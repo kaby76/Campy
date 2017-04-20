@@ -130,6 +130,15 @@ namespace Campy.LCFG
                     fv.Builder = lvv_ent.Builder;
                 }
             }
+            foreach (CIL_CFG.Vertex mv in mono_bbs)
+            {
+                LLVMCFG.Vertex fv = _cil_to_llvm_node_map[mv];
+                foreach (var j in mv.Instructions)
+                {
+                    var i = Inst.Wrap(j, fv);
+                    fv.Instructions.Add(i);
+                }
+            }
 
             //******************************************************
             //
@@ -398,7 +407,7 @@ namespace Campy.LCFG
                         LLVMCFG.Vertex llvm_node = _cil_to_llvm_node_map[node];
                         llvm_node.StateIn = new State(node, llvm_node, level_in);
                         State state_after = new State(llvm_node.StateIn);
-                        foreach (Inst i in llvm_node.Instructions)
+                        foreach (var i in llvm_node.Instructions)
                         {
                             i.StateIn = new State(state_after);
 

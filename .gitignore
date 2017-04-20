@@ -7,3 +7,10 @@ Campy.Utils/obj/
 ConsoleApp4/obj/
 ConsoleApp4/bin/
 packages/
+Campy.GraphAlgorithms/bin/
+.vs/
+Campy.Graphs/bin/
+Campy.LCFG/bin/
+Campy.MCFG/bin/
+Campy.Types.Utils/bin/
+Campy.Utils/bin/
