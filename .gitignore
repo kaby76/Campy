@@ -1,0 +1,9 @@
+Campy.GraphAlgorithms/obj/
+Campy.Graphs/obj/
+Campy.LCFG/obj/
+Campy.MCFG/obj/
+Campy.Types.Utils/obj/
+Campy.Utils/obj/
+ConsoleApp4/obj/
+ConsoleApp4/bin/
+packages/
