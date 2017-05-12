@@ -14,26 +14,10 @@ namespace Campy.LCFG
         public class Vertex
             : GraphLinkedList<int, Vertex, Edge>.Vertex
         {
-            private BasicBlockRef _basic_block;
-            public BasicBlockRef BasicBlock
-            {
-                get { return _basic_block; }
-                set { _basic_block = value; }
-            }
-
-            private ValueRef _function;
-            public ValueRef Function
-            {
-                get { return _function; }
-                set { _function = value; }
-            }
-
-            private BuilderRef _builder;
-            public BuilderRef Builder
-            {
-                get { return _builder; }
-                set { _builder = value; }
-            }
+            public BasicBlockRef BasicBlock { get; set; }
+            public ValueRef Function { get; set; }
+            public BuilderRef Builder { get; set; }
+            public ModuleRef Module { get; set; }
 
             private List<Inst> _instructions = new List<Inst>();
             public List<Inst> Instructions
@@ -67,7 +51,7 @@ namespace Campy.LCFG
 
             public Vertex(BasicBlockRef bb)
             {
-                _basic_block = bb;
+                BasicBlock = bb;
                 _state_in = new State();
                 _state_out = new State();
             }

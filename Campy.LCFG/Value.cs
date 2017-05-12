@@ -31,6 +31,12 @@ namespace Campy.LCFG
             _type = new Type(t);
         }
 
+        public Value(ValueRef v, TypeRef t)
+        {
+            _value_ref = v;
+            _type = new Type(t);
+        }
+
         public virtual int CompareTo(object obj)
         {
             throw new ArgumentException("Unimplemented in derived type.");

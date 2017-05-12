@@ -26,6 +26,12 @@ namespace Campy.LCFG
             get { return _type_ref; }
         }
 
+        public TypeKind GetKind()
+        {
+            TypeKind kind = LLVM.GetTypeKind(_type_ref);
+            return kind;
+        }
+
         /// Return true if this is one of the six floating-point types
         public bool isFloatingPointTy()
         {
@@ -120,6 +126,12 @@ namespace Campy.LCFG
         public Type getScalarType()
         {
             return null;
+        }
+
+        public Type getPointerElementType()
+        {
+            var r = LLVM.GetElementType(_type_ref);
+            return new Type(r);
         }
 
         public UInt32 getPrimitiveSizeInBits()

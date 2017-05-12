@@ -252,6 +252,43 @@ namespace Campy.Types.Utils
             return null;
         }
 
+        public static Type ConvertToBasicSystemReflectionType(Mono.Cecil.TypeDefinition td)
+        {
+            // Convert to System type based on name.
+            string str = td.FullName;
+            if (str.Equals("System.Boolean"))
+                return typeof(bool);
+            if (str.Equals("System.Byte"))
+                return typeof(byte);
+            if (str.Equals("System.Char"))
+                return typeof(char);
+            if (str.Equals("System.Decimal"))
+                return typeof(decimal);
+            if (str.Equals("System.Double"))
+                return typeof(double);
+            if (str.Equals("System.Single"))
+                return typeof(float);
+            if (str.Equals("System.Int32"))
+                return typeof(int);
+            if (str.Equals("System.Int64"))
+                return typeof(long);
+            if (str.Equals("System.SByte"))
+                return typeof(sbyte);
+            if (str.Equals("System.Int16"))
+                return typeof(short);
+            if (str.Equals("System.UInt32"))
+                return typeof(uint);
+            if (str.Equals("System.UInt64"))
+                return typeof(ulong);
+            if (str.Equals("System.UInt16"))
+                return typeof(ushort);
+            if (str.Equals("System.Void"))
+                return typeof(void);
+            return null;
+        }
+
+
+
         public static bool IsStruct(Type t)
         {
             return t.IsValueType && !t.IsPrimitive && !t.IsEnum;
