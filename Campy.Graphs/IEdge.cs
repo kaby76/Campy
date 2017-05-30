@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Campy.Graphs
 {
-    public interface IEdge<NAME>
+    public interface IEdge<NAME> : IComparable<IVertex<NAME>>
     {
         NAME From
         {

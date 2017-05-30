@@ -206,6 +206,43 @@ namespace Campy.Graphs
             return new PredecessorEnumerator(this, n);
         }
 
+        class PredecessorEdgeEnumerator : IEnumerable<IEdge<NAME>>
+        {
+            GraphAdjList<NAME> graph;
+            NAME name;
+
+            public PredecessorEdgeEnumerator(GraphAdjList<NAME> g, NAME n)
+            {
+                graph = g;
+                name = n;
+            }
+
+            public IEnumerator<IEdge<NAME>> GetEnumerator()
+            {
+                int[] index = graph.adj.IndexPredecessors;
+                int[] data = graph.adj.DataPredecessors;
+                int n = graph.NameSpace.BijectFromBasetype(name);
+                GraphAdjListVertex<NAME> node = graph.VertexSpace[n];
+                for (int i = index[n]; i < index[n + 1]; ++i)
+                {
+                    int d = data[i];
+                    var c = graph.VertexSpace[d];
+                    yield return new GraphAdjListEdge<NAME>(c, node);
+                }
+            }
+
+            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+            {
+                return GetEnumerator();
+            }
+        }
+
+
+        public IEnumerable<IEdge<NAME>> PredecessorEdges(NAME n)
+        {
+            return new PredecessorEdgeEnumerator(this, n);
+        }
+
         class ReversePredecessorEnumerator : IEnumerable<NAME>
         {
             GraphAdjList<NAME> graph;
@@ -276,6 +313,43 @@ namespace Campy.Graphs
         public IEnumerable<NAME> Successors(NAME n)
         {
             return new SuccessorEnumerator(this, n);
+        }
+
+        class SuccessorEdgeEnumerator : IEnumerable<IEdge<NAME>>
+        {
+            GraphAdjList<NAME> graph;
+            NAME name;
+
+            public SuccessorEdgeEnumerator(GraphAdjList<NAME> g, NAME n)
+            {
+                graph = g;
+                name = n;
+            }
+
+            public IEnumerator<IEdge<NAME>> GetEnumerator()
+            {
+                int[] index = graph.adj.IndexSuccessors;
+                int[] data = graph.adj.DataSuccessors;
+                int n = graph.NameSpace.BijectFromBasetype(name);
+                GraphAdjListVertex<NAME> node = graph.VertexSpace[n];
+                for (int i = index[n]; i < index[n + 1]; ++i)
+                {
+                    int d = data[i];
+                    var c = graph.VertexSpace[d];
+                    yield return new GraphAdjListEdge<NAME>(node, c);
+                }
+            }
+
+            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+            {
+                return GetEnumerator();
+            }
+        }
+
+
+        public IEnumerable<IEdge<NAME>> SuccessorEdges(NAME n)
+        {
+            return new SuccessorEdgeEnumerator(this, n);
         }
 
         public class ReverseSuccessorEnumerator : IEnumerable<NAME>
@@ -385,6 +459,11 @@ namespace Campy.Graphs
         public NAME To
         {
             get { return to.Name; }
+        }
+
+        public int CompareTo(IVertex<NAME> other)
+        {
+            throw new NotImplementedException();
         }
 
         override public string ToString()

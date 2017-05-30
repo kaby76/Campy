@@ -28,16 +28,10 @@ namespace Campy.LCFG
             _lcfg = lcfg;
         }
 
-        public void ConvertToLLVM(IEnumerable<int> change_set)
+        public void ConvertToLLVM(IEnumerable<CIL_CFG.Vertex> change_set)
         {
             // Map all basic blocks in CIL to LLVM.
-            IEnumerable<CIL_CFG.Vertex> mono_bbs =
-                change_set.Select(i =>
-                {
-                    CIL_CFG.Vertex r = _mcfg.NameToVertex(i);
-                    return r;
-                });
-
+            IEnumerable<CIL_CFG.Vertex> mono_bbs = change_set;
             foreach (var mv in mono_bbs)
             {
                 GraphLinkedList<int, LLVMCFG.Vertex, LLVMCFG.Edge>.Vertex lv = _lcfg.AddVertex(mv.Name);
@@ -144,11 +138,14 @@ namespace Campy.LCFG
             foreach (CIL_CFG.Vertex mv in mono_bbs)
             {
                 LLVMCFG.Vertex fv = _cil_to_llvm_node_map[mv];
+                Inst prev = null;
                 foreach (var j in mv.Instructions)
                 {
                     var i = Inst.Wrap(j);
                     i.Block = fv;
                     fv.Instructions.Add(i);
+                    if (prev != null) prev.Next = i;
+                    prev = i;
                 }
             }
 
@@ -336,14 +333,21 @@ namespace Campy.LCFG
                 {
                     // Create DFT order of all nodes.
                     IEnumerable<int> objs = entries.Select(x => x.Name);
-                    GraphAlgorithms.DepthFirstPreorderTraversal<int>
-                        dfs = new GraphAlgorithms.DepthFirstPreorderTraversal<int>(
+                    GraphAlgorithms.TSort<int>
+                        tSort = new GraphAlgorithms.TSort<int>(
                             _mcfg,
                             objs
                             );
 
                     List<CIL_CFG.Vertex> visited = new List<CIL_CFG.Vertex>();
-                    foreach (int ob in dfs)
+                    foreach (int ob in tSort)
+                    {
+                        CIL_CFG.Vertex node = _mcfg.VertexSpace[_mcfg.NameSpace.BijectFromBasetype(ob)];
+                        visited.Add(node);
+                        System.Console.WriteLine(node);
+                    }
+                    visited = new List<CIL_CFG.Vertex>();
+                    foreach (int ob in tSort)
                     {
                         CIL_CFG.Vertex node = _mcfg.VertexSpace[_mcfg.NameSpace.BijectFromBasetype(ob)];
                         visited.Add(node);
@@ -363,9 +367,9 @@ namespace Campy.LCFG
                         LLVMCFG.Vertex llvm_node = _cil_to_llvm_node_map[node];
                         llvm_node.StateIn = new State(node, llvm_node, level_in);
                         llvm_node.StateOut = new State(llvm_node.StateIn);
-                        foreach (Inst i in llvm_node.Instructions)
+                        for (Inst i = llvm_node.Instructions.First(); i != null; )
                         {
-                            i.Convert(llvm_node.StateOut);
+                            i = i.Convert(llvm_node.StateOut);
                         }
                     }
                 }
@@ -389,17 +393,18 @@ namespace Campy.LCFG
             CIL_CFG.Vertex mv = here.Key;
             LLVMCFG.Vertex lvv = here.Value;
             var mod = lvv.Module;
-            string error = null;
-            //LLVM.VerifyModule(mod, VerifierFailureAction.AbortProcessAction, out error);
-            //LLVM.DisposeMessage(error);
+            MyString error = new MyString();
+            LLVM.VerifyModule(mod, VerifierFailureAction.AbortProcessAction, error);
+            System.Console.WriteLine(error.ToString());
             ExecutionEngineRef engine;
+            LLVM.DumpModule(mod);
             LLVM.LinkInMCJIT();
             LLVM.InitializeNativeTarget();
             LLVM.InitializeNativeAsmPrinter();
-            MCJITCompilerOptions options;
+            MCJITCompilerOptions options = new MCJITCompilerOptions();
             var optionsSize = (4 * sizeof(int)) + IntPtr.Size; // LLVMMCJITCompilerOptions has 4 ints and a pointer
-            LLVM.InitializeMCJITCompilerOptions(out options, (uint)optionsSize);
-            LLVM.CreateMCJITCompilerForModule(out engine, mod, out options, (uint)optionsSize, out error);
+            LLVM.InitializeMCJITCompilerOptions(options, (uint)optionsSize);
+            LLVM.CreateMCJITCompilerForModule(out engine, mod, options, (uint)optionsSize, error);
             var ptr = LLVM.GetPointerToGlobal(engine, lvv.Function);
             IntPtr p = (IntPtr)ptr;
             Foo2 ff = (Foo2)Marshal.GetDelegateForFunctionPointer(p, typeof(Foo2));
@@ -409,7 +414,6 @@ namespace Campy.LCFG
             {
                 Console.WriteLine("error writing bitcode to file, skipping");
             }
-            LLVM.DumpModule(mod);
             LLVM.DisposeBuilder(lvv.Builder);
             LLVM.DisposeExecutionEngine(engine);
 

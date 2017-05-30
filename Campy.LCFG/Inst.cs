@@ -1,75 +1,42 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.SqlTypes;
 using System.Diagnostics;
 using Campy.CIL;
-using Mono.Cecil.Cil;
 using Swigged.LLVM;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using Campy.Graphs;
-using Mono.Cecil;
 
 namespace Campy.LCFG
 {
     public class Inst
     {
-        protected readonly CIL_Inst _instruction;
         public BuilderRef Builder { get { return Block.Builder; } }
+
         public ContextRef LLVMContext { get; set; }
 
-        public CIL_Inst Instruction
-        {
-            get
-            {
-                return _instruction;
-            }
-        }
+        public CIL_Inst Instruction { get; private set; }
 
-        protected List<Value> _llvm_instructions;
-        public List<Value> LLVMInstructions
-        {
-            get { return this._llvm_instructions; }
-        }
+        public List<Value> LLVMInstructions { get; private set; }
 
-        private LLVMCFG.Vertex _block;
-        public LLVMCFG.Vertex Block
-        {
-            get { return _block; }
-            set { _block = value; }
-        }
+        public LLVMCFG.Vertex Block { get; set; }
 
-        public override string ToString()
-        {
-            return _instruction.ToString();
-        }
+        public override string ToString() { return Instruction.ToString(); }
 
-        public Inst(CIL_Inst i)
-        {
-            _instruction = i;
-        }
+        public Inst(CIL_Inst i) { Instruction = i; }
 
-        public Mono.Cecil.Cil.OpCode OpCode
-        {
-            get
-            {
-                return _instruction.OpCode;
-            }
-        }
+        public Mono.Cecil.Cil.OpCode OpCode { get { return Instruction.OpCode; } }
 
-        public object Operand
-        {
-            get
-            {
-                return _instruction.Operand;
-            }
-        }
+        public object Operand { get { return Instruction.Operand; } }
+
+        // Required instruction sequencing so we can translate groups of instructions.
+        public virtual Inst Next { get; set; }
+
         public virtual void ComputeStackLevel(ref int level_after)
         {
         }
 
-        public virtual void Convert(State state)
-        {
-        }
+        public virtual Inst Convert(State state) { return null; }
 
         static public Inst Wrap(CIL_Inst i)
         {
@@ -536,267 +503,6 @@ namespace Campy.LCFG
         }
 
         public UInt32 TargetPointerSizeInBits = 64;
-
-        // Given an integral CorInfoType, get the
-        // LLVM type that represents it on the stack
-        Type getStackType(TypeReference CorType)
-        {
-            UInt32 Size = stackSize(CorType);
-            TypeRef x = LLVM.IntTypeInContext(LLVMContext, Size);
-            return new Type(x);
-        }
-
-
-
-        // Create a new temporary with the indicated type.
-        ValueRef createTemporary(TypeRef Ty)//, Twine Name)
-        {
-            // Put the alloca for this temporary into the entry block so
-            // the temporary uses can appear anywhere.
-            BasicBlockRef ib = LLVM.GetInsertBlock(Builder);
-            // TODO There is no saveIP() in LLVM-C. So, we need to do something with
-            // current instruction. For now, punt.
-//            ValueRef IP = LLVMBuilder->saveIP();
-
-//            BasicBlock::iterator InsertPoint;
-//            BasicBlock* Block = nullptr;
-//            if (AllocaInsertionPoint == nullptr) {
-//                // There are no local, param or temp allocas in the entry block, so set
-//                // the insertion point to the first point in the block.
-//                InsertPoint = EntryBlock->getFirstInsertionPt();
-//                Block = EntryBlock;
-//            } else {
-//                // There are local, param or temp allocas. TempInsertionPoint refers to
-//                // the last of them. Set the insertion point to the next instruction since
-//                // the builder will insert new instructions before the insertion point.
-//               InsertPoint = std::next(AllocaInsertionPoint->getIterator());
-//                Block = AllocaInsertionPoint->getParent();
-//            }
-
-//            LLVMBuilder->SetInsertPoint(Block, InsertPoint);
-
-//            AllocaInst* AllocaInst = createAlloca(Ty, nullptr, Name);
-// Update the end of the alloca range.
-//            AllocaInsertionPoint = AllocaInst;
-//            LLVMBuilder->restoreIP(IP);
-
-//            return AllocaInst;
-            return default(ValueRef);
-        }
-
-
-        Value loadNonPrimitiveObj(Type StructTy, Value Address, ReaderAlignType Alignment, bool IsVolatile, bool AddressMayBeNull)
-        {
-            if (AddressMayBeNull)
-            {
-                if (UseExplicitNullChecks)
-                {
-                    Address = genNullCheck(Address);
-                }
-                else
-                {
-                    // If we had support for implicit null checks, this
-                    // path would need to annotate the load we're about
-                    // to generate.
-                }
-            }
-
-            ValueRef Copy = createTemporary(StructTy.T);
-
-            // TODO Punt
-            //copyStructNoBarrier(cast<StructType>(StructTy), Copy, Address, IsVolatile,
-            //    Alignment);
-            //setValueRepresentsStruct(Copy);
-            return new Value(Copy);
-        }
-
-        // Convert ReaderAlignType to byte alighnment
-        UInt32 convertReaderAlignment(ReaderAlignType ReaderAlignment)
-        {
-            uint Result = (ReaderAlignment == ReaderAlignType.Reader_AlignNatural)
-                ? TargetPointerSizeInBits / 8
-                : (uint)ReaderAlignment;
-            return Result;
-        }
-
-        // Given an integral or float CorInfoType, determine its size
-        // once pushed on the evaluation stack.
-        UInt32 stackSize(TypeReference CorType)
-        {
-            System.Type t = Campy.Types.Utils.ReflectionCecilInterop.ConvertToBasicSystemReflectionType(CorType.Resolve());
-            if (t == typeof(bool) ||
-                t == typeof(byte) ||
-                t == typeof(char) ||
-                t == typeof(sbyte) ||
-                t == typeof(short) ||
-                t == typeof(int) ||
-                t == typeof(uint) ||
-                t == typeof(ushort) ||
-                t == typeof(decimal))
-            {
-                return 32;
-            }
-            else if (t == typeof(long) ||
-                t == typeof(float) ||
-                t == typeof(double) ||
-                t == typeof(ulong))
-            {
-                return 64;
-            }
-            else
-            {
-                return TargetPointerSizeInBits;
-            }
-        }
-
-        // Given an CorInfoType, determine if it is
-        // signed or unsigned. Treats pointer
-        // types as unsigned.
-        bool isSigned(TypeReference CorType)
-        {
-            System.Type t = Campy.Types.Utils.ReflectionCecilInterop.ConvertToBasicSystemReflectionType(CorType.Resolve());
-            if (t == typeof(bool) ||
-                t == typeof(char) ||
-                t == typeof(byte) ||
-                t == typeof(ushort) ||
-                t == typeof(uint) ||
-                t == typeof(ulong) ||
-                t == typeof(decimal))
-            {
-                return false;
-            }
-            else if (
-                 t == typeof(sbyte) ||
-                 t == typeof(int) ||
-                 t == typeof(short) ||
-                 t == typeof(long) ||
-                 t == typeof(float) ||
-                 t == typeof(double))
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-
-        // Convert this result to a valid stack type,
-        // extending size as necessary for integer types.
-        //
-        // Because LLVM's type system can't describe unsigned
-        // types, we also pass in CorType to convey whether integral-typed
-        // Nodes should be handled as unsigned types.
-        Value convertToStackType(Value Node, ParameterDefinition CorType)
-        {
-            Type Ty = Node.T;
-            Value Result = Node;
-
-            switch (Ty.GetKind())
-            {
-                case TypeKind.IntegerTypeKind:
-                {
-                    var Size = Ty.getPrimitiveSizeInBits();
-                    var DesiredSize = stackSize(CorType.ParameterType);
-
-                    if (Size < DesiredSize)
-                    {
-                        // Need to sign or zero extend, figure out which from the CorType.
-                        Type ResultTy = getStackType(CorType.ParameterType);
-                        bool IsSigned = isSigned(CorType.ParameterType);
-                        var c = LLVM.BuildIntCast(Builder, Node.V, ResultTy.T, "");
-                        //TODO Not sure how to set signed property.
-                        Result = new Value(c, ResultTy.T);
-                    }
-                    break;
-                }
-
-                case TypeKind.PointerTypeKind:
-                case TypeKind.FloatTypeKind:
-                case TypeKind.DoubleTypeKind:
-                    // Already a valid stack type.
-                    break;
-                case TypeKind.VectorTypeKind:
-                    // Already a valid stack type.
-                    break;
-
-                case TypeKind.StructTypeKind:
-                default:
-                    // An invalid type
-                    Debug.Assert(false);
-                    break;
-            }
-
-            return Result;
-        }
-
-
-        public Value loadAtAddress(Value Address,
-            Type Ty,
-            ParameterDefinition CorType,
-            ReaderAlignType AlignmentPrefix,
-            bool IsVolatile,
-            bool AddressMayBeNull)
-        {
-            if (Ty.isStructTy())
-            {
-                var StructTy = Ty;
-                return loadNonPrimitiveObj(StructTy, Address, AlignmentPrefix, IsVolatile,
-                    AddressMayBeNull);
-            }
-            else
-            {
-                Value LoadInst = makeLoad(Address, IsVolatile, AddressMayBeNull);
-                var Align = convertReaderAlignment(AlignmentPrefix);
-                LLVM.SetAlignment(LoadInst.V, Align);
-                Value Result = convertToStackType(LoadInst, CorType);
-                return Result;
-            }
-        }
-
-        Value makeLoad(Value Address, bool IsVolatile, bool AddressMayBeNull = true)
-        {
-            if (AddressMayBeNull)
-            {
-                if (UseExplicitNullChecks)
-                {
-                    Address = genNullCheck(Address);
-                }
-                else
-                {
-                    // If we had support for implicit null checks, this
-                    // path would need to annotate the load we're about
-                    // to generate.
-                }
-            }
-            if (Address.T.isPointerTy() &&
-                Address.T.getPointerElementType().isVectorTy())
-            {
-                var r = LLVM.BuildLoad(Builder, Address.V, "");
-                LLVM.SetAlignment(r, 1);
-                LLVM.SetVolatile(r, IsVolatile);
-                return new Value(r, Address.T.T);
-            }
-            var ret = LLVM.BuildLoad(Builder, Address.V, "");
-            LLVM.SetVolatile(ret, IsVolatile);
-            return new Value(ret, Address.T.T);
-        }
-
-        Value genNullCheck(Value Node)
-        {
-            // Insert the compare against null.
-            ValueRef c = LLVM.BuildIsNull(Builder, Node.V, "NullCheck");
-
-            // Insert the conditional throw
-            // TODO CorInfoHelpFunc HelperId = CORINFO_HELP_THROWNULLREF;
-            // TODO genConditionalThrow(Compare, HelperId, "ThrowNullRef");
-
-            return Node;
-        }
-
-
-        public bool UseExplicitNullChecks { get; set; }
     }
 
     public class BinaryOpInst : Inst
@@ -811,12 +517,13 @@ namespace Campy.LCFG
             level_after--;
         }
 
-        public override void Convert(State state)
+        public override Inst Convert(State state)
         {
             var rhs = state._stack.Pop();
             var lhs = state._stack.Pop();
             var result = binaryOp(this.GetType(), lhs, rhs);
             state._stack.Push(result);
+            return Next;
         }
 
         class BinaryInstTable
@@ -1226,46 +933,6 @@ namespace Campy.LCFG
             return Result;
         }
 
-        //// Generate a call to the throw helper if the condition is met.
-        //public void genConditionalThrow(Value Condition, CorInfoHelpFunc HelperId,
-        //    Twine ThrowBlockName)
-        //{
-        //    Value Arg1 = null, Arg2 = null;
-        //    Type ReturnType = new Type(Type.getVoidTy(LLVMContext));
-        //    bool MayThrow = true;
-        //    bool CallReturns = false;
-        //    genConditionalHelperCall(Condition, HelperId, MayThrow, ReturnType, Arg1,
-        //        Arg2, CallReturns, ThrowBlockName);
-        //}
-
-        //CallSite genConditionalHelperCall(
-        //    Value Condition, CorInfoHelpFunc HelperId,
-        //    bool MayThrow, Type ReturnType,
-        //    Value Arg1, Value Arg2, bool CallReturns, Twine CallBlockName)
-        //{
-        //    // Create the call block and fill it in.
-        //    Swigged.LLVM.BasicBlockRef CallBlock = createPointBlock(CallBlockName);
-
-            
-
-        //    IRBuilder<>::InsertPoint SavedInsertPoint = LLVMBuilder->saveIP();
-        //    LLVMBuilder->SetInsertPoint(CallBlock);
-        //    CallSite HelperCall =
-        //        callHelperImpl(HelperId, MayThrow, ReturnType, Arg1, Arg2);
-
-        //    if (!CallReturns) {
-        //        HelperCall.setDoesNotReturn();
-        //        LLVMBuilder->CreateUnreachable();
-        //    }
-        //    LLVMBuilder->restoreIP(SavedInsertPoint);
-
-        //    // Splice it into the flow.
-        //    insertConditionalPointBlock(Condition, CallBlock, CallReturns);
-
-        //    // Return the the call.
-        //    return HelperCall;
-        //}
-
         public bool UseExplicitZeroDivideChecks { get; set; }
     }
 
@@ -1281,11 +948,12 @@ namespace Campy.LCFG
             level_after++;
         }
 
-        public override void Convert(State state)
+        public override Inst Convert(State state)
         {
             int _arg = (this.Instruction as CIL.LoadArgInst)._arg;
             Value value = state._arguments[_arg];
             state._stack.Push(value);
+            return Next;
         }
     }
 
@@ -1301,11 +969,12 @@ namespace Campy.LCFG
             level_after++;
         }
 
-        public override void Convert(State state)
+        public override Inst Convert(State state)
         {
             Int32 arg = (this.Instruction as CIL.LDCInst4)._arg;
             Value value = new Value(LLVM.ConstInt(LLVM.Int32Type(), (ulong)arg, true));
             state._stack.Push(value);
+            return Next;
         }
     }
 
@@ -1321,11 +990,12 @@ namespace Campy.LCFG
             level_after++;
         }
 
-        public override void Convert(State state)
+        public override Inst Convert(State state)
         {
             var arg = (this.Instruction as CIL.LDCInst8)._arg;
             Value value = new Value(LLVM.ConstInt(LLVM.Int64Type(), (ulong)arg, true));
             state._stack.Push(value);
+            return Next;
         }
     }
 
@@ -1335,11 +1005,12 @@ namespace Campy.LCFG
         {
         }
 
-        public override void Convert(State state)
+        public override Inst Convert(State state)
         {
             var arg = (this.Instruction as CIL.LdLoc)._arg;
             Value v = state._locals[arg];
             state._stack.Push(v);
+            return Next;
         }
     }
 
@@ -1349,11 +1020,91 @@ namespace Campy.LCFG
         {
         }
 
-        public override void Convert(State state)
+        public override Inst Convert(State state)
         {
             Value v = state._stack.Pop();
             var arg = (this.Instruction as CIL.StLoc)._arg;
             state._locals[arg] = v;
+            return Next;
+        }
+    }
+
+    public class CompareInst : Inst
+    {
+        public CompareInst(CIL_Inst i) : base(i)
+        {
+        }
+
+        public enum PredicateType
+        {
+            eq,
+            ne,
+            gt,
+            lt,
+            ge,
+            le,
+        };
+
+        public Swigged.LLVM.IntPredicate[] _int_pred = new Swigged.LLVM.IntPredicate[]
+        {
+            Swigged.LLVM.IntPredicate.IntEQ,
+            Swigged.LLVM.IntPredicate.IntNE,
+            Swigged.LLVM.IntPredicate.IntSGT,
+            Swigged.LLVM.IntPredicate.IntSLT,
+            Swigged.LLVM.IntPredicate.IntSGE,
+            Swigged.LLVM.IntPredicate.IntSLE,
+        };
+
+        public Swigged.LLVM.IntPredicate[] _uint_pred = new Swigged.LLVM.IntPredicate[]
+        {
+            Swigged.LLVM.IntPredicate.IntEQ,
+            Swigged.LLVM.IntPredicate.IntNE,
+            Swigged.LLVM.IntPredicate.IntUGT,
+            Swigged.LLVM.IntPredicate.IntULT,
+            Swigged.LLVM.IntPredicate.IntUGE,
+            Swigged.LLVM.IntPredicate.IntULE,
+        };
+
+        public virtual PredicateType Predicate { get; set; }
+
+        public override Inst Convert(State state)
+        {
+            Value v2 = state._stack.Pop();
+            Value v1 = state._stack.Pop();
+            // TODO Undoubtably, this will be much more complicated than my initial stab.
+            Type t1 = v1.T;
+            Type t2 = v2.T;
+            ValueRef cmp = default(ValueRef);
+            // Deal with various combinations of types.
+            if (t1.isIntegerTy() && t2.isIntegerTy())
+            {
+                var op = _int_pred[(int)Predicate];
+                cmp = LLVM.BuildICmp(Builder, op, v1.V, v2.V, "");
+                if (Next == null) return null;
+                var t = Next.GetType();
+                if (t == typeof(i_brfalse))
+                {
+                    // Push, Pop, branch -> combine
+                }
+                else if (t == typeof(i_brfalse_s))
+                {
+                    // Push, Pop, branch -> combine
+                }
+                else if (t == typeof(i_brtrue))
+                {
+                    // Push, Pop, branch -> combine
+                }
+                else if (t == typeof(i_brtrue_s))
+                {
+                    // Push, Pop, branch -> combine
+                } else
+                {
+                    // Set up for push of 0/1.
+                    var ret = LLVM.BuildZExt(Builder, cmp, LLVM.Int32Type(), "");
+                    state._stack.Push(new Value(ret, LLVM.Int32Type()));
+                }
+            }
+            return Next;
         }
     }
 
@@ -1409,19 +1160,21 @@ namespace Campy.LCFG
         }
     }
 
-    public class i_beq_s : Inst
+    public class i_beq_s : CompareInst
     {
         public i_beq_s(CIL_Inst i)
             : base(i)
         {
+            Predicate = PredicateType.eq;
         }
     }
 
-    public class i_bge : Inst
+    public class i_bge : CompareInst
     {
         public i_bge(CIL_Inst i)
             : base(i)
         {
+            Predicate = PredicateType.ne;
         }
     }
 
@@ -1441,11 +1194,12 @@ namespace Campy.LCFG
         }
     }
 
-    public class i_bge_s : Inst
+    public class i_bge_s : CompareInst
     {
         public i_bge_s(CIL_Inst i)
             : base(i)
         {
+            Predicate = PredicateType.ge;
         }
     }
 
@@ -1457,11 +1211,12 @@ namespace Campy.LCFG
         }
     }
 
-    public class i_bgt_s : Inst
+    public class i_bgt_s : CompareInst
     {
         public i_bgt_s(CIL_Inst i)
             : base(i)
         {
+            Predicate = PredicateType.gt;
         }
     }
 
@@ -1489,11 +1244,12 @@ namespace Campy.LCFG
         }
     }
 
-    public class i_ble_s : Inst
+    public class i_ble_s : CompareInst
     {
         public i_ble_s(CIL_Inst i)
             : base(i)
         {
+            Predicate = PredicateType.le;
         }
     }
 
@@ -1521,11 +1277,12 @@ namespace Campy.LCFG
         }
     }
 
-    public class i_blt_s : Inst
+    public class i_blt_s : CompareInst
     {
         public i_blt_s(CIL_Inst i)
             : base(i)
         {
+            Predicate = PredicateType.lt;
         }
     }
 
@@ -1553,11 +1310,12 @@ namespace Campy.LCFG
         }
     }
 
-    public class i_bne_un_s : Inst
+    public class i_bne_un_s : CompareInst
     {
         public i_bne_un_s(CIL_Inst i)
             : base(i)
         {
+            Predicate = PredicateType.ne;
         }
     }
 
@@ -1584,12 +1342,13 @@ namespace Campy.LCFG
         {
         }
 
-        public override void Convert(State state)
+        public override Inst Convert(State state)
         {
             GraphLinkedList<int, LLVMCFG.Vertex, LLVMCFG.Edge>.Edge edge = Block._Successors[0];
             int succ = edge.To;
             var s = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ)];
             var br = LLVM.BuildBr(Builder, s.BasicBlock);
+            return Next;
         }
     }
 
@@ -1598,6 +1357,19 @@ namespace Campy.LCFG
         public i_brfalse(CIL_Inst i)
             : base(i)
         {
+        }
+
+        public override Inst Convert(State state)
+        {
+            var v = state._stack.Pop();
+            GraphLinkedList<int, LLVMCFG.Vertex, LLVMCFG.Edge>.Edge edge1 = Block._Successors[0];
+            GraphLinkedList<int, LLVMCFG.Vertex, LLVMCFG.Edge>.Edge edge2 = Block._Successors[1];
+            int succ1 = edge1.To;
+            int succ2 = edge1.To;
+            var s1 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ1)];
+            var s2 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ1)];
+            LLVM.BuildCondBr(Builder, v.V, s1.BasicBlock, s2.BasicBlock);
+            return Next;
         }
     }
 
@@ -1614,6 +1386,22 @@ namespace Campy.LCFG
         public i_brfalse_s(CIL_Inst i)
             : base(i)
         {
+        }
+
+        public override Inst Convert(State state)
+        {
+            var v = state._stack.Pop();
+            GraphLinkedList<int, LLVMCFG.Vertex, LLVMCFG.Edge>.Edge edge1 = Block._Successors[0];
+            GraphLinkedList<int, LLVMCFG.Vertex, LLVMCFG.Edge>.Edge edge2 = Block._Successors[1];
+            int succ1 = edge1.To;
+            int succ2 = edge2.To;
+            var s1 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ1)];
+            var s2 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ2)];
+            // We need to compare the value popped with 0/1.
+            var v2 = LLVM.ConstInt(LLVM.Int32Type(), 1, false);
+            var v3 = LLVM.BuildICmp(Builder, IntPredicate.IntEQ, v.V, v2, "");
+            LLVM.BuildCondBr(Builder, v3, s1.BasicBlock, s2.BasicBlock);
+            return Next;
         }
     }
 
@@ -1665,27 +1453,30 @@ namespace Campy.LCFG
         }
     }
 
-    public class i_ceq : Inst
+    public class i_ceq : CompareInst
     {
         public i_ceq(CIL_Inst i)
             : base(i)
         {
+            Predicate = PredicateType.eq;
         }
     }
 
-    public class i_cgt : Inst
+    public class i_cgt : CompareInst
     {
         public i_cgt(CIL_Inst i)
             : base(i)
         {
+            Predicate = PredicateType.gt;
         }
     }
 
-    public class i_cgt_un : Inst
+    public class i_cgt_un : CompareInst
     {
         public i_cgt_un(CIL_Inst i)
             : base(i)
         {
+            Predicate = PredicateType.gt;
         }
     }
 
@@ -1697,19 +1488,21 @@ namespace Campy.LCFG
         }
     }
 
-    public class i_clt : Inst
+    public class i_clt : CompareInst
     {
         public i_clt(CIL_Inst i)
             : base(i)
         {
+            Predicate = PredicateType.lt;
         }
     }
 
-    public class i_clt_un : Inst
+    public class i_clt_un : CompareInst
     {
         public i_clt_un(CIL_Inst i)
             : base(i)
         {
+            Predicate = PredicateType.lt;
         }
     }
 
@@ -2675,8 +2468,9 @@ namespace Campy.LCFG
             : base(i)
         {
         }
-        public override void Convert(State state)
+        public override Inst Convert(State state)
         {
+            return Next;
         }
     }
 
@@ -2751,7 +2545,7 @@ namespace Campy.LCFG
         {
         }
 
-        public override void Convert(State state)
+        public override Inst Convert(State state)
         {
             // There are really two different stacks here:
             // one for the called method, and the other for the caller of the method.
@@ -2762,6 +2556,7 @@ namespace Campy.LCFG
             // This is handled by the call instruction.
             var v = state._stack.Pop();
             var i = LLVM.BuildRet(Builder, v.V);
+            return Next;
         }
     }
 

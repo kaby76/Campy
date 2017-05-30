@@ -296,6 +296,11 @@ namespace Campy.Graphs
             return new PredecessorEnumerator(this, n);
         }
 
+        public IEnumerable<IEdge<NAME>> PredecessorEdges(NAME n)
+        {
+            throw new NotImplementedException();
+        }
+
         class ReversePredecessorEnumerator : IEnumerable<NAME>
         {
             GraphLinkedList<NAME, NODE, EDGE> graph;
@@ -425,6 +430,11 @@ namespace Campy.Graphs
             return new SuccessorEnumerator(this, n);
         }
 
+        public IEnumerable<IEdge<NAME>> SuccessorEdges(NAME n)
+        {
+            throw new NotImplementedException();
+        }
+
         public class ReverseSuccessorEnumerator : IEnumerable<NAME>
         {
             GraphLinkedList<NAME, NODE, EDGE> graph;
@@ -537,6 +547,11 @@ namespace Campy.Graphs
             public NAME To
             {
                 get { return to.Name; }
+            }
+
+            public int CompareTo(IVertex<NAME> other)
+            {
+                throw new NotImplementedException();
             }
 
             override public string ToString()

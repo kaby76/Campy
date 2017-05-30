@@ -22,9 +22,13 @@ namespace Campy.Graphs
 
         IEnumerable<NAME> Predecessors(NAME n);
 
+        IEnumerable<IEdge<NAME>> PredecessorEdges(NAME n);
+
         IEnumerable<NAME> ReversePredecessors(NAME n);
 
         IEnumerable<NAME> Successors(NAME n);
+
+        IEnumerable<IEdge<NAME>> SuccessorEdges(NAME n);
 
         IEnumerable<NAME> ReverseSuccessors(NAME n);
 

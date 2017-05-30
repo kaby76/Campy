@@ -76,9 +76,38 @@ namespace Campy.LCFG
                 // even be processing this bb.
                 // TODO
             }
-            else
+            else // node._Predecessors.Count > 0
             {
-                // TODO
+                // Now, for every arg, local, stack, set up for merge.
+                var pred = llvm_node._Predecessors[0].From;
+                var p_llvm_node = llvm_node._Graph.VertexSpace[llvm_node._Graph.NameSpace.BijectFromBasetype(pred)];
+                var size = p_llvm_node.StateOut._stack.Count;
+                for (int i = 0; i < size; ++i)
+                {
+                    _stack.Push(default(Value));
+                    var count = node._Predecessors.Count;
+                    ValueRef res = LLVM.BuildPhi(llvm_node.Builder, LLVM.Int32Type(), "");
+                    ValueRef[] phi_vals = new ValueRef[count];
+                    for (int c = 0; c < count; ++c)
+                    {
+                        var p = llvm_node._Predecessors[c].From;
+                        var plm = llvm_node._Graph.VertexSpace[llvm_node._Graph.NameSpace.BijectFromBasetype(p)];
+                        var vr = plm.StateOut._stack[i];
+                        phi_vals[c] = vr.V;
+                    }
+                    BasicBlockRef[] phi_blocks = new BasicBlockRef[count];
+                    for (int c = 0; c < count; ++c)
+                    {
+                        var p = llvm_node._Predecessors[c].From;
+                        var plm = llvm_node._Graph.VertexSpace[llvm_node._Graph.NameSpace.BijectFromBasetype(p)];
+                        phi_blocks[c] = plm.BasicBlock;
+                    }
+                    LLVM.AddIncoming(res, phi_vals, phi_blocks);
+                    _stack[i] = new Value(res);
+                }
+                var other = p_llvm_node.StateOut;
+                _arguments = _stack.Section(other._arguments.Base, other._arguments.Len);
+                _locals = _stack.Section(other._locals.Base, other._locals.Len);
             }
         }
 
