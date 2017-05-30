@@ -1,6 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using Campy.CIL;
 using Campy.LCFG;
+using Swigged.LLVM;
 
 namespace ConsoleApp4
 {
@@ -25,6 +28,8 @@ namespace ConsoleApp4
             return 99;
         }
 
+        public delegate int DFoo2(int a);
+
         static void Main(string[] args)
         {
             Reader r = new Reader();
@@ -36,14 +41,26 @@ namespace ConsoleApp4
             var c2 = new Campy.LCFG.Converter(mg, lg);
             Swigged.LLVM.Helper.Adjust.Path();
             c2.ConvertToLLVM(change_set);
-            c2.Call(1);
+
+            IntPtr p2 = c2.GetPtr(1);
+            DFoo2 ff2 = (DFoo2)Marshal.GetDelegateForFunctionPointer(p2, typeof(DFoo2));
+            for (int k = 0; k < 100; ++k)
+            {
+                int result = ff2(k);
+                Console.WriteLine("Result is: " + result);
+            }
 
             mg.StartChangeSet(2);
             r.AnalyzeMethod(() => Program.Foo3(2));
             List<CIL_CFG.Vertex> change_set2 = mg.EndChangeSet(2);
             c2.ConvertToLLVM(change_set2);
-            c2.Call(3);
-
+            IntPtr p3 = c2.GetPtr(3);
+            DFoo2 ff3 = (DFoo2)Marshal.GetDelegateForFunctionPointer(p3, typeof(DFoo2));
+            for (int k = 0; k < 100; ++k)
+            {
+                int result = ff3(k);
+                Console.WriteLine("Result is: " + result);
+            }
         }
     }
 }

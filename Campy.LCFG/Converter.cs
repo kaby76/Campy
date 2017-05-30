@@ -376,9 +376,7 @@ namespace Campy.LCFG
             }
         }
 
-        public delegate int Foo2(int a);
-
-        public void Call(int block_number)
+        public IntPtr GetPtr(int block_number)
         {
             KeyValuePair<CIL_CFG.Vertex, LLVMCFG.Vertex> here = default(KeyValuePair<CIL_CFG.Vertex, LLVMCFG.Vertex>);
 
@@ -407,16 +405,8 @@ namespace Campy.LCFG
             LLVM.CreateMCJITCompilerForModule(out engine, mod, options, (uint)optionsSize, error);
             var ptr = LLVM.GetPointerToGlobal(engine, lvv.Function);
             IntPtr p = (IntPtr)ptr;
-            Foo2 ff = (Foo2)Marshal.GetDelegateForFunctionPointer(p, typeof(Foo2));
-            int result = ff(10);
-            Console.WriteLine("Result is: " + result);
-            if (LLVM.WriteBitcodeToFile(mod, "sum.bc") != 0)
-            {
-                Console.WriteLine("error writing bitcode to file, skipping");
-            }
-            //LLVM.DisposeBuilder(lvv.Builder);
-            LLVM.DisposeExecutionEngine(engine);
 
+            return p;
         }
     }
 }
