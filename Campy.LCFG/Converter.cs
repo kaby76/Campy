@@ -378,13 +378,13 @@ namespace Campy.LCFG
 
         public delegate int Foo2(int a);
 
-        public void Call()
+        public void Call(int block_number)
         {
             KeyValuePair<CIL_CFG.Vertex, LLVMCFG.Vertex> here = default(KeyValuePair<CIL_CFG.Vertex, LLVMCFG.Vertex>);
 
             foreach (KeyValuePair<CIL_CFG.Vertex, LLVMCFG.Vertex> xxx in this._cil_to_llvm_node_map)
             {
-                if (xxx.Key.IsEntry)
+                if (xxx.Key.IsEntry && xxx.Key.Name == block_number)
                 {
                     here = xxx;
                     break;
@@ -414,7 +414,7 @@ namespace Campy.LCFG
             {
                 Console.WriteLine("error writing bitcode to file, skipping");
             }
-            LLVM.DisposeBuilder(lvv.Builder);
+            //LLVM.DisposeBuilder(lvv.Builder);
             LLVM.DisposeExecutionEngine(engine);
 
         }

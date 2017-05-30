@@ -29,20 +29,20 @@ namespace ConsoleApp4
         {
             Reader r = new Reader();
             var mg = r.Cfg;
-          //  mg.StartChangeSet(1);
-           // r.AnalyzeMethod(() => Program.Foo2(1));
-         //   List<CIL_CFG.Vertex> change_set = mg.EndChangeSet(1);
+            mg.StartChangeSet(1);
+            r.AnalyzeMethod(() => Program.Foo2(1));
+            List<CIL_CFG.Vertex> change_set = mg.EndChangeSet(1);
             var lg = new LLVMCFG();
             var c2 = new Campy.LCFG.Converter(mg, lg);
             Swigged.LLVM.Helper.Adjust.Path();
-            //c2.ConvertToLLVM(change_set);
-           // c2.Call();
+            c2.ConvertToLLVM(change_set);
+            c2.Call(1);
 
             mg.StartChangeSet(2);
             r.AnalyzeMethod(() => Program.Foo3(2));
             List<CIL_CFG.Vertex> change_set2 = mg.EndChangeSet(2);
             c2.ConvertToLLVM(change_set2);
-            c2.Call();
+            c2.Call(3);
 
         }
     }
