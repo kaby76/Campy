@@ -185,6 +185,15 @@ namespace Campy.LCFG
                 node.HasReturnValue = ret > 0;
             }
 
+            foreach (CIL_CFG.Vertex node in _mcfg.VertexNodes)
+            {
+                if (node.IsEntry) continue;
+                CIL_CFG.Vertex e = node.Entry;
+                node.HasReturnValue = e.HasReturnValue;
+                node.NumberOfArguments = e.NumberOfArguments;
+                node.NumberOfLocals = e.NumberOfLocals;
+            }
+
             List<CIL_CFG.Vertex> unreachable = new List<CIL_CFG.Vertex>();
             {
                 // Create DFT order of all nodes.

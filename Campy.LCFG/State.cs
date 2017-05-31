@@ -48,9 +48,15 @@ namespace Campy.LCFG
                 }
                 _locals = _stack.Section(_stack.Count, locals);
                 for (int i = 0; i < locals; ++i)
-                    _stack.Push(default(Value));
+                {
+                    Value value = new Value(LLVM.ConstInt(LLVM.Int32Type(), (ulong)0, true));
+                    _stack.Push(value);
+                }
                 for (int i = _stack.Size(); i < level; ++i)
-                    _stack.Push(default(Value));
+                {
+                    Value value = new Value(LLVM.ConstInt(LLVM.Int32Type(), (ulong)0, true));
+                    _stack.Push(value);
+                }
             }
             else if (node._Predecessors.Count == 1)
             {
@@ -75,6 +81,7 @@ namespace Campy.LCFG
                 // This is a problem because it's a dead block. We shouldn't
                 // even be processing this bb.
                 // TODO
+                Debug.Assert(false, "Dead code block, not handled yet.");
             }
             else // node._Predecessors.Count > 0
             {
@@ -84,10 +91,22 @@ namespace Campy.LCFG
                 var size = p_llvm_node.StateOut._stack.Count;
                 for (int i = 0; i < size; ++i)
                 {
-                    _stack.Push(default(Value));
+                    {
+                        Value value = new Value(LLVM.ConstInt(LLVM.Int32Type(), (ulong)0, true));
+                        _stack.Push(value);
+                    }
                     var count = node._Predecessors.Count;
                     ValueRef res = LLVM.BuildPhi(llvm_node.Builder, LLVM.Int32Type(), "");
                     ValueRef[] phi_vals = new ValueRef[count];
+                    System.Console.WriteLine();
+                    for (int c = 0; c < count; ++c)
+                    {
+                        var p = llvm_node._Predecessors[c].From;
+                        var plm = llvm_node._Graph.VertexSpace[llvm_node._Graph.NameSpace.BijectFromBasetype(p)];
+                        System.Console.WriteLine("node " + plm.Name);
+                        System.Console.WriteLine(plm.StateOut._stack.Count);
+                        for (int z = 0; z < plm.StateOut._stack.Count; ++z) System.Console.WriteLine(" " + plm.StateOut._stack[z]);
+                    }
                     for (int c = 0; c < count; ++c)
                     {
                         var p = llvm_node._Predecessors[c].From;

@@ -28,6 +28,13 @@ namespace ConsoleApp4
             return 99;
         }
 
+        static int fact(int b)
+        {
+            if (b == 0) return 1;
+            else if (b == 1) return 1;
+            else return b * fact(b - 1);
+        }
+
         public delegate int DFoo2(int a);
 
         static void Main(string[] args)
@@ -59,6 +66,18 @@ namespace ConsoleApp4
             for (int k = 0; k < 100; ++k)
             {
                 int result = ff3(k);
+                Console.WriteLine("Result is: " + result);
+            }
+
+            mg.StartChangeSet(3);
+            r.AnalyzeMethod(() => Program.fact(2));
+            List<CIL_CFG.Vertex> change_set3 = mg.EndChangeSet(3);
+            c2.ConvertToLLVM(change_set3);
+            IntPtr p4 = c2.GetPtr(7);
+            DFoo2 ff4 = (DFoo2)Marshal.GetDelegateForFunctionPointer(p4, typeof(DFoo2));
+            for (int k = 0; k < 10; ++k)
+            {
+                int result = ff4(k);
                 Console.WriteLine("Result is: " + result);
             }
         }

@@ -1427,6 +1427,67 @@ namespace Campy.LCFG
             : base(i)
         {
         }
+
+        public override Inst Convert(State state)
+        {
+            // Get function.
+            var i = this.Instruction;
+            var j = (Campy.CIL.i_call) i;
+
+            // Successor is fallthrough.
+            int nargs = 0;
+            int ret = 0;
+            object method = j.Operand;
+            if (method as Mono.Cecil.MethodReference != null)
+            {
+                Mono.Cecil.MethodReference mr = method as Mono.Cecil.MethodReference;
+                if (mr.HasThis)
+                    nargs++;
+                nargs += mr.Parameters.Count;
+                if (mr.MethodReturnType != null)
+                {
+                    Mono.Cecil.MethodReturnType rt = mr.MethodReturnType;
+                    Mono.Cecil.TypeReference tr = rt.ReturnType;
+                    // Get type, may contain modifiers.
+                    if (tr.FullName.Contains(' '))
+                    {
+                        String[] sp = tr.FullName.Split(' ');
+                        if (!sp[0].Equals("System.Void"))
+                            ret++;
+                    }
+                    else
+                    {
+                        if (!tr.FullName.Equals("System.Void"))
+                            ret++;
+                    }
+                }
+                var name = mr.FullName;
+                // Find bb entry.
+                LLVMCFG.Vertex the_entry = this.Block._Graph.VertexNodes.Where(node
+                    =>
+                {
+                    GraphLinkedList<int, CIL_CFG.Vertex, CIL_CFG.Edge> g = j.Block._Graph;
+                    int k = g.NameSpace.BijectFromBasetype(node.Name);
+                    CIL_CFG.Vertex v = g.VertexSpace[k];
+                    if (v.IsEntry && v.Method.FullName == name)
+                        return true;
+                    else return false;
+                }).ToList().FirstOrDefault();
+
+                if (the_entry != default(LLVMCFG.Vertex))
+                {
+                    BuilderRef bu = this.Builder;
+                    ValueRef fv = the_entry.Function;
+                    ValueRef[] args = new ValueRef[nargs];
+                    for (int k = nargs-1; k >= 0; --k)
+                        args[k] = state._stack.Pop().V;
+                    var call = LLVM.BuildCall(Builder, fv, args, name);
+                    if (ret > 0)
+                        state._stack.Push(new Value(call));
+                }
+            }
+            return Next;
+        }
     }
 
     public class i_calli : Inst
