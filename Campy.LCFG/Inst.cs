@@ -1005,6 +1005,11 @@ namespace Campy.LCFG
         {
         }
 
+	public override void ComputeStackLevel(ref int level_after)
+	{
+		level_after++;
+	}
+
         public override Inst Convert(State state)
         {
             var arg = (this.Instruction as CIL.LdLoc)._arg;
@@ -1020,6 +1025,11 @@ namespace Campy.LCFG
         {
         }
 
+	public override void ComputeStackLevel(ref int level_after)
+	{
+		level_after--;
+	}
+
         public override Inst Convert(State state)
         {
             Value v = state._stack.Pop();
@@ -1034,6 +1044,11 @@ namespace Campy.LCFG
         public CompareInst(CIL_Inst i) : base(i)
         {
         }
+
+	public override void ComputeStackLevel(ref int level_after)
+	{
+		level_after -= 1;
+	}
 
         public enum PredicateType
         {
@@ -1117,14 +1132,10 @@ namespace Campy.LCFG
     }
 
     public class i_add_ovf : BinaryOpInst
-        {
+    {
         public i_add_ovf(CIL_Inst i)
             : base(i)
         {
-        }
-        public override void ComputeStackLevel(ref int level_after)
-        {
-            level_after--;
         }
     }
 
@@ -1137,7 +1148,7 @@ namespace Campy.LCFG
     }
 
     public class i_and : BinaryOpInst
-        {
+    {
         public i_and(CIL_Inst i)
             : base(i)
         {
@@ -1152,7 +1163,7 @@ namespace Campy.LCFG
         }
     }
 
-    public class i_beq : Inst
+    public class i_beq : CompareInst
     {
         public i_beq(CIL_Inst i)
             : base(i)
@@ -1178,7 +1189,7 @@ namespace Campy.LCFG
         }
     }
 
-    public class i_bge_un : Inst
+    public class i_bge_un : CompareInst
     {
         public i_bge_un(CIL_Inst i)
             : base(i)
@@ -1186,7 +1197,7 @@ namespace Campy.LCFG
         }
     }
 
-    public class i_bge_un_s : Inst
+    public class i_bge_un_s : CompareInst
     {
         public i_bge_un_s(CIL_Inst i)
             : base(i)
@@ -1203,7 +1214,7 @@ namespace Campy.LCFG
         }
     }
 
-    public class i_bgt : Inst
+    public class i_bgt : CompareInst
     {
         public i_bgt(CIL_Inst i)
             : base(i)
@@ -1220,7 +1231,7 @@ namespace Campy.LCFG
         }
     }
 
-    public class i_bgt_un : Inst
+    public class i_bgt_un : CompareInst
     {
         public i_bgt_un(CIL_Inst i)
             : base(i)
@@ -1228,7 +1239,7 @@ namespace Campy.LCFG
         }
     }
 
-    public class i_bgt_un_s : Inst
+    public class i_bgt_un_s : CompareInst
     {
         public i_bgt_un_s(CIL_Inst i)
             : base(i)
@@ -1236,7 +1247,7 @@ namespace Campy.LCFG
         }
     }
 
-    public class i_ble : Inst
+    public class i_ble : CompareInst
     {
         public i_ble(CIL_Inst i)
             : base(i)
@@ -1253,7 +1264,7 @@ namespace Campy.LCFG
         }
     }
 
-    public class i_ble_un : Inst
+    public class i_ble_un : CompareInst
     {
         public i_ble_un(CIL_Inst i)
             : base(i)
@@ -1261,7 +1272,7 @@ namespace Campy.LCFG
         }
     }
 
-    public class i_ble_un_s : Inst
+    public class i_ble_un_s : CompareInst
     {
         public i_ble_un_s(CIL_Inst i)
             : base(i)
@@ -1269,7 +1280,7 @@ namespace Campy.LCFG
         }
     }
 
-    public class i_blt : Inst
+    public class i_blt : CompareInst
     {
         public i_blt(CIL_Inst i)
             : base(i)
@@ -1286,7 +1297,7 @@ namespace Campy.LCFG
         }
     }
 
-    public class i_blt_un : Inst
+    public class i_blt_un : CompareInst
     {
         public i_blt_un(CIL_Inst i)
             : base(i)
@@ -1294,7 +1305,7 @@ namespace Campy.LCFG
         }
     }
 
-    public class i_blt_un_s : Inst
+    public class i_blt_un_s : CompareInst
     {
         public i_blt_un_s(CIL_Inst i)
             : base(i)
@@ -1302,7 +1313,7 @@ namespace Campy.LCFG
         }
     }
 
-    public class i_bne_un : Inst
+    public class i_bne_un : CompareInst
     {
         public i_bne_un(CIL_Inst i)
             : base(i)
@@ -1359,6 +1370,11 @@ namespace Campy.LCFG
         {
         }
 
+	public override void ComputeStackLevel(ref int level_after)
+	{
+		level_after--;
+	}
+
         public override Inst Convert(State state)
         {
             var v = state._stack.Pop();
@@ -1388,6 +1404,11 @@ namespace Campy.LCFG
         {
         }
 
+	public override void ComputeStackLevel(ref int level_after)
+	{
+		level_after--;
+	}
+
         public override Inst Convert(State state)
         {
             var v = state._stack.Pop();
@@ -1411,6 +1432,27 @@ namespace Campy.LCFG
             : base(i)
         {
         }
+
+	public override void ComputeStackLevel(ref int level_after)
+	{
+		level_after--;
+	}
+
+	public override Inst Convert(State state)
+	{
+		var v = state._stack.Pop();
+		GraphLinkedList<int, LLVMCFG.Vertex, LLVMCFG.Edge>.Edge edge1 = Block._Successors[0];
+		GraphLinkedList<int, LLVMCFG.Vertex, LLVMCFG.Edge>.Edge edge2 = Block._Successors[1];
+		int succ1 = edge1.To;
+		int succ2 = edge2.To;
+		var s1 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ1)];
+		var s2 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ2)];
+	    // We need to compare the value popped with 0/1.
+		var v2 = LLVM.ConstInt(LLVM.Int32Type(), 0, false);
+		var v3 = LLVM.BuildICmp(Builder, IntPredicate.IntEQ, v.V, v2, "");
+		LLVM.BuildCondBr(Builder, v3, s1.BasicBlock, s2.BasicBlock);
+		return Next;
+	}
     }
 
     public class i_brtrue_s : Inst
@@ -1419,6 +1461,27 @@ namespace Campy.LCFG
             : base(i)
         {
         }
+
+	public override void ComputeStackLevel(ref int level_after)
+	{
+		level_after--;
+	}
+
+	public override Inst Convert(State state)
+	{
+		var v = state._stack.Pop();
+		GraphLinkedList<int, LLVMCFG.Vertex, LLVMCFG.Edge>.Edge edge1 = Block._Successors[0];
+		GraphLinkedList<int, LLVMCFG.Vertex, LLVMCFG.Edge>.Edge edge2 = Block._Successors[1];
+		int succ1 = edge1.To;
+		int succ2 = edge2.To;
+		var s1 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ1)];
+		var s2 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ2)];
+	    // We need to compare the value popped with 0/1.
+		var v2 = LLVM.ConstInt(LLVM.Int32Type(), 0, false);
+		var v3 = LLVM.BuildICmp(Builder, IntPredicate.IntEQ, v.V, v2, "");
+		LLVM.BuildCondBr(Builder, v3, s1.BasicBlock, s2.BasicBlock);
+		return Next;
+	}
     }
 
     public class i_call : Inst
@@ -1427,6 +1490,39 @@ namespace Campy.LCFG
             : base(i)
         {
         }
+
+	public override void ComputeStackLevel(ref int level_after)
+	{
+	    // Successor is fallthrough.
+		int args = 0;
+		int ret = 0;
+		object method = this.Operand;
+		if (method as Mono.Cecil.MethodReference != null)
+		{
+			Mono.Cecil.MethodReference mr = method as Mono.Cecil.MethodReference;
+			if (mr.HasThis)
+				args++;
+			args += mr.Parameters.Count;
+			if (mr.MethodReturnType != null)
+			{
+				Mono.Cecil.MethodReturnType rt = mr.MethodReturnType;
+				Mono.Cecil.TypeReference tr = rt.ReturnType;
+		// Get type, may contain modifiers.
+				if (tr.FullName.Contains(' '))
+				{
+					String[] sp = tr.FullName.Split(' ');
+					if (!sp[0].Equals("System.Void"))
+						ret++;
+				}
+				else
+				{
+					if (!tr.FullName.Equals("System.Void"))
+						ret++;
+				}
+			}
+		}
+		level_after = level_after + ret - args;
+	}
 
         public override Inst Convert(State state)
         {
@@ -1496,6 +1592,39 @@ namespace Campy.LCFG
             : base(i)
         {
         }
+	public override void ComputeStackLevel(ref int level_after)
+	{
+	    // Successor is fallthrough.
+		int args = 0;
+		int ret = 0;
+		args++; // The function is on the stack.
+		object method = this.Operand;
+		if (method as Mono.Cecil.CallSite != null)
+		{
+			Mono.Cecil.CallSite mr = method as Mono.Cecil.CallSite;
+			if (mr.HasThis)
+				args++;
+			args += mr.Parameters.Count;
+			if (mr.MethodReturnType != null)
+			{
+				Mono.Cecil.MethodReturnType rt = mr.MethodReturnType;
+				Mono.Cecil.TypeReference tr = rt.ReturnType;
+		// Get type, may contain modifiers.
+				if (tr.FullName.Contains(' '))
+				{
+					String[] sp = tr.FullName.Split(' ');
+					if (!sp[0].Equals("System.Void"))
+						ret++;
+				}
+				else
+				{
+					if (!tr.FullName.Equals("System.Void"))
+						ret++;
+				}
+			}
+		}
+		level_after = level_after + ret - args;
+	}
     }
 
     public class i_callvirt : Inst
@@ -1504,6 +1633,39 @@ namespace Campy.LCFG
             : base(i)
         {
         }
+
+	public override void ComputeStackLevel(ref int level_after)
+	{
+	    // Successor is fallthrough.
+		int args = 0;
+		int ret = 0;
+		object method = this.Operand;
+		if (method as Mono.Cecil.MethodReference != null)
+		{
+			Mono.Cecil.MethodReference mr = method as Mono.Cecil.MethodReference;
+			if (mr.HasThis)
+				args++;
+			args += mr.Parameters.Count;
+			if (mr.MethodReturnType != null)
+			{
+				Mono.Cecil.MethodReturnType rt = mr.MethodReturnType;
+				Mono.Cecil.TypeReference tr = rt.ReturnType;
+		// Get type, may contain modifiers.
+				if (tr.FullName.Contains(' '))
+				{
+					String[] sp = tr.FullName.Split(' ');
+					if (!sp[0].Equals("System.Void"))
+						ret++;
+				}
+				else
+				{
+					if (!tr.FullName.Equals("System.Void"))
+						ret++;
+				}
+			}
+		}
+		level_after = level_after + ret - args;
+	}
     }
 
     public class i_castclass : Inst
@@ -1521,6 +1683,11 @@ namespace Campy.LCFG
         {
             Predicate = PredicateType.eq;
         }
+
+	public override void ComputeStackLevel(ref int level_after)
+	{
+		level_after--;
+	}
     }
 
     public class i_cgt : CompareInst
@@ -1877,6 +2044,11 @@ namespace Campy.LCFG
             : base(i)
         {
         }
+
+	public override void ComputeStackLevel(ref int level_after)
+	{
+		level_after++;
+	}
     }
 
     public class i_endfilter : Inst
@@ -1885,6 +2057,11 @@ namespace Campy.LCFG
             : base(i)
         {
         }
+
+	public override void ComputeStackLevel(ref int level_after)
+	{
+		level_after--;
+	}
     }
 
     public class i_endfinally : Inst
@@ -1901,6 +2078,11 @@ namespace Campy.LCFG
             : base(i)
         {
         }
+
+	public override void ComputeStackLevel(ref int level_after)
+	{
+		level_after -= 3;
+	}
     }
 
     public class i_initobj : Inst
