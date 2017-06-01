@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Campy.Graphs
 {
-    public interface IVertex<NAME>
+    public interface IVertex<NAME> : IComparable<IVertex<NAME>>
     {
         NAME Name
         {

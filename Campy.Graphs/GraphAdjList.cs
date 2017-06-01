@@ -390,14 +390,11 @@ namespace Campy.Graphs
 
         public bool IsLeaf(NAME n)
         {
-            if (Successors(n).Count() == 0)
-                return true;
-            else
-                return false;
+            return !Successors(n).Any();
         }
     }
 
-    public class GraphAdjListVertex<NAME> : IVertex<NAME>
+    public class GraphAdjListVertex<NAME> : IVertex<NAME>, IComparable<GraphAdjListVertex<NAME>>
     {
         public NAME Name
         {
@@ -429,9 +426,19 @@ namespace Campy.Graphs
             this.Name = t;
         }
 
+        public int CompareTo(IVertex<NAME> other)
+        {
+            throw new NotImplementedException();
+        }
+
         override public string ToString()
         {
             return Name.ToString();
+        }
+
+        public int CompareTo(GraphAdjListVertex<NAME> other)
+        {
+            throw new NotImplementedException();
         }
     }
 
@@ -461,7 +468,7 @@ namespace Campy.Graphs
             get { return to.Name; }
         }
 
-        public int CompareTo(IVertex<NAME> other)
+        public int CompareTo(IEdge<NAME> other)
         {
             throw new NotImplementedException();
         }

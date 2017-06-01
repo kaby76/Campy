@@ -505,6 +505,11 @@ namespace Campy.Graphs
                 this.Name = t;
             }
 
+            public int CompareTo(IVertex<NAME> other)
+            {
+                throw new NotImplementedException();
+            }
+
             override public string ToString()
             {
                 return Name.ToString();
@@ -549,7 +554,7 @@ namespace Campy.Graphs
                 get { return to.Name; }
             }
 
-            public int CompareTo(IVertex<NAME> other)
+            public int CompareTo(IEdge<NAME> other)
             {
                 throw new NotImplementedException();
             }
