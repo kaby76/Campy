@@ -27,6 +27,45 @@ namespace Campy.LCFG
                     return _instructions;
                 }
             }
+            protected int? _stack_level_in;
+            protected int? _stack_level_out;
+            protected int _stack_pre_last_instruction;
+
+            public int? StackLevelIn
+            {
+                get
+                {
+                    return _stack_level_in;
+                }
+                set
+                {
+                    _stack_level_in = value;
+                }
+            }
+
+            public int? StackLevelOut
+            {
+                get
+                {
+                    return _stack_level_out;
+                }
+                set
+                {
+                    _stack_level_out = value;
+                }
+            }
+
+            public int StackLevelPreLastInstruction
+            {
+                get
+                {
+                    return _stack_pre_last_instruction;
+                }
+                set
+                {
+                    _stack_pre_last_instruction = value;
+                }
+            }
 
             private State _state_in;
             public State StateIn

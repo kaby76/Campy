@@ -101,68 +101,9 @@
 
         public class Vertex
             : GraphLinkedList<int, Vertex, Edge>.Vertex
-        {
-            private MethodDefinition _method;
-
-            public MethodDefinition Method
-            {
-                get
-                {
-                    return _method;
-                }
-                set
-                {
-                    _method = value;
-                }
-            }
-
-            private List<CIL_Inst> _instructions = new List<CIL_Inst>();
-            public List<CIL_Inst> Instructions
-            {
-                get
-                {
-                    return _instructions;
-                }
-            }
-            protected int? _stack_level_in;
-            protected int? _stack_level_out;
-            protected int _stack_pre_last_instruction;
-
-            public int? StackLevelIn
-            {
-                get
-                {
-                    return _stack_level_in;
-                }
-                set
-                {
-                    _stack_level_in = value;
-                }
-            }
-
-            public int? StackLevelOut
-            {
-                get
-                {
-                    return _stack_level_out;
-                }
-                set
-                {
-                    _stack_level_out = value;
-                }
-            }
-
-            public int StackLevelPreLastInstruction
-            {
-                get
-                {
-                    return _stack_pre_last_instruction;
-                }
-                set
-                {
-                    _stack_pre_last_instruction = value;
-                }
-            }
+        {        
+            public MethodDefinition Method { get; set; }
+            public List<CIL_Inst> Instructions { get; private set; } = new List<CIL_Inst>();
 
 
             private Vertex _entry;
@@ -192,7 +133,7 @@
             {
                 get
                 {
-                    CIL_Inst last = _instructions[_instructions.Count - 1];
+                    CIL_Inst last = Instructions[Instructions.Count - 1];
                     switch (last.OpCode.FlowControl)
                     {
                         case FlowControl.Call:
@@ -207,7 +148,7 @@
             {
                 get
                 {
-                    CIL_Inst last = _instructions[_instructions.Count - 1];
+                    CIL_Inst last = Instructions[Instructions.Count - 1];
                     return last.OpCode.Code == Code.Newobj;
                 }
             }
@@ -216,7 +157,7 @@
             {
                 get
                 {
-                    CIL_Inst last = _instructions[_instructions.Count - 1];
+                    CIL_Inst last = Instructions[Instructions.Count - 1];
                     return last.OpCode.Code == Code.Newarr;
                 }
             }
@@ -225,7 +166,7 @@
             {
                 get
                 {
-                    CIL_Inst last = _instructions[_instructions.Count - 1];
+                    CIL_Inst last = Instructions[Instructions.Count - 1];
                     switch (last.OpCode.FlowControl)
                     {
                         case FlowControl.Return:
@@ -321,7 +262,7 @@
                     Console.WriteLine();
                 }
                 Console.WriteLine(new String(' ', 4) + "Instructions:");
-                foreach (CIL_Inst i in v._instructions)
+                foreach (CIL_Inst i in v.Instructions)
                 {
                     Console.Write(new String(' ', 8) + i + new String(' ', 4));
                     Console.WriteLine();
@@ -331,7 +272,7 @@
 
             public Vertex Split(int i)
             {
-                Debug.Assert(_instructions.Count != 0);
+                Debug.Assert(Instructions.Count != 0);
                 // Split this node into two nodes, with all instructions after "i" in new node.
                 CIL_CFG cfg = (CIL_CFG)this._Graph;
                 Vertex result = (Vertex)cfg.AddVertex(cfg.NewNodeNumber());
@@ -344,27 +285,27 @@
                     this._entry._ordered_list_of_blocks.IndexOf(this) + 1,
                     result);
 
-                int count = _instructions.Count;
+                int count = Instructions.Count;
 
                 // Add instructions from split point to new block.
                 for (int j = i; j < count; ++j)
                 {
-                    CIL_Inst new_cil_inst = CIL_Inst.Wrap(_instructions[j].Instruction, result);
-                    result._instructions.Add(new_cil_inst);
+                    CIL_Inst new_cil_inst = CIL_Inst.Wrap(Instructions[j].Instruction, result);
+                    result.Instructions.Add(new_cil_inst);
                 }
 
                 // Remove instructions from previous block.
                 for (int j = i; j < count; ++j)
                 {
-                    this._instructions.RemoveAt(i);
+                    this.Instructions.RemoveAt(i);
                 }
 
-                Debug.Assert(this._instructions.Count != 0);
-                Debug.Assert(result._instructions.Count != 0);
-                Debug.Assert(this._instructions.Count + result._instructions.Count == count);
+                Debug.Assert(this.Instructions.Count != 0);
+                Debug.Assert(result.Instructions.Count != 0);
+                Debug.Assert(this.Instructions.Count + result.Instructions.Count == count);
 
-                CIL_Inst last_instruction = this._instructions[
-                    this._instructions.Count - 1];
+                CIL_Inst last_instruction = this.Instructions[
+                    this.Instructions.Count - 1];
 
                 // Transfer any out edges to pred block to new block.
                 while (cfg.SuccessorNodes(this).Count() > 0)

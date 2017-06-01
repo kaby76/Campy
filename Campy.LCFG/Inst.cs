@@ -971,7 +971,7 @@ namespace Campy.LCFG
 
         public override Inst Convert(State state)
         {
-            Int32 arg = (this.Instruction as CIL.LDCInst4)._arg;
+            Int32 arg = (this.Instruction as CIL.LDCInstI4)._arg;
             Value value = new Value(LLVM.ConstInt(LLVM.Int32Type(), (ulong)arg, true));
             state._stack.Push(value);
             return Next;
@@ -992,7 +992,7 @@ namespace Campy.LCFG
 
         public override Inst Convert(State state)
         {
-            var arg = (this.Instruction as CIL.LDCInst8)._arg;
+            var arg = (this.Instruction as CIL.LDCInstI8)._arg;
             Value value = new Value(LLVM.ConstInt(LLVM.Int64Type(), (ulong)arg, true));
             state._stack.Push(value);
             return Next;
@@ -2091,6 +2091,11 @@ namespace Campy.LCFG
             : base(i)
         {
         }
+
+	public override void ComputeStackLevel(ref int level_after)
+	{
+		level_after--;
+	}
     }
 
     public class i_isinst : Inst
@@ -2271,6 +2276,11 @@ namespace Campy.LCFG
             : base(i)
         {
         }
+
+	public override void ComputeStackLevel(ref int level_after)
+	{
+		level_after++;
+	}
     }
 
     public class i_ldc_r8 : Inst
@@ -2278,6 +2288,11 @@ namespace Campy.LCFG
         public i_ldc_r8(CIL_Inst i) : base(i)
         {
         }
+
+	public override void ComputeStackLevel(ref int level_after)
+	{
+		level_after++;
+	}
     }
 
     public class i_ldelem_any : Inst
@@ -2286,6 +2301,11 @@ namespace Campy.LCFG
             : base(i)
         {
         }
+
+	public override void ComputeStackLevel(ref int level_after)
+	{
+		level_after--;
+	}
     }
 
     public class i_ldelem_i1 : Inst
@@ -2294,6 +2314,11 @@ namespace Campy.LCFG
             : base(i)
         {
         }
+
+	public override void ComputeStackLevel(ref int level_after)
+	{
+		level_after--;
+	}
     }
 
     public class i_ldelem_i2 : Inst
@@ -2302,6 +2327,11 @@ namespace Campy.LCFG
             : base(i)
         {
         }
+
+	public override void ComputeStackLevel(ref int level_after)
+	{
+		level_after--;
+	}
     }
 
     public class i_ldelem_i4 : Inst
@@ -2310,6 +2340,11 @@ namespace Campy.LCFG
             : base(i)
         {
         }
+
+	public override void ComputeStackLevel(ref int level_after)
+	{
+		level_after--;
+	}
     }
 
     public class i_ldelem_i8 : Inst
@@ -2318,6 +2353,11 @@ namespace Campy.LCFG
             : base(i)
         {
         }
+
+	public override void ComputeStackLevel(ref int level_after)
+	{
+		level_after--;
+	}
     }
 
     public class i_ldelem_i : Inst
@@ -2326,6 +2366,11 @@ namespace Campy.LCFG
             : base(i)
         {
         }
+
+	public override void ComputeStackLevel(ref int level_after)
+	{
+		level_after--;
+	}
     }
 
     public class i_ldelem_r4 : Inst
@@ -2334,6 +2379,11 @@ namespace Campy.LCFG
             : base(i)
         {
         }
+
+	public override void ComputeStackLevel(ref int level_after)
+	{
+		level_after--;
+	}
     }
 
     public class i_ldelem_r8 : Inst
@@ -2342,6 +2392,11 @@ namespace Campy.LCFG
             : base(i)
         {
         }
+
+	public override void ComputeStackLevel(ref int level_after)
+	{
+		level_after--;
+	}
     }
 
     public class i_ldelem_ref : Inst
@@ -2350,6 +2405,11 @@ namespace Campy.LCFG
             : base(i)
         {
         }
+
+	public override void ComputeStackLevel(ref int level_after)
+	{
+		level_after--;
+	}
     }
 
     public class i_ldelem_u1 : Inst
@@ -2358,6 +2418,11 @@ namespace Campy.LCFG
             : base(i)
         {
         }
+
+	public override void ComputeStackLevel(ref int level_after)
+	{
+		level_after--;
+	}
     }
 
     public class i_ldelem_u2 : Inst
@@ -2366,6 +2431,11 @@ namespace Campy.LCFG
             : base(i)
         {
         }
+
+	public override void ComputeStackLevel(ref int level_after)
+	{
+		level_after--;
+	}
     }
 
     public class i_ldelem_u4 : Inst
@@ -2374,6 +2444,11 @@ namespace Campy.LCFG
             : base(i)
         {
         }
+
+	public override void ComputeStackLevel(ref int level_after)
+	{
+		level_after--;
+	}
     }
 
     public class i_ldelema : Inst
@@ -2382,6 +2457,11 @@ namespace Campy.LCFG
             : base(i)
         {
         }
+
+	public override void ComputeStackLevel(ref int level_after)
+	{
+		level_after--;
+	}
     }
 
     public class i_ldfld : Inst
@@ -2406,6 +2486,11 @@ namespace Campy.LCFG
             : base(i)
         {
         }
+
+	public override void ComputeStackLevel(ref int level_after)
+	{
+		level_after++;
+	}
     }
 
     public class i_ldind_i1 : Inst
@@ -2567,6 +2652,11 @@ namespace Campy.LCFG
             : base(i)
         {
         }
+
+	public override void ComputeStackLevel(ref int level_after)
+	{
+		level_after++;
+	}
     }
 
     public class i_ldobj : Inst
@@ -2583,6 +2673,11 @@ namespace Campy.LCFG
             : base(i)
         {
         }
+
+	public override void ComputeStackLevel(ref int level_after)
+	{
+		level_after++;
+	}
     }
 
     public class i_ldsflda : Inst
@@ -2591,6 +2686,11 @@ namespace Campy.LCFG
             : base(i)
         {
         }
+
+	public override void ComputeStackLevel(ref int level_after)
+	{
+		level_after++;
+	}
     }
 
     public class i_ldstr : Inst
@@ -2599,6 +2699,11 @@ namespace Campy.LCFG
             : base(i)
         {
         }
+
+	public override void ComputeStackLevel(ref int level_after)
+	{
+		level_after++;
+	}
     }
 
     public class i_ldtoken : Inst
@@ -2607,6 +2712,11 @@ namespace Campy.LCFG
             : base(i)
         {
         }
+
+	public override void ComputeStackLevel(ref int level_after)
+	{
+		level_after++;
+	}
     }
 
     public class i_ldvirtftn : Inst
@@ -2687,6 +2797,38 @@ namespace Campy.LCFG
             : base(i)
         {
         }
+
+	public override void ComputeStackLevel(ref int level_after)
+	{
+	// Successor is fallthrough.
+		int args = 0;
+		int ret = 0;
+		object method = this.Operand;
+		if (method as Mono.Cecil.MethodReference != null)
+		{
+			Mono.Cecil.MethodReference mr = method as Mono.Cecil.MethodReference;
+			args += mr.Parameters.Count;
+			if (mr.MethodReturnType != null)
+			{
+				Mono.Cecil.MethodReturnType rt = mr.MethodReturnType;
+				Mono.Cecil.TypeReference tr = rt.ReturnType;
+	    // Get type, may contain modifiers.
+				if (tr.FullName.Contains(' '))
+				{
+					String[] sp = tr.FullName.Split(' ');
+					if (!sp[0].Equals("System.Void"))
+						ret++;
+				}
+				else
+				{
+					if (!tr.FullName.Equals("System.Void"))
+						ret++;
+				}
+			}
+			ret++;
+		}
+		level_after = level_after + ret - args;
+	}
     }
 
     public class i_newobj : Inst
@@ -2695,6 +2837,37 @@ namespace Campy.LCFG
             : base(i)
         {
         }
+	public override void ComputeStackLevel(ref int level_after)
+	{
+	// Successor is fallthrough.
+		int args = 0;
+		int ret = 0;
+		object method = this.Operand;
+		if (method as Mono.Cecil.MethodReference != null)
+		{
+			Mono.Cecil.MethodReference mr = method as Mono.Cecil.MethodReference;
+			args += mr.Parameters.Count;
+			if (mr.MethodReturnType != null)
+			{
+				Mono.Cecil.MethodReturnType rt = mr.MethodReturnType;
+				Mono.Cecil.TypeReference tr = rt.ReturnType;
+	    // Get type, may contain modifiers.
+				if (tr.FullName.Contains(' '))
+				{
+					String[] sp = tr.FullName.Split(' ');
+					if (!sp[0].Equals("System.Void"))
+						ret++;
+				}
+				else
+				{
+					if (!tr.FullName.Equals("System.Void"))
+						ret++;
+				}
+			}
+			ret++;
+		}
+		level_after = level_after + ret - args;
+	}
     }
 
     public class i_no : Inst
@@ -2726,7 +2899,7 @@ namespace Campy.LCFG
     }
 
     public class i_or : BinaryOpInst
-        {
+    {
         public i_or(CIL_Inst i)
             : base(i)
         {
@@ -2739,6 +2912,11 @@ namespace Campy.LCFG
             : base(i)
         {
         }
+
+	public override void ComputeStackLevel(ref int level_after)
+	{
+		level_after--;
+	}
     }
 
     public class i_readonly : Inst
@@ -2766,7 +2944,7 @@ namespace Campy.LCFG
     }
 
     public class i_rem : BinaryOpInst
-        {
+    {
         public i_rem(CIL_Inst i)
             : base(i)
         {
@@ -2774,7 +2952,7 @@ namespace Campy.LCFG
     }
 
     public class i_rem_un : BinaryOpInst
-        {
+    {
         public i_rem_un(CIL_Inst i)
             : base(i)
         {
@@ -2787,6 +2965,17 @@ namespace Campy.LCFG
             : base(i)
         {
         }
+
+	public override void ComputeStackLevel(ref int level_after)
+	{
+	// There are really two different stacks here:
+	// one for the called method, and the other for the caller of the method.
+	// When returning, the stack of the method is pretty much unchanged.
+	// In fact the top of stack often contains the return value from the method.
+	// Back in the caller, the stack is popped of all arguments to the callee.
+	// And, the return value is pushed on the top of stack.
+	// This is handled by the call instruction.
+	}
 
         public override Inst Convert(State state)
         {
@@ -2817,6 +3006,11 @@ namespace Campy.LCFG
             : base(i)
         {
         }
+
+	public override void ComputeStackLevel(ref int level_after)
+	{
+		level_after--;
+	}
     }
 
     public class i_shr : Inst
@@ -2825,6 +3019,11 @@ namespace Campy.LCFG
             : base(i)
         {
         }
+
+	public override void ComputeStackLevel(ref int level_after)
+	{
+		level_after--;
+	}
     }
 
     public class i_shr_un : Inst
@@ -2833,6 +3032,11 @@ namespace Campy.LCFG
             : base(i)
         {
         }
+
+	public override void ComputeStackLevel(ref int level_after)
+	{
+		level_after--;
+	}
     }
 
     public class i_sizeof : Inst
@@ -2854,6 +3058,11 @@ namespace Campy.LCFG
             int arg = pr.Index;
             _arg = arg;
         }
+
+	public override void ComputeStackLevel(ref int level_after)
+	{
+		level_after--;
+	}
     }
 
     public class i_starg_s : Inst
@@ -2867,6 +3076,11 @@ namespace Campy.LCFG
             int arg = pr.Index;
             _arg = arg;
         }
+
+	public override void ComputeStackLevel(ref int level_after)
+	{
+		level_after--;
+	}
     }
 
     public class i_stelem_any : Inst
@@ -2875,6 +3089,11 @@ namespace Campy.LCFG
             : base(i)
         {
         }
+
+	public override void ComputeStackLevel(ref int level_after)
+	{
+		level_after = level_after - 3;
+	}
     }
 
     public class i_stelem_i1 : Inst
@@ -2883,6 +3102,11 @@ namespace Campy.LCFG
             : base(i)
         {
         }
+
+	public override void ComputeStackLevel(ref int level_after)
+	{
+		level_after = level_after - 3;
+	}
     }
 
     public class i_stelem_i2 : Inst
@@ -2891,6 +3115,11 @@ namespace Campy.LCFG
             : base(i)
         {
         }
+
+	public override void ComputeStackLevel(ref int level_after)
+	{
+		level_after = level_after - 3;
+	}
     }
 
     public class i_stelem_i4 : Inst
@@ -2899,6 +3128,11 @@ namespace Campy.LCFG
             : base(i)
         {
         }
+
+	public override void ComputeStackLevel(ref int level_after)
+	{
+		level_after = level_after - 3;
+	}
     }
 
     public class i_stelem_i8 : Inst
@@ -2907,6 +3141,11 @@ namespace Campy.LCFG
             : base(i)
         {
         }
+
+	public override void ComputeStackLevel(ref int level_after)
+	{
+		level_after = level_after - 3;
+	}
     }
 
     public class i_stelem_i : Inst
@@ -2915,6 +3154,11 @@ namespace Campy.LCFG
             : base(i)
         {
         }
+
+	public override void ComputeStackLevel(ref int level_after)
+	{
+		level_after = level_after - 3;
+	}
     }
 
     public class i_stelem_r4 : Inst
@@ -2923,6 +3167,11 @@ namespace Campy.LCFG
             : base(i)
         {
         }
+
+	public override void ComputeStackLevel(ref int level_after)
+	{
+		level_after = level_after - 3;
+	}
     }
 
     public class i_stelem_r8 : Inst
@@ -2931,6 +3180,11 @@ namespace Campy.LCFG
             : base(i)
         {
         }
+
+	public override void ComputeStackLevel(ref int level_after)
+	{
+		level_after = level_after - 3;
+	}
     }
 
     public class i_stelem_ref : Inst
@@ -2939,6 +3193,11 @@ namespace Campy.LCFG
             : base(i)
         {
         }
+
+	public override void ComputeStackLevel(ref int level_after)
+	{
+		level_after = level_after - 3;
+	}
     }
 
     public class i_stfld : Inst
@@ -2947,6 +3206,11 @@ namespace Campy.LCFG
             : base(i)
         {
         }
+
+	public override void ComputeStackLevel(ref int level_after)
+	{
+		level_after = level_after - 2;
+	}
     }
 
     public class i_stind_i1 : Inst
@@ -2955,6 +3219,11 @@ namespace Campy.LCFG
             : base(i)
         {
         }
+
+	public override void ComputeStackLevel(ref int level_after)
+	{
+		level_after = level_after - 2;
+	}
     }
 
     public class i_stind_i2 : Inst
@@ -2971,6 +3240,11 @@ namespace Campy.LCFG
             : base(i)
         {
         }
+
+	public override void ComputeStackLevel(ref int level_after)
+	{
+		level_after = level_after - 2;
+	}
     }
 
     public class i_stind_i8 : Inst
@@ -2979,6 +3253,11 @@ namespace Campy.LCFG
             : base(i)
         {
         }
+
+	public override void ComputeStackLevel(ref int level_after)
+	{
+		level_after = level_after - 2;
+	}
     }
 
     public class i_stind_i : Inst
@@ -2987,6 +3266,11 @@ namespace Campy.LCFG
             : base(i)
         {
         }
+
+	public override void ComputeStackLevel(ref int level_after)
+	{
+		level_after = level_after - 2;
+	}
     }
 
     public class i_stind_r4 : Inst
@@ -2995,6 +3279,11 @@ namespace Campy.LCFG
             : base(i)
         {
         }
+
+	public override void ComputeStackLevel(ref int level_after)
+	{
+		level_after = level_after - 2;
+	}
     }
 
     public class i_stind_r8 : Inst
@@ -3003,6 +3292,11 @@ namespace Campy.LCFG
             : base(i)
         {
         }
+
+	public override void ComputeStackLevel(ref int level_after)
+	{
+		level_after = level_after - 2;
+	}
     }
 
     public class i_stind_ref : Inst
@@ -3011,6 +3305,11 @@ namespace Campy.LCFG
             : base(i)
         {
         }
+
+	public override void ComputeStackLevel(ref int level_after)
+	{
+		level_after = level_after - 2;
+	}
     }
 
     public class i_stloc : StLoc
@@ -3061,6 +3360,11 @@ namespace Campy.LCFG
             : base(i)
         {
         }
+
+	public override void ComputeStackLevel(ref int level_after)
+	{
+		level_after -= 2;
+	}
     }
 
     public class i_stsfld : Inst
@@ -3069,10 +3373,15 @@ namespace Campy.LCFG
             : base(i)
         {
         }
+
+	public override void ComputeStackLevel(ref int level_after)
+	{
+		level_after--;
+	}
     }
 
     public class i_sub : BinaryOpInst
-        {
+    {
         public i_sub(CIL_Inst i)
             : base(i)
         {
@@ -3080,7 +3389,7 @@ namespace Campy.LCFG
     }
 
     public class i_sub_ovf : BinaryOpInst
-        {
+    {
         public i_sub_ovf(CIL_Inst i)
             : base(i)
         {
@@ -3088,7 +3397,7 @@ namespace Campy.LCFG
     }
 
     public class i_sub_ovf_un : BinaryOpInst
-        {
+    {
         public i_sub_ovf_un(CIL_Inst i)
             : base(i)
         {
@@ -3101,6 +3410,11 @@ namespace Campy.LCFG
             : base(i)
         {
         }
+
+	public override void ComputeStackLevel(ref int level_after)
+	{
+		level_after--;
+	}
     }
 
     public class i_tail : Inst

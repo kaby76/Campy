@@ -254,7 +254,8 @@ namespace Campy.LCFG
                         // Use predecessor information to get initial stack size.
                         if (node.IsEntry)
                         {
-                            node.StackLevelIn = node.NumberOfLocals + node.NumberOfArguments;
+                            LLVMCFG.Vertex llvm_nodex = _cil_to_llvm_node_map[node];
+                            llvm_nodex.StackLevelIn = node.NumberOfLocals + node.NumberOfArguments;
                         }
                         else
                         {
@@ -266,13 +267,14 @@ namespace Campy.LCFG
                                     continue;
                                 // If predecessor has not been visited, warn and do not consider.
                                 var llvm_pred = _cil_to_llvm_node_map[pred];
-                                if (pred.StackLevelOut == null)
+                                if (llvm_pred.StackLevelOut == null)
                                 {
                                     continue;
                                 }
                                 // Warn if predecessor does not concur with another predecessor.
-                                node.StackLevelIn = pred.StackLevelOut;
-                                in_level = (int)node.StackLevelIn;
+                                LLVMCFG.Vertex llvm_nodex = _cil_to_llvm_node_map[node];
+                                llvm_nodex.StackLevelIn = llvm_pred.StackLevelOut;
+                                in_level = (int)llvm_nodex.StackLevelIn;
                             }
                             // Warn if no predecessors have been visited.
                             if (in_level == -1)
@@ -280,10 +282,10 @@ namespace Campy.LCFG
                                 continue;
                             }
                         }
-
-                        int level_after = (int)node.StackLevelIn;
+                        LLVMCFG.Vertex llvm_nodez = _cil_to_llvm_node_map[node];
+                        int level_after = (int)llvm_nodez.StackLevelIn;
                         int level_pre = level_after;
-                        foreach (CIL_Inst i in node.Instructions)
+                        foreach (var i in llvm_nodez.Instructions)
                         {
                             level_pre = level_after;
                             i.ComputeStackLevel(ref level_after);
@@ -291,11 +293,11 @@ namespace Campy.LCFG
                             //System.Console.WriteLine("level = " + level_after);
                             Debug.Assert(level_after >= node.NumberOfLocals + node.NumberOfArguments);
                         }
-                        node.StackLevelOut = level_after;
+                        llvm_nodez.StackLevelOut = level_after;
                         // Verify return node that it makes sense.
                         if (node.IsReturn && !unreachable.Contains(node))
                         {
-                            if (node.StackLevelOut ==
+                            if (llvm_nodez.StackLevelOut ==
                                 node.NumberOfArguments +
                                 node.NumberOfLocals +
                                 (node.HasReturnValue ? 1 : 0))
@@ -305,7 +307,7 @@ namespace Campy.LCFG
                                 throw new Exception("Failed stack level out check");
                             }
                         }
-                        node.StackLevelPreLastInstruction = level_pre;
+                        llvm_nodez.StackLevelPreLastInstruction = level_pre;
                         foreach (CIL_CFG.Vertex succ in node._Graph.SuccessorNodes(node))
                         {
                             // If it's an interprocedural edge, nothing to pass on.
@@ -318,11 +320,12 @@ namespace Campy.LCFG
                             if (node.Instructions.Last() as CIL.i_ret != null)
                                 continue;
                             // Nothing to update if no change.
-                            if (succ.StackLevelIn > level_after)
+                            LLVMCFG.Vertex llvm_succ = _cil_to_llvm_node_map[node];
+                            if (llvm_succ.StackLevelIn > level_after)
                             {
                                 continue;
                             }
-                            else if (succ.StackLevelIn == level_after)
+                            else if (llvm_succ.StackLevelIn == level_after)
                             {
                                 continue;
                             }
@@ -365,14 +368,15 @@ namespace Campy.LCFG
                             continue;
                         }
                         work.Remove(node);
+                        LLVMCFG.Vertex llvm_nodez = _cil_to_llvm_node_map[node];
 
                         // Check if stack levels computed.
-                        if (node.StackLevelIn == null)
+                        if (llvm_nodez.StackLevelIn == null)
                         {
                             continue;
                         }
 
-                        int level_in = (int)node.StackLevelIn;
+                        int level_in = (int)llvm_nodez.StackLevelIn;
                         LLVMCFG.Vertex llvm_node = _cil_to_llvm_node_map[node];
                         llvm_node.StateIn = new State(node, llvm_node, level_in);
                         llvm_node.StateOut = new State(llvm_node.StateIn);
