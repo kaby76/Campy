@@ -55,7 +55,7 @@
                 return null;
         }
 
-        public override GraphLinkedList<int, CIL_CFG.Vertex, CIL_CFG.Edge>.Vertex AddVertex(int v)
+        public override IVertex<int> AddVertex(int v)
         {
             foreach (CIL_CFG.Vertex vertex in this.VertexNodes)
             {
@@ -204,19 +204,7 @@
                 }
             }
 
-            private bool _has_return;
-
-            public bool HasReturnValue
-            {
-                get
-                {
-                    return _has_return;
-                }
-                set
-                {
-                    _has_return = value;
-                }
-            }
+            public bool HasReturnValue { get; set; }
 
             public Vertex Exit
             {
@@ -400,6 +388,25 @@
                     }
                 }
             }
+        }
+
+        public void OutputDotGraph()
+        {
+            Dictionary<int,bool> visited = new Dictionary<int, bool>();
+            System.Console.WriteLine("digraph {");
+            foreach (IEdge<int> n in this.Edges)
+            {
+                System.Console.WriteLine(n.From + " -> " + n.To + ";");
+                visited[n.From] = true;
+                visited[n.To] = true;
+            }
+            foreach (int n in this.Vertices)
+            {
+                if (visited.ContainsKey(n)) continue;
+                System.Console.WriteLine(n + ";");
+            }
+            System.Console.WriteLine("}");
+            System.Console.WriteLine();
         }
 
         class CallEnumerator : IEnumerable<CIL_CFG.Vertex>

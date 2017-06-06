@@ -38,6 +38,7 @@
             this.Add(methodInfo);
             this.ExtractBasicBlocks();
             _cfg.OutputEntireGraph();
+            _cfg.OutputDotGraph();
         }
 
         public void Add(Type type)

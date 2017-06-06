@@ -13,25 +13,27 @@ using Campy.Graphs;
 namespace Campy.GraphAlgorithms
 {
 
-
-    public class TSort<T>
+    /// <summary>
+    /// This class enumerates a topological sort of a graph. If the graph
+    /// is not a DAG, then it will fail.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    public class TopologicalSort<T>
     {
 
         IGraph<T> graph;
         IEnumerable<T> Source;
-        bool _backwards;
         Dictionary<T, bool> Visited = new Dictionary<T, bool>();
 
-        public TSort(IGraph<T> g, IEnumerable<T> s, bool backwards = false)
+        public TopologicalSort(IGraph<T> g, IEnumerable<T> s)
         {
             graph = g;
             Source = s;
-            _backwards = backwards;
             foreach (T v in graph.Vertices)
                 Visited.Add(v, false);
         }
 
-        public TSort(IGraph<T> g, T s)
+        public TopologicalSort(IGraph<T> g, T s)
         {
             graph = g;
             Source = new T[] {s};
@@ -64,7 +66,8 @@ namespace Campy.GraphAlgorithms
                     yield return n;
 
                     // for each node m with an edge e from n to m do
-                    foreach (var e in edges.Where(e => e.Item1.Equals(n)).ToList())
+                    var look = edges.Where(e => e.Item1.Equals(n)).ToList();
+                    foreach (var e in look)
                     {
                         var m = e.Item2;
 

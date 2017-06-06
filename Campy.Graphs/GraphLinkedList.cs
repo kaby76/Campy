@@ -118,7 +118,7 @@ namespace Campy.Graphs
             }
         }
 
-        virtual public GraphLinkedList<NAME, NODE, EDGE>.Vertex AddVertex(NAME v)
+        virtual public IVertex<NAME> AddVertex(NAME v)
         {
             NODE vv = null;
 
@@ -155,10 +155,10 @@ namespace Campy.Graphs
         {
         }
 
-        virtual public GraphLinkedList<NAME, NODE, EDGE>.Edge AddEdge(NAME f, NAME t)
+        virtual public IEdge<NAME> AddEdge(NAME f, NAME t)
         {
-            Vertex vf = AddVertex(f);
-            Vertex vt = AddVertex(t);
+            Vertex vf = (Vertex)AddVertex(f);
+            Vertex vt = (Vertex)AddVertex(t);
             // Graphs should not have duplicates!
             if (!allow_duplicates)
             {

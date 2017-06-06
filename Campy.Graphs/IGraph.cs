@@ -20,6 +20,10 @@ namespace Campy.Graphs
             //set;
         }
 
+        IVertex<NAME> AddVertex(NAME v);
+
+        IEdge<NAME> AddEdge(NAME f, NAME t);
+
         IEnumerable<NAME> Predecessors(NAME n);
 
         IEnumerable<IEdge<NAME>> PredecessorEdges(NAME n);

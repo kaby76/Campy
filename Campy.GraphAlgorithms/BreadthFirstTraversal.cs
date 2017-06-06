@@ -40,22 +40,22 @@ namespace Campy.GraphAlgorithms
                     Visited[v] = false;
 
                 Queue <T> frontier = new Queue<T>();
-                foreach (T v in Source)
-                    frontier.Enqueue(v);
+
+                // Find all entries.
+                var entries = graph.Vertices.Where(node => !graph.Predecessors(node).Any()).ToList();
+                foreach (T v in entries) frontier.Enqueue(v);
 
                 while (frontier.Count != 0)
                 {
                     T u = frontier.Peek();
                     frontier.Dequeue();
+                    if (Visited[u]) continue;
+                    Visited[u] = true;
                     yield return u;
                     IEnumerable<T> ordered_enumerator = _backwards ? graph.Predecessors(u) : graph.Successors(u);
                     foreach (T v in ordered_enumerator)
                     {
-                        if (!Visited[v])
-                        {
-                            Visited[v] = true;
-                            frontier.Enqueue(v);
-                        }
+                        frontier.Enqueue(v);
                     }
                 }
             }

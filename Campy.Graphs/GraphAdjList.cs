@@ -85,7 +85,7 @@ namespace Campy.Graphs
             return vv;
         }
 
-        virtual public GraphAdjListVertex<NAME> AddVertex(NAME v)
+        virtual public IVertex<NAME> AddVertex(NAME v)
         {
             GraphAdjListVertex<NAME> vv = null;
 
@@ -126,10 +126,10 @@ namespace Campy.Graphs
             return e;
         }
 
-        virtual public GraphAdjListEdge<NAME> AddEdge(NAME f, NAME t)
+        virtual public IEdge<NAME> AddEdge(NAME f, NAME t)
         {
-            GraphAdjListVertex<NAME> vf = AddVertex(f);
-            GraphAdjListVertex<NAME> vt = AddVertex(t);
+            GraphAdjListVertex<NAME> vf = (GraphAdjListVertex<NAME>)AddVertex(f);
+            GraphAdjListVertex<NAME> vt = (GraphAdjListVertex<NAME>)AddVertex(t);
             // Create adjacency table entry for (f, t).
             int j = adj.Add(f, t);
             // Create EDGE with from/to.

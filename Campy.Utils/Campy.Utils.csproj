@@ -54,6 +54,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ArraySection.cs" />
+    <Compile Include="Class1.cs" />
     <Compile Include="ForgivingArray.cs" />
     <Compile Include="MultiMap.cs" />
     <Compile Include="StackQueue.cs" />

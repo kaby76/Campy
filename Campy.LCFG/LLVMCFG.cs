@@ -19,80 +19,29 @@ namespace Campy.LCFG
             public BuilderRef Builder { get; set; }
             public ModuleRef Module { get; set; }
 
-            private List<Inst> _instructions = new List<Inst>();
-            public List<Inst> Instructions
-            {
-                get
-                {
-                    return _instructions;
-                }
-            }
-            protected int? _stack_level_in;
-            protected int? _stack_level_out;
-            protected int _stack_pre_last_instruction;
+            public List<Inst> Instructions { get; } = new List<Inst>();
 
-            public int? StackLevelIn
-            {
-                get
-                {
-                    return _stack_level_in;
-                }
-                set
-                {
-                    _stack_level_in = value;
-                }
-            }
+            public int NumberOfArguments { get; set; }
+            public int NumberOfLocals { get; set; }
+            public bool IsEntry { get; set; }
+            public bool HasReturnValue { get; set; }
 
-            public int? StackLevelOut
-            {
-                get
-                {
-                    return _stack_level_out;
-                }
-                set
-                {
-                    _stack_level_out = value;
-                }
-            }
+            public int? StackLevelIn { get; set; }
 
-            public int StackLevelPreLastInstruction
-            {
-                get
-                {
-                    return _stack_pre_last_instruction;
-                }
-                set
-                {
-                    _stack_pre_last_instruction = value;
-                }
-            }
+            public int? StackLevelOut { get; set; }
 
-            private State _state_in;
-            public State StateIn
-            {
-                get { return _state_in; }
-                set { _state_in = value; }
-            }
+            public State StateIn { get; set; }
 
-            private State _state_out;
-            public State StateOut
-            {
-                get { return _state_out; }
-                set { _state_out = value; }
-            }
+            public State StateOut { get; set; }
 
             public Vertex()
                 : base()
             {
-                _state_in = new State();
-                _state_out = new State();
             }
 
             public Vertex(BasicBlockRef bb)
             {
                 BasicBlock = bb;
-                _state_in = new State();
-                _state_out = new State();
             }
         }
 

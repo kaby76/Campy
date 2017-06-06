@@ -35,6 +35,18 @@ namespace ConsoleApp4
             else return b * fact(b - 1);
         }
 
+        static int SumOf3Or5(int high)
+        {
+            int result = 0;
+            for (int i = 1; i < high; ++i)
+            {
+                if (i % 3 == 0) result += i;
+                if (i % 5 == 0) result += i;
+            }
+            return result;
+        }
+
+
         public delegate int DFoo2(int a);
 
         static void Main(string[] args)
@@ -80,6 +92,20 @@ namespace ConsoleApp4
                 int result = ff4(k);
                 Console.WriteLine("Result is: " + result);
             }
+
+            mg.StartChangeSet(4);
+            r.AnalyzeMethod(() => Program.SumOf3Or5(2));
+            List<CIL_CFG.Vertex> change_set4 = mg.EndChangeSet(4);
+            c2.ConvertToLLVM(change_set4);
+            IntPtr p5 = c2.GetPtr(13);
+            DFoo2 ff5 = (DFoo2)Marshal.GetDelegateForFunctionPointer(p5, typeof(DFoo2));
+            for (int k = 0; k < 10; ++k)
+            {
+                int result = ff5(1000);
+                Console.WriteLine("Result is: " + result);
+            }
+
+            int pp = SumOf3Or5(1000);
         }
     }
 }
