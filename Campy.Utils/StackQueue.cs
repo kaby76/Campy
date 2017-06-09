@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Campy.Utils
 {
@@ -10,20 +11,25 @@ namespace Campy.Utils
     {
         private int _size;
         private int _top;
-        private T[] _items;
+
+        // Underlying the datatype, we need an array that resizes without changing it's
+        // reference. A straight array cannot work.
+        private List<T> _items;
 
         public StackQueue()
         {
             _size = 10;
             _top = 0;
-            _items = new T[_size];
+            _items = new List<T>(_size);
+            for (int i = 0; i < _size; ++i) _items.Add(default(T));
         }
 
         public StackQueue(T value)
         {
             _size = 10;
             _top = 0;
-            _items = new T[_size];
+            _items = new List<T>(_size);
+            for (int i = 0; i < _size; ++i) _items.Add(default(T));
             _items[_top++] = value;
         }
 
@@ -31,8 +37,9 @@ namespace Campy.Utils
         {
             _size = other._size;
             _top = other._top;
-            _items = new T[_size];
-            System.Array.Copy(other._items, _items, _size);
+            _items = new List<T>(_size);
+            for (int i = 0; i < _size; ++i) _items.Add(default(T));
+            _items.AddRange(other._items);
         }
 
         public int Size()
@@ -49,8 +56,10 @@ namespace Campy.Utils
         {
             if (_top >= _size)
             {
+                int old = _size;
                 _size *= 2;
-                System.Array.Resize(ref _items, _size);
+                _items.Capacity = _size;
+                for (int i = old; i < _size; ++i) _items.Add(default(T));
             }
             if (_top > 0)
             {
@@ -82,8 +91,10 @@ namespace Campy.Utils
         {
             if (_top >= _size)
             {
+                int old = _size;
                 _size *= 2;
-                System.Array.Resize(ref _items, _size);
+                _items.Capacity = _size;
+                for (int i = old; i < _size; ++i) _items.Add(default(T));
             }
             if (_top > 0)
             {
@@ -101,8 +112,10 @@ namespace Campy.Utils
         {
             if (_top >= _size)
             {
+                int old = _size;
                 _size *= 2;
-                System.Array.Resize(ref _items, _size);
+                _items.Capacity = _size;
+                for (int i = old; i < _size; ++i) _items.Add(default(T));
             }
             if (n >= _top)
                 return default(T);
@@ -114,8 +127,10 @@ namespace Campy.Utils
         {
             if (_top >= _size)
             {
+                int old = _size;
                 _size *= 2;
-                System.Array.Resize(ref _items, _size);
+                _items.Capacity = _size;
+                for (int i = old; i < _size; ++i) _items.Add(default(T));
             }
             _items[_top++] = value;
         }
@@ -126,8 +141,10 @@ namespace Campy.Utils
             {
                 if (_top >= _size)
                 {
+                    int old = _size;
                     _size *= 2;
-                    System.Array.Resize(ref _items, _size);
+                    _items.Capacity = _size;
+                    for (int i = old; i < _size; ++i) _items.Add(default(T));
                 }
                 _items[_top++] = t;
             }
@@ -153,7 +170,7 @@ namespace Campy.Utils
             if (_top >= _size)
             {
                 _size *= 2;
-                System.Array.Resize(ref _items, _size);
+                _items.Capacity = _size;
             }
             // "Push" a value on the bottom of the stack.
             for (int i = _top - 1; i >= 0; --i)
@@ -173,7 +190,7 @@ namespace Campy.Utils
             if (_top >= _size)
             {
                 _size *= 2;
-                System.Array.Resize(ref _items, _size);
+                _items.Capacity = _size;
             }
             // Remove item from bottom of stack.
             if (_top > 0)
@@ -192,7 +209,7 @@ namespace Campy.Utils
 
         public bool Contains(T item)
         {
-            return System.Array.FindIndex(_items, 0, _top, (T t) => t.Equals(item)) >= 0;
+            return _items.Contains(item);
         }
 
         public System.Collections.Generic.IEnumerator<T> GetEnumerator()

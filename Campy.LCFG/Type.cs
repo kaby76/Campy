@@ -271,7 +271,7 @@ namespace Campy.LCFG
         /// <inheritdoc/>
         public override string ToString()
         {
-            return TypeReferenceCecil.ToString();
+            return _type_ref.ToString();
         }
     }
 }

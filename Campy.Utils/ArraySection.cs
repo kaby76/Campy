@@ -12,11 +12,11 @@ namespace Campy.Utils
     /// <typeparam name="T"></typeparam>
     public class ArraySection<T>
     {
-        T[] _arr;
+        List<T> _arr;
         int _base;
         int _len;
 
-        public T[] Arr
+        public List<T> Arr
         {
             get
             {
@@ -40,7 +40,7 @@ namespace Campy.Utils
             }
         }
 
-        public ArraySection(T[] arr, int b, int l)
+        public ArraySection(List<T> arr, int b, int l)
         {
             _arr = arr;
             _base = b;

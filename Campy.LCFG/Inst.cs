@@ -1768,9 +1768,82 @@ namespace Campy.LCFG
 
     public class i_conv_i8 : Inst
     {
+        ValueRef convert_full(ValueRef v, TypeRef dtype, bool is_unsigned)
+        {
+            TypeRef stype = LLVM.TypeOf(v);
+            if (stype != dtype)
+            {
+                bool ext = false;
+
+                /* Extend */
+                if (dtype == LLVM.Int64Type() && (stype == LLVM.Int32Type() || stype == LLVM.Int16Type() ||
+                                                  stype == LLVM.Int8Type()))
+                    ext = true;
+                else if (dtype == LLVM.Int32Type() && (stype == LLVM.Int16Type() || stype == LLVM.Int8Type()))
+                    ext = true;
+                else if (dtype == LLVM.Int16Type() && (stype == LLVM.Int8Type()))
+                    ext = true;
+
+                if (ext)
+                    return is_unsigned
+                        ? LLVM.BuildZExt(Builder, v, dtype, "")
+                        : LLVM.BuildSExt(Builder, v, dtype, "");
+
+                if (dtype == LLVM.DoubleType() && stype == LLVM.FloatType())
+                    return LLVM.BuildFPExt(Builder, v, dtype, "");
+
+                /* Trunc */
+                if (stype == LLVM.Int64Type() && (dtype == LLVM.Int32Type() || dtype == LLVM.Int16Type() ||
+                                                  dtype == LLVM.Int8Type()))
+                    return LLVM.BuildTrunc(Builder, v, dtype, "");
+                if (stype == LLVM.Int32Type() && (dtype == LLVM.Int16Type() || dtype == LLVM.Int8Type()))
+                    return LLVM.BuildTrunc(Builder, v, dtype, "");
+                if (stype == LLVM.Int16Type() && dtype == LLVM.Int8Type())
+                    return LLVM.BuildTrunc(Builder, v, dtype, "");
+                if (stype == LLVM.DoubleType() && dtype == LLVM.FloatType())
+                    return LLVM.BuildFPTrunc(Builder, v, dtype, "");
+
+                //if (LLVM.GetTypeKind(stype) == LLVM.PointerTypeKind && LLVM.GetTypeKind(dtype) == LLVMPointerTypeKind)
+                //    return LLVM.BuildBitCast(Builder, v, dtype, "");
+                //if (LLVM.GetTypeKind(dtype) == LLVM.PointerTypeKind)
+                //    return LLVM.BuildIntToPtr(Builder, v, dtype, "");
+                //if (LLVM.GetTypeKind(stype) == LLVM.PointerTypeKind)
+                //    return LLVM.BuildPtrToInt(Builder, v, dtype, "");
+
+                //if (mono_arch_is_soft_float())
+                //{
+                //    if (stype == LLVM.Int32Type() && dtype == LLVM.FloatType())
+                //        return LLVM.BuildBitCast(Builder, v, dtype, "");
+                //    if (stype == LLVM.Int32Type() && dtype == LLVM.DoubleType())
+                //        return LLVM.BuildBitCast(Builder, LLVM.BuildZExt(Builder, v, LLVM.Int64Type(), ""), dtype, "");
+                //}
+
+                //if (LLVM.GetTypeKind(stype) == LLVM.VectorTypeKind && LLVM.GetTypeKind(dtype) == LLVMVectorTypeKind)
+                //    return LLVM.BuildBitCast(Builder, v, dtype, "");
+
+                LLVM.DumpValue(v);
+                LLVM.DumpValue(LLVM.ConstNull(dtype));
+                return default(ValueRef);
+            }
+            else
+            {
+                return v;
+            }
+        }
+
         public i_conv_i8(CIL_Inst i)
             : base(i)
         {
+        }
+
+        public override Inst Convert(State state)
+        {
+            Value vv = state._stack.Pop();
+            ValueRef v = vv.V;
+            TypeRef dtype = LLVM.Int64Type();
+            ValueRef r = convert_full(v, dtype, false);
+            state._stack.Push(new Value(r, dtype));
+            return Next;
         }
     }
 

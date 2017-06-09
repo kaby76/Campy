@@ -53,7 +53,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Converter.cs" />
+    <Compile Include="Reader.cs" />
     <Compile Include="CIL_CFG.cs" />
     <Compile Include="CIL_Inst.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

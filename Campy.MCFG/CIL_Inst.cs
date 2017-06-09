@@ -5,6 +5,11 @@ using Mono.Cecil.Cil;
 
 namespace Campy.CIL
 {
+    /// <summary>
+    /// Wrapper for CIL instructions that are implemented using Mono.Cecil.Cil.
+    /// This class adds basic block graph structure on top of these instructions. There
+    /// is no semantics encoded in the wrapper.
+    /// </summary>
     public class CIL_Inst
     {
         public Mono.Cecil.Cil.Instruction Instruction { get; private set; }
@@ -13,8 +18,6 @@ namespace Campy.CIL
         public override string ToString() { return Instruction.ToString(); }
         public Mono.Cecil.Cil.OpCode OpCode { get { return Instruction.OpCode; } }
         public object Operand { get { return Instruction.Operand; } }
-
-
         public CIL_Inst(Mono.Cecil.Cil.Instruction i, CIL_CFG.Vertex b)
         {
             Instruction = i;
@@ -24,7 +27,6 @@ namespace Campy.CIL
                 CIL_Inst.CallInstructions.Add(this);
             }
         }
-
         static public CIL_Inst Wrap(Mono.Cecil.Cil.Instruction i, CIL_CFG.Vertex b)
         {
             // Wrap instruction with semantics, def/use/kill properties.
@@ -477,6 +479,10 @@ namespace Campy.CIL
         }
     }
 
+    /// <summary>
+    /// The LoadArgInst is a class for representing Load Arg instructions. The purpose to
+    /// provide a representation of the arg operand of the instruction.
+    /// </summary>
     public class LoadArgInst : CIL_Inst
     {
         public int _arg;
@@ -486,6 +492,10 @@ namespace Campy.CIL
         }
     }
 
+    /// <summary>
+    /// The LDCInstI4 and LDCInstI8 are classes for representing load constant instructions. The constant
+    /// of the instruction is encoded here.
+    /// </summary>
     public class LDCInstI4 : CIL_Inst
     {
         public Int32 _arg;
@@ -504,6 +514,9 @@ namespace Campy.CIL
         }
     }
 
+    /// <summary>
+    /// The LdLoc is a class for representing load local instructions.
+    /// </summary>
     public class LdLoc : CIL_Inst
     {
         public int _arg;
@@ -513,6 +526,9 @@ namespace Campy.CIL
         }
     }
 
+    /// <summary>
+    /// The StLoc is a class for representing store local instructions.
+    /// </summary>
     public class StLoc : CIL_Inst
     {
         public int _arg;
@@ -521,6 +537,8 @@ namespace Campy.CIL
         {
         }
     }
+
+
 
     public class i_add : CIL_Inst
     {

@@ -37,8 +37,8 @@ namespace Campy.LCFG
             {
                 var lv = _lcfg.AddVertex(mv.Name);
                 LLVMCFG.Vertex lvv = lv as LLVMCFG.Vertex;
-                _cil_to_llvm_node_map[mv] = (LLVMCFG.Vertex)lv;
-                
+                _cil_to_llvm_node_map[mv] = (LLVMCFG.Vertex) lv;
+
                 if (mv.IsEntry)
                 {
                     MethodDefinition method = mv.Method;
@@ -97,6 +97,11 @@ namespace Campy.LCFG
                     }
                     else if (mb is System.Reflection.MethodInfo mi7 && mi7.ReturnType.IsArray)
                     {
+                        throw new Exception("Cannot handle parameter type.");
+                    }
+                    else
+                    {
+                        throw new Exception("Cannot handle parameter type.");
                     }
                     TypeRef met_type = LLVM.FunctionType(ret_type, param_types, false);
                     ValueRef fun = LLVM.AddFunction(mod, mb.Name, met_type);
@@ -133,7 +138,7 @@ namespace Campy.LCFG
                 {
                     var tv = _cil_to_llvm_node_map[s];
                     _lcfg.AddEdge(fv, tv);
-                    
+
                 }
             }
             foreach (CIL_CFG.Vertex mv in mono_bbs)
@@ -186,6 +191,7 @@ namespace Campy.LCFG
                 node.HasReturnValue = ret > 0;
                 var lvv = _cil_to_llvm_node_map[node];
                 lvv.IsEntry = node.IsEntry;
+                lvv.Method = node.Method;
                 lvv.NumberOfArguments = node.NumberOfArguments;
                 lvv.NumberOfLocals = node.NumberOfLocals;
                 lvv.HasReturnValue = node.HasReturnValue;
@@ -200,6 +206,7 @@ namespace Campy.LCFG
                 node.NumberOfLocals = e.NumberOfLocals;
                 var lvv = _cil_to_llvm_node_map[node];
                 lvv.IsEntry = node.IsEntry;
+                lvv.Method = node.Method;
                 lvv.NumberOfArguments = node.NumberOfArguments;
                 lvv.NumberOfLocals = node.NumberOfLocals;
                 lvv.HasReturnValue = node.HasReturnValue;
@@ -213,7 +220,7 @@ namespace Campy.LCFG
                     dfs = new GraphAlgorithms.DepthFirstPreorderTraversal<int>(
                         _mcfg,
                         objs
-                        );
+                    );
                 List<CIL_CFG.Vertex> visited = new List<CIL_CFG.Vertex>();
                 foreach (int ob in dfs)
                 {
@@ -246,7 +253,7 @@ namespace Campy.LCFG
                         dfs = new GraphAlgorithms.DepthFirstPreorderTraversal<int>(
                             _mcfg,
                             objs
-                            );
+                        );
 
                     List<CIL_CFG.Vertex> visited = new List<CIL_CFG.Vertex>();
                     // Compute stack size for each basic block, processing nodes on work list
@@ -285,7 +292,7 @@ namespace Campy.LCFG
                                 // Warn if predecessor does not concur with another predecessor.
                                 LLVMCFG.Vertex llvm_nodex = _cil_to_llvm_node_map[node];
                                 llvm_nodex.StackLevelIn = llvm_pred.StackLevelOut;
-                                in_level = (int)llvm_nodex.StackLevelIn;
+                                in_level = (int) llvm_nodex.StackLevelIn;
                             }
                             // Warn if no predecessors have been visited.
                             if (in_level == -1)
@@ -294,7 +301,7 @@ namespace Campy.LCFG
                             }
                         }
                         LLVMCFG.Vertex llvm_nodez = _cil_to_llvm_node_map[node];
-                        int level_after = (int)llvm_nodez.StackLevelIn;
+                        int level_after = (int) llvm_nodez.StackLevelIn;
                         int level_pre = level_after;
                         foreach (var i in llvm_nodez.Instructions)
                         {
@@ -351,7 +358,7 @@ namespace Campy.LCFG
             {
                 // Get a list of nodes to compile.
                 List<CIL_CFG.Vertex> work = new List<CIL_CFG.Vertex>(change_set_minus_unreachable);
-                
+
                 // Get a list of the name of nodes to compile.
                 IEnumerable<int> work_names = work.Select(v => v.Name);
 
@@ -367,23 +374,35 @@ namespace Campy.LCFG
                 {
                     CIL_CFG.Vertex node = _mcfg.VertexSpace[_mcfg.NameSpace.BijectFromBasetype(ob)];
                     LLVMCFG.Vertex llvm_node = _cil_to_llvm_node_map[node];
-                    llvm_node.StateIn = new State(llvm_node.NumberOfArguments, llvm_node.NumberOfLocals, (int) llvm_node.StackLevelIn);
-                    llvm_node.StateOut = new State(llvm_node.NumberOfArguments, llvm_node.NumberOfLocals, (int) llvm_node.StackLevelOut);
+                    llvm_node.StateIn = new State(node.Method, llvm_node.NumberOfArguments, llvm_node.NumberOfLocals,
+                        (int) llvm_node.StackLevelIn);
+                    llvm_node.StateOut = new State(node.Method, llvm_node.NumberOfArguments, llvm_node.NumberOfLocals,
+                        (int) llvm_node.StackLevelOut);
                 }
+
+                Dictionary<int, bool> visited = new Dictionary<int, bool>();
 
                 // Emit LLVM IR code, based on state and per-instruction simulation on that state.
                 foreach (int ob in order)
                 {
                     CIL_CFG.Vertex node = _mcfg.VertexSpace[_mcfg.NameSpace.BijectFromBasetype(ob)];
                     LLVMCFG.Vertex llvm_node = _cil_to_llvm_node_map[node];
-                    var state_in = new State(llvm_node);
+
+                    var state_in = new State(visited, llvm_node);
                     llvm_node.StateIn = state_in;
                     llvm_node.StateOut = new State(state_in);
+
+                    node.OutputEntireNode();
+                    state_in.Dump();
+
                     Inst last_inst = null;
                     for (Inst i = llvm_node.Instructions.First(); i != null;)
                     {
+                        System.Console.WriteLine(i);
                         last_inst = i;
                         i = i.Convert(llvm_node.StateOut);
+                        llvm_node.StateOut.Dump();
+
                     }
                     if (last_inst != null && last_inst.OpCode.FlowControl == Mono.Cecil.Cil.FlowControl.Next)
                     {
@@ -393,6 +412,7 @@ namespace Campy.LCFG
                         var s = llvm_node._Graph.VertexSpace[llvm_node._Graph.NameSpace.BijectFromBasetype(succ)];
                         var br = LLVM.BuildBr(llvm_node.Builder, s.BasicBlock);
                     }
+                    visited[ob] = true;
                 }
 
                 // Finally, update phi functions with "incoming" information from predecessors.
@@ -423,10 +443,46 @@ namespace Campy.LCFG
                             var plm = llvm_node._Graph.VertexSpace[llvm_node._Graph.NameSpace.BijectFromBasetype(p)];
                             phi_blocks[c] = plm.BasicBlock;
                         }
+                        System.Console.WriteLine();
+                        System.Console.WriteLine("Node " + llvm_node.Name + " stack slot " + i + " types:");
+                        for (int c = 0; c < count; ++c)
+                        {
+                            var vr = phi_vals[c];
+                            System.Console.WriteLine(GetStringTypeOf(vr));
+                        }
+
                         LLVM.AddIncoming(res, phi_vals, phi_blocks);
                     }
                 }
+                System.Console.WriteLine("===========");
+                foreach (int ob in order)
+                {
+                    CIL_CFG.Vertex node = _mcfg.VertexSpace[_mcfg.NameSpace.BijectFromBasetype(ob)];
+                    LLVMCFG.Vertex llvm_node = _cil_to_llvm_node_map[node];
+
+                    node.OutputEntireNode();
+                    llvm_node.StateIn.Dump();
+                    llvm_node.StateOut.Dump();
+                }
             }
+        }
+
+        public string GetStringTypeOf(ValueRef v)
+        {
+            TypeRef stype = LLVM.TypeOf(v);
+            if (stype == LLVM.Int64Type())
+                return "Int64Type";
+            else if (stype == LLVM.Int32Type())
+                return "Int32Type";
+            else if (stype == LLVM.Int16Type())
+                return "Int16Type";
+            else if (stype == LLVM.Int8Type())
+                return "Int8Type";
+            else if (stype == LLVM.DoubleType())
+                return "DoubleType";
+            else if (stype == LLVM.FloatType())
+                return "FloatType";
+            else return "unknown";
         }
 
         public IntPtr GetPtr(int block_number)
@@ -454,12 +510,36 @@ namespace Campy.LCFG
             LLVM.InitializeNativeAsmPrinter();
             MCJITCompilerOptions options = new MCJITCompilerOptions();
             var optionsSize = (4 * sizeof(int)) + IntPtr.Size; // LLVMMCJITCompilerOptions has 4 ints and a pointer
-            LLVM.InitializeMCJITCompilerOptions(options, (uint)optionsSize);
-            LLVM.CreateMCJITCompilerForModule(out engine, mod, options, (uint)optionsSize, error);
+            LLVM.InitializeMCJITCompilerOptions(options, (uint) optionsSize);
+            LLVM.CreateMCJITCompilerForModule(out engine, mod, options, (uint) optionsSize, error);
             var ptr = LLVM.GetPointerToGlobal(engine, lvv.Function);
-            IntPtr p = (IntPtr)ptr;
+            IntPtr p = (IntPtr) ptr;
 
             return p;
+        }
+
+        public static TypeRef MapMonoTypeToLLVMType(TypeDefinition td)
+        {
+            System.Type sys_type = Campy.Types.Utils.ReflectionCecilInterop.ConvertToBasicSystemReflectionType(td);
+            TypeRef type;
+            if (sys_type == typeof(System.Int16))
+            {
+                type = LLVM.Int16Type();
+            }
+            else if (sys_type == typeof(System.Int32))
+            {
+                type = LLVM.Int32Type();
+            }
+            else if (sys_type == typeof(System.Int64))
+            {
+                type = LLVM.Int64Type();
+            }
+            else if (sys_type == typeof(System.Boolean))
+            {
+                type = LLVM.Int32Type();
+            }
+            else throw new Exception("Cannot handle type.");
+            return type;
         }
     }
 }

@@ -4,6 +4,9 @@ using System.Diagnostics;
 using Campy.CIL;
 using Campy.Graphs;
 using Campy.Utils;
+using Mono.Cecil;
+using Mono.Cecil.Cil;
+using Mono.Collections.Generic;
 using Swigged.LLVM;
 
 namespace Campy.LCFG
@@ -25,13 +28,22 @@ namespace Campy.LCFG
             _phi = new List<ValueRef>();
         }
 
-        public State(int args, int locals, int level)
+        public State(MethodDefinition md, int args, int locals, int level)
         {
             // Set up state with args, locals, basic stack initial value of 0xDEADBEEF.
+            // In addition, use type information from method to compute types for all args.
             _stack = new StackQueue<Value>();
-            for (uint i = 0; i < level; ++i)
+            for (int i = 0; i < level; ++i)
             {
-                var vx = new Value(LLVM.ConstInt(LLVM.Int32Type(), (ulong)0xdeadbeef, true));
+                TypeRef type = LLVM.Int32Type();
+                if (i < args)
+                {
+                    ParameterDefinition p = md.Parameters[i];
+                    TypeReference tr = p.ParameterType;
+                    TypeDefinition td = tr.Resolve();
+                    type = Converter.MapMonoTypeToLLVMType(td);
+                }
+                var vx = new Value(LLVM.ConstInt(type, (ulong)0xdeadbeef, true));
                 _stack.Push(vx);
             }
             _arguments = _stack.Section(0, args);
@@ -39,21 +51,27 @@ namespace Campy.LCFG
             _phi = new List<ValueRef>();
         }
 
-        public State(LLVMCFG.Vertex llvm_node)
+        public State(Dictionary<int, bool> visited, LLVMCFG.Vertex llvm_node)
         {
             int args = llvm_node.NumberOfArguments;
             int locals = llvm_node.NumberOfLocals;
             int level = (int)llvm_node.StackLevelIn;
 
+            // Set up list of phi functions in case there are multiple predecessors.
             _phi = new List<ValueRef>();
+
+            // Set up a blank stack.
             _stack = new StackQueue<Value>();
 
             // State depends on predecessors. To handle this without updating state
             // until a fix point is found while converting to LLVM IR, we introduce
             // SSA phi functions.
-            if (llvm_node.IsEntry)
+            if (llvm_node._Predecessors.Count == 0)
             {
+                if (!llvm_node.IsEntry) throw new Exception("Cannot handle dead code blocks.");
                 var fun = llvm_node.Function;
+
+                // Set up args.
                 _arguments = _stack.Section(0, args);
                 for (uint i = 0; i < args; ++i)
                 {
@@ -61,12 +79,21 @@ namespace Campy.LCFG
                     var vx = new Value(par);
                     _stack.Push(vx);
                 }
-                _locals = _stack.Section(_stack.Count, locals);
+
+                // Set up locals. I'm making an assumption that there is a 
+                // one to one and in order mapping of the locals with that
+                // defined for the method body by Mono.
+                Collection<VariableDefinition> variables = llvm_node.Method.Body.Variables;
+                _locals = _stack.Section(args, locals);
                 for (int i = 0; i < locals; ++i)
                 {
-                    Value value = new Value(LLVM.ConstInt(LLVM.Int32Type(), (ulong)0, true));
+                    var td = variables[i].VariableType.Resolve();
+                    TypeRef type = Converter.MapMonoTypeToLLVMType(td);
+                    Value value = new Value(LLVM.ConstInt(type, (ulong)0, true));
                     _stack.Push(value);
                 }
+
+                // Set up any thing else.
                 for (int i = _stack.Size(); i < level; ++i)
                 {
                     Value value = new Value(LLVM.ConstInt(LLVM.Int32Type(), (ulong)0, true));
@@ -91,13 +118,6 @@ namespace Campy.LCFG
                 _arguments = _stack.Section(other._arguments.Base, other._arguments.Len);
                 _locals = _stack.Section(other._locals.Base, other._locals.Len);
             }
-            else if (llvm_node._Predecessors.Count == 0)
-            {
-                // This is a problem because it's a dead block. We shouldn't
-                // even be processing this bb.
-                // TODO
-                Debug.Assert(false, "Dead code block, not handled yet.");
-            }
             else // node._Predecessors.Count > 0
             {
                 // As we cannot guarentee whether all predecessors are fulfilled,
@@ -109,6 +129,7 @@ namespace Campy.LCFG
                 for (int pred_ind = 0; pred_ind < llvm_node._Predecessors.Count; ++pred_ind)
                 {
                     int to_check = llvm_node._Predecessors[pred_ind].From;
+                    if (!visited.ContainsKey(to_check)) continue;
                     LLVMCFG.Vertex check_llvm_node = llvm_node._Graph.VertexSpace[llvm_node._Graph.NameSpace.BijectFromBasetype(to_check)];
                     if (check_llvm_node.StateOut == null)
                         continue;
@@ -127,7 +148,9 @@ namespace Campy.LCFG
                         _stack.Push(value);
                     }
                     var count = llvm_node._Predecessors.Count;
-                    ValueRef res = LLVM.BuildPhi(llvm_node.Builder, LLVM.Int32Type(), "");
+                    var v = p_llvm_node.StateOut._stack[i].V;
+                    TypeRef tr = LLVM.TypeOf(v);
+                    ValueRef res = LLVM.BuildPhi(llvm_node.Builder, tr, "");
                     _phi.Add(res);
                     
                     //ValueRef[] phi_vals = new ValueRef[count];
@@ -171,14 +194,16 @@ namespace Campy.LCFG
             int locs = _locals.Len;
             System.Console.Write("[args");
             for (int i = 0; i < args; ++i)
-                System.Console.Write(" " + _stack[i]);
-            System.Console.Write("]");
-            System.Console.Write("[locs");
+            {
+                System.Console.WriteLine(" " + _stack[i]);
+            }
+            System.Console.WriteLine("]");
+            System.Console.WriteLine("[locs");
             for (int i = 0; i < locs; ++i)
-                System.Console.Write(" " + _stack[args + i]);
-            System.Console.Write("]");
+                System.Console.WriteLine(" " + _stack[args + i]);
+            System.Console.WriteLine("]");
             for (int i = args + locs; i < _stack.Size(); ++i)
-                System.Console.Write(" " + _stack[i]);
+                System.Console.WriteLine(" " + _stack[i]);
             System.Console.WriteLine();
         }
     }

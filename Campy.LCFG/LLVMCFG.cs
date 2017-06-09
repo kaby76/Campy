@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Campy.Graphs;
 using Campy.Utils;
+using Mono.Cecil;
 using Swigged.LLVM;
 
 namespace Campy.LCFG
@@ -24,6 +25,7 @@ namespace Campy.LCFG
             public int NumberOfArguments { get; set; }
             public int NumberOfLocals { get; set; }
             public bool IsEntry { get; set; }
+            public MethodDefinition Method { get; set; }
             public bool HasReturnValue { get; set; }
 
             public int? StackLevelIn { get; set; }

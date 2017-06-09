@@ -31,6 +31,13 @@ namespace Campy.LCFG
             _type = new Type(t);
         }
 
+        public override string ToString()
+        {
+            string a = LLVM.PrintValueToString(_value_ref);
+            string b = LLVM.PrintTypeToString(LLVM.TypeOf(_value_ref));
+            return a + ":" + b;
+        }
+
         public Value(ValueRef v, TypeRef t)
         {
             _value_ref = v;

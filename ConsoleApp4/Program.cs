@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using Campy.CIL;
 using Campy.LCFG;
@@ -49,6 +50,25 @@ namespace ConsoleApp4
 
         public delegate int DFoo2(int a);
 
+        public static long Ackermann(long m, long n)
+        {
+            if (m > 0)
+            {
+                if (n > 0)
+                    return Ackermann(m - 1, Ackermann(m, n - 1));
+                else if (n == 0)
+                    return Ackermann(m - 1, 1);
+            }
+            else if (m == 0)
+            {
+                if (n >= 0)
+                    return n + 1;
+            }
+            return -1;
+        }
+
+        public delegate long DAck(long a, long b);
+
         static void Main(string[] args)
         {
             Reader r = new Reader();
@@ -97,7 +117,7 @@ namespace ConsoleApp4
             r.AnalyzeMethod(() => Program.SumOf3Or5(2));
             List<CIL_CFG.Vertex> change_set4 = mg.EndChangeSet(4);
             c2.ConvertToLLVM(change_set4);
-            IntPtr p5 = c2.GetPtr(13);
+            IntPtr p5 = c2.GetPtr(change_set4.First().Name);
             DFoo2 ff5 = (DFoo2)Marshal.GetDelegateForFunctionPointer(p5, typeof(DFoo2));
             for (int k = 0; k < 10; ++k)
             {
@@ -106,6 +126,24 @@ namespace ConsoleApp4
             }
 
             int pp = SumOf3Or5(1000);
+
+
+            mg.StartChangeSet(10);
+            r.AnalyzeMethod(() => Program.Ackermann(2, 2));
+            List<CIL_CFG.Vertex> change_set19 = mg.EndChangeSet(10);
+            c2.ConvertToLLVM(change_set19);
+            IntPtr p10 = c2.GetPtr(change_set19.First().Name);
+            DAck ff10 = (DAck)Marshal.GetDelegateForFunctionPointer(p10, typeof(DAck));
+            for (long m = 0; m <= 3; ++m)
+            {
+                for (long n = 0; n <= 4; ++n)
+                {
+                    Console.WriteLine();
+                    Console.WriteLine("Ackermann({0}, {1}) = {2}", m, n, Ackermann(m, n));
+                    long result = ff10(m, n);
+                    Console.WriteLine("Result is: " + result);
+                }
+            }
         }
     }
 }

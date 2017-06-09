@@ -177,32 +177,9 @@
                 }
             }
 
-            private int _number_of_locals;
-            private int _number_of_arguments;
+            public int NumberOfLocals { get; set; }
 
-            public int NumberOfLocals
-            {
-                get
-                {
-                    return _number_of_locals;
-                }
-                set
-                {
-                    _number_of_locals = value;
-                }
-            }
-
-            public int NumberOfArguments
-            {
-                get
-                {
-                    return _number_of_arguments;
-                }
-                set
-                {
-                    _number_of_arguments = value;
-                }
-            }
+            public int NumberOfArguments { get; set; }
 
             public bool HasReturnValue { get; set; }
 
