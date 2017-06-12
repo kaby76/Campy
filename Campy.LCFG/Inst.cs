@@ -1,45 +1,63 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.SqlTypes;
 using System.Diagnostics;
-using Campy.CIL;
-using Swigged.LLVM;
 using System.Linq;
 using Campy.Graphs;
+using Mono.Cecil.Cil;
+using Swigged.LLVM;
 
 namespace Campy.LCFG
 {
+    /// <summary>
+    /// Wrapper for CIL instructions that are implemented using Mono.Cecil.Cil.
+    /// This class adds basic block graph structure on top of these instructions. There
+    /// is no semantics encoded in the wrapper.
+    /// </summary>
     public class Inst
     {
-        public BuilderRef Builder { get { return Block.Builder; } }
-
-        public ContextRef LLVMContext { get; set; }
-
-        public CIL_Inst Instruction { get; private set; }
-
-        public List<Value> LLVMInstructions { get; private set; }
-
-        public LLVMCFG.Vertex Block { get; set; }
-
+		// Required for Mono to bb conversion.
+        public Mono.Cecil.Cil.Instruction Instruction { get; private set; }
+        public static List<Inst> CallInstructions { get; private set; } = new List<Inst>();
         public override string ToString() { return Instruction.ToString(); }
-
-        public Inst(CIL_Inst i) { Instruction = i; }
-
         public Mono.Cecil.Cil.OpCode OpCode { get { return Instruction.OpCode; } }
-
         public object Operand { get { return Instruction.Operand; } }
 
-        // Required instruction sequencing so we can translate groups of instructions.
-        public virtual Inst Next { get; set; }
 
-        public virtual void ComputeStackLevel(ref int level_after)
+		// Required for LLVM conversion.
+		public BuilderRef Builder { get { return Block.Builder; } }
+		public ContextRef LLVMContext { get; set; }
+		public List<Value> LLVMInstructions { get; private set; }
+		public CIL_CFG.Vertex Block { get; set; }
+		// Required instruction sequencing so we can translate groups of instructions.
+		public virtual Inst Next { get; set; }
+		public virtual void ComputeStackLevel(ref int level_after) { }
+		public virtual Inst Convert(State state) { return null; }
+		private State _state_in;
+		public State StateIn
+		{
+			get { return _state_in; }
+			set { _state_in = value; }
+		}
+		private State _state_out;
+		public State StateOut
+		{
+			get { return _state_out; }
+			set { _state_out = value; }
+		}
+		public UInt32 TargetPointerSizeInBits = 64;
+
+
+        public Inst(Mono.Cecil.Cil.Instruction i)
         {
+            Instruction = i;
+            if (i.OpCode.FlowControl == Mono.Cecil.Cil.FlowControl.Call)
+            {
+                Inst.CallInstructions.Add(this);
+            }
         }
-
-        public virtual Inst Convert(State state) { return null; }
-
-        static public Inst Wrap(CIL_Inst i)
+        static public Inst Wrap(Mono.Cecil.Cil.Instruction i)
         {
+            // Wrap instruction with semantics, def/use/kill properties.
             Mono.Cecil.Cil.OpCode op = i.OpCode;
             switch (op.Code)
             {
@@ -487,27 +505,11 @@ namespace Campy.LCFG
                     throw new Exception("Unknown instruction type " + i);
             }
         }
-
-        private State _state_in;
-        public State StateIn
-        {
-            get { return _state_in; }
-            set { _state_in = value; }
-        }
-
-        private State _state_out;
-        public State StateOut
-        {
-            get { return _state_out; }
-            set { _state_out = value; }
-        }
-
-        public UInt32 TargetPointerSizeInBits = 64;
     }
 
     public class BinaryOpInst : Inst
     {
-        public BinaryOpInst(CIL_Inst i)
+        public BinaryOpInst(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -936,72 +938,61 @@ namespace Campy.LCFG
         public bool UseExplicitZeroDivideChecks { get; set; }
     }
 
+    /// <summary>
+    /// The LoadArgInst is a class for representing Load Arg instructions. The purpose to
+    /// provide a representation of the arg operand of the instruction.
+    /// </summary>
     public class LoadArgInst : Inst
     {
-        public LoadArgInst(CIL_Inst i)
-            : base(i)
+        public int _arg;
+
+        public LoadArgInst(Mono.Cecil.Cil.Instruction i) : base(i)
         {
         }
 
-        public override void ComputeStackLevel(ref int level_after)
-        {
-            level_after++;
-        }
+		public override void ComputeStackLevel(ref int level_after)
+		{
+			level_after++;
+		}
 
-        public override Inst Convert(State state)
-        {
-            int _arg = (this.Instruction as CIL.LoadArgInst)._arg;
-            Value value = state._arguments[_arg];
-            state._stack.Push(value);
-            return Next;
-        }
+		public override Inst Convert(State state)
+		{
+			Value value = state._arguments[_arg];
+			state._stack.Push(value);
+			return Next;
+		}
     }
 
+    /// <summary>
+    /// The LDCInstI4 and LDCInstI8 are classes for representing load constant instructions. The constant
+    /// of the instruction is encoded here.
+    /// </summary>
     public class LDCInstI4 : Inst
     {
-        public LDCInstI4(CIL_Inst i)
-            : base(i)
+        public Int32 _arg;
+
+        public LDCInstI4(Instruction i) : base(i)
         {
         }
 
-        public override void ComputeStackLevel(ref int level_after)
-        {
-            level_after++;
-        }
+		public override void ComputeStackLevel(ref int level_after)
+		{
+			level_after++;
+		}
 
-        public override Inst Convert(State state)
-        {
-            Int32 arg = (this.Instruction as CIL.LDCInstI4)._arg;
-            Value value = new Value(LLVM.ConstInt(LLVM.Int32Type(), (ulong)arg, true));
-            state._stack.Push(value);
-            return Next;
-        }
+		public override Inst Convert(State state)
+		{
+			Value value = new Value(LLVM.ConstInt(LLVM.Int32Type(), (ulong)_arg, true));
+			state._stack.Push(value);
+			return Next;
+		}
     }
 
     public class LDCInstI8 : Inst
     {
-        public LDCInstI8(CIL_Inst i)
-            : base(i)
-        {
-        }
+        public Int64 _arg;
 
-        public override void ComputeStackLevel(ref int level_after)
-        {
-            level_after++;
-        }
-
-        public override Inst Convert(State state)
-        {
-            var arg = (this.Instruction as CIL.LDCInstI8)._arg;
-            Value value = new Value(LLVM.ConstInt(LLVM.Int64Type(), (ulong)arg, true));
-            state._stack.Push(value);
-            return Next;
-        }
-    }
-
-    public class LdLoc : Inst
-    {
-        public LdLoc(CIL_Inst i) : base(i)
+        public LDCInstI8(Instruction i) : base(i)
         {
         }
 
@@ -1010,122 +1001,149 @@ namespace Campy.LCFG
 		level_after++;
 	}
 
-        public override Inst Convert(State state)
-        {
-            var arg = (this.Instruction as CIL.LdLoc)._arg;
-            Value v = state._locals[arg];
-            state._stack.Push(v);
-            return Next;
-        }
+	public override Inst Convert(State state)
+	{
+		Value value = new Value(LLVM.ConstInt(LLVM.Int64Type(), (ulong)_arg, true));
+		state._stack.Push(value);
+		return Next;
+	}
     }
 
-    public class StLoc : Inst
+    /// <summary>
+    /// The LdLoc is a class for representing load local instructions.
+    /// </summary>
+    public class LdLoc : Inst
     {
-        public StLoc(CIL_Inst i) : base(i)
+        public int _arg;
+
+        public LdLoc(Instruction i) : base(i)
         {
         }
 
+	public override void ComputeStackLevel(ref int level_after)
+	{
+		level_after++;
+	}
+
+	public override Inst Convert(State state)
+	{
+		Value v = state._locals[_arg];
+		state._stack.Push(v);
+		return Next;
+	}
+    }
+
+    /// <summary>
+    /// The StLoc is a class for representing store local instructions.
+    /// </summary>
+    public class StLoc : Inst
+    {
+        public int _arg;
+
+        public StLoc(Instruction i) : base(i)
+        {
+        }
 	public override void ComputeStackLevel(ref int level_after)
 	{
 		level_after--;
 	}
 
-        public override Inst Convert(State state)
-        {
-            Value v = state._stack.Pop();
-            var arg = (this.Instruction as CIL.StLoc)._arg;
-            state._locals[arg] = v;
-            return Next;
-        }
+	public override Inst Convert(State state)
+	{
+		Value v = state._stack.Pop();
+		state._locals[_arg] = v;
+		return Next;
+	}
     }
+
 
     public class CompareInst : Inst
     {
-        public CompareInst(CIL_Inst i) : base(i)
-        {
-        }
+	    public CompareInst(Mono.Cecil.Cil.Instruction i) : base(i)
+	    {
+	    }
 
-	public override void ComputeStackLevel(ref int level_after)
-	{
-		level_after -= 1;
-	}
+	    public override void ComputeStackLevel(ref int level_after)
+	    {
+		    level_after -= 1;
+	    }
 
-        public enum PredicateType
-        {
-            eq,
-            ne,
-            gt,
-            lt,
-            ge,
-            le,
-        };
+	    public enum PredicateType
+	    {
+		    eq,
+		    ne,
+		    gt,
+		    lt,
+		    ge,
+		    le,
+	    };
 
-        public Swigged.LLVM.IntPredicate[] _int_pred = new Swigged.LLVM.IntPredicate[]
-        {
-            Swigged.LLVM.IntPredicate.IntEQ,
-            Swigged.LLVM.IntPredicate.IntNE,
-            Swigged.LLVM.IntPredicate.IntSGT,
-            Swigged.LLVM.IntPredicate.IntSLT,
-            Swigged.LLVM.IntPredicate.IntSGE,
-            Swigged.LLVM.IntPredicate.IntSLE,
-        };
+	    public Swigged.LLVM.IntPredicate[] _int_pred = new Swigged.LLVM.IntPredicate[]
+	    {
+		    Swigged.LLVM.IntPredicate.IntEQ,
+		    Swigged.LLVM.IntPredicate.IntNE,
+		    Swigged.LLVM.IntPredicate.IntSGT,
+		    Swigged.LLVM.IntPredicate.IntSLT,
+		    Swigged.LLVM.IntPredicate.IntSGE,
+		    Swigged.LLVM.IntPredicate.IntSLE,
+	    };
 
-        public Swigged.LLVM.IntPredicate[] _uint_pred = new Swigged.LLVM.IntPredicate[]
-        {
-            Swigged.LLVM.IntPredicate.IntEQ,
-            Swigged.LLVM.IntPredicate.IntNE,
-            Swigged.LLVM.IntPredicate.IntUGT,
-            Swigged.LLVM.IntPredicate.IntULT,
-            Swigged.LLVM.IntPredicate.IntUGE,
-            Swigged.LLVM.IntPredicate.IntULE,
-        };
+	    public Swigged.LLVM.IntPredicate[] _uint_pred = new Swigged.LLVM.IntPredicate[]
+	    {
+		    Swigged.LLVM.IntPredicate.IntEQ,
+		    Swigged.LLVM.IntPredicate.IntNE,
+		    Swigged.LLVM.IntPredicate.IntUGT,
+		    Swigged.LLVM.IntPredicate.IntULT,
+		    Swigged.LLVM.IntPredicate.IntUGE,
+		    Swigged.LLVM.IntPredicate.IntULE,
+	    };
 
-        public virtual PredicateType Predicate { get; set; }
+	    public virtual PredicateType Predicate { get; set; }
 
-        public override Inst Convert(State state)
-        {
-            Value v2 = state._stack.Pop();
-            Value v1 = state._stack.Pop();
-            // TODO Undoubtably, this will be much more complicated than my initial stab.
-            Type t1 = v1.T;
-            Type t2 = v2.T;
-            ValueRef cmp = default(ValueRef);
-            // Deal with various combinations of types.
-            if (t1.isIntegerTy() && t2.isIntegerTy())
-            {
-                var op = _int_pred[(int)Predicate];
-                cmp = LLVM.BuildICmp(Builder, op, v1.V, v2.V, "");
-                if (Next == null) return null;
-                var t = Next.GetType();
-                if (t == typeof(i_brfalse))
-                {
-                    // Push, Pop, branch -> combine
-                }
-                else if (t == typeof(i_brfalse_s))
-                {
-                    // Push, Pop, branch -> combine
-                }
-                else if (t == typeof(i_brtrue))
-                {
-                    // Push, Pop, branch -> combine
-                }
-                else if (t == typeof(i_brtrue_s))
-                {
-                    // Push, Pop, branch -> combine
-                } else
-                {
-                    // Set up for push of 0/1.
-                    var ret = LLVM.BuildZExt(Builder, cmp, LLVM.Int32Type(), "");
-                    state._stack.Push(new Value(ret, LLVM.Int32Type()));
-                }
-            }
-            return Next;
-        }
+	    public override Inst Convert(State state)
+	    {
+		    Value v2 = state._stack.Pop();
+		    Value v1 = state._stack.Pop();
+	    // TODO Undoubtably, this will be much more complicated than my initial stab.
+		    Type t1 = v1.T;
+		    Type t2 = v2.T;
+		    ValueRef cmp = default(ValueRef);
+	    // Deal with various combinations of types.
+		    if (t1.isIntegerTy() && t2.isIntegerTy())
+		    {
+			    var op = _int_pred[(int)Predicate];
+			    cmp = LLVM.BuildICmp(Builder, op, v1.V, v2.V, "");
+			    if (Next == null) return null;
+			    var t = Next.GetType();
+			    if (t == typeof(i_brfalse))
+			    {
+		    // Push, Pop, branch -> combine
+			    }
+			    else if (t == typeof(i_brfalse_s))
+			    {
+		    // Push, Pop, branch -> combine
+			    }
+			    else if (t == typeof(i_brtrue))
+			    {
+		    // Push, Pop, branch -> combine
+			    }
+			    else if (t == typeof(i_brtrue_s))
+			    {
+		    // Push, Pop, branch -> combine
+			    } else
+			    {
+		    // Set up for push of 0/1.
+				    var ret = LLVM.BuildZExt(Builder, cmp, LLVM.Int32Type(), "");
+				    state._stack.Push(new Value(ret, LLVM.Int32Type()));
+			    }
+		    }
+		    return Next;
+	    }
     }
 
     public class i_add : BinaryOpInst
     {
-        public i_add(CIL_Inst i)
+        public i_add(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -1133,15 +1151,15 @@ namespace Campy.LCFG
 
     public class i_add_ovf : BinaryOpInst
     {
-        public i_add_ovf(CIL_Inst i)
+        public i_add_ovf(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
     }
 
     public class i_add_ovf_un : BinaryOpInst
-        {
-        public i_add_ovf_un(CIL_Inst i)
+    {
+        public i_add_ovf_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -1149,7 +1167,7 @@ namespace Campy.LCFG
 
     public class i_and : BinaryOpInst
     {
-        public i_and(CIL_Inst i)
+        public i_and(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -1157,7 +1175,7 @@ namespace Campy.LCFG
 
     public class i_arglist : Inst
     {
-        public i_arglist(CIL_Inst i)
+        public i_arglist(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -1165,174 +1183,187 @@ namespace Campy.LCFG
 
     public class i_beq : CompareInst
     {
-        public i_beq(CIL_Inst i)
+        public i_beq(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+		Predicate = PredicateType.eq;
         }
     }
 
     public class i_beq_s : CompareInst
     {
-        public i_beq_s(CIL_Inst i)
+        public i_beq_s(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            Predicate = PredicateType.eq;
+		Predicate = PredicateType.eq;
         }
     }
 
     public class i_bge : CompareInst
     {
-        public i_bge(CIL_Inst i)
+        public i_bge(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            Predicate = PredicateType.ne;
+		Predicate = PredicateType.ge;
         }
     }
 
     public class i_bge_un : CompareInst
     {
-        public i_bge_un(CIL_Inst i)
+        public i_bge_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+		Predicate = PredicateType.ge;
         }
     }
 
     public class i_bge_un_s : CompareInst
     {
-        public i_bge_un_s(CIL_Inst i)
+        public i_bge_un_s(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+		Predicate = PredicateType.ge;
         }
     }
 
     public class i_bge_s : CompareInst
     {
-        public i_bge_s(CIL_Inst i)
+        public i_bge_s(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            Predicate = PredicateType.ge;
+		Predicate = PredicateType.ge;
         }
     }
 
     public class i_bgt : CompareInst
     {
-        public i_bgt(CIL_Inst i)
+        public i_bgt(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+		Predicate = PredicateType.gt;
         }
     }
 
     public class i_bgt_s : CompareInst
     {
-        public i_bgt_s(CIL_Inst i)
+        public i_bgt_s(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            Predicate = PredicateType.gt;
+		Predicate = PredicateType.gt;
         }
     }
 
     public class i_bgt_un : CompareInst
     {
-        public i_bgt_un(CIL_Inst i)
+        public i_bgt_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+		Predicate = PredicateType.gt;
         }
     }
 
     public class i_bgt_un_s : CompareInst
     {
-        public i_bgt_un_s(CIL_Inst i)
+        public i_bgt_un_s(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+		Predicate = PredicateType.gt;
         }
     }
 
     public class i_ble : CompareInst
     {
-        public i_ble(CIL_Inst i)
+        public i_ble(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+		Predicate = PredicateType.le;
         }
     }
 
     public class i_ble_s : CompareInst
     {
-        public i_ble_s(CIL_Inst i)
+        public i_ble_s(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            Predicate = PredicateType.le;
+		Predicate = PredicateType.le;
         }
     }
 
     public class i_ble_un : CompareInst
     {
-        public i_ble_un(CIL_Inst i)
+        public i_ble_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+		Predicate = PredicateType.le;
         }
     }
 
     public class i_ble_un_s : CompareInst
     {
-        public i_ble_un_s(CIL_Inst i)
+        public i_ble_un_s(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+		Predicate = PredicateType.le;
         }
     }
 
     public class i_blt : CompareInst
     {
-        public i_blt(CIL_Inst i)
+        public i_blt(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+		Predicate = PredicateType.lt;
         }
     }
 
     public class i_blt_s : CompareInst
     {
-        public i_blt_s(CIL_Inst i)
+        public i_blt_s(Mono.Cecil.Cil.Instruction i)
+            : base(i)
+        {
+		Predicate = PredicateType.lt;
+        }
+    }
+
+    public class i_blt_un : CompareInst
+    {
+        public i_blt_un(Mono.Cecil.Cil.Instruction i)
+            : base(i)
+        {
+		Predicate = PredicateType.lt;
+        }
+    }
+
+    public class i_blt_un_s : CompareInst
+    {
+        public i_blt_un_s(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
             Predicate = PredicateType.lt;
         }
     }
 
-    public class i_blt_un : CompareInst
-    {
-        public i_blt_un(CIL_Inst i)
-            : base(i)
-        {
-        }
-    }
-
-    public class i_blt_un_s : CompareInst
-    {
-        public i_blt_un_s(CIL_Inst i)
-            : base(i)
-        {
-        }
-    }
-
     public class i_bne_un : CompareInst
     {
-        public i_bne_un(CIL_Inst i)
+        public i_bne_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+		Predicate = PredicateType.ne;
         }
     }
 
     public class i_bne_un_s : CompareInst
     {
-        public i_bne_un_s(CIL_Inst i)
+        public i_bne_un_s(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            Predicate = PredicateType.ne;
+		Predicate = PredicateType.ne;
         }
     }
 
     public class i_box : Inst
     {
-        public i_box(CIL_Inst i)
+        public i_box(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -1340,22 +1371,31 @@ namespace Campy.LCFG
 
     public class i_br : Inst
     {
-        public i_br(CIL_Inst i)
+        public i_br(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
+
+	public override Inst Convert(State state)
+	{
+		GraphLinkedList<int, CIL_CFG.Vertex, CIL_CFG.Edge>.Edge edge = Block._Successors[0];
+		int succ = edge.To;
+		var s = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ)];
+		var br = LLVM.BuildBr(Builder, s.BasicBlock);
+		return Next;
+	}
     }
 
     public class i_br_s : Inst
     {
-        public i_br_s(CIL_Inst i)
+        public i_br_s(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
 
         public override Inst Convert(State state)
         {
-            GraphLinkedList<int, LLVMCFG.Vertex, LLVMCFG.Edge>.Edge edge = Block._Successors[0];
+            GraphLinkedList<int, CIL_CFG.Vertex, CIL_CFG.Edge>.Edge edge = Block._Successors[0];
             int succ = edge.To;
             var s = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ)];
             var br = LLVM.BuildBr(Builder, s.BasicBlock);
@@ -1365,70 +1405,7 @@ namespace Campy.LCFG
 
     public class i_brfalse : Inst
     {
-        public i_brfalse(CIL_Inst i)
-            : base(i)
-        {
-        }
-
-	public override void ComputeStackLevel(ref int level_after)
-	{
-		level_after--;
-	}
-
-        public override Inst Convert(State state)
-        {
-            var v = state._stack.Pop();
-            GraphLinkedList<int, LLVMCFG.Vertex, LLVMCFG.Edge>.Edge edge1 = Block._Successors[0];
-            GraphLinkedList<int, LLVMCFG.Vertex, LLVMCFG.Edge>.Edge edge2 = Block._Successors[1];
-            int succ1 = edge1.To;
-            int succ2 = edge1.To;
-            var s1 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ1)];
-            var s2 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ1)];
-            LLVM.BuildCondBr(Builder, v.V, s1.BasicBlock, s2.BasicBlock);
-            return Next;
-        }
-    }
-
-    public class i_break : Inst
-    {
-        public i_break(CIL_Inst i)
-            : base(i)
-        {
-        }
-    }
-
-    public class i_brfalse_s : Inst
-    {
-        public i_brfalse_s(CIL_Inst i)
-            : base(i)
-        {
-        }
-
-	public override void ComputeStackLevel(ref int level_after)
-	{
-		level_after--;
-	}
-
-        public override Inst Convert(State state)
-        {
-            var v = state._stack.Pop();
-            GraphLinkedList<int, LLVMCFG.Vertex, LLVMCFG.Edge>.Edge edge1 = Block._Successors[0];
-            GraphLinkedList<int, LLVMCFG.Vertex, LLVMCFG.Edge>.Edge edge2 = Block._Successors[1];
-            int succ1 = edge1.To;
-            int succ2 = edge2.To;
-            var s1 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ1)];
-            var s2 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ2)];
-            // We need to compare the value popped with 0/1.
-            var v2 = LLVM.ConstInt(LLVM.Int32Type(), 1, false);
-            var v3 = LLVM.BuildICmp(Builder, IntPredicate.IntEQ, v.V, v2, "");
-            LLVM.BuildCondBr(Builder, v3, s1.BasicBlock, s2.BasicBlock);
-            return Next;
-        }
-    }
-
-    public class i_brtrue : Inst
-    {
-        public i_brtrue(CIL_Inst i)
+        public i_brfalse(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -1441,8 +1418,71 @@ namespace Campy.LCFG
 	public override Inst Convert(State state)
 	{
 		var v = state._stack.Pop();
-		GraphLinkedList<int, LLVMCFG.Vertex, LLVMCFG.Edge>.Edge edge1 = Block._Successors[0];
-		GraphLinkedList<int, LLVMCFG.Vertex, LLVMCFG.Edge>.Edge edge2 = Block._Successors[1];
+		GraphLinkedList<int, CIL_CFG.Vertex, CIL_CFG.Edge>.Edge edge1 = Block._Successors[0];
+		GraphLinkedList<int, CIL_CFG.Vertex, CIL_CFG.Edge>.Edge edge2 = Block._Successors[1];
+		int succ1 = edge1.To;
+		int succ2 = edge1.To;
+		var s1 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ1)];
+		var s2 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ1)];
+		LLVM.BuildCondBr(Builder, v.V, s1.BasicBlock, s2.BasicBlock);
+		return Next;
+	}
+    }
+
+    public class i_break : Inst
+    {
+        public i_break(Mono.Cecil.Cil.Instruction i)
+            : base(i)
+        {
+        }
+    }
+
+    public class i_brfalse_s : Inst
+    {
+        public i_brfalse_s(Mono.Cecil.Cil.Instruction i)
+            : base(i)
+        {
+        }
+
+	public override void ComputeStackLevel(ref int level_after)
+	{
+		level_after--;
+	}
+
+	public override Inst Convert(State state)
+	{
+		var v = state._stack.Pop();
+		GraphLinkedList<int, CIL_CFG.Vertex, CIL_CFG.Edge>.Edge edge1 = Block._Successors[0];
+		GraphLinkedList<int, CIL_CFG.Vertex, CIL_CFG.Edge>.Edge edge2 = Block._Successors[1];
+		int succ1 = edge1.To;
+            int succ2 = edge2.To;
+		var s1 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ1)];
+            var s2 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ2)];
+            // We need to compare the value popped with 0/1.
+            var v2 = LLVM.ConstInt(LLVM.Int32Type(), 1, false);
+            var v3 = LLVM.BuildICmp(Builder, IntPredicate.IntEQ, v.V, v2, "");
+            LLVM.BuildCondBr(Builder, v3, s1.BasicBlock, s2.BasicBlock);
+		return Next;
+	}
+    }
+
+    public class i_brtrue : Inst
+    {
+        public i_brtrue(Mono.Cecil.Cil.Instruction i)
+            : base(i)
+        {
+        }
+
+	public override void ComputeStackLevel(ref int level_after)
+	{
+		level_after--;
+	}
+
+	public override Inst Convert(State state)
+	{
+		var v = state._stack.Pop();
+		GraphLinkedList<int, CIL_CFG.Vertex, CIL_CFG.Edge>.Edge edge1 = Block._Successors[0];
+		GraphLinkedList<int, CIL_CFG.Vertex, CIL_CFG.Edge>.Edge edge2 = Block._Successors[1];
 		int succ1 = edge1.To;
 		int succ2 = edge2.To;
 		var s1 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ1)];
@@ -1457,7 +1497,7 @@ namespace Campy.LCFG
 
     public class i_brtrue_s : Inst
     {
-        public i_brtrue_s(CIL_Inst i)
+        public i_brtrue_s(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -1470,8 +1510,8 @@ namespace Campy.LCFG
 	public override Inst Convert(State state)
 	{
 		var v = state._stack.Pop();
-		GraphLinkedList<int, LLVMCFG.Vertex, LLVMCFG.Edge>.Edge edge1 = Block._Successors[0];
-		GraphLinkedList<int, LLVMCFG.Vertex, LLVMCFG.Edge>.Edge edge2 = Block._Successors[1];
+		GraphLinkedList<int, CIL_CFG.Vertex, CIL_CFG.Edge>.Edge edge1 = Block._Successors[0];
+		GraphLinkedList<int, CIL_CFG.Vertex, CIL_CFG.Edge>.Edge edge2 = Block._Successors[1];
 		int succ1 = edge1.To;
 		int succ2 = edge2.To;
 		var s1 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ1)];
@@ -1486,7 +1526,7 @@ namespace Campy.LCFG
 
     public class i_call : Inst
     {
-        public i_call(CIL_Inst i)
+        public i_call(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -1524,71 +1564,70 @@ namespace Campy.LCFG
 		level_after = level_after + ret - args;
 	}
 
-        public override Inst Convert(State state)
-        {
-            // Get function.
-            var i = this.Instruction;
-            var j = (Campy.CIL.i_call) i;
+	public override Inst Convert(State state)
+	{
+	    // Get function.
+		var j = this;
 
-            // Successor is fallthrough.
-            int nargs = 0;
-            int ret = 0;
-            object method = j.Operand;
-            if (method as Mono.Cecil.MethodReference != null)
-            {
-                Mono.Cecil.MethodReference mr = method as Mono.Cecil.MethodReference;
-                if (mr.HasThis)
-                    nargs++;
-                nargs += mr.Parameters.Count;
-                if (mr.MethodReturnType != null)
-                {
-                    Mono.Cecil.MethodReturnType rt = mr.MethodReturnType;
-                    Mono.Cecil.TypeReference tr = rt.ReturnType;
-                    // Get type, may contain modifiers.
-                    if (tr.FullName.Contains(' '))
-                    {
-                        String[] sp = tr.FullName.Split(' ');
-                        if (!sp[0].Equals("System.Void"))
-                            ret++;
-                    }
-                    else
-                    {
-                        if (!tr.FullName.Equals("System.Void"))
-                            ret++;
-                    }
-                }
-                var name = mr.FullName;
+	    // Successor is fallthrough.
+		int nargs = 0;
+		int ret = 0;
+		object method = j.Operand;
+		if (method as Mono.Cecil.MethodReference != null)
+		{
+			Mono.Cecil.MethodReference mr = method as Mono.Cecil.MethodReference;
+			if (mr.HasThis)
+				nargs++;
+			nargs += mr.Parameters.Count;
+			if (mr.MethodReturnType != null)
+			{
+				Mono.Cecil.MethodReturnType rt = mr.MethodReturnType;
+				Mono.Cecil.TypeReference tr = rt.ReturnType;
+		    // Get type, may contain modifiers.
+				if (tr.FullName.Contains(' '))
+				{
+					String[] sp = tr.FullName.Split(' ');
+					if (!sp[0].Equals("System.Void"))
+						ret++;
+				}
+				else
+				{
+					if (!tr.FullName.Equals("System.Void"))
+						ret++;
+				}
+			}
+			var name = mr.FullName;
                 // Find bb entry.
-                LLVMCFG.Vertex the_entry = this.Block._Graph.VertexNodes.Where(node
-                    =>
-                {
-                    GraphLinkedList<int, CIL_CFG.Vertex, CIL_CFG.Edge> g = j.Block._Graph;
-                    int k = g.NameSpace.BijectFromBasetype(node.Name);
-                    CIL_CFG.Vertex v = g.VertexSpace[k];
-                    if (v.IsEntry && v.Method.FullName == name)
-                        return true;
-                    else return false;
-                }).ToList().FirstOrDefault();
+		    CIL_CFG.Vertex the_entry = this.Block._Graph.VertexNodes.Where(node
+				=>
+			{
+				GraphLinkedList<int, CIL_CFG.Vertex, CIL_CFG.Edge> g = j.Block._Graph;
+				int k = g.NameSpace.BijectFromBasetype(node.Name);
+				CIL_CFG.Vertex v = g.VertexSpace[k];
+				if (v.IsEntry && v.Method.FullName == name)
+					return true;
+				else return false;
+			}).ToList().FirstOrDefault();
 
-                if (the_entry != default(LLVMCFG.Vertex))
-                {
-                    BuilderRef bu = this.Builder;
-                    ValueRef fv = the_entry.Function;
-                    ValueRef[] args = new ValueRef[nargs];
-                    for (int k = nargs-1; k >= 0; --k)
-                        args[k] = state._stack.Pop().V;
-                    var call = LLVM.BuildCall(Builder, fv, args, name);
-                    if (ret > 0)
-                        state._stack.Push(new Value(call));
-                }
-            }
-            return Next;
-        }
+			if (the_entry != default(CIL_CFG.Vertex))
+			{
+				BuilderRef bu = this.Builder;
+				ValueRef fv = the_entry.Function;
+				ValueRef[] args = new ValueRef[nargs];
+				for (int k = nargs-1; k >= 0; --k)
+					args[k] = state._stack.Pop().V;
+				var call = LLVM.BuildCall(Builder, fv, args, name);
+				if (ret > 0)
+					state._stack.Push(new Value(call));
+			}
+		}
+		return Next;
+	}
     }
 
     public class i_calli : Inst
     {
-        public i_calli(CIL_Inst i)
+        public i_calli(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -1629,7 +1668,7 @@ namespace Campy.LCFG
 
     public class i_callvirt : Inst
     {
-        public i_callvirt(CIL_Inst i)
+        public i_callvirt(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -1670,7 +1709,7 @@ namespace Campy.LCFG
 
     public class i_castclass : Inst
     {
-        public i_castclass(CIL_Inst i)
+        public i_castclass(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -1678,39 +1717,34 @@ namespace Campy.LCFG
 
     public class i_ceq : CompareInst
     {
-        public i_ceq(CIL_Inst i)
+        public i_ceq(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            Predicate = PredicateType.eq;
+		Predicate = PredicateType.eq;
         }
-
-	public override void ComputeStackLevel(ref int level_after)
-	{
-		level_after--;
-	}
     }
 
     public class i_cgt : CompareInst
     {
-        public i_cgt(CIL_Inst i)
+        public i_cgt(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            Predicate = PredicateType.gt;
+		Predicate = PredicateType.gt;
         }
     }
 
     public class i_cgt_un : CompareInst
     {
-        public i_cgt_un(CIL_Inst i)
+        public i_cgt_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            Predicate = PredicateType.gt;
+		Predicate = PredicateType.gt;
         }
     }
 
     public class i_ckfinite : Inst
     {
-        public i_ckfinite(CIL_Inst i)
+        public i_ckfinite(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -1718,25 +1752,25 @@ namespace Campy.LCFG
 
     public class i_clt : CompareInst
     {
-        public i_clt(CIL_Inst i)
+        public i_clt(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            Predicate = PredicateType.lt;
+		Predicate = PredicateType.lt;
         }
     }
 
     public class i_clt_un : CompareInst
     {
-        public i_clt_un(CIL_Inst i)
+        public i_clt_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            Predicate = PredicateType.lt;
+		Predicate = PredicateType.lt;
         }
     }
 
     public class i_constrained : Inst
     {
-        public i_constrained(CIL_Inst i)
+        public i_constrained(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -1744,7 +1778,7 @@ namespace Campy.LCFG
 
     public class i_conv_i1 : Inst
     {
-        public i_conv_i1(CIL_Inst i)
+        public i_conv_i1(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -1752,7 +1786,7 @@ namespace Campy.LCFG
 
     public class i_conv_i2 : Inst
     {
-        public i_conv_i2(CIL_Inst i)
+        public i_conv_i2(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -1760,7 +1794,7 @@ namespace Campy.LCFG
 
     public class i_conv_i4 : Inst
     {
-        public i_conv_i4(CIL_Inst i)
+        public i_conv_i4(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -1768,88 +1802,88 @@ namespace Campy.LCFG
 
     public class i_conv_i8 : Inst
     {
-        ValueRef convert_full(ValueRef v, TypeRef dtype, bool is_unsigned)
-        {
-            TypeRef stype = LLVM.TypeOf(v);
-            if (stype != dtype)
-            {
-                bool ext = false;
+	ValueRef convert_full(ValueRef v, TypeRef dtype, bool is_unsigned)
+	{
+		TypeRef stype = LLVM.TypeOf(v);
+		if (stype != dtype)
+		{
+			bool ext = false;
 
-                /* Extend */
-                if (dtype == LLVM.Int64Type() && (stype == LLVM.Int32Type() || stype == LLVM.Int16Type() ||
-                                                  stype == LLVM.Int8Type()))
-                    ext = true;
-                else if (dtype == LLVM.Int32Type() && (stype == LLVM.Int16Type() || stype == LLVM.Int8Type()))
-                    ext = true;
-                else if (dtype == LLVM.Int16Type() && (stype == LLVM.Int8Type()))
-                    ext = true;
+		/* Extend */
+			if (dtype == LLVM.Int64Type() && (stype == LLVM.Int32Type() || stype == LLVM.Int16Type() ||
+				stype == LLVM.Int8Type()))
+				ext = true;
+			else if (dtype == LLVM.Int32Type() && (stype == LLVM.Int16Type() || stype == LLVM.Int8Type()))
+				ext = true;
+			else if (dtype == LLVM.Int16Type() && (stype == LLVM.Int8Type()))
+				ext = true;
 
-                if (ext)
-                    return is_unsigned
-                        ? LLVM.BuildZExt(Builder, v, dtype, "")
-                        : LLVM.BuildSExt(Builder, v, dtype, "");
+			if (ext)
+				return is_unsigned
+						? LLVM.BuildZExt(Builder, v, dtype, "")
+						: LLVM.BuildSExt(Builder, v, dtype, "");
 
-                if (dtype == LLVM.DoubleType() && stype == LLVM.FloatType())
-                    return LLVM.BuildFPExt(Builder, v, dtype, "");
+			if (dtype == LLVM.DoubleType() && stype == LLVM.FloatType())
+				return LLVM.BuildFPExt(Builder, v, dtype, "");
 
-                /* Trunc */
-                if (stype == LLVM.Int64Type() && (dtype == LLVM.Int32Type() || dtype == LLVM.Int16Type() ||
-                                                  dtype == LLVM.Int8Type()))
-                    return LLVM.BuildTrunc(Builder, v, dtype, "");
-                if (stype == LLVM.Int32Type() && (dtype == LLVM.Int16Type() || dtype == LLVM.Int8Type()))
-                    return LLVM.BuildTrunc(Builder, v, dtype, "");
-                if (stype == LLVM.Int16Type() && dtype == LLVM.Int8Type())
-                    return LLVM.BuildTrunc(Builder, v, dtype, "");
-                if (stype == LLVM.DoubleType() && dtype == LLVM.FloatType())
-                    return LLVM.BuildFPTrunc(Builder, v, dtype, "");
+		/* Trunc */
+			if (stype == LLVM.Int64Type() && (dtype == LLVM.Int32Type() || dtype == LLVM.Int16Type() ||
+				dtype == LLVM.Int8Type()))
+				return LLVM.BuildTrunc(Builder, v, dtype, "");
+			if (stype == LLVM.Int32Type() && (dtype == LLVM.Int16Type() || dtype == LLVM.Int8Type()))
+				return LLVM.BuildTrunc(Builder, v, dtype, "");
+			if (stype == LLVM.Int16Type() && dtype == LLVM.Int8Type())
+				return LLVM.BuildTrunc(Builder, v, dtype, "");
+			if (stype == LLVM.DoubleType() && dtype == LLVM.FloatType())
+				return LLVM.BuildFPTrunc(Builder, v, dtype, "");
 
-                //if (LLVM.GetTypeKind(stype) == LLVM.PointerTypeKind && LLVM.GetTypeKind(dtype) == LLVMPointerTypeKind)
-                //    return LLVM.BuildBitCast(Builder, v, dtype, "");
-                //if (LLVM.GetTypeKind(dtype) == LLVM.PointerTypeKind)
-                //    return LLVM.BuildIntToPtr(Builder, v, dtype, "");
-                //if (LLVM.GetTypeKind(stype) == LLVM.PointerTypeKind)
-                //    return LLVM.BuildPtrToInt(Builder, v, dtype, "");
+		//if (LLVM.GetTypeKind(stype) == LLVM.PointerTypeKind && LLVM.GetTypeKind(dtype) == LLVMPointerTypeKind)
+		//    return LLVM.BuildBitCast(Builder, v, dtype, "");
+		//if (LLVM.GetTypeKind(dtype) == LLVM.PointerTypeKind)
+		//    return LLVM.BuildIntToPtr(Builder, v, dtype, "");
+		//if (LLVM.GetTypeKind(stype) == LLVM.PointerTypeKind)
+		//    return LLVM.BuildPtrToInt(Builder, v, dtype, "");
 
-                //if (mono_arch_is_soft_float())
-                //{
-                //    if (stype == LLVM.Int32Type() && dtype == LLVM.FloatType())
-                //        return LLVM.BuildBitCast(Builder, v, dtype, "");
-                //    if (stype == LLVM.Int32Type() && dtype == LLVM.DoubleType())
-                //        return LLVM.BuildBitCast(Builder, LLVM.BuildZExt(Builder, v, LLVM.Int64Type(), ""), dtype, "");
-                //}
+		//if (mono_arch_is_soft_float())
+		//{
+		//    if (stype == LLVM.Int32Type() && dtype == LLVM.FloatType())
+		//        return LLVM.BuildBitCast(Builder, v, dtype, "");
+		//    if (stype == LLVM.Int32Type() && dtype == LLVM.DoubleType())
+		//        return LLVM.BuildBitCast(Builder, LLVM.BuildZExt(Builder, v, LLVM.Int64Type(), ""), dtype, "");
+		//}
 
-                //if (LLVM.GetTypeKind(stype) == LLVM.VectorTypeKind && LLVM.GetTypeKind(dtype) == LLVMVectorTypeKind)
-                //    return LLVM.BuildBitCast(Builder, v, dtype, "");
+		//if (LLVM.GetTypeKind(stype) == LLVM.VectorTypeKind && LLVM.GetTypeKind(dtype) == LLVMVectorTypeKind)
+		//    return LLVM.BuildBitCast(Builder, v, dtype, "");
 
-                LLVM.DumpValue(v);
-                LLVM.DumpValue(LLVM.ConstNull(dtype));
-                return default(ValueRef);
-            }
-            else
-            {
-                return v;
-            }
-        }
+			LLVM.DumpValue(v);
+			LLVM.DumpValue(LLVM.ConstNull(dtype));
+			return default(ValueRef);
+		}
+		else
+		{
+			return v;
+		}
+	}
 
-        public i_conv_i8(CIL_Inst i)
-            : base(i)
-        {
-        }
+	public i_conv_i8(Mono.Cecil.Cil.Instruction i)
+			: base(i)
+	{
+	}
 
-        public override Inst Convert(State state)
-        {
-            Value vv = state._stack.Pop();
-            ValueRef v = vv.V;
-            TypeRef dtype = LLVM.Int64Type();
-            ValueRef r = convert_full(v, dtype, false);
-            state._stack.Push(new Value(r, dtype));
-            return Next;
-        }
+	public override Inst Convert(State state)
+	{
+		Value vv = state._stack.Pop();
+		ValueRef v = vv.V;
+		TypeRef dtype = LLVM.Int64Type();
+		ValueRef r = convert_full(v, dtype, false);
+		state._stack.Push(new Value(r, dtype));
+		return Next;
+	}
     }
 
     public class i_conv_i : Inst
     {
-        public i_conv_i(CIL_Inst i)
+        public i_conv_i(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -1857,7 +1891,7 @@ namespace Campy.LCFG
 
     public class i_conv_ovf_i1 : Inst
     {
-        public i_conv_ovf_i1(CIL_Inst i)
+        public i_conv_ovf_i1(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -1865,7 +1899,7 @@ namespace Campy.LCFG
 
     public class i_conv_ovf_i1_un : Inst
     {
-        public i_conv_ovf_i1_un(CIL_Inst i)
+        public i_conv_ovf_i1_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -1873,7 +1907,7 @@ namespace Campy.LCFG
 
     public class i_conv_ovf_i2 : Inst
     {
-        public i_conv_ovf_i2(CIL_Inst i)
+        public i_conv_ovf_i2(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -1881,7 +1915,7 @@ namespace Campy.LCFG
 
     public class i_conv_ovf_i2_un : Inst
     {
-        public i_conv_ovf_i2_un(CIL_Inst i)
+        public i_conv_ovf_i2_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -1889,7 +1923,7 @@ namespace Campy.LCFG
 
     public class i_conv_ovf_i4 : Inst
     {
-        public i_conv_ovf_i4(CIL_Inst i)
+        public i_conv_ovf_i4(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -1897,7 +1931,7 @@ namespace Campy.LCFG
 
     public class i_conv_ovf_i4_un : Inst
     {
-        public i_conv_ovf_i4_un(CIL_Inst i)
+        public i_conv_ovf_i4_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -1905,7 +1939,7 @@ namespace Campy.LCFG
 
     public class i_conv_ovf_i8 : Inst
     {
-        public i_conv_ovf_i8(CIL_Inst i)
+        public i_conv_ovf_i8(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -1913,7 +1947,7 @@ namespace Campy.LCFG
 
     public class i_conv_ovf_i8_un : Inst
     {
-        public i_conv_ovf_i8_un(CIL_Inst i)
+        public i_conv_ovf_i8_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -1921,7 +1955,7 @@ namespace Campy.LCFG
 
     public class i_conv_ovf_i : Inst
     {
-        public i_conv_ovf_i(CIL_Inst i)
+        public i_conv_ovf_i(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -1929,7 +1963,7 @@ namespace Campy.LCFG
 
     public class i_conv_ovf_i_un : Inst
     {
-        public i_conv_ovf_i_un(CIL_Inst i)
+        public i_conv_ovf_i_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -1937,7 +1971,7 @@ namespace Campy.LCFG
 
     public class i_conv_ovf_u1 : Inst
     {
-        public i_conv_ovf_u1(CIL_Inst i)
+        public i_conv_ovf_u1(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -1945,7 +1979,7 @@ namespace Campy.LCFG
 
     public class i_conv_ovf_u1_un : Inst
     {
-        public i_conv_ovf_u1_un(CIL_Inst i)
+        public i_conv_ovf_u1_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -1953,7 +1987,7 @@ namespace Campy.LCFG
 
     public class i_conv_ovf_u2 : Inst
     {
-        public i_conv_ovf_u2(CIL_Inst i)
+        public i_conv_ovf_u2(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -1961,7 +1995,7 @@ namespace Campy.LCFG
 
     public class i_conv_ovf_u2_un : Inst
     {
-        public i_conv_ovf_u2_un(CIL_Inst i)
+        public i_conv_ovf_u2_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -1969,7 +2003,7 @@ namespace Campy.LCFG
 
     public class i_conv_ovf_u4 : Inst
     {
-        public i_conv_ovf_u4(CIL_Inst i)
+        public i_conv_ovf_u4(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -1977,7 +2011,7 @@ namespace Campy.LCFG
 
     public class i_conv_ovf_u4_un : Inst
     {
-        public i_conv_ovf_u4_un(CIL_Inst i)
+        public i_conv_ovf_u4_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -1985,7 +2019,7 @@ namespace Campy.LCFG
 
     public class i_conv_ovf_u8 : Inst
     {
-        public i_conv_ovf_u8(CIL_Inst i)
+        public i_conv_ovf_u8(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -1993,7 +2027,7 @@ namespace Campy.LCFG
 
     public class i_conv_ovf_u8_un : Inst
     {
-        public i_conv_ovf_u8_un(CIL_Inst i)
+        public i_conv_ovf_u8_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -2001,7 +2035,7 @@ namespace Campy.LCFG
 
     public class i_conv_ovf_u : Inst
     {
-        public i_conv_ovf_u(CIL_Inst i)
+        public i_conv_ovf_u(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -2009,7 +2043,7 @@ namespace Campy.LCFG
 
     public class i_conv_ovf_u_un : Inst
     {
-        public i_conv_ovf_u_un(CIL_Inst i)
+        public i_conv_ovf_u_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -2017,7 +2051,7 @@ namespace Campy.LCFG
 
     public class i_conv_r4 : Inst
     {
-        public i_conv_r4(CIL_Inst i)
+        public i_conv_r4(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -2025,7 +2059,7 @@ namespace Campy.LCFG
 
     public class i_conv_r8 : Inst
     {
-        public i_conv_r8(CIL_Inst i)
+        public i_conv_r8(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -2033,7 +2067,7 @@ namespace Campy.LCFG
 
     public class i_conv_r_un : Inst
     {
-        public i_conv_r_un(CIL_Inst i)
+        public i_conv_r_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -2041,7 +2075,7 @@ namespace Campy.LCFG
 
     public class i_conv_u1 : Inst
     {
-        public i_conv_u1(CIL_Inst i)
+        public i_conv_u1(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -2049,7 +2083,7 @@ namespace Campy.LCFG
 
     public class i_conv_u2 : Inst
     {
-        public i_conv_u2(CIL_Inst i)
+        public i_conv_u2(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -2057,7 +2091,7 @@ namespace Campy.LCFG
 
     public class i_conv_u4 : Inst
     {
-        public i_conv_u4(CIL_Inst i)
+        public i_conv_u4(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -2065,7 +2099,7 @@ namespace Campy.LCFG
 
     public class i_conv_u8 : Inst
     {
-        public i_conv_u8(CIL_Inst i)
+        public i_conv_u8(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -2073,7 +2107,7 @@ namespace Campy.LCFG
 
     public class i_conv_u : Inst
     {
-        public i_conv_u(CIL_Inst i)
+        public i_conv_u(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -2081,7 +2115,7 @@ namespace Campy.LCFG
 
     public class i_cpblk : Inst
     {
-        public i_cpblk(CIL_Inst i)
+        public i_cpblk(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -2089,23 +2123,23 @@ namespace Campy.LCFG
 
     public class i_cpobj : Inst
     {
-        public i_cpobj(CIL_Inst i)
+        public i_cpobj(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
     }
 
     public class i_div : BinaryOpInst
-        {
-        public i_div(CIL_Inst i)
+    {
+        public i_div(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
     }
 
     public class i_div_un : BinaryOpInst
-        {
-        public i_div_un(CIL_Inst i)
+    {
+        public i_div_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -2113,7 +2147,7 @@ namespace Campy.LCFG
 
     public class i_dup : Inst
     {
-        public i_dup(CIL_Inst i)
+        public i_dup(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -2126,7 +2160,7 @@ namespace Campy.LCFG
 
     public class i_endfilter : Inst
     {
-        public i_endfilter(CIL_Inst i)
+        public i_endfilter(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -2139,7 +2173,7 @@ namespace Campy.LCFG
 
     public class i_endfinally : Inst
     {
-        public i_endfinally(CIL_Inst i)
+        public i_endfinally(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -2147,7 +2181,7 @@ namespace Campy.LCFG
 
     public class i_initblk : Inst
     {
-        public i_initblk(CIL_Inst i)
+        public i_initblk(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -2160,7 +2194,7 @@ namespace Campy.LCFG
 
     public class i_initobj : Inst
     {
-        public i_initobj(CIL_Inst i)
+        public i_initobj(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -2173,7 +2207,7 @@ namespace Campy.LCFG
 
     public class i_isinst : Inst
     {
-        public i_isinst(CIL_Inst i)
+        public i_isinst(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -2181,7 +2215,7 @@ namespace Campy.LCFG
 
     public class i_jmp : Inst
     {
-        public i_jmp(CIL_Inst i)
+        public i_jmp(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -2189,177 +2223,519 @@ namespace Campy.LCFG
 
     public class i_ldarg : LoadArgInst
     {
-
-        public i_ldarg(CIL_Inst i)
+        public i_ldarg(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+            Mono.Cecil.ParameterReference pr = i.Operand as Mono.Cecil.ParameterReference;
+            int ar = pr.Index;
+            _arg = ar;
         }
     }
 
     public class i_ldarg_0 : LoadArgInst
     {
-        public i_ldarg_0(CIL_Inst i)
+        public i_ldarg_0(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+            _arg = 0;
         }
     }
 
     public class i_ldarg_1 : LoadArgInst
     {
-        public i_ldarg_1(CIL_Inst i)
+        public i_ldarg_1(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+            _arg = 1;
         }
     }
 
     public class i_ldarg_2 : LoadArgInst
     {
-        public i_ldarg_2(CIL_Inst i)
+        public i_ldarg_2(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+            _arg = 2;
         }
     }
 
     public class i_ldarg_3 : LoadArgInst
     {
-        public i_ldarg_3(CIL_Inst i)
+
+        public i_ldarg_3(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+            _arg = 3;
         }
     }
 
     public class i_ldarg_s : LoadArgInst
     {
-        public i_ldarg_s(CIL_Inst i)
+        public i_ldarg_s(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+            Mono.Cecil.ParameterReference pr = i.Operand as Mono.Cecil.ParameterReference;
+            int ar = pr.Index;
+            _arg = ar;
         }
     }
 
     public class i_ldarga : LoadArgInst
     {
-        public i_ldarga(CIL_Inst i)
+        int _arg;
+
+        public i_ldarga(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+            Mono.Cecil.ParameterReference pr = i.Operand as Mono.Cecil.ParameterReference;
+            int arg = pr.Index;
+            _arg = arg;
         }
     }
 
     public class i_ldarga_s : LoadArgInst
     {
-        public i_ldarga_s(CIL_Inst i)
+        int _arg;
+
+        public i_ldarga_s(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+            Mono.Cecil.ParameterReference pr = i.Operand as Mono.Cecil.ParameterReference;
+            int arg = pr.Index;
+            _arg = arg;
         }
     }
 
     public class i_ldc_i4 : LDCInstI4
     {
-        public i_ldc_i4(CIL_Inst i) : base(i)
+        public i_ldc_i4(Mono.Cecil.Cil.Instruction i)
+            : base(i)
         {
+            int arg = default(int);
+            object o = i.Operand;
+            if (o != null)
+            {
+                // Fuck C# casting in the way of just getting
+                // a plain ol' int.
+                for (;;)
+                {
+                    bool success = false;
+                    try
+                    {
+                        byte? o3 = (byte?)o;
+                        arg = (int)o3;
+                        success = true;
+                    }
+                    catch { }
+                    if (success) break;
+                    try
+                    {
+                        sbyte? o3 = (sbyte?)o;
+                        arg = (int)o3;
+                        success = true;
+                    }
+                    catch { }
+                    if (success) break;
+                    try
+                    {
+                        short? o3 = (short?)o;
+                        arg = (int)o3;
+                        success = true;
+                    }
+                    catch { }
+                    if (success) break;
+                    try
+                    {
+                        ushort? o3 = (ushort?)o;
+                        arg = (int)o3;
+                        success = true;
+                    }
+                    catch { }
+                    if (success) break;
+                    try
+                    {
+                        int? o3 = (int?)o;
+                        arg = (int)o3;
+                        success = true;
+                    }
+                    catch { }
+                    if (success) break;
+                    throw new Exception("Cannot convert ldc_i4. Unknown type of operand. F... Mono.");
+                }
+            }
+            _arg = arg;
         }
     }
 
     public class i_ldc_i4_0 : LDCInstI4
     {
-        public i_ldc_i4_0(CIL_Inst i) : base(i)
+        public i_ldc_i4_0(Mono.Cecil.Cil.Instruction i)
+            : base(i)
         {
+            int arg = 0;
+            _arg = arg;
         }
     }
 
     public class i_ldc_i4_1 : LDCInstI4
     {
-        public i_ldc_i4_1(CIL_Inst i) : base(i)
+        public i_ldc_i4_1(Mono.Cecil.Cil.Instruction i)
+            : base(i)
         {
+            int arg = 1;
+            _arg = arg;
         }
     }
 
     public class i_ldc_i4_2 : LDCInstI4
     {
-        public i_ldc_i4_2(CIL_Inst i) : base(i)
+        public i_ldc_i4_2(Mono.Cecil.Cil.Instruction i)
+            : base(i)
         {
+            int arg = 2;
+            _arg = arg;
         }
     }
 
     public class i_ldc_i4_3 : LDCInstI4
     {
-        public i_ldc_i4_3(CIL_Inst i) : base(i)
+        public i_ldc_i4_3(Mono.Cecil.Cil.Instruction i)
+            : base(i)
         {
+            int arg = 3;
+            _arg = arg;
         }
     }
 
     public class i_ldc_i4_4 : LDCInstI4
     {
-        public i_ldc_i4_4(CIL_Inst i) : base(i)
+        public i_ldc_i4_4(Mono.Cecil.Cil.Instruction i)
+            : base(i)
         {
+            int arg = 4;
+            _arg = arg;
         }
     }
 
     public class i_ldc_i4_5 : LDCInstI4
     {
-        public i_ldc_i4_5(CIL_Inst i) : base(i)
+        public i_ldc_i4_5(Mono.Cecil.Cil.Instruction i)
+            : base(i)
         {
+            int arg = 5;
+            _arg = arg;
         }
     }
 
     public class i_ldc_i4_6 : LDCInstI4
     {
-        public i_ldc_i4_6(CIL_Inst i) : base(i)
+        public i_ldc_i4_6(Mono.Cecil.Cil.Instruction i)
+            : base(i)
         {
+            int arg = 6;
+            _arg = arg;
         }
     }
 
     public class i_ldc_i4_7 : LDCInstI4
     {
-        public i_ldc_i4_7(CIL_Inst i) : base(i)
+        public i_ldc_i4_7(Mono.Cecil.Cil.Instruction i)
+            : base(i)
         {
+            int arg = 7;
+            _arg = arg;
         }
     }
 
     public class i_ldc_i4_8 : LDCInstI4
     {
-        public i_ldc_i4_8(CIL_Inst i) : base(i)
+        public i_ldc_i4_8(Mono.Cecil.Cil.Instruction i)
+            : base(i)
         {
+            int arg = 8;
+            _arg = arg;
         }
     }
 
     public class i_ldc_i4_m1 : LDCInstI4
     {
-        public i_ldc_i4_m1(CIL_Inst i) : base(i)
+        public i_ldc_i4_m1(Mono.Cecil.Cil.Instruction i)
+            : base(i)
         {
+            int arg = -1;
+            _arg = arg;
         }
     }
 
     public class i_ldc_i4_s : LDCInstI4
     {
-        public i_ldc_i4_s(CIL_Inst i) : base(i)
+        public i_ldc_i4_s(Mono.Cecil.Cil.Instruction i)
+            : base(i)
         {
+            int arg = default(int);
+            object o = i.Operand;
+            if (o != null)
+            {
+                // Fuck C# casting in the way of just getting
+                // a plain ol' int.
+                for (;;)
+                {
+                    bool success = false;
+                    try
+                    {
+                        byte? o3 = (byte?)o;
+                        arg = (int)o3;
+                        success = true;
+                    }
+                    catch { }
+                    if (success) break;
+                    try
+                    {
+                        sbyte? o3 = (sbyte?)o;
+                        arg = (int)o3;
+                        success = true;
+                    }
+                    catch { }
+                    if (success) break;
+                    try
+                    {
+                        short? o3 = (short?)o;
+                        arg = (int)o3;
+                        success = true;
+                    }
+                    catch { }
+                    if (success) break;
+                    try
+                    {
+                        ushort? o3 = (ushort?)o;
+                        arg = (int)o3;
+                        success = true;
+                    }
+                    catch { }
+                    if (success) break;
+                    try
+                    {
+                        int? o3 = (int?)o;
+                        arg = (int)o3;
+                        success = true;
+                    }
+                    catch { }
+                    if (success) break;
+                    throw new Exception("Cannot convert ldc_i4. Unknown type of operand. F... Mono.");
+                }
+            }
+            _arg = arg;
         }
     }
 
     public class i_ldc_i8 : LDCInstI8
     {
-        public i_ldc_i8(CIL_Inst i) : base(i)
+        public i_ldc_i8(Mono.Cecil.Cil.Instruction i)
+            : base(i)
         {
+            Int64 arg = default(Int64);
+            object o = i.Operand;
+            if (o != null)
+            {
+                // Fuck C# casting in the way of just getting
+                // a plain ol' int.
+                for (;;)
+                {
+                    bool success = false;
+                    try
+                    {
+                        byte? o3 = (byte?)o;
+                        arg = (Int64)o3;
+                        success = true;
+                    }
+                    catch { }
+                    if (success) break;
+                    try
+                    {
+                        sbyte? o3 = (sbyte?)o;
+                        arg = (Int64)o3;
+                        success = true;
+                    }
+                    catch { }
+                    if (success) break;
+                    try
+                    {
+                        short? o3 = (short?)o;
+                        arg = (Int64)o3;
+                        success = true;
+                    }
+                    catch { }
+                    if (success) break;
+                    try
+                    {
+                        ushort? o3 = (ushort?)o;
+                        arg = (Int64)o3;
+                        success = true;
+                    }
+                    catch { }
+                    if (success) break;
+                    try
+                    {
+                        int? o3 = (int?)o;
+                        arg = (Int64)o3;
+                        success = true;
+                    }
+                    catch { }
+                    if (success) break;
+                    throw new Exception("Cannot convert ldc_i4. Unknown type of operand. F... Mono.");
+                }
+            }
+            _arg = arg;
         }
     }
 
     public class i_ldc_r4 : Inst
     {
-        public i_ldc_r4(CIL_Inst i)
+        public Single _arg;
+
+        public i_ldc_r4(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+            Single arg = default(Single);
+            object o = i.Operand;
+            if (o != null)
+            {
+                // Fuck C# casting in the way of just getting
+                // a plain ol' int.
+                for (;;)
+                {
+                    bool success = false;
+                    try
+                    {
+                        byte? o3 = (byte?)o;
+                        arg = (Single)o3;
+                        success = true;
+                    }
+                    catch { }
+                    if (success) break;
+                    try
+                    {
+                        sbyte? o3 = (sbyte?)o;
+                        arg = (Single)o3;
+                        success = true;
+                    }
+                    catch { }
+                    if (success) break;
+                    try
+                    {
+                        short? o3 = (short?)o;
+                        arg = (Single)o3;
+                        success = true;
+                    }
+                    catch { }
+                    if (success) break;
+                    try
+                    {
+                        ushort? o3 = (ushort?)o;
+                        arg = (Single)o3;
+                        success = true;
+                    }
+                    catch { }
+                    if (success) break;
+                    try
+                    {
+                        int? o3 = (int?)o;
+                        arg = (Single)o3;
+                        success = true;
+                    }
+                    catch { }
+                    if (success) break;
+                    try
+                    {
+                        Single? o3 = (Single?)o;
+                        arg = (Single)o3;
+                        success = true;
+                    }
+                    catch { }
+                    if (success) break;
+                    throw new Exception("Cannot convert ldc_i4. Unknown type of operand. F... Mono.");
+                }
+            }
+            _arg = arg;
         }
-
-	public override void ComputeStackLevel(ref int level_after)
-	{
-		level_after++;
-	}
     }
 
     public class i_ldc_r8 : Inst
     {
-        public i_ldc_r8(CIL_Inst i) : base(i)
+        Double _arg;
+
+        public i_ldc_r8(Mono.Cecil.Cil.Instruction i)
+            : base(i)
         {
+            Double arg = default(Double);
+            object o = i.Operand;
+            if (o != null)
+            {
+                // Fuck C# casting in the way of just getting
+                // a plain ol' int.
+                for (;;)
+                {
+                    bool success = false;
+                    try
+                    {
+                        byte? o3 = (byte?)o;
+                        arg = (Double)o3;
+                        success = true;
+                    }
+                    catch { }
+                    if (success) break;
+                    try
+                    {
+                        sbyte? o3 = (sbyte?)o;
+                        arg = (Double)o3;
+                        success = true;
+                    }
+                    catch { }
+                    if (success) break;
+                    try
+                    {
+                        short? o3 = (short?)o;
+                        arg = (Double)o3;
+                        success = true;
+                    }
+                    catch { }
+                    if (success) break;
+                    try
+                    {
+                        ushort? o3 = (ushort?)o;
+                        arg = (Double)o3;
+                        success = true;
+                    }
+                    catch { }
+                    if (success) break;
+                    try
+                    {
+                        int? o3 = (int?)o;
+                        arg = (Double)o3;
+                        success = true;
+                    }
+                    catch { }
+                    if (success) break;
+                    try
+                    {
+                        Single? o3 = (Single?)o;
+                        arg = (Double)o3;
+                        success = true;
+                    }
+                    catch { }
+                    if (success) break;
+                    try
+                    {
+                        Double? o3 = (Double?)o;
+                        arg = (Double)o3;
+                        success = true;
+                    }
+                    catch { }
+                    if (success) break;
+                    throw new Exception("Cannot convert ldc_i4. Unknown type of operand. F... Mono.");
+                }
+            }
+            _arg = arg;
         }
 
 	public override void ComputeStackLevel(ref int level_after)
@@ -2370,7 +2746,7 @@ namespace Campy.LCFG
 
     public class i_ldelem_any : Inst
     {
-        public i_ldelem_any(CIL_Inst i)
+        public i_ldelem_any(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -2383,7 +2759,7 @@ namespace Campy.LCFG
 
     public class i_ldelem_i1 : Inst
     {
-        public i_ldelem_i1(CIL_Inst i)
+        public i_ldelem_i1(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -2396,20 +2772,15 @@ namespace Campy.LCFG
 
     public class i_ldelem_i2 : Inst
     {
-        public i_ldelem_i2(CIL_Inst i)
+        public i_ldelem_i2(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
-
-	public override void ComputeStackLevel(ref int level_after)
-	{
-		level_after--;
-	}
     }
 
     public class i_ldelem_i4 : Inst
     {
-        public i_ldelem_i4(CIL_Inst i)
+        public i_ldelem_i4(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -2422,7 +2793,7 @@ namespace Campy.LCFG
 
     public class i_ldelem_i8 : Inst
     {
-        public i_ldelem_i8(CIL_Inst i)
+        public i_ldelem_i8(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -2435,7 +2806,7 @@ namespace Campy.LCFG
 
     public class i_ldelem_i : Inst
     {
-        public i_ldelem_i(CIL_Inst i)
+        public i_ldelem_i(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -2448,7 +2819,7 @@ namespace Campy.LCFG
 
     public class i_ldelem_r4 : Inst
     {
-        public i_ldelem_r4(CIL_Inst i)
+        public i_ldelem_r4(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -2461,7 +2832,7 @@ namespace Campy.LCFG
 
     public class i_ldelem_r8 : Inst
     {
-        public i_ldelem_r8(CIL_Inst i)
+        public i_ldelem_r8(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -2474,7 +2845,7 @@ namespace Campy.LCFG
 
     public class i_ldelem_ref : Inst
     {
-        public i_ldelem_ref(CIL_Inst i)
+        public i_ldelem_ref(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -2487,7 +2858,7 @@ namespace Campy.LCFG
 
     public class i_ldelem_u1 : Inst
     {
-        public i_ldelem_u1(CIL_Inst i)
+        public i_ldelem_u1(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -2500,7 +2871,7 @@ namespace Campy.LCFG
 
     public class i_ldelem_u2 : Inst
     {
-        public i_ldelem_u2(CIL_Inst i)
+        public i_ldelem_u2(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -2513,7 +2884,7 @@ namespace Campy.LCFG
 
     public class i_ldelem_u4 : Inst
     {
-        public i_ldelem_u4(CIL_Inst i)
+        public i_ldelem_u4(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -2526,7 +2897,7 @@ namespace Campy.LCFG
 
     public class i_ldelema : Inst
     {
-        public i_ldelema(CIL_Inst i)
+        public i_ldelema(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -2539,7 +2910,7 @@ namespace Campy.LCFG
 
     public class i_ldfld : Inst
     {
-        public i_ldfld(CIL_Inst i)
+        public i_ldfld(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -2547,7 +2918,7 @@ namespace Campy.LCFG
 
     public class i_ldflda : Inst
     {
-        public i_ldflda(CIL_Inst i)
+        public i_ldflda(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -2555,7 +2926,7 @@ namespace Campy.LCFG
 
     public class i_ldftn : Inst
     {
-        public i_ldftn(CIL_Inst i)
+        public i_ldftn(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -2568,7 +2939,7 @@ namespace Campy.LCFG
 
     public class i_ldind_i1 : Inst
     {
-        public i_ldind_i1(CIL_Inst i)
+        public i_ldind_i1(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -2576,7 +2947,7 @@ namespace Campy.LCFG
 
     public class i_ldind_i2 : Inst
     {
-        public i_ldind_i2(CIL_Inst i)
+        public i_ldind_i2(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -2584,7 +2955,7 @@ namespace Campy.LCFG
 
     public class i_ldind_i4 : Inst
     {
-        public i_ldind_i4(CIL_Inst i)
+        public i_ldind_i4(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -2592,7 +2963,7 @@ namespace Campy.LCFG
 
     public class i_ldind_i8 : Inst
     {
-        public i_ldind_i8(CIL_Inst i)
+        public i_ldind_i8(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -2600,7 +2971,7 @@ namespace Campy.LCFG
 
     public class i_ldind_i : Inst
     {
-        public i_ldind_i(CIL_Inst i)
+        public i_ldind_i(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -2608,7 +2979,7 @@ namespace Campy.LCFG
 
     public class i_ldind_r4 : Inst
     {
-        public i_ldind_r4(CIL_Inst i)
+        public i_ldind_r4(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -2616,7 +2987,7 @@ namespace Campy.LCFG
 
     public class i_ldind_r8 : Inst
     {
-        public i_ldind_r8(CIL_Inst i)
+        public i_ldind_r8(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -2624,7 +2995,7 @@ namespace Campy.LCFG
 
     public class i_ldind_ref : Inst
     {
-        public i_ldind_ref(CIL_Inst i)
+        public i_ldind_ref(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -2632,7 +3003,7 @@ namespace Campy.LCFG
 
     public class i_ldind_u1 : Inst
     {
-        public i_ldind_u1(CIL_Inst i)
+        public i_ldind_u1(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -2640,7 +3011,7 @@ namespace Campy.LCFG
 
     public class i_ldind_u2 : Inst
     {
-        public i_ldind_u2(CIL_Inst i)
+        public i_ldind_u2(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -2648,7 +3019,7 @@ namespace Campy.LCFG
 
     public class i_ldind_u4 : Inst
     {
-        public i_ldind_u4(CIL_Inst i)
+        public i_ldind_u4(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -2656,7 +3027,7 @@ namespace Campy.LCFG
 
     public class i_ldlen : Inst
     {
-        public i_ldlen(CIL_Inst i)
+        public i_ldlen(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -2664,64 +3035,91 @@ namespace Campy.LCFG
 
     public class i_ldloc : LdLoc
     {
-        public i_ldloc(CIL_Inst i)
+        public i_ldloc(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+            Mono.Cecil.ParameterReference pr = i.Operand as Mono.Cecil.ParameterReference;
+            int arg = pr.Index;
+            _arg = arg;
         }
     }
 
     public class i_ldloc_0 : LdLoc
     {
-        public i_ldloc_0(CIL_Inst i) : base(i)
+        public i_ldloc_0(Mono.Cecil.Cil.Instruction i)
+            : base(i)
         {
+            int arg = 0;
+            _arg = arg;
         }
     }
 
     public class i_ldloc_1 : LdLoc
     {
-        public i_ldloc_1(CIL_Inst i) : base(i)
+        public i_ldloc_1(Mono.Cecil.Cil.Instruction i)
+            : base(i)
         {
+            int arg = 1;
+            _arg = arg;
         }
     }
 
     public class i_ldloc_2 : LdLoc
     {
-        public i_ldloc_2(CIL_Inst i) : base(i)
+        public i_ldloc_2(Mono.Cecil.Cil.Instruction i)
+            : base(i)
         {
+            int arg = 2;
+            _arg = arg;
         }
     }
 
     public class i_ldloc_3 : LdLoc
     {
-        public i_ldloc_3(CIL_Inst i) : base(i)
+        public i_ldloc_3(Mono.Cecil.Cil.Instruction i)
+            : base(i)
         {
+            int arg = 3;
+            _arg = arg;
         }
     }
 
     public class i_ldloc_s : LdLoc
     {
-        public i_ldloc_s(CIL_Inst i) : base(i)
+        public i_ldloc_s(Mono.Cecil.Cil.Instruction i)
+            : base(i)
         {
+            Mono.Cecil.Cil.VariableReference pr = i.Operand as Mono.Cecil.Cil.VariableReference;
+            int arg = pr.Index;
+            _arg = arg;
         }
     }
 
     public class i_ldloca : LdLoc
     {
-        public i_ldloca(CIL_Inst i) : base(i)
+        public i_ldloca(Mono.Cecil.Cil.Instruction i)
+            : base(i)
         {
+            Mono.Cecil.Cil.VariableDefinition pr = i.Operand as Mono.Cecil.Cil.VariableDefinition;
+            int arg = pr.Index;
+            _arg = arg;
         }
     }
 
     public class i_ldloca_s : LdLoc
     {
-        public i_ldloca_s(CIL_Inst i) : base(i)
+        public i_ldloca_s(Mono.Cecil.Cil.Instruction i)
+            : base(i)
         {
+            Mono.Cecil.Cil.VariableDefinition pr = i.Operand as Mono.Cecil.Cil.VariableDefinition;
+            int arg = pr.Index;
+            _arg = arg;
         }
     }
 
     public class i_ldnull : Inst
     {
-        public i_ldnull(CIL_Inst i)
+        public i_ldnull(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -2734,7 +3132,7 @@ namespace Campy.LCFG
 
     public class i_ldobj : Inst
     {
-        public i_ldobj(CIL_Inst i)
+        public i_ldobj(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -2742,11 +3140,10 @@ namespace Campy.LCFG
 
     public class i_ldsfld : Inst
     {
-        public i_ldsfld(CIL_Inst i)
+        public i_ldsfld(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
-
 	public override void ComputeStackLevel(ref int level_after)
 	{
 		level_after++;
@@ -2755,7 +3152,7 @@ namespace Campy.LCFG
 
     public class i_ldsflda : Inst
     {
-        public i_ldsflda(CIL_Inst i)
+        public i_ldsflda(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -2768,7 +3165,7 @@ namespace Campy.LCFG
 
     public class i_ldstr : Inst
     {
-        public i_ldstr(CIL_Inst i)
+        public i_ldstr(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -2781,7 +3178,7 @@ namespace Campy.LCFG
 
     public class i_ldtoken : Inst
     {
-        public i_ldtoken(CIL_Inst i)
+        public i_ldtoken(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -2794,7 +3191,7 @@ namespace Campy.LCFG
 
     public class i_ldvirtftn : Inst
     {
-        public i_ldvirtftn(CIL_Inst i)
+        public i_ldvirtftn(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -2802,7 +3199,7 @@ namespace Campy.LCFG
 
     public class i_leave : Inst
     {
-        public i_leave(CIL_Inst i)
+        public i_leave(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -2810,7 +3207,7 @@ namespace Campy.LCFG
 
     public class i_leave_s : Inst
     {
-        public i_leave_s(CIL_Inst i)
+        public i_leave_s(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -2818,7 +3215,7 @@ namespace Campy.LCFG
 
     public class i_localloc : Inst
     {
-        public i_localloc(CIL_Inst i)
+        public i_localloc(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -2826,31 +3223,31 @@ namespace Campy.LCFG
 
     public class i_mkrefany : Inst
     {
-        public i_mkrefany(CIL_Inst i)
+        public i_mkrefany(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
     }
 
     public class i_mul : BinaryOpInst
-        {
-        public i_mul(CIL_Inst i)
+    {
+        public i_mul(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
     }
 
     public class i_mul_ovf : BinaryOpInst
-        {
-        public i_mul_ovf(CIL_Inst i)
+    {
+        public i_mul_ovf(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
     }
 
     public class i_mul_ovf_un : BinaryOpInst
-        {
-        public i_mul_ovf_un(CIL_Inst i)
+    {
+        public i_mul_ovf_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -2858,7 +3255,7 @@ namespace Campy.LCFG
 
     public class i_neg : Inst
     {
-        public i_neg(CIL_Inst i)
+        public i_neg(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -2866,7 +3263,7 @@ namespace Campy.LCFG
 
     public class i_newarr : Inst
     {
-        public i_newarr(CIL_Inst i)
+        public i_newarr(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -2906,7 +3303,7 @@ namespace Campy.LCFG
 
     public class i_newobj : Inst
     {
-        public i_newobj(CIL_Inst i)
+        public i_newobj(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -2945,7 +3342,7 @@ namespace Campy.LCFG
 
     public class i_no : Inst
     {
-        public i_no(CIL_Inst i)
+        public i_no(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -2953,7 +3350,7 @@ namespace Campy.LCFG
 
     public class i_nop : Inst
     {
-        public i_nop(CIL_Inst i)
+        public i_nop(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -2965,7 +3362,7 @@ namespace Campy.LCFG
 
     public class i_not : Inst
     {
-        public i_not(CIL_Inst i)
+        public i_not(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -2973,7 +3370,7 @@ namespace Campy.LCFG
 
     public class i_or : BinaryOpInst
     {
-        public i_or(CIL_Inst i)
+        public i_or(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -2981,7 +3378,7 @@ namespace Campy.LCFG
 
     public class i_pop : Inst
     {
-        public i_pop(CIL_Inst i)
+        public i_pop(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -2994,7 +3391,7 @@ namespace Campy.LCFG
 
     public class i_readonly : Inst
     {
-        public i_readonly(CIL_Inst i)
+        public i_readonly(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -3002,7 +3399,7 @@ namespace Campy.LCFG
 
     public class i_refanytype : Inst
     {
-        public i_refanytype(CIL_Inst i)
+        public i_refanytype(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -3010,7 +3407,7 @@ namespace Campy.LCFG
 
     public class i_refanyval : Inst
     {
-        public i_refanyval(CIL_Inst i)
+        public i_refanyval(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -3018,7 +3415,7 @@ namespace Campy.LCFG
 
     public class i_rem : BinaryOpInst
     {
-        public i_rem(CIL_Inst i)
+        public i_rem(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -3026,7 +3423,7 @@ namespace Campy.LCFG
 
     public class i_rem_un : BinaryOpInst
     {
-        public i_rem_un(CIL_Inst i)
+        public i_rem_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -3034,7 +3431,7 @@ namespace Campy.LCFG
 
     public class i_ret : Inst
     {
-        public i_ret(CIL_Inst i)
+        public i_ret(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -3050,24 +3447,24 @@ namespace Campy.LCFG
 	// This is handled by the call instruction.
 	}
 
-        public override Inst Convert(State state)
-        {
-            // There are really two different stacks here:
-            // one for the called method, and the other for the caller of the method.
-            // When returning, the stack of the method is pretty much unchanged.
-            // In fact the top of stack often contains the return value from the method.
-            // Back in the caller, the stack is popped of all arguments to the callee.
-            // And, the return value is pushed on the top of stack.
-            // This is handled by the call instruction.
-            var v = state._stack.Pop();
-            var i = LLVM.BuildRet(Builder, v.V);
-            return Next;
-        }
+	public override Inst Convert(State state)
+	{
+	    // There are really two different stacks here:
+	    // one for the called method, and the other for the caller of the method.
+	    // When returning, the stack of the method is pretty much unchanged.
+	    // In fact the top of stack often contains the return value from the method.
+	    // Back in the caller, the stack is popped of all arguments to the callee.
+	    // And, the return value is pushed on the top of stack.
+	    // This is handled by the call instruction.
+		var v = state._stack.Pop();
+		var i = LLVM.BuildRet(Builder, v.V);
+		return Next;
+	}
     }
 
     public class i_rethrow : Inst
     {
-        public i_rethrow(CIL_Inst i)
+        public i_rethrow(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -3075,7 +3472,7 @@ namespace Campy.LCFG
 
     public class i_shl : Inst
     {
-        public i_shl(CIL_Inst i)
+        public i_shl(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -3088,7 +3485,7 @@ namespace Campy.LCFG
 
     public class i_shr : Inst
     {
-        public i_shr(CIL_Inst i)
+        public i_shr(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -3101,7 +3498,7 @@ namespace Campy.LCFG
 
     public class i_shr_un : Inst
     {
-        public i_shr_un(CIL_Inst i)
+        public i_shr_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -3114,7 +3511,7 @@ namespace Campy.LCFG
 
     public class i_sizeof : Inst
     {
-        public i_sizeof(CIL_Inst i)
+        public i_sizeof(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -3124,7 +3521,7 @@ namespace Campy.LCFG
     {
         int _arg;
 
-        public i_starg(CIL_Inst i)
+        public i_starg(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
             Mono.Cecil.ParameterReference pr = i.Operand as Mono.Cecil.ParameterReference;
@@ -3142,7 +3539,7 @@ namespace Campy.LCFG
     {
         int _arg;
 
-        public i_starg_s(CIL_Inst i)
+        public i_starg_s(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
             Mono.Cecil.ParameterReference pr = i.Operand as Mono.Cecil.ParameterReference;
@@ -3158,7 +3555,7 @@ namespace Campy.LCFG
 
     public class i_stelem_any : Inst
     {
-        public i_stelem_any(CIL_Inst i)
+        public i_stelem_any(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -3171,7 +3568,7 @@ namespace Campy.LCFG
 
     public class i_stelem_i1 : Inst
     {
-        public i_stelem_i1(CIL_Inst i)
+        public i_stelem_i1(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -3184,7 +3581,7 @@ namespace Campy.LCFG
 
     public class i_stelem_i2 : Inst
     {
-        public i_stelem_i2(CIL_Inst i)
+        public i_stelem_i2(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -3197,7 +3594,7 @@ namespace Campy.LCFG
 
     public class i_stelem_i4 : Inst
     {
-        public i_stelem_i4(CIL_Inst i)
+        public i_stelem_i4(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -3210,7 +3607,7 @@ namespace Campy.LCFG
 
     public class i_stelem_i8 : Inst
     {
-        public i_stelem_i8(CIL_Inst i)
+        public i_stelem_i8(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -3223,7 +3620,7 @@ namespace Campy.LCFG
 
     public class i_stelem_i : Inst
     {
-        public i_stelem_i(CIL_Inst i)
+        public i_stelem_i(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -3236,7 +3633,7 @@ namespace Campy.LCFG
 
     public class i_stelem_r4 : Inst
     {
-        public i_stelem_r4(CIL_Inst i)
+        public i_stelem_r4(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -3249,7 +3646,7 @@ namespace Campy.LCFG
 
     public class i_stelem_r8 : Inst
     {
-        public i_stelem_r8(CIL_Inst i)
+        public i_stelem_r8(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -3262,7 +3659,7 @@ namespace Campy.LCFG
 
     public class i_stelem_ref : Inst
     {
-        public i_stelem_ref(CIL_Inst i)
+        public i_stelem_ref(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -3275,7 +3672,7 @@ namespace Campy.LCFG
 
     public class i_stfld : Inst
     {
-        public i_stfld(CIL_Inst i)
+        public i_stfld(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -3288,7 +3685,7 @@ namespace Campy.LCFG
 
     public class i_stind_i1 : Inst
     {
-        public i_stind_i1(CIL_Inst i)
+        public i_stind_i1(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -3301,15 +3698,20 @@ namespace Campy.LCFG
 
     public class i_stind_i2 : Inst
     {
-        public i_stind_i2(CIL_Inst i)
+        public i_stind_i2(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
+
+	public override void ComputeStackLevel(ref int level_after)
+	{
+		level_after = level_after - 2;
+	}
     }
 
     public class i_stind_i4 : Inst
     {
-        public i_stind_i4(CIL_Inst i)
+        public i_stind_i4(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -3322,7 +3724,7 @@ namespace Campy.LCFG
 
     public class i_stind_i8 : Inst
     {
-        public i_stind_i8(CIL_Inst i)
+        public i_stind_i8(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -3335,10 +3737,10 @@ namespace Campy.LCFG
 
     public class i_stind_i : Inst
     {
-        public i_stind_i(CIL_Inst i)
+        public i_stind_i(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-        }
+		}
 
 	public override void ComputeStackLevel(ref int level_after)
 	{
@@ -3348,7 +3750,7 @@ namespace Campy.LCFG
 
     public class i_stind_r4 : Inst
     {
-        public i_stind_r4(CIL_Inst i)
+        public i_stind_r4(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -3361,7 +3763,7 @@ namespace Campy.LCFG
 
     public class i_stind_r8 : Inst
     {
-        public i_stind_r8(CIL_Inst i)
+        public i_stind_r8(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -3374,7 +3776,7 @@ namespace Campy.LCFG
 
     public class i_stind_ref : Inst
     {
-        public i_stind_ref(CIL_Inst i)
+        public i_stind_ref(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -3387,49 +3789,69 @@ namespace Campy.LCFG
 
     public class i_stloc : StLoc
     {
-        public i_stloc(CIL_Inst i) : base(i)
+        public i_stloc(Mono.Cecil.Cil.Instruction i)
+            : base(i)
         {
+            Mono.Cecil.ParameterReference pr = i.Operand as Mono.Cecil.ParameterReference;
+            int arg = pr.Index;
+            _arg = arg;
         }
     }
 
     public class i_stloc_0 : StLoc
     {
-        public i_stloc_0(CIL_Inst i) : base(i)
+        public i_stloc_0(Mono.Cecil.Cil.Instruction i)
+            : base(i)
         {
+            int arg = 0;
+            _arg = arg;
         }
     }
 
     public class i_stloc_1 : StLoc
     {
-        public i_stloc_1(CIL_Inst i) : base(i)
+        public i_stloc_1(Mono.Cecil.Cil.Instruction i)
+            : base(i)
         {
+            int arg = 1;
+            _arg = arg;
         }
     }
 
     public class i_stloc_2 : StLoc
     {
-        public i_stloc_2(CIL_Inst i) : base(i)
+        public i_stloc_2(Mono.Cecil.Cil.Instruction i)
+            : base(i)
         {
+            int arg = 2;
+            _arg = arg;
         }
     }
 
     public class i_stloc_3 : StLoc
     {
-        public i_stloc_3(CIL_Inst i) : base(i)
+        public i_stloc_3(Mono.Cecil.Cil.Instruction i)
+            : base(i)
         {
+            int arg = 3;
+            _arg = arg;
         }
     }
 
     public class i_stloc_s : StLoc
     {
-        public i_stloc_s(CIL_Inst i) : base(i)
+        public i_stloc_s(Mono.Cecil.Cil.Instruction i)
+            : base(i)
         {
+            Mono.Cecil.Cil.VariableReference pr = i.Operand as Mono.Cecil.Cil.VariableReference;
+            int arg = pr.Index;
+            _arg = arg;
         }
     }
 
     public class i_stobj : Inst
     {
-        public i_stobj(CIL_Inst i)
+        public i_stobj(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -3442,7 +3864,7 @@ namespace Campy.LCFG
 
     public class i_stsfld : Inst
     {
-        public i_stsfld(CIL_Inst i)
+        public i_stsfld(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -3455,7 +3877,7 @@ namespace Campy.LCFG
 
     public class i_sub : BinaryOpInst
     {
-        public i_sub(CIL_Inst i)
+        public i_sub(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -3463,7 +3885,7 @@ namespace Campy.LCFG
 
     public class i_sub_ovf : BinaryOpInst
     {
-        public i_sub_ovf(CIL_Inst i)
+        public i_sub_ovf(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -3471,7 +3893,7 @@ namespace Campy.LCFG
 
     public class i_sub_ovf_un : BinaryOpInst
     {
-        public i_sub_ovf_un(CIL_Inst i)
+        public i_sub_ovf_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -3479,7 +3901,7 @@ namespace Campy.LCFG
 
     public class i_switch : Inst
     {
-        public i_switch(CIL_Inst i)
+        public i_switch(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -3492,7 +3914,7 @@ namespace Campy.LCFG
 
     public class i_tail : Inst
     {
-        public i_tail(CIL_Inst i)
+        public i_tail(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -3500,7 +3922,7 @@ namespace Campy.LCFG
 
     public class i_throw : Inst
     {
-        public i_throw(CIL_Inst i)
+        public i_throw(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -3508,7 +3930,7 @@ namespace Campy.LCFG
 
     public class i_unaligned : Inst
     {
-        public i_unaligned(CIL_Inst i)
+        public i_unaligned(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -3516,7 +3938,7 @@ namespace Campy.LCFG
 
     public class i_unbox : Inst
     {
-        public i_unbox(CIL_Inst i)
+        public i_unbox(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -3524,7 +3946,7 @@ namespace Campy.LCFG
 
     public class i_unbox_any : Inst
     {
-        public i_unbox_any(CIL_Inst i)
+        public i_unbox_any(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -3532,15 +3954,15 @@ namespace Campy.LCFG
 
     public class i_volatile : Inst
     {
-        public i_volatile(CIL_Inst i)
+        public i_volatile(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
     }
 
     public class i_xor : BinaryOpInst
-        {
-        public i_xor(CIL_Inst i)
+    {
+        public i_xor(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }

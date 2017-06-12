@@ -1,4 +1,4 @@
-﻿namespace Campy.CIL
+﻿namespace Campy.LCFG
 {
     using Campy.Utils;
     using Mono.Cecil;
@@ -41,7 +41,7 @@
             _cfg.OutputDotGraph();
         }
 
-        public void Add(Type type)
+        public void Add(System.Type type)
         {
             // Add all methods of type.
             BindingFlags findFlags = BindingFlags.NonPublic |
@@ -175,7 +175,8 @@
                 // accumulate jump to locations since these split blocks.
                 Mono.Cecil.Cil.Instruction mi = definition.Body.Instructions[j];
                 //System.Console.WriteLine(mi);
-                CIL_Inst i = CIL_Inst.Wrap(mi, v);
+                Inst i = Inst.Wrap(mi);
+                i.Block = v;
                 Mono.Cecil.Cil.OpCode op = i.OpCode;
                 Mono.Cecil.Cil.FlowControl fc = op.FlowControl;
 
@@ -242,7 +243,7 @@
                 int node_instruction_count = node.Instructions.Count;
                 for (int j = 0; j < node_instruction_count; ++j)
                 {
-                    CIL_Inst i = node.Instructions[j];
+                    Inst i = node.Instructions[j];
                     Mono.Cecil.Cil.OpCode op = i.OpCode;
                     Mono.Cecil.Cil.FlowControl fc = op.FlowControl;
                     if (fc == Mono.Cecil.Cil.FlowControl.Next)
@@ -269,7 +270,7 @@
                 // Add in all final non-fallthrough branch edges.
                 CIL_CFG.Vertex node = stack.Pop();
                 int node_instruction_count = node.Instructions.Count;
-                CIL_Inst i = node.Instructions[node_instruction_count - 1];
+                Inst i = node.Instructions[node_instruction_count - 1];
                 Mono.Cecil.Cil.OpCode op = i.OpCode;
                 Mono.Cecil.Cil.FlowControl fc = op.FlowControl;
                 switch (fc)

@@ -131,6 +131,8 @@
   <ItemGroup>
     <Compile Include="ABIParameterInfo.cs" />
     <Compile Include="ABIParameterInfoKind.cs" />
+    <Compile Include="CIL_CFG.cs" />
+    <Compile Include="Inst.cs" />
     <Compile Include="Class.cs" />
     <Compile Include="Class1.cs" />
     <Compile Include="Field.cs" />
@@ -140,11 +142,11 @@
     <Compile Include="GcInfo.cs" />
     <Compile Include="IABI.cs" />
     <Compile Include="Phi.cs" />
+    <Compile Include="Reader.cs" />
     <Compile Include="StackValue.cs" />
     <Compile Include="StackValueType.cs" />
     <Compile Include="Converter.cs" />
     <Compile Include="LLVMCFG.cs" />
-    <Compile Include="Inst.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="State.cs" />
     <Compile Include="Type.cs" />
@@ -164,10 +166,6 @@
     <ProjectReference Include="..\Campy.Utils\Campy.Utils.csproj">
       <Project>{ed3c7742-647c-44f9-b64b-29866044a54a}</Project>
       <Name>Campy.Utils</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Campy.MCFG\Campy.CIL.csproj">
-      <Project>{897cd8e6-0e7a-4f07-9966-98182f5c88f3}</Project>
-      <Name>Campy.CIL</Name>
     </ProjectReference>
     <ProjectReference Include="..\Campy.Graphs\Campy.Graphs.csproj">
       <Project>{a71ce04f-f0d2-46e0-bae8-06cf1ea50f96}</Project>

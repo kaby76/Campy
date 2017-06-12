@@ -1,4 +1,6 @@
-﻿namespace Campy.CIL
+﻿using Swigged.LLVM;
+
+namespace Campy.LCFG
 {
     using Campy.Graphs;
     using Mono.Cecil.Cil;
@@ -10,6 +12,8 @@
 
     public class CIL_CFG : GraphLinkedList<int, CIL_CFG.Vertex, CIL_CFG.Edge>
     {
+
+
         private static int _node_number = 1;
 
         public int NewNodeNumber()
@@ -71,12 +75,12 @@
             return x;
         }
 
-        public Vertex FindEntry(CIL_Inst cilInst)
+        public Vertex FindEntry(Inst inst)
         {
             Vertex result = null;
 
             // Find owning block.
-            result = cilInst.Block;
+            result = inst.Block;
 
             // Return entry block for method.
             return result.Entry;
@@ -103,8 +107,22 @@
             : GraphLinkedList<int, Vertex, Edge>.Vertex
         {        
             public MethodDefinition Method { get; set; }
-            public List<CIL_Inst> Instructions { get; private set; } = new List<CIL_Inst>();
+            public List<Inst> Instructions { get; private set; } = new List<Inst>();
 
+            public BasicBlockRef BasicBlock { get; set; }
+            public ValueRef Function { get; set; }
+            public BuilderRef Builder { get; set; }
+            public ModuleRef Module { get; set; }
+
+            public bool HasReturnValue { get; set; }
+
+            public int? StackLevelIn { get; set; }
+
+            public int? StackLevelOut { get; set; }
+
+            public State StateIn { get; set; }
+
+            public State StateOut { get; set; }
 
             private Vertex _entry;
             public Vertex Entry
@@ -133,7 +151,7 @@
             {
                 get
                 {
-                    CIL_Inst last = Instructions[Instructions.Count - 1];
+                    Inst last = Instructions[Instructions.Count - 1];
                     switch (last.OpCode.FlowControl)
                     {
                         case FlowControl.Call:
@@ -148,7 +166,7 @@
             {
                 get
                 {
-                    CIL_Inst last = Instructions[Instructions.Count - 1];
+                    Inst last = Instructions[Instructions.Count - 1];
                     return last.OpCode.Code == Code.Newobj;
                 }
             }
@@ -157,7 +175,7 @@
             {
                 get
                 {
-                    CIL_Inst last = Instructions[Instructions.Count - 1];
+                    Inst last = Instructions[Instructions.Count - 1];
                     return last.OpCode.Code == Code.Newarr;
                 }
             }
@@ -166,7 +184,7 @@
             {
                 get
                 {
-                    CIL_Inst last = Instructions[Instructions.Count - 1];
+                    Inst last = Instructions[Instructions.Count - 1];
                     switch (last.OpCode.FlowControl)
                     {
                         case FlowControl.Return:
@@ -180,8 +198,6 @@
             public int NumberOfLocals { get; set; }
 
             public int NumberOfArguments { get; set; }
-
-            public bool HasReturnValue { get; set; }
 
             public Vertex Exit
             {
@@ -227,7 +243,7 @@
                     Console.WriteLine();
                 }
                 Console.WriteLine(new String(' ', 4) + "Instructions:");
-                foreach (CIL_Inst i in v.Instructions)
+                foreach (Inst i in v.Instructions)
                 {
                     Console.Write(new String(' ', 8) + i + new String(' ', 4));
                     Console.WriteLine();
@@ -239,7 +255,7 @@
             {
                 Debug.Assert(Instructions.Count != 0);
                 // Split this node into two nodes, with all instructions after "i" in new node.
-                CIL_CFG cfg = (CIL_CFG)this._Graph;
+                var cfg = (CIL_CFG)this._Graph;
                 Vertex result = (Vertex)cfg.AddVertex(cfg.NewNodeNumber());
                 result.Method = this.Method;
                 result.HasReturnValue = this.HasReturnValue;
@@ -255,8 +271,10 @@
                 // Add instructions from split point to new block.
                 for (int j = i; j < count; ++j)
                 {
-                    CIL_Inst new_cil_inst = CIL_Inst.Wrap(Instructions[j].Instruction, result);
-                    result.Instructions.Add(new_cil_inst);
+                    Inst newInst = Inst.Wrap(Instructions[j].Instruction);
+                    CIL_CFG.Vertex v = newInst.Block;
+                    newInst.Block = (CIL_CFG.Vertex) result;
+                    result.Instructions.Add(newInst);
                 }
 
                 // Remove instructions from previous block.
@@ -269,7 +287,7 @@
                 Debug.Assert(result.Instructions.Count != 0);
                 Debug.Assert(this.Instructions.Count + result.Instructions.Count == count);
 
-                CIL_Inst last_instruction = this.Instructions[
+                Inst last_instruction = this.Instructions[
                     this.Instructions.Count - 1];
 
                 // Transfer any out edges to pred block to new block.
@@ -340,7 +358,7 @@
             System.Console.WriteLine();
             System.Console.WriteLine("List of callers:");
             System.Console.WriteLine(new String(' ', 4) + "Node" + new string(' ', 4) + "Instruction");
-            foreach (CIL_Inst caller in CIL_Inst.CallInstructions)
+            foreach (Inst caller in Inst.CallInstructions)
             {
                 Vertex n = caller.Block;
                 System.Console.Write("{0,8}", n);

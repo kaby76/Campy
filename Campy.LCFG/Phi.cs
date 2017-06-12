@@ -11,7 +11,7 @@ namespace Campy.LCFG
     {
         public Value _v;
         public List<Value> _merge;
-        public LLVMCFG.Vertex _block;
+        public CIL_CFG.Vertex _block;
 
         public Phi()
             : base(default(ValueRef))

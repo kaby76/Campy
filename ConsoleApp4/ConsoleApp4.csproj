@@ -150,10 +150,6 @@
       <Project>{CED2299A-4F97-4FB7-BFA8-A61B50E9986D}</Project>
       <Name>Campy.LCFG</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Campy.MCFG\Campy.CIL.csproj">
-      <Project>{897cd8e6-0e7a-4f07-9966-98182f5c88f3}</Project>
-      <Name>Campy.CIL</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Campy.Graphs\Campy.Graphs.csproj">
       <Project>{a71ce04f-f0d2-46e0-bae8-06cf1ea50f96}</Project>
       <Name>Campy.Graphs</Name>

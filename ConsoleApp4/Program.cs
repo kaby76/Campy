@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
-using Campy.CIL;
 using Campy.LCFG;
 using Swigged.LLVM;
 
@@ -76,8 +75,8 @@ namespace ConsoleApp4
             mg.StartChangeSet(1);
             r.AnalyzeMethod(() => Program.Foo2(1));
             List<CIL_CFG.Vertex> change_set = mg.EndChangeSet(1);
-            var lg = new LLVMCFG();
-            var c2 = new Campy.LCFG.Converter(mg, lg);
+            var lg = new CIL_CFG();
+            var c2 = new Campy.LCFG.Converter(mg);
             Swigged.LLVM.Helper.Adjust.Path();
             c2.ConvertToLLVM(change_set);
 
