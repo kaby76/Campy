@@ -1100,6 +1100,7 @@ namespace Campy.ControlFlowGraph
         };
 
         public virtual PredicateType Predicate { get; set; }
+        public virtual bool IsSigned { get; set; }
 
         public override Inst Convert(State state)
         {
@@ -1112,7 +1113,10 @@ namespace Campy.ControlFlowGraph
             // Deal with various combinations of types.
             if (t1.isIntegerTy() && t2.isIntegerTy())
             {
-                var op = _int_pred[(int)Predicate];
+                IntPredicate op;
+                if (IsSigned) op = _int_pred[(int)Predicate];
+                else op = _uint_pred[(int)Predicate];
+
                 cmp = LLVM.BuildICmp(Builder, op, v1.V, v2.V, "");
                 if (Next == null) return null;
                 var t = Next.GetType();
@@ -1185,6 +1189,7 @@ namespace Campy.ControlFlowGraph
         };
 
         public virtual PredicateType Predicate { get; set; }
+        public virtual bool IsSigned { get; set; }
 
         public override Inst Convert(State state)
         {
@@ -1197,7 +1202,10 @@ namespace Campy.ControlFlowGraph
             // Deal with various combinations of types.
             if (t1.isIntegerTy() && t2.isIntegerTy())
             {
-                var op = _int_pred[(int)Predicate];
+                IntPredicate op;
+                if (IsSigned) op = _int_pred[(int)Predicate];
+                else op = _uint_pred[(int)Predicate];
+
                 cmp = LLVM.BuildICmp(Builder, op, v1.V, v2.V, "");
 
                 GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge1 = Block._Successors[0];
@@ -1260,6 +1268,7 @@ namespace Campy.ControlFlowGraph
             : base(i)
         {
 		    Predicate = PredicateType.eq;
+            IsSigned = true;
         }
     }
 
@@ -1269,6 +1278,7 @@ namespace Campy.ControlFlowGraph
             : base(i)
         {
 		    Predicate = PredicateType.eq;
+            IsSigned = true;
         }
     }
 
@@ -1278,6 +1288,7 @@ namespace Campy.ControlFlowGraph
             : base(i)
         {
 		    Predicate = PredicateType.ge;
+            IsSigned = true;
         }
     }
 
@@ -1287,6 +1298,7 @@ namespace Campy.ControlFlowGraph
             : base(i)
         {
 		    Predicate = PredicateType.ge;
+            IsSigned = false;
         }
     }
 
@@ -1296,6 +1308,7 @@ namespace Campy.ControlFlowGraph
             : base(i)
         {
 		    Predicate = PredicateType.ge;
+            IsSigned = false;
         }
     }
 
@@ -1305,6 +1318,7 @@ namespace Campy.ControlFlowGraph
             : base(i)
         {
 		    Predicate = PredicateType.ge;
+            IsSigned = true;
         }
     }
 
@@ -1314,6 +1328,7 @@ namespace Campy.ControlFlowGraph
             : base(i)
         {
 		    Predicate = PredicateType.gt;
+            IsSigned = true;
         }
     }
 
@@ -1323,6 +1338,7 @@ namespace Campy.ControlFlowGraph
             : base(i)
         {
 		    Predicate = PredicateType.gt;
+            IsSigned = true;
         }
     }
 
@@ -1332,6 +1348,7 @@ namespace Campy.ControlFlowGraph
             : base(i)
         {
 		    Predicate = PredicateType.gt;
+            IsSigned = false;
         }
     }
 
@@ -1341,6 +1358,7 @@ namespace Campy.ControlFlowGraph
             : base(i)
         {
 		    Predicate = PredicateType.gt;
+            IsSigned = false;
         }
     }
 
@@ -1350,6 +1368,7 @@ namespace Campy.ControlFlowGraph
             : base(i)
         {
 		    Predicate = PredicateType.le;
+            IsSigned = true;
         }
     }
 
@@ -1368,6 +1387,7 @@ namespace Campy.ControlFlowGraph
             : base(i)
         {
 		    Predicate = PredicateType.le;
+            IsSigned = false;
         }
     }
 
@@ -1377,6 +1397,7 @@ namespace Campy.ControlFlowGraph
             : base(i)
         {
 		    Predicate = PredicateType.le;
+            IsSigned = false;
         }
     }
 
@@ -1386,6 +1407,7 @@ namespace Campy.ControlFlowGraph
             : base(i)
         {
 		    Predicate = PredicateType.lt;
+            IsSigned = true;
         }
     }
 
@@ -1395,6 +1417,7 @@ namespace Campy.ControlFlowGraph
             : base(i)
         {
 		    Predicate = PredicateType.lt;
+            IsSigned = true;
         }
     }
 
@@ -1404,6 +1427,7 @@ namespace Campy.ControlFlowGraph
             : base(i)
         {
 		    Predicate = PredicateType.lt;
+            IsSigned = false;
         }
     }
 
@@ -1413,6 +1437,7 @@ namespace Campy.ControlFlowGraph
             : base(i)
         {
             Predicate = PredicateType.lt;
+            IsSigned = false;
         }
     }
 
@@ -1422,6 +1447,7 @@ namespace Campy.ControlFlowGraph
             : base(i)
         {
 		    Predicate = PredicateType.ne;
+            IsSigned = false;
         }
     }
 
@@ -1431,6 +1457,7 @@ namespace Campy.ControlFlowGraph
             : base(i)
         {
 		    Predicate = PredicateType.ne;
+            IsSigned = false;
         }
     }
 
@@ -1794,6 +1821,7 @@ namespace Campy.ControlFlowGraph
             : base(i)
         {
 		    Predicate = PredicateType.eq;
+            IsSigned = true;
         }
     }
 
@@ -1803,6 +1831,7 @@ namespace Campy.ControlFlowGraph
             : base(i)
         {
 		    Predicate = PredicateType.gt;
+            IsSigned = true;
         }
     }
 
@@ -1812,6 +1841,7 @@ namespace Campy.ControlFlowGraph
             : base(i)
         {
 		    Predicate = PredicateType.gt;
+            IsSigned = false;
         }
     }
 
@@ -1829,6 +1859,7 @@ namespace Campy.ControlFlowGraph
             : base(i)
         {
 		    Predicate = PredicateType.lt;
+            IsSigned = true;
         }
     }
 
@@ -1838,6 +1869,7 @@ namespace Campy.ControlFlowGraph
             : base(i)
         {
 		    Predicate = PredicateType.lt;
+            IsSigned = false;
         }
     }
 
