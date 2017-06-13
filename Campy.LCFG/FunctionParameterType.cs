@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Campy.LCFG
+namespace Campy.ControlFlowGraph
 {
     public struct FunctionParameterType
     {

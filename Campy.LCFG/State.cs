@@ -8,7 +8,7 @@ using Mono.Cecil.Cil;
 using Mono.Collections.Generic;
 using Swigged.LLVM;
 
-namespace Campy.LCFG
+namespace Campy.ControlFlowGraph
 {
     public class State
     {
@@ -50,7 +50,7 @@ namespace Campy.LCFG
             _phi = new List<ValueRef>();
         }
 
-        public State(Dictionary<int, bool> visited, CIL_CFG.Vertex llvm_node)
+        public State(Dictionary<int, bool> visited, CFG.Vertex llvm_node)
         {
             int args = llvm_node.NumberOfArguments;
             int locals = llvm_node.NumberOfLocals;
@@ -129,7 +129,7 @@ namespace Campy.LCFG
                 {
                     int to_check = llvm_node._Predecessors[pred_ind].From;
                     if (!visited.ContainsKey(to_check)) continue;
-                    CIL_CFG.Vertex check_llvm_node = llvm_node._Graph.VertexSpace[llvm_node._Graph.NameSpace.BijectFromBasetype(to_check)];
+                    CFG.Vertex check_llvm_node = llvm_node._Graph.VertexSpace[llvm_node._Graph.NameSpace.BijectFromBasetype(to_check)];
                     if (check_llvm_node.StateOut == null)
                         continue;
                     if (check_llvm_node.StateOut._stack == null)
@@ -138,7 +138,7 @@ namespace Campy.LCFG
                     break;
                 }
 
-                CIL_CFG.Vertex p_llvm_node = llvm_node._Graph.VertexSpace[llvm_node._Graph.NameSpace.BijectFromBasetype(llvm_node._Predecessors[pred].From)];
+                CFG.Vertex p_llvm_node = llvm_node._Graph.VertexSpace[llvm_node._Graph.NameSpace.BijectFromBasetype(llvm_node._Predecessors[pred].From)];
                 int size = p_llvm_node.StateOut._stack.Count;
                 for (int i = 0; i < size; ++i)
                 {

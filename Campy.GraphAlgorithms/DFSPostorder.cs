@@ -1,23 +1,25 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Campy.Graphs;
 using Campy.Utils;
 
-namespace Campy.Graphs
+namespace Campy.GraphAlgorithms
 {
     // Algorithms adapted from "A NEW NON-RECURSIVE ALGORITHM FOR
     // BINARY SEARCH TREE TRAVERSAL", Akram Al-Rawi, Azzedine Lansari, Faouzi Bouslama
     // N.B.: There is no "in-order" traversal defined for a general graph,
     // it must be a binary tree.
-    public class DepthFirstInorderTraversal<T>
+    public class DFSPostorder<T> : IEnumerable<T>
     {
-        BinaryTreeLinkList<T> graph;
-        T Source = default(T);
+        IGraph<T> graph;
+        IEnumerable<T> Source;
         Dictionary<T, bool> Visited = new Dictionary<T, bool>();
 
-        public DepthFirstInorderTraversal(BinaryTreeLinkList<T> g, T s)
+        public DFSPostorder(IGraph<T> g, IEnumerable<T> s)
         {
             graph = g;
             Source = s;
@@ -32,30 +34,33 @@ namespace Campy.Graphs
             foreach (T v in graph.Vertices)
                 Visited[v] = false;
 
-            for (T s = Source; s != null; )
-            {
-                Stack.Push(s);
-                int j = graph.NameSpace.BijectFromBasetype(s);
-                BinaryTreeLinkListVertex<T> ver = graph.VertexSpace[j];
-                s = ver.Left.Name;
-            }
+            foreach (T v in Source)
+                Stack.Push(v);
 
             while (Stack.Count != 0)
             {
                 T u = Stack.Pop();
-                yield return u;
-                int j = graph.NameSpace.BijectFromBasetype(u);
-                BinaryTreeLinkListVertex<T> ver = graph.VertexSpace[j];
-                u = ver.Right.Name;
-                while (u != null)
+                if (Visited[u])
                 {
+                    yield return u;
+                }
+                else
+                {
+                    Visited[u] = true;
                     Stack.Push(u);
-                    int k = graph.NameSpace.BijectFromBasetype(u);
-                    BinaryTreeLinkListVertex<T> z = graph.VertexSpace[k];
-                    u = ver.Right.Name;
-                    u = z.Left.Name;
+                    foreach (T v in graph.ReverseSuccessors(u))
+                    {
+                        if (!Visited[v] && !Stack.Contains(v))
+                            Stack.Push(v);
+                    }
                 }
             }
         }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
     }
+
 }

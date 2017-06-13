@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -18,7 +19,7 @@ namespace Campy.GraphAlgorithms
     /// is not a DAG, then it will fail.
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class TopologicalSort<T>
+    public class TopologicalSort<T> : IEnumerable<T>
     {
 
         IGraph<T> graph;
@@ -83,6 +84,11 @@ namespace Campy.GraphAlgorithms
                     }
                 }
             }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
     }
 }

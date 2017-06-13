@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,17 +8,17 @@ using Campy.Graphs;
 
 namespace Campy.GraphAlgorithms
 {
-    public class Tarjan<NAME>
+    public class Tarjan<T> : IEnumerable<T>
     {
-        private Dictionary<NAME, bool> visited = new Dictionary<NAME, bool>();
-        private Dictionary<NAME, bool> closed = new Dictionary<NAME, bool>();
-        private IGraph<NAME> _graph;
+        private Dictionary<T, bool> visited = new Dictionary<T, bool>();
+        private Dictionary<T, bool> closed = new Dictionary<T, bool>();
+        private IGraph<T> _graph;
         int index = 0; // number of nodes
-        Stack<NAME> S = new Stack<NAME>();
-        Dictionary<NAME, int> Index = new Dictionary<NAME, int>();
-        Dictionary<NAME, int> LowLink = new Dictionary<NAME, int>();
+        Stack<T> S = new Stack<T>();
+        Dictionary<T, int> Index = new Dictionary<T, int>();
+        Dictionary<T, int> LowLink = new Dictionary<T, int>();
 
-        public Tarjan(IGraph<NAME> graph)
+        public Tarjan(IGraph<T> graph)
         {
             _graph = graph;
             foreach (var v in _graph.Vertices)
@@ -27,7 +28,7 @@ namespace Campy.GraphAlgorithms
             }
         }
 
-        IEnumerable<NAME> StrongConnect(NAME v)
+        IEnumerable<T> StrongConnect(T v)
         {
             // Set the depth index for v to the smallest unused index
             Index[v] = index;
@@ -53,7 +54,7 @@ namespace Campy.GraphAlgorithms
             {
                 Console.Write("SCC: ");
 
-                NAME w;
+                T w;
                 do
                 {
                     w = S.Pop();
@@ -65,7 +66,29 @@ namespace Campy.GraphAlgorithms
             }
         }
 
-        public IEnumerable<NAME> GetEnumerable()
+        public IEnumerable<T> GetEnumerable()
+        {
+            foreach (var v in _graph.Vertices)
+            {
+                if (_graph.Predecessors(v).Any()) continue;
+                if (Index[v] < 0)
+                    foreach (var w in StrongConnect(v))
+                        yield return w;
+            }
+        }
+
+        public IEnumerator<T> GetEnumerator()
+        {
+            foreach (var v in _graph.Vertices)
+            {
+                if (_graph.Predecessors(v).Any()) continue;
+                if (Index[v] < 0)
+                    foreach (var w in StrongConnect(v))
+                        yield return w;
+            }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
         {
             foreach (var v in _graph.Vertices)
             {

@@ -1,4 +1,4 @@
-﻿namespace Campy.LCFG
+﻿namespace Campy.ControlFlowGraph
 {
     using Campy.Utils;
     using Mono.Cecil;
@@ -11,9 +11,9 @@
 
     public class Reader
     {
-        private CIL_CFG _cfg = new CIL_CFG();
+        private CFG _cfg = new CFG();
 
-        public CIL_CFG Cfg
+        public CFG Cfg
         {
             get { return _cfg; }
             set { _cfg = value; }
@@ -163,12 +163,12 @@
             StackQueue<Mono.Cecil.Cil.Instruction> leader_list = new StackQueue<Mono.Cecil.Cil.Instruction>();
 
             // Each method is a leader of a block.
-            CIL_CFG.Vertex v = (CIL_CFG.Vertex)_cfg.AddVertex(_cfg.NewNodeNumber());
+            CFG.Vertex v = (CFG.Vertex)_cfg.AddVertex(_cfg.NewNodeNumber());
             v.Method = definition;
             v.HasReturnValue = definition.IsReuseSlot;
             v.Entry = v;
             _cfg.Entries.Add(v);
-            v._ordered_list_of_blocks = new List<CIL_CFG.Vertex>();
+            v._ordered_list_of_blocks = new List<CFG.Vertex>();
             v._ordered_list_of_blocks.Add(v);
             for (int j = 0; j < instruction_count; ++j)
             {
@@ -228,18 +228,18 @@
             while (ordered_leader_list.Count > 0)
             {
                 int i = ordered_leader_list.Pop();
-                CIL_CFG.Vertex new_node = v.Split(i);
+                CFG.Vertex new_node = v.Split(i);
             }
 
             //this.Dump();
 
-            StackQueue<CIL_CFG.Vertex> stack = new StackQueue<CIL_CFG.Vertex>();
-            foreach (CIL_CFG.Vertex node in _cfg.VertexNodes) stack.Push(node);
+            StackQueue<CFG.Vertex> stack = new StackQueue<CFG.Vertex>();
+            foreach (CFG.Vertex node in _cfg.VertexNodes) stack.Push(node);
             while (stack.Count > 0)
             {
                 // Split blocks at branches, not including calls, with following
                 // instruction a leader of new block.
-                CIL_CFG.Vertex node = stack.Pop();
+                CFG.Vertex node = stack.Pop();
                 int node_instruction_count = node.Instructions.Count;
                 for (int j = 0; j < node_instruction_count; ++j)
                 {
@@ -256,19 +256,19 @@
                         continue;
                     if (j + 1 >= node_instruction_count)
                         continue;
-                    CIL_CFG.Vertex new_node = node.Split(j + 1);
+                    CFG.Vertex new_node = node.Split(j + 1);
                     stack.Push(new_node);
                     break;
                 }
             }
 
             //this.Dump();
-            stack = new StackQueue<CIL_CFG.Vertex>();
-            foreach (CIL_CFG.Vertex node in _cfg.VertexNodes) stack.Push(node);
+            stack = new StackQueue<CFG.Vertex>();
+            foreach (CFG.Vertex node in _cfg.VertexNodes) stack.Push(node);
             while (stack.Count > 0)
             {
                 // Add in all final non-fallthrough branch edges.
-                CIL_CFG.Vertex node = stack.Pop();
+                CFG.Vertex node = stack.Pop();
                 int node_instruction_count = node.Instructions.Count;
                 Inst i = node.Instructions[node_instruction_count - 1];
                 Mono.Cecil.Cil.OpCode op = i.OpCode;
@@ -282,8 +282,8 @@
                             if (i.Operand as Mono.Cecil.Cil.Instruction != null)
                             {
                                 Mono.Cecil.Cil.Instruction target_instruction = i.Operand as Mono.Cecil.Cil.Instruction;
-                                CIL_CFG.Vertex target_node = _cfg.VertexNodes.First(
-                                    (CIL_CFG.Vertex x) =>
+                                CFG.Vertex target_node = _cfg.VertexNodes.First(
+                                    (CFG.Vertex x) =>
                                     {
                                         if (!x.Instructions.First().Instruction.Equals(target_instruction))
                                             return false;
@@ -295,8 +295,8 @@
                             {
                                 foreach (Mono.Cecil.Cil.Instruction target_instruction in (i.Operand as Mono.Cecil.Cil.Instruction[]))
                                 {
-                                    CIL_CFG.Vertex target_node = _cfg.VertexNodes.First(
-                                        (CIL_CFG.Vertex x) =>
+                                    CFG.Vertex target_node = _cfg.VertexNodes.First(
+                                        (CFG.Vertex x) =>
                                         {
                                             if (!x.Instructions.First().Instruction.Equals(target_instruction))
                                                 return false;
@@ -325,8 +325,8 @@
                             {
                                 Mono.Cecil.MethodReference r = o as Mono.Cecil.MethodReference;
                                 Mono.Cecil.MethodDefinition d = r.Resolve();
-                                IEnumerable<CIL_CFG.Vertex> target_node_list = _cfg.VertexNodes.Where(
-                                    (CIL_CFG.Vertex x) =>
+                                IEnumerable<CFG.Vertex> target_node_list = _cfg.VertexNodes.Where(
+                                    (CFG.Vertex x) =>
                                     {
                                         return x.Method.FullName == r.FullName
                                             && x.Entry == x;
@@ -335,8 +335,8 @@
                                 if (c >= 1)
                                 {
                                     // target_node is the entry for a method. Also get the exit.
-                                    CIL_CFG.Vertex target_node = target_node_list.First();
-                                    CIL_CFG.Vertex exit_node = target_node.Exit;
+                                    CFG.Vertex target_node = target_node_list.First();
+                                    CFG.Vertex exit_node = target_node.Exit;
                                 }
                             }
                             break;

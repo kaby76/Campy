@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -8,11 +9,11 @@ using Campy.Graphs;
 
 namespace Campy.GraphAlgorithms
 {
-    public class KosarajuAlgorithm<NAME>
+    public class Kosaraju<NAME> : IEnumerable<NAME>
     {
         private IGraph<NAME> _graph;
 
-        public KosarajuAlgorithm(IGraph<NAME> graph)
+        public Kosaraju(IGraph<NAME> graph)
         {
             _graph = graph;
         }
@@ -99,6 +100,16 @@ namespace Campy.GraphAlgorithms
                     yield return new SCCEnumerator(gr, v, visited).ToList();
                 }
             }
+        }
+
+        IEnumerator<NAME> IEnumerable<NAME>.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            throw new NotImplementedException();
         }
     }
 }

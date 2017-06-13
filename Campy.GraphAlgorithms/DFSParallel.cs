@@ -8,14 +8,6 @@ using Campy.Utils;
 
 namespace Campy.GraphAlgorithms
 {
-    public class FFFF
-    {
-        public FFFF()
-        {
-            GraphAdjList<int> xx = new GraphAdjList<int>();
-            IGraph<int> xxx = xx;
-        }
-    }
     // Grama A, Karypis G, Kumar V, Gupta A. Introduction to Parallel
     // Computing. 2nd ed. Essex, England: Pearson Education Limited;
     // 2003.
@@ -23,14 +15,14 @@ namespace Campy.GraphAlgorithms
     // Rao VN, Kumar V. Parallel depth first search. Part I.
     // Implementation. International Journal of Parallel Programming.
     // 1987; 16(6):479-99.
-    public class DepthFirstSearchParallel<T>
+    public class DFSParallel<T>
     {
         IGraph<T> graph;
         IEnumerable<T> Source;
         Dictionary<T, bool> Visited = new Dictionary<T, bool>();
         int NumberOfWorkers;
 
-        public DepthFirstSearchParallel(IGraph<T> g, IEnumerable<T> s, int n)
+        public DFSParallel(IGraph<T> g, IEnumerable<T> s, int n)
         {
             graph = g;
             Source = s;

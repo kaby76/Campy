@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,7 +8,7 @@ using Campy.Graphs;
 
 namespace Campy.GraphAlgorithms
 {
-    public class BreadthFirstTraversal<T>
+    public class BFS<T> : IEnumerable<T>
     {
 
         IGraph<T> graph;
@@ -15,7 +16,7 @@ namespace Campy.GraphAlgorithms
         bool _backwards;
         Dictionary<T, bool> Visited = new Dictionary<T, bool>();
 
-        public BreadthFirstTraversal(IGraph<T> g, IEnumerable<T> s, bool backwards = false)
+        public BFS(IGraph<T> g, IEnumerable<T> s, bool backwards = false)
         {
             graph = g;
             Source = s;
@@ -24,7 +25,7 @@ namespace Campy.GraphAlgorithms
                 Visited.Add(v, false);
         }
 
-        public BreadthFirstTraversal(IGraph<T> g, T s)
+        public BFS(IGraph<T> g, T s)
         {
             graph = g;
             Source = new T[] { s };
@@ -59,6 +60,11 @@ namespace Campy.GraphAlgorithms
                     }
                 }
             }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
     }
 }

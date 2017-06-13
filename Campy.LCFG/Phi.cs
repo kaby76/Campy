@@ -5,13 +5,13 @@ using System.Text;
 using System.Threading.Tasks;
 using Swigged.LLVM;
 
-namespace Campy.LCFG
+namespace Campy.ControlFlowGraph
 {
     public class Phi : Value
     {
         public Value _v;
         public List<Value> _merge;
-        public CIL_CFG.Vertex _block;
+        public CFG.Vertex _block;
 
         public Phi()
             : base(default(ValueRef))

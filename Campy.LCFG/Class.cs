@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Mono.Cecil;
 using Swigged.LLVM;
 
-namespace Campy.LCFG
+namespace Campy.ControlFlowGraph
 {
     class Class
     {

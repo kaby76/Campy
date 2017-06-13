@@ -41,13 +41,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BreadthFirstSearchParallel.cs" />
-    <Compile Include="BreadthFirstTraversal.cs" />
-    <Compile Include="DepthFirstInorderTraversal.cs" />
-    <Compile Include="DepthFirstPostorderTraversal.cs" />
-    <Compile Include="DepthFirstPreorderTraversal.cs" />
-    <Compile Include="DepthFirstSearchParallel.cs" />
-    <Compile Include="KosarajuAlgorithm.cs" />
+    <Compile Include="BFSParallel.cs" />
+    <Compile Include="BFS.cs" />
+    <Compile Include="DFSInorder.cs" />
+    <Compile Include="DFSPostorder.cs" />
+    <Compile Include="DFSPreorder.cs" />
+    <Compile Include="DFSParallel.cs" />
+    <Compile Include="Kosaraju.cs" />
     <Compile Include="Partition.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Tarjan.cs" />

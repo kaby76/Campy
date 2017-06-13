@@ -6,7 +6,7 @@ using Campy.Graphs;
 using Mono.Cecil.Cil;
 using Swigged.LLVM;
 
-namespace Campy.LCFG
+namespace Campy.ControlFlowGraph
 {
     /// <summary>
     /// Wrapper for CIL instructions that are implemented using Mono.Cecil.Cil.
@@ -27,7 +27,7 @@ namespace Campy.LCFG
 		public BuilderRef Builder { get { return Block.Builder; } }
 		public ContextRef LLVMContext { get; set; }
 		public List<Value> LLVMInstructions { get; private set; }
-		public CIL_CFG.Vertex Block { get; set; }
+		public CFG.Vertex Block { get; set; }
 		// Required instruction sequencing so we can translate groups of instructions.
 		public virtual Inst Next { get; set; }
 		public virtual void ComputeStackLevel(ref int level_after) { }
@@ -1378,7 +1378,7 @@ namespace Campy.LCFG
 
 	public override Inst Convert(State state)
 	{
-		GraphLinkedList<int, CIL_CFG.Vertex, CIL_CFG.Edge>.Edge edge = Block._Successors[0];
+		GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge = Block._Successors[0];
 		int succ = edge.To;
 		var s = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ)];
 		var br = LLVM.BuildBr(Builder, s.BasicBlock);
@@ -1395,7 +1395,7 @@ namespace Campy.LCFG
 
         public override Inst Convert(State state)
         {
-            GraphLinkedList<int, CIL_CFG.Vertex, CIL_CFG.Edge>.Edge edge = Block._Successors[0];
+            GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge = Block._Successors[0];
             int succ = edge.To;
             var s = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ)];
             var br = LLVM.BuildBr(Builder, s.BasicBlock);
@@ -1418,8 +1418,8 @@ namespace Campy.LCFG
 	public override Inst Convert(State state)
 	{
 		var v = state._stack.Pop();
-		GraphLinkedList<int, CIL_CFG.Vertex, CIL_CFG.Edge>.Edge edge1 = Block._Successors[0];
-		GraphLinkedList<int, CIL_CFG.Vertex, CIL_CFG.Edge>.Edge edge2 = Block._Successors[1];
+		GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge1 = Block._Successors[0];
+		GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge2 = Block._Successors[1];
 		int succ1 = edge1.To;
 		int succ2 = edge1.To;
 		var s1 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ1)];
@@ -1452,8 +1452,8 @@ namespace Campy.LCFG
 	public override Inst Convert(State state)
 	{
 		var v = state._stack.Pop();
-		GraphLinkedList<int, CIL_CFG.Vertex, CIL_CFG.Edge>.Edge edge1 = Block._Successors[0];
-		GraphLinkedList<int, CIL_CFG.Vertex, CIL_CFG.Edge>.Edge edge2 = Block._Successors[1];
+		GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge1 = Block._Successors[0];
+		GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge2 = Block._Successors[1];
 		int succ1 = edge1.To;
             int succ2 = edge2.To;
 		var s1 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ1)];
@@ -1481,8 +1481,8 @@ namespace Campy.LCFG
 	public override Inst Convert(State state)
 	{
 		var v = state._stack.Pop();
-		GraphLinkedList<int, CIL_CFG.Vertex, CIL_CFG.Edge>.Edge edge1 = Block._Successors[0];
-		GraphLinkedList<int, CIL_CFG.Vertex, CIL_CFG.Edge>.Edge edge2 = Block._Successors[1];
+		GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge1 = Block._Successors[0];
+		GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge2 = Block._Successors[1];
 		int succ1 = edge1.To;
 		int succ2 = edge2.To;
 		var s1 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ1)];
@@ -1510,8 +1510,8 @@ namespace Campy.LCFG
 	public override Inst Convert(State state)
 	{
 		var v = state._stack.Pop();
-		GraphLinkedList<int, CIL_CFG.Vertex, CIL_CFG.Edge>.Edge edge1 = Block._Successors[0];
-		GraphLinkedList<int, CIL_CFG.Vertex, CIL_CFG.Edge>.Edge edge2 = Block._Successors[1];
+		GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge1 = Block._Successors[0];
+		GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge2 = Block._Successors[1];
 		int succ1 = edge1.To;
 		int succ2 = edge2.To;
 		var s1 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ1)];
@@ -1598,18 +1598,18 @@ namespace Campy.LCFG
 			}
 			var name = mr.FullName;
                 // Find bb entry.
-		    CIL_CFG.Vertex the_entry = this.Block._Graph.VertexNodes.Where(node
+		    CFG.Vertex the_entry = this.Block._Graph.VertexNodes.Where(node
 				=>
 			{
-				GraphLinkedList<int, CIL_CFG.Vertex, CIL_CFG.Edge> g = j.Block._Graph;
+				GraphLinkedList<int, CFG.Vertex, CFG.Edge> g = j.Block._Graph;
 				int k = g.NameSpace.BijectFromBasetype(node.Name);
-				CIL_CFG.Vertex v = g.VertexSpace[k];
+				CFG.Vertex v = g.VertexSpace[k];
 				if (v.IsEntry && v.Method.FullName == name)
 					return true;
 				else return false;
 			}).ToList().FirstOrDefault();
 
-			if (the_entry != default(CIL_CFG.Vertex))
+			if (the_entry != default(CFG.Vertex))
 			{
 				BuilderRef bu = this.Builder;
 				ValueRef fv = the_entry.Function;

@@ -131,10 +131,10 @@
   <ItemGroup>
     <Compile Include="ABIParameterInfo.cs" />
     <Compile Include="ABIParameterInfoKind.cs" />
-    <Compile Include="CIL_CFG.cs" />
+    <Compile Include="CFG.cs" />
     <Compile Include="Inst.cs" />
     <Compile Include="Class.cs" />
-    <Compile Include="Class1.cs" />
+    <Compile Include="ReaderAlignType.cs" />
     <Compile Include="Field.cs" />
     <Compile Include="FunctionParameterType.cs" />
     <Compile Include="FunctionSignature.cs" />
@@ -143,7 +143,6 @@
     <Compile Include="IABI.cs" />
     <Compile Include="Phi.cs" />
     <Compile Include="Reader.cs" />
-    <Compile Include="StackValue.cs" />
     <Compile Include="StackValueType.cs" />
     <Compile Include="Converter.cs" />
     <Compile Include="LLVMCFG.cs" />

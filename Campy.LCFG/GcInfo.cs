@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Swigged.LLVM;
 
-namespace Campy.LCFG
+namespace Campy.ControlFlowGraph
 {
 
     // Allocation type information for a stack allocation.

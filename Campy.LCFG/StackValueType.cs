@@ -1,4 +1,4 @@
-﻿namespace Campy.LCFG
+﻿namespace Campy.ControlFlowGraph
 {
     public enum StackValueType
     {

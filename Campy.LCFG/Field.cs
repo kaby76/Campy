@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Mono.Cecil;
 
-namespace Campy.LCFG
+namespace Campy.ControlFlowGraph
 {
     public class Field
     {

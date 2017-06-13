@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,14 +13,14 @@ namespace Campy.GraphAlgorithms
     // BINARY SEARCH TREE TRAVERSAL", Akram Al-Rawi, Azzedine Lansari, Faouzi Bouslama
     // N.B.: There is no "in-order" traversal defined for a general graph,
     // it must be a binary tree.
-    public class DepthFirstPreorderTraversal<T>
+    public class DFSPreorder<T> : IEnumerable<T>
     {
         IGraph<T> graph;
         IEnumerable<T> Source;
         Dictionary<T, bool> Visited = new Dictionary<T, bool>();
         StackQueue<T> Stack = new StackQueue<T>();
 
-        public DepthFirstPreorderTraversal(IGraph<T> g, IEnumerable<T> s)
+        public DFSPreorder(IGraph<T> g, IEnumerable<T> s)
         {
             graph = g;
             Source = s;
@@ -46,6 +47,11 @@ namespace Campy.GraphAlgorithms
                         Stack.Push(v);
                 }
             }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
     }
 

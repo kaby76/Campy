@@ -2,7 +2,7 @@
 using Mono.Cecil;
 using Swigged.LLVM;
 
-namespace Campy.LCFG
+namespace Campy.ControlFlowGraph
 {
     public class Function
     {

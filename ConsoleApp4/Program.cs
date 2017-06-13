@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
-using Campy.LCFG;
+using Campy.ControlFlowGraph;
 using Swigged.LLVM;
 
 namespace ConsoleApp4
@@ -74,9 +74,9 @@ namespace ConsoleApp4
             var mg = r.Cfg;
             mg.StartChangeSet(1);
             r.AnalyzeMethod(() => Program.Foo2(1));
-            List<CIL_CFG.Vertex> change_set = mg.EndChangeSet(1);
-            var lg = new CIL_CFG();
-            var c2 = new Campy.LCFG.Converter(mg);
+            List<CFG.Vertex> change_set = mg.EndChangeSet(1);
+            var lg = new CFG();
+            var c2 = new Campy.ControlFlowGraph.Converter(mg);
             Swigged.LLVM.Helper.Adjust.Path();
             c2.ConvertToLLVM(change_set);
 
@@ -90,7 +90,7 @@ namespace ConsoleApp4
 
             mg.StartChangeSet(2);
             r.AnalyzeMethod(() => Program.Foo3(2));
-            List<CIL_CFG.Vertex> change_set2 = mg.EndChangeSet(2);
+            List<CFG.Vertex> change_set2 = mg.EndChangeSet(2);
             c2.ConvertToLLVM(change_set2);
             IntPtr p3 = c2.GetPtr(3);
             DFoo2 ff3 = (DFoo2)Marshal.GetDelegateForFunctionPointer(p3, typeof(DFoo2));
@@ -102,7 +102,7 @@ namespace ConsoleApp4
 
             mg.StartChangeSet(3);
             r.AnalyzeMethod(() => Program.fact(2));
-            List<CIL_CFG.Vertex> change_set3 = mg.EndChangeSet(3);
+            List<CFG.Vertex> change_set3 = mg.EndChangeSet(3);
             c2.ConvertToLLVM(change_set3);
             IntPtr p4 = c2.GetPtr(7);
             DFoo2 ff4 = (DFoo2)Marshal.GetDelegateForFunctionPointer(p4, typeof(DFoo2));
@@ -114,7 +114,7 @@ namespace ConsoleApp4
 
             mg.StartChangeSet(4);
             r.AnalyzeMethod(() => Program.SumOf3Or5(2));
-            List<CIL_CFG.Vertex> change_set4 = mg.EndChangeSet(4);
+            List<CFG.Vertex> change_set4 = mg.EndChangeSet(4);
             c2.ConvertToLLVM(change_set4);
             IntPtr p5 = c2.GetPtr(change_set4.First().Name);
             DFoo2 ff5 = (DFoo2)Marshal.GetDelegateForFunctionPointer(p5, typeof(DFoo2));
@@ -129,7 +129,7 @@ namespace ConsoleApp4
 
             mg.StartChangeSet(10);
             r.AnalyzeMethod(() => Program.Ackermann(2, 2));
-            List<CIL_CFG.Vertex> change_set19 = mg.EndChangeSet(10);
+            List<CFG.Vertex> change_set19 = mg.EndChangeSet(10);
             c2.ConvertToLLVM(change_set19);
             IntPtr p10 = c2.GetPtr(change_set19.First().Name);
             DAck ff10 = (DAck)Marshal.GetDelegateForFunctionPointer(p10, typeof(DAck));

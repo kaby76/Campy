@@ -12,21 +12,21 @@ using Campy.Utils;
 using Mono.Cecil;
 using Swigged.LLVM;
 
-namespace Campy.LCFG
+namespace Campy.ControlFlowGraph
 {
     public class Converter
     {
-        private CIL_CFG _mcfg;
+        private CFG _mcfg;
 
-        public Converter(CIL_CFG mcfg)
+        public Converter(CFG mcfg)
         {
             _mcfg = mcfg;
         }
 
-        public void ConvertToLLVM(IEnumerable<CIL_CFG.Vertex> change_set)
+        public void ConvertToLLVM(IEnumerable<CFG.Vertex> change_set)
         {
             // Map all basic blocks in CIL to LLVM.
-            IEnumerable<CIL_CFG.Vertex> mono_bbs = change_set;
+            IEnumerable<CFG.Vertex> mono_bbs = change_set;
             foreach (var lv in mono_bbs)
             {
                 if (lv.IsEntry)
@@ -105,7 +105,7 @@ namespace Campy.LCFG
             }
             foreach (var mv in mono_bbs)
             {
-                IEnumerable<CIL_CFG.Vertex> successors = _mcfg.SuccessorNodes(mv);
+                IEnumerable<CFG.Vertex> successors = _mcfg.SuccessorNodes(mv);
                 if (!mv.IsEntry)
                 {
                     var ent = mv.Entry;
@@ -119,7 +119,7 @@ namespace Campy.LCFG
                     LLVM.PositionBuilderAtEnd(builder, bb);
                 }
             }
-	        foreach (CIL_CFG.Vertex mv in mono_bbs)
+	        foreach (CFG.Vertex mv in mono_bbs)
 	        {
 		        Inst prev = null;
 		        foreach (var j in mv.Instructions)
@@ -132,7 +132,7 @@ namespace Campy.LCFG
 
             var entries = _mcfg.VertexNodes.Where(node => node.IsEntry).ToList();
 
-            foreach (CIL_CFG.Vertex node in mono_bbs)
+            foreach (CFG.Vertex node in mono_bbs)
             {
                 int args = 0;
                 Mono.Cecil.MethodDefinition md = node.Method;
@@ -166,39 +166,39 @@ namespace Campy.LCFG
                 node.HasReturnValue = ret > 0;
             }
 
-            foreach (CIL_CFG.Vertex node in _mcfg.VertexNodes)
+            foreach (CFG.Vertex node in _mcfg.VertexNodes)
             {
                 if (node.IsEntry) continue;
-                CIL_CFG.Vertex e = node.Entry;
+                CFG.Vertex e = node.Entry;
                 node.HasReturnValue = e.HasReturnValue;
                 node.NumberOfArguments = e.NumberOfArguments;
                 node.NumberOfLocals = e.NumberOfLocals;
             }
 
-            List<CIL_CFG.Vertex> unreachable = new List<CIL_CFG.Vertex>();
+            List<CFG.Vertex> unreachable = new List<CFG.Vertex>();
             {
                 // Create DFT order of all nodes.
                 IEnumerable<int> objs = entries.Select(x => x.Name);
-                GraphAlgorithms.DepthFirstPreorderTraversal<int>
-                    dfs = new GraphAlgorithms.DepthFirstPreorderTraversal<int>(
+                GraphAlgorithms.DFSPreorder<int>
+                    dfs = new GraphAlgorithms.DFSPreorder<int>(
                         _mcfg,
                         objs
                     );
-                List<CIL_CFG.Vertex> visited = new List<CIL_CFG.Vertex>();
+                List<CFG.Vertex> visited = new List<CFG.Vertex>();
                 foreach (int ob in dfs)
                 {
-                    CIL_CFG.Vertex node = _mcfg.VertexSpace[_mcfg.NameSpace.BijectFromBasetype(ob)];
+                    CFG.Vertex node = _mcfg.VertexSpace[_mcfg.NameSpace.BijectFromBasetype(ob)];
                     visited.Add(node);
                 }
-                foreach (CIL_CFG.Vertex v in mono_bbs)
+                foreach (CFG.Vertex v in mono_bbs)
                 {
                     if (!visited.Contains(v))
                         unreachable.Add(v);
                 }
             }
 
-            List<CIL_CFG.Vertex> change_set_minus_unreachable = new List<CIL_CFG.Vertex>(mono_bbs);
-            foreach (CIL_CFG.Vertex v in unreachable)
+            List<CFG.Vertex> change_set_minus_unreachable = new List<CFG.Vertex>(mono_bbs);
+            foreach (CFG.Vertex v in unreachable)
             {
                 if (change_set_minus_unreachable.Contains(v))
                 {
@@ -207,23 +207,23 @@ namespace Campy.LCFG
             }
 
             {
-                List<CIL_CFG.Vertex> work = new List<CIL_CFG.Vertex>(change_set_minus_unreachable);
+                List<CFG.Vertex> work = new List<CFG.Vertex>(change_set_minus_unreachable);
                 while (work.Count != 0)
                 {
                     // Create DFT order of all nodes.
                     IEnumerable<int> objs = entries.Select(x => x.Name);
-                    GraphAlgorithms.DepthFirstPreorderTraversal<int>
-                        dfs = new GraphAlgorithms.DepthFirstPreorderTraversal<int>(
+                    GraphAlgorithms.DFSPreorder<int>
+                        dfs = new GraphAlgorithms.DFSPreorder<int>(
                             _mcfg,
                             objs
                         );
 
-                    List<CIL_CFG.Vertex> visited = new List<CIL_CFG.Vertex>();
+                    List<CFG.Vertex> visited = new List<CFG.Vertex>();
                     // Compute stack size for each basic block, processing nodes on work list
                     // in DFT order.
                     foreach (int ob in dfs)
                     {
-                        CIL_CFG.Vertex node = _mcfg.VertexSpace[_mcfg.NameSpace.BijectFromBasetype(ob)];
+                        CFG.Vertex node = _mcfg.VertexSpace[_mcfg.NameSpace.BijectFromBasetype(ob)];
                         var llvm_node = node;
                         visited.Add(node);
                         if (!(work.Contains(node)))
@@ -235,13 +235,13 @@ namespace Campy.LCFG
                         // Use predecessor information to get initial stack size.
                         if (node.IsEntry)
                         {
-                            CIL_CFG.Vertex llvm_nodex = node;
+                            CFG.Vertex llvm_nodex = node;
                             llvm_nodex.StackLevelIn = node.NumberOfLocals + node.NumberOfArguments;
                         }
                         else
                         {
                             int in_level = -1;
-                            foreach (CIL_CFG.Vertex pred in _mcfg.PredecessorNodes(node))
+                            foreach (CFG.Vertex pred in _mcfg.PredecessorNodes(node))
                             {
                                 // Do not consider interprocedural edges when computing stack size.
                                 if (pred.Method != node.Method)
@@ -253,7 +253,7 @@ namespace Campy.LCFG
                                     continue;
                                 }
                                 // Warn if predecessor does not concur with another predecessor.
-                                CIL_CFG.Vertex llvm_nodex = node;
+                                CFG.Vertex llvm_nodex = node;
                                 llvm_nodex.StackLevelIn = llvm_pred.StackLevelOut;
                                 in_level = (int) llvm_nodex.StackLevelIn;
                             }
@@ -263,7 +263,7 @@ namespace Campy.LCFG
                                 continue;
                             }
                         }
-                        CIL_CFG.Vertex llvm_nodez = node;
+                        CFG.Vertex llvm_nodez = node;
                         int level_after = (int) llvm_nodez.StackLevelIn;
                         int level_pre = level_after;
                         foreach (var i in llvm_nodez.Instructions)
@@ -288,7 +288,7 @@ namespace Campy.LCFG
                                 throw new Exception("Failed stack level out check");
                             }
                         }
-                        foreach (CIL_CFG.Vertex succ in node._Graph.SuccessorNodes(node))
+                        foreach (CFG.Vertex succ in node._Graph.SuccessorNodes(node))
                         {
                             // If it's an interprocedural edge, nothing to pass on.
                             if (succ.Method != node.Method)
@@ -300,7 +300,7 @@ namespace Campy.LCFG
                             if (node.Instructions.Last() as i_ret != null)
                                 continue;
                             // Nothing to update if no change.
-                            CIL_CFG.Vertex llvm_succ = node;
+                            CFG.Vertex llvm_succ = node;
                             if (llvm_succ.StackLevelIn > level_after)
                             {
                                 continue;
@@ -320,14 +320,15 @@ namespace Campy.LCFG
 
             {
                 // Get a list of nodes to compile.
-                List<CIL_CFG.Vertex> work = new List<CIL_CFG.Vertex>(change_set_minus_unreachable);
+                List<CFG.Vertex> work = new List<CFG.Vertex>(change_set_minus_unreachable);
 
                 // Get a list of the name of nodes to compile.
                 IEnumerable<int> work_names = work.Select(v => v.Name);
 
                 // Get a Tarjan DFS/SCC order of the nodes. Reverse it because we want to
                 // proceed from entry basic block.
-                var ordered_list = new Tarjan<int>(_mcfg).GetEnumerable().Reverse();
+                //var ordered_list = new Tarjan<int>(_mcfg).GetEnumerable().Reverse();
+                var ordered_list = new Tarjan<int>(_mcfg).Reverse();
 
                 // Eliminate all node names not in the work list.
                 var order = ordered_list.Where(v => work_names.Contains(v)).ToList();
@@ -335,8 +336,8 @@ namespace Campy.LCFG
                 // Set up the initial states associated with each node, that is, state into and state out of.
                 foreach (int ob in order)
                 {
-                    CIL_CFG.Vertex node = _mcfg.VertexSpace[_mcfg.NameSpace.BijectFromBasetype(ob)];
-                    CIL_CFG.Vertex llvm_node = node;
+                    CFG.Vertex node = _mcfg.VertexSpace[_mcfg.NameSpace.BijectFromBasetype(ob)];
+                    CFG.Vertex llvm_node = node;
                     llvm_node.StateIn = new State(node.Method, llvm_node.NumberOfArguments, llvm_node.NumberOfLocals,
                         (int) llvm_node.StackLevelIn);
                     llvm_node.StateOut = new State(node.Method, llvm_node.NumberOfArguments, llvm_node.NumberOfLocals,
@@ -348,8 +349,8 @@ namespace Campy.LCFG
                 // Emit LLVM IR code, based on state and per-instruction simulation on that state.
                 foreach (int ob in order)
                 {
-                    CIL_CFG.Vertex node = _mcfg.VertexSpace[_mcfg.NameSpace.BijectFromBasetype(ob)];
-                    CIL_CFG.Vertex llvm_node = node;
+                    CFG.Vertex node = _mcfg.VertexSpace[_mcfg.NameSpace.BijectFromBasetype(ob)];
+                    CFG.Vertex llvm_node = node;
 
                     var state_in = new State(visited, llvm_node);
                     llvm_node.StateIn = state_in;
@@ -370,7 +371,7 @@ namespace Campy.LCFG
                     if (last_inst != null && last_inst.OpCode.FlowControl == Mono.Cecil.Cil.FlowControl.Next)
                     {
                         // Need to insert instruction to branch to fall through.
-                        GraphLinkedList<int, CIL_CFG.Vertex, CIL_CFG.Edge>.Edge edge = llvm_node._Successors[0];
+                        GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge = llvm_node._Successors[0];
                         int succ = edge.To;
                         var s = llvm_node._Graph.VertexSpace[llvm_node._Graph.NameSpace.BijectFromBasetype(succ)];
                         var br = LLVM.BuildBr(llvm_node.Builder, s.BasicBlock);
@@ -381,8 +382,8 @@ namespace Campy.LCFG
                 // Finally, update phi functions with "incoming" information from predecessors.
                 foreach (int ob in order)
                 {
-                    CIL_CFG.Vertex node = _mcfg.VertexSpace[_mcfg.NameSpace.BijectFromBasetype(ob)];
-                    CIL_CFG.Vertex llvm_node = node;
+                    CFG.Vertex node = _mcfg.VertexSpace[_mcfg.NameSpace.BijectFromBasetype(ob)];
+                    CFG.Vertex llvm_node = node;
                     int size = llvm_node.StateIn._stack.Count;
                     for (int i = 0; i < size; ++i)
                     {
@@ -420,8 +421,8 @@ namespace Campy.LCFG
                 System.Console.WriteLine("===========");
                 foreach (int ob in order)
                 {
-                    CIL_CFG.Vertex node = _mcfg.VertexSpace[_mcfg.NameSpace.BijectFromBasetype(ob)];
-                    CIL_CFG.Vertex llvm_node = node;
+                    CFG.Vertex node = _mcfg.VertexSpace[_mcfg.NameSpace.BijectFromBasetype(ob)];
+                    CFG.Vertex llvm_node = node;
 
                     node.OutputEntireNode();
                     llvm_node.StateIn.Dump();
@@ -450,7 +451,7 @@ namespace Campy.LCFG
 
         public IntPtr GetPtr(int block_number)
         {
-            CIL_CFG.Vertex here = null;
+            CFG.Vertex here = null;
             foreach (var xxx in _mcfg.VertexNodes)
             {
                 if (xxx.IsEntry && xxx.Name == block_number)
@@ -459,7 +460,7 @@ namespace Campy.LCFG
                     break;
                 }
             }
-            CIL_CFG.Vertex lvv = here;
+            CFG.Vertex lvv = here;
             var mod = lvv.Module;
             MyString error = new MyString();
             LLVM.VerifyModule(mod, VerifierFailureAction.ReturnStatusAction, error);

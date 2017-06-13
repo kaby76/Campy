@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Campy.LCFG
+namespace Campy.ControlFlowGraph
 {
     /// <summary>
     /// Describes how much info has been generated in a <see cref="Type"/>.

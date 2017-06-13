@@ -7,13 +7,13 @@ using Campy.Graphs;
 
 namespace Campy.GraphAlgorithms
 {
-    public class BreadthFirstSearchParallel<NAME>
+    public class BFSParallel<NAME>
     {
         IGraph<NAME> graph;
         IEnumerable<NAME> Source;
         Dictionary<NAME, bool> Visited = new Dictionary<NAME, bool>();
 
-        public BreadthFirstSearchParallel(IGraph<NAME> g, IEnumerable<NAME> s)
+        public BFSParallel(IGraph<NAME> g, IEnumerable<NAME> s)
         {
             graph = g;
             Source = s;

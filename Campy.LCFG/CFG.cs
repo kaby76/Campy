@@ -1,6 +1,6 @@
 ﻿using Swigged.LLVM;
 
-namespace Campy.LCFG
+namespace Campy.ControlFlowGraph
 {
     using Campy.Graphs;
     using Mono.Cecil.Cil;
@@ -10,7 +10,7 @@ namespace Campy.LCFG
     using System.Linq;
     using System;
 
-    public class CIL_CFG : GraphLinkedList<int, CIL_CFG.Vertex, CIL_CFG.Edge>
+    public class CFG : GraphLinkedList<int, CFG.Vertex, CFG.Edge>
     {
 
 
@@ -21,19 +21,19 @@ namespace Campy.LCFG
             return _node_number++;
         }
 
-        private List<CIL_CFG.Vertex> _entries = new List<Vertex>();
+        private List<CFG.Vertex> _entries = new List<Vertex>();
 
-        public List<CIL_CFG.Vertex> Entries
+        public List<CFG.Vertex> Entries
         {
             get { return _entries; }
         }
 
-        public CIL_CFG()
+        public CFG()
             : base()
         {
         }
 
-        private Dictionary<object, List<CIL_CFG.Vertex>> _change_set = new Dictionary<object, List<Vertex>>();
+        private Dictionary<object, List<CFG.Vertex>> _change_set = new Dictionary<object, List<Vertex>>();
 
         public void StartChangeSet(object observer)
         {
@@ -47,11 +47,11 @@ namespace Campy.LCFG
             }
         }
 
-        public List<CIL_CFG.Vertex> EndChangeSet(object observer)
+        public List<CFG.Vertex> EndChangeSet(object observer)
         {
             if (_change_set.ContainsKey(observer))
             {
-                List<CIL_CFG.Vertex> list = _change_set[observer];
+                List<CFG.Vertex> list = _change_set[observer];
                 _change_set.Remove(observer);
                 return list;
             }
@@ -61,13 +61,13 @@ namespace Campy.LCFG
 
         public override IVertex<int> AddVertex(int v)
         {
-            foreach (CIL_CFG.Vertex vertex in this.VertexNodes)
+            foreach (CFG.Vertex vertex in this.VertexNodes)
             {
                 if (vertex.Name == v)
                     return vertex;
             }
-            CIL_CFG.Vertex x = (Vertex)base.AddVertex(v);
-            foreach (KeyValuePair<object, List<CIL_CFG.Vertex>> pair in this._change_set)
+            CFG.Vertex x = (Vertex)base.AddVertex(v);
+            foreach (KeyValuePair<object, List<CFG.Vertex>> pair in this._change_set)
             {
                 pair.Value.Add(x);
                 Debug.Assert(_change_set[pair.Key].Contains(x));
@@ -89,7 +89,7 @@ namespace Campy.LCFG
         public Vertex FindEntry(Mono.Cecil.Cil.Instruction inst)
         {
             Vertex result = null;
-            foreach (CIL_CFG.Vertex node in this.VertexNodes)
+            foreach (CFG.Vertex node in this.VertexNodes)
                 if (node.Instructions.First().Instruction == inst)
                     return node;
             return result;
@@ -97,7 +97,7 @@ namespace Campy.LCFG
 
         public Vertex FindEntry(Mono.Cecil.MethodReference mr)
         {
-            foreach (CIL_CFG.Vertex node in this.VertexNodes)
+            foreach (CFG.Vertex node in this.VertexNodes)
                 if (node.Method == mr)
                     return node;
             return null;
@@ -217,7 +217,7 @@ namespace Campy.LCFG
 
             public void OutputEntireNode()
             {
-                CIL_CFG.Vertex v = this;
+                CFG.Vertex v = this;
                 Console.WriteLine();
                 Console.WriteLine("Node: " + v.Name + " ");
                 Console.WriteLine(new String(' ', 4) + "Method " + v.Method.FullName);
@@ -255,7 +255,7 @@ namespace Campy.LCFG
             {
                 Debug.Assert(Instructions.Count != 0);
                 // Split this node into two nodes, with all instructions after "i" in new node.
-                var cfg = (CIL_CFG)this._Graph;
+                var cfg = (CFG)this._Graph;
                 Vertex result = (Vertex)cfg.AddVertex(cfg.NewNodeNumber());
                 result.Method = this.Method;
                 result.HasReturnValue = this.HasReturnValue;
@@ -272,8 +272,8 @@ namespace Campy.LCFG
                 for (int j = i; j < count; ++j)
                 {
                     Inst newInst = Inst.Wrap(Instructions[j].Instruction);
-                    CIL_CFG.Vertex v = newInst.Block;
-                    newInst.Block = (CIL_CFG.Vertex) result;
+                    CFG.Vertex v = newInst.Block;
+                    newInst.Block = (CFG.Vertex) result;
                     result.Instructions.Add(newInst);
                 }
 
@@ -293,7 +293,7 @@ namespace Campy.LCFG
                 // Transfer any out edges to pred block to new block.
                 while (cfg.SuccessorNodes(this).Count() > 0)
                 {
-                    CIL_CFG.Vertex succ = cfg.SuccessorNodes(this).First();
+                    CFG.Vertex succ = cfg.SuccessorNodes(this).First();
                     cfg.DeleteEdge(this, succ);
                     cfg.AddEdge(result, succ);
                 }
@@ -331,12 +331,12 @@ namespace Campy.LCFG
         }
 
         public class Edge
-            : GraphLinkedList<int, CIL_CFG.Vertex, CIL_CFG.Edge>.Edge
+            : GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge
         {
             public bool IsInterprocedural()
             {
-                CIL_CFG.Vertex f = (CIL_CFG.Vertex)this.from;
-                CIL_CFG.Vertex t = (CIL_CFG.Vertex)this.to;
+                CFG.Vertex f = (CFG.Vertex)this.from;
+                CFG.Vertex t = (CFG.Vertex)this.to;
                 if (f.Method != t.Method)
                     return true;
                 return false;
@@ -404,20 +404,20 @@ namespace Campy.LCFG
             System.Console.WriteLine();
         }
 
-        class CallEnumerator : IEnumerable<CIL_CFG.Vertex>
+        class CallEnumerator : IEnumerable<CFG.Vertex>
         {
-            CIL_CFG.Vertex _node;
+            CFG.Vertex _node;
 
-            public CallEnumerator(CIL_CFG.Vertex node)
+            public CallEnumerator(CFG.Vertex node)
             {
                 _node = node;
             }
 
-            public IEnumerator<CIL_CFG.Vertex> GetEnumerator()
+            public IEnumerator<CFG.Vertex> GetEnumerator()
             {
-                foreach (CIL_CFG.Vertex current in _node._ordered_list_of_blocks)
+                foreach (CFG.Vertex current in _node._ordered_list_of_blocks)
                 {
-                    foreach (CIL_CFG.Vertex next in _node._Graph.SuccessorNodes(current))
+                    foreach (CFG.Vertex next in _node._Graph.SuccessorNodes(current))
                     {
                         if (next.IsEntry && next.Method != _node.Method)
                             yield return next;
@@ -431,7 +431,7 @@ namespace Campy.LCFG
             }
         }
 
-        public IEnumerable<CIL_CFG.Vertex> AllInterproceduralCalls(CIL_CFG.Vertex node)
+        public IEnumerable<CFG.Vertex> AllInterproceduralCalls(CFG.Vertex node)
         {
             return new CallEnumerator(node);
         }
