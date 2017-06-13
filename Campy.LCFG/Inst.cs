@@ -1211,9 +1211,9 @@ namespace Campy.ControlFlowGraph
                 GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge1 = Block._Successors[0];
                 GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge2 = Block._Successors[1];
                 int succ1 = edge1.To;
-                int succ2 = edge1.To;
+                int succ2 = edge2.To;
                 var s1 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ1)];
-                var s2 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ1)];
+                var s2 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ2)];
                 LLVM.BuildCondBr(Builder, cmp, s1.BasicBlock, s2.BasicBlock);
                 return Next;
             }
@@ -1521,9 +1521,9 @@ namespace Campy.ControlFlowGraph
 		    GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge1 = Block._Successors[0];
 		    GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge2 = Block._Successors[1];
 		    int succ1 = edge1.To;
-		    int succ2 = edge1.To;
+		    int succ2 = edge2.To;
 		    var s1 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ1)];
-		    var s2 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ1)];
+		    var s2 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ2)];
 		    LLVM.BuildCondBr(Builder, v.V, s1.BasicBlock, s2.BasicBlock);
 		    return Next;
 	    }
@@ -1555,13 +1555,13 @@ namespace Campy.ControlFlowGraph
 		    GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge1 = Block._Successors[0];
 		    GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge2 = Block._Successors[1];
 		    int succ1 = edge1.To;
-                int succ2 = edge2.To;
+            int succ2 = edge2.To;
 		    var s1 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ1)];
-                var s2 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ2)];
-                // We need to compare the value popped with 0/1.
-                var v2 = LLVM.ConstInt(LLVM.Int32Type(), 1, false);
-                var v3 = LLVM.BuildICmp(Builder, IntPredicate.IntEQ, v.V, v2, "");
-                LLVM.BuildCondBr(Builder, v3, s1.BasicBlock, s2.BasicBlock);
+            var s2 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ2)];
+            // We need to compare the value popped with 0/1.
+            var v2 = LLVM.ConstInt(LLVM.Int32Type(), 1, false);
+            var v3 = LLVM.BuildICmp(Builder, IntPredicate.IntEQ, v.V, v2, "");
+            LLVM.BuildCondBr(Builder, v3, s1.BasicBlock, s2.BasicBlock);
 		    return Next;
 	    }
     }
