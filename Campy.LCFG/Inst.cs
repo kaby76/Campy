@@ -996,17 +996,17 @@ namespace Campy.ControlFlowGraph
         {
         }
 
-	public override void ComputeStackLevel(ref int level_after)
-	{
-		level_after++;
-	}
+	    public override void ComputeStackLevel(ref int level_after)
+	    {
+		    level_after++;
+	    }
 
-	public override Inst Convert(State state)
-	{
-		Value value = new Value(LLVM.ConstInt(LLVM.Int64Type(), (ulong)_arg, true));
-		state._stack.Push(value);
-		return Next;
-	}
+	    public override Inst Convert(State state)
+	    {
+		    Value value = new Value(LLVM.ConstInt(LLVM.Int64Type(), (ulong)_arg, true));
+		    state._stack.Push(value);
+		    return Next;
+	    }
     }
 
     /// <summary>
@@ -1020,17 +1020,17 @@ namespace Campy.ControlFlowGraph
         {
         }
 
-	public override void ComputeStackLevel(ref int level_after)
-	{
-		level_after++;
-	}
+	    public override void ComputeStackLevel(ref int level_after)
+	    {
+		    level_after++;
+	    }
 
-	public override Inst Convert(State state)
-	{
-		Value v = state._locals[_arg];
-		state._stack.Push(v);
-		return Next;
-	}
+	    public override Inst Convert(State state)
+	    {
+		    Value v = state._locals[_arg];
+		    state._stack.Push(v);
+		    return Next;
+	    }
     }
 
     /// <summary>
@@ -1043,102 +1043,175 @@ namespace Campy.ControlFlowGraph
         public StLoc(Instruction i) : base(i)
         {
         }
-	public override void ComputeStackLevel(ref int level_after)
-	{
-		level_after--;
-	}
 
-	public override Inst Convert(State state)
-	{
-		Value v = state._stack.Pop();
-		state._locals[_arg] = v;
-		return Next;
-	}
+	    public override void ComputeStackLevel(ref int level_after)
+	    {
+		    level_after--;
+	    }
+
+	    public override Inst Convert(State state)
+	    {
+		    Value v = state._stack.Pop();
+		    state._locals[_arg] = v;
+		    return Next;
+	    }
     }
 
 
     public class CompareInst : Inst
     {
-	    public CompareInst(Mono.Cecil.Cil.Instruction i) : base(i)
-	    {
-	    }
+        public CompareInst(Mono.Cecil.Cil.Instruction i) : base(i)
+        {
+        }
 
-	    public override void ComputeStackLevel(ref int level_after)
-	    {
-		    level_after -= 1;
-	    }
+        public override void ComputeStackLevel(ref int level_after)
+        {
+            level_after -= 1;
+        }
 
-	    public enum PredicateType
-	    {
-		    eq,
-		    ne,
-		    gt,
-		    lt,
-		    ge,
-		    le,
-	    };
+        public enum PredicateType
+        {
+            eq,
+            ne,
+            gt,
+            lt,
+            ge,
+            le,
+        };
 
-	    public Swigged.LLVM.IntPredicate[] _int_pred = new Swigged.LLVM.IntPredicate[]
-	    {
-		    Swigged.LLVM.IntPredicate.IntEQ,
-		    Swigged.LLVM.IntPredicate.IntNE,
-		    Swigged.LLVM.IntPredicate.IntSGT,
-		    Swigged.LLVM.IntPredicate.IntSLT,
-		    Swigged.LLVM.IntPredicate.IntSGE,
-		    Swigged.LLVM.IntPredicate.IntSLE,
-	    };
+        public Swigged.LLVM.IntPredicate[] _int_pred = new Swigged.LLVM.IntPredicate[]
+        {
+            Swigged.LLVM.IntPredicate.IntEQ,
+            Swigged.LLVM.IntPredicate.IntNE,
+            Swigged.LLVM.IntPredicate.IntSGT,
+            Swigged.LLVM.IntPredicate.IntSLT,
+            Swigged.LLVM.IntPredicate.IntSGE,
+            Swigged.LLVM.IntPredicate.IntSLE,
+        };
 
-	    public Swigged.LLVM.IntPredicate[] _uint_pred = new Swigged.LLVM.IntPredicate[]
-	    {
-		    Swigged.LLVM.IntPredicate.IntEQ,
-		    Swigged.LLVM.IntPredicate.IntNE,
-		    Swigged.LLVM.IntPredicate.IntUGT,
-		    Swigged.LLVM.IntPredicate.IntULT,
-		    Swigged.LLVM.IntPredicate.IntUGE,
-		    Swigged.LLVM.IntPredicate.IntULE,
-	    };
+        public Swigged.LLVM.IntPredicate[] _uint_pred = new Swigged.LLVM.IntPredicate[]
+        {
+            Swigged.LLVM.IntPredicate.IntEQ,
+            Swigged.LLVM.IntPredicate.IntNE,
+            Swigged.LLVM.IntPredicate.IntUGT,
+            Swigged.LLVM.IntPredicate.IntULT,
+            Swigged.LLVM.IntPredicate.IntUGE,
+            Swigged.LLVM.IntPredicate.IntULE,
+        };
 
-	    public virtual PredicateType Predicate { get; set; }
+        public virtual PredicateType Predicate { get; set; }
 
-	    public override Inst Convert(State state)
-	    {
-		    Value v2 = state._stack.Pop();
-		    Value v1 = state._stack.Pop();
-	    // TODO Undoubtably, this will be much more complicated than my initial stab.
-		    Type t1 = v1.T;
-		    Type t2 = v2.T;
-		    ValueRef cmp = default(ValueRef);
-	    // Deal with various combinations of types.
-		    if (t1.isIntegerTy() && t2.isIntegerTy())
-		    {
-			    var op = _int_pred[(int)Predicate];
-			    cmp = LLVM.BuildICmp(Builder, op, v1.V, v2.V, "");
-			    if (Next == null) return null;
-			    var t = Next.GetType();
-			    if (t == typeof(i_brfalse))
-			    {
-		    // Push, Pop, branch -> combine
-			    }
-			    else if (t == typeof(i_brfalse_s))
-			    {
-		    // Push, Pop, branch -> combine
-			    }
-			    else if (t == typeof(i_brtrue))
-			    {
-		    // Push, Pop, branch -> combine
-			    }
-			    else if (t == typeof(i_brtrue_s))
-			    {
-		    // Push, Pop, branch -> combine
-			    } else
-			    {
-		    // Set up for push of 0/1.
-				    var ret = LLVM.BuildZExt(Builder, cmp, LLVM.Int32Type(), "");
-				    state._stack.Push(new Value(ret, LLVM.Int32Type()));
-			    }
-		    }
-		    return Next;
-	    }
+        public override Inst Convert(State state)
+        {
+            Value v2 = state._stack.Pop();
+            Value v1 = state._stack.Pop();
+            // TODO Undoubtably, this will be much more complicated than my initial stab.
+            Type t1 = v1.T;
+            Type t2 = v2.T;
+            ValueRef cmp = default(ValueRef);
+            // Deal with various combinations of types.
+            if (t1.isIntegerTy() && t2.isIntegerTy())
+            {
+                var op = _int_pred[(int)Predicate];
+                cmp = LLVM.BuildICmp(Builder, op, v1.V, v2.V, "");
+                if (Next == null) return null;
+                var t = Next.GetType();
+                if (t == typeof(i_brfalse))
+                {
+                    // Push, Pop, branch -> combine
+                }
+                else if (t == typeof(i_brfalse_s))
+                {
+                    // Push, Pop, branch -> combine
+                }
+                else if (t == typeof(i_brtrue))
+                {
+                    // Push, Pop, branch -> combine
+                }
+                else if (t == typeof(i_brtrue_s))
+                {
+                    // Push, Pop, branch -> combine
+                }
+                else
+                {
+                    // Set up for push of 0/1.
+                    var ret = LLVM.BuildZExt(Builder, cmp, LLVM.Int32Type(), "");
+                    state._stack.Push(new Value(ret, LLVM.Int32Type()));
+                }
+            }
+            return Next;
+        }
+    }
+
+    public class CompareAndBranchInst : Inst
+    {
+        public CompareAndBranchInst(Mono.Cecil.Cil.Instruction i) : base(i)
+        {
+        }
+
+        public override void ComputeStackLevel(ref int level_after)
+        {
+            level_after -= 2;
+        }
+
+        public enum PredicateType
+        {
+            eq,
+            ne,
+            gt,
+            lt,
+            ge,
+            le,
+        };
+
+        public Swigged.LLVM.IntPredicate[] _int_pred = new Swigged.LLVM.IntPredicate[]
+        {
+            Swigged.LLVM.IntPredicate.IntEQ,
+            Swigged.LLVM.IntPredicate.IntNE,
+            Swigged.LLVM.IntPredicate.IntSGT,
+            Swigged.LLVM.IntPredicate.IntSLT,
+            Swigged.LLVM.IntPredicate.IntSGE,
+            Swigged.LLVM.IntPredicate.IntSLE,
+        };
+
+        public Swigged.LLVM.IntPredicate[] _uint_pred = new Swigged.LLVM.IntPredicate[]
+        {
+            Swigged.LLVM.IntPredicate.IntEQ,
+            Swigged.LLVM.IntPredicate.IntNE,
+            Swigged.LLVM.IntPredicate.IntUGT,
+            Swigged.LLVM.IntPredicate.IntULT,
+            Swigged.LLVM.IntPredicate.IntUGE,
+            Swigged.LLVM.IntPredicate.IntULE,
+        };
+
+        public virtual PredicateType Predicate { get; set; }
+
+        public override Inst Convert(State state)
+        {
+            Value v2 = state._stack.Pop();
+            Value v1 = state._stack.Pop();
+            // TODO Undoubtably, this will be much more complicated than my initial stab.
+            Type t1 = v1.T;
+            Type t2 = v2.T;
+            ValueRef cmp = default(ValueRef);
+            // Deal with various combinations of types.
+            if (t1.isIntegerTy() && t2.isIntegerTy())
+            {
+                var op = _int_pred[(int)Predicate];
+                cmp = LLVM.BuildICmp(Builder, op, v1.V, v2.V, "");
+
+                GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge1 = Block._Successors[0];
+                GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge2 = Block._Successors[1];
+                int succ1 = edge1.To;
+                int succ2 = edge1.To;
+                var s1 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ1)];
+                var s2 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ1)];
+                LLVM.BuildCondBr(Builder, cmp, s1.BasicBlock, s2.BasicBlock);
+                return Next;
+            }
+            throw new Exception("Unhandled compare and branch.");
+            return Next;
+        }
     }
 
     public class i_add : BinaryOpInst
@@ -1181,160 +1254,160 @@ namespace Campy.ControlFlowGraph
         }
     }
 
-    public class i_beq : CompareInst
+    public class i_beq : CompareAndBranchInst
     {
         public i_beq(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-		Predicate = PredicateType.eq;
+		    Predicate = PredicateType.eq;
         }
     }
 
-    public class i_beq_s : CompareInst
+    public class i_beq_s : CompareAndBranchInst
     {
         public i_beq_s(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-		Predicate = PredicateType.eq;
+		    Predicate = PredicateType.eq;
         }
     }
 
-    public class i_bge : CompareInst
+    public class i_bge : CompareAndBranchInst
     {
         public i_bge(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-		Predicate = PredicateType.ge;
+		    Predicate = PredicateType.ge;
         }
     }
 
-    public class i_bge_un : CompareInst
+    public class i_bge_un : CompareAndBranchInst
     {
         public i_bge_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-		Predicate = PredicateType.ge;
+		    Predicate = PredicateType.ge;
         }
     }
 
-    public class i_bge_un_s : CompareInst
+    public class i_bge_un_s : CompareAndBranchInst
     {
         public i_bge_un_s(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-		Predicate = PredicateType.ge;
+		    Predicate = PredicateType.ge;
         }
     }
 
-    public class i_bge_s : CompareInst
+    public class i_bge_s : CompareAndBranchInst
     {
         public i_bge_s(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-		Predicate = PredicateType.ge;
+		    Predicate = PredicateType.ge;
         }
     }
 
-    public class i_bgt : CompareInst
+    public class i_bgt : CompareAndBranchInst
     {
         public i_bgt(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-		Predicate = PredicateType.gt;
+		    Predicate = PredicateType.gt;
         }
     }
 
-    public class i_bgt_s : CompareInst
+    public class i_bgt_s : CompareAndBranchInst
     {
         public i_bgt_s(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-		Predicate = PredicateType.gt;
+		    Predicate = PredicateType.gt;
         }
     }
 
-    public class i_bgt_un : CompareInst
+    public class i_bgt_un : CompareAndBranchInst
     {
         public i_bgt_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-		Predicate = PredicateType.gt;
+		    Predicate = PredicateType.gt;
         }
     }
 
-    public class i_bgt_un_s : CompareInst
+    public class i_bgt_un_s : CompareAndBranchInst
     {
         public i_bgt_un_s(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-		Predicate = PredicateType.gt;
+		    Predicate = PredicateType.gt;
         }
     }
 
-    public class i_ble : CompareInst
+    public class i_ble : CompareAndBranchInst
     {
         public i_ble(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-		Predicate = PredicateType.le;
+		    Predicate = PredicateType.le;
         }
     }
 
-    public class i_ble_s : CompareInst
+    public class i_ble_s : CompareAndBranchInst
     {
         public i_ble_s(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-		Predicate = PredicateType.le;
+		    Predicate = PredicateType.le;
         }
     }
 
-    public class i_ble_un : CompareInst
+    public class i_ble_un : CompareAndBranchInst
     {
         public i_ble_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-		Predicate = PredicateType.le;
+		    Predicate = PredicateType.le;
         }
     }
 
-    public class i_ble_un_s : CompareInst
+    public class i_ble_un_s : CompareAndBranchInst
     {
         public i_ble_un_s(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-		Predicate = PredicateType.le;
+		    Predicate = PredicateType.le;
         }
     }
 
-    public class i_blt : CompareInst
+    public class i_blt : CompareAndBranchInst
     {
         public i_blt(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-		Predicate = PredicateType.lt;
+		    Predicate = PredicateType.lt;
         }
     }
 
-    public class i_blt_s : CompareInst
+    public class i_blt_s : CompareAndBranchInst
     {
         public i_blt_s(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-		Predicate = PredicateType.lt;
+		    Predicate = PredicateType.lt;
         }
     }
 
-    public class i_blt_un : CompareInst
+    public class i_blt_un : CompareAndBranchInst
     {
         public i_blt_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-		Predicate = PredicateType.lt;
+		    Predicate = PredicateType.lt;
         }
     }
 
-    public class i_blt_un_s : CompareInst
+    public class i_blt_un_s : CompareAndBranchInst
     {
         public i_blt_un_s(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -1343,21 +1416,21 @@ namespace Campy.ControlFlowGraph
         }
     }
 
-    public class i_bne_un : CompareInst
+    public class i_bne_un : CompareAndBranchInst
     {
         public i_bne_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-		Predicate = PredicateType.ne;
+		    Predicate = PredicateType.ne;
         }
     }
 
-    public class i_bne_un_s : CompareInst
+    public class i_bne_un_s : CompareAndBranchInst
     {
         public i_bne_un_s(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-		Predicate = PredicateType.ne;
+		    Predicate = PredicateType.ne;
         }
     }
 
@@ -1376,14 +1449,14 @@ namespace Campy.ControlFlowGraph
         {
         }
 
-	public override Inst Convert(State state)
-	{
-		GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge = Block._Successors[0];
-		int succ = edge.To;
-		var s = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ)];
-		var br = LLVM.BuildBr(Builder, s.BasicBlock);
-		return Next;
-	}
+	    public override Inst Convert(State state)
+	    {
+		    GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge = Block._Successors[0];
+		    int succ = edge.To;
+		    var s = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ)];
+		    var br = LLVM.BuildBr(Builder, s.BasicBlock);
+		    return Next;
+	    }
     }
 
     public class i_br_s : Inst
@@ -1410,23 +1483,23 @@ namespace Campy.ControlFlowGraph
         {
         }
 
-	public override void ComputeStackLevel(ref int level_after)
-	{
-		level_after--;
-	}
+	    public override void ComputeStackLevel(ref int level_after)
+	    {
+		    level_after--;
+	    }
 
-	public override Inst Convert(State state)
-	{
-		var v = state._stack.Pop();
-		GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge1 = Block._Successors[0];
-		GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge2 = Block._Successors[1];
-		int succ1 = edge1.To;
-		int succ2 = edge1.To;
-		var s1 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ1)];
-		var s2 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ1)];
-		LLVM.BuildCondBr(Builder, v.V, s1.BasicBlock, s2.BasicBlock);
-		return Next;
-	}
+	    public override Inst Convert(State state)
+	    {
+		    var v = state._stack.Pop();
+		    GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge1 = Block._Successors[0];
+		    GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge2 = Block._Successors[1];
+		    int succ1 = edge1.To;
+		    int succ2 = edge1.To;
+		    var s1 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ1)];
+		    var s2 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ1)];
+		    LLVM.BuildCondBr(Builder, v.V, s1.BasicBlock, s2.BasicBlock);
+		    return Next;
+	    }
     }
 
     public class i_break : Inst
@@ -1444,26 +1517,26 @@ namespace Campy.ControlFlowGraph
         {
         }
 
-	public override void ComputeStackLevel(ref int level_after)
-	{
-		level_after--;
-	}
+	    public override void ComputeStackLevel(ref int level_after)
+	    {
+		    level_after--;
+	    }
 
-	public override Inst Convert(State state)
-	{
-		var v = state._stack.Pop();
-		GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge1 = Block._Successors[0];
-		GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge2 = Block._Successors[1];
-		int succ1 = edge1.To;
-            int succ2 = edge2.To;
-		var s1 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ1)];
-            var s2 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ2)];
-            // We need to compare the value popped with 0/1.
-            var v2 = LLVM.ConstInt(LLVM.Int32Type(), 1, false);
-            var v3 = LLVM.BuildICmp(Builder, IntPredicate.IntEQ, v.V, v2, "");
-            LLVM.BuildCondBr(Builder, v3, s1.BasicBlock, s2.BasicBlock);
-		return Next;
-	}
+	    public override Inst Convert(State state)
+	    {
+		    var v = state._stack.Pop();
+		    GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge1 = Block._Successors[0];
+		    GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge2 = Block._Successors[1];
+		    int succ1 = edge1.To;
+                int succ2 = edge2.To;
+		    var s1 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ1)];
+                var s2 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ2)];
+                // We need to compare the value popped with 0/1.
+                var v2 = LLVM.ConstInt(LLVM.Int32Type(), 1, false);
+                var v3 = LLVM.BuildICmp(Builder, IntPredicate.IntEQ, v.V, v2, "");
+                LLVM.BuildCondBr(Builder, v3, s1.BasicBlock, s2.BasicBlock);
+		    return Next;
+	    }
     }
 
     public class i_brtrue : Inst
@@ -1473,26 +1546,26 @@ namespace Campy.ControlFlowGraph
         {
         }
 
-	public override void ComputeStackLevel(ref int level_after)
-	{
-		level_after--;
-	}
+	    public override void ComputeStackLevel(ref int level_after)
+	    {
+		    level_after--;
+	    }
 
-	public override Inst Convert(State state)
-	{
-		var v = state._stack.Pop();
-		GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge1 = Block._Successors[0];
-		GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge2 = Block._Successors[1];
-		int succ1 = edge1.To;
-		int succ2 = edge2.To;
-		var s1 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ1)];
-		var s2 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ2)];
-	    // We need to compare the value popped with 0/1.
-		var v2 = LLVM.ConstInt(LLVM.Int32Type(), 0, false);
-		var v3 = LLVM.BuildICmp(Builder, IntPredicate.IntEQ, v.V, v2, "");
-		LLVM.BuildCondBr(Builder, v3, s1.BasicBlock, s2.BasicBlock);
-		return Next;
-	}
+	    public override Inst Convert(State state)
+	    {
+		    var v = state._stack.Pop();
+		    GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge1 = Block._Successors[0];
+		    GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge2 = Block._Successors[1];
+		    int succ1 = edge1.To;
+		    int succ2 = edge2.To;
+		    var s1 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ1)];
+		    var s2 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ2)];
+	        // We need to compare the value popped with 0/1.
+		    var v2 = LLVM.ConstInt(LLVM.Int32Type(), 0, false);
+		    var v3 = LLVM.BuildICmp(Builder, IntPredicate.IntEQ, v.V, v2, "");
+		    LLVM.BuildCondBr(Builder, v3, s1.BasicBlock, s2.BasicBlock);
+		    return Next;
+	    }
     }
 
     public class i_brtrue_s : Inst
@@ -1502,26 +1575,26 @@ namespace Campy.ControlFlowGraph
         {
         }
 
-	public override void ComputeStackLevel(ref int level_after)
-	{
-		level_after--;
-	}
+	    public override void ComputeStackLevel(ref int level_after)
+	    {
+		    level_after--;
+	    }
 
-	public override Inst Convert(State state)
-	{
-		var v = state._stack.Pop();
-		GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge1 = Block._Successors[0];
-		GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge2 = Block._Successors[1];
-		int succ1 = edge1.To;
-		int succ2 = edge2.To;
-		var s1 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ1)];
-		var s2 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ2)];
-	    // We need to compare the value popped with 0/1.
-		var v2 = LLVM.ConstInt(LLVM.Int32Type(), 0, false);
-		var v3 = LLVM.BuildICmp(Builder, IntPredicate.IntEQ, v.V, v2, "");
-		LLVM.BuildCondBr(Builder, v3, s1.BasicBlock, s2.BasicBlock);
-		return Next;
-	}
+	    public override Inst Convert(State state)
+	    {
+		    var v = state._stack.Pop();
+		    GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge1 = Block._Successors[0];
+		    GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge2 = Block._Successors[1];
+		    int succ1 = edge1.To;
+		    int succ2 = edge2.To;
+		    var s1 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ1)];
+		    var s2 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ2)];
+	        // We need to compare the value popped with 0/1.
+		    var v2 = LLVM.ConstInt(LLVM.Int32Type(), 0, false);
+		    var v3 = LLVM.BuildICmp(Builder, IntPredicate.IntEQ, v.V, v2, "");
+		    LLVM.BuildCondBr(Builder, v3, s1.BasicBlock, s2.BasicBlock);
+		    return Next;
+	    }
     }
 
     public class i_call : Inst
@@ -1531,98 +1604,98 @@ namespace Campy.ControlFlowGraph
         {
         }
 
-	public override void ComputeStackLevel(ref int level_after)
-	{
-	    // Successor is fallthrough.
-		int args = 0;
-		int ret = 0;
-		object method = this.Operand;
-		if (method as Mono.Cecil.MethodReference != null)
-		{
-			Mono.Cecil.MethodReference mr = method as Mono.Cecil.MethodReference;
-			if (mr.HasThis)
-				args++;
-			args += mr.Parameters.Count;
-			if (mr.MethodReturnType != null)
-			{
-				Mono.Cecil.MethodReturnType rt = mr.MethodReturnType;
-				Mono.Cecil.TypeReference tr = rt.ReturnType;
-		// Get type, may contain modifiers.
-				if (tr.FullName.Contains(' '))
-				{
-					String[] sp = tr.FullName.Split(' ');
-					if (!sp[0].Equals("System.Void"))
-						ret++;
-				}
-				else
-				{
-					if (!tr.FullName.Equals("System.Void"))
-						ret++;
-				}
-			}
-		}
-		level_after = level_after + ret - args;
-	}
-
-	public override Inst Convert(State state)
-	{
-	    // Get function.
-		var j = this;
-
-	    // Successor is fallthrough.
-		int nargs = 0;
-		int ret = 0;
-		object method = j.Operand;
-		if (method as Mono.Cecil.MethodReference != null)
-		{
-			Mono.Cecil.MethodReference mr = method as Mono.Cecil.MethodReference;
-			if (mr.HasThis)
-				nargs++;
-			nargs += mr.Parameters.Count;
-			if (mr.MethodReturnType != null)
-			{
-				Mono.Cecil.MethodReturnType rt = mr.MethodReturnType;
-				Mono.Cecil.TypeReference tr = rt.ReturnType;
+	    public override void ComputeStackLevel(ref int level_after)
+	    {
+	        // Successor is fallthrough.
+		    int args = 0;
+		    int ret = 0;
+		    object method = this.Operand;
+		    if (method as Mono.Cecil.MethodReference != null)
+		    {
+			    Mono.Cecil.MethodReference mr = method as Mono.Cecil.MethodReference;
+			    if (mr.HasThis)
+				    args++;
+			    args += mr.Parameters.Count;
+			    if (mr.MethodReturnType != null)
+			    {
+				    Mono.Cecil.MethodReturnType rt = mr.MethodReturnType;
+				    Mono.Cecil.TypeReference tr = rt.ReturnType;
 		    // Get type, may contain modifiers.
-				if (tr.FullName.Contains(' '))
-				{
-					String[] sp = tr.FullName.Split(' ');
-					if (!sp[0].Equals("System.Void"))
-						ret++;
-				}
-				else
-				{
-					if (!tr.FullName.Equals("System.Void"))
-						ret++;
-				}
-			}
-			var name = mr.FullName;
-                // Find bb entry.
-		    CFG.Vertex the_entry = this.Block._Graph.VertexNodes.Where(node
-				=>
-			{
-				GraphLinkedList<int, CFG.Vertex, CFG.Edge> g = j.Block._Graph;
-				int k = g.NameSpace.BijectFromBasetype(node.Name);
-				CFG.Vertex v = g.VertexSpace[k];
-				if (v.IsEntry && v.Method.FullName == name)
-					return true;
-				else return false;
-			}).ToList().FirstOrDefault();
+				    if (tr.FullName.Contains(' '))
+				    {
+					    String[] sp = tr.FullName.Split(' ');
+					    if (!sp[0].Equals("System.Void"))
+						    ret++;
+				    }
+				    else
+				    {
+					    if (!tr.FullName.Equals("System.Void"))
+						    ret++;
+				    }
+			    }
+		    }
+		    level_after = level_after + ret - args;
+	    }
 
-			if (the_entry != default(CFG.Vertex))
-			{
-				BuilderRef bu = this.Builder;
-				ValueRef fv = the_entry.Function;
-				ValueRef[] args = new ValueRef[nargs];
-				for (int k = nargs-1; k >= 0; --k)
-					args[k] = state._stack.Pop().V;
-				var call = LLVM.BuildCall(Builder, fv, args, name);
-				if (ret > 0)
-					state._stack.Push(new Value(call));
-			}
-		}
-		return Next;
-	}
+	    public override Inst Convert(State state)
+	    {
+	        // Get function.
+		    var j = this;
+
+	        // Successor is fallthrough.
+		    int nargs = 0;
+		    int ret = 0;
+		    object method = j.Operand;
+		    if (method as Mono.Cecil.MethodReference != null)
+		    {
+			    Mono.Cecil.MethodReference mr = method as Mono.Cecil.MethodReference;
+			    if (mr.HasThis)
+				    nargs++;
+			    nargs += mr.Parameters.Count;
+			    if (mr.MethodReturnType != null)
+			    {
+				    Mono.Cecil.MethodReturnType rt = mr.MethodReturnType;
+				    Mono.Cecil.TypeReference tr = rt.ReturnType;
+		        // Get type, may contain modifiers.
+				    if (tr.FullName.Contains(' '))
+				    {
+					    String[] sp = tr.FullName.Split(' ');
+					    if (!sp[0].Equals("System.Void"))
+						    ret++;
+				    }
+				    else
+				    {
+					    if (!tr.FullName.Equals("System.Void"))
+						    ret++;
+				    }
+			    }
+			    var name = mr.FullName;
+                    // Find bb entry.
+		        CFG.Vertex the_entry = this.Block._Graph.VertexNodes.Where(node
+				    =>
+			    {
+				    GraphLinkedList<int, CFG.Vertex, CFG.Edge> g = j.Block._Graph;
+				    int k = g.NameSpace.BijectFromBasetype(node.Name);
+				    CFG.Vertex v = g.VertexSpace[k];
+				    if (v.IsEntry && v.Method.FullName == name)
+					    return true;
+				    else return false;
+			    }).ToList().FirstOrDefault();
+
+			    if (the_entry != default(CFG.Vertex))
+			    {
+				    BuilderRef bu = this.Builder;
+				    ValueRef fv = the_entry.Function;
+				    ValueRef[] args = new ValueRef[nargs];
+				    for (int k = nargs-1; k >= 0; --k)
+					    args[k] = state._stack.Pop().V;
+				    var call = LLVM.BuildCall(Builder, fv, args, name);
+				    if (ret > 0)
+					    state._stack.Push(new Value(call));
+			    }
+		    }
+		    return Next;
+	    }
     }
 
     public class i_calli : Inst
@@ -1631,39 +1704,39 @@ namespace Campy.ControlFlowGraph
             : base(i)
         {
         }
-	public override void ComputeStackLevel(ref int level_after)
-	{
-	    // Successor is fallthrough.
-		int args = 0;
-		int ret = 0;
-		args++; // The function is on the stack.
-		object method = this.Operand;
-		if (method as Mono.Cecil.CallSite != null)
-		{
-			Mono.Cecil.CallSite mr = method as Mono.Cecil.CallSite;
-			if (mr.HasThis)
-				args++;
-			args += mr.Parameters.Count;
-			if (mr.MethodReturnType != null)
-			{
-				Mono.Cecil.MethodReturnType rt = mr.MethodReturnType;
-				Mono.Cecil.TypeReference tr = rt.ReturnType;
-		// Get type, may contain modifiers.
-				if (tr.FullName.Contains(' '))
-				{
-					String[] sp = tr.FullName.Split(' ');
-					if (!sp[0].Equals("System.Void"))
-						ret++;
-				}
-				else
-				{
-					if (!tr.FullName.Equals("System.Void"))
-						ret++;
-				}
-			}
-		}
-		level_after = level_after + ret - args;
-	}
+	    public override void ComputeStackLevel(ref int level_after)
+	    {
+	        // Successor is fallthrough.
+		    int args = 0;
+		    int ret = 0;
+		    args++; // The function is on the stack.
+		    object method = this.Operand;
+		    if (method as Mono.Cecil.CallSite != null)
+		    {
+			    Mono.Cecil.CallSite mr = method as Mono.Cecil.CallSite;
+			    if (mr.HasThis)
+				    args++;
+			    args += mr.Parameters.Count;
+			    if (mr.MethodReturnType != null)
+			    {
+				    Mono.Cecil.MethodReturnType rt = mr.MethodReturnType;
+				    Mono.Cecil.TypeReference tr = rt.ReturnType;
+		    // Get type, may contain modifiers.
+				    if (tr.FullName.Contains(' '))
+				    {
+					    String[] sp = tr.FullName.Split(' ');
+					    if (!sp[0].Equals("System.Void"))
+						    ret++;
+				    }
+				    else
+				    {
+					    if (!tr.FullName.Equals("System.Void"))
+						    ret++;
+				    }
+			    }
+		    }
+		    level_after = level_after + ret - args;
+	    }
     }
 
     public class i_callvirt : Inst
@@ -1673,38 +1746,38 @@ namespace Campy.ControlFlowGraph
         {
         }
 
-	public override void ComputeStackLevel(ref int level_after)
-	{
-	    // Successor is fallthrough.
-		int args = 0;
-		int ret = 0;
-		object method = this.Operand;
-		if (method as Mono.Cecil.MethodReference != null)
-		{
-			Mono.Cecil.MethodReference mr = method as Mono.Cecil.MethodReference;
-			if (mr.HasThis)
-				args++;
-			args += mr.Parameters.Count;
-			if (mr.MethodReturnType != null)
-			{
-				Mono.Cecil.MethodReturnType rt = mr.MethodReturnType;
-				Mono.Cecil.TypeReference tr = rt.ReturnType;
-		// Get type, may contain modifiers.
-				if (tr.FullName.Contains(' '))
-				{
-					String[] sp = tr.FullName.Split(' ');
-					if (!sp[0].Equals("System.Void"))
-						ret++;
-				}
-				else
-				{
-					if (!tr.FullName.Equals("System.Void"))
-						ret++;
-				}
-			}
-		}
-		level_after = level_after + ret - args;
-	}
+	    public override void ComputeStackLevel(ref int level_after)
+	    {
+	        // Successor is fallthrough.
+		    int args = 0;
+		    int ret = 0;
+		    object method = this.Operand;
+		    if (method as Mono.Cecil.MethodReference != null)
+		    {
+			    Mono.Cecil.MethodReference mr = method as Mono.Cecil.MethodReference;
+			    if (mr.HasThis)
+				    args++;
+			    args += mr.Parameters.Count;
+			    if (mr.MethodReturnType != null)
+			    {
+				    Mono.Cecil.MethodReturnType rt = mr.MethodReturnType;
+				    Mono.Cecil.TypeReference tr = rt.ReturnType;
+		    // Get type, may contain modifiers.
+				    if (tr.FullName.Contains(' '))
+				    {
+					    String[] sp = tr.FullName.Split(' ');
+					    if (!sp[0].Equals("System.Void"))
+						    ret++;
+				    }
+				    else
+				    {
+					    if (!tr.FullName.Equals("System.Void"))
+						    ret++;
+				    }
+			    }
+		    }
+		    level_after = level_after + ret - args;
+	    }
     }
 
     public class i_castclass : Inst
@@ -1720,7 +1793,7 @@ namespace Campy.ControlFlowGraph
         public i_ceq(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-		Predicate = PredicateType.eq;
+		    Predicate = PredicateType.eq;
         }
     }
 
@@ -1729,7 +1802,7 @@ namespace Campy.ControlFlowGraph
         public i_cgt(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-		Predicate = PredicateType.gt;
+		    Predicate = PredicateType.gt;
         }
     }
 
@@ -1738,7 +1811,7 @@ namespace Campy.ControlFlowGraph
         public i_cgt_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-		Predicate = PredicateType.gt;
+		    Predicate = PredicateType.gt;
         }
     }
 
@@ -1755,7 +1828,7 @@ namespace Campy.ControlFlowGraph
         public i_clt(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-		Predicate = PredicateType.lt;
+		    Predicate = PredicateType.lt;
         }
     }
 
@@ -1764,7 +1837,7 @@ namespace Campy.ControlFlowGraph
         public i_clt_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-		Predicate = PredicateType.lt;
+		    Predicate = PredicateType.lt;
         }
     }
 
@@ -1802,83 +1875,83 @@ namespace Campy.ControlFlowGraph
 
     public class i_conv_i8 : Inst
     {
-	ValueRef convert_full(ValueRef v, TypeRef dtype, bool is_unsigned)
-	{
-		TypeRef stype = LLVM.TypeOf(v);
-		if (stype != dtype)
-		{
-			bool ext = false;
+	    ValueRef convert_full(ValueRef v, TypeRef dtype, bool is_unsigned)
+	    {
+		    TypeRef stype = LLVM.TypeOf(v);
+		    if (stype != dtype)
+		    {
+			    bool ext = false;
 
-		/* Extend */
-			if (dtype == LLVM.Int64Type() && (stype == LLVM.Int32Type() || stype == LLVM.Int16Type() ||
-				stype == LLVM.Int8Type()))
-				ext = true;
-			else if (dtype == LLVM.Int32Type() && (stype == LLVM.Int16Type() || stype == LLVM.Int8Type()))
-				ext = true;
-			else if (dtype == LLVM.Int16Type() && (stype == LLVM.Int8Type()))
-				ext = true;
+		    /* Extend */
+			    if (dtype == LLVM.Int64Type() && (stype == LLVM.Int32Type() || stype == LLVM.Int16Type() ||
+				    stype == LLVM.Int8Type()))
+				    ext = true;
+			    else if (dtype == LLVM.Int32Type() && (stype == LLVM.Int16Type() || stype == LLVM.Int8Type()))
+				    ext = true;
+			    else if (dtype == LLVM.Int16Type() && (stype == LLVM.Int8Type()))
+				    ext = true;
 
-			if (ext)
-				return is_unsigned
-						? LLVM.BuildZExt(Builder, v, dtype, "")
-						: LLVM.BuildSExt(Builder, v, dtype, "");
+			    if (ext)
+				    return is_unsigned
+						    ? LLVM.BuildZExt(Builder, v, dtype, "")
+						    : LLVM.BuildSExt(Builder, v, dtype, "");
 
-			if (dtype == LLVM.DoubleType() && stype == LLVM.FloatType())
-				return LLVM.BuildFPExt(Builder, v, dtype, "");
+			    if (dtype == LLVM.DoubleType() && stype == LLVM.FloatType())
+				    return LLVM.BuildFPExt(Builder, v, dtype, "");
 
-		/* Trunc */
-			if (stype == LLVM.Int64Type() && (dtype == LLVM.Int32Type() || dtype == LLVM.Int16Type() ||
-				dtype == LLVM.Int8Type()))
-				return LLVM.BuildTrunc(Builder, v, dtype, "");
-			if (stype == LLVM.Int32Type() && (dtype == LLVM.Int16Type() || dtype == LLVM.Int8Type()))
-				return LLVM.BuildTrunc(Builder, v, dtype, "");
-			if (stype == LLVM.Int16Type() && dtype == LLVM.Int8Type())
-				return LLVM.BuildTrunc(Builder, v, dtype, "");
-			if (stype == LLVM.DoubleType() && dtype == LLVM.FloatType())
-				return LLVM.BuildFPTrunc(Builder, v, dtype, "");
+		    /* Trunc */
+			    if (stype == LLVM.Int64Type() && (dtype == LLVM.Int32Type() || dtype == LLVM.Int16Type() ||
+				    dtype == LLVM.Int8Type()))
+				    return LLVM.BuildTrunc(Builder, v, dtype, "");
+			    if (stype == LLVM.Int32Type() && (dtype == LLVM.Int16Type() || dtype == LLVM.Int8Type()))
+				    return LLVM.BuildTrunc(Builder, v, dtype, "");
+			    if (stype == LLVM.Int16Type() && dtype == LLVM.Int8Type())
+				    return LLVM.BuildTrunc(Builder, v, dtype, "");
+			    if (stype == LLVM.DoubleType() && dtype == LLVM.FloatType())
+				    return LLVM.BuildFPTrunc(Builder, v, dtype, "");
 
-		//if (LLVM.GetTypeKind(stype) == LLVM.PointerTypeKind && LLVM.GetTypeKind(dtype) == LLVMPointerTypeKind)
-		//    return LLVM.BuildBitCast(Builder, v, dtype, "");
-		//if (LLVM.GetTypeKind(dtype) == LLVM.PointerTypeKind)
-		//    return LLVM.BuildIntToPtr(Builder, v, dtype, "");
-		//if (LLVM.GetTypeKind(stype) == LLVM.PointerTypeKind)
-		//    return LLVM.BuildPtrToInt(Builder, v, dtype, "");
+		    //if (LLVM.GetTypeKind(stype) == LLVM.PointerTypeKind && LLVM.GetTypeKind(dtype) == LLVMPointerTypeKind)
+		    //    return LLVM.BuildBitCast(Builder, v, dtype, "");
+		    //if (LLVM.GetTypeKind(dtype) == LLVM.PointerTypeKind)
+		    //    return LLVM.BuildIntToPtr(Builder, v, dtype, "");
+		    //if (LLVM.GetTypeKind(stype) == LLVM.PointerTypeKind)
+		    //    return LLVM.BuildPtrToInt(Builder, v, dtype, "");
 
-		//if (mono_arch_is_soft_float())
-		//{
-		//    if (stype == LLVM.Int32Type() && dtype == LLVM.FloatType())
-		//        return LLVM.BuildBitCast(Builder, v, dtype, "");
-		//    if (stype == LLVM.Int32Type() && dtype == LLVM.DoubleType())
-		//        return LLVM.BuildBitCast(Builder, LLVM.BuildZExt(Builder, v, LLVM.Int64Type(), ""), dtype, "");
-		//}
+		    //if (mono_arch_is_soft_float())
+		    //{
+		    //    if (stype == LLVM.Int32Type() && dtype == LLVM.FloatType())
+		    //        return LLVM.BuildBitCast(Builder, v, dtype, "");
+		    //    if (stype == LLVM.Int32Type() && dtype == LLVM.DoubleType())
+		    //        return LLVM.BuildBitCast(Builder, LLVM.BuildZExt(Builder, v, LLVM.Int64Type(), ""), dtype, "");
+		    //}
 
-		//if (LLVM.GetTypeKind(stype) == LLVM.VectorTypeKind && LLVM.GetTypeKind(dtype) == LLVMVectorTypeKind)
-		//    return LLVM.BuildBitCast(Builder, v, dtype, "");
+		    //if (LLVM.GetTypeKind(stype) == LLVM.VectorTypeKind && LLVM.GetTypeKind(dtype) == LLVMVectorTypeKind)
+		    //    return LLVM.BuildBitCast(Builder, v, dtype, "");
 
-			LLVM.DumpValue(v);
-			LLVM.DumpValue(LLVM.ConstNull(dtype));
-			return default(ValueRef);
-		}
-		else
-		{
-			return v;
-		}
-	}
+			    LLVM.DumpValue(v);
+			    LLVM.DumpValue(LLVM.ConstNull(dtype));
+			    return default(ValueRef);
+		    }
+		    else
+		    {
+			    return v;
+		    }
+	    }
 
-	public i_conv_i8(Mono.Cecil.Cil.Instruction i)
-			: base(i)
-	{
-	}
+	    public i_conv_i8(Mono.Cecil.Cil.Instruction i)
+			    : base(i)
+	    {
+	    }
 
-	public override Inst Convert(State state)
-	{
-		Value vv = state._stack.Pop();
-		ValueRef v = vv.V;
-		TypeRef dtype = LLVM.Int64Type();
-		ValueRef r = convert_full(v, dtype, false);
-		state._stack.Push(new Value(r, dtype));
-		return Next;
-	}
+	    public override Inst Convert(State state)
+	    {
+		    Value vv = state._stack.Pop();
+		    ValueRef v = vv.V;
+		    TypeRef dtype = LLVM.Int64Type();
+		    ValueRef r = convert_full(v, dtype, false);
+		    state._stack.Push(new Value(r, dtype));
+		    return Next;
+	    }
     }
 
     public class i_conv_i : Inst

@@ -70,77 +70,73 @@ namespace ConsoleApp4
 
         static void Main(string[] args)
         {
-            Reader r = new Reader();
-            var mg = r.Cfg;
-            mg.StartChangeSet(1);
-            r.AnalyzeMethod(() => Program.Foo2(1));
-            List<CFG.Vertex> change_set = mg.EndChangeSet(1);
-            var lg = new CFG();
-            var c2 = new Campy.ControlFlowGraph.Converter(mg);
             Swigged.LLVM.Helper.Adjust.Path();
-            c2.ConvertToLLVM(change_set);
 
-            IntPtr p2 = c2.GetPtr(1);
-            DFoo2 ff2 = (DFoo2)Marshal.GetDelegateForFunctionPointer(p2, typeof(DFoo2));
-            for (int k = 0; k < 100; ++k)
+            Reader r = new Reader();
+            var g = r.Cfg;
+            var c = new Campy.ControlFlowGraph.Converter(g);
+
             {
-                int result = ff2(k);
-                Console.WriteLine("Result is: " + result);
+                g.StartChangeSet(r);
+                r.AnalyzeMethod(() => Program.Foo2(1));
+                List<CFG.Vertex> cs = g.EndChangeSet(r);
+                c.ConvertToLLVM(cs);
+                IntPtr p = c.GetPtr(cs.First().Name);
+                DFoo2 f = (DFoo2) Marshal.GetDelegateForFunctionPointer(p, typeof(DFoo2));
+                for (int k = 0; k < 100; ++k)
+                    Console.WriteLine("Result is: " + f(k));
             }
 
-            mg.StartChangeSet(2);
-            r.AnalyzeMethod(() => Program.Foo3(2));
-            List<CFG.Vertex> change_set2 = mg.EndChangeSet(2);
-            c2.ConvertToLLVM(change_set2);
-            IntPtr p3 = c2.GetPtr(3);
-            DFoo2 ff3 = (DFoo2)Marshal.GetDelegateForFunctionPointer(p3, typeof(DFoo2));
-            for (int k = 0; k < 100; ++k)
             {
-                int result = ff3(k);
-                Console.WriteLine("Result is: " + result);
+                g.StartChangeSet(r);
+                r.AnalyzeMethod(() => Program.Foo3(2));
+                List<CFG.Vertex> cs = g.EndChangeSet(r);
+                c.ConvertToLLVM(cs);
+                IntPtr p = c.GetPtr(cs.First().Name);
+                DFoo2 f = (DFoo2) Marshal.GetDelegateForFunctionPointer(p, typeof(DFoo2));
+                for (int k = 0; k < 100; ++k)
+                    Console.WriteLine("Result is: " + f(k));
             }
 
-            mg.StartChangeSet(3);
-            r.AnalyzeMethod(() => Program.fact(2));
-            List<CFG.Vertex> change_set3 = mg.EndChangeSet(3);
-            c2.ConvertToLLVM(change_set3);
-            IntPtr p4 = c2.GetPtr(7);
-            DFoo2 ff4 = (DFoo2)Marshal.GetDelegateForFunctionPointer(p4, typeof(DFoo2));
-            for (int k = 0; k < 10; ++k)
             {
-                int result = ff4(k);
-                Console.WriteLine("Result is: " + result);
+                g.StartChangeSet(r);
+                r.AnalyzeMethod(() => Program.fact(2));
+                List<CFG.Vertex> cs = g.EndChangeSet(r);
+                c.ConvertToLLVM(cs);
+                IntPtr p = c.GetPtr(cs.First().Name);
+                DFoo2 f = (DFoo2) Marshal.GetDelegateForFunctionPointer(p, typeof(DFoo2));
+                for (int k = 0; k < 10; ++k)
+                    Console.WriteLine("Result is: " + f(k));
             }
 
-            mg.StartChangeSet(4);
-            r.AnalyzeMethod(() => Program.SumOf3Or5(2));
-            List<CFG.Vertex> change_set4 = mg.EndChangeSet(4);
-            c2.ConvertToLLVM(change_set4);
-            IntPtr p5 = c2.GetPtr(change_set4.First().Name);
-            DFoo2 ff5 = (DFoo2)Marshal.GetDelegateForFunctionPointer(p5, typeof(DFoo2));
-            for (int k = 0; k < 10; ++k)
             {
-                int result = ff5(1000);
-                Console.WriteLine("Result is: " + result);
+                g.StartChangeSet(r);
+                r.AnalyzeMethod(() => Program.SumOf3Or5(2));
+                List<CFG.Vertex> cs = g.EndChangeSet(r);
+                c.ConvertToLLVM(cs);
+                IntPtr p = c.GetPtr(cs.First().Name);
+                DFoo2 f = (DFoo2) Marshal.GetDelegateForFunctionPointer(p, typeof(DFoo2));
+                for (int k = 0; k < 10; ++k)
+                    Console.WriteLine("Result is: " + f(1000));
+                int pp = SumOf3Or5(1000);
             }
 
-            int pp = SumOf3Or5(1000);
-
-
-            mg.StartChangeSet(10);
-            r.AnalyzeMethod(() => Program.Ackermann(2, 2));
-            List<CFG.Vertex> change_set19 = mg.EndChangeSet(10);
-            c2.ConvertToLLVM(change_set19);
-            IntPtr p10 = c2.GetPtr(change_set19.First().Name);
-            DAck ff10 = (DAck)Marshal.GetDelegateForFunctionPointer(p10, typeof(DAck));
-            for (long m = 0; m <= 3; ++m)
             {
-                for (long n = 0; n <= 4; ++n)
+                g.StartChangeSet(r);
+                r.AnalyzeMethod(() => Program.Ackermann(2, 2));
+                List<CFG.Vertex> cs = g.EndChangeSet(r);
+                c.ConvertToLLVM(cs);
+                IntPtr p = c.GetPtr(cs.First().Name);
+                DAck f = (DAck) Marshal.GetDelegateForFunctionPointer(p, typeof(DAck));
+                for (long m = 0; m <= 3; ++m)
                 {
-                    Console.WriteLine();
-                    Console.WriteLine("Ackermann({0}, {1}) = {2}", m, n, Ackermann(m, n));
-                    long result = ff10(m, n);
-                    Console.WriteLine("Result is: " + result);
+                    for (long n = 0; n <= 4; ++n)
+                    {
+                        Console.WriteLine();
+                        Console.WriteLine("Ackermann({0}, {1}) = {2}", m, n, Ackermann(m, n));
+                        long result = f(m, n);
+                        Console.WriteLine("Result is: " + result);
+                    }
                 }
             }
         }
