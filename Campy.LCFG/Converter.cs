@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Threading;
 using Campy.GraphAlgorithms;
 using Campy.Graphs;
 using Campy.Types.Utils;
@@ -25,7 +26,9 @@ namespace Campy.ControlFlowGraph
 
         public void ConvertToLLVM(IEnumerable<CFG.Vertex> change_set)
         {
-            // Map all basic blocks in CIL to LLVM.
+            //
+            // Create a basic block, module in LLVM for entry blocks in the CIL graph.
+            //
             IEnumerable<CFG.Vertex> mono_bbs = change_set;
             foreach (var lv in mono_bbs)
             {
@@ -43,56 +46,11 @@ namespace Campy.ControlFlowGraph
                     if (count > 0)
                         foreach (ParameterInfo p in mb.GetParameters())
                         {
-                            if (p.ParameterType.IsValueType && p.ParameterType == typeof(Int16))
-                            {
-                                param_types[current++] = LLVM.Int16Type();
-                            }
-                            else if (p.ParameterType.IsValueType && p.ParameterType == typeof(Int32))
-                            {
-                                param_types[current++] = LLVM.Int32Type();
-                            }
-                            else if (p.ParameterType.IsValueType && p.ParameterType == typeof(Int64))
-                            {
-                                param_types[current++] = LLVM.Int64Type();
-                            }
-                            else if (p.ParameterType.IsValueType && p.ParameterType == typeof(Boolean))
-                            {
-                                param_types[current++] = LLVM.Int1Type();
-                            }
-                            else if (p.ParameterType.IsArray)
-                            {
-
-                            }
+                            param_types[current++] = ConvertSystemTypeToLLVM(p.ParameterType);
                         }
                     TypeRef ret_type = default(TypeRef);
-                    if (mb is System.Reflection.MethodInfo mi2 && mi2.ReturnType == typeof(int))
-                    {
-                        ret_type = LLVM.Int32Type();
-                    }
-                    else if (mb is System.Reflection.MethodInfo mi3 && mi3.ReturnType == typeof(Int16))
-                    {
-                        ret_type = LLVM.Int16Type();
-                    }
-                    else if (mb is System.Reflection.MethodInfo mi4 && mi4.ReturnType == typeof(Int32))
-                    {
-                        ret_type = LLVM.Int32Type();
-                    }
-                    else if (mb is System.Reflection.MethodInfo mi5 && mi5.ReturnType == typeof(Int64))
-                    {
-                        ret_type = LLVM.Int64Type();
-                    }
-                    else if (mb is System.Reflection.MethodInfo mi6 && mi6.ReturnType == typeof(Boolean))
-                    {
-                        ret_type = LLVM.Int1Type();
-                    }
-                    else if (mb is System.Reflection.MethodInfo mi7 && mi7.ReturnType.IsArray)
-                    {
-                        throw new Exception("Cannot handle parameter type.");
-                    }
-                    else
-                    {
-                        throw new Exception("Cannot handle parameter type.");
-                    }
+                    var mi2 = mb as System.Reflection.MethodInfo;
+                    ret_type = ConvertSystemTypeToLLVM(mi2.ReturnType);
                     TypeRef met_type = LLVM.FunctionType(ret_type, param_types, false);
                     ValueRef fun = LLVM.AddFunction(mod, mb.Name, met_type);
                     BasicBlockRef entry = LLVM.AppendBasicBlock(fun, lv.Name.ToString());
@@ -119,16 +77,16 @@ namespace Campy.ControlFlowGraph
                     LLVM.PositionBuilderAtEnd(builder, bb);
                 }
             }
-	        foreach (CFG.Vertex mv in mono_bbs)
-	        {
-		        Inst prev = null;
-		        foreach (var j in mv.Instructions)
-		        {
-		            j.Block = mv;
-			        if (prev != null) prev.Next = j;
-			        prev = j;
-		        }
-	        }
+            foreach (CFG.Vertex mv in mono_bbs)
+            {
+                Inst prev = null;
+                foreach (var j in mv.Instructions)
+                {
+                    j.Block = mv;
+                    if (prev != null) prev.Next = j;
+                    prev = j;
+                }
+            }
 
             var entries = _mcfg.VertexNodes.Where(node => node.IsEntry).ToList();
 
@@ -429,24 +387,15 @@ namespace Campy.ControlFlowGraph
                     llvm_node.StateOut.Dump();
                 }
             }
-        }
 
-        public string GetStringTypeOf(ValueRef v)
-        {
-            TypeRef stype = LLVM.TypeOf(v);
-            if (stype == LLVM.Int64Type())
-                return "Int64Type";
-            else if (stype == LLVM.Int32Type())
-                return "Int32Type";
-            else if (stype == LLVM.Int16Type())
-                return "Int16Type";
-            else if (stype == LLVM.Int8Type())
-                return "Int8Type";
-            else if (stype == LLVM.DoubleType())
-                return "DoubleType";
-            else if (stype == LLVM.FloatType())
-                return "FloatType";
-            else return "unknown";
+            foreach (var lv in mono_bbs)
+            {
+                if (lv.IsEntry)
+                {
+                    ModuleRef mod = lv.Module;
+                    LLVM.DumpModule(mod);
+                }
+            }
         }
 
         public IntPtr GetPtr(int block_number)
@@ -480,7 +429,25 @@ namespace Campy.ControlFlowGraph
             return p;
         }
 
-        public static TypeRef MapMonoTypeToLLVMType(TypeDefinition td)
+        public static string GetStringTypeOf(ValueRef v)
+        {
+            TypeRef stype = LLVM.TypeOf(v);
+            if (stype == LLVM.Int64Type())
+                return "Int64Type";
+            else if (stype == LLVM.Int32Type())
+                return "Int32Type";
+            else if (stype == LLVM.Int16Type())
+                return "Int16Type";
+            else if (stype == LLVM.Int8Type())
+                return "Int8Type";
+            else if (stype == LLVM.DoubleType())
+                return "DoubleType";
+            else if (stype == LLVM.FloatType())
+                return "FloatType";
+            else return "unknown";
+        }
+
+        public static TypeRef ConvertMonoTypeToLLVM(TypeDefinition td)
         {
             System.Type sys_type = Campy.Types.Utils.ReflectionCecilInterop.ConvertToBasicSystemReflectionType(td);
             TypeRef type;
@@ -500,8 +467,52 @@ namespace Campy.ControlFlowGraph
             {
                 type = LLVM.Int32Type();
             }
+            else if (sys_type == typeof(System.Char))
+            {
+                type = LLVM.Int16Type();
+            }
             else throw new Exception("Cannot handle type.");
             return type;
+        }
+
+        private TypeRef ConvertSystemTypeToLLVM(System.Type t)
+        {
+            if (t == typeof(Int16))
+            {
+                return LLVM.Int16Type();
+            }
+            else if (t == typeof(Int32))
+            {
+                return LLVM.Int32Type();
+            }
+            else if (t == typeof(Int64))
+            {
+                return LLVM.Int64Type();
+            }
+            else if (t == typeof(Boolean))
+            {
+                return LLVM.Int1Type();
+            }
+            else if (t == typeof(System.Char))
+            {
+                return LLVM.Int16Type();
+            }
+            else if (t.IsArray)
+            {
+                var element_type = t.GetElementType();
+                var e = ConvertSystemTypeToLLVM(element_type);
+                var p = LLVM.PointerType(e, 0);
+                var d = LLVM.GetUndef(p);
+                ContextRef c = LLVM.ContextCreate();
+                TypeRef s = LLVM.StructCreateNamed(c, t.ToString());
+                LLVM.StructSetBody(s, new TypeRef[2]
+                {
+                    LLVM.PointerType(ConvertSystemTypeToLLVM(t.GetElementType()), 0),
+                    LLVM.Int32Type()
+                }, false);
+                return s;
+            }
+            throw new Exception("Unknown type.");
         }
     }
 }

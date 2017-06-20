@@ -31,7 +31,12 @@ namespace Campy.ControlFlowGraph
 		// Required instruction sequencing so we can translate groups of instructions.
 		public virtual Inst Next { get; set; }
 		public virtual void ComputeStackLevel(ref int level_after) { }
-		public virtual Inst Convert(State state) { return null; }
+
+        public virtual Inst Convert(State state)
+        {
+            throw new Exception("Must have an implementation for Convert!");
+            return null;
+        }
 		private State _state_in;
 		public State StateIn
 		{
@@ -1222,6 +1227,138 @@ namespace Campy.ControlFlowGraph
         }
     }
 
+
+    public class ConvertInst : Inst
+    {
+        protected TypeRef dtype;
+
+        ValueRef convert_full(ValueRef v, TypeRef dtype, bool is_unsigned)
+        {
+            TypeRef stype = LLVM.TypeOf(v);
+            if (stype != dtype)
+            {
+                bool ext = false;
+
+                /* Extend */
+                if (dtype == LLVM.Int64Type() && (stype == LLVM.Int32Type() || stype == LLVM.Int16Type() ||
+                                                  stype == LLVM.Int8Type()))
+                    ext = true;
+                else if (dtype == LLVM.Int32Type() && (stype == LLVM.Int16Type() || stype == LLVM.Int8Type()))
+                    ext = true;
+                else if (dtype == LLVM.Int16Type() && (stype == LLVM.Int8Type()))
+                    ext = true;
+
+                if (ext)
+                    return is_unsigned
+                        ? LLVM.BuildZExt(Builder, v, dtype, "")
+                        : LLVM.BuildSExt(Builder, v, dtype, "");
+
+                if (dtype == LLVM.DoubleType() && stype == LLVM.FloatType())
+                    return LLVM.BuildFPExt(Builder, v, dtype, "");
+
+                /* Trunc */
+                if (stype == LLVM.Int64Type() && (dtype == LLVM.Int32Type() || dtype == LLVM.Int16Type() ||
+                                                  dtype == LLVM.Int8Type()))
+                    return LLVM.BuildTrunc(Builder, v, dtype, "");
+                if (stype == LLVM.Int32Type() && (dtype == LLVM.Int16Type() || dtype == LLVM.Int8Type()))
+                    return LLVM.BuildTrunc(Builder, v, dtype, "");
+                if (stype == LLVM.Int16Type() && dtype == LLVM.Int8Type())
+                    return LLVM.BuildTrunc(Builder, v, dtype, "");
+                if (stype == LLVM.DoubleType() && dtype == LLVM.FloatType())
+                    return LLVM.BuildFPTrunc(Builder, v, dtype, "");
+
+                //if (LLVM.GetTypeKind(stype) == LLVM.PointerTypeKind && LLVM.GetTypeKind(dtype) == LLVMPointerTypeKind)
+                //    return LLVM.BuildBitCast(Builder, v, dtype, "");
+                //if (LLVM.GetTypeKind(dtype) == LLVM.PointerTypeKind)
+                //    return LLVM.BuildIntToPtr(Builder, v, dtype, "");
+                //if (LLVM.GetTypeKind(stype) == LLVM.PointerTypeKind)
+                //    return LLVM.BuildPtrToInt(Builder, v, dtype, "");
+
+                //if (mono_arch_is_soft_float())
+                //{
+                //    if (stype == LLVM.Int32Type() && dtype == LLVM.FloatType())
+                //        return LLVM.BuildBitCast(Builder, v, dtype, "");
+                //    if (stype == LLVM.Int32Type() && dtype == LLVM.DoubleType())
+                //        return LLVM.BuildBitCast(Builder, LLVM.BuildZExt(Builder, v, LLVM.Int64Type(), ""), dtype, "");
+                //}
+
+                //if (LLVM.GetTypeKind(stype) == LLVM.VectorTypeKind && LLVM.GetTypeKind(dtype) == LLVMVectorTypeKind)
+                //    return LLVM.BuildBitCast(Builder, v, dtype, "");
+
+                LLVM.DumpValue(v);
+                LLVM.DumpValue(LLVM.ConstNull(dtype));
+                return default(ValueRef);
+            }
+            else
+            {
+                return v;
+            }
+        }
+
+        public ConvertInst(Mono.Cecil.Cil.Instruction i)
+            : base(i)
+        {
+        }
+
+        public override Inst Convert(State state)
+        {
+            Value vv = state._stack.Pop();
+            ValueRef v = vv.V;
+            // TypeRef dtype = LLVM.Int64Type();
+            ValueRef r = convert_full(v, dtype, false);
+            state._stack.Push(new Value(r, dtype));
+            return Next;
+        }
+    }
+
+    public class ConvertLoadElement : Inst
+    {
+        public ConvertLoadElement(Mono.Cecil.Cil.Instruction i)
+            : base(i)
+        {
+        }
+
+        public override void ComputeStackLevel(ref int level_after)
+        {
+            level_after--;
+        }
+
+        public override Inst Convert(State state)
+        {
+            Value i = state._stack.Pop();
+            Value v = state._stack.Pop();
+            TypeRef tr = LLVM.TypeOf(v.V);
+            System.Console.WriteLine(LLVM.PrintTypeToString(tr));
+            bool isPtr = v.T.isPointerTy();
+            bool isArr = v.T.isArrayTy();
+            bool isSt = v.T.isStructTy();
+            TypeKind kind = LLVM.GetTypeKind(tr);
+            bool isPtra = kind == TypeKind.PointerTypeKind;
+            bool isArra = kind == TypeKind.ArrayTypeKind;
+            bool isSta = kind == TypeKind.StructTypeKind;
+            ValueRef[] indexes = new ValueRef[1];
+            indexes[0] = i.V;
+            ValueRef load = LLVM.BuildExtractValue(Builder, v.V, 0, "");
+            ValueRef ll = LLVM.BuildInBoundsGEP(Builder, load, indexes, "");
+            var tt = LLVM.TypeOf(load);
+            System.Console.WriteLine(LLVM.PrintTypeToString(tt));
+            bool xInt = LLVM.GetTypeKind(tt) == TypeKind.IntegerTypeKind;
+            bool xP = LLVM.GetTypeKind(tt) == TypeKind.PointerTypeKind;
+            bool xA = LLVM.GetTypeKind(tt) == TypeKind.ArrayTypeKind;
+            System.Console.WriteLine(Converter.GetStringTypeOf(load));
+            if (tt == LLVM.Int32Type())
+                System.Console.WriteLine("int32");
+            ValueRef ssss = LLVM.SizeOf(tt);
+
+            //var zz = LLVM.BuildLoad(Builder, load, "");
+            var zz = LLVM.BuildLoad(Builder, ll, "");
+
+            //state._stack.Push(new Value(zz));
+            state._stack.Push(new Value(zz));
+            return Next;
+        }
+    }
+
     public class i_add : BinaryOpInst
     {
         public i_add(Mono.Cecil.Cil.Instruction i)
@@ -1881,108 +2018,39 @@ namespace Campy.ControlFlowGraph
         }
     }
 
-    public class i_conv_i1 : Inst
+    public class i_conv_i1 : ConvertInst
     {
         public i_conv_i1(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+            dtype = LLVM.Int8Type();
         }
     }
 
-    public class i_conv_i2 : Inst
+    public class i_conv_i2 : ConvertInst
     {
         public i_conv_i2(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+            dtype = LLVM.Int16Type();
         }
     }
 
-    public class i_conv_i4 : Inst
+    public class i_conv_i4 : ConvertInst
     {
         public i_conv_i4(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+            dtype = LLVM.Int32Type();
         }
     }
 
-    public class i_conv_i8 : Inst
+    public class i_conv_i8 : ConvertInst
     {
-	    ValueRef convert_full(ValueRef v, TypeRef dtype, bool is_unsigned)
-	    {
-		    TypeRef stype = LLVM.TypeOf(v);
-		    if (stype != dtype)
-		    {
-			    bool ext = false;
-
-		    /* Extend */
-			    if (dtype == LLVM.Int64Type() && (stype == LLVM.Int32Type() || stype == LLVM.Int16Type() ||
-				    stype == LLVM.Int8Type()))
-				    ext = true;
-			    else if (dtype == LLVM.Int32Type() && (stype == LLVM.Int16Type() || stype == LLVM.Int8Type()))
-				    ext = true;
-			    else if (dtype == LLVM.Int16Type() && (stype == LLVM.Int8Type()))
-				    ext = true;
-
-			    if (ext)
-				    return is_unsigned
-						    ? LLVM.BuildZExt(Builder, v, dtype, "")
-						    : LLVM.BuildSExt(Builder, v, dtype, "");
-
-			    if (dtype == LLVM.DoubleType() && stype == LLVM.FloatType())
-				    return LLVM.BuildFPExt(Builder, v, dtype, "");
-
-		    /* Trunc */
-			    if (stype == LLVM.Int64Type() && (dtype == LLVM.Int32Type() || dtype == LLVM.Int16Type() ||
-				    dtype == LLVM.Int8Type()))
-				    return LLVM.BuildTrunc(Builder, v, dtype, "");
-			    if (stype == LLVM.Int32Type() && (dtype == LLVM.Int16Type() || dtype == LLVM.Int8Type()))
-				    return LLVM.BuildTrunc(Builder, v, dtype, "");
-			    if (stype == LLVM.Int16Type() && dtype == LLVM.Int8Type())
-				    return LLVM.BuildTrunc(Builder, v, dtype, "");
-			    if (stype == LLVM.DoubleType() && dtype == LLVM.FloatType())
-				    return LLVM.BuildFPTrunc(Builder, v, dtype, "");
-
-		    //if (LLVM.GetTypeKind(stype) == LLVM.PointerTypeKind && LLVM.GetTypeKind(dtype) == LLVMPointerTypeKind)
-		    //    return LLVM.BuildBitCast(Builder, v, dtype, "");
-		    //if (LLVM.GetTypeKind(dtype) == LLVM.PointerTypeKind)
-		    //    return LLVM.BuildIntToPtr(Builder, v, dtype, "");
-		    //if (LLVM.GetTypeKind(stype) == LLVM.PointerTypeKind)
-		    //    return LLVM.BuildPtrToInt(Builder, v, dtype, "");
-
-		    //if (mono_arch_is_soft_float())
-		    //{
-		    //    if (stype == LLVM.Int32Type() && dtype == LLVM.FloatType())
-		    //        return LLVM.BuildBitCast(Builder, v, dtype, "");
-		    //    if (stype == LLVM.Int32Type() && dtype == LLVM.DoubleType())
-		    //        return LLVM.BuildBitCast(Builder, LLVM.BuildZExt(Builder, v, LLVM.Int64Type(), ""), dtype, "");
-		    //}
-
-		    //if (LLVM.GetTypeKind(stype) == LLVM.VectorTypeKind && LLVM.GetTypeKind(dtype) == LLVMVectorTypeKind)
-		    //    return LLVM.BuildBitCast(Builder, v, dtype, "");
-
-			    LLVM.DumpValue(v);
-			    LLVM.DumpValue(LLVM.ConstNull(dtype));
-			    return default(ValueRef);
-		    }
-		    else
-		    {
-			    return v;
-		    }
-	    }
-
 	    public i_conv_i8(Mono.Cecil.Cil.Instruction i)
 			    : base(i)
 	    {
-	    }
-
-	    public override Inst Convert(State state)
-	    {
-		    Value vv = state._stack.Pop();
-		    ValueRef v = vv.V;
-		    TypeRef dtype = LLVM.Int64Type();
-		    ValueRef r = convert_full(v, dtype, false);
-		    state._stack.Push(new Value(r, dtype));
-		    return Next;
+	        dtype = LLVM.Int64Type();
 	    }
     }
 
@@ -2843,39 +2911,29 @@ namespace Campy.ControlFlowGraph
             _arg = arg;
         }
 
-	public override void ComputeStackLevel(ref int level_after)
-	{
-		level_after++;
-	}
+	    public override void ComputeStackLevel(ref int level_after)
+	    {
+		    level_after++;
+	    }
     }
 
-    public class i_ldelem_any : Inst
+    public class i_ldelem_any : ConvertLoadElement
     {
         public i_ldelem_any(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
-
-	public override void ComputeStackLevel(ref int level_after)
-	{
-		level_after--;
-	}
     }
 
-    public class i_ldelem_i1 : Inst
+    public class i_ldelem_i1 : ConvertLoadElement
     {
         public i_ldelem_i1(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
-
-	public override void ComputeStackLevel(ref int level_after)
-	{
-		level_after--;
-	}
     }
 
-    public class i_ldelem_i2 : Inst
+    public class i_ldelem_i2 : ConvertLoadElement
     {
         public i_ldelem_i2(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -2883,134 +2941,84 @@ namespace Campy.ControlFlowGraph
         }
     }
 
-    public class i_ldelem_i4 : Inst
+    public class i_ldelem_i4 : ConvertLoadElement
     {
         public i_ldelem_i4(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
-
-	public override void ComputeStackLevel(ref int level_after)
-	{
-		level_after--;
-	}
     }
 
-    public class i_ldelem_i8 : Inst
+    public class i_ldelem_i8 : ConvertLoadElement
     {
         public i_ldelem_i8(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
-
-	public override void ComputeStackLevel(ref int level_after)
-	{
-		level_after--;
-	}
     }
 
-    public class i_ldelem_i : Inst
+    public class i_ldelem_i : ConvertLoadElement
     {
         public i_ldelem_i(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
-
-	public override void ComputeStackLevel(ref int level_after)
-	{
-		level_after--;
-	}
     }
 
-    public class i_ldelem_r4 : Inst
+    public class i_ldelem_r4 : ConvertLoadElement
     {
         public i_ldelem_r4(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
-
-	public override void ComputeStackLevel(ref int level_after)
-	{
-		level_after--;
-	}
     }
 
-    public class i_ldelem_r8 : Inst
+    public class i_ldelem_r8 : ConvertLoadElement
     {
         public i_ldelem_r8(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
-
-	public override void ComputeStackLevel(ref int level_after)
-	{
-		level_after--;
-	}
     }
 
-    public class i_ldelem_ref : Inst
+    public class i_ldelem_ref : ConvertLoadElement
     {
         public i_ldelem_ref(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
-
-	public override void ComputeStackLevel(ref int level_after)
-	{
-		level_after--;
-	}
     }
 
-    public class i_ldelem_u1 : Inst
+    public class i_ldelem_u1 : ConvertLoadElement
     {
         public i_ldelem_u1(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
-
-	public override void ComputeStackLevel(ref int level_after)
-	{
-		level_after--;
-	}
     }
 
-    public class i_ldelem_u2 : Inst
+    public class i_ldelem_u2 : ConvertLoadElement
     {
         public i_ldelem_u2(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
-
-	public override void ComputeStackLevel(ref int level_after)
-	{
-		level_after--;
-	}
     }
 
-    public class i_ldelem_u4 : Inst
+    public class i_ldelem_u4 : ConvertLoadElement
     {
         public i_ldelem_u4(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
-
-	public override void ComputeStackLevel(ref int level_after)
-	{
-		level_after--;
-	}
     }
 
-    public class i_ldelema : Inst
+    public class i_ldelema : ConvertLoadElement
     {
         public i_ldelema(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
-
-	public override void ComputeStackLevel(ref int level_after)
-	{
-		level_after--;
-	}
     }
 
     public class i_ldfld : Inst
@@ -3135,6 +3143,43 @@ namespace Campy.ControlFlowGraph
         public i_ldlen(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+        }
+
+        // For array implementation, see https://www.codeproject.com/Articles/3467/Arrays-UNDOCUMENTED
+        public override void ComputeStackLevel(ref int level_after)
+        {
+            // No effect change in stack size.
+        }
+
+        public override Inst Convert(State state)
+        {
+            Value v = state._stack.Pop();
+            TypeRef tr = LLVM.TypeOf(v.V);
+            // Add 1 to pointer, deref, push value on stack.
+            bool isPtr = v.T.isPointerTy();
+            bool isArr = v.T.isArrayTy();
+            bool isSt = v.T.isStructTy();
+            TypeKind kind = LLVM.GetTypeKind(tr);
+            bool isPtra = kind == TypeKind.PointerTypeKind;
+            bool isArra = kind == TypeKind.ArrayTypeKind;
+            bool isSta = kind == TypeKind.StructTypeKind;
+
+            //if (! isPtr) throw new Exception("This is not a pointer type!");
+            ValueRef[] indexes = new ValueRef[1];
+            indexes[0] = LLVM.ConstInt(LLVM.Int32Type(), 1, false);
+            ValueRef load = LLVM.BuildExtractValue(Builder, v.V, 1, "");
+
+            var tt = LLVM.TypeOf(load);
+            System.Console.WriteLine(LLVM.PrintTypeToString(tt));
+            bool xInt = LLVM.GetTypeKind(tt) == TypeKind.IntegerTypeKind;
+            bool xP = LLVM.GetTypeKind(tt) == TypeKind.PointerTypeKind;
+            bool xA = LLVM.GetTypeKind(tt) == TypeKind.ArrayTypeKind;
+            System.Console.WriteLine(Converter.GetStringTypeOf(load));
+            if (tt == LLVM.Int32Type())
+                System.Console.WriteLine("int32");
+            ValueRef ssss = LLVM.SizeOf(tt);
+            state._stack.Push(new Value(load));
+            return Next;
         }
     }
 

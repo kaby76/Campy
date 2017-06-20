@@ -68,6 +68,22 @@ namespace ConsoleApp4
 
         public delegate long DAck(long a, long b);
 
+        public static int CountChar(char c, char[] a)
+        {
+            return a.Length;
+            int result = 0;
+            for (int i = 0; i < a.Length; ++i)
+                if (c == a[i]) result++;
+            return result;
+        }
+        public delegate long DCountChar(char c, char[] a);
+        public static Int64 SimpleCount(int ind, Int64[] a)
+        {
+            return a[ind];
+        }
+        public delegate Int64 DSimpleCount(int ind, Int64[] a);
+
+
         static void Main(string[] args)
         {
             Swigged.LLVM.Helper.Adjust.Path();
@@ -127,7 +143,7 @@ namespace ConsoleApp4
                 List<CFG.Vertex> cs = g.EndChangeSet(r);
                 c.ConvertToLLVM(cs);
                 IntPtr p = c.GetPtr(cs.First().Name);
-                DAck f = (DAck) Marshal.GetDelegateForFunctionPointer(p, typeof(DAck));
+                DAck f = (DAck)Marshal.GetDelegateForFunctionPointer(p, typeof(DAck));
                 for (long m = 0; m <= 3; ++m)
                 {
                     for (long n = 0; n <= 4; ++n)
@@ -137,6 +153,22 @@ namespace ConsoleApp4
                         long result = f(m, n);
                         Console.WriteLine("Result is: " + result);
                     }
+                }
+            }
+
+            {
+                g.StartChangeSet(r);
+                r.AnalyzeMethod(() => Program.SimpleCount(1, new Int64[2]));
+                List<CFG.Vertex> cs = g.EndChangeSet(r);
+                c.ConvertToLLVM(cs);
+                IntPtr p = c.GetPtr(cs.First().Name);
+                DSimpleCount f = (DSimpleCount)Marshal.GetDelegateForFunctionPointer(p, typeof(DSimpleCount));
+                Console.WriteLine();
+                var dataArray = new Int64[10]{1,2,3,4,5,6,7,8,9,10};
+                for (int j = 0; j < 10; ++j)
+                {
+                    Int64 result = f(j, dataArray);
+                    Console.WriteLine("Result is: " + result);
                 }
             }
         }
