@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Campy.ControlFlowGraph;
+using Campy.Types;
 using Swigged.LLVM;
 
 namespace ConsoleApp4
@@ -77,100 +78,205 @@ namespace ConsoleApp4
             return result;
         }
         public delegate long DCountChar(char c, char[] a);
+
+
         public static Int64 SimpleCount(int ind, Int64[] a)
         {
             return a[ind];
         }
         public delegate Int64 DSimpleCount(int ind, Int64[] a);
+        public static Int32 SimpleCount2(int ind, Int32[] a)
+        {
+            return a[ind];
+        }
+        public delegate Int32 DSimpleCount2(int ind, Int32[] a);
+
+        public static Int16 SimpleCount3(int ind, Int16[] a)
+        {
+            return a[ind];
+        }
+        public delegate Int16 DSimpleCount3(int ind, Int16[] a);
+
+        public static Char SimpleCount4(int ind, Char[] a)
+        {
+            return a[ind];
+        }
+        public delegate Char DSimpleCount4(int ind, Char[] a);
+
+        public static Int64 SimpleCount5(int[] a)
+        {
+            return a.Length;
+        }
+        public delegate Int64 DSimpleCount5(int[] a);
 
 
         static void Main(string[] args)
         {
-            Swigged.LLVM.Helper.Adjust.Path();
+            var all = Campy.Types.Accelerator.GetAll();
+            int[] host_data = new[] { 1, 2, 3, 4, 5 };
+            ArrayView<int> av = new ArrayView<int>(ref host_data);
+            Campy.Parallel.For(av.Extent, idx => { av[idx] += 1; });
+            for (int i = 0; i < host_data.Length; ++i)
+                System.Console.WriteLine(av[i]);
 
-            Reader r = new Reader();
-            var g = r.Cfg;
-            var c = new Campy.ControlFlowGraph.Converter(g);
+            //Swigged.LLVM.Helper.Adjust.Path();
 
-            {
-                g.StartChangeSet(r);
-                r.AnalyzeMethod(() => Program.Foo2(1));
-                List<CFG.Vertex> cs = g.EndChangeSet(r);
-                c.ConvertToLLVM(cs);
-                IntPtr p = c.GetPtr(cs.First().Name);
-                DFoo2 f = (DFoo2) Marshal.GetDelegateForFunctionPointer(p, typeof(DFoo2));
-                for (int k = 0; k < 100; ++k)
-                    Console.WriteLine("Result is: " + f(k));
-            }
+            //Reader r = new Reader();
+            //var g = r.Cfg;
+            //var c = new Campy.ControlFlowGraph.Converter(g);
 
-            {
-                g.StartChangeSet(r);
-                r.AnalyzeMethod(() => Program.Foo3(2));
-                List<CFG.Vertex> cs = g.EndChangeSet(r);
-                c.ConvertToLLVM(cs);
-                IntPtr p = c.GetPtr(cs.First().Name);
-                DFoo2 f = (DFoo2) Marshal.GetDelegateForFunctionPointer(p, typeof(DFoo2));
-                for (int k = 0; k < 100; ++k)
-                    Console.WriteLine("Result is: " + f(k));
-            }
+            //int sz = int.Parse("33");
+            //int[] Sa = new int[sz];
+            //for (int kk = 0; kk < Sa.Length; ++kk) Sa[kk] = kk;
+            //System.Console.WriteLine(Sa.Length);
 
-            {
-                g.StartChangeSet(r);
-                r.AnalyzeMethod(() => Program.fact(2));
-                List<CFG.Vertex> cs = g.EndChangeSet(r);
-                c.ConvertToLLVM(cs);
-                IntPtr p = c.GetPtr(cs.First().Name);
-                DFoo2 f = (DFoo2) Marshal.GetDelegateForFunctionPointer(p, typeof(DFoo2));
-                for (int k = 0; k < 10; ++k)
-                    Console.WriteLine("Result is: " + f(k));
-            }
 
-            {
-                g.StartChangeSet(r);
-                r.AnalyzeMethod(() => Program.SumOf3Or5(2));
-                List<CFG.Vertex> cs = g.EndChangeSet(r);
-                c.ConvertToLLVM(cs);
-                IntPtr p = c.GetPtr(cs.First().Name);
-                DFoo2 f = (DFoo2) Marshal.GetDelegateForFunctionPointer(p, typeof(DFoo2));
-                for (int k = 0; k < 10; ++k)
-                    Console.WriteLine("Result is: " + f(1000));
-                int pp = SumOf3Or5(1000);
-            }
+            //{
+            //    g.StartChangeSet(r);
+            //    r.AnalyzeMethod(() => Program.Foo2(1));
+            //    List<CFG.Vertex> cs = g.EndChangeSet(r);
+            //    c.ConvertToLLVM(cs);
+            //    IntPtr p = c.GetPtr(cs.First().Name);
+            //    DFoo2 f = (DFoo2) Marshal.GetDelegateForFunctionPointer(p, typeof(DFoo2));
+            //    for (int k = 0; k < 100; ++k)
+            //        Console.WriteLine("Result is: " + f(k));
+            //}
 
-            {
-                g.StartChangeSet(r);
-                r.AnalyzeMethod(() => Program.Ackermann(2, 2));
-                List<CFG.Vertex> cs = g.EndChangeSet(r);
-                c.ConvertToLLVM(cs);
-                IntPtr p = c.GetPtr(cs.First().Name);
-                DAck f = (DAck)Marshal.GetDelegateForFunctionPointer(p, typeof(DAck));
-                for (long m = 0; m <= 3; ++m)
-                {
-                    for (long n = 0; n <= 4; ++n)
-                    {
-                        Console.WriteLine();
-                        Console.WriteLine("Ackermann({0}, {1}) = {2}", m, n, Ackermann(m, n));
-                        long result = f(m, n);
-                        Console.WriteLine("Result is: " + result);
-                    }
-                }
-            }
+            //{
+            //    g.StartChangeSet(r);
+            //    r.AnalyzeMethod(() => Program.Foo3(2));
+            //    List<CFG.Vertex> cs = g.EndChangeSet(r);
+            //    c.ConvertToLLVM(cs);
+            //    IntPtr p = c.GetPtr(cs.First().Name);
+            //    DFoo2 f = (DFoo2) Marshal.GetDelegateForFunctionPointer(p, typeof(DFoo2));
+            //    for (int k = 0; k < 100; ++k)
+            //        Console.WriteLine("Result is: " + f(k));
+            //}
 
-            {
-                g.StartChangeSet(r);
-                r.AnalyzeMethod(() => Program.SimpleCount(1, new Int64[2]));
-                List<CFG.Vertex> cs = g.EndChangeSet(r);
-                c.ConvertToLLVM(cs);
-                IntPtr p = c.GetPtr(cs.First().Name);
-                DSimpleCount f = (DSimpleCount)Marshal.GetDelegateForFunctionPointer(p, typeof(DSimpleCount));
-                Console.WriteLine();
-                var dataArray = new Int64[10]{1,2,3,4,5,6,7,8,9,10};
-                for (int j = 0; j < 10; ++j)
-                {
-                    Int64 result = f(j, dataArray);
-                    Console.WriteLine("Result is: " + result);
-                }
-            }
+            //{
+            //    g.StartChangeSet(r);
+            //    r.AnalyzeMethod(() => Program.fact(2));
+            //    List<CFG.Vertex> cs = g.EndChangeSet(r);
+            //    c.ConvertToLLVM(cs);
+            //    IntPtr p = c.GetPtr(cs.First().Name);
+            //    DFoo2 f = (DFoo2) Marshal.GetDelegateForFunctionPointer(p, typeof(DFoo2));
+            //    for (int k = 0; k < 10; ++k)
+            //        Console.WriteLine("Result is: " + f(k));
+            //}
+
+            //{
+            //    g.StartChangeSet(r);
+            //    r.AnalyzeMethod(() => Program.SumOf3Or5(2));
+            //    List<CFG.Vertex> cs = g.EndChangeSet(r);
+            //    c.ConvertToLLVM(cs);
+            //    IntPtr p = c.GetPtr(cs.First().Name);
+            //    DFoo2 f = (DFoo2) Marshal.GetDelegateForFunctionPointer(p, typeof(DFoo2));
+            //    for (int k = 0; k < 10; ++k)
+            //        Console.WriteLine("Result is: " + f(1000));
+            //    int pp = SumOf3Or5(1000);
+            //}
+
+            //{
+            //    g.StartChangeSet(r);
+            //    r.AnalyzeMethod(() => Program.Ackermann(2, 2));
+            //    List<CFG.Vertex> cs = g.EndChangeSet(r);
+            //    c.ConvertToLLVM(cs);
+            //    IntPtr p = c.GetPtr(cs.First().Name);
+            //    DAck f = (DAck)Marshal.GetDelegateForFunctionPointer(p, typeof(DAck));
+            //    for (long m = 0; m <= 3; ++m)
+            //    {
+            //        for (long n = 0; n <= 4; ++n)
+            //        {
+            //            Console.WriteLine();
+            //            Console.WriteLine("Ackermann({0}, {1}) = {2}", m, n, Ackermann(m, n));
+            //            long result = f(m, n);
+            //            Console.WriteLine("Result is: " + result);
+            //        }
+            //    }
+            //}
+
+            //{
+            //    g.StartChangeSet(r);
+            //    r.AnalyzeMethod(() => Program.SimpleCount(1, new Int64[2]));
+            //    List<CFG.Vertex> cs = g.EndChangeSet(r);
+            //    c.ConvertToLLVM(cs);
+            //    IntPtr p = c.GetPtr(cs.First().Name);
+            //    DSimpleCount f = (DSimpleCount)Marshal.GetDelegateForFunctionPointer(p, typeof(DSimpleCount));
+            //    Console.WriteLine();
+            //    var dataArray = new Int64[10] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+            //    for (int j = 0; j < 10; ++j)
+            //    {
+            //        Int64 result = f(j, dataArray);
+            //        Console.WriteLine("Result is: " + result);
+            //    }
+            //}
+            //{
+            //    g.StartChangeSet(r);
+            //    r.AnalyzeMethod(() => Program.SimpleCount2(1, new Int32[2]));
+            //    List<CFG.Vertex> cs = g.EndChangeSet(r);
+            //    c.ConvertToLLVM(cs);
+            //    IntPtr p = c.GetPtr(cs.First().Name);
+            //    DSimpleCount2 f = (DSimpleCount2)Marshal.GetDelegateForFunctionPointer(p, typeof(DSimpleCount2));
+            //    Console.WriteLine();
+            //    var dataArray = new Int32[10] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+            //    for (int j = 0; j < 10; ++j)
+            //    {
+            //        Int64 result = f(j, dataArray);
+            //        Console.WriteLine("Result is: " + result);
+            //    }
+            //}
+            //{
+            //    g.StartChangeSet(r);
+            //    r.AnalyzeMethod(() => Program.SimpleCount3(1, new Int16[2]));
+            //    List<CFG.Vertex> cs = g.EndChangeSet(r);
+            //    c.ConvertToLLVM(cs);
+            //    IntPtr p = c.GetPtr(cs.First().Name);
+            //    DSimpleCount3 f = (DSimpleCount3)Marshal.GetDelegateForFunctionPointer(p, typeof(DSimpleCount3));
+            //    Console.WriteLine();
+            //    var dataArray = new Int16[10] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+            //    for (int j = 0; j < 10; ++j)
+            //    {
+            //        Int64 result = f(j, dataArray);
+            //        Console.WriteLine("Result is: " + result);
+            //    }
+            //}
+            //{
+            //    g.StartChangeSet(r);
+            //    r.AnalyzeMethod(() => Program.SimpleCount4(1, new Char[2]));
+            //    List<CFG.Vertex> cs = g.EndChangeSet(r);
+            //    c.ConvertToLLVM(cs);
+            //    IntPtr p = c.GetPtr(cs.First().Name);
+            //    DSimpleCount4 f = (DSimpleCount4)Marshal.GetDelegateForFunctionPointer(p, typeof(DSimpleCount4));
+            //    Console.WriteLine();
+            //    var dataArray = new Char[10] { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j' };
+            //    for (int j = 0; j < 10; ++j)
+            //    {
+            //        Char result = f(j, dataArray);
+            //        Console.WriteLine("Result is: " + result);
+            //    }
+            //}
+            //{
+            //    g.StartChangeSet(r);
+            //    r.AnalyzeMethod(() => Program.SimpleCount5(new int[2]));
+            //    List<CFG.Vertex> cs = g.EndChangeSet(r);
+            //    c.ConvertToLLVM(cs);
+            //    IntPtr p = c.GetPtr(cs.First().Name);
+            //    DSimpleCount5 f = (DSimpleCount5)Marshal.GetDelegateForFunctionPointer(p, typeof(DSimpleCount5));
+            //    Console.WriteLine();
+            //    for (int j = 0; j < 10; ++j)
+            //    {
+            //        unsafe
+            //        {
+            //            fixed (int * ffff = Sa)
+            //            {
+            //                System.Console.WriteLine();
+            //            }
+            //            Int64 result = f(Sa);
+            //            Console.WriteLine("Result is: " + result);
+            //        }
+            //    }
+            //}
+
         }
     }
 }

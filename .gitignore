@@ -14,3 +14,7 @@ Campy.LCFG/bin/
 Campy.MCFG/bin/
 Campy.Types.Utils/bin/
 Campy.Utils/bin/
+Campy/obj/
+Campy/bin/
+Campy.Types/obj/
+Campy.Types/bin/

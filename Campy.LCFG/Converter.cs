@@ -495,7 +495,7 @@ namespace Campy.ControlFlowGraph
             }
             else if (t == typeof(System.Char))
             {
-                return LLVM.Int16Type();
+                return LLVM.Int8Type();
             }
             else if (t.IsArray)
             {
@@ -508,8 +508,8 @@ namespace Campy.ControlFlowGraph
                 LLVM.StructSetBody(s, new TypeRef[2]
                 {
                     LLVM.PointerType(ConvertSystemTypeToLLVM(t.GetElementType()), 0),
-                    LLVM.Int32Type()
-                }, false);
+                    LLVM.Int64Type()
+                }, true);
                 return s;
             }
             throw new Exception("Unknown type.");

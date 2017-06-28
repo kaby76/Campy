@@ -60,9 +60,6 @@
     <Reference Include="Microsoft.Win32.Primitives, Version=4.0.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Win32.Primitives.4.3.0\lib\net46\Microsoft.Win32.Primitives.dll</HintPath>
     </Reference>
-    <Reference Include="std.swigged.llvm">
-      <HintPath>..\..\sw-llvm\swigged-llvm\swigged-llvm\std.swigged.llvm\any\Debug\netstandard1.6\std.swigged.llvm.dll</HintPath>
-    </Reference>
     <Reference Include="swigged.llvm, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\swigged.llvm.4.0.11\lib\netstandard1.5\swigged.llvm.dll</HintPath>
     </Reference>
@@ -153,6 +150,14 @@
     <ProjectReference Include="..\Campy.Graphs\Campy.Graphs.csproj">
       <Project>{a71ce04f-f0d2-46e0-bae8-06cf1ea50f96}</Project>
       <Name>Campy.Graphs</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Campy.Types\Campy.Types.csproj">
+      <Project>{528fba1b-ff5f-493e-861d-e02a727f51ae}</Project>
+      <Name>Campy.Types</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Campy\Campy.csproj">
+      <Project>{453aba79-5380-48a0-8c93-53a814977448}</Project>
+      <Name>Campy</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -8,6 +8,7 @@
     using System.Linq;
     using System.Reflection;
     using System;
+    using Campy.Types;
 
     public class Reader
     {
@@ -31,10 +32,10 @@
             _cfg.OutputEntireGraph();
         }
 
-        public void AnalyzeMethod(Expression<Action> expr)
+        public void AnalyzeMethod(Campy.Types._Kernel_type expr)
         {
-
-            var methodInfo = ((MethodCallExpression)expr.Body).Method;
+            MethodInfo methodInfo = expr.Method;
+            //var methodInfo = ((MethodCallExpression)expr.Body).Method;
             this.Add(methodInfo);
             this.ExtractBasicBlocks();
             _cfg.OutputEntireGraph();

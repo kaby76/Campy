@@ -3153,31 +3153,11 @@ namespace Campy.ControlFlowGraph
 
         public override Inst Convert(State state)
         {
+            throw new Exception("ldlen does not work. Pass array length explicitly.");
+            // Pointer passed is beginning of array, but length is represented
+            // in a 32-bit word 8 bytes before this address.
             Value v = state._stack.Pop();
-            TypeRef tr = LLVM.TypeOf(v.V);
-            // Add 1 to pointer, deref, push value on stack.
-            bool isPtr = v.T.isPointerTy();
-            bool isArr = v.T.isArrayTy();
-            bool isSt = v.T.isStructTy();
-            TypeKind kind = LLVM.GetTypeKind(tr);
-            bool isPtra = kind == TypeKind.PointerTypeKind;
-            bool isArra = kind == TypeKind.ArrayTypeKind;
-            bool isSta = kind == TypeKind.StructTypeKind;
-
-            //if (! isPtr) throw new Exception("This is not a pointer type!");
-            ValueRef[] indexes = new ValueRef[1];
-            indexes[0] = LLVM.ConstInt(LLVM.Int32Type(), 1, false);
             ValueRef load = LLVM.BuildExtractValue(Builder, v.V, 1, "");
-
-            var tt = LLVM.TypeOf(load);
-            System.Console.WriteLine(LLVM.PrintTypeToString(tt));
-            bool xInt = LLVM.GetTypeKind(tt) == TypeKind.IntegerTypeKind;
-            bool xP = LLVM.GetTypeKind(tt) == TypeKind.PointerTypeKind;
-            bool xA = LLVM.GetTypeKind(tt) == TypeKind.ArrayTypeKind;
-            System.Console.WriteLine(Converter.GetStringTypeOf(load));
-            if (tt == LLVM.Int32Type())
-                System.Console.WriteLine("int32");
-            ValueRef ssss = LLVM.SizeOf(tt);
             state._stack.Push(new Value(load));
             return Next;
         }
