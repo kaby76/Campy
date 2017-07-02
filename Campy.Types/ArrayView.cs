@@ -7,36 +7,47 @@ namespace Campy.Types
     {
         public int Rank = 1;
         private Type ValueType;
+        private _Value_type[] arr;
+        private int dimx;
+        private int dimy;
+        private int dimz;
+
         public ArrayView(Array src) { }
         public ArrayView(ArrayView<_Value_type> other) { }
         public ArrayView(Extent extent) { }
         public ArrayView(int l0)
         {
             Rank = 1;
+            arr = new _Value_type[l0];
         }
         public ArrayView(int l0, int l1)
         {
             Rank = 2;
+            arr = new _Value_type[l0*l1];
         }
         public ArrayView(int l0, int l1, int l2)
         {
             Rank = 3;
+            arr = new _Value_type[l0 * l1 * l2];
         }
         public ArrayView(ref _Value_type[] data)
         {
             Rank = 1;
+            arr = new _Value_type[data.Length];
         }
         public ArrayView(ref _Value_type[][] data)
         {
             Rank = 2;
+            arr = new _Value_type[data.Length];
         }
         public ArrayView(ref _Value_type[][][] data)
         {
             Rank = 3;
+            arr = new _Value_type[data.Length];
         }
         public _Value_type this[int i]
         {
-            get { return default(_Value_type); }
+            get { return arr[i]; }
             set { }
         }
         public _Value_type this[int i, int j]

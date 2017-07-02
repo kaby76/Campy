@@ -42,6 +42,20 @@
             _cfg.OutputDotGraph();
         }
 
+        public void AnalyzeMethod(MethodInfo methodInfo)
+        {
+            //var methodInfo = ((MethodCallExpression)expr.Body).Method;
+            this.Add(methodInfo);
+            this.ExtractBasicBlocks();
+        }
+
+        public void AnalyzeMethod(Mono.Cecil.MethodDefinition md)
+        {
+            this.Add(md);
+            this.ExtractBasicBlocks();
+        }
+
+
         public void Add(System.Type type)
         {
             // Add all methods of type.
@@ -120,8 +134,30 @@
         {
             while (_methoddefs_to_do.Count > 0)
             {
+                int change_set_id = this.Cfg.StartChangeSet();
+
                 Mono.Cecil.MethodDefinition definition = _methoddefs_to_do.Pop();
                 ExtractBasicBlocksOfMethod(definition);
+
+                var blocks = this.Cfg.PopChangeSet(change_set_id);
+
+                // Get closure of calls, if possible.
+                foreach (var b in blocks)
+                {
+                    foreach (Inst i in b.Instructions)
+                    {
+                        var fc = i.OpCode.FlowControl;
+                        if (fc != Mono.Cecil.Cil.FlowControl.Call)
+                            continue;
+                        object method = i.Operand;
+                        if (method as Mono.Cecil.MethodReference != null)
+                        {
+                            Mono.Cecil.MethodReference mr = method as Mono.Cecil.MethodReference;
+                            Mono.Cecil.MethodDefinition md = mr.Resolve();
+                            Add(md);
+                        }
+                    }
+                }
             }
         }
 

@@ -78,10 +78,12 @@ namespace Campy.Types
                 if (res != CUresult.CUDA_SUCCESS) continue;
                 res = Cuda.cuDeviceGetAttribute(out int CU_DEVICE_ATTRIBUTE_SHARED_MEMORY_PER_BLOCK, CUdevice_attribute.CU_DEVICE_ATTRIBUTE_SHARED_MEMORY_PER_BLOCK, dev);
                 if (res != CUresult.CUDA_SUCCESS) continue;
-
-                //res = Cuda.cuDeviceGetName(naem, )
+                res = Cuda.cuDeviceGetName(out string name, 1000, dev);
+                if (res != CUresult.CUDA_SUCCESS) continue;
+                res = Cuda.cuDeviceTotalMem_v2(out ulong bytes, dev);
+                if (res != CUresult.CUDA_SUCCESS) continue;
                 var acc = new Accelerator();
-                acc.Description = CU_DEVICE_ATTRIBUTE_WARP_SIZE + "|" + CU_DEVICE_ATTRIBUTE_COMPUTE_MODE;
+                acc.Description = name + " | " + bytes.ToString();
                 results.Add(acc);
             }
             return results;

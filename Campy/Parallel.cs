@@ -25,9 +25,10 @@ namespace Campy
             Reader r = new Reader();
             CFG g = r.Cfg;
             Converter c = new Campy.ControlFlowGraph.Converter(g);
-            g.StartChangeSet(r);
+            int change_set_id = g.StartChangeSet();
             r.AnalyzeMethod(kernel);
-            List<CFG.Vertex> cs = g.EndChangeSet(r);
+
+            List<CFG.Vertex> cs = g.PopChangeSet(change_set_id);
             c.ConvertToLLVM(cs);
             IntPtr p = c.GetPtr(cs.First().Name);
 

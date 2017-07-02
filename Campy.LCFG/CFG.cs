@@ -33,30 +33,38 @@ namespace Campy.ControlFlowGraph
         {
         }
 
-        private Dictionary<object, List<CFG.Vertex>> _change_set = new Dictionary<object, List<Vertex>>();
-
-        public void StartChangeSet(object observer)
+        private Dictionary<int, List<CFG.Vertex>> _change_set = new Dictionary<int, List<Vertex>>();
+        private Random random;
+        
+        public int StartChangeSet()
         {
-            if (_change_set.ContainsKey(observer))
+            if (random == null)
             {
-                _change_set[observer] = new List<Vertex>();
+                random = new Random();
             }
-            else
+            int new_num = 0;
+            for (;;)
             {
-                _change_set.Add(observer, new List<Vertex>());
+                new_num = random.Next(100000000);
+                if (_change_set.ContainsKey(new_num))
+                {
+                    continue;
+                }
+                break;
             }
+            _change_set.Add(new_num, new List<Vertex>());
+            return new_num;
         }
 
-        public List<CFG.Vertex> EndChangeSet(object observer)
+        public List<CFG.Vertex> PopChangeSet(int num)
         {
-            if (_change_set.ContainsKey(observer))
+            if (_change_set.ContainsKey(num))
             {
-                List<CFG.Vertex> list = _change_set[observer];
-                _change_set.Remove(observer);
+                List<CFG.Vertex> list = _change_set[num];
+                _change_set.Remove(num);
                 return list;
             }
-            else
-                return null;
+            throw new Exception("Unknown change set.");
         }
 
         public override IVertex<int> AddVertex(int v)
@@ -67,7 +75,7 @@ namespace Campy.ControlFlowGraph
                     return vertex;
             }
             CFG.Vertex x = (Vertex)base.AddVertex(v);
-            foreach (KeyValuePair<object, List<CFG.Vertex>> pair in this._change_set)
+            foreach (KeyValuePair<int, List<CFG.Vertex>> pair in this._change_set)
             {
                 pair.Value.Add(x);
                 Debug.Assert(_change_set[pair.Key].Contains(x));

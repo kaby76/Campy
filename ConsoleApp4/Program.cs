@@ -134,7 +134,7 @@ namespace ConsoleApp4
             //{
             //    g.StartChangeSet(r);
             //    r.AnalyzeMethod(() => Program.Foo2(1));
-            //    List<CFG.Vertex> cs = g.EndChangeSet(r);
+            //    List<CFG.Vertex> cs = g.PopChangeSet(r);
             //    c.ConvertToLLVM(cs);
             //    IntPtr p = c.GetPtr(cs.First().Name);
             //    DFoo2 f = (DFoo2) Marshal.GetDelegateForFunctionPointer(p, typeof(DFoo2));
@@ -145,7 +145,7 @@ namespace ConsoleApp4
             //{
             //    g.StartChangeSet(r);
             //    r.AnalyzeMethod(() => Program.Foo3(2));
-            //    List<CFG.Vertex> cs = g.EndChangeSet(r);
+            //    List<CFG.Vertex> cs = g.PopChangeSet(r);
             //    c.ConvertToLLVM(cs);
             //    IntPtr p = c.GetPtr(cs.First().Name);
             //    DFoo2 f = (DFoo2) Marshal.GetDelegateForFunctionPointer(p, typeof(DFoo2));
@@ -156,7 +156,7 @@ namespace ConsoleApp4
             //{
             //    g.StartChangeSet(r);
             //    r.AnalyzeMethod(() => Program.fact(2));
-            //    List<CFG.Vertex> cs = g.EndChangeSet(r);
+            //    List<CFG.Vertex> cs = g.PopChangeSet(r);
             //    c.ConvertToLLVM(cs);
             //    IntPtr p = c.GetPtr(cs.First().Name);
             //    DFoo2 f = (DFoo2) Marshal.GetDelegateForFunctionPointer(p, typeof(DFoo2));
@@ -167,7 +167,7 @@ namespace ConsoleApp4
             //{
             //    g.StartChangeSet(r);
             //    r.AnalyzeMethod(() => Program.SumOf3Or5(2));
-            //    List<CFG.Vertex> cs = g.EndChangeSet(r);
+            //    List<CFG.Vertex> cs = g.PopChangeSet(r);
             //    c.ConvertToLLVM(cs);
             //    IntPtr p = c.GetPtr(cs.First().Name);
             //    DFoo2 f = (DFoo2) Marshal.GetDelegateForFunctionPointer(p, typeof(DFoo2));
@@ -179,7 +179,7 @@ namespace ConsoleApp4
             //{
             //    g.StartChangeSet(r);
             //    r.AnalyzeMethod(() => Program.Ackermann(2, 2));
-            //    List<CFG.Vertex> cs = g.EndChangeSet(r);
+            //    List<CFG.Vertex> cs = g.PopChangeSet(r);
             //    c.ConvertToLLVM(cs);
             //    IntPtr p = c.GetPtr(cs.First().Name);
             //    DAck f = (DAck)Marshal.GetDelegateForFunctionPointer(p, typeof(DAck));
@@ -198,7 +198,7 @@ namespace ConsoleApp4
             //{
             //    g.StartChangeSet(r);
             //    r.AnalyzeMethod(() => Program.SimpleCount(1, new Int64[2]));
-            //    List<CFG.Vertex> cs = g.EndChangeSet(r);
+            //    List<CFG.Vertex> cs = g.PopChangeSet(r);
             //    c.ConvertToLLVM(cs);
             //    IntPtr p = c.GetPtr(cs.First().Name);
             //    DSimpleCount f = (DSimpleCount)Marshal.GetDelegateForFunctionPointer(p, typeof(DSimpleCount));
@@ -213,7 +213,7 @@ namespace ConsoleApp4
             //{
             //    g.StartChangeSet(r);
             //    r.AnalyzeMethod(() => Program.SimpleCount2(1, new Int32[2]));
-            //    List<CFG.Vertex> cs = g.EndChangeSet(r);
+            //    List<CFG.Vertex> cs = g.PopChangeSet(r);
             //    c.ConvertToLLVM(cs);
             //    IntPtr p = c.GetPtr(cs.First().Name);
             //    DSimpleCount2 f = (DSimpleCount2)Marshal.GetDelegateForFunctionPointer(p, typeof(DSimpleCount2));
@@ -228,7 +228,7 @@ namespace ConsoleApp4
             //{
             //    g.StartChangeSet(r);
             //    r.AnalyzeMethod(() => Program.SimpleCount3(1, new Int16[2]));
-            //    List<CFG.Vertex> cs = g.EndChangeSet(r);
+            //    List<CFG.Vertex> cs = g.PopChangeSet(r);
             //    c.ConvertToLLVM(cs);
             //    IntPtr p = c.GetPtr(cs.First().Name);
             //    DSimpleCount3 f = (DSimpleCount3)Marshal.GetDelegateForFunctionPointer(p, typeof(DSimpleCount3));
@@ -243,7 +243,7 @@ namespace ConsoleApp4
             //{
             //    g.StartChangeSet(r);
             //    r.AnalyzeMethod(() => Program.SimpleCount4(1, new Char[2]));
-            //    List<CFG.Vertex> cs = g.EndChangeSet(r);
+            //    List<CFG.Vertex> cs = g.PopChangeSet(r);
             //    c.ConvertToLLVM(cs);
             //    IntPtr p = c.GetPtr(cs.First().Name);
             //    DSimpleCount4 f = (DSimpleCount4)Marshal.GetDelegateForFunctionPointer(p, typeof(DSimpleCount4));
@@ -258,7 +258,7 @@ namespace ConsoleApp4
             //{
             //    g.StartChangeSet(r);
             //    r.AnalyzeMethod(() => Program.SimpleCount5(new int[2]));
-            //    List<CFG.Vertex> cs = g.EndChangeSet(r);
+            //    List<CFG.Vertex> cs = g.PopChangeSet(r);
             //    c.ConvertToLLVM(cs);
             //    IntPtr p = c.GetPtr(cs.First().Name);
             //    DSimpleCount5 f = (DSimpleCount5)Marshal.GetDelegateForFunctionPointer(p, typeof(DSimpleCount5));

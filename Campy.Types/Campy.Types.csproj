@@ -40,7 +40,7 @@
       <HintPath>..\..\ILSpy\ICSharpCode.Decompiler\bin\Debug\Mono.Cecil.Pdb.dll</HintPath>
     </Reference>
     <Reference Include="swigged.cuda, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\swigged.cuda.8.0.1-alpha\lib\netstandard1.1\swigged.cuda.dll</HintPath>
+      <HintPath>..\packages\swigged.cuda.8.0.3-alpha\lib\netstandard1.1\swigged.cuda.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
