@@ -512,6 +512,20 @@ namespace Campy.ControlFlowGraph
                 }, true);
                 return s;
             }
+            else if (t.IsClass)
+            {
+                var e = ConvertSystemTypeToLLVM(t);
+                var p = LLVM.PointerType(e, 0);
+                var d = LLVM.GetUndef(p);
+                ContextRef c = LLVM.ContextCreate();
+                TypeRef s = LLVM.StructCreateNamed(c, t.ToString());
+                LLVM.StructSetBody(s, new TypeRef[2]
+                {
+                    LLVM.PointerType(ConvertSystemTypeToLLVM(t.GetElementType()), 0),
+                    LLVM.Int64Type()
+                }, true);
+                return s;
+            }
             throw new Exception("Unknown type.");
         }
     }
