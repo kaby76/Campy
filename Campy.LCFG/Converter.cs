@@ -499,31 +499,43 @@ namespace Campy.ControlFlowGraph
             }
             else if (t.IsArray)
             {
+                ContextRef c = LLVM.ContextCreate();
+                TypeRef s = LLVM.StructCreateNamed(c, t.ToString());
+                LLVM.StructSetBody(s, new TypeRef[2]
+                {
+                    LLVM.PointerType(ConvertSystemTypeToLLVM(t.GetElementType()), 0),
+                    LLVM.Int64Type()
+                }, true);
+
                 var element_type = t.GetElementType();
                 var e = ConvertSystemTypeToLLVM(element_type);
                 var p = LLVM.PointerType(e, 0);
                 var d = LLVM.GetUndef(p);
-                ContextRef c = LLVM.ContextCreate();
-                TypeRef s = LLVM.StructCreateNamed(c, t.ToString());
-                LLVM.StructSetBody(s, new TypeRef[2]
-                {
-                    LLVM.PointerType(ConvertSystemTypeToLLVM(t.GetElementType()), 0),
-                    LLVM.Int64Type()
-                }, true);
                 return s;
             }
             else if (t.IsClass)
             {
-                var e = ConvertSystemTypeToLLVM(t);
-                var p = LLVM.PointerType(e, 0);
-                var d = LLVM.GetUndef(p);
+                // Create a struct/class type.
                 ContextRef c = LLVM.ContextCreate();
                 TypeRef s = LLVM.StructCreateNamed(c, t.ToString());
-                LLVM.StructSetBody(s, new TypeRef[2]
+                // Create array of typerefs as argument to StructSetBody below.
+                var fields = t.GetFields(
+                    System.Reflection.BindingFlags.Instance
+                    | System.Reflection.BindingFlags.NonPublic
+                    | System.Reflection.BindingFlags.Public
+                    | System.Reflection.BindingFlags.Static);
+                List<TypeRef> list = new List<TypeRef>();
+                foreach (var field in fields)
                 {
-                    LLVM.PointerType(ConvertSystemTypeToLLVM(t.GetElementType()), 0),
-                    LLVM.Int64Type()
-                }, true);
+                    if (field.FieldType == t)
+                    {
+                        list.Add(s);
+                        continue;
+                    }
+                    var field_converted_type = ConvertSystemTypeToLLVM(field.FieldType);
+                    list.Add(field_converted_type);
+                }
+                LLVM.StructSetBody(s, list.ToArray(), true);
                 return s;
             }
             throw new Exception("Unknown type.");

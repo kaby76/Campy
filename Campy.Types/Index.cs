@@ -3,9 +3,9 @@ namespace Campy.Types
 {
     public class Index
     {
-        internal static Index default_value = new Index();
         internal int _Rank;
         internal int[] _M_base;
+        internal static Index default_value = new Index();
 
         public static Index Default_Value
         {
