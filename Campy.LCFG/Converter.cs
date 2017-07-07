@@ -538,6 +538,11 @@ namespace Campy.ControlFlowGraph
                 LLVM.StructSetBody(s, list.ToArray(), true);
                 return s;
             }
+            else if (t == typeof(void))
+            {
+                return LLVM.VoidType();
+            }
+            else
             throw new Exception("Unknown type.");
         }
     }
