@@ -37,10 +37,18 @@ namespace Campy.ControlFlowGraph
                 TypeRef type = LLVM.Int32Type();
                 if (i < args)
                 {
-                    ParameterDefinition p = md.Parameters[i];
-                    TypeReference tr = p.ParameterType;
-                    TypeDefinition td = tr.Resolve();
-                    type = Converter.ConvertMonoTypeToLLVM(td);
+                    if (md.HasThis && i == 0)
+                    {
+                        // First parameter is this object.
+                    }
+                    else
+                    {
+                        ParameterDefinition p = md.Parameters[i];
+                        TypeReference tr = p.ParameterType;
+                        TypeDefinition td = tr.Resolve();
+                        System.Type sys_td = Campy.Types.Utils.ReflectionCecilInterop.ConvertToSystemReflectionType(tr);
+                        type = Converter.ConvertSystemTypeToLLVM(sys_td);
+                    }
                 }
                 var vx = new Value(LLVM.ConstInt(type, (ulong)0xdeadbeef, true));
                 _stack.Push(vx);
@@ -86,8 +94,10 @@ namespace Campy.ControlFlowGraph
                 _locals = _stack.Section(args, locals);
                 for (int i = 0; i < locals; ++i)
                 {
-                    var td = variables[i].VariableType.Resolve();
-                    TypeRef type = Converter.ConvertMonoTypeToLLVM(td);
+                    var tr = variables[i].VariableType;
+                    var td = tr.Resolve();
+                    System.Type sys_td = Campy.Types.Utils.ReflectionCecilInterop.ConvertToSystemReflectionType(tr);
+                    TypeRef type = Converter.ConvertSystemTypeToLLVM(sys_td);
                     Value value = new Value(LLVM.ConstInt(type, (ulong)0, true));
                     _stack.Push(value);
                 }

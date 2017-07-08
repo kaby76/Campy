@@ -447,35 +447,35 @@ namespace Campy.ControlFlowGraph
             else return "unknown";
         }
 
-        public static TypeRef ConvertMonoTypeToLLVM(TypeDefinition td)
-        {
-            System.Type sys_type = Campy.Types.Utils.ReflectionCecilInterop.ConvertToBasicSystemReflectionType(td);
-            TypeRef type;
-            if (sys_type == typeof(System.Int16))
-            {
-                type = LLVM.Int16Type();
-            }
-            else if (sys_type == typeof(System.Int32))
-            {
-                type = LLVM.Int32Type();
-            }
-            else if (sys_type == typeof(System.Int64))
-            {
-                type = LLVM.Int64Type();
-            }
-            else if (sys_type == typeof(System.Boolean))
-            {
-                type = LLVM.Int32Type();
-            }
-            else if (sys_type == typeof(System.Char))
-            {
-                type = LLVM.Int16Type();
-            }
-            else throw new Exception("Cannot handle type.");
-            return type;
-        }
+        //public static TypeRef ConvertMonoTypeToLLVM(TypeDefinition td)
+        //{
+        //    System.Type sys_type = Campy.Types.Utils.ReflectionCecilInterop.ConvertToBasicSystemReflectionType(td);
+        //    TypeRef type;
+        //    if (sys_type == typeof(System.Int16))
+        //    {
+        //        type = LLVM.Int16Type();
+        //    }
+        //    else if (sys_type == typeof(System.Int32))
+        //    {
+        //        type = LLVM.Int32Type();
+        //    }
+        //    else if (sys_type == typeof(System.Int64))
+        //    {
+        //        type = LLVM.Int64Type();
+        //    }
+        //    else if (sys_type == typeof(System.Boolean))
+        //    {
+        //        type = LLVM.Int32Type();
+        //    }
+        //    else if (sys_type == typeof(System.Char))
+        //    {
+        //        type = LLVM.Int16Type();
+        //    }
+        //    else throw new Exception("Cannot handle type.");
+        //    return type;
+        //}
 
-        private TypeRef ConvertSystemTypeToLLVM(System.Type t)
+        public static TypeRef ConvertSystemTypeToLLVM(System.Type t)
         {
             if (t == typeof(Int16))
             {
