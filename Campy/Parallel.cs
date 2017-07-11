@@ -29,6 +29,13 @@ namespace Campy
             r.AnalyzeMethod(kernel);
 
             List<CFG.Vertex> cs = g.PopChangeSet(change_set_id);
+
+            // Very important note: Although we have the control flow graph of the code that is to
+            // be compiled, there is going to be generics used, e.g., ArrayView<int>, within the body
+            // of the code and in the called runtime library. We need to record the types for compiling
+            // and add that to compilation.
+            // https://stackoverflow.com/questions/5342345/how-do-generics-get-compiled-by-the-jit-compiler
+
             c.ConvertToLLVM(cs);
             IntPtr p = c.GetPtr(cs.First().Name);
 

@@ -46,11 +46,11 @@ namespace Campy.ControlFlowGraph
                     if (count > 0)
                         foreach (ParameterInfo p in mb.GetParameters())
                         {
-                            param_types[current++] = ConvertSystemTypeToLLVM(p.ParameterType);
+                            param_types[current++] = ConvertSystemTypeToLLVM(p.ParameterType, false);
                         }
                     TypeRef ret_type = default(TypeRef);
                     var mi2 = mb as System.Reflection.MethodInfo;
-                    ret_type = ConvertSystemTypeToLLVM(mi2.ReturnType);
+                    ret_type = ConvertSystemTypeToLLVM(mi2.ReturnType, false);
                     TypeRef met_type = LLVM.FunctionType(ret_type, param_types, false);
                     ValueRef fun = LLVM.AddFunction(mod, mb.Name, met_type);
                     BasicBlockRef entry = LLVM.AppendBasicBlock(fun, lv.Name.ToString());
@@ -475,9 +475,13 @@ namespace Campy.ControlFlowGraph
         //    return type;
         //}
 
-        public static TypeRef ConvertSystemTypeToLLVM(System.Type t)
+        public static TypeRef ConvertSystemTypeToLLVM(System.Type t, bool black_box)
         {
             if (t == typeof(Int16))
+            {
+                return LLVM.Int16Type();
+            }
+            else if (t == typeof(UInt16))
             {
                 return LLVM.Int16Type();
             }
@@ -485,7 +489,15 @@ namespace Campy.ControlFlowGraph
             {
                 return LLVM.Int32Type();
             }
+            else if (t == typeof(UInt32))
+            {
+                return LLVM.Int32Type();
+            }
             else if (t == typeof(Int64))
+            {
+                return LLVM.Int64Type();
+            }
+            else if (t == typeof(UInt64))
             {
                 return LLVM.Int64Type();
             }
@@ -497,18 +509,43 @@ namespace Campy.ControlFlowGraph
             {
                 return LLVM.Int8Type();
             }
+            else if (t == typeof(void))
+            {
+                return LLVM.VoidType();
+            }
+            else if (t == typeof(System.Type))
+            {
+                // Pass on compiling the system type. Too compilicated. For now, just pass void *.
+                var typeref = LLVM.VoidType();
+                var s = LLVM.PointerType(typeref, 0);
+                return s;
+            }
+            else if (black_box && t.IsArray)
+            {
+                // Pass on compiling the system type. Too compilicated. For now, just pass void *.
+                var typeref = LLVM.VoidType();
+                var s = LLVM.PointerType(typeref, 0);
+                return s;
+            }
+            else if (black_box && t.IsClass)
+            {
+                // Pass on compiling the system type. Too compilicated. For now, just pass void *.
+                var typeref = LLVM.VoidType();
+                var s = LLVM.PointerType(typeref, 0);
+                return s;
+            }
             else if (t.IsArray)
             {
                 ContextRef c = LLVM.ContextCreate();
                 TypeRef s = LLVM.StructCreateNamed(c, t.ToString());
                 LLVM.StructSetBody(s, new TypeRef[2]
                 {
-                    LLVM.PointerType(ConvertSystemTypeToLLVM(t.GetElementType()), 0),
+                    LLVM.PointerType(ConvertSystemTypeToLLVM(t.GetElementType(), false), 0),
                     LLVM.Int64Type()
                 }, true);
 
                 var element_type = t.GetElementType();
-                var e = ConvertSystemTypeToLLVM(element_type);
+                var e = ConvertSystemTypeToLLVM(element_type, false);
                 var p = LLVM.PointerType(e, 0);
                 var d = LLVM.GetUndef(p);
                 return s;
@@ -532,15 +569,11 @@ namespace Campy.ControlFlowGraph
                         list.Add(s);
                         continue;
                     }
-                    var field_converted_type = ConvertSystemTypeToLLVM(field.FieldType);
+                    var field_converted_type = ConvertSystemTypeToLLVM(field.FieldType, true);
                     list.Add(field_converted_type);
                 }
                 LLVM.StructSetBody(s, list.ToArray(), true);
                 return s;
-            }
-            else if (t == typeof(void))
-            {
-                return LLVM.VoidType();
             }
             else
             throw new Exception("Unknown type.");

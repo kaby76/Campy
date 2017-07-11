@@ -39,15 +39,20 @@ namespace Campy.ControlFlowGraph
                 {
                     if (md.HasThis && i == 0)
                     {
-                        // First parameter is this object.
+                        // First parameter is "this", the object that method is attached to.
+                        // We'll record a pointer to the object type.
+                        var td = md.DeclaringType;
+                        System.Type sys_td = Campy.Types.Utils.ReflectionCecilInterop.ConvertToSystemReflectionType(td);
+                        type = Converter.ConvertSystemTypeToLLVM(sys_td, false);
                     }
                     else
                     {
-                        ParameterDefinition p = md.Parameters[i];
+                        int j = md.HasThis ? i - 1 : i;
+                        ParameterDefinition p = md.Parameters[j];
                         TypeReference tr = p.ParameterType;
                         TypeDefinition td = tr.Resolve();
                         System.Type sys_td = Campy.Types.Utils.ReflectionCecilInterop.ConvertToSystemReflectionType(tr);
-                        type = Converter.ConvertSystemTypeToLLVM(sys_td);
+                        type = Converter.ConvertSystemTypeToLLVM(sys_td, false);
                     }
                 }
                 var vx = new Value(LLVM.ConstInt(type, (ulong)0xdeadbeef, true));
@@ -97,7 +102,7 @@ namespace Campy.ControlFlowGraph
                     var tr = variables[i].VariableType;
                     var td = tr.Resolve();
                     System.Type sys_td = Campy.Types.Utils.ReflectionCecilInterop.ConvertToSystemReflectionType(tr);
-                    TypeRef type = Converter.ConvertSystemTypeToLLVM(sys_td);
+                    TypeRef type = Converter.ConvertSystemTypeToLLVM(sys_td, false);
                     Value value = new Value(LLVM.ConstInt(type, (ulong)0, true));
                     _stack.Push(value);
                 }
