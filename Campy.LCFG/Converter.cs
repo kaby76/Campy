@@ -24,7 +24,7 @@ namespace Campy.ControlFlowGraph
             _mcfg = mcfg;
         }
 
-        public void ConvertToLLVM(IEnumerable<CFG.Vertex> change_set)
+        public void CompileToLLVM(IEnumerable<CFG.Vertex> change_set)
         {
             //
             // Create a basic block, module in LLVM for entry blocks in the CIL graph.
