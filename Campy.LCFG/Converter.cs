@@ -398,6 +398,207 @@ namespace Campy.ControlFlowGraph
             }
         }
 
+        public List<int> FindAllTargets(Delegate obj)
+        {
+            Dictionary<Delegate, object> delegate_to_instance = new Dictionary<Delegate, object>();
+
+            Delegate lambda_delegate = (Delegate)obj;
+
+            BindingFlags findFlags = BindingFlags.NonPublic |
+                                     BindingFlags.Public |
+                                     BindingFlags.Static |
+                                     BindingFlags.Instance |
+                                     BindingFlags.InvokeMethod |
+                                     BindingFlags.OptionalParamBinding |
+                                     BindingFlags.DeclaredOnly;
+
+
+            // Construct list of generic methods with types that will be JIT'ed.
+            StackQueue<object> stack = new StackQueue<object>();
+            stack.Push(lambda_delegate);
+            Campy.Graphs.GraphLinkedList<object> data_graph = new GraphLinkedList<object>();
+            while (stack.Count > 0)
+            {
+                object node = stack.Pop();
+
+                // Case 1: object is multicast delegate.
+                // A multicast delegate is a list of delegates called in the order
+                // they appear in the list.
+                System.MulticastDelegate multicast_delegate = node as System.MulticastDelegate;
+                if (multicast_delegate != null)
+                {
+                    foreach (System.Delegate node2 in multicast_delegate.GetInvocationList())
+                    {
+                        if ((object)node2 != (object)node)
+                        {
+                            stack.Push(node2);
+                        }
+                    }
+                }
+
+                // Case 2: object is plain delegate.
+                System.Delegate plain_delegate = node as System.Delegate;
+                if (plain_delegate != null)
+                {
+                    object target = plain_delegate.Target;
+                    if (target == null)
+                    {
+                        // If target is null, then the delegate is a function that
+                        // uses either static data, or does not require any additional
+                        // data. If target isn't null, then it's probably a class.
+                        target = Activator.CreateInstance(plain_delegate.Method.DeclaringType);
+                        if (data_graph.Vertices.Contains(target))
+                            continue;
+                        if (!delegate_to_instance.ContainsKey(plain_delegate))
+                        {
+                            data_graph.AddVertex(target);
+                            delegate_to_instance.Add(plain_delegate, target);
+                            stack.Push(target);
+                        }
+                    }
+                    else
+                    {
+                        // Target isn't null for delegate. Most likely, the method
+                        // is part of the target, so let's assert that.
+                        bool found = false;
+                        foreach (System.Reflection.MethodInfo mi in target.GetType().GetMethods(findFlags))
+                        {
+                            if (mi == plain_delegate.Method)
+                            {
+                                found = true;
+                                break;
+                            }
+                        }
+                        Debug.Assert(found);
+                        if (delegate_to_instance.ContainsKey(plain_delegate))
+                        {
+                            Debug.Assert(delegate_to_instance[plain_delegate] == target);
+                        }
+                        else
+                        {
+                            delegate_to_instance.Add(plain_delegate, target);
+                        }
+                        stack.Push(target);
+                    }
+                    continue;
+                }
+
+                if (data_graph.Vertices.Contains(node))
+                    continue;
+
+                if (node != null && (multicast_delegate == null || plain_delegate == null))
+                {
+                    // This is just a closure object, represented as a class. Go through
+                    // the class and record instances of generic types.
+                    System.Type t = node.GetType();
+
+                    // Case 3: object is a class, and potentially could point to delegate.
+                    // Examine all fields, looking for list_of_targets.
+
+                    System.Type target_type = node.GetType();
+
+                    FieldInfo[] target_type_fieldinfo = target_type.GetFields();
+                    foreach (var field in target_type_fieldinfo)
+                    {
+                        var value = field.GetValue(node);
+                        if (value != null)
+                        {
+                            if (field.FieldType.IsValueType)
+                                continue;
+                            // chase pointer type.
+                            stack.Push(value);
+                        }
+                    }
+
+                }
+
+                //    Debug.Assert(!TypesUtility.IsBaseType(node.GetType(), typeof(Delegate)));
+                //    data_graph.AddVertex(node);
+
+                //    // Case 3: object is a class, and potentially could point to delegate.
+                //    // Examine all fields, looking for list_of_targets.
+
+                //    Type target_type = node.GetType();
+
+                //    FieldInfo[] target_type_fieldinfo = target_type.GetFields();
+                //    foreach (var field in target_type_fieldinfo)
+                //    {
+                //        var value = field.GetValue(node);
+                //        if (value != null)
+                //        {
+                //            if (field.FieldType.IsValueType)
+                //                continue;
+                //            if (TypesUtility.IsCampyArrayType(field.FieldType))
+                //                continue;
+                //            if (TypesUtility.IsSimpleCampyType(field.FieldType))
+                //                continue;
+                //            // chase pointer type.
+                //            if (Options.Singleton.Get(Options.OptionType.DisplayStructureComputation))
+                //                System.Console.WriteLine("Pushingf " + MyToString(value));
+                //            stack.Push(value);
+                //        }
+                //    }
+                //}
+
+                //// Add edges.
+                //foreach (object node in data_graph.Vertices)
+                //{
+                //    Type node_type = node.GetType();
+
+                //    FieldInfo[] node_type_fieldinfo = node_type.GetFields();
+                //    foreach (var field in node_type_fieldinfo)
+                //    {
+                //        if (field.FieldType.IsValueType)
+                //            continue;
+                //        if (TypesUtility.IsCampyArrayType(field.FieldType))
+                //            continue;
+                //        if (TypesUtility.IsSimpleCampyType(field.FieldType))
+                //            continue;
+                //        var value = field.GetValue(node);
+                //        if (value == null)
+                //        {
+                //        }
+                //        else if (TypesUtility.IsBaseType(value.GetType(), typeof(Delegate)))
+                //        {
+                //            Delegate del = value as Delegate;
+                //            object value_target = del.Target;
+                //            if (value_target == node)
+                //                ;
+                //            else if (value_target != null)
+                //            {
+                //                Debug.Assert(data_graph.Vertices.Contains(node));
+                //                Debug.Assert(data_graph.Vertices.Contains(value_target));
+                //                data_graph.AddEdge(node, value_target);
+                //            }
+                //            else
+                //            {
+                //                value_target = delegate_to_instance[del];
+                //                if (value_target != node)
+                //                {
+                //                    Debug.Assert(data_graph.Vertices.Contains(node));
+                //                    Debug.Assert(data_graph.Vertices.Contains(value_target));
+                //                    data_graph.AddEdge(node, value_target);
+                //                }
+                //            }
+                //        }
+                //        else
+                //        {
+                //            Debug.Assert(data_graph.Vertices.Contains(node));
+                //            Debug.Assert(data_graph.Vertices.Contains(value));
+                //            data_graph.AddEdge(node, value);
+                //        }
+                //    }
+
+            }
+
+            //Structure res = Structure.Initialize(delegate_to_instance, lambda_delegate.Method, data_graph, _control_flow_graph);
+            //if (Options.Singleton.Get(Options.OptionType.DisplayStructureComputation))
+            //    res.Dump();
+
+            return null;
+        }
+
+
         public IntPtr GetPtr(int block_number)
         {
             CFG.Vertex here = null;

@@ -36,7 +36,12 @@ namespace Campy
             // and add that to compilation.
             // https://stackoverflow.com/questions/5342345/how-do-generics-get-compiled-by-the-jit-compiler
 
+            // Create a list of generics called with types passed.
+            c.FindAllTargets(kernel);
+
+            // Compile methods with added type information.
             c.CompileToLLVM(cs);
+
             IntPtr p = c.GetPtr(cs.First().Name);
 
             //DFoo2 f = (DFoo2)Marshal.GetDelegateForFunctionPointer(p, typeof(DFoo2));
