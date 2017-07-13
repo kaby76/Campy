@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Campy.Types;
 using Campy.ControlFlowGraph;
+using Type = System.Type;
 
 namespace Campy
 {
@@ -37,10 +38,10 @@ namespace Campy
             // https://stackoverflow.com/questions/5342345/how-do-generics-get-compiled-by-the-jit-compiler
 
             // Create a list of generics called with types passed.
-            c.FindAllTargets(kernel);
+            List<Type> list_of_data_types_used = c.FindAllTargets(kernel);
 
             // Compile methods with added type information.
-            c.CompileToLLVM(cs);
+            c.CompileToLLVM(cs, list_of_data_types_used);
 
             IntPtr p = c.GetPtr(cs.First().Name);
 

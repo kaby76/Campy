@@ -24,7 +24,7 @@ namespace Campy.ControlFlowGraph
             _mcfg = mcfg;
         }
 
-        public void CompileToLLVM(IEnumerable<CFG.Vertex> change_set)
+        public void CompileToLLVM(IEnumerable<CFG.Vertex> change_set, List<System.Type> list_of_data_types_used)
         {
             //
             // Create a basic block, module in LLVM for entry blocks in the CIL graph.
@@ -46,11 +46,11 @@ namespace Campy.ControlFlowGraph
                     if (count > 0)
                         foreach (ParameterInfo p in mb.GetParameters())
                         {
-                            param_types[current++] = ConvertSystemTypeToLLVM(p.ParameterType, false);
+                            param_types[current++] = ConvertSystemTypeToLLVM(p.ParameterType, list_of_data_types_used, false);
                         }
                     TypeRef ret_type = default(TypeRef);
                     var mi2 = mb as System.Reflection.MethodInfo;
-                    ret_type = ConvertSystemTypeToLLVM(mi2.ReturnType, false);
+                    ret_type = ConvertSystemTypeToLLVM(mi2.ReturnType, list_of_data_types_used, false);
                     TypeRef met_type = LLVM.FunctionType(ret_type, param_types, false);
                     ValueRef fun = LLVM.AddFunction(mod, mb.Name, met_type);
                     BasicBlockRef entry = LLVM.AppendBasicBlock(fun, lv.Name.ToString());
@@ -297,9 +297,9 @@ namespace Campy.ControlFlowGraph
                     CFG.Vertex node = _mcfg.VertexSpace[_mcfg.NameSpace.BijectFromBasetype(ob)];
                     CFG.Vertex llvm_node = node;
                     llvm_node.StateIn = new State(node.Method, llvm_node.NumberOfArguments, llvm_node.NumberOfLocals,
-                        (int) llvm_node.StackLevelIn);
+                        (int) llvm_node.StackLevelIn, list_of_data_types_used);
                     llvm_node.StateOut = new State(node.Method, llvm_node.NumberOfArguments, llvm_node.NumberOfLocals,
-                        (int) llvm_node.StackLevelOut);
+                        (int) llvm_node.StackLevelOut, list_of_data_types_used);
                 }
 
                 Dictionary<int, bool> visited = new Dictionary<int, bool>();
@@ -310,7 +310,7 @@ namespace Campy.ControlFlowGraph
                     CFG.Vertex node = _mcfg.VertexSpace[_mcfg.NameSpace.BijectFromBasetype(ob)];
                     CFG.Vertex llvm_node = node;
 
-                    var state_in = new State(visited, llvm_node);
+                    var state_in = new State(visited, llvm_node, list_of_data_types_used);
                     llvm_node.StateIn = state_in;
                     llvm_node.StateOut = new State(state_in);
 
@@ -398,8 +398,10 @@ namespace Campy.ControlFlowGraph
             }
         }
 
-        public List<int> FindAllTargets(Delegate obj)
+        public List<System.Type> FindAllTargets(Delegate obj)
         {
+            List<System.Type> data_used = new List<System.Type>();
+
             Dictionary<Delegate, object> delegate_to_instance = new Dictionary<Delegate, object>();
 
             Delegate lambda_delegate = (Delegate)obj;
@@ -412,14 +414,18 @@ namespace Campy.ControlFlowGraph
                                      BindingFlags.OptionalParamBinding |
                                      BindingFlags.DeclaredOnly;
 
+            List<object> processed = new List<object>();
 
             // Construct list of generic methods with types that will be JIT'ed.
             StackQueue<object> stack = new StackQueue<object>();
             stack.Push(lambda_delegate);
-            Campy.Graphs.GraphLinkedList<object> data_graph = new GraphLinkedList<object>();
+
             while (stack.Count > 0)
             {
                 object node = stack.Pop();
+                if (processed.Contains(node)) continue;
+
+                processed.Add(node);
 
                 // Case 1: object is multicast delegate.
                 // A multicast delegate is a list of delegates called in the order
@@ -429,7 +435,7 @@ namespace Campy.ControlFlowGraph
                 {
                     foreach (System.Delegate node2 in multicast_delegate.GetInvocationList())
                     {
-                        if ((object)node2 != (object)node)
+                        if ((object) node2 != (object) node)
                         {
                             stack.Push(node2);
                         }
@@ -447,12 +453,8 @@ namespace Campy.ControlFlowGraph
                         // uses either static data, or does not require any additional
                         // data. If target isn't null, then it's probably a class.
                         target = Activator.CreateInstance(plain_delegate.Method.DeclaringType);
-                        if (data_graph.Vertices.Contains(target))
-                            continue;
-                        if (!delegate_to_instance.ContainsKey(plain_delegate))
+                        if (target != null)
                         {
-                            data_graph.AddVertex(target);
-                            delegate_to_instance.Add(plain_delegate, target);
                             stack.Push(target);
                         }
                     }
@@ -470,27 +472,16 @@ namespace Campy.ControlFlowGraph
                             }
                         }
                         Debug.Assert(found);
-                        if (delegate_to_instance.ContainsKey(plain_delegate))
-                        {
-                            Debug.Assert(delegate_to_instance[plain_delegate] == target);
-                        }
-                        else
-                        {
-                            delegate_to_instance.Add(plain_delegate, target);
-                        }
                         stack.Push(target);
                     }
                     continue;
                 }
 
-                if (data_graph.Vertices.Contains(node))
-                    continue;
-
                 if (node != null && (multicast_delegate == null || plain_delegate == null))
                 {
                     // This is just a closure object, represented as a class. Go through
                     // the class and record instances of generic types.
-                    System.Type t = node.GetType();
+                    data_used.Add(node.GetType());
 
                     // Case 3: object is a class, and potentially could point to delegate.
                     // Examine all fields, looking for list_of_targets.
@@ -509,93 +500,10 @@ namespace Campy.ControlFlowGraph
                             stack.Push(value);
                         }
                     }
-
                 }
-
-                //    Debug.Assert(!TypesUtility.IsBaseType(node.GetType(), typeof(Delegate)));
-                //    data_graph.AddVertex(node);
-
-                //    // Case 3: object is a class, and potentially could point to delegate.
-                //    // Examine all fields, looking for list_of_targets.
-
-                //    Type target_type = node.GetType();
-
-                //    FieldInfo[] target_type_fieldinfo = target_type.GetFields();
-                //    foreach (var field in target_type_fieldinfo)
-                //    {
-                //        var value = field.GetValue(node);
-                //        if (value != null)
-                //        {
-                //            if (field.FieldType.IsValueType)
-                //                continue;
-                //            if (TypesUtility.IsCampyArrayType(field.FieldType))
-                //                continue;
-                //            if (TypesUtility.IsSimpleCampyType(field.FieldType))
-                //                continue;
-                //            // chase pointer type.
-                //            if (Options.Singleton.Get(Options.OptionType.DisplayStructureComputation))
-                //                System.Console.WriteLine("Pushingf " + MyToString(value));
-                //            stack.Push(value);
-                //        }
-                //    }
-                //}
-
-                //// Add edges.
-                //foreach (object node in data_graph.Vertices)
-                //{
-                //    Type node_type = node.GetType();
-
-                //    FieldInfo[] node_type_fieldinfo = node_type.GetFields();
-                //    foreach (var field in node_type_fieldinfo)
-                //    {
-                //        if (field.FieldType.IsValueType)
-                //            continue;
-                //        if (TypesUtility.IsCampyArrayType(field.FieldType))
-                //            continue;
-                //        if (TypesUtility.IsSimpleCampyType(field.FieldType))
-                //            continue;
-                //        var value = field.GetValue(node);
-                //        if (value == null)
-                //        {
-                //        }
-                //        else if (TypesUtility.IsBaseType(value.GetType(), typeof(Delegate)))
-                //        {
-                //            Delegate del = value as Delegate;
-                //            object value_target = del.Target;
-                //            if (value_target == node)
-                //                ;
-                //            else if (value_target != null)
-                //            {
-                //                Debug.Assert(data_graph.Vertices.Contains(node));
-                //                Debug.Assert(data_graph.Vertices.Contains(value_target));
-                //                data_graph.AddEdge(node, value_target);
-                //            }
-                //            else
-                //            {
-                //                value_target = delegate_to_instance[del];
-                //                if (value_target != node)
-                //                {
-                //                    Debug.Assert(data_graph.Vertices.Contains(node));
-                //                    Debug.Assert(data_graph.Vertices.Contains(value_target));
-                //                    data_graph.AddEdge(node, value_target);
-                //                }
-                //            }
-                //        }
-                //        else
-                //        {
-                //            Debug.Assert(data_graph.Vertices.Contains(node));
-                //            Debug.Assert(data_graph.Vertices.Contains(value));
-                //            data_graph.AddEdge(node, value);
-                //        }
-                //    }
-
             }
 
-            //Structure res = Structure.Initialize(delegate_to_instance, lambda_delegate.Method, data_graph, _control_flow_graph);
-            //if (Options.Singleton.Get(Options.OptionType.DisplayStructureComputation))
-            //    res.Dump();
-
-            return null;
+            return data_used;
         }
 
 
@@ -676,7 +584,7 @@ namespace Campy.ControlFlowGraph
         //    return type;
         //}
 
-        public static TypeRef ConvertSystemTypeToLLVM(System.Type t, bool black_box)
+        public static TypeRef ConvertSystemTypeToLLVM(System.Type t, List<System.Type> list_of_data_types_used, bool black_box)
         {
             if (t == typeof(Int16))
             {
@@ -741,18 +649,32 @@ namespace Campy.ControlFlowGraph
                 TypeRef s = LLVM.StructCreateNamed(c, t.ToString());
                 LLVM.StructSetBody(s, new TypeRef[2]
                 {
-                    LLVM.PointerType(ConvertSystemTypeToLLVM(t.GetElementType(), false), 0),
+                    LLVM.PointerType(ConvertSystemTypeToLLVM(t.GetElementType(), list_of_data_types_used, false), 0),
                     LLVM.Int64Type()
                 }, true);
 
                 var element_type = t.GetElementType();
-                var e = ConvertSystemTypeToLLVM(element_type, false);
+                var e = ConvertSystemTypeToLLVM(element_type, list_of_data_types_used, false);
                 var p = LLVM.PointerType(e, 0);
                 var d = LLVM.GetUndef(p);
                 return s;
             }
             else if (t.IsClass)
             {
+                if (t.IsGenericType && t.ContainsGenericParameters)
+                {
+                    // The type is generic. Loop through all data types used in closure to see
+                    // how to compile this type.
+                    foreach (var tt in list_of_data_types_used)
+                    {
+                        if (tt.Name == t.Name && ! tt.ContainsGenericParameters)
+                        {
+                            // match.
+                            // Substitute tt for t.
+                            return ConvertSystemTypeToLLVM(tt, list_of_data_types_used, black_box);
+                        }
+                    }
+                }
                 // Create a struct/class type.
                 ContextRef c = LLVM.ContextCreate();
                 TypeRef s = LLVM.StructCreateNamed(c, t.ToString());
@@ -770,7 +692,7 @@ namespace Campy.ControlFlowGraph
                         list.Add(s);
                         continue;
                     }
-                    var field_converted_type = ConvertSystemTypeToLLVM(field.FieldType, true);
+                    var field_converted_type = ConvertSystemTypeToLLVM(field.FieldType, list_of_data_types_used, true);
                     list.Add(field_converted_type);
                 }
                 LLVM.StructSetBody(s, list.ToArray(), true);
