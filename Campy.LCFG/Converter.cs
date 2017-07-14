@@ -24,44 +24,120 @@ namespace Campy.ControlFlowGraph
             _mcfg = mcfg;
         }
 
+
+        public void InstantiateGenerics(IEnumerable<CFG.Vertex> change_set, List<Mono.Cecil.TypeDefinition> list_of_data_types_used)
+        {
+            foreach (var data_type_used in list_of_data_types_used)
+            {
+                IEnumerable<CFG.Vertex> mono_bbs = change_set;
+                foreach (var lv in mono_bbs)
+                {
+                    // Skip all but entry blocks for now.
+                    if (!lv.IsEntry) continue;
+
+                    MethodDefinition method = lv.Method;
+                    var parameters = method.Parameters;
+
+                    // No need to handle methods without an owner.
+                    var declaring_type = method.DeclaringType;
+                    if (declaring_type == null) continue;
+
+                    // If the owning type is generic, and if it's instantiated.
+                    if (!((declaring_type.HasGenericParameters && data_type_used.HasGenericParameters) &&
+                        (declaring_type.Name == data_type_used.Name)))
+                    {
+                        // match.
+                        // Substitute tt for t.
+                        //return ConvertSystemTypeToLLVM(tt, list_of_data_types_used, black_box);
+                    }
+                }
+
+                System.Reflection.MethodBase mb =
+                    ReflectionCecilInterop.ConvertToSystemReflectionMethodInfo(method);
+                string mn = mb.DeclaringType.Assembly.GetName().Name;
+                ModuleRef mod = LLVM.ModuleCreateWithName(mn);
+                lv.Module = mod;
+                uint count = (uint)mb.GetParameters().Count();
+                TypeRef[] param_types = new TypeRef[count];
+                int current = 0;
+                if (count > 0)
+                    foreach (var p in parameters)
+                    {
+                        param_types[current++] =
+                            ConvertMonoTypeToLLVM(p.ParameterType.Resolve(), list_of_data_types_used, false);
+                    }
+                TypeRef ret_type = default(TypeRef);
+                var mi2 = method.ReturnType;
+                ret_type = ConvertMonoTypeToLLVM(mi2.Resolve(), list_of_data_types_used, false);
+                TypeRef met_type = LLVM.FunctionType(ret_type, param_types, false);
+                ValueRef fun = LLVM.AddFunction(mod, mb.Name, met_type);
+                BasicBlockRef entry = LLVM.AppendBasicBlock(fun, lv.Name.ToString());
+                lv.BasicBlock = entry;
+                lv.Function = fun;
+                BuilderRef builder = LLVM.CreateBuilder();
+                lv.Builder = builder;
+                LLVM.PositionBuilderAtEnd(builder, entry);
+            }
+        }
         public void CompileToLLVM(IEnumerable<CFG.Vertex> change_set, List<Mono.Cecil.TypeDefinition> list_of_data_types_used)
         {
             //
-            // Create a basic block, module in LLVM for entry blocks in the CIL graph.
+            // Create a basic block and module in LLVM for entry blocks in the CIL graph.
+            // Note, we are going to create a basic block unique for each generic type instantiated.
             //
             IEnumerable<CFG.Vertex> mono_bbs = change_set;
             foreach (var lv in mono_bbs)
             {
-                if (lv.IsEntry)
+                // Skip all but entry blocks for now.
+                if (!lv.IsEntry) continue;
+
+                MethodDefinition method = lv.Method;
+                var parameters = method.Parameters;
+
+                // Let's determine if the owning type is generic, and if it's instantiated.
+                if (method.DeclaringType != null && method.DeclaringType.HasGenericParameters)
                 {
-                    MethodDefinition method = lv.Method;
-                    var parameters = method.Parameters;
-                    System.Reflection.MethodBase mb =
-                        ReflectionCecilInterop.ConvertToSystemReflectionMethodInfo(method);
-                    string mn = mb.DeclaringType.Assembly.GetName().Name;
-                    ModuleRef mod = LLVM.ModuleCreateWithName(mn);
-                    lv.Module = mod;
-                    uint count = (uint) mb.GetParameters().Count();
-                    TypeRef[] param_types = new TypeRef[count];
-                    int current = 0;
-                    if (count > 0)
-                        foreach (var p in parameters)
+                    // Yes, let's find all matching instantiated types in closure. Otherwise, we have
+                    // no clue what to do here.
+                    foreach (var tt in list_of_data_types_used)
+                    {
+                        if (tt.Name == t.Name && !tt.HasGenericParameters)
                         {
-                            param_types[current++] = ConvertMonoTypeToLLVM(p.ParameterType.Resolve(), list_of_data_types_used, false);
+                            // match.
+                            // Substitute tt for t.
+                            //return ConvertSystemTypeToLLVM(tt, list_of_data_types_used, black_box);
                         }
-                    TypeRef ret_type = default(TypeRef);
-                    var mi2 = method.ReturnType;
-                    ret_type = ConvertMonoTypeToLLVM(mi2.Resolve(), list_of_data_types_used, false);
-                    TypeRef met_type = LLVM.FunctionType(ret_type, param_types, false);
-                    ValueRef fun = LLVM.AddFunction(mod, mb.Name, met_type);
-                    BasicBlockRef entry = LLVM.AppendBasicBlock(fun, lv.Name.ToString());
-                    lv.BasicBlock = entry;
-                    lv.Function = fun;
-                    BuilderRef builder = LLVM.CreateBuilder();
-                    lv.Builder = builder;
-                    LLVM.PositionBuilderAtEnd(builder, entry);
+                    }
                 }
+
+                System.Reflection.MethodBase mb =
+                    ReflectionCecilInterop.ConvertToSystemReflectionMethodInfo(method);
+                string mn = mb.DeclaringType.Assembly.GetName().Name;
+                ModuleRef mod = LLVM.ModuleCreateWithName(mn);
+                lv.Module = mod;
+                uint count = (uint) mb.GetParameters().Count();
+                TypeRef[] param_types = new TypeRef[count];
+                int current = 0;
+                if (count > 0)
+                    foreach (var p in parameters)
+                    {
+                        param_types[current++] =
+                            ConvertMonoTypeToLLVM(p.ParameterType.Resolve(), list_of_data_types_used, false);
+                    }
+                TypeRef ret_type = default(TypeRef);
+                var mi2 = method.ReturnType;
+                ret_type = ConvertMonoTypeToLLVM(mi2.Resolve(), list_of_data_types_used, false);
+                TypeRef met_type = LLVM.FunctionType(ret_type, param_types, false);
+                ValueRef fun = LLVM.AddFunction(mod, mb.Name, met_type);
+                BasicBlockRef entry = LLVM.AppendBasicBlock(fun, lv.Name.ToString());
+                lv.BasicBlock = entry;
+                lv.Function = fun;
+                BuilderRef builder = LLVM.CreateBuilder();
+                lv.Builder = builder;
+                LLVM.PositionBuilderAtEnd(builder, entry);
             }
+
+
             foreach (var mv in mono_bbs)
             {
                 IEnumerable<CFG.Vertex> successors = _mcfg.SuccessorNodes(mv);
