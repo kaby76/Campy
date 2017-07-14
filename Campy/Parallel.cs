@@ -26,10 +26,11 @@ namespace Campy
 
             Reader r = new Reader();
             CFG g = r.Cfg;
+
             Converter c = new Campy.ControlFlowGraph.Converter(g);
+
             int change_set_id = g.StartChangeSet();
             r.AnalyzeMethod(kernel);
-
             List<CFG.Vertex> cs = g.PopChangeSet(change_set_id);
 
             // Very important note: Although we have the control flow graph of the code that is to
@@ -50,6 +51,11 @@ namespace Campy
                 list_of_mono_data_types_used.Add(mono_type);
             }
             if (list_of_mono_data_types_used.Count != list_of_data_types_used.Count) throw new Exception("Cannot convert types properly to Mono.");
+
+            // Instantiate all generics at this point.
+            int change_set_id2 = g.StartChangeSet();
+            c.InstantiateGenerics(list_of_mono_data_types_used);
+            List<CFG.Vertex> cs2 = g.PopChangeSet(change_set_id2);
 
             // Compile methods with added type information.
             c.CompileToLLVM(cs, list_of_mono_data_types_used);
