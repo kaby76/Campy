@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Campy.Types;
 using Campy.ControlFlowGraph;
+using Mono.Cecil;
 using Type = System.Type;
 
 namespace Campy
@@ -40,8 +41,18 @@ namespace Campy
             // Create a list of generics called with types passed.
             List<Type> list_of_data_types_used = c.FindAllTargets(kernel);
 
+            // Convert list into Mono data types.
+            List<Mono.Cecil.TypeDefinition> list_of_mono_data_types_used = new List<TypeDefinition>();
+            foreach (System.Type data_type_used in list_of_data_types_used)
+            {
+                var mono_type = Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(data_type_used);
+                if (mono_type == null) continue;
+                list_of_mono_data_types_used.Add(mono_type);
+            }
+            if (list_of_mono_data_types_used.Count != list_of_data_types_used.Count) throw new Exception("Cannot convert types properly to Mono.");
+
             // Compile methods with added type information.
-            c.CompileToLLVM(cs, list_of_data_types_used);
+            c.CompileToLLVM(cs, list_of_mono_data_types_used);
 
             IntPtr p = c.GetPtr(cs.First().Name);
 

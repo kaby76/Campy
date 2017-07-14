@@ -6,11 +6,89 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Campy.Utils;
+using Mono.Cecil;
 
 namespace Campy.Types.Utils
 {
     public class ReflectionCecilInterop
     {
+
+        public static Mono.Cecil.TypeDefinition ConvertToMonoCecilTypeDefinition(System.Type ty)
+        {
+            // Get assembly name which encloses code for kernel.
+            String kernel_assembly_file_name = ty.Assembly.Location;
+
+            // Get directory containing the assembly.
+            String full_path = Path.GetFullPath(kernel_assembly_file_name);
+            full_path = Path.GetDirectoryName(full_path);
+
+            // Decompile entire module.
+            Mono.Cecil.ModuleDefinition md = Mono.Cecil.ModuleDefinition.ReadModule(kernel_assembly_file_name);
+
+            // Examine all types, and all methods of types in order to find the lambda in Mono.Cecil.
+            List<Type> types = new List<Type>();
+            StackQueue<Mono.Cecil.TypeDefinition> type_definitions = new StackQueue<Mono.Cecil.TypeDefinition>();
+            StackQueue<Mono.Cecil.TypeDefinition> type_definitions_closure = new StackQueue<Mono.Cecil.TypeDefinition>();
+            foreach (Mono.Cecil.TypeDefinition td in md.Types)
+            {
+                type_definitions.Push(td);
+            }
+            while (type_definitions.Count > 0)
+            {
+                Mono.Cecil.TypeDefinition td = type_definitions.Pop();
+                if (Campy.Utils.Utility.IsSimilarType(ty, td))
+                    return td;
+                type_definitions_closure.Push(td);
+                foreach (Mono.Cecil.TypeDefinition ntd in td.NestedTypes)
+                    type_definitions.Push(ntd);
+            }
+            foreach (Mono.Cecil.TypeDefinition td in type_definitions_closure)
+            {
+                if (Campy.Utils.Utility.IsSimilarType(ty, td))
+                    return td;
+            }
+            return null;
+        }
+
+        public static System.Type ConvertToSystemReflectionType(Mono.Cecil.TypeReference tr)
+        {
+            // Find equivalent to type definition in Mono to System Reflection type.
+            var td = tr.Resolve();
+
+            // If the type isn't defined, can't do much about it. Just return null.
+            if (td == null) return null;
+
+            String ss = tr.Module.FullyQualifiedName;
+
+            // get module.
+            String assembly_location = td.Module.FullyQualifiedName;
+
+            System.Reflection.Assembly assembly = System.Reflection.Assembly.LoadFile(assembly_location);
+
+            List<Type> types = new List<Type>();
+            StackQueue<Type> type_definitions = new StackQueue<Type>();
+            StackQueue<Type> type_definitions_closure = new StackQueue<Type>();
+            foreach (Type t in assembly.GetTypes())
+            {
+                type_definitions.Push(t);
+            }
+            while (type_definitions.Count > 0)
+            {
+                Type t = type_definitions.Pop();
+                if (Campy.Utils.Utility.IsSimilarType(t, td))
+                    return t;
+                type_definitions_closure.Push(t);
+                foreach (Type ntd in t.GetNestedTypes())
+                    type_definitions.Push(ntd);
+            }
+            foreach (Type t in type_definitions_closure)
+            {
+                if (Campy.Utils.Utility.IsSimilarType(t, td))
+                    return t;
+            }
+            return null;
+        }
+
         public static Mono.Cecil.ModuleDefinition GetMonoCecilModuleDefinition(System.Delegate del)
         {
             System.Reflection.MethodInfo mi = del.Method;
@@ -70,43 +148,6 @@ namespace Campy.Types.Utils
                     if (md2_name.Contains(kernel_full_name))
                         return md2;
                 }
-            }
-            return null;
-        }
-
-        public static Mono.Cecil.TypeDefinition ConvertToMonoCecilTypeDefinition(Type ty)
-        {
-            // Get assembly name which encloses code for kernel.
-            String kernel_assembly_file_name = ty.Assembly.Location;
-
-            // Get directory containing the assembly.
-            String full_path = Path.GetFullPath(kernel_assembly_file_name);
-            full_path = Path.GetDirectoryName(full_path);
-
-            // Decompile entire module.
-            Mono.Cecil.ModuleDefinition md = Mono.Cecil.ModuleDefinition.ReadModule(kernel_assembly_file_name);
-
-            // Examine all types, and all methods of types in order to find the lambda in Mono.Cecil.
-            List<Type> types = new List<Type>();
-            StackQueue<Mono.Cecil.TypeDefinition> type_definitions = new StackQueue<Mono.Cecil.TypeDefinition>();
-            StackQueue<Mono.Cecil.TypeDefinition> type_definitions_closure = new StackQueue<Mono.Cecil.TypeDefinition>();
-            foreach (Mono.Cecil.TypeDefinition td in md.Types)
-            {
-                type_definitions.Push(td);
-            }
-            while (type_definitions.Count > 0)
-            {
-                Mono.Cecil.TypeDefinition td = type_definitions.Pop();
-                if (Campy.Utils.Utility.IsSimilarType(ty, td))
-                    return td;
-                type_definitions_closure.Push(td);
-                foreach (Mono.Cecil.TypeDefinition ntd in td.NestedTypes)
-                    type_definitions.Push(ntd);
-            }
-            foreach (Mono.Cecil.TypeDefinition td in type_definitions_closure)
-            {
-                if (Campy.Utils.Utility.IsSimilarType(ty, td))
-                    return td;
             }
             return null;
         }
@@ -214,45 +255,7 @@ namespace Campy.Types.Utils
             return null;
         }
 
-        public static Type ConvertToSystemReflectionType(Mono.Cecil.TypeReference tr)
-        {
-            Mono.Cecil.TypeDefinition td = tr.Resolve();
-            return ConvertToSystemReflectionType(td);
-        }
-
-        public static Type ConvertToSystemReflectionType(Mono.Cecil.TypeDefinition td)
-        {
-            // Find equivalent to type definition in Mono to System Reflection type.
-
-            // get module.
-            String assembly_location = td.Module.FullyQualifiedName;
-            System.Reflection.Assembly assembly = System.Reflection.Assembly.LoadFile(assembly_location);
-
-            List<Type> types = new List<Type>();
-            StackQueue<Type> type_definitions = new StackQueue<Type>();
-            StackQueue<Type> type_definitions_closure = new StackQueue<Type>();
-            foreach (Type t in assembly.GetTypes())
-            {
-                type_definitions.Push(t);
-            }
-            while (type_definitions.Count > 0)
-            {
-                Type t = type_definitions.Pop();
-                if (Campy.Utils.Utility.IsSimilarType(t, td))
-                    return t;
-                type_definitions_closure.Push(t);
-                foreach (Type ntd in t.GetNestedTypes())
-                    type_definitions.Push(ntd);
-            }
-            foreach (Type t in type_definitions_closure)
-            {
-                if (Campy.Utils.Utility.IsSimilarType(t, td))
-                    return t;
-            }
-            return null;
-        }
-
-        public static Type ConvertToBasicSystemReflectionType(Mono.Cecil.TypeDefinition td)
+        public static System.Type ConvertToBasicSystemReflectionType(Mono.Cecil.TypeDefinition td)
         {
             // Convert to System type based on name.
             string str = td.FullName;
@@ -287,9 +290,7 @@ namespace Campy.Types.Utils
             return null;
         }
 
-
-
-        public static bool IsStruct(Type t)
+        public static bool IsStruct(System.Type t)
         {
             return t.IsValueType && !t.IsPrimitive && !t.IsEnum;
         }

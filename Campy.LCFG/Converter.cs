@@ -24,7 +24,7 @@ namespace Campy.ControlFlowGraph
             _mcfg = mcfg;
         }
 
-        public void CompileToLLVM(IEnumerable<CFG.Vertex> change_set, List<System.Type> list_of_data_types_used)
+        public void CompileToLLVM(IEnumerable<CFG.Vertex> change_set, List<Mono.Cecil.TypeDefinition> list_of_data_types_used)
         {
             //
             // Create a basic block, module in LLVM for entry blocks in the CIL graph.
@@ -35,6 +35,7 @@ namespace Campy.ControlFlowGraph
                 if (lv.IsEntry)
                 {
                     MethodDefinition method = lv.Method;
+                    var parameters = method.Parameters;
                     System.Reflection.MethodBase mb =
                         ReflectionCecilInterop.ConvertToSystemReflectionMethodInfo(method);
                     string mn = mb.DeclaringType.Assembly.GetName().Name;
@@ -44,13 +45,13 @@ namespace Campy.ControlFlowGraph
                     TypeRef[] param_types = new TypeRef[count];
                     int current = 0;
                     if (count > 0)
-                        foreach (ParameterInfo p in mb.GetParameters())
+                        foreach (var p in parameters)
                         {
-                            param_types[current++] = ConvertSystemTypeToLLVM(p.ParameterType, list_of_data_types_used, false);
+                            param_types[current++] = ConvertMonoTypeToLLVM(p.ParameterType.Resolve(), list_of_data_types_used, false);
                         }
                     TypeRef ret_type = default(TypeRef);
-                    var mi2 = mb as System.Reflection.MethodInfo;
-                    ret_type = ConvertSystemTypeToLLVM(mi2.ReturnType, list_of_data_types_used, false);
+                    var mi2 = method.ReturnType;
+                    ret_type = ConvertMonoTypeToLLVM(mi2.Resolve(), list_of_data_types_used, false);
                     TypeRef met_type = LLVM.FunctionType(ret_type, param_types, false);
                     ValueRef fun = LLVM.AddFunction(mod, mb.Name, met_type);
                     BasicBlockRef entry = LLVM.AppendBasicBlock(fun, lv.Name.ToString());
@@ -584,45 +585,72 @@ namespace Campy.ControlFlowGraph
         //    return type;
         //}
 
-        public static TypeRef ConvertSystemTypeToLLVM(System.Type t, List<System.Type> list_of_data_types_used, bool black_box)
+        private static bool setup = true;
+        private static Mono.Cecil.TypeDefinition MonoInt16;
+        private static Mono.Cecil.TypeDefinition MonoUInt16;
+        private static Mono.Cecil.TypeDefinition MonoInt32;
+        private static Mono.Cecil.TypeDefinition MonoUInt32;
+        private static Mono.Cecil.TypeDefinition MonoInt64;
+        private static Mono.Cecil.TypeDefinition MonoUInt64;
+        private static Mono.Cecil.TypeDefinition MonoBoolean;
+        private static Mono.Cecil.TypeDefinition MonoChar;
+        private static Mono.Cecil.TypeDefinition MonoVoid;
+        private static Mono.Cecil.TypeDefinition MonoTypeDef;
+
+        public static TypeRef ConvertMonoTypeToLLVM(Mono.Cecil.TypeDefinition t, List<Mono.Cecil.TypeDefinition> list_of_data_types_used, bool black_box)
         {
-            if (t == typeof(Int16))
+            if (setup)
+            {
+                MonoInt16 = Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(typeof(Int16));
+                MonoUInt16 = Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(typeof(UInt16));
+                MonoInt32 = Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(typeof(Int32));
+                MonoUInt32 = Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(typeof(UInt32));
+                MonoInt64 = Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(typeof(Int64));
+                MonoUInt64 = Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(typeof(UInt64));
+                MonoBoolean = Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(typeof(Boolean));
+                MonoChar = Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(typeof(Char));
+                MonoVoid = Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(typeof(void));
+                MonoTypeDef = Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(typeof(Mono.Cecil.TypeDefinition));
+                setup = false;
+            }
+
+            if (t == MonoInt16)
             {
                 return LLVM.Int16Type();
             }
-            else if (t == typeof(UInt16))
+            else if (t == MonoUInt16)
             {
                 return LLVM.Int16Type();
             }
-            else if (t == typeof(Int32))
+            else if (t == MonoInt32)
             {
                 return LLVM.Int32Type();
             }
-            else if (t == typeof(UInt32))
+            else if (t == MonoUInt32)
             {
                 return LLVM.Int32Type();
             }
-            else if (t == typeof(Int64))
+            else if (t == MonoInt64)
             {
                 return LLVM.Int64Type();
             }
-            else if (t == typeof(UInt64))
+            else if (t == MonoUInt64)
             {
                 return LLVM.Int64Type();
             }
-            else if (t == typeof(Boolean))
+            else if (t == MonoBoolean)
             {
                 return LLVM.Int1Type();
             }
-            else if (t == typeof(System.Char))
+            else if (t == MonoChar)
             {
                 return LLVM.Int8Type();
             }
-            else if (t == typeof(void))
+            else if (t == MonoVoid)
             {
                 return LLVM.VoidType();
             }
-            else if (t == typeof(System.Type))
+            else if (t == MonoTypeDef)
             {
                 // Pass on compiling the system type. Too compilicated. For now, just pass void *.
                 var typeref = LLVM.VoidType();
@@ -649,29 +677,29 @@ namespace Campy.ControlFlowGraph
                 TypeRef s = LLVM.StructCreateNamed(c, t.ToString());
                 LLVM.StructSetBody(s, new TypeRef[2]
                 {
-                    LLVM.PointerType(ConvertSystemTypeToLLVM(t.GetElementType(), list_of_data_types_used, false), 0),
+                    LLVM.PointerType(ConvertMonoTypeToLLVM(t.GetElementType().Resolve(), list_of_data_types_used, false), 0),
                     LLVM.Int64Type()
                 }, true);
 
                 var element_type = t.GetElementType();
-                var e = ConvertSystemTypeToLLVM(element_type, list_of_data_types_used, false);
+                var e = ConvertMonoTypeToLLVM(element_type.Resolve(), list_of_data_types_used, false);
                 var p = LLVM.PointerType(e, 0);
                 var d = LLVM.GetUndef(p);
                 return s;
             }
             else if (t.IsClass)
             {
-                if (t.IsGenericType && t.ContainsGenericParameters)
+                if (t.HasGenericParameters)
                 {
                     // The type is generic. Loop through all data types used in closure to see
                     // how to compile this type.
                     foreach (var tt in list_of_data_types_used)
                     {
-                        if (tt.Name == t.Name && ! tt.ContainsGenericParameters)
+                        if (tt.Name == t.Name && ! tt.HasGenericParameters)
                         {
                             // match.
                             // Substitute tt for t.
-                            return ConvertSystemTypeToLLVM(tt, list_of_data_types_used, black_box);
+                            //return ConvertSystemTypeToLLVM(tt, list_of_data_types_used, black_box);
                         }
                     }
                 }
@@ -679,11 +707,12 @@ namespace Campy.ControlFlowGraph
                 ContextRef c = LLVM.ContextCreate();
                 TypeRef s = LLVM.StructCreateNamed(c, t.ToString());
                 // Create array of typerefs as argument to StructSetBody below.
-                var fields = t.GetFields(
-                    System.Reflection.BindingFlags.Instance
-                    | System.Reflection.BindingFlags.NonPublic
-                    | System.Reflection.BindingFlags.Public
-                    | System.Reflection.BindingFlags.Static);
+                var fields = t.Fields;
+                //(
+                //    System.Reflection.BindingFlags.Instance
+                //    | System.Reflection.BindingFlags.NonPublic
+                //    | System.Reflection.BindingFlags.Public
+                //    | System.Reflection.BindingFlags.Static);
                 List<TypeRef> list = new List<TypeRef>();
                 foreach (var field in fields)
                 {
@@ -692,7 +721,7 @@ namespace Campy.ControlFlowGraph
                         list.Add(s);
                         continue;
                     }
-                    var field_converted_type = ConvertSystemTypeToLLVM(field.FieldType, list_of_data_types_used, true);
+                    var field_converted_type = ConvertMonoTypeToLLVM(field.FieldType.Resolve(), list_of_data_types_used, true);
                     list.Add(field_converted_type);
                 }
                 LLVM.StructSetBody(s, list.ToArray(), true);

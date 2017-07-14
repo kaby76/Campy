@@ -27,7 +27,7 @@ namespace Campy.ControlFlowGraph
             _phi = new List<ValueRef>();
         }
 
-        public State(MethodDefinition md, int args, int locals, int level, List<System.Type> list_of_data_types_used)
+        public State(MethodDefinition md, int args, int locals, int level, List<Mono.Cecil.TypeDefinition> list_of_data_types_used)
         {
             // Set up state with args, locals, basic stack initial value of 0xDEADBEEF.
             // In addition, use type information from method to compute types for all args.
@@ -42,8 +42,7 @@ namespace Campy.ControlFlowGraph
                         // First parameter is "this", the object that method is attached to.
                         // We'll record a pointer to the object type.
                         var td = md.DeclaringType;
-                        System.Type sys_td = Campy.Types.Utils.ReflectionCecilInterop.ConvertToSystemReflectionType(td);
-                        type = Converter.ConvertSystemTypeToLLVM(sys_td, list_of_data_types_used, false);
+                        type = Converter.ConvertMonoTypeToLLVM(td, list_of_data_types_used, false);
                     }
                     else
                     {
@@ -51,8 +50,27 @@ namespace Campy.ControlFlowGraph
                         ParameterDefinition p = md.Parameters[j];
                         TypeReference tr = p.ParameterType;
                         TypeDefinition td = tr.Resolve();
-                        System.Type sys_td = Campy.Types.Utils.ReflectionCecilInterop.ConvertToSystemReflectionType(tr);
-                        type = Converter.ConvertSystemTypeToLLVM(sys_td, list_of_data_types_used, false);
+
+                        if (td == null)
+                        {
+                            if (!tr.ContainsGenericParameter) throw new Exception("Cannot resolve type.");
+                            // For generic, find instantiated type using list of
+                            //. data types used in closure.
+                            var declaring_type = tr.DeclaringType;
+                            foreach (var data_type_used in list_of_data_types_used)
+                            {
+                                if (declaring_type.Name == data_type_used.Name && !data_type_used.HasGenericParameters)
+                                {
+                                    // match.
+                                    // Make substitutions of actual type for generic.
+                                    // The instantiated type is data_type_used. Find method within instantiated type,
+                                    // and add mutate.
+                                }
+
+                            }
+                        }
+
+                        type = Converter.ConvertMonoTypeToLLVM(tr.Resolve(), list_of_data_types_used, false);
                     }
                 }
                 var vx = new Value(LLVM.ConstInt(type, (ulong)0xdeadbeef, true));
@@ -63,7 +81,7 @@ namespace Campy.ControlFlowGraph
             _phi = new List<ValueRef>();
         }
 
-        public State(Dictionary<int, bool> visited, CFG.Vertex llvm_node, List<System.Type> list_of_data_types_used)
+        public State(Dictionary<int, bool> visited, CFG.Vertex llvm_node, List<Mono.Cecil.TypeDefinition> list_of_data_types_used)
         {
             int args = llvm_node.NumberOfArguments;
             int locals = llvm_node.NumberOfLocals;
@@ -101,8 +119,7 @@ namespace Campy.ControlFlowGraph
                 {
                     var tr = variables[i].VariableType;
                     var td = tr.Resolve();
-                    System.Type sys_td = Campy.Types.Utils.ReflectionCecilInterop.ConvertToSystemReflectionType(tr);
-                    TypeRef type = Converter.ConvertSystemTypeToLLVM(sys_td, list_of_data_types_used, false);
+                    TypeRef type = Converter.ConvertMonoTypeToLLVM(td, list_of_data_types_used, false);
                     Value value = new Value(LLVM.ConstInt(type, (ulong)0, true));
                     _stack.Push(value);
                 }
