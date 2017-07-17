@@ -25,10 +25,13 @@ namespace Campy.ControlFlowGraph
         }
 
 
-        public void InstantiateGenerics(IEnumerable<CFG.Vertex> change_set, List<Mono.Cecil.TypeDefinition> list_of_data_types_used)
+        public void InstantiateGenerics(IEnumerable<CFG.Vertex> change_set, List<System.Type> list_of_data_types_used, List<Mono.Cecil.TypeDefinition> list_of_mono_data_types_used)
         {
-            foreach (var data_type_used in list_of_data_types_used)
+            for (int i = 0; i < list_of_data_types_used.Count; ++i)
             {
+                var data_type_used = list_of_mono_data_types_used[i];
+                var sys_data_type_used = list_of_data_types_used[i];
+
                 var data_type_used_has_generics = data_type_used.HasGenericParameters;
                 var data_type_used_contains_generics = data_type_used.ContainsGenericParameter;
                 var data_type_used_generic_instance = data_type_used.IsGenericInstance;
