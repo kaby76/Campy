@@ -13,6 +13,13 @@ namespace Campy.Types.Utils
     public class ReflectionCecilInterop
     {
 
+        /// <summary>
+        /// ConvertToMonoCecilTypeDefinition is a very important function
+        /// that converts Sysmtem.Types in C# into Mono Cecil data types. I would
+        /// prefer not to do this but Mono does not seem to do it.
+        /// </summary>
+        /// <param name="ty"></param>
+        /// <returns></returns>
         public static Mono.Cecil.TypeDefinition ConvertToMonoCecilTypeDefinition(System.Type ty)
         {
             // Get assembly name which encloses code for kernel.
@@ -22,7 +29,7 @@ namespace Campy.Types.Utils
             String full_path = Path.GetFullPath(kernel_assembly_file_name);
             full_path = Path.GetDirectoryName(full_path);
 
-            // Decompile entire module.
+            // Decompile entire module using Mono.
             Mono.Cecil.ModuleDefinition md = Mono.Cecil.ModuleDefinition.ReadModule(kernel_assembly_file_name);
 
             // Examine all types, and all methods of types in order to find the lambda in Mono.Cecil.
