@@ -36,7 +36,13 @@ namespace Campy.ControlFlowGraph
                 var data_type_used_contains_generics = data_type_used.ContainsGenericParameter;
                 var data_type_used_generic_instance = data_type_used.IsGenericInstance;
 
-
+                var sys_data_type_used_is_generic_type = sys_data_type_used.IsGenericType;
+                var sys_data_type_used_is_generic_parameter = sys_data_type_used.IsGenericParameter;
+                var sys_data_type_used_contains_generics = sys_data_type_used.ContainsGenericParameters;
+                if (sys_data_type_used_is_generic_type)
+                {
+                    var sys_data_type_used_get_generic_type_def = sys_data_type_used.GetGenericTypeDefinition();
+                }
 
 
                 IEnumerable<CFG.Vertex> mono_bbs = change_set;
@@ -51,7 +57,10 @@ namespace Campy.ControlFlowGraph
                     
                     if (method_contains_generics)
                     {
-                        // Find match.
+                        if (declaring_type.Equals(data_type_used))
+                        {
+                            // match is sys_data_type_used. Substitute all generics from sys_data_type_used.
+                        }
                     }
                     
                     // If the owning type is generic, and if it's instantiated.
@@ -67,6 +76,7 @@ namespace Campy.ControlFlowGraph
                 }
             }
         }
+
         public void CompileToLLVM(IEnumerable<CFG.Vertex> change_set, List<Mono.Cecil.TypeDefinition> list_of_data_types_used)
         {
             //
