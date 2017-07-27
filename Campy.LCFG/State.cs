@@ -27,7 +27,7 @@ namespace Campy.ControlFlowGraph
             _phi = new List<ValueRef>();
         }
 
-        public State(MethodDefinition md, int args, int locals, int level, List<Mono.Cecil.TypeDefinition> list_of_data_types_used)
+        public State(CFG.Vertex vertex, MethodDefinition md, int args, int locals, int level)
         {
             // Set up state with args, locals, basic stack initial value of 0xDEADBEEF.
             // In addition, use type information from method to compute types for all args.
@@ -42,7 +42,10 @@ namespace Campy.ControlFlowGraph
                         // First parameter is "this", the object that method is attached to.
                         // We'll record a pointer to the object type.
                         var td = md.DeclaringType;
-                        type = Converter.ConvertMonoTypeToLLVM(td, list_of_data_types_used, false);
+                        type = Converter.ConvertMonoTypeToLLVM(
+                            td,
+                            vertex,
+                            false);
                     }
                     else
                     {
@@ -57,9 +60,11 @@ namespace Campy.ControlFlowGraph
                             // For generic, find instantiated type using list of
                             //. data types used in closure.
                             var declaring_type = tr.DeclaringType;
-                            foreach (var data_type_used in list_of_data_types_used)
+                            foreach (var kvp in vertex.node_type_map)
                             {
-                                if (declaring_type.Name == data_type_used.Name && !data_type_used.HasGenericParameters)
+                                var key = kvp.Key;
+                                var value = kvp.Value;
+                                if (declaring_type.Name == key.Name)
                                 {
                                     // match.
                                     // Make substitutions of actual type for generic.
@@ -70,7 +75,7 @@ namespace Campy.ControlFlowGraph
                             }
                         }
 
-                        type = Converter.ConvertMonoTypeToLLVM(tr.Resolve(), list_of_data_types_used, false);
+                        type = Converter.ConvertMonoTypeToLLVM(tr.Resolve(), vertex, false);
                     }
                 }
                 var vx = new Value(LLVM.ConstInt(type, (ulong)0xdeadbeef, true));
@@ -81,11 +86,11 @@ namespace Campy.ControlFlowGraph
             _phi = new List<ValueRef>();
         }
 
-        public State(Dictionary<int, bool> visited, CFG.Vertex llvm_node, List<Mono.Cecil.TypeDefinition> list_of_data_types_used)
+        public State(Dictionary<int, bool> visited, CFG.Vertex vertex, List<Mono.Cecil.TypeDefinition> list_of_data_types_used)
         {
-            int args = llvm_node.NumberOfArguments;
-            int locals = llvm_node.NumberOfLocals;
-            int level = (int)llvm_node.StackLevelIn;
+            int args = vertex.NumberOfArguments;
+            int locals = vertex.NumberOfLocals;
+            int level = (int)vertex.StackLevelIn;
 
             // Set up list of phi functions in case there are multiple predecessors.
             _phi = new List<ValueRef>();
@@ -96,10 +101,10 @@ namespace Campy.ControlFlowGraph
             // State depends on predecessors. To handle this without updating state
             // until a fix point is found while converting to LLVM IR, we introduce
             // SSA phi functions.
-            if (llvm_node._Predecessors.Count == 0)
+            if (vertex._Predecessors.Count == 0)
             {
-                if (!llvm_node.IsEntry) throw new Exception("Cannot handle dead code blocks.");
-                var fun = llvm_node.Function;
+                if (!vertex.IsEntry) throw new Exception("Cannot handle dead code blocks.");
+                var fun = vertex.Function;
 
                 // Set up args.
                 _arguments = _stack.Section(0, args);
@@ -113,13 +118,13 @@ namespace Campy.ControlFlowGraph
                 // Set up locals. I'm making an assumption that there is a 
                 // one to one and in order mapping of the locals with that
                 // defined for the method body by Mono.
-                Collection<VariableDefinition> variables = llvm_node.Method.Body.Variables;
+                Collection<VariableDefinition> variables = vertex.Method.Body.Variables;
                 _locals = _stack.Section(args, locals);
                 for (int i = 0; i < locals; ++i)
                 {
                     var tr = variables[i].VariableType;
                     var td = tr.Resolve();
-                    TypeRef type = Converter.ConvertMonoTypeToLLVM(td, list_of_data_types_used, false);
+                    TypeRef type = Converter.ConvertMonoTypeToLLVM(td, vertex, false);
                     Value value = new Value(LLVM.ConstInt(type, (ulong)0, true));
                     _stack.Push(value);
                 }
@@ -131,14 +136,14 @@ namespace Campy.ControlFlowGraph
                     _stack.Push(value);
                 }
             }
-            else if (llvm_node._Predecessors.Count == 1)
+            else if (vertex._Predecessors.Count == 1)
             {
                 // We don't need phi functions--and can't with LLVM--
                 // if there is only one predecessor. If it hasn't been
                 // converted before this node, just create basic state.
 
-                var pred = llvm_node._Predecessors[0].From;
-                var p_llvm_node = llvm_node._Graph.VertexSpace[llvm_node._Graph.NameSpace.BijectFromBasetype(pred)];
+                var pred = vertex._Predecessors[0].From;
+                var p_llvm_node = vertex._Graph.VertexSpace[vertex._Graph.NameSpace.BijectFromBasetype(pred)];
                 var other = p_llvm_node.StateOut;
                 var size = p_llvm_node.StateOut._stack.Count;
                 for (int i = 0; i < size; ++i)
@@ -156,12 +161,12 @@ namespace Campy.ControlFlowGraph
                 // Now, for every arg, local, stack, set up for merge.
                 // Find a predecessor that has some definition.
                 int pred = -1;
-                pred = llvm_node._Predecessors[0].From;
-                for (int pred_ind = 0; pred_ind < llvm_node._Predecessors.Count; ++pred_ind)
+                pred = vertex._Predecessors[0].From;
+                for (int pred_ind = 0; pred_ind < vertex._Predecessors.Count; ++pred_ind)
                 {
-                    int to_check = llvm_node._Predecessors[pred_ind].From;
+                    int to_check = vertex._Predecessors[pred_ind].From;
                     if (!visited.ContainsKey(to_check)) continue;
-                    CFG.Vertex check_llvm_node = llvm_node._Graph.VertexSpace[llvm_node._Graph.NameSpace.BijectFromBasetype(to_check)];
+                    CFG.Vertex check_llvm_node = vertex._Graph.VertexSpace[vertex._Graph.NameSpace.BijectFromBasetype(to_check)];
                     if (check_llvm_node.StateOut == null)
                         continue;
                     if (check_llvm_node.StateOut._stack == null)
@@ -170,7 +175,7 @@ namespace Campy.ControlFlowGraph
                     break;
                 }
 
-                CFG.Vertex p_llvm_node = llvm_node._Graph.VertexSpace[llvm_node._Graph.NameSpace.BijectFromBasetype(llvm_node._Predecessors[pred].From)];
+                CFG.Vertex p_llvm_node = vertex._Graph.VertexSpace[vertex._Graph.NameSpace.BijectFromBasetype(vertex._Predecessors[pred].From)];
                 int size = p_llvm_node.StateOut._stack.Count;
                 for (int i = 0; i < size; ++i)
                 {
@@ -178,10 +183,10 @@ namespace Campy.ControlFlowGraph
                         Value value = new Value(LLVM.ConstInt(LLVM.Int32Type(), (ulong)0, true));
                         _stack.Push(value);
                     }
-                    var count = llvm_node._Predecessors.Count;
+                    var count = vertex._Predecessors.Count;
                     var v = p_llvm_node.StateOut._stack[i].V;
                     TypeRef tr = LLVM.TypeOf(v);
-                    ValueRef res = LLVM.BuildPhi(llvm_node.Builder, tr, "");
+                    ValueRef res = LLVM.BuildPhi(vertex.Builder, tr, "");
                     _phi.Add(res);
                     
                     //ValueRef[] phi_vals = new ValueRef[count];

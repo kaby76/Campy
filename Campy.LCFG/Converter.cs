@@ -24,58 +24,227 @@ namespace Campy.ControlFlowGraph
             _mcfg = mcfg;
         }
 
+        // Finally, we need a mapping of node to rewrites.
+        Dictionary<CFG.Vertex, MultiMap<Mono.Cecil.TypeReference, System.Type>> map =
+            new Dictionary<CFG.Vertex, MultiMap<TypeReference, System.Type>>();
+
+        public class Comparer : IEqualityComparer<Tuple<CFG.Vertex, Mono.Cecil.TypeReference, System.Type>>
+        {
+            bool IEqualityComparer<Tuple<CFG.Vertex, TypeReference, System.Type>>.Equals(Tuple<CFG.Vertex, TypeReference, System.Type> x, Tuple<CFG.Vertex, TypeReference, System.Type> y)
+            {
+                // Order by vertex id, typereference string, type string.
+                if (x.Item1.Name != y.Item1.Name)
+                    return false;
+                // Equal vertex name.
+                if (x.Item2.Name != y.Item2.Name)
+                    return false;
+                // Equal TypeReference.
+                if (x.Item3.Name != y.Item3.Name)
+                    return false;
+
+                return true;
+            }
+
+            int IEqualityComparer<Tuple<CFG.Vertex, TypeReference, System.Type>>.GetHashCode(Tuple<CFG.Vertex, TypeReference, System.Type> obj)
+            {
+                int result = 0;
+                result = obj.Item1.GetHashCode() + obj.Item2.GetHashCode() + obj.Item3.GetHashCode();
+                return result;
+            }
+        }
+
+        Dictionary<Tuple<CFG.Vertex, Mono.Cecil.TypeReference, System.Type>, CFG.Vertex> mmap
+            = new Dictionary<Tuple<CFG.Vertex, TypeReference, System.Type>, CFG.Vertex>(new Comparer());
+
+
+        private CFG.Vertex FindInstantiatedBasicBlock(CFG.Vertex current, Mono.Cecil.TypeReference generic_type, System.Type value)
+        {
+            var k = new Tuple<CFG.Vertex, TypeReference, System.Type>(current, generic_type, value);
+
+            // Find vertex that maps from base vertex via symbol.
+            if (!mmap.ContainsKey(k))
+                return null;
+
+            var v = mmap[k];
+            return v;
+        }
+
+        private void EnterInstantiatedBasicBlock(CFG.Vertex current, Mono.Cecil.TypeReference generic_type, System.Type value, CFG.Vertex xx)
+        {
+            var k = new Tuple<CFG.Vertex, TypeReference, System.Type>(current, generic_type, value);
+            mmap[k] = xx;
+        }
+
 
         public void InstantiateGenerics(IEnumerable<CFG.Vertex> change_set, List<System.Type> list_of_data_types_used, List<Mono.Cecil.TypeDefinition> list_of_mono_data_types_used)
         {
-            for (int i = 0; i < list_of_data_types_used.Count; ++i)
+            // We need to do bookkeeping of what nodes to consider.
+            Stack<CFG.Vertex> instantiated_nodes = new Stack<CFG.Vertex>(change_set);
+
+            // And, we also need a list of nodes that should be deleted.
+            List<CFG.Vertex> to_nuke = new List<CFG.Vertex>();
+
+            while (instantiated_nodes.Count > 0)
             {
-                var data_type_used = list_of_mono_data_types_used[i];
-                var sys_data_type_used = list_of_data_types_used[i];
+                CFG.Vertex lv = instantiated_nodes.Pop();
 
-                var data_type_used_has_generics = data_type_used.HasGenericParameters;
-                var data_type_used_contains_generics = data_type_used.ContainsGenericParameter;
-                var data_type_used_generic_instance = data_type_used.IsGenericInstance;
+                MethodDefinition method = lv.Method;
+                var declaring_type = method.DeclaringType;
+                var method_has_generics = method.HasGenericParameters;
+                var method_contains_generics = method.ContainsGenericParameter;
+                var method_generic_instance = method.IsGenericInstance;
 
-                var sys_data_type_used_is_generic_type = sys_data_type_used.IsGenericType;
-                var sys_data_type_used_is_generic_parameter = sys_data_type_used.IsGenericParameter;
-                var sys_data_type_used_contains_generics = sys_data_type_used.ContainsGenericParameters;
-                if (sys_data_type_used_is_generic_type)
+                System.Console.WriteLine("Considering " + lv.Name);
+
+                // If a block associated with method contains generics,
+                // we need to duplicate the node and add in type information
+                // about the generic type with that is actually used.
+                // So, for example, if the method contains a parameter of type
+                // "T", then we add in a mapping of T to the actual data type
+                // used, e.g., Integer, or what have you. When it is compiled,
+                // to LLVM, the mapped data type will be used!
+                if (method_contains_generics)
                 {
-                    var sys_data_type_used_get_generic_type_def = sys_data_type_used.GetGenericTypeDefinition();
-                }
-
-
-                IEnumerable<CFG.Vertex> mono_bbs = change_set;
-                foreach (var lv in mono_bbs)
-                {
-                    MethodDefinition method = lv.Method;
+                    // Let's first consider the parameters to the function.
                     var parameters = method.Parameters;
-                    var declaring_type = method.DeclaringType;
-                    var method_has_generics = method.HasGenericParameters;
-                    var method_contains_generics = method.ContainsGenericParameter;
-                    var method_generic_instance = method.IsGenericInstance;
-                    
-                    if (method_contains_generics)
+                    for (int k = 0; k < parameters.Count; ++k)
                     {
-                        if (declaring_type.Equals(data_type_used))
+                        ParameterDefinition par = parameters[k];
+                        var type_to_consider = par.ParameterType;
+                        if (type_to_consider.ContainsGenericParameter)
                         {
-                            // match is sys_data_type_used. Substitute all generics from sys_data_type_used.
+                            var declaring_type_of_considered_type = type_to_consider.DeclaringType;
+
+                            // "type_to_consider" is generic, so find matching
+                            // type, make mapping, and node copy.
+                            for (int i = 0; i < list_of_data_types_used.Count; ++i)
+                            {
+                                var data_type_used = list_of_mono_data_types_used[i];
+                                var sys_data_type_used = list_of_data_types_used[i];
+
+                                var data_type_used_has_generics = data_type_used.HasGenericParameters;
+                                var data_type_used_contains_generics = data_type_used.ContainsGenericParameter;
+                                var data_type_used_generic_instance = data_type_used.IsGenericInstance;
+
+                                var sys_data_type_used_is_generic_type = sys_data_type_used.IsGenericType;
+                                var sys_data_type_used_is_generic_parameter = sys_data_type_used.IsGenericParameter;
+                                var sys_data_type_used_contains_generics = sys_data_type_used.ContainsGenericParameters;
+                                if (sys_data_type_used_is_generic_type)
+                                {
+                                    var sys_data_type_used_get_generic_type_def = sys_data_type_used.GetGenericTypeDefinition();
+                                }
+
+                                if (declaring_type_of_considered_type.FullName.Equals(data_type_used.FullName))
+                                {
+                                    // Find generic parameter corresponding to par.ParameterType
+                                    System.Type xx = null;
+                                    for (int l = 0; l < sys_data_type_used.GetGenericArguments().Count(); ++l)
+                                    {
+                                        var pp = declaring_type.GenericParameters;
+                                        var ppp = pp[l];
+                                        if (ppp.Name == type_to_consider.Name)
+                                            xx = sys_data_type_used.GetGenericArguments()[l];
+                                    }
+
+                                    // Match. First find node if it exists.
+                                    var old_node = FindInstantiatedBasicBlock(lv, type_to_consider, xx);
+                                    if (old_node != null)
+                                        continue;
+
+                                    // Rewrite node
+                                    int new_node_id = _mcfg.NewNodeNumber();
+                                    var new_node = _mcfg.AddVertex(new_node_id);
+                                    var new_cfg_node = (CFG.Vertex)new_node;
+                                    new_cfg_node.Instructions = lv.Instructions;
+                                    new_cfg_node.Method = lv.Method;
+                                    // Add in rewrites.
+                                    new_cfg_node.node_type_map = new MultiMap<TypeReference, System.Type>(lv.node_type_map);
+                                    new_cfg_node.node_type_map.Add(type_to_consider, xx);
+                                    EnterInstantiatedBasicBlock(lv, type_to_consider, xx, new_cfg_node);
+                                    System.Console.WriteLine("Adding new node " + new_cfg_node.Name);
+
+                                    // Push this node back on the stack.
+                                    //   if (!instantiated_nodes.Contains(new_cfg_node))
+                                    //      instantiated_nodes.Push(new_cfg_node);
+                                }
+                            }
                         }
                     }
-                    
-                    // If the owning type is generic, and if it's instantiated.
-                    if (((declaring_type.HasGenericParameters && data_type_used.HasGenericParameters) &&
-                        (declaring_type.Name == data_type_used.Name)))
-                    {
-                        // match.
-                        // Substitute data_type_used for declaring_type, create a whole new set of
-                        // basic blocks.
 
-                        _mcfg.AddVertex(_mcfg.NewNodeNumber());
+                    // Next, consider the return value.
+                    {
+                        var return_type = method.ReturnType;
+                        var type_to_consider = return_type;
+                        if (type_to_consider.ContainsGenericParameter)
+                        {
+                            var declaring_type_of_considered_type = type_to_consider.DeclaringType;
+
+                            // "type_to_consider" is generic, so find matching
+                            // type, make mapping, and node copy.
+                            for (int i = 0; i < list_of_data_types_used.Count; ++i)
+                            {
+                                var data_type_used = list_of_mono_data_types_used[i];
+                                var sys_data_type_used = list_of_data_types_used[i];
+
+                                var data_type_used_has_generics = data_type_used.HasGenericParameters;
+                                var data_type_used_contains_generics = data_type_used.ContainsGenericParameter;
+                                var data_type_used_generic_instance = data_type_used.IsGenericInstance;
+
+                                var sys_data_type_used_is_generic_type = sys_data_type_used.IsGenericType;
+                                var sys_data_type_used_is_generic_parameter = sys_data_type_used.IsGenericParameter;
+                                var sys_data_type_used_contains_generics = sys_data_type_used.ContainsGenericParameters;
+                                if (sys_data_type_used_is_generic_type)
+                                {
+                                    var sys_data_type_used_get_generic_type_def = sys_data_type_used.GetGenericTypeDefinition();
+                                }
+
+                                if (declaring_type_of_considered_type.FullName.Equals(data_type_used.FullName))
+                                {
+                                    // Find generic parameter corresponding to par.ParameterType
+                                    System.Type xx = null;
+                                    for (int l = 0; l < sys_data_type_used.GetGenericArguments().Count(); ++l)
+                                    {
+                                        var pp = declaring_type.GenericParameters;
+                                        var ppp = pp[l];
+                                        if (ppp.Name == type_to_consider.Name)
+                                            xx = sys_data_type_used.GetGenericArguments()[l];
+                                    }
+
+                                    // Match. First find node if it exists.
+                                    var old_node = FindInstantiatedBasicBlock(lv, type_to_consider, xx);
+                                    if (old_node != null)
+                                        continue;
+
+                                    // Rewrite node
+                                    int new_node_id = _mcfg.NewNodeNumber();
+                                    var new_node = _mcfg.AddVertex(new_node_id);
+                                    var new_cfg_node = (CFG.Vertex)new_node;
+                                    new_cfg_node.Instructions = lv.Instructions;
+                                    new_cfg_node.Method = lv.Method;
+                                    // Add in rewrites.
+                                    new_cfg_node.node_type_map = new MultiMap<TypeReference, System.Type>(lv.node_type_map);
+                                    new_cfg_node.node_type_map.Add(type_to_consider, xx);
+                                    EnterInstantiatedBasicBlock(lv, type_to_consider, xx, new_cfg_node);
+                                    System.Console.WriteLine("Adding new node " + new_cfg_node.Name);
+
+                                    // Push this node back on the stack.
+                                    //   if (!instantiated_nodes.Contains(new_cfg_node))
+                                    //      instantiated_nodes.Push(new_cfg_node);
+                                }
+                            }
+                        }
                     }
                 }
             }
+
+            // Set up entry flag for every block.
+            foreach (var v in change_set)
+            {
+
+            }
+
         }
+        
 
         public void CompileToLLVM(IEnumerable<CFG.Vertex> change_set, List<Mono.Cecil.TypeDefinition> list_of_data_types_used)
         {
@@ -87,7 +256,8 @@ namespace Campy.ControlFlowGraph
             foreach (var lv in mono_bbs)
             {
                 // Skip all but entry blocks for now.
-                if (!lv.IsEntry) continue;
+                if (!lv.IsEntry)
+                    continue;                
 
                 MethodDefinition method = lv.Method;
                 var parameters = method.Parameters;
@@ -97,6 +267,15 @@ namespace Campy.ControlFlowGraph
                 string mn = mb.DeclaringType.Assembly.GetName().Name;
                 ModuleRef mod = LLVM.ModuleCreateWithName(mn);
                 lv.Module = mod;
+
+                // Further, do not compile nodes for methods that are generic and uninstantiated.
+                if (method.HasGenericParameters && lv.node_type_map != null
+                    && !lv.node_type_map.Any())
+                    continue;
+                if (method.ContainsGenericParameter && lv.node_type_map != null
+                    && !lv.node_type_map.Any())
+                    continue;
+
                 uint count = (uint) mb.GetParameters().Count();
                 TypeRef[] param_types = new TypeRef[count];
                 int current = 0;
@@ -104,11 +283,17 @@ namespace Campy.ControlFlowGraph
                     foreach (var p in parameters)
                     {
                         param_types[current++] =
-                            ConvertMonoTypeToLLVM(p.ParameterType.Resolve(), list_of_data_types_used, false);
+                            ConvertMonoTypeToLLVM(
+                                p.ParameterType,
+                                lv,
+                                false);
                     }
                 TypeRef ret_type = default(TypeRef);
                 var mi2 = method.ReturnType;
-                ret_type = ConvertMonoTypeToLLVM(mi2.Resolve(), list_of_data_types_used, false);
+                ret_type = ConvertMonoTypeToLLVM(
+                    mi2,
+                    lv,
+                    false);
                 TypeRef met_type = LLVM.FunctionType(ret_type, param_types, false);
                 ValueRef fun = LLVM.AddFunction(mod, mb.Name, met_type);
                 BasicBlockRef entry = LLVM.AppendBasicBlock(fun, lv.Name.ToString());
@@ -355,10 +540,10 @@ namespace Campy.ControlFlowGraph
                 {
                     CFG.Vertex node = _mcfg.VertexSpace[_mcfg.NameSpace.BijectFromBasetype(ob)];
                     CFG.Vertex llvm_node = node;
-                    llvm_node.StateIn = new State(node.Method, llvm_node.NumberOfArguments, llvm_node.NumberOfLocals,
-                        (int) llvm_node.StackLevelIn, list_of_data_types_used);
-                    llvm_node.StateOut = new State(node.Method, llvm_node.NumberOfArguments, llvm_node.NumberOfLocals,
-                        (int) llvm_node.StackLevelOut, list_of_data_types_used);
+                    llvm_node.StateIn = new State(node, node.Method, llvm_node.NumberOfArguments, llvm_node.NumberOfLocals,
+                        (int) llvm_node.StackLevelIn);
+                    llvm_node.StateOut = new State(node, node.Method, llvm_node.NumberOfArguments, llvm_node.NumberOfLocals,
+                        (int) llvm_node.StackLevelOut);
                 }
 
                 Dictionary<int, bool> visited = new Dictionary<int, bool>();
@@ -655,8 +840,12 @@ namespace Campy.ControlFlowGraph
         private static Mono.Cecil.TypeDefinition MonoVoid;
         private static Mono.Cecil.TypeDefinition MonoTypeDef;
 
-        public static TypeRef ConvertMonoTypeToLLVM(Mono.Cecil.TypeDefinition t, List<Mono.Cecil.TypeDefinition> list_of_data_types_used, bool black_box)
+        public static TypeRef ConvertMonoTypeToLLVM(
+            Mono.Cecil.TypeReference tr,
+            CFG.Vertex node,
+            bool black_box)
         {
+            TypeDefinition td = tr.Resolve();
             if (setup)
             {
                 MonoInt16 = Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(typeof(Int16));
@@ -672,88 +861,108 @@ namespace Campy.ControlFlowGraph
                 setup = false;
             }
 
-            if (t == MonoInt16)
+            if (tr == MonoInt16)
             {
                 return LLVM.Int16Type();
             }
-            else if (t == MonoUInt16)
+            else if (tr == MonoUInt16)
             {
                 return LLVM.Int16Type();
             }
-            else if (t == MonoInt32)
+            else if (tr == MonoInt32)
             {
                 return LLVM.Int32Type();
             }
-            else if (t == MonoUInt32)
+            else if (tr == MonoUInt32)
             {
                 return LLVM.Int32Type();
             }
-            else if (t == MonoInt64)
+            else if (tr == MonoInt64)
             {
                 return LLVM.Int64Type();
             }
-            else if (t == MonoUInt64)
+            else if (tr == MonoUInt64)
             {
                 return LLVM.Int64Type();
             }
-            else if (t == MonoBoolean)
+            else if (tr == MonoBoolean)
             {
                 return LLVM.Int1Type();
             }
-            else if (t == MonoChar)
+            else if (tr == MonoChar)
             {
                 return LLVM.Int8Type();
             }
-            else if (t == MonoVoid)
+            else if (tr == MonoVoid)
             {
                 return LLVM.VoidType();
             }
-            else if (t == MonoTypeDef)
+            else if (tr == MonoTypeDef)
             {
                 // Pass on compiling the system type. Too compilicated. For now, just pass void *.
                 var typeref = LLVM.VoidType();
                 var s = LLVM.PointerType(typeref, 0);
                 return s;
             }
-            else if (black_box && t.IsArray)
+            else if (black_box && tr.IsArray)
             {
                 // Pass on compiling the system type. Too compilicated. For now, just pass void *.
                 var typeref = LLVM.VoidType();
                 var s = LLVM.PointerType(typeref, 0);
                 return s;
             }
-            else if (black_box && t.IsClass)
+            else if (black_box && td.IsClass)
             {
                 // Pass on compiling the system type. Too compilicated. For now, just pass void *.
                 var typeref = LLVM.VoidType();
                 var s = LLVM.PointerType(typeref, 0);
                 return s;
             }
-            else if (t.IsArray)
+            else if (tr.IsArray)
             {
                 ContextRef c = LLVM.ContextCreate();
-                TypeRef s = LLVM.StructCreateNamed(c, t.ToString());
+                TypeRef s = LLVM.StructCreateNamed(c, tr.ToString());
                 LLVM.StructSetBody(s, new TypeRef[2]
                 {
-                    LLVM.PointerType(ConvertMonoTypeToLLVM(t.GetElementType().Resolve(), list_of_data_types_used, false), 0),
+                    LLVM.PointerType(ConvertMonoTypeToLLVM(tr.GetElementType(), node, false), 0),
                     LLVM.Int64Type()
                 }, true);
 
-                var element_type = t.GetElementType();
-                var e = ConvertMonoTypeToLLVM(element_type.Resolve(), list_of_data_types_used, false);
+                var element_type = tr.GetElementType();
+                var e = ConvertMonoTypeToLLVM(element_type, node, false);
                 var p = LLVM.PointerType(e, 0);
                 var d = LLVM.GetUndef(p);
                 return s;
             }
-            else if (t.IsClass)
+            else if (tr.IsGenericParameter)
             {
-                if (t.HasGenericParameters)
+                foreach (var kvp in node.node_type_map)
+                {
+                    var key = kvp.Key;
+                    var value = kvp.Value;
+                    if (key.Name == tr.Name)
+                    {
+                        // Match, and substitute.
+                        var v = value.First();
+                        var mv = Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(v);
+                        var e = ConvertMonoTypeToLLVM(mv, node, true);
+                        return e;
+                    }
+                }
+                throw new Exception("Cannot convert " + tr.Name);
+            }
+            else if (td.IsClass)
+            {
+                if (tr.HasGenericParameters)
                 {
                     // The type is generic. Loop through all data types used in closure to see
                     // how to compile this type.
-                    foreach (var tt in list_of_data_types_used)
+                    foreach (var kvp in node.node_type_map)
                     {
-                        if (tt.Name == t.Name && ! tt.HasGenericParameters)
+                        var key = kvp.Key;
+                        var value = kvp.Value;
+
+                        if (key.Name == tr.Name)
                         {
                             // match.
                             // Substitute tt for t.
@@ -763,9 +972,9 @@ namespace Campy.ControlFlowGraph
                 }
                 // Create a struct/class type.
                 ContextRef c = LLVM.ContextCreate();
-                TypeRef s = LLVM.StructCreateNamed(c, t.ToString());
+                TypeRef s = LLVM.StructCreateNamed(c, tr.ToString());
                 // Create array of typerefs as argument to StructSetBody below.
-                var fields = t.Fields;
+                var fields = td.Fields;
                 //(
                 //    System.Reflection.BindingFlags.Instance
                 //    | System.Reflection.BindingFlags.NonPublic
@@ -774,12 +983,12 @@ namespace Campy.ControlFlowGraph
                 List<TypeRef> list = new List<TypeRef>();
                 foreach (var field in fields)
                 {
-                    if (field.FieldType == t)
+                    if (field.FieldType == tr)
                     {
                         list.Add(s);
                         continue;
                     }
-                    var field_converted_type = ConvertMonoTypeToLLVM(field.FieldType.Resolve(), list_of_data_types_used, true);
+                    var field_converted_type = ConvertMonoTypeToLLVM(field.FieldType, node, true);
                     list.Add(field_converted_type);
                 }
                 LLVM.StructSetBody(s, list.ToArray(), true);
