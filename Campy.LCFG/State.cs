@@ -60,10 +60,10 @@ namespace Campy.ControlFlowGraph
                             // For generic, find instantiated type using list of
                             //. data types used in closure.
                             var declaring_type = tr.DeclaringType;
-                            foreach (var kvp in vertex.node_type_map)
+                            foreach (var kvp in vertex.OpsFromOriginal)
                             {
-                                var key = kvp.Key;
-                                var value = kvp.Value;
+                                var key = kvp.Item1;
+                                var value = kvp.Item2;
                                 if (declaring_type.Name == key.Name)
                                 {
                                     // match.

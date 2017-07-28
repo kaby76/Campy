@@ -115,6 +115,9 @@ namespace Campy.ControlFlowGraph
             : GraphLinkedList<int, Vertex, Edge>.Vertex
         {
             public CFG.Vertex OriginalVertex { get; set; }
+            public List<Tuple<TypeReference, System.Type>> OpsFromOriginal { get; set; }
+            public CFG.Vertex PreviousVertex { get; set; }
+            public Tuple<TypeReference, System.Type> OpFromPreviousNode { get; set; }
 
             public MethodDefinition Method { get; set; }
             public List<Inst> Instructions { get; set; } = new List<Inst>();
@@ -220,8 +223,8 @@ namespace Campy.ControlFlowGraph
 
             public List<Vertex> _ordered_list_of_blocks;
 
-            public Campy.Utils.MultiMap<Mono.Cecil.TypeReference, System.Type> node_type_map =
-                new Campy.Utils.MultiMap<TypeReference, System.Type>();
+           // public Campy.Utils.MultiMap<Mono.Cecil.TypeReference, System.Type> node_type_map =
+           //     new Campy.Utils.MultiMap<TypeReference, System.Type>();
 
             public Vertex()
                 : base()

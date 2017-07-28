@@ -94,7 +94,7 @@ namespace Campy.ControlFlowGraph
                         break;
                     }
                 }
-                if (! found) throw new Exception("Cannot transition.");
+                if (!found) throw new Exception("Cannot transition.");
             }
             return current;
         }
@@ -170,22 +170,33 @@ namespace Campy.ControlFlowGraph
                                             xx = sys_data_type_used.GetGenericArguments()[l];
                                     }
 
-                                    // Match. First find node if it exists.
-                                    var old_node = FindInstantiatedBasicBlock(lv, type_to_consider, xx);
-                                    if (old_node != null)
-                                        continue;
-
+                                    // Match. First find rewrite node if previous created.
+                                    var previous = lv;
+                                    for (; previous != null; previous = previous.PreviousVertex)
+                                    {
+                                        var old_node = FindInstantiatedBasicBlock(previous, type_to_consider, xx);
+                                        if (old_node != null)
+                                            break;
+                                    }
+                                    if (previous != null) continue;
                                     // Rewrite node
                                     int new_node_id = _mcfg.NewNodeNumber();
                                     var new_node = _mcfg.AddVertex(new_node_id);
                                     var new_cfg_node = (CFG.Vertex)new_node;
                                     new_cfg_node.Instructions = lv.Instructions;
                                     new_cfg_node.Method = lv.Method;
+                                    new_cfg_node.PreviousVertex = lv;
+                                    new_cfg_node.OpFromPreviousNode = new Tuple<TypeReference, System.Type>(type_to_consider, xx);
+                                    var previous_list = lv.OpsFromOriginal;
+                                    if (previous_list != null) new_cfg_node.OpsFromOriginal = new List<Tuple<TypeReference, System.Type>>(previous_list);
+                                    else new_cfg_node.OpsFromOriginal = new List<Tuple<TypeReference, System.Type>>();
+                                    new_cfg_node.OpsFromOriginal.Add(new_cfg_node.OpFromPreviousNode);
                                     if (lv.OriginalVertex == null) new_cfg_node.OriginalVertex = lv;
                                     else new_cfg_node.OriginalVertex = lv.OriginalVertex;
+
                                     // Add in rewrites.
-                                    new_cfg_node.node_type_map = new MultiMap<TypeReference, System.Type>(lv.node_type_map);
-                                    new_cfg_node.node_type_map.Add(type_to_consider, xx);
+                                    //new_cfg_node.node_type_map = new MultiMap<TypeReference, System.Type>(lv.node_type_map);
+                                    //new_cfg_node.node_type_map.Add(type_to_consider, xx);
                                     EnterInstantiatedBasicBlock(lv, type_to_consider, xx, new_cfg_node);
                                     System.Console.WriteLine("Adding new node " + new_cfg_node.Name);
 
@@ -235,22 +246,33 @@ namespace Campy.ControlFlowGraph
                                             xx = sys_data_type_used.GetGenericArguments()[l];
                                     }
 
-                                    // Match. First find node if it exists.
-                                    var old_node = FindInstantiatedBasicBlock(lv, type_to_consider, xx);
-                                    if (old_node != null)
-                                        continue;
-
+                                    // Match. First find rewrite node if previous created.
+                                    var previous = lv;
+                                    for (; previous != null; previous = previous.PreviousVertex)
+                                    {
+                                        var old_node = FindInstantiatedBasicBlock(previous, type_to_consider, xx);
+                                        if (old_node != null)
+                                            break;
+                                    }
+                                    if (previous != null) continue;
                                     // Rewrite node
                                     int new_node_id = _mcfg.NewNodeNumber();
                                     var new_node = _mcfg.AddVertex(new_node_id);
                                     var new_cfg_node = (CFG.Vertex)new_node;
                                     new_cfg_node.Instructions = lv.Instructions;
                                     new_cfg_node.Method = lv.Method;
+                                    new_cfg_node.PreviousVertex = lv;
+                                    new_cfg_node.OpFromPreviousNode = new Tuple<TypeReference, System.Type>(type_to_consider, xx);
+                                    var previous_list = lv.OpsFromOriginal;
+                                    if (previous_list != null) new_cfg_node.OpsFromOriginal = new List<Tuple<TypeReference, System.Type>>(previous_list);
+                                    else new_cfg_node.OpsFromOriginal = new List<Tuple<TypeReference, System.Type>>();
+                                    new_cfg_node.OpsFromOriginal.Add(new_cfg_node.OpFromPreviousNode);
                                     if (lv.OriginalVertex == null) new_cfg_node.OriginalVertex = lv;
                                     else new_cfg_node.OriginalVertex = lv.OriginalVertex;
+                                    
                                     // Add in rewrites.
-                                    new_cfg_node.node_type_map = new MultiMap<TypeReference, System.Type>(lv.node_type_map);
-                                    new_cfg_node.node_type_map.Add(type_to_consider, xx);
+                                    //new_cfg_node.node_type_map = new MultiMap<TypeReference, System.Type>(lv.node_type_map);
+                                    //new_cfg_node.node_type_map.Add(type_to_consider, xx);
                                     EnterInstantiatedBasicBlock(lv, type_to_consider, xx, new_cfg_node);
                                     System.Console.WriteLine("Adding new node " + new_cfg_node.Name);
 
@@ -263,17 +285,50 @@ namespace Campy.ControlFlowGraph
                 }
             }
 
-            // Get new nodes.
             List<CFG.Vertex> cs2 = _mcfg.PopChangeSet(change_set_id2);
-
-            // Set up entry flag for every block.
+            Dictionary<CFG.Vertex, CFG.Vertex> map_to_new_block = new Dictionary<CFG.Vertex, CFG.Vertex>();
             foreach (var v in cs2)
             {
-
+                if (!IsFullyInstantiatedNode(v)) continue;
+                var original = v.OriginalVertex;
+                var ops_list = v.OpsFromOriginal;
+                // Apply instance information from v onto predecessors and successors, and entry.
+                foreach (var vto in _mcfg.SuccessorNodes(original))
+                {
+                    var vto_mapped = Eval(vto, ops_list);
+                    _mcfg.AddEdge(v, vto_mapped);
+                }
+            }
+            foreach (var v in cs2)
+            {
+                if (!IsFullyInstantiatedNode(v)) continue;
+                var original = v.OriginalVertex;
+                var ops_list = v.OpsFromOriginal;
+                if (original.Entry != null)
+                    v.Entry = Eval(original.Entry, ops_list);
             }
 
         }
-        
+
+        private bool IsFullyInstantiatedNode(CFG.Vertex node)
+        {
+            bool result = false;
+            // First, go through and mark all nodes that have non-null
+            // previous entries.
+
+            Dictionary<CFG.Vertex, bool> instantiated = new Dictionary<CFG.Vertex, bool>();
+            foreach (var v in _mcfg.VertexNodes)
+            {
+                instantiated[v] = true;
+            }
+            foreach (var v in _mcfg.VertexNodes)
+            {
+                if (v.PreviousVertex != null) instantiated[v.PreviousVertex] = false;
+            }
+            result = instantiated[node];
+            return result;
+        }
+
 
         public void CompileToLLVM(IEnumerable<CFG.Vertex> change_set, List<Mono.Cecil.TypeDefinition> list_of_data_types_used)
         {
@@ -286,7 +341,10 @@ namespace Campy.ControlFlowGraph
             {
                 // Skip all but entry blocks for now.
                 if (!lv.IsEntry)
-                    continue;                
+                    continue;
+
+                if (!IsFullyInstantiatedNode(lv))
+                    continue;
 
                 MethodDefinition method = lv.Method;
                 var parameters = method.Parameters;
@@ -296,14 +354,6 @@ namespace Campy.ControlFlowGraph
                 string mn = mb.DeclaringType.Assembly.GetName().Name;
                 ModuleRef mod = LLVM.ModuleCreateWithName(mn);
                 lv.Module = mod;
-
-                // Further, do not compile nodes for methods that are generic and uninstantiated.
-                if (method.HasGenericParameters && lv.node_type_map != null
-                    && !lv.node_type_map.Any())
-                    continue;
-                if (method.ContainsGenericParameter && lv.node_type_map != null
-                    && !lv.node_type_map.Any())
-                    continue;
 
                 uint count = (uint) mb.GetParameters().Count();
                 TypeRef[] param_types = new TypeRef[count];
@@ -336,6 +386,9 @@ namespace Campy.ControlFlowGraph
 
             foreach (var mv in mono_bbs)
             {
+                if (!IsFullyInstantiatedNode(mv))
+                    continue;
+
                 IEnumerable<CFG.Vertex> successors = _mcfg.SuccessorNodes(mv);
                 if (!mv.IsEntry)
                 {
@@ -352,6 +405,9 @@ namespace Campy.ControlFlowGraph
             }
             foreach (CFG.Vertex mv in mono_bbs)
             {
+                if (!IsFullyInstantiatedNode(mv))
+                    continue;
+
                 Inst prev = null;
                 foreach (var j in mv.Instructions)
                 {
@@ -365,6 +421,9 @@ namespace Campy.ControlFlowGraph
 
             foreach (CFG.Vertex node in mono_bbs)
             {
+                if (!IsFullyInstantiatedNode(node))
+                    continue;
+
                 int args = 0;
                 Mono.Cecil.MethodDefinition md = node.Method;
                 Mono.Cecil.MethodReference mr = node.Method;
@@ -423,6 +482,9 @@ namespace Campy.ControlFlowGraph
                 }
                 foreach (CFG.Vertex v in mono_bbs)
                 {
+                    if (!IsFullyInstantiatedNode(v))
+                        continue;
+
                     if (!visited.Contains(v))
                         unreachable.Add(v);
                 }
@@ -663,6 +725,9 @@ namespace Campy.ControlFlowGraph
 
             foreach (var lv in mono_bbs)
             {
+                if (!IsFullyInstantiatedNode(lv))
+                    continue;
+
                 if (lv.IsEntry)
                 {
                     ModuleRef mod = lv.Module;
@@ -965,14 +1030,14 @@ namespace Campy.ControlFlowGraph
             }
             else if (tr.IsGenericParameter)
             {
-                foreach (var kvp in node.node_type_map)
+                foreach (var kvp in node.OpsFromOriginal)
                 {
-                    var key = kvp.Key;
-                    var value = kvp.Value;
+                    var key = kvp.Item1;
+                    var value = kvp.Item2;
                     if (key.Name == tr.Name)
                     {
                         // Match, and substitute.
-                        var v = value.First();
+                        var v = value;
                         var mv = Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(v);
                         var e = ConvertMonoTypeToLLVM(mv, node, true);
                         return e;
@@ -986,10 +1051,10 @@ namespace Campy.ControlFlowGraph
                 {
                     // The type is generic. Loop through all data types used in closure to see
                     // how to compile this type.
-                    foreach (var kvp in node.node_type_map)
+                    foreach (var kvp in node.OpsFromOriginal)
                     {
-                        var key = kvp.Key;
-                        var value = kvp.Value;
+                        var key = kvp.Item1;
+                        var value = kvp.Item2;
 
                         if (key.Name == tr.Name)
                         {
