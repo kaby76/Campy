@@ -113,7 +113,9 @@ namespace Campy.ControlFlowGraph
 
         public class Vertex
             : GraphLinkedList<int, Vertex, Edge>.Vertex
-        {        
+        {
+            public CFG.Vertex OriginalVertex { get; set; }
+
             public MethodDefinition Method { get; set; }
             public List<Inst> Instructions { get; set; } = new List<Inst>();
 

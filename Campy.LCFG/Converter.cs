@@ -48,7 +48,7 @@ namespace Campy.ControlFlowGraph
             int IEqualityComparer<Tuple<CFG.Vertex, TypeReference, System.Type>>.GetHashCode(Tuple<CFG.Vertex, TypeReference, System.Type> obj)
             {
                 int result = 0;
-                result = obj.Item1.GetHashCode() + obj.Item2.GetHashCode() + obj.Item3.GetHashCode();
+               // result = obj.Item1.GetHashCode() + obj.Item2.GetHashCode() + obj.Item3.GetHashCode();
                 return result;
             }
         }
@@ -75,14 +75,38 @@ namespace Campy.ControlFlowGraph
             mmap[k] = xx;
         }
 
+        private CFG.Vertex Eval(CFG.Vertex current, List<Tuple<TypeReference, System.Type>> ops)
+        {
+            // Start at current vertex, and find transition state given ops.
+            var copy = new List<Tuple<TypeReference, System.Type>>(ops);
+            while (copy.Count != 0)
+            {
+                bool found = false;
+                for (int i = 0; i < copy.Count; ++i)
+                {
+                    var t = copy[i];
+                    var x = FindInstantiatedBasicBlock(current, t.Item1, t.Item2);
+                    if (x != null)
+                    {
+                        current = x;
+                        copy.RemoveAt(i);
+                        found = true;
+                        break;
+                    }
+                }
+                if (! found) throw new Exception("Cannot transition.");
+            }
+            return current;
+        }
 
         public void InstantiateGenerics(IEnumerable<CFG.Vertex> change_set, List<System.Type> list_of_data_types_used, List<Mono.Cecil.TypeDefinition> list_of_mono_data_types_used)
         {
+            // Start a new change set so we can update edges and other properties for the new nodes
+            // in the graph.
+            int change_set_id2 = _mcfg.StartChangeSet();
+
             // We need to do bookkeeping of what nodes to consider.
             Stack<CFG.Vertex> instantiated_nodes = new Stack<CFG.Vertex>(change_set);
-
-            // And, we also need a list of nodes that should be deleted.
-            List<CFG.Vertex> to_nuke = new List<CFG.Vertex>();
 
             while (instantiated_nodes.Count > 0)
             {
@@ -157,6 +181,8 @@ namespace Campy.ControlFlowGraph
                                     var new_cfg_node = (CFG.Vertex)new_node;
                                     new_cfg_node.Instructions = lv.Instructions;
                                     new_cfg_node.Method = lv.Method;
+                                    if (lv.OriginalVertex == null) new_cfg_node.OriginalVertex = lv;
+                                    else new_cfg_node.OriginalVertex = lv.OriginalVertex;
                                     // Add in rewrites.
                                     new_cfg_node.node_type_map = new MultiMap<TypeReference, System.Type>(lv.node_type_map);
                                     new_cfg_node.node_type_map.Add(type_to_consider, xx);
@@ -164,8 +190,7 @@ namespace Campy.ControlFlowGraph
                                     System.Console.WriteLine("Adding new node " + new_cfg_node.Name);
 
                                     // Push this node back on the stack.
-                                    //   if (!instantiated_nodes.Contains(new_cfg_node))
-                                    //      instantiated_nodes.Push(new_cfg_node);
+                                    instantiated_nodes.Push(new_cfg_node);
                                 }
                             }
                         }
@@ -221,6 +246,8 @@ namespace Campy.ControlFlowGraph
                                     var new_cfg_node = (CFG.Vertex)new_node;
                                     new_cfg_node.Instructions = lv.Instructions;
                                     new_cfg_node.Method = lv.Method;
+                                    if (lv.OriginalVertex == null) new_cfg_node.OriginalVertex = lv;
+                                    else new_cfg_node.OriginalVertex = lv.OriginalVertex;
                                     // Add in rewrites.
                                     new_cfg_node.node_type_map = new MultiMap<TypeReference, System.Type>(lv.node_type_map);
                                     new_cfg_node.node_type_map.Add(type_to_consider, xx);
@@ -228,8 +255,7 @@ namespace Campy.ControlFlowGraph
                                     System.Console.WriteLine("Adding new node " + new_cfg_node.Name);
 
                                     // Push this node back on the stack.
-                                    //   if (!instantiated_nodes.Contains(new_cfg_node))
-                                    //      instantiated_nodes.Push(new_cfg_node);
+                                    instantiated_nodes.Push(new_cfg_node);
                                 }
                             }
                         }
@@ -237,8 +263,11 @@ namespace Campy.ControlFlowGraph
                 }
             }
 
+            // Get new nodes.
+            List<CFG.Vertex> cs2 = _mcfg.PopChangeSet(change_set_id2);
+
             // Set up entry flag for every block.
-            foreach (var v in change_set)
+            foreach (var v in cs2)
             {
 
             }
