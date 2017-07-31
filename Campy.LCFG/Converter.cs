@@ -329,97 +329,136 @@ namespace Campy.ControlFlowGraph
             return result;
         }
 
-
-        public void CompileToLLVM(IEnumerable<CFG.Vertex> change_set, List<Mono.Cecil.TypeDefinition> list_of_data_types_used)
+        private void CompilePart1(IEnumerable<CFG.Vertex> basic_blocks_to_compile, List<Mono.Cecil.TypeDefinition> list_of_data_types_used)
         {
-            //
-            // Create a basic block and module in LLVM for entry blocks in the CIL graph.
-            // Note, we are going to create a basic block unique for each generic type instantiated.
-            //
-            IEnumerable<CFG.Vertex> mono_bbs = change_set;
-            foreach (var lv in mono_bbs)
+            foreach (var bb in basic_blocks_to_compile)
             {
                 // Skip all but entry blocks for now.
-                if (!lv.IsEntry)
+                if (!bb.IsEntry)
                     continue;
 
-                if (!IsFullyInstantiatedNode(lv))
+                if (!IsFullyInstantiatedNode(bb))
                     continue;
 
-                MethodDefinition method = lv.Method;
+                MethodDefinition method = bb.Method;
                 var parameters = method.Parameters;
 
-                System.Reflection.MethodBase mb =
-                    ReflectionCecilInterop.ConvertToSystemReflectionMethodInfo(method);
+                System.Reflection.MethodBase mb = ReflectionCecilInterop.ConvertToSystemReflectionMethodInfo(method);
                 string mn = mb.DeclaringType.Assembly.GetName().Name;
                 ModuleRef mod = LLVM.ModuleCreateWithName(mn);
-                lv.Module = mod;
+                bb.Module = mod;
 
-                uint count = (uint) mb.GetParameters().Count();
+                uint count = (uint)mb.GetParameters().Count();
                 TypeRef[] param_types = new TypeRef[count];
                 int current = 0;
                 if (count > 0)
+                {
                     foreach (var p in parameters)
-                    {
-                        param_types[current++] =
-                            ConvertMonoTypeToLLVM(
-                                p.ParameterType,
-                                lv,
-                                false);
-                    }
+                        param_types[current++] = ConvertMonoTypeToLLVM(p.ParameterType, bb, false);
+                }
                 TypeRef ret_type = default(TypeRef);
                 var mi2 = method.ReturnType;
-                ret_type = ConvertMonoTypeToLLVM(
-                    mi2,
-                    lv,
-                    false);
+                ret_type = ConvertMonoTypeToLLVM(mi2, bb, false);
                 TypeRef met_type = LLVM.FunctionType(ret_type, param_types, false);
                 ValueRef fun = LLVM.AddFunction(mod, mb.Name, met_type);
-                BasicBlockRef entry = LLVM.AppendBasicBlock(fun, lv.Name.ToString());
-                lv.BasicBlock = entry;
-                lv.Function = fun;
+                BasicBlockRef entry = LLVM.AppendBasicBlock(fun, bb.Name.ToString());
+                bb.BasicBlock = entry;
+                bb.Function = fun;
                 BuilderRef builder = LLVM.CreateBuilder();
-                lv.Builder = builder;
+                bb.Builder = builder;
                 LLVM.PositionBuilderAtEnd(builder, entry);
             }
+        }
 
-
-            foreach (var mv in mono_bbs)
+        private void CompilePart2(IEnumerable<CFG.Vertex> basic_blocks_to_compile, List<Mono.Cecil.TypeDefinition> list_of_data_types_used)
+        {
+            foreach (var bb in basic_blocks_to_compile)
             {
-                if (!IsFullyInstantiatedNode(mv))
+                if (!IsFullyInstantiatedNode(bb))
                     continue;
 
-                IEnumerable<CFG.Vertex> successors = _mcfg.SuccessorNodes(mv);
-                if (!mv.IsEntry)
+                IEnumerable<CFG.Vertex> successors = _mcfg.SuccessorNodes(bb);
+                if (!bb.IsEntry)
                 {
-                    var ent = mv.Entry;
+                    var ent = bb.Entry;
                     var lvv_ent = ent;
                     var fun = lvv_ent.Function;
-                    var bb = LLVM.AppendBasicBlock(fun, mv.Name.ToString());
-                    mv.BasicBlock = bb;
-                    mv.Function = lvv_ent.Function;
+                    var llvm_bb = LLVM.AppendBasicBlock(fun, bb.Name.ToString());
+                    bb.BasicBlock = llvm_bb;
+                    bb.Function = lvv_ent.Function;
                     BuilderRef builder = LLVM.CreateBuilder();
-                    mv.Builder = builder;
-                    LLVM.PositionBuilderAtEnd(builder, bb);
+                    bb.Builder = builder;
+                    LLVM.PositionBuilderAtEnd(builder, llvm_bb);
                 }
             }
-            foreach (CFG.Vertex mv in mono_bbs)
+        }
+
+        private void CompilePart3(IEnumerable<CFG.Vertex> basic_blocks_to_compile, List<Mono.Cecil.TypeDefinition> list_of_data_types_used)
+        {
+            foreach (CFG.Vertex bb in basic_blocks_to_compile)
             {
-                if (!IsFullyInstantiatedNode(mv))
+                if (!IsFullyInstantiatedNode(bb))
                     continue;
 
                 Inst prev = null;
-                foreach (var j in mv.Instructions)
+                foreach (var j in bb.Instructions)
                 {
-                    j.Block = mv;
+                    j.Block = bb;
                     if (prev != null) prev.Next = j;
                     prev = j;
                 }
             }
+        }
 
-            var entries = _mcfg.VertexNodes.Where(node => node.IsEntry).ToList();
 
-            foreach (CFG.Vertex node in mono_bbs)
+        private void CompilePart4(IEnumerable<CFG.Vertex> basic_blocks_to_compile, List<Mono.Cecil.TypeDefinition> list_of_data_types_used, List<CFG.Vertex> entries,
+            out List<CFG.Vertex> unreachable, out List<CFG.Vertex> change_set_minus_unreachable)
+        {
+            unreachable = new List<CFG.Vertex>();
+            change_set_minus_unreachable = new List<CFG.Vertex>(basic_blocks_to_compile);
+            {
+                // Create DFT order of all nodes from entries.
+                IEnumerable<int> objs = entries.Select(x => x.Name);
+                GraphAlgorithms.DFSPreorder<int>
+                    dfs = new GraphAlgorithms.DFSPreorder<int>(
+                        _mcfg,
+                        objs
+                    );
+                List<CFG.Vertex> visited = new List<CFG.Vertex>();
+                foreach (int ob in dfs)
+                {
+                    CFG.Vertex node = _mcfg.VertexSpace[_mcfg.NameSpace.BijectFromBasetype(ob)];
+                    if (!IsFullyInstantiatedNode(node))
+                        continue;
+                    visited.Add(node);
+                }
+                foreach (CFG.Vertex v in basic_blocks_to_compile)
+                {
+                    if (!visited.Contains(v))
+                        unreachable.Add(v);
+                }
+
+                foreach (CFG.Vertex v in unreachable)
+                {
+                    if (change_set_minus_unreachable.Contains(v))
+                    {
+                        change_set_minus_unreachable.Remove(v);
+                    }
+                }
+            }
+        }
+
+        public void CompileToLLVM(IEnumerable<CFG.Vertex> basic_blocks_to_compile, List<Mono.Cecil.TypeDefinition> list_of_data_types_used)
+        {
+            CompilePart1(basic_blocks_to_compile, list_of_data_types_used);
+
+            CompilePart2(basic_blocks_to_compile, list_of_data_types_used);
+
+            CompilePart3(basic_blocks_to_compile, list_of_data_types_used);
+
+            List<CFG.Vertex> entries = _mcfg.VertexNodes.Where(node => node.IsEntry).ToList();
+
+            foreach (CFG.Vertex node in basic_blocks_to_compile)
             {
                 if (!IsFullyInstantiatedNode(node))
                     continue;
@@ -458,46 +497,17 @@ namespace Campy.ControlFlowGraph
 
             foreach (CFG.Vertex node in _mcfg.VertexNodes)
             {
-                if (node.IsEntry) continue;
+                if (node.IsEntry)
+                    continue;
                 CFG.Vertex e = node.Entry;
                 node.HasReturnValue = e.HasReturnValue;
                 node.NumberOfArguments = e.NumberOfArguments;
                 node.NumberOfLocals = e.NumberOfLocals;
             }
 
-            List<CFG.Vertex> unreachable = new List<CFG.Vertex>();
-            {
-                // Create DFT order of all nodes.
-                IEnumerable<int> objs = entries.Select(x => x.Name);
-                GraphAlgorithms.DFSPreorder<int>
-                    dfs = new GraphAlgorithms.DFSPreorder<int>(
-                        _mcfg,
-                        objs
-                    );
-                List<CFG.Vertex> visited = new List<CFG.Vertex>();
-                foreach (int ob in dfs)
-                {
-                    CFG.Vertex node = _mcfg.VertexSpace[_mcfg.NameSpace.BijectFromBasetype(ob)];
-                    visited.Add(node);
-                }
-                foreach (CFG.Vertex v in mono_bbs)
-                {
-                    if (!IsFullyInstantiatedNode(v))
-                        continue;
-
-                    if (!visited.Contains(v))
-                        unreachable.Add(v);
-                }
-            }
-
-            List<CFG.Vertex> change_set_minus_unreachable = new List<CFG.Vertex>(mono_bbs);
-            foreach (CFG.Vertex v in unreachable)
-            {
-                if (change_set_minus_unreachable.Contains(v))
-                {
-                    change_set_minus_unreachable.Remove(v);
-                }
-            }
+            List<CFG.Vertex> unreachable;
+            List<CFG.Vertex> change_set_minus_unreachable;
+            CompilePart4(basic_blocks_to_compile, list_of_data_types_used, entries, out unreachable, out change_set_minus_unreachable);
 
             {
                 List<CFG.Vertex> work = new List<CFG.Vertex>(change_set_minus_unreachable);
@@ -723,7 +733,7 @@ namespace Campy.ControlFlowGraph
                 }
             }
 
-            foreach (var lv in mono_bbs)
+            foreach (var lv in basic_blocks_to_compile)
             {
                 if (!IsFullyInstantiatedNode(lv))
                     continue;

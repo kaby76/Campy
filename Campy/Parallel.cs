@@ -29,6 +29,7 @@ namespace Campy
 
             Converter c = new Campy.ControlFlowGraph.Converter(g);
 
+            // Parse kernel instructions to determine basic block representation of all the code to compile.
             int change_set_id = g.StartChangeSet();
             r.AnalyzeMethod(kernel);
             List<CFG.Vertex> cs = g.PopChangeSet(change_set_id);
