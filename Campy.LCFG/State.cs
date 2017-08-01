@@ -14,13 +14,16 @@ namespace Campy.ControlFlowGraph
     {
         // See ECMA 335, page 82.
         public StackQueue<Value> _stack;
-        public ArraySection<Value> _arguments;
-        public ArraySection<Value> _locals;
+        public ArraySection<Value> _this; // Pointer to _stack, if there is a "this" pointer.
+        public ArraySection<Value> _arguments; // Pointer to _stack, if there are parameters for the method.
+        public ArraySection<Value> _locals; // Pointer to _stack, if there are local variables to the method.
         public Dictionary<String, Value> _memory;
         public List<ValueRef> _phi;
 
         public State()
         {
+            _stack = new StackQueue<Value>();
+            _this = null;
             _arguments = null;
             _locals = null;
             _memory = new Dictionary<string, Value>();
@@ -32,71 +35,73 @@ namespace Campy.ControlFlowGraph
             // Set up state with args, locals, basic stack initial value of 0xDEADBEEF.
             // In addition, use type information from method to compute types for all args.
             _stack = new StackQueue<Value>();
-            for (int i = 0; i < level; ++i)
+
+            int begin = 0;
+
+            if (md.HasThis)
+            {
+                TypeDefinition td = md.DeclaringType;
+                TypeRef type = Converter.ConvertMonoTypeToLLVM(td, vertex, false);
+                var vx = new Value(LLVM.ConstInt(type, (ulong)0xdeadbeef, true));
+                _stack.Push(vx);
+                _this = _stack.Section(begin++, args);
+            }
+            else
+            {
+                _this = _stack.Section(begin, 0);
+            }
+
+            for (int i = begin; i < level; ++i)
             {
                 TypeRef type = LLVM.Int32Type();
-                if (i < args)
+                if (i < begin + args)
                 {
-                    if (md.HasThis && i == 0)
-                    {
-                        // First parameter is "this", the object that method is attached to.
-                        // We'll record a pointer to the object type.
-                        var td = md.DeclaringType;
-                        type = Converter.ConvertMonoTypeToLLVM(
-                            td,
-                            vertex,
-                            false);
-                    }
-                    else
-                    {
-                        int j = md.HasThis ? i - 1 : i;
-                        ParameterDefinition p = md.Parameters[j];
-                        TypeReference tr = p.ParameterType;
-                        TypeDefinition td = tr.Resolve();
+                    int j = i - begin;
+                    ParameterDefinition p = md.Parameters[j];
+                    TypeReference tr = p.ParameterType;
+                    TypeDefinition td = tr.Resolve();
 
-                        if (td == null)
+                    if (td == null)
+                    {
+                        if (!tr.ContainsGenericParameter) throw new Exception("Cannot resolve type.");
+                        // For generic, find instantiated type using list of
+                        //. data types used in closure.
+                        var declaring_type = tr.DeclaringType;
+                        foreach (var kvp in vertex.OpsFromOriginal)
                         {
-                            if (!tr.ContainsGenericParameter) throw new Exception("Cannot resolve type.");
-                            // For generic, find instantiated type using list of
-                            //. data types used in closure.
-                            var declaring_type = tr.DeclaringType;
-                            foreach (var kvp in vertex.OpsFromOriginal)
+                            var key = kvp.Item1;
+                            var value = kvp.Item2;
+                            if (declaring_type.Name == key.Name)
                             {
-                                var key = kvp.Item1;
-                                var value = kvp.Item2;
-                                if (declaring_type.Name == key.Name)
-                                {
-                                    // match.
-                                    // Make substitutions of actual type for generic.
-                                    // The instantiated type is data_type_used. Find method within instantiated type,
-                                    // and add mutate.
-                                }
-
+                                // match.
+                                // Make substitutions of actual type for generic.
+                                // The instantiated type is data_type_used. Find method within instantiated type,
+                                // and add mutate.
                             }
-                        }
 
-                        type = Converter.ConvertMonoTypeToLLVM(tr.Resolve(), vertex, false);
+                        }
                     }
+                    type = Converter.ConvertMonoTypeToLLVM(tr.Resolve(), vertex, false);
                 }
                 var vx = new Value(LLVM.ConstInt(type, (ulong)0xdeadbeef, true));
                 _stack.Push(vx);
             }
-            _arguments = _stack.Section(0, args);
+            _arguments = _stack.Section(begin, args);
             _locals = _stack.Section(args, locals);
             _phi = new List<ValueRef>();
         }
 
         public State(Dictionary<int, bool> visited, CFG.Vertex vertex, List<Mono.Cecil.TypeDefinition> list_of_data_types_used)
         {
+            // Set up a blank stack.
+            _stack = new StackQueue<Value>();
+
             int args = vertex.NumberOfArguments;
             int locals = vertex.NumberOfLocals;
             int level = (int)vertex.StackLevelIn;
 
             // Set up list of phi functions in case there are multiple predecessors.
             _phi = new List<ValueRef>();
-
-            // Set up a blank stack.
-            _stack = new StackQueue<Value>();
 
             // State depends on predecessors. To handle this without updating state
             // until a fix point is found while converting to LLVM IR, we introduce
@@ -105,13 +110,25 @@ namespace Campy.ControlFlowGraph
             {
                 if (!vertex.IsEntry) throw new Exception("Cannot handle dead code blocks.");
                 var fun = vertex.Function;
-
-                // Set up args.
-                _arguments = _stack.Section(0, args);
-                for (uint i = 0; i < args; ++i)
+                uint begin = 0;
+                if (vertex.HasThis)
                 {
-                    var par = LLVM.GetParam(fun, i);
+                    var par = LLVM.GetParam(fun, begin++);
                     var vx = new Value(par);
+                    _stack.Push(vx);
+                    _this = _stack.Section((int)0, 1);
+                }
+                else
+                {
+                    _this = _stack.Section((int)0, 0);
+                }
+                // Set up args.
+                _arguments = _stack.Section((int)begin, args);
+                for (uint i = begin; i < args + begin; ++i)
+                {
+                    ValueRef par = LLVM.GetParam(fun, i);
+                    var vx = new Value(par);
+                    System.Console.WriteLine(" " + vx);
                     _stack.Push(vx);
                 }
 
@@ -119,7 +136,7 @@ namespace Campy.ControlFlowGraph
                 // one to one and in order mapping of the locals with that
                 // defined for the method body by Mono.
                 Collection<VariableDefinition> variables = vertex.Method.Body.Variables;
-                _locals = _stack.Section(args, locals);
+                _locals = _stack.Section((int)(args+begin), locals);
                 for (int i = 0; i < locals; ++i)
                 {
                     var tr = variables[i].VariableType;
@@ -151,6 +168,7 @@ namespace Campy.ControlFlowGraph
                     var vx = other._stack[i];
                     _stack.Push(vx);
                 }
+                _this = _stack.Section(other._this.Base, other._this.Len);
                 _arguments = _stack.Section(other._arguments.Base, other._arguments.Len);
                 _locals = _stack.Section(other._locals.Base, other._locals.Len);
             }
@@ -208,6 +226,7 @@ namespace Campy.ControlFlowGraph
                     _stack[i] = new Value(res);
                 }
                 var other = p_llvm_node.StateOut;
+                _this = _stack.Section(other._this.Base, other._this.Len);
                 _arguments = _stack.Section(other._arguments.Base, other._arguments.Len);
                 _locals = _stack.Section(other._locals.Base, other._locals.Len);
             }
@@ -220,6 +239,7 @@ namespace Campy.ControlFlowGraph
             {
                 _stack.Push(other._stack.PeekBottom(i));
             }
+            _this = _stack.Section(other._this.Base, other._this.Len);
             _arguments = _stack.Section(other._arguments.Base, other._arguments.Len);
             _locals = _stack.Section(other._locals.Base, other._locals.Len);
         }
@@ -228,15 +248,22 @@ namespace Campy.ControlFlowGraph
         {
             int args = _arguments.Len;
             int locs = _locals.Len;
+            int begin = 0;
+            if (_this.Len > 0)
+            {
+                System.Console.WriteLine("[this ");
+                System.Console.WriteLine(_stack[begin++]);
+                System.Console.WriteLine("]");
+            }
             System.Console.WriteLine("[args");
             for (int i = 0; i < args; ++i)
             {
-                System.Console.WriteLine(" " + _stack[i]);
+                System.Console.WriteLine(" " + _stack[i+begin]);
             }
             System.Console.WriteLine("]");
             System.Console.WriteLine("[locs");
             for (int i = 0; i < locs; ++i)
-                System.Console.WriteLine(" " + _stack[args + i]);
+                System.Console.WriteLine(" " + _stack[args + begin + i]);
             System.Console.WriteLine("]");
             for (int i = args + locs; i < _stack.Size(); ++i)
                 System.Console.WriteLine(" " + _stack[i]);

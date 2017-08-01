@@ -115,7 +115,7 @@ namespace Campy.ControlFlowGraph
             : GraphLinkedList<int, Vertex, Edge>.Vertex
         {
             public CFG.Vertex OriginalVertex { get; set; }
-            public List<Tuple<TypeReference, System.Type>> OpsFromOriginal { get; set; }
+            public List<Tuple<TypeReference, System.Type>> OpsFromOriginal { get; set; } = new List<Tuple<TypeReference, System.Type>>();
             public CFG.Vertex PreviousVertex { get; set; }
             public Tuple<TypeReference, System.Type> OpFromPreviousNode { get; set; }
 
@@ -126,6 +126,8 @@ namespace Campy.ControlFlowGraph
             public ValueRef Function { get; set; }
             public BuilderRef Builder { get; set; }
             public ModuleRef Module { get; set; }
+
+            public bool HasThis { get; set; }
 
             public bool HasReturnValue { get; set; }
 
@@ -246,6 +248,7 @@ namespace Campy.ControlFlowGraph
                 Console.WriteLine();
                 Console.WriteLine("Node: " + v.Name + " ");
                 Console.WriteLine(new String(' ', 4) + "Method " + v.Method.FullName);
+                Console.WriteLine(new String(' ', 4) + "HasThis   " + v.HasThis);
                 Console.WriteLine(new String(' ', 4) + "Args   " + v.NumberOfArguments);
                 Console.WriteLine(new String(' ', 4) + "Locals " + v.NumberOfLocals);
                 Console.WriteLine(new String(' ', 4) + "Return (reuse) " + v.HasReturnValue);

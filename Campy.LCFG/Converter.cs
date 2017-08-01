@@ -342,20 +342,30 @@ namespace Campy.ControlFlowGraph
 
                 MethodDefinition method = bb.Method;
                 var parameters = method.Parameters;
-
                 System.Reflection.MethodBase mb = ReflectionCecilInterop.ConvertToSystemReflectionMethodInfo(method);
                 string mn = mb.DeclaringType.Assembly.GetName().Name;
                 ModuleRef mod = LLVM.ModuleCreateWithName(mn);
                 bb.Module = mod;
-
                 uint count = (uint)mb.GetParameters().Count();
+                if (bb.HasThis) count++;
                 TypeRef[] param_types = new TypeRef[count];
                 int current = 0;
                 if (count > 0)
                 {
+                    if (bb.HasThis)
+                        param_types[current++] = ConvertMonoTypeToLLVM(
+                            Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(mb.DeclaringType), bb, false);
                     foreach (var p in parameters)
                         param_types[current++] = ConvertMonoTypeToLLVM(p.ParameterType, bb, false);
+
+
+                    foreach (var pp in param_types)
+                    {
+                        string a = LLVM.PrintTypeToString(pp);
+                        System.Console.WriteLine(" " + a);
+                    }
                 }
+
                 TypeRef ret_type = default(TypeRef);
                 var mi2 = method.ReturnType;
                 ret_type = ConvertMonoTypeToLLVM(mi2, bb, false);
@@ -466,9 +476,9 @@ namespace Campy.ControlFlowGraph
                 int args = 0;
                 Mono.Cecil.MethodDefinition md = node.Method;
                 Mono.Cecil.MethodReference mr = node.Method;
-                if (mr.HasThis) args++;
                 args += mr.Parameters.Count;
                 node.NumberOfArguments = args;
+                node.HasThis = mr.HasThis;
                 int locals = md.Body.Variables.Count;
                 node.NumberOfLocals = locals;
                 int ret = 0;
@@ -503,6 +513,7 @@ namespace Campy.ControlFlowGraph
                 node.HasReturnValue = e.HasReturnValue;
                 node.NumberOfArguments = e.NumberOfArguments;
                 node.NumberOfLocals = e.NumberOfLocals;
+                node.HasThis = e.HasThis;
             }
 
             List<CFG.Vertex> unreachable;
@@ -539,7 +550,7 @@ namespace Campy.ControlFlowGraph
                         if (node.IsEntry)
                         {
                             CFG.Vertex llvm_nodex = node;
-                            llvm_nodex.StackLevelIn = node.NumberOfLocals + node.NumberOfArguments;
+                            llvm_nodex.StackLevelIn = node.NumberOfLocals + node.NumberOfArguments + (node.HasThis ? 1 : 0);
                         }
                         else
                         {
@@ -575,16 +586,18 @@ namespace Campy.ControlFlowGraph
                             i.ComputeStackLevel(ref level_after);
                             //System.Console.WriteLine("after inst " + i);
                             //System.Console.WriteLine("level = " + level_after);
-                            Debug.Assert(level_after >= node.NumberOfLocals + node.NumberOfArguments);
+                            Debug.Assert(level_after >= node.NumberOfLocals + node.NumberOfArguments
+                                 + (node.HasThis ? 1 : 0));
                         }
                         llvm_nodez.StackLevelOut = level_after;
                         // Verify return node that it makes sense.
                         if (node.IsReturn && !unreachable.Contains(node))
                         {
                             if (llvm_nodez.StackLevelOut ==
-                                node.NumberOfArguments +
-                                node.NumberOfLocals +
-                                (node.HasReturnValue ? 1 : 0))
+                                node.NumberOfArguments
+                                + node.NumberOfLocals
+                                + (node.HasThis ? 1 : 0)
+                                + (node.HasReturnValue ? 1 : 0))
                                 ;
                             else
                             {
