@@ -78,7 +78,7 @@
     <Compile Include="AcceleratorView.cs" />
     <Compile Include="Array.cs" />
     <Compile Include="ArrayView.cs" />
-    <Compile Include="Class1.cs" />
+    <Compile Include="KernelTypes.cs" />
     <Compile Include="Extent.cs" />
     <Compile Include="Index.cs" />
     <Compile Include="QueuingMode.cs" />

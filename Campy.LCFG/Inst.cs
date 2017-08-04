@@ -1359,6 +1359,60 @@ namespace Campy.ControlFlowGraph
         }
     }
 
+    public class ConvertLoadField : Inst
+    {
+        public ConvertLoadField(Mono.Cecil.Cil.Instruction i)
+            : base(i)
+        {
+        }
+
+        public override void ComputeStackLevel(ref int level_after)
+        {
+            // Stack level remains unchanged through instruction.
+        }
+
+        public override Inst Convert(State state)
+        {
+            Value v = state._stack.Pop();
+            TypeRef tr = LLVM.TypeOf(v.V);
+            System.Console.WriteLine(LLVM.PrintTypeToString(tr));
+            bool isPtr = v.T.isPointerTy();
+            bool isArr = v.T.isArrayTy();
+            bool isSt = v.T.isStructTy();
+            TypeKind kind = LLVM.GetTypeKind(tr);
+            bool isPtra = kind == TypeKind.PointerTypeKind;
+            bool isArra = kind == TypeKind.ArrayTypeKind;
+            bool isSta = kind == TypeKind.StructTypeKind;
+
+            if (isPtr)
+            {
+
+            }
+            else
+            {
+
+            }
+            uint offset = 0;
+            ValueRef load = LLVM.BuildExtractValue(Builder, v.V, offset, "");
+            var tt = LLVM.TypeOf(load);
+            System.Console.WriteLine(LLVM.PrintTypeToString(tt));
+            bool xInt = LLVM.GetTypeKind(tt) == TypeKind.IntegerTypeKind;
+            bool xP = LLVM.GetTypeKind(tt) == TypeKind.PointerTypeKind;
+            bool xA = LLVM.GetTypeKind(tt) == TypeKind.ArrayTypeKind;
+            //System.Console.WriteLine(Converter.GetStringTypeOf(load));
+            if (tt == LLVM.Int32Type())
+                System.Console.WriteLine("int32");
+            ValueRef ssss = LLVM.SizeOf(tt);
+
+            //var zz = LLVM.BuildLoad(Builder, load, "");
+            var zz = LLVM.BuildLoad(Builder, load, "");
+
+            //state._stack.Push(new Value(zz));
+            state._stack.Push(new Value(zz));
+            return Next;
+        }
+    }
+
     public class i_add : BinaryOpInst
     {
         public i_add(Mono.Cecil.Cil.Instruction i)
@@ -3021,7 +3075,7 @@ namespace Campy.ControlFlowGraph
         }
     }
 
-    public class i_ldfld : Inst
+    public class i_ldfld : ConvertLoadField
     {
         public i_ldfld(Mono.Cecil.Cil.Instruction i)
             : base(i)
