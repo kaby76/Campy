@@ -115,7 +115,7 @@ namespace Campy.ControlFlowGraph
             : GraphLinkedList<int, Vertex, Edge>.Vertex
         {
             public CFG.Vertex OriginalVertex { get; set; }
-            public List<Tuple<TypeReference, System.Type>> OpsFromOriginal { get; set; } = new List<Tuple<TypeReference, System.Type>>();
+            public Dictionary<TypeReference, System.Type> OpsFromOriginal { get; set; } = new Dictionary<TypeReference, System.Type>();
             public CFG.Vertex PreviousVertex { get; set; }
             public Tuple<TypeReference, System.Type> OpFromPreviousNode { get; set; }
             public Dictionary<TypeReference, TypeRef> LLVMTypeMap = new Dictionary<TypeReference, TypeRef>();

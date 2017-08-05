@@ -41,7 +41,7 @@ namespace Campy.ControlFlowGraph
             if (md.HasThis)
             {
                 TypeDefinition td = md.DeclaringType;
-                TypeRef type = Converter.ConvertMonoTypeToLLVM(td, vertex, false);
+                TypeRef type = Converter.ConvertMonoTypeToLLVM(td, vertex.LLVMTypeMap, vertex.OpsFromOriginal, false);
                 var vx = new Value(LLVM.ConstInt(type, (ulong)0xdeadbeef, true));
                 _stack.Push(vx);
                 _this = _stack.Section(begin++, args);
@@ -69,8 +69,8 @@ namespace Campy.ControlFlowGraph
                         var declaring_type = tr.DeclaringType;
                         foreach (var kvp in vertex.OpsFromOriginal)
                         {
-                            var key = kvp.Item1;
-                            var value = kvp.Item2;
+                            var key = kvp.Key;
+                            var value = kvp.Value;
                             if (declaring_type.Name == key.Name)
                             {
                                 // match.
@@ -81,7 +81,7 @@ namespace Campy.ControlFlowGraph
 
                         }
                     }
-                    type = Converter.ConvertMonoTypeToLLVM(tr.Resolve(), vertex, false);
+                    type = Converter.ConvertMonoTypeToLLVM(tr.Resolve(), vertex.LLVMTypeMap, vertex.OpsFromOriginal, false);
                 }
                 var vx = new Value(LLVM.ConstInt(type, (ulong)0xdeadbeef, true));
                 _stack.Push(vx);
@@ -141,7 +141,7 @@ namespace Campy.ControlFlowGraph
                 {
                     var tr = variables[i].VariableType;
                     var td = tr.Resolve();
-                    TypeRef type = Converter.ConvertMonoTypeToLLVM(td, vertex, false);
+                    TypeRef type = Converter.ConvertMonoTypeToLLVM(td, vertex.LLVMTypeMap, vertex.OpsFromOriginal, false);
                     Value value = new Value(LLVM.ConstInt(type, (ulong)0, true));
                     _stack.Push(value);
                 }
