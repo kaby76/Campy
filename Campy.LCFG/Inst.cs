@@ -1375,7 +1375,7 @@ namespace Campy.ControlFlowGraph
         {
             Value v = state._stack.Pop();
             TypeRef tr = LLVM.TypeOf(v.V);
-            System.Console.WriteLine(LLVM.PrintTypeToString(tr));
+            System.Console.WriteLine("tos = " + LLVM.PrintTypeToString(tr));
             bool isPtr = v.T.isPointerTy();
             bool isArr = v.T.isArrayTy();
             bool isSt = v.T.isStructTy();
@@ -1392,7 +1392,7 @@ namespace Campy.ControlFlowGraph
             {
 
             }
-            uint offset = 0;
+            uint offset =0;
             ValueRef load = LLVM.BuildExtractValue(Builder, v.V, offset, "");
             var tt = LLVM.TypeOf(load);
             System.Console.WriteLine(LLVM.PrintTypeToString(tt));
@@ -1402,13 +1402,13 @@ namespace Campy.ControlFlowGraph
             //System.Console.WriteLine(Converter.GetStringTypeOf(load));
             if (tt == LLVM.Int32Type())
                 System.Console.WriteLine("int32");
-            ValueRef ssss = LLVM.SizeOf(tt);
+            //ValueRef ssss = LLVM.SizeOf(tt);
 
             //var zz = LLVM.BuildLoad(Builder, load, "");
-            var zz = LLVM.BuildLoad(Builder, load, "");
+            //var zz = LLVM.BuildLoad(Builder, load, "");
 
             //state._stack.Push(new Value(zz));
-            state._stack.Push(new Value(zz));
+            state._stack.Push(new Value(load));
             return Next;
         }
     }

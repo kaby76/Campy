@@ -44,7 +44,7 @@ namespace Campy.ControlFlowGraph
                 TypeRef type = Converter.ConvertMonoTypeToLLVM(td, vertex.LLVMTypeMap, vertex.OpsFromOriginal, false);
                 var vx = new Value(LLVM.ConstInt(type, (ulong)0xdeadbeef, true));
                 _stack.Push(vx);
-                _this = _stack.Section(begin++, args);
+                _this = _stack.Section(begin++, 1);
             }
             else
             {
@@ -86,8 +86,8 @@ namespace Campy.ControlFlowGraph
                 var vx = new Value(LLVM.ConstInt(type, (ulong)0xdeadbeef, true));
                 _stack.Push(vx);
             }
-            _arguments = _stack.Section(begin, args);
-            _locals = _stack.Section(args, locals);
+            _arguments = _stack.Section(0 /* NB: args begin with "this" ptr. */, args + begin);
+            _locals = _stack.Section(args + begin, locals);
             _phi = new List<ValueRef>();
         }
 
@@ -122,8 +122,8 @@ namespace Campy.ControlFlowGraph
                 {
                     _this = _stack.Section((int)0, 0);
                 }
-                // Set up args.
-                _arguments = _stack.Section((int)begin, args);
+                // Set up args. NB: Args begin with "this" pointer according to spec!!!!!
+                _arguments = _stack.Section((int)0, args + (int)begin);
                 for (uint i = begin; i < args + begin; ++i)
                 {
                     ValueRef par = LLVM.GetParam(fun, i);
