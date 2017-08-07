@@ -1392,7 +1392,11 @@ namespace Campy.ControlFlowGraph
             {
 
             }
-            uint offset =0;
+
+            uint offset = 0;
+            offset = (uint)this.Instruction.Offset;
+            var yy = this.Instruction.Operand;
+           // foreach (var field in )
             ValueRef load = LLVM.BuildExtractValue(Builder, v.V, offset, "");
             var tt = LLVM.TypeOf(load);
             System.Console.WriteLine(LLVM.PrintTypeToString(tt));
