@@ -457,9 +457,9 @@ namespace Campy.ControlFlowGraph
                 {
                     if (bb.HasThis)
                         param_types[current++] = ConvertMonoTypeToLLVM(
-                            Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(mb.DeclaringType), bb.LLVMTypeMap, bb.OpsFromOriginal, false);
+                            Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(mb.DeclaringType), bb.LLVMTypeMap, bb.OpsFromOriginal);
                     foreach (var p in parameters)
-                        param_types[current++] = ConvertMonoTypeToLLVM(p.ParameterType, bb.LLVMTypeMap, bb.OpsFromOriginal, false);
+                        param_types[current++] = ConvertMonoTypeToLLVM(p.ParameterType, bb.LLVMTypeMap, bb.OpsFromOriginal);
 
 
                     foreach (var pp in param_types)
@@ -471,7 +471,7 @@ namespace Campy.ControlFlowGraph
 
                 TypeRef ret_type = default(TypeRef);
                 var mi2 = method.ReturnType;
-                ret_type = ConvertMonoTypeToLLVM(mi2, bb.LLVMTypeMap, bb.OpsFromOriginal, false);
+                ret_type = ConvertMonoTypeToLLVM(mi2, bb.LLVMTypeMap, bb.OpsFromOriginal);
                 TypeRef met_type = LLVM.FunctionType(ret_type, param_types, false);
                 ValueRef fun = LLVM.AddFunction(mod, mb.Name, met_type);
                 BasicBlockRef entry = LLVM.AppendBasicBlock(fun, bb.Name.ToString());
@@ -1034,8 +1034,7 @@ namespace Campy.ControlFlowGraph
         public static TypeRef ConvertMonoTypeToLLVM(
             Mono.Cecil.TypeReference tr,
             Dictionary<TypeReference, TypeRef> LLVMTypeMap,
-            Dictionary<TypeReference, System.Type> mmmap,
-            bool black_box)
+            Dictionary<TypeReference, System.Type> mmmap)
         {
             // Search for type if already converted.
             foreach (var kv in LLVMTypeMap)
@@ -1047,88 +1046,88 @@ namespace Campy.ControlFlowGraph
             if (setup)
             {
                 MonoInt16 = Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(typeof(Int16));
+                if (MonoInt16 == null) throw new Exception("Bad initialization");
                 MonoUInt16 = Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(typeof(UInt16));
+                if (MonoUInt16 == null) throw new Exception("Bad initialization");
                 MonoInt32 = Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(typeof(Int32));
+                if (MonoInt32 == null) throw new Exception("Bad initialization");
                 MonoUInt32 = Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(typeof(UInt32));
+                if (MonoUInt32 == null) throw new Exception("Bad initialization");
                 MonoInt64 = Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(typeof(Int64));
+                if (MonoInt64 == null) throw new Exception("Bad initialization");
                 MonoUInt64 = Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(typeof(UInt64));
+                if (MonoUInt64 == null) throw new Exception("Bad initialization");
                 MonoBoolean = Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(typeof(Boolean));
+                if (MonoBoolean == null) throw new Exception("Bad initialization");
                 MonoChar = Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(typeof(Char));
+                if (MonoChar == null) throw new Exception("Bad initialization");
                 MonoVoid = Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(typeof(void));
+                if (MonoVoid == null) throw new Exception("Bad initialization");
                 MonoTypeDef = Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(typeof(Mono.Cecil.TypeDefinition));
+                if (MonoTypeDef == null) throw new Exception("Bad initialization");
                 setup = false;
             }
-
-            if (tr == MonoInt16)
+            // Check basic types using TypeDefinition's found and initialized in the above code.
+            if (td != null)
             {
-                return LLVM.Int16Type();
+                if (td.FullName == MonoInt16.FullName)
+                {
+                    return LLVM.Int16Type();
+                }
+                else if (td.FullName == MonoUInt16.FullName)
+                {
+                    return LLVM.Int16Type();
+                }
+                else if (td.FullName == MonoInt32.FullName)
+                {
+                    return LLVM.Int32Type();
+                }
+                else if (td.FullName == MonoUInt32.FullName)
+                {
+                    return LLVM.Int32Type();
+                }
+                else if (td.FullName == MonoInt64.FullName)
+                {
+                    return LLVM.Int64Type();
+                }
+                else if (td.FullName == MonoUInt64.FullName)
+                {
+                    return LLVM.Int64Type();
+                }
+                else if (td.FullName == MonoBoolean.FullName)
+                {
+                    return LLVM.Int1Type();
+                }
+                else if (td.FullName == MonoChar.FullName)
+                {
+                    return LLVM.Int8Type();
+                }
+                else if (td.FullName == MonoVoid.FullName)
+                {
+                    return LLVM.VoidType();
+                }
+                else if (td.FullName == MonoTypeDef.FullName)
+                {
+                    // Pass on compiling the system type. Too compilicated. For now, just pass void *.
+                    var typeref = LLVM.VoidType();
+                    var s = LLVM.PointerType(typeref, 0);
+                    return s;
+                }
             }
-            else if (tr == MonoUInt16)
-            {
-                return LLVM.Int16Type();
-            }
-            else if (tr == MonoInt32)
-            {
-                return LLVM.Int32Type();
-            }
-            else if (tr == MonoUInt32)
-            {
-                return LLVM.Int32Type();
-            }
-            else if (tr == MonoInt64)
-            {
-                return LLVM.Int64Type();
-            }
-            else if (tr == MonoUInt64)
-            {
-                return LLVM.Int64Type();
-            }
-            else if (tr == MonoBoolean)
-            {
-                return LLVM.Int1Type();
-            }
-            else if (tr == MonoChar)
-            {
-                return LLVM.Int8Type();
-            }
-            else if (tr == MonoVoid)
-            {
-                return LLVM.VoidType();
-            }
-            else if (tr == MonoTypeDef)
-            {
-                // Pass on compiling the system type. Too compilicated. For now, just pass void *.
-                var typeref = LLVM.VoidType();
-                var s = LLVM.PointerType(typeref, 0);
-                return s;
-            }
-            //else if (black_box && tr.IsArray)
-            //{
-            //    // Pass on compiling the system type. Too compilicated. For now, just pass void *.
-            //    var typeref = LLVM.VoidType();
-            //    var s = LLVM.PointerType(typeref, 0);
-            //    return s;
-            //}
-            //else if (black_box && td.IsClass)
-            //{
-            //    // Pass on compiling the system type. Too compilicated. For now, just pass void *.
-            //    var typeref = LLVM.VoidType();
-            //    var s = LLVM.PointerType(typeref, 0);
-            //    return s;
-            //}
-            else if (tr.IsArray)
+            
+            if (tr.IsArray)
             {
                 ContextRef c = LLVM.ContextCreate();
                 TypeRef s = LLVM.StructCreateNamed(c, tr.ToString());
                 LLVMTypeMap.Add(tr, s);
                 LLVM.StructSetBody(s, new TypeRef[2]
                 {
-                    LLVM.PointerType(ConvertMonoTypeToLLVM(tr.GetElementType(), LLVMTypeMap, mmmap, false), 0),
+                    LLVM.PointerType(ConvertMonoTypeToLLVM(tr.GetElementType(), LLVMTypeMap, mmmap), 0),
                     LLVM.Int64Type()
                 }, true);
 
                 var element_type = tr.GetElementType();
-                var e = ConvertMonoTypeToLLVM(element_type, LLVMTypeMap, mmmap, false);
+                var e = ConvertMonoTypeToLLVM(element_type, LLVMTypeMap, mmmap);
                 var p = LLVM.PointerType(e, 0);
                 var d = LLVM.GetUndef(p);
                 return s;
@@ -1144,14 +1143,14 @@ namespace Campy.ControlFlowGraph
                         // Match, and substitute.
                         var v = value;
                         var mv = Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(v);
-                        var e = ConvertMonoTypeToLLVM(mv, LLVMTypeMap, mmmap, true);
+                        var e = ConvertMonoTypeToLLVM(mv, LLVMTypeMap, mmmap);
                         LLVMTypeMap.Add(tr, e);
                         return e;
                     }
                 }
                 throw new Exception("Cannot convert " + tr.Name);
             }
-            else if (td.IsClass)
+            else if (td != null && td.IsClass)
             {
                 Dictionary<TypeReference, System.Type> additional = new Dictionary<TypeReference, System.Type>();
                 var gp = tr.GenericParameters;
@@ -1212,14 +1211,14 @@ namespace Campy.ControlFlowGraph
                         continue;
                     }
 
-                    var field_converted_type = ConvertMonoTypeToLLVM(field.FieldType, LLVMTypeMap, new_list, true);
+                    var field_converted_type = ConvertMonoTypeToLLVM(field.FieldType, LLVMTypeMap, new_list);
                     list.Add(field_converted_type);
                 }
                 LLVM.StructSetBody(s, list.ToArray(), true);
                 return s;
             }
             else
-            throw new Exception("Unknown type.");
+                throw new Exception("Unknown type.");
         }
     }
 }
