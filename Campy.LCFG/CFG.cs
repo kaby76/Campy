@@ -150,15 +150,7 @@ namespace Campy.ControlFlowGraph
             {
                 get
                 {
-                    if (_entry == null)
-                        return false;
-                    if (_entry._ordered_list_of_blocks == null)
-                        return false;
-                    if (_entry._ordered_list_of_blocks.Count == 0)
-                        return false;
-                    if (_entry._ordered_list_of_blocks.First() != this)
-                        return false;
-                    return true;
+                    return this.Entry == this;
                 }
             }
 
@@ -218,12 +210,9 @@ namespace Campy.ControlFlowGraph
             {
                 get
                 {
-                    List<Vertex> list = this._entry._ordered_list_of_blocks;
-                    return list[list.Count() - 1];
+                    return null;
                 }
             }
-
-            public List<Vertex> _ordered_list_of_blocks;
 
            // public Campy.Utils.MultiMap<Mono.Cecil.TypeReference, System.Type> node_type_map =
            //     new Campy.Utils.MultiMap<TypeReference, System.Type>();
@@ -288,11 +277,6 @@ namespace Campy.ControlFlowGraph
                 result.Method = this.Method;
                 result.HasReturnValue = this.HasReturnValue;
                 result._entry = this._entry;
-
-                // Insert new block after this block.
-                this._entry._ordered_list_of_blocks.Insert(
-                    this._entry._ordered_list_of_blocks.IndexOf(this) + 1,
-                    result);
 
                 int count = Instructions.Count;
 
@@ -403,13 +387,7 @@ namespace Campy.ControlFlowGraph
 
             foreach (Vertex n in VertexNodes)
             {
-                if (n._ordered_list_of_blocks != null)
-                {
-                    foreach (Vertex v in n._ordered_list_of_blocks)
-                    {
-                        v.OutputEntireNode();
-                    }
-                }
+                  n.OutputEntireNode();
             }
         }
 
@@ -443,7 +421,25 @@ namespace Campy.ControlFlowGraph
 
             public IEnumerator<CFG.Vertex> GetEnumerator()
             {
-                foreach (CFG.Vertex current in _node._ordered_list_of_blocks)
+                // Create a sorted list of nodes for given node.
+                List<CFG.Vertex> list = new List<Vertex>();
+                foreach (CFG.Vertex v in _node._Graph.VertexNodes)
+                {
+                    if (v.Entry == _node) list.Add(v);
+                }
+                for (int i = 0; i < list.Count - 1; ++i)
+                {
+                    var v1 = list[i];
+                    var v2 = list[i + 1];
+                    var sv1 = v1.Instructions.First().ToString();
+                    var sv2 = v2.Instructions.First().ToString();
+                    if (sv1.CompareTo(sv2) > 0)
+                    {
+                        list[i] = v2;
+                        list[i + 1] = v1;
+                    }
+                }
+                foreach (CFG.Vertex current in list)
                 {
                     foreach (CFG.Vertex next in _node._Graph.SuccessorNodes(current))
                     {

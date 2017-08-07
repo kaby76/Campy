@@ -205,8 +205,6 @@
             v.HasReturnValue = definition.IsReuseSlot;
             v.Entry = v;
             _cfg.Entries.Add(v);
-            v._ordered_list_of_blocks = new List<CFG.Vertex>();
-            v._ordered_list_of_blocks.Add(v);
             for (int j = 0; j < instruction_count; ++j)
             {
                 // accumulate jump to locations since these split blocks.
@@ -357,26 +355,26 @@
                             // code too "messy".
                             break;
 
-                            object o = i.Operand;
-                            if (o as Mono.Cecil.MethodReference != null)
-                            {
-                                Mono.Cecil.MethodReference r = o as Mono.Cecil.MethodReference;
-                                Mono.Cecil.MethodDefinition d = r.Resolve();
-                                IEnumerable<CFG.Vertex> target_node_list = _cfg.VertexNodes.Where(
-                                    (CFG.Vertex x) =>
-                                    {
-                                        return x.Method.FullName == r.FullName
-                                            && x.Entry == x;
-                                    });
-                                int c = target_node_list.Count();
-                                if (c >= 1)
-                                {
-                                    // target_node is the entry for a method. Also get the exit.
-                                    CFG.Vertex target_node = target_node_list.First();
-                                    CFG.Vertex exit_node = target_node.Exit;
-                                }
-                            }
-                            break;
+                            //object o = i.Operand;
+                            //if (o as Mono.Cecil.MethodReference != null)
+                            //{
+                            //    Mono.Cecil.MethodReference r = o as Mono.Cecil.MethodReference;
+                            //    Mono.Cecil.MethodDefinition d = r.Resolve();
+                            //    IEnumerable<CFG.Vertex> target_node_list = _cfg.VertexNodes.Where(
+                            //        (CFG.Vertex x) =>
+                            //        {
+                            //            return x.Method.FullName == r.FullName
+                            //                && x.Entry == x;
+                            //        });
+                            //    int c = target_node_list.Count();
+                            //    if (c >= 1)
+                            //    {
+                            //        // target_node is the entry for a method. Also get the exit.
+                            //        CFG.Vertex target_node = target_node_list.First();
+                            //        CFG.Vertex exit_node = target_node.Exit;
+                            //    }
+                            //}
+                            //break;
                         }
                     case Mono.Cecil.Cil.FlowControl.Meta:
                         break;

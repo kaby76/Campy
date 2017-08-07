@@ -31,16 +31,14 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Mono.Cecil, Version=0.9.6.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\ILSpy\ICSharpCode.Decompiler\bin\Debug\Mono.Cecil.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Cecil.Pdb, Version=0.9.6.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\ILSpy\ICSharpCode.Decompiler\bin\Debug\Mono.Cecil.Pdb.dll</HintPath>
-    </Reference>
     <Reference Include="swigged.cuda, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\swigged.cuda.8.0.5\lib\netstandard1.1\swigged.cuda.dll</HintPath>
+    </Reference>
+    <Reference Include="swigged.llvm, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\swigged.llvm.4.0.11\lib\netstandard1.5\swigged.llvm.dll</HintPath>
+    </Reference>
+    <Reference Include="swigged.llvm.helper, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\swigged.llvm.4.0.11\lib\netstandard1.5\swigged.llvm.helper.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />

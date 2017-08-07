@@ -1895,7 +1895,8 @@ namespace Campy.ControlFlowGraph
 				    GraphLinkedList<int, CFG.Vertex, CFG.Edge> g = j.Block._Graph;
 				    int k = g.NameSpace.BijectFromBasetype(node.Name);
 				    CFG.Vertex v = g.VertexSpace[k];
-				    if (v.IsEntry && v.Method.FullName == name)
+                    Converter c = Converter.GetConverter((CFG)g);
+				    if (v.IsEntry && v.Method.FullName == name && c.IsFullyInstantiatedNode(v))
 					    return true;
 				    else return false;
 			    }).ToList().FirstOrDefault();
@@ -1996,6 +1997,66 @@ namespace Campy.ControlFlowGraph
 		    }
 		    level_after = level_after + ret - args;
 	    }
+        public override Inst Convert(State state)
+        {
+            // Get function.
+            var j = this;
+
+            // Successor is fallthrough.
+            int nargs = 0;
+            int ret = 0;
+            object method = j.Operand;
+            if (method as Mono.Cecil.MethodReference != null)
+            {
+                Mono.Cecil.MethodReference mr = method as Mono.Cecil.MethodReference;
+                if (mr.HasThis)
+                    nargs++;
+                nargs += mr.Parameters.Count;
+                if (mr.MethodReturnType != null)
+                {
+                    Mono.Cecil.MethodReturnType rt = mr.MethodReturnType;
+                    Mono.Cecil.TypeReference tr = rt.ReturnType;
+                    // Get type, may contain modifiers.
+                    if (tr.FullName.Contains(' '))
+                    {
+                        String[] sp = tr.FullName.Split(' ');
+                        if (!sp[0].Equals("System.Void"))
+                            ret++;
+                    }
+                    else
+                    {
+                        if (!tr.FullName.Equals("System.Void"))
+                            ret++;
+                    }
+                }
+                var name = mr.Name;
+                // Find bb entry.
+                CFG.Vertex the_entry = this.Block._Graph.VertexNodes.Where(node
+                    =>
+                {
+                    GraphLinkedList<int, CFG.Vertex, CFG.Edge> g = j.Block._Graph;
+                    int k = g.NameSpace.BijectFromBasetype(node.Name);
+                    CFG.Vertex v = g.VertexSpace[k];
+                    Converter c = Converter.GetConverter((CFG)g);
+                    if (v.IsEntry && v.Method.Name == name && c.IsFullyInstantiatedNode(v))
+                        return true;
+                    else return false;
+                }).ToList().FirstOrDefault();
+
+                if (the_entry != default(CFG.Vertex))
+                {
+                    BuilderRef bu = this.Builder;
+                    ValueRef fv = the_entry.Function;
+                    ValueRef[] args = new ValueRef[nargs];
+                    for (int k = nargs - 1; k >= 0; --k)
+                        args[k] = state._stack.Pop().V;
+                    var call = LLVM.BuildCall(Builder, fv, args, name);
+                    if (ret > 0)
+                        state._stack.Push(new Value(call));
+                }
+            }
+            return Next;
+        }
     }
 
     public class i_castclass : Inst
@@ -3620,30 +3681,105 @@ namespace Campy.ControlFlowGraph
         {
         }
 
-	public override void ComputeStackLevel(ref int level_after)
-	{
-	// There are really two different stacks here:
-	// one for the called method, and the other for the caller of the method.
-	// When returning, the stack of the method is pretty much unchanged.
-	// In fact the top of stack often contains the return value from the method.
-	// Back in the caller, the stack is popped of all arguments to the callee.
-	// And, the return value is pushed on the top of stack.
-	// This is handled by the call instruction.
-	}
+	    public override void ComputeStackLevel(ref int level_after)
+	    {
+	        // There are really two different stacks here:
+	        // one for the called method, and the other for the caller of the method.
+	        // When returning, the stack of the method is pretty much unchanged.
+	        // In fact the top of stack often contains the return value from the method.
+	        // Back in the caller, the stack is popped of all arguments to the callee.
+	        // And, the return value is pushed on the top of stack.
+	        // This is handled by the call instruction.
+	    }
 
-	public override Inst Convert(State state)
-	{
-	    // There are really two different stacks here:
-	    // one for the called method, and the other for the caller of the method.
-	    // When returning, the stack of the method is pretty much unchanged.
-	    // In fact the top of stack often contains the return value from the method.
-	    // Back in the caller, the stack is popped of all arguments to the callee.
-	    // And, the return value is pushed on the top of stack.
-	    // This is handled by the call instruction.
-		var v = state._stack.Pop();
-		var i = LLVM.BuildRet(Builder, v.V);
-		return Next;
-	}
+	    public override Inst Convert(State state)
+	    {
+	        // There are really two different stacks here:
+	        // one for the called method, and the other for the caller of the method.
+	        // When returning, the stack of the method is pretty much unchanged.
+	        // In fact the top of stack often contains the return value from the method.
+	        // Back in the caller, the stack is popped of all arguments to the callee.
+	        // And, the return value is pushed on the top of stack.
+	        // This is handled by the call instruction.
+		    var v = state._stack.Pop();
+
+            var bb = this.Block;
+            var mn = bb.Method.FullName;
+            if (mn == "System.Int32 Campy.Types.Index::op_Implicit(Campy.Types.Index)")
+            {
+                var context = LLVM.ContextCreate();
+                // Load in basics for PTX kernel tid.
+                var tidx = LLVM.AddFunction(
+                    bb.Module,
+                    "llvm.nvvm.read.ptx.sreg.tid.x",
+                    LLVM.FunctionType(LLVM.Int32TypeInContext(context),
+                    new TypeRef[] { }, false));
+                LLVM.AddFunction(
+                    bb.Module,
+                    "llvm.nvvm.read.ptx.sreg.tid.y",
+                    LLVM.FunctionType(LLVM.Int32TypeInContext(context),
+                    new TypeRef[] { }, false));
+                LLVM.AddFunction(
+                    bb.Module,
+                    "llvm.nvvm.read.ptx.sreg.tid.z",
+                    LLVM.FunctionType(LLVM.Int32TypeInContext(context),
+                    new TypeRef[] { }, false));
+                LLVM.AddFunction(
+                    bb.Module,
+                    "llvm.nvvm.read.ptx.sreg.ctaid.x",
+                    LLVM.FunctionType(LLVM.Int32TypeInContext(context),
+                    new TypeRef[] { }, false));
+                LLVM.AddFunction(
+                    bb.Module,
+                    "llvm.nvvm.read.ptx.sreg.ctaid.y",
+                    LLVM.FunctionType(LLVM.Int32TypeInContext(context),
+                    new TypeRef[] { }, false));
+                LLVM.AddFunction(
+                    bb.Module,
+                    "llvm.nvvm.read.ptx.sreg.ctaid.z",
+                    LLVM.FunctionType(LLVM.Int32TypeInContext(context),
+                    new TypeRef[] { }, false));
+                LLVM.AddFunction(
+                    bb.Module,
+                    "llvm.nvvm.read.ptx.sreg.ntid.x",
+                    LLVM.FunctionType(LLVM.Int32TypeInContext(context),
+                    new TypeRef[] { }, false));
+                LLVM.AddFunction(
+                    bb.Module,
+                    "llvm.nvvm.read.ptx.sreg.ntid.y",
+                    LLVM.FunctionType(LLVM.Int32TypeInContext(context),
+                    new TypeRef[] { }, false));
+                LLVM.AddFunction(
+                    bb.Module,
+                    "llvm.nvvm.read.ptx.sreg.ntid.z",
+                    LLVM.FunctionType(LLVM.Int32TypeInContext(context),
+                    new TypeRef[] { }, false));
+                LLVM.AddFunction(
+                    bb.Module,
+                    "llvm.nvvm.read.ptx.sreg.nctaid.x",
+                    LLVM.FunctionType(LLVM.Int32TypeInContext(context),
+                    new TypeRef[] { }, false));
+                LLVM.AddFunction(
+                    bb.Module,
+                    "llvm.nvvm.read.ptx.sreg.nctaid.y",
+                    LLVM.FunctionType(LLVM.Int32TypeInContext(context),
+                    new TypeRef[] { }, false));
+                LLVM.AddFunction(
+                    bb.Module,
+                    "llvm.nvvm.read.ptx.sreg.nctaid.z",
+                    LLVM.FunctionType(LLVM.Int32TypeInContext(context),
+                    new TypeRef[] { }, false));
+                // Make bloody call!
+                var call = LLVM.BuildCall(bb.Builder, tidx, new ValueRef[] { }, "tidx");
+                var i = LLVM.BuildRet(Builder, call);
+                state._stack.Push(new Value(i));
+            } else
+            {
+                var i = LLVM.BuildRet(Builder, v.V);
+                state._stack.Push(new Value(i));
+            }
+            return Next;
+	    }
     }
 
     public class i_rethrow : Inst

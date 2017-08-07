@@ -19,9 +19,17 @@ namespace Campy.ControlFlowGraph
     {
         private CFG _mcfg;
 
+        static Dictionary<CFG, Converter> _converters = new Dictionary<CFG, Converter>();
+
+        public static Converter GetConverter(CFG cfg)
+        {
+            return _converters[cfg];
+        }
+
         public Converter(CFG mcfg)
         {
             _mcfg = mcfg;
+            _converters[mcfg] = this;
         }
 
         // Finally, we need a mapping of node to rewrites.
@@ -100,7 +108,7 @@ namespace Campy.ControlFlowGraph
         private bool TypeUsingGeneric()
         { return false; }
 
-        public void InstantiateGenerics(IEnumerable<CFG.Vertex> change_set, List<System.Type> list_of_data_types_used, List<Mono.Cecil.TypeDefinition> list_of_mono_data_types_used)
+        public List<CFG.Vertex> InstantiateGenerics(IEnumerable<CFG.Vertex> change_set, List<System.Type> list_of_data_types_used, List<Mono.Cecil.TypeDefinition> list_of_mono_data_types_used)
         {
             // Start a new change set so we can update edges and other properties for the new nodes
             // in the graph.
@@ -366,9 +374,9 @@ namespace Campy.ControlFlowGraph
                 }
             }
 
-            List<CFG.Vertex> cs2 = _mcfg.PopChangeSet(change_set_id2);
+            List<CFG.Vertex> new_change_set = _mcfg.PopChangeSet(change_set_id2);
             Dictionary<CFG.Vertex, CFG.Vertex> map_to_new_block = new Dictionary<CFG.Vertex, CFG.Vertex>();
-            foreach (var v in cs2)
+            foreach (var v in new_change_set)
             {
                 if (!IsFullyInstantiatedNode(v)) continue;
                 var original = v.OriginalVertex;
@@ -380,7 +388,7 @@ namespace Campy.ControlFlowGraph
                     _mcfg.AddEdge(v, vto_mapped);
                 }
             }
-            foreach (var v in cs2)
+            foreach (var v in new_change_set)
             {
                 if (!IsFullyInstantiatedNode(v)) continue;
                 var original = v.OriginalVertex;
@@ -389,9 +397,14 @@ namespace Campy.ControlFlowGraph
                     v.Entry = Eval(original.Entry, ops_list);
             }
 
+            this._mcfg.OutputEntireGraph();
+
+            new_change_set.AddRange(change_set);
+
+            return new_change_set;
         }
 
-        private bool IsFullyInstantiatedNode(CFG.Vertex node)
+        public bool IsFullyInstantiatedNode(CFG.Vertex node)
         {
             bool result = false;
             // First, go through and mark all nodes that have non-null

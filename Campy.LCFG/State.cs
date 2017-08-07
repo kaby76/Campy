@@ -249,24 +249,50 @@ namespace Campy.ControlFlowGraph
             int args = _arguments.Len;
             int locs = _locals.Len;
             int begin = 0;
+            System.Console.WriteLine("This size = " + _this.Len);
+            System.Console.WriteLine("Args size = " + _arguments.Len);
+            System.Console.WriteLine("Locals size = " + _locals.Len);
+            System.Console.WriteLine("Stack size = " + _stack.Count);
             if (_this.Len > 0)
             {
-                System.Console.WriteLine("[this ");
-                System.Console.WriteLine(_stack[begin++]);
+                System.Console.WriteLine("[this (base " + _this.Base + ")");
+                System.Console.WriteLine(_this[0]);
+                System.Console.WriteLine();
                 System.Console.WriteLine("]");
+                System.Console.WriteLine();
             }
-            System.Console.WriteLine("[args");
+            System.Console.WriteLine("[args (base " + _arguments.Base + ")");
             for (int i = 0; i < args; ++i)
             {
-                System.Console.WriteLine(" " + _stack[i+begin]);
+                System.Console.WriteLine(" " + _arguments[i]);
+                System.Console.WriteLine();
             }
             System.Console.WriteLine("]");
-            System.Console.WriteLine("[locs");
+            System.Console.WriteLine();
+            System.Console.WriteLine("[locs (base " + _locals.Base + ")");
             for (int i = 0; i < locs; ++i)
-                System.Console.WriteLine(" " + _stack[args + begin + i]);
+            {
+                System.Console.WriteLine(" " + _locals[i]);
+                System.Console.WriteLine();
+            }
             System.Console.WriteLine("]");
+            System.Console.WriteLine();
+            System.Console.WriteLine("[rest of stack (base " + (args + locs) + ")");
+            // NB. Args includes "this" pointer.
             for (int i = args + locs; i < _stack.Size(); ++i)
+            {
                 System.Console.WriteLine(" " + _stack[i]);
+                System.Console.WriteLine();
+            }
+            System.Console.WriteLine("]");
+            System.Console.WriteLine();
+            System.Console.WriteLine("[complete stack (base " + 0 + ")");
+            for (int i = 0; i < _stack.Size(); ++i)
+            {
+                System.Console.WriteLine(" " + _stack[i]);
+                System.Console.WriteLine();
+            }
+            System.Console.WriteLine("]");
             System.Console.WriteLine();
         }
     }

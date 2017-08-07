@@ -54,7 +54,7 @@ namespace Campy
             if (list_of_mono_data_types_used.Count != list_of_data_types_used.Count) throw new Exception("Cannot convert types properly to Mono.");
 
             // Instantiate all generics at this point.
-            c.InstantiateGenerics(cs, list_of_data_types_used, list_of_mono_data_types_used);
+            cs = c.InstantiateGenerics(cs, list_of_data_types_used, list_of_mono_data_types_used);
 
             // Compile methods with added type information.
             c.CompileToLLVM(cs, list_of_mono_data_types_used);
