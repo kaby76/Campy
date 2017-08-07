@@ -59,29 +59,7 @@ namespace Campy.ControlFlowGraph
                     int j = i - begin;
                     ParameterDefinition p = md.Parameters[j];
                     TypeReference tr = p.ParameterType;
-                    TypeDefinition td = tr.Resolve();
-
-                    if (td == null)
-                    {
-                        if (!tr.ContainsGenericParameter) throw new Exception("Cannot resolve type.");
-                        // For generic, find instantiated type using list of
-                        //. data types used in closure.
-                        var declaring_type = tr.DeclaringType;
-                        foreach (var kvp in vertex.OpsFromOriginal)
-                        {
-                            var key = kvp.Key;
-                            var value = kvp.Value;
-                            if (declaring_type.Name == key.Name)
-                            {
-                                // match.
-                                // Make substitutions of actual type for generic.
-                                // The instantiated type is data_type_used. Find method within instantiated type,
-                                // and add mutate.
-                            }
-
-                        }
-                    }
-                    type = Converter.ConvertMonoTypeToLLVM(tr.Resolve(), vertex.LLVMTypeMap, vertex.OpsFromOriginal, false);
+                    type = Converter.ConvertMonoTypeToLLVM(tr, vertex.LLVMTypeMap, vertex.OpsFromOriginal, false);
                 }
                 var vx = new Value(LLVM.ConstInt(type, (ulong)0xdeadbeef, true));
                 _stack.Push(vx);
@@ -140,8 +118,7 @@ namespace Campy.ControlFlowGraph
                 for (int i = 0; i < locals; ++i)
                 {
                     var tr = variables[i].VariableType;
-                    var td = tr.Resolve();
-                    TypeRef type = Converter.ConvertMonoTypeToLLVM(td, vertex.LLVMTypeMap, vertex.OpsFromOriginal, false);
+                    TypeRef type = Converter.ConvertMonoTypeToLLVM(tr, vertex.LLVMTypeMap, vertex.OpsFromOriginal, false);
                     Value value = new Value(LLVM.ConstInt(type, (ulong)0, true));
                     _stack.Push(value);
                 }
