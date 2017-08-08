@@ -399,9 +399,10 @@ namespace Campy.ControlFlowGraph
 
             this._mcfg.OutputEntireGraph();
 
-            new_change_set.AddRange(change_set);
-
-            return new_change_set;
+            List<CFG.Vertex> result = new List<CFG.Vertex>();
+            result.AddRange(change_set);
+            result.AddRange(new_change_set);
+            return result;
         }
 
         public bool IsFullyInstantiatedNode(CFG.Vertex node)

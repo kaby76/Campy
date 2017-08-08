@@ -1394,9 +1394,16 @@ namespace Campy.ControlFlowGraph
             }
 
             uint offset = 0;
-            offset = (uint)this.Instruction.Offset;
             var yy = this.Instruction.Operand;
-           // foreach (var field in )
+            var field = yy as Mono.Cecil.FieldReference;
+            if (yy == null) throw new Exception("Cannot convert.");
+            var declaring_type_tr = field.DeclaringType;
+            var declaring_type = declaring_type_tr.Resolve();
+            foreach (var f in declaring_type.Fields)
+            {
+                if (f.Name == field.Name) break;
+                offset++;
+            }
             ValueRef load = LLVM.BuildExtractValue(Builder, v.V, offset, "");
             var tt = LLVM.TypeOf(load);
             System.Console.WriteLine(LLVM.PrintTypeToString(tt));
