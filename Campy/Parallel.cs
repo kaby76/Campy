@@ -61,8 +61,8 @@ namespace Campy
 
             IntPtr p = c.GetPtr(cs.First().Name);
 
-            //DFoo2 f = (DFoo2)Marshal.GetDelegateForFunctionPointer(p, typeof(DFoo2));
-            //f(k);
+            // DFoo2 f = (DFoo2)Marshal.GetDelegateForFunctionPointer(p, typeof(DFoo2));
+            // f(k);
         }
 
         static public void For(TiledExtent extent, _Kernel_tiled_type kernel)
