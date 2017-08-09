@@ -1898,7 +1898,7 @@ namespace Campy.ControlFlowGraph
 						    ret++;
 				    }
 			    }
-			    var name = mr.FullName;
+			    var name = Converter.MethodName(mr);
                     // Find bb entry.
 		        CFG.Vertex the_entry = this.Block._Graph.VertexNodes.Where(node
 				    =>
@@ -1907,7 +1907,7 @@ namespace Campy.ControlFlowGraph
 				    int k = g.NameSpace.BijectFromBasetype(node.Name);
 				    CFG.Vertex v = g.VertexSpace[k];
                     Converter c = Converter.GetConverter((CFG)g);
-				    if (v.IsEntry && v.Method.FullName == name && c.IsFullyInstantiatedNode(v))
+				    if (v.IsEntry && Converter.MethodName(v.Method) == name && c.IsFullyInstantiatedNode(v))
 					    return true;
 				    else return false;
 			    }).ToList().FirstOrDefault();
@@ -2040,7 +2040,7 @@ namespace Campy.ControlFlowGraph
                             ret++;
                     }
                 }
-                var name = mr.Name;
+                var name = Converter.MethodName(mr);
                 // Find bb entry.
                 CFG.Vertex the_entry = this.Block._Graph.VertexNodes.Where(node
                     =>
@@ -2049,7 +2049,7 @@ namespace Campy.ControlFlowGraph
                     int k = g.NameSpace.BijectFromBasetype(node.Name);
                     CFG.Vertex v = g.VertexSpace[k];
                     Converter c = Converter.GetConverter((CFG)g);
-                    if (v.IsEntry && v.Method.Name == name && c.IsFullyInstantiatedNode(v))
+                    if (v.IsEntry && Converter.MethodName(v.Method) == name && c.IsFullyInstantiatedNode(v))
                         return true;
                     else return false;
                 }).ToList().FirstOrDefault();
