@@ -125,7 +125,10 @@ namespace Campy.ControlFlowGraph
             public BasicBlockRef BasicBlock { get; set; }
             public ValueRef Function { get; set; }
             public BuilderRef Builder { get; set; }
-            public ModuleRef Module { get; set; }
+            public ModuleRef Module {
+                get;
+                set;
+            }
 
             public bool HasThis { get; set; }
 

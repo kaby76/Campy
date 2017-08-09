@@ -3,9 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using System.Threading;
 using Campy.GraphAlgorithms;
 using Campy.Graphs;
 using Campy.Types.Utils;
@@ -457,10 +454,11 @@ namespace Campy.ControlFlowGraph
                 if (count > 0)
                 {
                     if (bb.HasThis)
-                        param_types[current++] = ConvertMonoTypeToLLVM(
+                        param_types[current++] = ConvertMonoTypeToLLVM(bb,
                             Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(mb.DeclaringType), bb.LLVMTypeMap, bb.OpsFromOriginal);
                     foreach (var p in parameters)
-                        param_types[current++] = ConvertMonoTypeToLLVM(p.ParameterType, bb.LLVMTypeMap, bb.OpsFromOriginal);
+                        param_types[current++] = ConvertMonoTypeToLLVM(bb,
+                            p.ParameterType, bb.LLVMTypeMap, bb.OpsFromOriginal);
 
 
                     foreach (var pp in param_types)
@@ -472,9 +470,9 @@ namespace Campy.ControlFlowGraph
 
                 TypeRef ret_type = default(TypeRef);
                 var mi2 = method.ReturnType;
-                ret_type = ConvertMonoTypeToLLVM(mi2, bb.LLVMTypeMap, bb.OpsFromOriginal);
+                ret_type = ConvertMonoTypeToLLVM(bb, mi2, bb.LLVMTypeMap, bb.OpsFromOriginal);
                 TypeRef met_type = LLVM.FunctionType(ret_type, param_types, false);
-                ValueRef fun = LLVM.AddFunction(mod, mb.Name, met_type);
+                ValueRef fun = LLVM.AddFunction(mod, Converter.MethodName(method), met_type);
                 BasicBlockRef entry = LLVM.AppendBasicBlock(fun, bb.Name.ToString());
                 bb.BasicBlock = entry;
                 bb.Function = fun;
@@ -562,6 +560,69 @@ namespace Campy.ControlFlowGraph
             }
         }
 
+        public static string MethodName(MethodReference mr)
+        {
+            // Method names for a method reference are sometimes not the
+            // same, even though they are in principle referring to the same
+            // method, especially for methods that contain generics. This function
+            // returns a normalized name for the method reference so that there
+            // is equivalence.
+            var declaring_type = mr.DeclaringType;
+            if (declaring_type == null) throw new Exception("Cannot get declaring type for method.");
+            var r = declaring_type.Resolve();
+            var methods = r.Methods;
+            foreach (var method in methods)
+            {
+                if (method.Name == mr.Name)
+                    return method.FullName;
+            }
+            return null;
+        }
+
+        public static CFG.Vertex FindFullyInstantiatedMethod(MethodReference mr,
+            Dictionary<TypeReference, TypeReference> map)
+        {
+            return null;
+        }
+
+        private void CompilePart5(IEnumerable<CFG.Vertex> basic_blocks_to_compile, List<Mono.Cecil.TypeDefinition> list_of_data_types_used)
+        {
+            // In all entries (that is, a basic block which in an entry and
+            // has an LLVM Module created), declare external functions. Note,
+            // every function is defined in its own Module. We have to do this
+            // due to a restriction in LLVM.
+            foreach (CFG.Vertex bb in basic_blocks_to_compile)
+            {
+                if (!IsFullyInstantiatedNode(bb))
+                    continue;
+
+                foreach (Inst caller in Inst.CallInstructions)
+                {
+                    CFG.Vertex n = caller.Block;
+                    if (n != bb) continue;
+                    System.Console.WriteLine(caller);
+                    object method = caller.Operand;
+                    if (method as Mono.Cecil.MethodReference == null) throw new Exception("Cannot cast call instruction operand!");
+                    Mono.Cecil.MethodReference mr = method as Mono.Cecil.MethodReference;
+                    var name = mr.FullName;
+                    name = MethodName(mr);
+                    // Find bb entry.
+                    CFG.Vertex the_entry = caller.Block._Graph.VertexNodes.Where(node
+                        =>
+                    {
+                        GraphLinkedList<int, CFG.Vertex, CFG.Edge> g = caller.Block._Graph;
+                        int k = g.NameSpace.BijectFromBasetype(node.Name);
+                        CFG.Vertex v = g.VertexSpace[k];
+                        Converter c = Converter.GetConverter((CFG)g);
+                        if (v.IsEntry && MethodName(v.Method) == name && c.IsFullyInstantiatedNode(v))
+                            return true;
+                        else return false;
+                    }).ToList().FirstOrDefault();
+                    System.Console.WriteLine("Found " + the_entry);
+                }
+            }
+        }
+
         public void CompileToLLVM(IEnumerable<CFG.Vertex> basic_blocks_to_compile, List<Mono.Cecil.TypeDefinition> list_of_data_types_used)
         {
             CompilePart1(basic_blocks_to_compile, list_of_data_types_used);
@@ -623,6 +684,9 @@ namespace Campy.ControlFlowGraph
             List<CFG.Vertex> unreachable;
             List<CFG.Vertex> change_set_minus_unreachable;
             CompilePart4(basic_blocks_to_compile, list_of_data_types_used, entries, out unreachable, out change_set_minus_unreachable);
+
+            CompilePart5(basic_blocks_to_compile, list_of_data_types_used);
+
 
             {
                 List<CFG.Vertex> work = new List<CFG.Vertex>(change_set_minus_unreachable);
@@ -1031,13 +1095,20 @@ namespace Campy.ControlFlowGraph
         private static Mono.Cecil.TypeDefinition MonoChar;
         private static Mono.Cecil.TypeDefinition MonoVoid;
         private static Mono.Cecil.TypeDefinition MonoTypeDef;
+        private static Dictionary<TypeReference, TypeRef> previous_llvm_types_created_global = new Dictionary<TypeReference, TypeRef>();
 
         public static TypeRef ConvertMonoTypeToLLVM(
+            CFG.Vertex node,
             Mono.Cecil.TypeReference tr,
             Dictionary<TypeReference, TypeRef> previous_llvm_types_created,
             Dictionary<TypeReference, System.Type> generic_type_rewrite_rules)
         {
             // Search for type if already converted.
+            foreach (var kv in previous_llvm_types_created_global)
+            {
+                if (kv.Key.Name == tr.Name)
+                    return kv.Value;
+            }
             foreach (var kv in previous_llvm_types_created)
             {
                 if (kv.Key.Name == tr.Name)
@@ -1120,15 +1191,15 @@ namespace Campy.ControlFlowGraph
             {
                 ContextRef c = LLVM.ContextCreate();
                 TypeRef s = LLVM.StructCreateNamed(c, tr.ToString());
-                previous_llvm_types_created.Add(tr, s);
+                previous_llvm_types_created_global.Add(tr, s);
                 LLVM.StructSetBody(s, new TypeRef[2]
                 {
-                    LLVM.PointerType(ConvertMonoTypeToLLVM(tr.GetElementType(), previous_llvm_types_created, generic_type_rewrite_rules), 0),
+                    LLVM.PointerType(ConvertMonoTypeToLLVM(node, tr.GetElementType(), previous_llvm_types_created, generic_type_rewrite_rules), 0),
                     LLVM.Int64Type()
                 }, true);
 
                 var element_type = tr.GetElementType();
-                var e = ConvertMonoTypeToLLVM(element_type, previous_llvm_types_created, generic_type_rewrite_rules);
+                var e = ConvertMonoTypeToLLVM(node, element_type, previous_llvm_types_created, generic_type_rewrite_rules);
                 var p = LLVM.PointerType(e, 0);
                 var d = LLVM.GetUndef(p);
                 return s;
@@ -1144,8 +1215,8 @@ namespace Campy.ControlFlowGraph
                         // Match, and substitute.
                         var v = value;
                         var mv = Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(v);
-                        var e = ConvertMonoTypeToLLVM(mv, previous_llvm_types_created, generic_type_rewrite_rules);
-                        previous_llvm_types_created.Add(tr, e);
+                        var e = ConvertMonoTypeToLLVM(node, mv, previous_llvm_types_created, generic_type_rewrite_rules);
+                        previous_llvm_types_created_global.Add(tr, e);
                         return e;
                     }
                 }
@@ -1193,7 +1264,7 @@ namespace Campy.ControlFlowGraph
                 // Create a struct/class type.
                 ContextRef c = LLVM.ContextCreate();
                 TypeRef s = LLVM.StructCreateNamed(c, tr.ToString());
-                previous_llvm_types_created.Add(tr, s);
+                previous_llvm_types_created_global.Add(tr, s);
                 // Create array of typerefs as argument to StructSetBody below.
                 var fields = td.Fields;
                 var new_list = new Dictionary<TypeReference, System.Type>(generic_type_rewrite_rules);
@@ -1212,10 +1283,11 @@ namespace Campy.ControlFlowGraph
                         continue;
                     }
 
-                    var field_converted_type = ConvertMonoTypeToLLVM(field.FieldType, previous_llvm_types_created, new_list);
+                    var field_converted_type = ConvertMonoTypeToLLVM(node, field.FieldType, previous_llvm_types_created, new_list);
                     list.Add(field_converted_type);
                 }
                 LLVM.StructSetBody(s, list.ToArray(), true);
+                System.Console.WriteLine("Created class for node " + node.Name + " :::: " + LLVM.PrintTypeToString(s));
                 return s;
             }
             else
