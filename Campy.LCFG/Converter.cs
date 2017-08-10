@@ -421,8 +421,11 @@ namespace Campy.ControlFlowGraph
             return result;
         }
 
+        ModuleRef global_module = default(ModuleRef);
+
         private void CompilePart1(IEnumerable<CFG.Vertex> basic_blocks_to_compile, List<Mono.Cecil.TypeDefinition> list_of_data_types_used)
         {
+            global_module = LLVM.ModuleCreateWithName("global");
             foreach (var bb in basic_blocks_to_compile)
             {
                 System.Console.WriteLine("Compile part 1, node " + bb);
@@ -445,10 +448,8 @@ namespace Campy.ControlFlowGraph
                 var parameters = method.Parameters;
                 System.Reflection.MethodBase mb = ReflectionCecilInterop.ConvertToSystemReflectionMethodInfo(method);
                 string mn = mb.DeclaringType.Assembly.GetName().Name;
-                ModuleRef mod = LLVM.ModuleCreateWithName(mn);
+                ModuleRef mod = global_module; // LLVM.ModuleCreateWithName(mn);
                 bb.Module = mod;
-
-
                 uint count = (uint)mb.GetParameters().Count();
                 if (bb.HasThis) count++;
                 TypeRef[] param_types = new TypeRef[count];
@@ -461,8 +462,6 @@ namespace Campy.ControlFlowGraph
                     foreach (var p in parameters)
                         param_types[current++] = ConvertMonoTypeToLLVM(bb,
                             p.ParameterType, bb.LLVMTypeMap, bb.OpsFromOriginal);
-
-
                     foreach (var pp in param_types)
                     {
                         string a = LLVM.PrintTypeToString(pp);
@@ -587,51 +586,38 @@ namespace Campy.ControlFlowGraph
             return null;
         }
 
-        private void AddExternFunction(Swigged.LLVM.ModuleRef module, MethodReference mr)
+        private void AddExternFunction(CFG.Vertex bb, CFG.Vertex called_bb)
         {
-            MethodDefinition md = mr.Resolve();
-            uint count = (uint)md.Parameters.Count();
-            if (md.HasThis) count++;
+            return;
+            var mr = called_bb.Method;
+            MethodDefinition method = mr.Resolve();
+            var mb = method.DeclaringType;
+            var name = Converter.MethodName(method);
+            var parameters = method.Parameters;
+            uint count = (uint)method.Parameters.Count();
+            if (method.HasThis) count++;
             TypeRef[] param_types = new TypeRef[count];
             int current = 0;
             if (count > 0)
             {
-                if (md.HasThis)
+                if (method.HasThis)
                     param_types[current++] = ConvertMonoTypeToLLVM(bb,
-                        Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(mb.DeclaringType), bb.LLVMTypeMap, bb.OpsFromOriginal);
+                        mb, bb.LLVMTypeMap, bb.OpsFromOriginal);
                 foreach (var p in parameters)
                     param_types[current++] = ConvertMonoTypeToLLVM(bb,
                         p.ParameterType, bb.LLVMTypeMap, bb.OpsFromOriginal);
-
-
-                foreach (var pp in param_types)
-                {
-                    string a = LLVM.PrintTypeToString(pp);
-                    System.Console.WriteLine(" " + a);
-                }
             }
-
             TypeRef ret_type = default(TypeRef);
             var mi2 = method.ReturnType;
-            ret_type = ConvertMonoTypeToLLVM(bb, mi2, bb.LLVMTypeMap, bb.OpsFromOriginal);
+            ret_type = ConvertMonoTypeToLLVM(called_bb, mi2, called_bb.LLVMTypeMap, called_bb.OpsFromOriginal);
             TypeRef met_type = LLVM.FunctionType(ret_type, param_types, false);
-            ValueRef fun = LLVM.AddFunction(mod, Converter.MethodName(method), met_type);
-
-            BasicBlockRef entry = LLVM.AppendBasicBlock(fun, bb.Name.ToString());
-            bb.BasicBlock = entry;
-            bb.Function = fun;
-
-            var context = LLVM.ContextCreate();
-            var tidx = LLVM.AddFunction(
-               module,
-                name,
-                LLVM.FunctionType(
-                    LLVM.Int32TypeInContext(context),
-                    new TypeRef[] { }, false));
+            ValueRef fun = LLVM.AddFunction(bb.Module,
+                Converter.MethodName(method), met_type);
         }
 
         private void CompilePart5(IEnumerable<CFG.Vertex> basic_blocks_to_compile, List<Mono.Cecil.TypeDefinition> list_of_data_types_used)
         {
+            return;
             // In all entries (that is, a basic block which in an entry and
             // has an LLVM Module created), declare external functions. Note,
             // every function is defined in its own Module. We have to do this
@@ -665,7 +651,7 @@ namespace Campy.ControlFlowGraph
                     System.Console.WriteLine("Found " + the_entry);
 
                     // Within the basic block bb, set up declaration of method.
-                    AddFunctionInModule(bb.Module, the_entry.Method);
+                    AddExternFunction(bb, the_entry);
                 }
             }
         }
