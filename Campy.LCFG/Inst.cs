@@ -1849,7 +1849,7 @@ namespace Campy.ControlFlowGraph
 			    {
 				    Mono.Cecil.MethodReturnType rt = mr.MethodReturnType;
 				    Mono.Cecil.TypeReference tr = rt.ReturnType;
-		    // Get type, may contain modifiers.
+		            // Get type, may contain modifiers.
 				    if (tr.FullName.Contains(' '))
 				    {
 					    String[] sp = tr.FullName.Split(' ');
@@ -1885,7 +1885,7 @@ namespace Campy.ControlFlowGraph
 			    {
 				    Mono.Cecil.MethodReturnType rt = mr.MethodReturnType;
 				    Mono.Cecil.TypeReference tr = rt.ReturnType;
-		        // Get type, may contain modifiers.
+		            // Get type, may contain modifiers.
 				    if (tr.FullName.Contains(' '))
 				    {
 					    String[] sp = tr.FullName.Split(' ');
@@ -1899,7 +1899,7 @@ namespace Campy.ControlFlowGraph
 				    }
 			    }
 			    var name = Converter.MethodName(mr);
-                    // Find bb entry.
+                // Find bb entry.
 		        CFG.Vertex the_entry = this.Block._Graph.VertexNodes.Where(node
 				    =>
 			    {
@@ -1919,10 +1919,16 @@ namespace Campy.ControlFlowGraph
 				    ValueRef[] args = new ValueRef[nargs];
 				    for (int k = nargs-1; k >= 0; --k)
 					    args[k] = state._stack.Pop().V;
-				    var call = LLVM.BuildCall(Builder, fv, args, name);
 				    if (ret > 0)
-					    state._stack.Push(new Value(call));
-			    }
+                    {
+                        var call = LLVM.BuildCall(Builder, fv, args, name);
+                        state._stack.Push(new Value(call));
+                    }
+                    else
+                    {
+                        var call = LLVM.BuildCall(Builder, fv, args, "");
+                    }
+                }
 		    }
 		    return Next;
 	    }
@@ -1992,7 +1998,7 @@ namespace Campy.ControlFlowGraph
 			    {
 				    Mono.Cecil.MethodReturnType rt = mr.MethodReturnType;
 				    Mono.Cecil.TypeReference tr = rt.ReturnType;
-		    // Get type, may contain modifiers.
+		            // Get type, may contain modifiers.
 				    if (tr.FullName.Contains(' '))
 				    {
 					    String[] sp = tr.FullName.Split(' ');
@@ -2061,9 +2067,15 @@ namespace Campy.ControlFlowGraph
                     ValueRef[] args = new ValueRef[nargs];
                     for (int k = nargs - 1; k >= 0; --k)
                         args[k] = state._stack.Pop().V;
-                    var call = LLVM.BuildCall(Builder, fv, args, name);
                     if (ret > 0)
+                    {
+                        var call = LLVM.BuildCall(Builder, fv, args, name);
                         state._stack.Push(new Value(call));
+                    }
+                    else
+                    {
+                        var call = LLVM.BuildCall(Builder, fv, args, "");
+                    }
                 }
             }
             return Next;
@@ -3705,89 +3717,101 @@ namespace Campy.ControlFlowGraph
 
 	    public override Inst Convert(State state)
 	    {
-	        // There are really two different stacks here:
-	        // one for the called method, and the other for the caller of the method.
-	        // When returning, the stack of the method is pretty much unchanged.
-	        // In fact the top of stack often contains the return value from the method.
-	        // Back in the caller, the stack is popped of all arguments to the callee.
-	        // And, the return value is pushed on the top of stack.
-	        // This is handled by the call instruction.
-		    var v = state._stack.Pop();
+            // There are really two different stacks here:
+            // one for the called method, and the other for the caller of the method.
+            // When returning, the stack of the method is pretty much unchanged.
+            // In fact the top of stack often contains the return value from the method.
+            // Back in the caller, the stack is popped of all arguments to the callee.
+            // And, the return value is pushed on the top of stack.
+            // This is handled by the call instruction.
+            var ret = this.Block.Method.ReturnType;
+            var void_type = Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(typeof(void));
 
-            var bb = this.Block;
-            var mn = bb.Method.FullName;
-            if (mn == "System.Int32 Campy.Types.Index::op_Implicit(Campy.Types.Index)")
+            if (ret == null || ret.FullName == void_type.FullName)
             {
-                var context = LLVM.ContextCreate();
-                // Load in basics for PTX kernel tid.
-                var tidx = LLVM.AddFunction(
-                    bb.Module,
-                    "llvm.nvvm.read.ptx.sreg.tid.x",
-                    LLVM.FunctionType(LLVM.Int32TypeInContext(context),
-                    new TypeRef[] { }, false));
-                LLVM.AddFunction(
-                    bb.Module,
-                    "llvm.nvvm.read.ptx.sreg.tid.y",
-                    LLVM.FunctionType(LLVM.Int32TypeInContext(context),
-                    new TypeRef[] { }, false));
-                LLVM.AddFunction(
-                    bb.Module,
-                    "llvm.nvvm.read.ptx.sreg.tid.z",
-                    LLVM.FunctionType(LLVM.Int32TypeInContext(context),
-                    new TypeRef[] { }, false));
-                LLVM.AddFunction(
-                    bb.Module,
-                    "llvm.nvvm.read.ptx.sreg.ctaid.x",
-                    LLVM.FunctionType(LLVM.Int32TypeInContext(context),
-                    new TypeRef[] { }, false));
-                LLVM.AddFunction(
-                    bb.Module,
-                    "llvm.nvvm.read.ptx.sreg.ctaid.y",
-                    LLVM.FunctionType(LLVM.Int32TypeInContext(context),
-                    new TypeRef[] { }, false));
-                LLVM.AddFunction(
-                    bb.Module,
-                    "llvm.nvvm.read.ptx.sreg.ctaid.z",
-                    LLVM.FunctionType(LLVM.Int32TypeInContext(context),
-                    new TypeRef[] { }, false));
-                LLVM.AddFunction(
-                    bb.Module,
-                    "llvm.nvvm.read.ptx.sreg.ntid.x",
-                    LLVM.FunctionType(LLVM.Int32TypeInContext(context),
-                    new TypeRef[] { }, false));
-                LLVM.AddFunction(
-                    bb.Module,
-                    "llvm.nvvm.read.ptx.sreg.ntid.y",
-                    LLVM.FunctionType(LLVM.Int32TypeInContext(context),
-                    new TypeRef[] { }, false));
-                LLVM.AddFunction(
-                    bb.Module,
-                    "llvm.nvvm.read.ptx.sreg.ntid.z",
-                    LLVM.FunctionType(LLVM.Int32TypeInContext(context),
-                    new TypeRef[] { }, false));
-                LLVM.AddFunction(
-                    bb.Module,
-                    "llvm.nvvm.read.ptx.sreg.nctaid.x",
-                    LLVM.FunctionType(LLVM.Int32TypeInContext(context),
-                    new TypeRef[] { }, false));
-                LLVM.AddFunction(
-                    bb.Module,
-                    "llvm.nvvm.read.ptx.sreg.nctaid.y",
-                    LLVM.FunctionType(LLVM.Int32TypeInContext(context),
-                    new TypeRef[] { }, false));
-                LLVM.AddFunction(
-                    bb.Module,
-                    "llvm.nvvm.read.ptx.sreg.nctaid.z",
-                    LLVM.FunctionType(LLVM.Int32TypeInContext(context),
-                    new TypeRef[] { }, false));
-                // Make bloody call!
-                var call = LLVM.BuildCall(bb.Builder, tidx, new ValueRef[] { }, "tidx");
-                var i = LLVM.BuildRet(Builder, call);
-                state._stack.Push(new Value(i));
-            } else
+                var i = LLVM.BuildRetVoid(Builder);
+            }
+            else
             {
-                var i = LLVM.BuildRet(Builder, v.V);
-                state._stack.Push(new Value(i));
+                var v = state._stack.Pop();
+
+                var bb = this.Block;
+                var mn = bb.Method.FullName;
+                if (mn == "System.Int32 Campy.Types.Index::op_Implicit(Campy.Types.Index)")
+                {
+                    //var context = LLVM.ContextCreate();
+                    //// Load in basics for PTX kernel tid.
+                    //var tidx = LLVM.AddFunction(
+                    //    bb.Module,
+                    //    "llvm.nvvm.read.ptx.sreg.tid.x",
+                    //    LLVM.FunctionType(LLVM.Int32Type(),
+                    //    new TypeRef[] { }, false));
+                    //LLVM.AddFunction(
+                    //    bb.Module,
+                    //    "llvm.nvvm.read.ptx.sreg.tid.y",
+                    //    LLVM.FunctionType(LLVM.Int32TypeInContext(context),
+                    //    new TypeRef[] { }, false));
+                    //LLVM.AddFunction(
+                    //    bb.Module,
+                    //    "llvm.nvvm.read.ptx.sreg.tid.z",
+                    //    LLVM.FunctionType(LLVM.Int32TypeInContext(context),
+                    //    new TypeRef[] { }, false));
+                    //LLVM.AddFunction(
+                    //    bb.Module,
+                    //    "llvm.nvvm.read.ptx.sreg.ctaid.x",
+                    //    LLVM.FunctionType(LLVM.Int32TypeInContext(context),
+                    //    new TypeRef[] { }, false));
+                    //LLVM.AddFunction(
+                    //    bb.Module,
+                    //    "llvm.nvvm.read.ptx.sreg.ctaid.y",
+                    //    LLVM.FunctionType(LLVM.Int32TypeInContext(context),
+                    //    new TypeRef[] { }, false));
+                    //LLVM.AddFunction(
+                    //    bb.Module,
+                    //    "llvm.nvvm.read.ptx.sreg.ctaid.z",
+                    //    LLVM.FunctionType(LLVM.Int32TypeInContext(context),
+                    //    new TypeRef[] { }, false));
+                    //LLVM.AddFunction(
+                    //    bb.Module,
+                    //    "llvm.nvvm.read.ptx.sreg.ntid.x",
+                    //    LLVM.FunctionType(LLVM.Int32TypeInContext(context),
+                    //    new TypeRef[] { }, false));
+                    //LLVM.AddFunction(
+                    //    bb.Module,
+                    //    "llvm.nvvm.read.ptx.sreg.ntid.y",
+                    //    LLVM.FunctionType(LLVM.Int32TypeInContext(context),
+                    //    new TypeRef[] { }, false));
+                    //LLVM.AddFunction(
+                    //    bb.Module,
+                    //    "llvm.nvvm.read.ptx.sreg.ntid.z",
+                    //    LLVM.FunctionType(LLVM.Int32TypeInContext(context),
+                    //    new TypeRef[] { }, false));
+                    //LLVM.AddFunction(
+                    //    bb.Module,
+                    //    "llvm.nvvm.read.ptx.sreg.nctaid.x",
+                    //    LLVM.FunctionType(LLVM.Int32TypeInContext(context),
+                    //    new TypeRef[] { }, false));
+                    //LLVM.AddFunction(
+                    //    bb.Module,
+                    //    "llvm.nvvm.read.ptx.sreg.nctaid.y",
+                    //    LLVM.FunctionType(LLVM.Int32TypeInContext(context),
+                    //    new TypeRef[] { }, false));
+                    //LLVM.AddFunction(
+                    //    bb.Module,
+                    //    "llvm.nvvm.read.ptx.sreg.nctaid.z",
+                    //    LLVM.FunctionType(LLVM.Int32TypeInContext(context),
+                    //    new TypeRef[] { }, false));
+                    //// Make bloody call!
+                    //var call = LLVM.BuildCall(bb.Builder, tidx, new ValueRef[] { }, "tidx");
+                    Value value = new Value(LLVM.ConstInt(LLVM.Int32Type(), (ulong)0, true));
+                    var i = LLVM.BuildRet(Builder, v.V);
+                    state._stack.Push(new Value(i));
+                }
+                else
+                {
+                    var i = LLVM.BuildRet(Builder, v.V);
+                    state._stack.Push(new Value(i));
+                }
             }
             return Next;
 	    }

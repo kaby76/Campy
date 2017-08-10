@@ -422,10 +422,17 @@ namespace Campy.ControlFlowGraph
         }
 
         ModuleRef global_module = default(ModuleRef);
+        private List<ModuleRef> all_modules = new List<ModuleRef>();
+        private ModuleRef CreateModule(string name)
+        {
+            var new_module = LLVM.ModuleCreateWithName(name);
+            all_modules.Add(new_module);
+            return new_module;
+        }
 
         private void CompilePart1(IEnumerable<CFG.Vertex> basic_blocks_to_compile, List<Mono.Cecil.TypeDefinition> list_of_data_types_used)
         {
-            global_module = LLVM.ModuleCreateWithName("global");
+            global_module = CreateModule("global");
             foreach (var bb in basic_blocks_to_compile)
             {
                 System.Console.WriteLine("Compile part 1, node " + bb);
@@ -946,16 +953,9 @@ namespace Campy.ControlFlowGraph
                 }
             }
 
-            foreach (var lv in basic_blocks_to_compile)
+            foreach (var m in all_modules)
             {
-                if (!IsFullyInstantiatedNode(lv))
-                    continue;
-
-                if (lv.IsEntry)
-                {
-                    ModuleRef mod = lv.Module;
-                    LLVM.DumpModule(mod);
-                }
+                LLVM.DumpModule(m);
             }
         }
 
@@ -1082,7 +1082,7 @@ namespace Campy.ControlFlowGraph
             CFG.Vertex lvv = here;
             var mod = lvv.Module;
             MyString error = new MyString();
-            LLVM.VerifyModule(mod, VerifierFailureAction.ReturnStatusAction, error);
+            LLVM.VerifyModule(mod, VerifierFailureAction.PrintMessageAction, error);
             System.Console.WriteLine(error.ToString());
             ExecutionEngineRef engine;
             LLVM.DumpModule(mod);
