@@ -421,7 +421,7 @@ namespace Campy.ControlFlowGraph
             return result;
         }
 
-        ModuleRef global_module = default(ModuleRef);
+        public static ModuleRef global_module = default(ModuleRef);
         private List<ModuleRef> all_modules = new List<ModuleRef>();
         private ModuleRef CreateModule(string name)
         {
@@ -433,6 +433,14 @@ namespace Campy.ControlFlowGraph
         private void CompilePart1(IEnumerable<CFG.Vertex> basic_blocks_to_compile, List<Mono.Cecil.TypeDefinition> list_of_data_types_used)
         {
             global_module = CreateModule("global");
+            LLVM.EnablePrettyStackTrace();
+            var triple = LLVM.GetDefaultTargetTriple();
+            LLVM.SetTarget(global_module, triple);
+            LLVM.InitializeAllTargets();
+            LLVM.InitializeAllTargetMCs();
+            LLVM.InitializeAllTargetInfos();
+            LLVM.InitializeAllAsmPrinters();
+
             foreach (var bb in basic_blocks_to_compile)
             {
                 System.Console.WriteLine("Compile part 1, node " + bb);
@@ -663,8 +671,13 @@ namespace Campy.ControlFlowGraph
             }
         }
 
-        public void CompileToLLVM(IEnumerable<CFG.Vertex> basic_blocks_to_compile, List<Mono.Cecil.TypeDefinition> list_of_data_types_used)
+        public void CompileToLLVM(List<CFG.Vertex> basic_blocks_to_compile, List<Mono.Cecil.TypeDefinition> list_of_data_types_used)
         {
+            var new_new = new List<CFG.Vertex>();
+            new_new.Add(basic_blocks_to_compile[4]);
+            new_new.Add(basic_blocks_to_compile[5]);
+            basic_blocks_to_compile = new_new;
+
             CompilePart1(basic_blocks_to_compile, list_of_data_types_used);
 
             CompilePart2(basic_blocks_to_compile, list_of_data_types_used);
@@ -1081,8 +1094,11 @@ namespace Campy.ControlFlowGraph
             }
             CFG.Vertex lvv = here;
             var mod = lvv.Module;
+
+            mod = Converter.global_module;
+
             MyString error = new MyString();
-            LLVM.VerifyModule(mod, VerifierFailureAction.PrintMessageAction, error);
+            LLVM.VerifyModule(mod, VerifierFailureAction.AbortProcessAction, error);
             System.Console.WriteLine(error.ToString());
             ExecutionEngineRef engine;
             LLVM.DumpModule(mod);
@@ -1131,6 +1147,7 @@ namespace Campy.ControlFlowGraph
 	    private static Mono.Cecil.TypeDefinition MonoSystemType;
 	    private static Mono.Cecil.TypeDefinition MonoSystemString;
         private static Dictionary<TypeReference, TypeRef> previous_llvm_types_created_global = new Dictionary<TypeReference, TypeRef>();
+        private static bool nested = false;
 
         public static TypeRef ConvertMonoTypeToLLVM(
             CFG.Vertex node,
@@ -1142,7 +1159,15 @@ namespace Campy.ControlFlowGraph
             foreach (var kv in previous_llvm_types_created_global)
             {
                 if (kv.Key.Name == tr.Name)
+                {
+                    if (nested)
+                    {
+                        var typeref = LLVM.VoidType();
+                        var s = LLVM.PointerType(typeref, 0);
+                        return s;
+                    }
                     return kv.Value;
+                }
             }
             foreach (var kv in previous_llvm_types_created)
             {
@@ -1275,6 +1300,7 @@ namespace Campy.ControlFlowGraph
             }
             else if (td != null && td.IsClass)
             {
+                nested = true;
                 Dictionary<TypeReference, System.Type> additional = new Dictionary<TypeReference, System.Type>();
                 var gp = tr.GenericParameters;
                 GenericInstanceType git = tr as GenericInstanceType;
@@ -1328,17 +1354,12 @@ namespace Campy.ControlFlowGraph
                 List<TypeRef> list = new List<TypeRef>();
                 foreach (var field in fields)
                 {
-                    if (field.FieldType == tr)
-                    {
-                        list.Add(s);
-                        continue;
-                    }
-
                     var field_converted_type = ConvertMonoTypeToLLVM(node, field.FieldType, previous_llvm_types_created, new_list);
                     list.Add(field_converted_type);
                 }
                 LLVM.StructSetBody(s, list.ToArray(), true);
                 System.Console.WriteLine("Created class for node " + node.Name + " :::: " + LLVM.PrintTypeToString(s));
+                nested = false;
                 return s;
             }
             else

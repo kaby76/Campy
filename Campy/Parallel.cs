@@ -8,6 +8,7 @@ using Campy.Types;
 using Campy.ControlFlowGraph;
 using Mono.Cecil;
 using Type = System.Type;
+using Swigged.LLVM;
 
 namespace Campy
 {
