@@ -1097,6 +1097,48 @@ namespace Campy.ControlFlowGraph
             System.Console.WriteLine(error.ToString());
             ExecutionEngineRef engine;
             LLVM.DumpModule(mod);
+
+            string triple = "nvptx64-nvidia-cuda";
+            TargetRef t2;
+            var b = LLVM.GetTargetFromTriple(triple, out t2, error);
+
+            string cpu = "";
+            string features = "";
+
+            TargetMachineRef tmr = LLVM.CreateTargetMachine(
+                t2, triple, cpu, features,
+                CodeGenOptLevel.CodeGenLevelDefault,
+                RelocMode.RelocDefault,
+                CodeModel.CodeModelKernel);
+            ContextRef context_ref = LLVM.ContextCreate();
+            ValueRef kernelMd = LLVM.MDNodeInContext(
+                context_ref, new ValueRef[3]
+            {
+                lvv.Function,
+                LLVM.MDStringInContext(context_ref, "kernel", 6),
+                LLVM.ConstInt(LLVM.Int32TypeInContext(context_ref), 1, false)
+            });
+            LLVM.AddNamedMetadataOperand(mod, "nvvm.annotations", kernelMd);
+            var y1 = LLVM.TargetMachineEmitToMemoryBuffer(
+                tmr,
+                mod,
+                Swigged.LLVM.CodeGenFileType.AssemblyFile,
+                error,
+                out MemoryBufferRef buffer);
+            string ptx = null;
+            try
+            {
+                ptx = LLVM.GetBufferStart(buffer);
+                uint length = LLVM.GetBufferSize(buffer);
+                // Output the PTX assembly code. We can run this using the CUDA Driver API
+                System.Console.WriteLine(ptx);
+            }
+            finally
+            {
+                LLVM.DisposeMemoryBuffer(buffer);
+            }
+            return default(IntPtr);
+
             LLVM.LinkInMCJIT();
             LLVM.InitializeNativeTarget();
             LLVM.InitializeNativeAsmPrinter();
