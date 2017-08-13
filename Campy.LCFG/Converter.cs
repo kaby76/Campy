@@ -1142,7 +1142,7 @@ namespace Campy.ControlFlowGraph
 	    private static Mono.Cecil.TypeDefinition MonoSystemType;
 	    private static Mono.Cecil.TypeDefinition MonoSystemString;
         private static Dictionary<TypeReference, TypeRef> previous_llvm_types_created_global = new Dictionary<TypeReference, TypeRef>();
-        private static bool nested = false;
+        private static Stack<bool> nested = new Stack<bool>();
 
         public static TypeRef ConvertMonoTypeToLLVM(
             CFG.Vertex node,
@@ -1155,7 +1155,7 @@ namespace Campy.ControlFlowGraph
             {
                 if (kv.Key.Name == tr.Name)
                 {
-                    if (nested)
+                    if (nested.Any())
                     {
                         // LLVM cannot handle recursive types.. For now, if nested, make it void *.
                         var typeref = LLVM.VoidType();
@@ -1296,7 +1296,7 @@ namespace Campy.ControlFlowGraph
             }
             else if (td != null && td.IsClass)
             {
-                nested = true; // LLVM cannot handle recursive types.. For now, if nested, make it void *.
+                nested.Push(true); // LLVM cannot handle recursive types.. For now, if nested, make it void *.
                 Dictionary<TypeReference, System.Type> additional = new Dictionary<TypeReference, System.Type>();
                 var gp = tr.GenericParameters;
                 GenericInstanceType git = tr as GenericInstanceType;
@@ -1355,7 +1355,7 @@ namespace Campy.ControlFlowGraph
                 }
                 LLVM.StructSetBody(s, list.ToArray(), true);
                 System.Console.WriteLine("Created class for node " + node.Name + " :::: " + LLVM.PrintTypeToString(s));
-                nested = false;
+                nested.Pop();
                 return s;
             }
             else
