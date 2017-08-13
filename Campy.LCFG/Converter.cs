@@ -673,11 +673,6 @@ namespace Campy.ControlFlowGraph
 
         public void CompileToLLVM(List<CFG.Vertex> basic_blocks_to_compile, List<Mono.Cecil.TypeDefinition> list_of_data_types_used)
         {
-            var new_new = new List<CFG.Vertex>();
-            new_new.Add(basic_blocks_to_compile[4]);
-            new_new.Add(basic_blocks_to_compile[5]);
-            basic_blocks_to_compile = new_new;
-
             CompilePart1(basic_blocks_to_compile, list_of_data_types_used);
 
             CompilePart2(basic_blocks_to_compile, list_of_data_types_used);
@@ -1162,6 +1157,7 @@ namespace Campy.ControlFlowGraph
                 {
                     if (nested)
                     {
+                        // LLVM cannot handle recursive types.. For now, if nested, make it void *.
                         var typeref = LLVM.VoidType();
                         var s = LLVM.PointerType(typeref, 0);
                         return s;
@@ -1300,7 +1296,7 @@ namespace Campy.ControlFlowGraph
             }
             else if (td != null && td.IsClass)
             {
-                nested = true;
+                nested = true; // LLVM cannot handle recursive types.. For now, if nested, make it void *.
                 Dictionary<TypeReference, System.Type> additional = new Dictionary<TypeReference, System.Type>();
                 var gp = tr.GenericParameters;
                 GenericInstanceType git = tr as GenericInstanceType;
