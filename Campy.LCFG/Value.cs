@@ -33,9 +33,16 @@ namespace Campy.ControlFlowGraph
 
         public override string ToString()
         {
-            string a = LLVM.PrintValueToString(_value_ref);
-            string b = LLVM.PrintTypeToString(LLVM.TypeOf(_value_ref));
-            return a + ":" + b;
+            try
+            {
+                string a = LLVM.PrintValueToString(_value_ref);
+                string b = LLVM.PrintTypeToString(LLVM.TypeOf(_value_ref));
+                return a + ":" + b;
+            }
+            catch
+            {
+                return "crash!";
+            }
         }
 
         public Value(ValueRef v, TypeRef t)

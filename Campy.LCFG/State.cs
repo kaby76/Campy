@@ -223,6 +223,7 @@ namespace Campy.ControlFlowGraph
 
         public void Dump()
         {
+            return;
             int args = _arguments.Len;
             int locs = _locals.Len;
             int begin = 0;
