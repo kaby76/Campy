@@ -1404,9 +1404,14 @@ namespace Campy.ControlFlowGraph
                 if (f.Name == field.Name) break;
                 offset++;
             }
-            ValueRef load = LLVM.BuildExtractValue(Builder, v.V, offset, "");
-            var tt = LLVM.TypeOf(load);
+
+            var tt = LLVM.TypeOf(v.V);
             System.Console.WriteLine(LLVM.PrintTypeToString(tt));
+
+            var addr = LLVM.BuildStructGEP(Builder, v.V, offset, "");
+            var load = LLVM.BuildLoad(Builder, addr, "");
+
+            //ValueRef load = LLVM.BuildExtractValue(Builder, v.V, offset, "");
             bool xInt = LLVM.GetTypeKind(tt) == TypeKind.IntegerTypeKind;
             bool xP = LLVM.GetTypeKind(tt) == TypeKind.PointerTypeKind;
             bool xA = LLVM.GetTypeKind(tt) == TypeKind.ArrayTypeKind;

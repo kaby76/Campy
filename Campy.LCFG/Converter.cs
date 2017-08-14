@@ -1379,7 +1379,8 @@ namespace Campy.ControlFlowGraph
                 // Create a struct/class type.
                 ContextRef c = LLVM.ContextCreate();
                 TypeRef s = LLVM.StructCreateNamed(c, tr.ToString());
-                previous_llvm_types_created_global.Add(tr, s);
+                var p = LLVM.PointerType(s, 0);
+                previous_llvm_types_created_global.Add(tr, p);
                 // Create array of typerefs as argument to StructSetBody below.
                 var fields = td.Fields;
                 var new_list = new Dictionary<TypeReference, System.Type>(generic_type_rewrite_rules);
@@ -1398,7 +1399,7 @@ namespace Campy.ControlFlowGraph
                 LLVM.StructSetBody(s, list.ToArray(), true);
                 System.Console.WriteLine("Created class for node " + node.Name + " :::: " + LLVM.PrintTypeToString(s));
                 nested.Pop();
-                return s;
+                return p;
             }
             else
                 throw new Exception("Unknown type.");
