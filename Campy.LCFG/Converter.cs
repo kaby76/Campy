@@ -9,6 +9,9 @@ using Campy.Types.Utils;
 using Campy.Utils;
 using Mono.Cecil;
 using Swigged.LLVM;
+using System;
+using System.Runtime.InteropServices;
+using Swigged.Cuda;
 
 namespace Campy.ControlFlowGraph
 {
@@ -1080,7 +1083,7 @@ namespace Campy.ControlFlowGraph
         }
 
 
-        public IntPtr GetPtr(int block_number)
+        public unsafe IntPtr GetPtr(int block_number)
         {
             CFG.Vertex here = null;
             foreach (var xxx in _mcfg.VertexNodes)
@@ -1129,31 +1132,80 @@ namespace Campy.ControlFlowGraph
                 Swigged.LLVM.CodeGenFileType.AssemblyFile,
                 error,
                 out MemoryBufferRef buffer);
-            string ptx = null;
+            string kernel = null;
             try
             {
-                ptx = LLVM.GetBufferStart(buffer);
+                kernel = LLVM.GetBufferStart(buffer);
                 uint length = LLVM.GetBufferSize(buffer);
                 // Output the PTX assembly code. We can run this using the CUDA Driver API
-                System.Console.WriteLine(ptx);
+                System.Console.WriteLine(kernel);
             }
             finally
             {
                 LLVM.DisposeMemoryBuffer(buffer);
             }
+
+            // Compile.
+            Cuda.cuInit(0);
+
+            // Device api.
+            var res = Cuda.cuDeviceGet(out int device, 0);
+            if (res != CUresult.CUDA_SUCCESS) throw new Exception();
+            res = Cuda.cuDeviceGetPCIBusId(out string pciBusId, 100, device);
+            if (res != CUresult.CUDA_SUCCESS) throw new Exception();
+            res = Cuda.cuDeviceGetName(out string name, 100, device);
+            if (res != CUresult.CUDA_SUCCESS) throw new Exception();
+
+            res = Cuda.cuCtxCreate_v2(out CUcontext cuContext, 0, device);
+            if (res != CUresult.CUDA_SUCCESS) throw new Exception();
+            IntPtr ptr = Marshal.StringToHGlobalAnsi(kernel);
+            res = Cuda.cuModuleLoadData(out CUmodule cuModule, ptr);
+            if (res != CUresult.CUDA_SUCCESS) throw new Exception();
+            res = Cuda.cuModuleGetFunction(out CUfunction helloWorld, cuModule, "_Z4kernPi");
+            if (res != CUresult.CUDA_SUCCESS) throw new Exception();
+            int[] v = { 'G', 'd', 'k', 'k', 'n', (char)31, 'v', 'n', 'q', 'k', 'c' };
+            GCHandle handle = GCHandle.Alloc(v, GCHandleType.Pinned);
+            IntPtr pointer = IntPtr.Zero;
+            pointer = handle.AddrOfPinnedObject();
+            res = Cuda.cuMemAlloc_v2(out IntPtr dptr, 11 * sizeof(int));
+            if (res != CUresult.CUDA_SUCCESS) throw new Exception();
+            res = Cuda.cuMemcpyHtoD_v2(dptr, pointer, 11 * sizeof(int));
+            if (res != CUresult.CUDA_SUCCESS) throw new Exception();
+
+            IntPtr[] x = new IntPtr[] { dptr };
+            GCHandle handle2 = GCHandle.Alloc(x, GCHandleType.Pinned);
+            IntPtr pointer2 = IntPtr.Zero;
+            pointer2 = handle2.AddrOfPinnedObject();
+
+            IntPtr[] kp = new IntPtr[] { pointer2 };
+            fixed (IntPtr* kernelParams = kp)
+            {
+                res = Cuda.cuLaunchKernel(helloWorld,
+                    1, 1, 1, // grid has one block.
+                    11, 1, 1, // block has 11 threads.
+                    0, // no shared memory
+                    default(CUstream),
+                    (IntPtr)kernelParams,
+                    (IntPtr)IntPtr.Zero
+                );
+            }
+            if (res != CUresult.CUDA_SUCCESS) throw new Exception();
+            res = Cuda.cuMemcpyDtoH_v2(pointer, dptr, 11 * sizeof(int));
+            if (res != CUresult.CUDA_SUCCESS) throw new Exception();
+            Cuda.cuCtxDestroy_v2(cuContext);
             return default(IntPtr);
 
-            LLVM.LinkInMCJIT();
-            LLVM.InitializeNativeTarget();
-            LLVM.InitializeNativeAsmPrinter();
-            MCJITCompilerOptions options = new MCJITCompilerOptions();
-            var optionsSize = (4 * sizeof(int)) + IntPtr.Size; // LLVMMCJITCompilerOptions has 4 ints and a pointer
-            LLVM.InitializeMCJITCompilerOptions(options, (uint) optionsSize);
-            LLVM.CreateMCJITCompilerForModule(out engine, mod, options, (uint) optionsSize, error);
-            var ptr = LLVM.GetPointerToGlobal(engine, lvv.Function);
-            IntPtr p = (IntPtr) ptr;
+            //LLVM.LinkInMCJIT();
+            //LLVM.InitializeNativeTarget();
+            //LLVM.InitializeNativeAsmPrinter();
+            //MCJITCompilerOptions options = new MCJITCompilerOptions();
+            //var optionsSize = (4 * sizeof(int)) + IntPtr.Size; // LLVMMCJITCompilerOptions has 4 ints and a pointer
+            //LLVM.InitializeMCJITCompilerOptions(options, (uint) optionsSize);
+            //LLVM.CreateMCJITCompilerForModule(out engine, mod, options, (uint) optionsSize, error);
+            //var ptr = LLVM.GetPointerToGlobal(engine, lvv.Function);
+            //IntPtr p = (IntPtr) ptr;
 
-            return p;
+            //return p;
         }
 
         public static string GetStringTypeOf(ValueRef v)
