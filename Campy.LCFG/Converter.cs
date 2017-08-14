@@ -882,8 +882,12 @@ namespace Campy.ControlFlowGraph
                 foreach (int ob in order)
                 {
                     CFG.Vertex bb = _mcfg.VertexSpace[_mcfg.NameSpace.BijectFromBasetype(ob)];
+                    System.Console.WriteLine("State computations for node " + bb.Name);
 
                     var state_in = new State(visited, bb, list_of_data_types_used);
+                    System.Console.WriteLine("state in output");
+                    state_in.Dump();
+
                     bb.StateIn = state_in;
                     bb.StateOut = new State(state_in);
 

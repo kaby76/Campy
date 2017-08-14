@@ -1387,44 +1387,43 @@ namespace Campy.ControlFlowGraph
             if (isPtr)
             {
 
+                uint offset = 0;
+                var yy = this.Instruction.Operand;
+                var field = yy as Mono.Cecil.FieldReference;
+                if (yy == null) throw new Exception("Cannot convert.");
+                var declaring_type_tr = field.DeclaringType;
+                var declaring_type = declaring_type_tr.Resolve();
+                foreach (var f in declaring_type.Fields)
+                {
+                    if (f.Name == field.Name) break;
+                    offset++;
+                }
+
+                var tt = LLVM.TypeOf(v.V);
+                System.Console.WriteLine(LLVM.PrintTypeToString(tt));
+
+                var addr = LLVM.BuildStructGEP(Builder, v.V, offset, "");
+                var load = LLVM.BuildLoad(Builder, addr, "");
+
+                //ValueRef load = LLVM.BuildExtractValue(Builder, v.V, offset, "");
+                bool xInt = LLVM.GetTypeKind(tt) == TypeKind.IntegerTypeKind;
+                bool xP = LLVM.GetTypeKind(tt) == TypeKind.PointerTypeKind;
+                bool xA = LLVM.GetTypeKind(tt) == TypeKind.ArrayTypeKind;
+                //System.Console.WriteLine(Converter.GetStringTypeOf(load));
+                if (tt == LLVM.Int32Type())
+                    System.Console.WriteLine("int32");
+                //ValueRef ssss = LLVM.SizeOf(tt);
+
+                //var zz = LLVM.BuildLoad(Builder, load, "");
+                //var zz = LLVM.BuildLoad(Builder, load, "");
+                //state._stack.Push(new Value(zz));
+                state._stack.Push(new Value(load));
             }
             else
             {
-
+                throw new Exception("Value type ldfld not implemented!");
             }
 
-            uint offset = 0;
-            var yy = this.Instruction.Operand;
-            var field = yy as Mono.Cecil.FieldReference;
-            if (yy == null) throw new Exception("Cannot convert.");
-            var declaring_type_tr = field.DeclaringType;
-            var declaring_type = declaring_type_tr.Resolve();
-            foreach (var f in declaring_type.Fields)
-            {
-                if (f.Name == field.Name) break;
-                offset++;
-            }
-
-            var tt = LLVM.TypeOf(v.V);
-            System.Console.WriteLine(LLVM.PrintTypeToString(tt));
-
-            var addr = LLVM.BuildStructGEP(Builder, v.V, offset, "");
-            var load = LLVM.BuildLoad(Builder, addr, "");
-
-            //ValueRef load = LLVM.BuildExtractValue(Builder, v.V, offset, "");
-            bool xInt = LLVM.GetTypeKind(tt) == TypeKind.IntegerTypeKind;
-            bool xP = LLVM.GetTypeKind(tt) == TypeKind.PointerTypeKind;
-            bool xA = LLVM.GetTypeKind(tt) == TypeKind.ArrayTypeKind;
-            //System.Console.WriteLine(Converter.GetStringTypeOf(load));
-            if (tt == LLVM.Int32Type())
-                System.Console.WriteLine("int32");
-            //ValueRef ssss = LLVM.SizeOf(tt);
-
-            //var zz = LLVM.BuildLoad(Builder, load, "");
-            //var zz = LLVM.BuildLoad(Builder, load, "");
-
-            //state._stack.Push(new Value(zz));
-            state._stack.Push(new Value(load));
             return Next;
         }
     }
