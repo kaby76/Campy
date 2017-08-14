@@ -11,6 +11,8 @@ using Mono.Cecil;
 using Swigged.LLVM;
 using System;
 using System.Runtime.InteropServices;
+using System.Text;
+using ManagedCuda;
 using Swigged.Cuda;
 
 namespace Campy.ControlFlowGraph
@@ -1132,13 +1134,15 @@ namespace Campy.ControlFlowGraph
                 Swigged.LLVM.CodeGenFileType.AssemblyFile,
                 error,
                 out MemoryBufferRef buffer);
-            string kernel = null;
+            string ptx = null;
             try
             {
-                kernel = LLVM.GetBufferStart(buffer);
+                ptx = LLVM.GetBufferStart(buffer);
                 uint length = LLVM.GetBufferSize(buffer);
                 // Output the PTX assembly code. We can run this using the CUDA Driver API
-                System.Console.WriteLine(kernel);
+                System.Console.WriteLine(ptx);
+                ptx = ptx.Replace("3.2", "5.0");
+                System.Console.WriteLine(ptx);
             }
             finally
             {
@@ -1146,7 +1150,23 @@ namespace Campy.ControlFlowGraph
             }
 
             // Compile.
-            Cuda.cuInit(0);
+            Int64[] h_C = new Int64[100];
+            CudaContext ctx = new CudaContext(CudaContext.GetMaxGflopsDeviceId());
+            CudaKernel kernel = ctx.LoadKernelPTX(Encoding.ASCII.GetBytes(ptx), "sum");
+            var d_C = new CudaDeviceVariable<Int64>(100);
+            int N = 1;
+            int threadsPerBlock = 256;
+            kernel.BlockDimensions = threadsPerBlock;
+            kernel.GridDimensions = (N + threadsPerBlock - 1) / threadsPerBlock;
+            kernel.Run(d_C.DevicePointer);
+            h_C = d_C;
+            System.Console.WriteLine("Result " + h_C[0]);
+            if (h_C[0] != 1) throw new Exception("Failed.");
+
+
+        
+
+            //Cuda.cuInit(0);
 
             // Device api.
             var res = Cuda.cuDeviceGet(out int device, 0);
@@ -1158,9 +1178,13 @@ namespace Campy.ControlFlowGraph
 
             res = Cuda.cuCtxCreate_v2(out CUcontext cuContext, 0, device);
             if (res != CUresult.CUDA_SUCCESS) throw new Exception();
-            IntPtr ptr = Marshal.StringToHGlobalAnsi(kernel);
+            IntPtr ptr = Marshal.StringToHGlobalAnsi(ptx);
             res = Cuda.cuModuleLoadData(out CUmodule cuModule, ptr);
-            if (res != CUresult.CUDA_SUCCESS) throw new Exception();
+            if (res != CUresult.CUDA_SUCCESS)
+            {
+                Cuda.cuGetErrorString(res, out IntPtr str);
+                throw new Exception();
+            }
             res = Cuda.cuModuleGetFunction(out CUfunction helloWorld, cuModule, "_Z4kernPi");
             if (res != CUresult.CUDA_SUCCESS) throw new Exception();
             int[] v = { 'G', 'd', 'k', 'k', 'n', (char)31, 'v', 'n', 'q', 'k', 'c' };
