@@ -6,7 +6,9 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Campy.Types;
 using Campy.ControlFlowGraph;
+using Campy.Types.Utils;
 using Mono.Cecil;
+using Swigged.Cuda;
 using Type = System.Type;
 using Swigged.LLVM;
 
@@ -21,13 +23,17 @@ namespace Campy
             For(view, extent, kernel);
         }
 
-        static public void For(AcceleratorView view, Extent extent, _Kernel_type kernel)
+        [DllImport("kernel32.dll", EntryPoint = "CopyMemory", SetLastError = false)]
+        public static extern void CopyMemory(IntPtr dest, IntPtr src, uint count);
+
+        static public unsafe void For(AcceleratorView view, Extent extent, _Kernel_type kernel)
         {
             Swigged.LLVM.Helper.Adjust.Path();
 
             Reader r = new Reader();
             CFG g = r.Cfg;
-
+            CUresult res;
+            
             Converter c = new Campy.ControlFlowGraph.Converter(g);
 
             // Parse kernel instructions to determine basic block representation of all the code to compile.
@@ -60,10 +66,82 @@ namespace Campy
             // Compile methods with added type information.
             c.CompileToLLVM(cs, list_of_mono_data_types_used);
 
-            IntPtr p = c.GetPtr(cs.First().Name);
+            // Get basic block of entry.
+            var bb = cs.First();
+            var method = bb.Method;
 
-            // DFoo2 f = (DFoo2)Marshal.GetDelegateForFunctionPointer(p, typeof(DFoo2));
-            // f(k);
+            var helloWorld = c.GetPtr(cs.First().Name);
+
+            var ok = GC.TryStartNoGCRegion(200000000);
+            var rank = extent._Rank;
+            Index index = new Index(extent.Size());
+
+            // Set up parameters.
+            var parameters = method.Parameters;
+            int count = parameters.Count;
+            if (bb.HasThis) count++;
+            object[] parms = new object[count];
+            int current = 0;
+            if (count > 0)
+            {
+                if (bb.HasThis)
+                {
+                    // kernel.Target is a class. Copy the entire class to managed memory.
+                    var type = kernel.Target.GetType();
+                    var is_blittable = type.IsBlittable();
+                    var blittable_type = Utility.CreateBlittableType(type, false, false);
+                    var size_of_type = Marshal.SizeOf(blittable_type);
+                    res = Cuda.cuMemAllocManaged(out IntPtr p_type, (uint)size_of_type, (uint)CUmemAttach_flags.CU_MEM_ATTACH_GLOBAL);
+                    if (res != CUresult.CUDA_SUCCESS) throw new Exception();
+                   // Marshal.Copy(kernel.Target, 0, p_type, size_of_type);
+                    parms[current] = kernel.Target;
+                    current++;
+                }
+                foreach (var p in parameters)
+                {
+                    parms[current++] = index;
+                }
+            }
+
+            int[] v = { 'G', 'd', 'k', 'k', 'n', (char)31, 'v', 'n', 'q', 'k', 'c' };
+            int size = v.Count() * sizeof(int);
+            var rr = Cuda.cuMemAllocManaged(out IntPtr ddptr, (uint) size, (uint)CUmemAttach_flags.CU_MEM_ATTACH_GLOBAL);
+            
+            GCHandle handle = GCHandle.Alloc(v);
+            IntPtr pointer = (IntPtr)handle;
+            //Cuda.cuMemHostRegister_v2(pointer, v.Count, 0);
+
+            //var res = Cuda.cuMemAlloc_v2(out IntPtr dptr, 11 * sizeof(int));
+            //if (res != CUresult.CUDA_SUCCESS) throw new Exception();
+            //res = Cuda.cuMemcpyHtoD_v2(dptr, pointer, 11 * sizeof(int));
+            //if (res != CUresult.CUDA_SUCCESS) throw new Exception();
+
+            IntPtr[] x = new IntPtr[] { pointer };
+            GCHandle handle2 = GCHandle.Alloc(x, GCHandleType.Pinned);
+            IntPtr pointer2 = IntPtr.Zero;
+            pointer2 = handle2.AddrOfPinnedObject();
+
+            IntPtr[] kp = new IntPtr[] { pointer2 };
+            res = CUresult.CUDA_SUCCESS;
+            fixed (IntPtr* kernelParams = kp)
+            {
+                res = Cuda.cuLaunchKernel(helloWorld,
+                    1, 1, 1, // grid has one block.
+                    2, 1, 1, // block has 2 threads.
+                    0, // no shared memory
+                    default(CUstream),
+                    (IntPtr)kernelParams,
+                    (IntPtr)IntPtr.Zero
+                );
+            }
+            if (res != CUresult.CUDA_SUCCESS) throw new Exception();
+            res = Cuda.cuCtxSynchronize();
+            if (res != CUresult.CUDA_SUCCESS) throw new Exception();
+
+            //res = Cuda.cuMemcpyDtoH_v2(pointer, dptr, 11 * sizeof(int));
+            //if (res != CUresult.CUDA_SUCCESS) throw new Exception();
+            //Cuda.cuCtxDestroy_v2(cuContext);
+            //return default(IntPtr);
         }
 
         static public void For(TiledExtent extent, _Kernel_tiled_type kernel)

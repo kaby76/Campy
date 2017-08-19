@@ -24,14 +24,20 @@ namespace Campy.Types
 
         public Extent(int _I0, int _I1, int _I2)
         {
+            _Rank = 3;
+            _M_base = new int[] { _I0, _I1, _I2 };
         }
 
         public Extent(int _I0, int _I1)
         {
+            _Rank = 2;
+            _M_base = new int[] { _I0, _I1 };
         }
 
         public Extent(int _I0)
         {
+            _Rank = 1;
+            _M_base = new int[] {_I0};
         }
 
         public Extent(Extent e)

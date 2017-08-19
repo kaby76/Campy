@@ -34,6 +34,7 @@ namespace Campy.Types
         {
             Rank = 1;
             arr = new _Value_type[data.Length];
+            Extent = new Extent(data.Length);
         }
         public ArrayView(ref _Value_type[][] data)
         {
