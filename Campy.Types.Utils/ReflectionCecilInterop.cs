@@ -43,6 +43,7 @@ namespace Campy.Types.Utils
             while (type_definitions.Count > 0)
             {
                 Mono.Cecil.TypeDefinition td = type_definitions.Pop();
+                //System.Console.WriteLine("M Type = " + td);
                 if (Campy.Utils.Utility.IsSimilarType(ty, td))
                     return td;
                 type_definitions_closure.Push(td);
@@ -51,6 +52,7 @@ namespace Campy.Types.Utils
             }
             foreach (Mono.Cecil.TypeDefinition td in type_definitions_closure)
             {
+               // System.Console.WriteLine("M Type = " + td);
                 if (Campy.Utils.Utility.IsSimilarType(ty, td))
                     return td;
             }

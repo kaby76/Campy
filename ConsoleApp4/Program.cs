@@ -115,7 +115,7 @@ namespace ConsoleApp4
             var all = Campy.Types.Accelerator.GetAll();
             int[] host_data = new[] { 1, 2, 3, 4, 5 };
             ArrayView<int> av = new ArrayView<int>(ref host_data);
-            Campy.Parallel.For(av.Extent, idx => { av[idx] += 1; });
+            Campy.Parallel.For(av.Extent, idx => { host_data[idx] += 1; });
             for (int i = 0; i < host_data.Length; ++i)
                 System.Console.WriteLine(av[i]);
 

@@ -7,6 +7,7 @@ using System.Text;
 using Campy.Types;
 using Campy.ControlFlowGraph;
 using Campy.Types.Utils;
+using DeepCopyGPU;
 using Mono.Cecil;
 using Swigged.Cuda;
 using Type = System.Type;
@@ -29,6 +30,7 @@ namespace Campy
         static public unsafe void For(AcceleratorView view, Extent extent, _Kernel_type kernel)
         {
             Swigged.LLVM.Helper.Adjust.Path();
+            Cuda.cuInit(0);
 
             Reader r = new Reader();
             CFG g = r.Cfg;
@@ -55,7 +57,7 @@ namespace Campy
             foreach (System.Type data_type_used in list_of_data_types_used)
             {
                 var mono_type = Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(data_type_used);
-                if (mono_type == null) continue;
+                //if (mono_type == null) continue;
                 list_of_mono_data_types_used.Add(mono_type);
             }
             if (list_of_mono_data_types_used.Count != list_of_data_types_used.Count) throw new Exception("Cannot convert types properly to Mono.");
@@ -75,48 +77,51 @@ namespace Campy
             var ok = GC.TryStartNoGCRegion(200000000);
             var rank = extent._Rank;
             Index index = new Index(extent.Size());
+            Buffers buffer = new Buffers();
 
             // Set up parameters.
             var parameters = method.Parameters;
             int count = parameters.Count;
             if (bb.HasThis) count++;
-            object[] parms = new object[count];
+
+            IntPtr[] parms = new IntPtr[count];
             int current = 0;
+            IntPtr ptr = IntPtr.Zero;
             if (count > 0)
             {
                 if (bb.HasThis)
                 {
                     // kernel.Target is a class. Copy the entire class to managed memory.
-                    var type = kernel.Target.GetType();
-                    var is_blittable = type.IsBlittable();
-                    var blittable_type = Utility.CreateBlittableType(type, false, false);
-                    var size_of_type = Marshal.SizeOf(blittable_type);
-                    res = Cuda.cuMemAllocManaged(out IntPtr p_type, (uint)size_of_type, (uint)CUmemAttach_flags.CU_MEM_ATTACH_GLOBAL);
-                    if (res != CUresult.CUDA_SUCCESS) throw new Exception();
-                   // Marshal.Copy(kernel.Target, 0, p_type, size_of_type);
-                    parms[current] = kernel.Target;
+                    Type type = kernel.Target.GetType();
+                    Type btype = buffer.CreateImplementationType(type);
+                    ptr = buffer.New(Marshal.SizeOf(btype));
+                    buffer.DeepCopyToImplementation(kernel.Target, ptr);
+
+                    parms[current] = ptr;
+
                     current++;
                 }
-                foreach (var p in parameters)
+
+                //foreach (var p in parameters)
                 {
-                    parms[current++] = index;
+                    Type btype = buffer.CreateImplementationType(typeof(Index));
+                    var ptr2 = buffer.New(Marshal.SizeOf(btype));
+                    buffer.DeepCopyToImplementation(index, ptr2);
+                    parms[current] = ptr2;
                 }
             }
 
-            int[] v = { 'G', 'd', 'k', 'k', 'n', (char)31, 'v', 'n', 'q', 'k', 'c' };
-            int size = v.Count() * sizeof(int);
-            var rr = Cuda.cuMemAllocManaged(out IntPtr ddptr, (uint) size, (uint)CUmemAttach_flags.CU_MEM_ATTACH_GLOBAL);
-            
-            GCHandle handle = GCHandle.Alloc(v);
-            IntPtr pointer = (IntPtr)handle;
-            //Cuda.cuMemHostRegister_v2(pointer, v.Count, 0);
+            //int[] v = { 'G', 'd', 'k', 'k', 'n', (char)31, 'v', 'n', 'q', 'k', 'c' };
+            //GCHandle handle = GCHandle.Alloc(v, GCHandleType.Pinned);
+            //IntPtr pointer = IntPtr.Zero;
+            //pointer = handle.AddrOfPinnedObject();
 
-            //var res = Cuda.cuMemAlloc_v2(out IntPtr dptr, 11 * sizeof(int));
-            //if (res != CUresult.CUDA_SUCCESS) throw new Exception();
-            //res = Cuda.cuMemcpyHtoD_v2(dptr, pointer, 11 * sizeof(int));
-            //if (res != CUresult.CUDA_SUCCESS) throw new Exception();
+            //IntPtr dptr = buffer.New(11 * sizeof(int));
+            // res = Cuda.cuMemcpyHtoD_v2(dptr, pointer, 11*sizeof(int));
+            // if (res != CUresult.CUDA_SUCCESS) throw new Exception();
 
-            IntPtr[] x = new IntPtr[] { pointer };
+            //IntPtr[] x = new IntPtr[] { dptr };
+            IntPtr[] x = parms;
             GCHandle handle2 = GCHandle.Alloc(x, GCHandleType.Pinned);
             IntPtr pointer2 = IntPtr.Zero;
             pointer2 = handle2.AddrOfPinnedObject();
@@ -137,7 +142,7 @@ namespace Campy
             if (res != CUresult.CUDA_SUCCESS) throw new Exception();
             res = Cuda.cuCtxSynchronize();
             if (res != CUresult.CUDA_SUCCESS) throw new Exception();
-
+            buffer.DeepCopyFromImplementation(ptr, out object to, kernel.Target.GetType());
             //res = Cuda.cuMemcpyDtoH_v2(pointer, dptr, 11 * sizeof(int));
             //if (res != CUresult.CUDA_SUCCESS) throw new Exception();
             //Cuda.cuCtxDestroy_v2(cuContext);

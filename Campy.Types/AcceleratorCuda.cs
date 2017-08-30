@@ -10,7 +10,6 @@ namespace Campy.Types
         internal static List<Accelerator> AllCudaDevices()
         {
             List<Accelerator> results = new List<Accelerator>();
-            Cuda.cuInit(0);
             var res = Cuda.cuDeviceGetCount(out int count);
             if (res != CUresult.CUDA_SUCCESS) return results;
             if (count == 0) return results;

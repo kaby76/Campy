@@ -93,6 +93,7 @@ namespace Campy.ControlFlowGraph
                 {
                     var par = LLVM.GetParam(fun, begin++);
                     var vx = new Value(par);
+                    System.Console.WriteLine("in state() " + vx.ToString());
                     _stack.Push(vx);
                     _this = _stack.Section((int)0, 1);
                 }

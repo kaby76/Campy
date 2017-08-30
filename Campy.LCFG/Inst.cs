@@ -15,7 +15,7 @@ namespace Campy.ControlFlowGraph
     /// </summary>
     public class Inst
     {
-		// Required for Mono to bb conversion.
+        // Required for Mono to bb conversion.
         public Mono.Cecil.Cil.Instruction Instruction { get; private set; }
         public static List<Inst> CallInstructions { get; private set; } = new List<Inst>();
         public override string ToString() { return Instruction.ToString(); }
@@ -23,33 +23,33 @@ namespace Campy.ControlFlowGraph
         public object Operand { get { return Instruction.Operand; } }
 
 
-		// Required for LLVM conversion.
-		public BuilderRef Builder { get { return Block.Builder; } }
-		public ContextRef LLVMContext { get; set; }
-		public List<Value> LLVMInstructions { get; private set; }
-		public CFG.Vertex Block { get; set; }
-		// Required instruction sequencing so we can translate groups of instructions.
-		public virtual Inst Next { get; set; }
-		public virtual void ComputeStackLevel(ref int level_after) { }
+        // Required for LLVM conversion.
+        public BuilderRef Builder { get { return Block.Builder; } }
+        public ContextRef LLVMContext { get; set; }
+        public List<Value> LLVMInstructions { get; private set; }
+        public CFG.Vertex Block { get; set; }
+        // Required instruction sequencing so we can translate groups of instructions.
+        public virtual Inst Next { get; set; }
+        public virtual void ComputeStackLevel(ref int level_after) { }
 
         public virtual Inst Convert(State state)
         {
             throw new Exception("Must have an implementation for Convert!");
             return null;
         }
-		private State _state_in;
-		public State StateIn
-		{
-			get { return _state_in; }
-			set { _state_in = value; }
-		}
-		private State _state_out;
-		public State StateOut
-		{
-			get { return _state_out; }
-			set { _state_out = value; }
-		}
-		public UInt32 TargetPointerSizeInBits = 64;
+        private State _state_in;
+        public State StateIn
+        {
+            get { return _state_in; }
+            set { _state_in = value; }
+        }
+        private State _state_out;
+        public State StateOut
+        {
+            get { return _state_out; }
+            set { _state_out = value; }
+        }
+        public UInt32 TargetPointerSizeInBits = 64;
 
 
         public Inst(Mono.Cecil.Cil.Instruction i)
@@ -955,17 +955,17 @@ namespace Campy.ControlFlowGraph
         {
         }
 
-		public override void ComputeStackLevel(ref int level_after)
-		{
-			level_after++;
-		}
+        public override void ComputeStackLevel(ref int level_after)
+        {
+            level_after++;
+        }
 
-		public override Inst Convert(State state)
-		{
-			Value value = state._arguments[_arg];
-			state._stack.Push(value);
-			return Next;
-		}
+        public override Inst Convert(State state)
+        {
+            Value value = state._arguments[_arg];
+            state._stack.Push(value);
+            return Next;
+        }
     }
 
     /// <summary>
@@ -980,17 +980,17 @@ namespace Campy.ControlFlowGraph
         {
         }
 
-		public override void ComputeStackLevel(ref int level_after)
-		{
-			level_after++;
-		}
+        public override void ComputeStackLevel(ref int level_after)
+        {
+            level_after++;
+        }
 
-		public override Inst Convert(State state)
-		{
-			Value value = new Value(LLVM.ConstInt(LLVM.Int32Type(), (ulong)_arg, true));
-			state._stack.Push(value);
-			return Next;
-		}
+        public override Inst Convert(State state)
+        {
+            Value value = new Value(LLVM.ConstInt(LLVM.Int32Type(), (ulong)_arg, true));
+            state._stack.Push(value);
+            return Next;
+        }
     }
 
     public class LDCInstI8 : Inst
@@ -1001,17 +1001,17 @@ namespace Campy.ControlFlowGraph
         {
         }
 
-	    public override void ComputeStackLevel(ref int level_after)
-	    {
-		    level_after++;
-	    }
+        public override void ComputeStackLevel(ref int level_after)
+        {
+            level_after++;
+        }
 
-	    public override Inst Convert(State state)
-	    {
-		    Value value = new Value(LLVM.ConstInt(LLVM.Int64Type(), (ulong)_arg, true));
-		    state._stack.Push(value);
-		    return Next;
-	    }
+        public override Inst Convert(State state)
+        {
+            Value value = new Value(LLVM.ConstInt(LLVM.Int64Type(), (ulong)_arg, true));
+            state._stack.Push(value);
+            return Next;
+        }
     }
 
     /// <summary>
@@ -1025,17 +1025,17 @@ namespace Campy.ControlFlowGraph
         {
         }
 
-	    public override void ComputeStackLevel(ref int level_after)
-	    {
-		    level_after++;
-	    }
+        public override void ComputeStackLevel(ref int level_after)
+        {
+            level_after++;
+        }
 
-	    public override Inst Convert(State state)
-	    {
-		    Value v = state._locals[_arg];
-		    state._stack.Push(v);
-		    return Next;
-	    }
+        public override Inst Convert(State state)
+        {
+            Value v = state._locals[_arg];
+            state._stack.Push(v);
+            return Next;
+        }
     }
 
     /// <summary>
@@ -1049,17 +1049,17 @@ namespace Campy.ControlFlowGraph
         {
         }
 
-	    public override void ComputeStackLevel(ref int level_after)
-	    {
-		    level_after--;
-	    }
+        public override void ComputeStackLevel(ref int level_after)
+        {
+            level_after--;
+        }
 
-	    public override Inst Convert(State state)
-	    {
-		    Value v = state._stack.Pop();
-		    state._locals[_arg] = v;
-		    return Next;
-	    }
+        public override Inst Convert(State state)
+        {
+            Value v = state._stack.Pop();
+            state._locals[_arg] = v;
+            return Next;
+        }
     }
 
 
@@ -1326,7 +1326,9 @@ namespace Campy.ControlFlowGraph
         public override Inst Convert(State state)
         {
             Value i = state._stack.Pop();
+            System.Console.WriteLine(i.ToString());
             Value v = state._stack.Pop();
+            System.Console.WriteLine(v.ToString());
             TypeRef tr = LLVM.TypeOf(v.V);
             System.Console.WriteLine(LLVM.PrintTypeToString(tr));
             bool isPtr = v.T.isPointerTy();
@@ -1350,11 +1352,60 @@ namespace Campy.ControlFlowGraph
                 System.Console.WriteLine("int32");
             ValueRef ssss = LLVM.SizeOf(tt);
 
-            //var zz = LLVM.BuildLoad(Builder, load, "");
             var zz = LLVM.BuildLoad(Builder, ll, "");
 
             //state._stack.Push(new Value(zz));
             state._stack.Push(new Value(zz));
+            return Next;
+        }
+    }
+
+    public class ConvertLoadElementA : Inst
+    {
+        public ConvertLoadElementA(Mono.Cecil.Cil.Instruction i)
+            : base(i)
+        {
+        }
+
+        public override void ComputeStackLevel(ref int level_after)
+        {
+            level_after--;
+        }
+
+        public override Inst Convert(State state)
+        {
+            Value i = state._stack.Pop();
+            System.Console.WriteLine(i.ToString());
+            Value v = state._stack.Pop();
+            System.Console.WriteLine(v.ToString());
+            TypeRef tr = LLVM.TypeOf(v.V);
+            System.Console.WriteLine(LLVM.PrintTypeToString(tr));
+            bool isPtr = v.T.isPointerTy();
+            bool isArr = v.T.isArrayTy();
+            bool isSt = v.T.isStructTy();
+            TypeKind kind = LLVM.GetTypeKind(tr);
+            bool isPtra = kind == TypeKind.PointerTypeKind;
+            bool isArra = kind == TypeKind.ArrayTypeKind;
+            bool isSta = kind == TypeKind.StructTypeKind;
+
+            // First, load array base.
+
+            ValueRef load0 = LLVM.BuildExtractValue(Builder, v.V, 0, "");
+            System.Console.WriteLine("load0 = " + new Value(load0).ToString());
+
+            // Now add in index to pointer.
+            ValueRef[] indexes0 = new ValueRef[1];
+            indexes0[0] = i.V;
+            ValueRef ll0 = LLVM.BuildInBoundsGEP(Builder, load0, indexes0, "");
+            System.Console.WriteLine((new Value(ll0)).ToString());
+
+            // Return pointer.
+
+            var result = new Value(ll0);
+            System.Console.WriteLine("Result = " + result.ToString());
+            System.Console.WriteLine("Result type is " + LLVM.PrintTypeToString(result.T.T));
+
+            state._stack.Push(result);
             return Next;
         }
     }
@@ -1428,6 +1479,75 @@ namespace Campy.ControlFlowGraph
         }
     }
 
+    public class ConvertLoadIndirect : Inst
+    {
+        public ConvertLoadIndirect(Mono.Cecil.Cil.Instruction i)
+            : base(i)
+        {
+        }
+
+        public override void ComputeStackLevel(ref int level_after)
+        {
+            // No change in depth of stack.
+        }
+
+        public override Inst Convert(State state)
+        {
+            Value v = state._stack.Pop();
+            System.Console.WriteLine("ConvertLoadIndirect into function " + v.ToString());
+            TypeRef tr = LLVM.TypeOf(v.V);
+            bool isPtr = v.T.isPointerTy();
+            bool isArr = v.T.isArrayTy();
+            bool isSt = v.T.isStructTy();
+            TypeKind kind = LLVM.GetTypeKind(tr);
+            bool isPtra = kind == TypeKind.PointerTypeKind;
+            bool isArra = kind == TypeKind.ArrayTypeKind;
+            bool isSta = kind == TypeKind.StructTypeKind;
+            ValueRef[] indexes = new ValueRef[0];
+            ValueRef load = v.V;
+            ValueRef ll = LLVM.BuildInBoundsGEP(Builder, load, indexes, "");
+            System.Console.WriteLine(new Value(ll).ToString());
+            var zz = LLVM.BuildLoad(Builder, ll, "");
+            System.Console.WriteLine("zz = " + new Value(zz).ToString());
+            state._stack.Push(new Value(zz));
+            return Next;
+        }
+    }
+
+    public class ConvertStoreIndirect : Inst
+    {
+        public ConvertStoreIndirect(Mono.Cecil.Cil.Instruction i)
+            : base(i)
+        {
+        }
+
+        public override void ComputeStackLevel(ref int level_after)
+        {
+            level_after -= 2;
+        }
+
+        public override Inst Convert(State state)
+        {
+            Value v = state._stack.Pop();
+            Value a = state._stack.Pop();
+
+            System.Console.WriteLine("ConvertStoreIndirect into function v " + v.ToString());
+            System.Console.WriteLine("ConvertLoadIndirect into function a " + a.ToString());
+
+            TypeRef tr = LLVM.TypeOf(a.V);
+            bool isPtr = a.T.isPointerTy();
+
+            ValueRef[] indexes = new ValueRef[0];
+            ValueRef load = a.V;
+            ValueRef ll = LLVM.BuildInBoundsGEP(Builder, load, indexes, "");
+            System.Console.WriteLine(new Value(ll).ToString());
+            var zz = LLVM.BuildStore(Builder, v.V, ll);
+            System.Console.WriteLine("Store = " + new Value(zz).ToString());
+
+            return Next;
+        }
+    }
+
     public class i_add : BinaryOpInst
     {
         public i_add(Mono.Cecil.Cil.Instruction i)
@@ -1473,7 +1593,7 @@ namespace Campy.ControlFlowGraph
         public i_beq(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-		    Predicate = PredicateType.eq;
+            Predicate = PredicateType.eq;
             IsSigned = true;
         }
     }
@@ -1483,7 +1603,7 @@ namespace Campy.ControlFlowGraph
         public i_beq_s(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-		    Predicate = PredicateType.eq;
+            Predicate = PredicateType.eq;
             IsSigned = true;
         }
     }
@@ -1493,7 +1613,7 @@ namespace Campy.ControlFlowGraph
         public i_bge(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-		    Predicate = PredicateType.ge;
+            Predicate = PredicateType.ge;
             IsSigned = true;
         }
     }
@@ -1503,7 +1623,7 @@ namespace Campy.ControlFlowGraph
         public i_bge_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-		    Predicate = PredicateType.ge;
+            Predicate = PredicateType.ge;
             IsSigned = false;
         }
     }
@@ -1513,7 +1633,7 @@ namespace Campy.ControlFlowGraph
         public i_bge_un_s(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-		    Predicate = PredicateType.ge;
+            Predicate = PredicateType.ge;
             IsSigned = false;
         }
     }
@@ -1523,7 +1643,7 @@ namespace Campy.ControlFlowGraph
         public i_bge_s(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-		    Predicate = PredicateType.ge;
+            Predicate = PredicateType.ge;
             IsSigned = true;
         }
     }
@@ -1533,7 +1653,7 @@ namespace Campy.ControlFlowGraph
         public i_bgt(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-		    Predicate = PredicateType.gt;
+            Predicate = PredicateType.gt;
             IsSigned = true;
         }
     }
@@ -1543,7 +1663,7 @@ namespace Campy.ControlFlowGraph
         public i_bgt_s(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-		    Predicate = PredicateType.gt;
+            Predicate = PredicateType.gt;
             IsSigned = true;
         }
     }
@@ -1553,7 +1673,7 @@ namespace Campy.ControlFlowGraph
         public i_bgt_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-		    Predicate = PredicateType.gt;
+            Predicate = PredicateType.gt;
             IsSigned = false;
         }
     }
@@ -1563,7 +1683,7 @@ namespace Campy.ControlFlowGraph
         public i_bgt_un_s(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-		    Predicate = PredicateType.gt;
+            Predicate = PredicateType.gt;
             IsSigned = false;
         }
     }
@@ -1573,7 +1693,7 @@ namespace Campy.ControlFlowGraph
         public i_ble(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-		    Predicate = PredicateType.le;
+            Predicate = PredicateType.le;
             IsSigned = true;
         }
     }
@@ -1583,7 +1703,7 @@ namespace Campy.ControlFlowGraph
         public i_ble_s(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-		    Predicate = PredicateType.le;
+            Predicate = PredicateType.le;
         }
     }
 
@@ -1592,7 +1712,7 @@ namespace Campy.ControlFlowGraph
         public i_ble_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-		    Predicate = PredicateType.le;
+            Predicate = PredicateType.le;
             IsSigned = false;
         }
     }
@@ -1602,7 +1722,7 @@ namespace Campy.ControlFlowGraph
         public i_ble_un_s(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-		    Predicate = PredicateType.le;
+            Predicate = PredicateType.le;
             IsSigned = false;
         }
     }
@@ -1612,7 +1732,7 @@ namespace Campy.ControlFlowGraph
         public i_blt(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-		    Predicate = PredicateType.lt;
+            Predicate = PredicateType.lt;
             IsSigned = true;
         }
     }
@@ -1622,7 +1742,7 @@ namespace Campy.ControlFlowGraph
         public i_blt_s(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-		    Predicate = PredicateType.lt;
+            Predicate = PredicateType.lt;
             IsSigned = true;
         }
     }
@@ -1632,7 +1752,7 @@ namespace Campy.ControlFlowGraph
         public i_blt_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-		    Predicate = PredicateType.lt;
+            Predicate = PredicateType.lt;
             IsSigned = false;
         }
     }
@@ -1652,7 +1772,7 @@ namespace Campy.ControlFlowGraph
         public i_bne_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-		    Predicate = PredicateType.ne;
+            Predicate = PredicateType.ne;
             IsSigned = false;
         }
     }
@@ -1662,7 +1782,7 @@ namespace Campy.ControlFlowGraph
         public i_bne_un_s(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-		    Predicate = PredicateType.ne;
+            Predicate = PredicateType.ne;
             IsSigned = false;
         }
     }
@@ -1682,14 +1802,14 @@ namespace Campy.ControlFlowGraph
         {
         }
 
-	    public override Inst Convert(State state)
-	    {
-		    GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge = Block._Successors[0];
-		    int succ = edge.To;
-		    var s = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ)];
-		    var br = LLVM.BuildBr(Builder, s.BasicBlock);
-		    return Next;
-	    }
+        public override Inst Convert(State state)
+        {
+            GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge = Block._Successors[0];
+            int succ = edge.To;
+            var s = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ)];
+            var br = LLVM.BuildBr(Builder, s.BasicBlock);
+            return Next;
+        }
     }
 
     public class i_br_s : Inst
@@ -1716,23 +1836,23 @@ namespace Campy.ControlFlowGraph
         {
         }
 
-	    public override void ComputeStackLevel(ref int level_after)
-	    {
-		    level_after--;
-	    }
+        public override void ComputeStackLevel(ref int level_after)
+        {
+            level_after--;
+        }
 
-	    public override Inst Convert(State state)
-	    {
-		    var v = state._stack.Pop();
-		    GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge1 = Block._Successors[0];
-		    GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge2 = Block._Successors[1];
-		    int succ1 = edge1.To;
-		    int succ2 = edge2.To;
-		    var s1 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ1)];
-		    var s2 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ2)];
-		    LLVM.BuildCondBr(Builder, v.V, s1.BasicBlock, s2.BasicBlock);
-		    return Next;
-	    }
+        public override Inst Convert(State state)
+        {
+            var v = state._stack.Pop();
+            GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge1 = Block._Successors[0];
+            GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge2 = Block._Successors[1];
+            int succ1 = edge1.To;
+            int succ2 = edge2.To;
+            var s1 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ1)];
+            var s2 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ2)];
+            LLVM.BuildCondBr(Builder, v.V, s1.BasicBlock, s2.BasicBlock);
+            return Next;
+        }
     }
 
     public class i_break : Inst
@@ -1750,26 +1870,26 @@ namespace Campy.ControlFlowGraph
         {
         }
 
-	    public override void ComputeStackLevel(ref int level_after)
-	    {
-		    level_after--;
-	    }
+        public override void ComputeStackLevel(ref int level_after)
+        {
+            level_after--;
+        }
 
-	    public override Inst Convert(State state)
-	    {
-		    var v = state._stack.Pop();
-		    GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge1 = Block._Successors[0];
-		    GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge2 = Block._Successors[1];
-		    int succ1 = edge1.To;
+        public override Inst Convert(State state)
+        {
+            var v = state._stack.Pop();
+            GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge1 = Block._Successors[0];
+            GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge2 = Block._Successors[1];
+            int succ1 = edge1.To;
             int succ2 = edge2.To;
-		    var s1 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ1)];
+            var s1 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ1)];
             var s2 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ2)];
             // We need to compare the value popped with 0/1.
             var v2 = LLVM.ConstInt(LLVM.Int32Type(), 1, false);
             var v3 = LLVM.BuildICmp(Builder, IntPredicate.IntEQ, v.V, v2, "");
             LLVM.BuildCondBr(Builder, v3, s1.BasicBlock, s2.BasicBlock);
-		    return Next;
-	    }
+            return Next;
+        }
     }
 
     public class i_brtrue : Inst
@@ -1779,26 +1899,26 @@ namespace Campy.ControlFlowGraph
         {
         }
 
-	    public override void ComputeStackLevel(ref int level_after)
-	    {
-		    level_after--;
-	    }
+        public override void ComputeStackLevel(ref int level_after)
+        {
+            level_after--;
+        }
 
-	    public override Inst Convert(State state)
-	    {
-		    var v = state._stack.Pop();
-		    GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge1 = Block._Successors[0];
-		    GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge2 = Block._Successors[1];
-		    int succ1 = edge1.To;
-		    int succ2 = edge2.To;
-		    var s1 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ1)];
-		    var s2 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ2)];
-	        // We need to compare the value popped with 0/1.
-		    var v2 = LLVM.ConstInt(LLVM.Int32Type(), 0, false);
-		    var v3 = LLVM.BuildICmp(Builder, IntPredicate.IntEQ, v.V, v2, "");
-		    LLVM.BuildCondBr(Builder, v3, s1.BasicBlock, s2.BasicBlock);
-		    return Next;
-	    }
+        public override Inst Convert(State state)
+        {
+            var v = state._stack.Pop();
+            GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge1 = Block._Successors[0];
+            GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge2 = Block._Successors[1];
+            int succ1 = edge1.To;
+            int succ2 = edge2.To;
+            var s1 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ1)];
+            var s2 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ2)];
+            // We need to compare the value popped with 0/1.
+            var v2 = LLVM.ConstInt(LLVM.Int32Type(), 0, false);
+            var v3 = LLVM.BuildICmp(Builder, IntPredicate.IntEQ, v.V, v2, "");
+            LLVM.BuildCondBr(Builder, v3, s1.BasicBlock, s2.BasicBlock);
+            return Next;
+        }
     }
 
     public class i_brtrue_s : Inst
@@ -1808,26 +1928,26 @@ namespace Campy.ControlFlowGraph
         {
         }
 
-	    public override void ComputeStackLevel(ref int level_after)
-	    {
-		    level_after--;
-	    }
+        public override void ComputeStackLevel(ref int level_after)
+        {
+            level_after--;
+        }
 
-	    public override Inst Convert(State state)
-	    {
-		    var v = state._stack.Pop();
-		    GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge1 = Block._Successors[0];
-		    GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge2 = Block._Successors[1];
-		    int succ1 = edge1.To;
-		    int succ2 = edge2.To;
-		    var s1 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ1)];
-		    var s2 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ2)];
-	        // We need to compare the value popped with 0/1.
-		    var v2 = LLVM.ConstInt(LLVM.Int32Type(), 0, false);
-		    var v3 = LLVM.BuildICmp(Builder, IntPredicate.IntEQ, v.V, v2, "");
-		    LLVM.BuildCondBr(Builder, v3, s1.BasicBlock, s2.BasicBlock);
-		    return Next;
-	    }
+        public override Inst Convert(State state)
+        {
+            var v = state._stack.Pop();
+            GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge1 = Block._Successors[0];
+            GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge2 = Block._Successors[1];
+            int succ1 = edge1.To;
+            int succ2 = edge2.To;
+            var s1 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ1)];
+            var s2 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ2)];
+            // We need to compare the value popped with 0/1.
+            var v2 = LLVM.ConstInt(LLVM.Int32Type(), 0, false);
+            var v3 = LLVM.BuildICmp(Builder, IntPredicate.IntEQ, v.V, v2, "");
+            LLVM.BuildCondBr(Builder, v3, s1.BasicBlock, s2.BasicBlock);
+            return Next;
+        }
     }
 
     public class i_call : Inst
@@ -1837,93 +1957,93 @@ namespace Campy.ControlFlowGraph
         {
         }
 
-	    public override void ComputeStackLevel(ref int level_after)
-	    {
-	        // Successor is fallthrough.
-		    int args = 0;
-		    int ret = 0;
-		    object method = this.Operand;
-		    if (method as Mono.Cecil.MethodReference != null)
-		    {
-			    Mono.Cecil.MethodReference mr = method as Mono.Cecil.MethodReference;
-			    if (mr.HasThis)
-				    args++;
-			    args += mr.Parameters.Count;
-			    if (mr.MethodReturnType != null)
-			    {
-				    Mono.Cecil.MethodReturnType rt = mr.MethodReturnType;
-				    Mono.Cecil.TypeReference tr = rt.ReturnType;
-		            // Get type, may contain modifiers.
-				    if (tr.FullName.Contains(' '))
-				    {
-					    String[] sp = tr.FullName.Split(' ');
-					    if (!sp[0].Equals("System.Void"))
-						    ret++;
-				    }
-				    else
-				    {
-					    if (!tr.FullName.Equals("System.Void"))
-						    ret++;
-				    }
-			    }
-		    }
-		    level_after = level_after + ret - args;
-	    }
+        public override void ComputeStackLevel(ref int level_after)
+        {
+            // Successor is fallthrough.
+            int args = 0;
+            int ret = 0;
+            object method = this.Operand;
+            if (method as Mono.Cecil.MethodReference != null)
+            {
+                Mono.Cecil.MethodReference mr = method as Mono.Cecil.MethodReference;
+                if (mr.HasThis)
+                    args++;
+                args += mr.Parameters.Count;
+                if (mr.MethodReturnType != null)
+                {
+                    Mono.Cecil.MethodReturnType rt = mr.MethodReturnType;
+                    Mono.Cecil.TypeReference tr = rt.ReturnType;
+                    // Get type, may contain modifiers.
+                    if (tr.FullName.Contains(' '))
+                    {
+                        String[] sp = tr.FullName.Split(' ');
+                        if (!sp[0].Equals("System.Void"))
+                            ret++;
+                    }
+                    else
+                    {
+                        if (!tr.FullName.Equals("System.Void"))
+                            ret++;
+                    }
+                }
+            }
+            level_after = level_after + ret - args;
+        }
 
-	    public override Inst Convert(State state)
-	    {
-	        // Get function.
-		    var j = this;
+        public override Inst Convert(State state)
+        {
+            // Get function.
+            var j = this;
 
-	        // Successor is fallthrough.
-		    int nargs = 0;
-		    int ret = 0;
-		    object method = j.Operand;
-		    if (method as Mono.Cecil.MethodReference != null)
-		    {
-			    Mono.Cecil.MethodReference mr = method as Mono.Cecil.MethodReference;
-			    if (mr.HasThis)
-				    nargs++;
-			    nargs += mr.Parameters.Count;
-			    if (mr.MethodReturnType != null)
-			    {
-				    Mono.Cecil.MethodReturnType rt = mr.MethodReturnType;
-				    Mono.Cecil.TypeReference tr = rt.ReturnType;
-		            // Get type, may contain modifiers.
-				    if (tr.FullName.Contains(' '))
-				    {
-					    String[] sp = tr.FullName.Split(' ');
-					    if (!sp[0].Equals("System.Void"))
-						    ret++;
-				    }
-				    else
-				    {
-					    if (!tr.FullName.Equals("System.Void"))
-						    ret++;
-				    }
-			    }
-			    var name = Converter.MethodName(mr);
+            // Successor is fallthrough.
+            int nargs = 0;
+            int ret = 0;
+            object method = j.Operand;
+            if (method as Mono.Cecil.MethodReference != null)
+            {
+                Mono.Cecil.MethodReference mr = method as Mono.Cecil.MethodReference;
+                if (mr.HasThis)
+                    nargs++;
+                nargs += mr.Parameters.Count;
+                if (mr.MethodReturnType != null)
+                {
+                    Mono.Cecil.MethodReturnType rt = mr.MethodReturnType;
+                    Mono.Cecil.TypeReference tr = rt.ReturnType;
+                    // Get type, may contain modifiers.
+                    if (tr.FullName.Contains(' '))
+                    {
+                        String[] sp = tr.FullName.Split(' ');
+                        if (!sp[0].Equals("System.Void"))
+                            ret++;
+                    }
+                    else
+                    {
+                        if (!tr.FullName.Equals("System.Void"))
+                            ret++;
+                    }
+                }
+                var name = Converter.MethodName(mr);
                 // Find bb entry.
-		        CFG.Vertex the_entry = this.Block._Graph.VertexNodes.Where(node
-				    =>
-			    {
-				    GraphLinkedList<int, CFG.Vertex, CFG.Edge> g = j.Block._Graph;
-				    int k = g.NameSpace.BijectFromBasetype(node.Name);
-				    CFG.Vertex v = g.VertexSpace[k];
+                CFG.Vertex the_entry = this.Block._Graph.VertexNodes.Where(node
+                    =>
+                {
+                    GraphLinkedList<int, CFG.Vertex, CFG.Edge> g = j.Block._Graph;
+                    int k = g.NameSpace.BijectFromBasetype(node.Name);
+                    CFG.Vertex v = g.VertexSpace[k];
                     Converter c = Converter.GetConverter((CFG)g);
-				    if (v.IsEntry && Converter.MethodName(v.Method) == name && c.IsFullyInstantiatedNode(v))
-					    return true;
-				    else return false;
-			    }).ToList().FirstOrDefault();
+                    if (v.IsEntry && Converter.MethodName(v.Method) == name && c.IsFullyInstantiatedNode(v))
+                        return true;
+                    else return false;
+                }).ToList().FirstOrDefault();
 
-			    if (the_entry != default(CFG.Vertex))
-			    {
-				    BuilderRef bu = this.Builder;
-				    ValueRef fv = the_entry.Function;
-				    ValueRef[] args = new ValueRef[nargs];
-				    for (int k = nargs-1; k >= 0; --k)
-					    args[k] = state._stack.Pop().V;
-				    if (ret > 0)
+                if (the_entry != default(CFG.Vertex))
+                {
+                    BuilderRef bu = this.Builder;
+                    ValueRef fv = the_entry.Function;
+                    ValueRef[] args = new ValueRef[nargs];
+                    for (int k = nargs-1; k >= 0; --k)
+                        args[k] = state._stack.Pop().V;
+                    if (ret > 0)
                     {
                         var call = LLVM.BuildCall(Builder, fv, args, name);
                         state._stack.Push(new Value(call));
@@ -1933,9 +2053,9 @@ namespace Campy.ControlFlowGraph
                         var call = LLVM.BuildCall(Builder, fv, args, "");
                     }
                 }
-		    }
-		    return Next;
-	    }
+            }
+            return Next;
+        }
     }
 
     public class i_calli : Inst
@@ -1944,39 +2064,39 @@ namespace Campy.ControlFlowGraph
             : base(i)
         {
         }
-	    public override void ComputeStackLevel(ref int level_after)
-	    {
-	        // Successor is fallthrough.
-		    int args = 0;
-		    int ret = 0;
-		    args++; // The function is on the stack.
-		    object method = this.Operand;
-		    if (method as Mono.Cecil.CallSite != null)
-		    {
-			    Mono.Cecil.CallSite mr = method as Mono.Cecil.CallSite;
-			    if (mr.HasThis)
-				    args++;
-			    args += mr.Parameters.Count;
-			    if (mr.MethodReturnType != null)
-			    {
-				    Mono.Cecil.MethodReturnType rt = mr.MethodReturnType;
-				    Mono.Cecil.TypeReference tr = rt.ReturnType;
-		    // Get type, may contain modifiers.
-				    if (tr.FullName.Contains(' '))
-				    {
-					    String[] sp = tr.FullName.Split(' ');
-					    if (!sp[0].Equals("System.Void"))
-						    ret++;
-				    }
-				    else
-				    {
-					    if (!tr.FullName.Equals("System.Void"))
-						    ret++;
-				    }
-			    }
-		    }
-		    level_after = level_after + ret - args;
-	    }
+        public override void ComputeStackLevel(ref int level_after)
+        {
+            // Successor is fallthrough.
+            int args = 0;
+            int ret = 0;
+            args++; // The function is on the stack.
+            object method = this.Operand;
+            if (method as Mono.Cecil.CallSite != null)
+            {
+                Mono.Cecil.CallSite mr = method as Mono.Cecil.CallSite;
+                if (mr.HasThis)
+                    args++;
+                args += mr.Parameters.Count;
+                if (mr.MethodReturnType != null)
+                {
+                    Mono.Cecil.MethodReturnType rt = mr.MethodReturnType;
+                    Mono.Cecil.TypeReference tr = rt.ReturnType;
+            // Get type, may contain modifiers.
+                    if (tr.FullName.Contains(' '))
+                    {
+                        String[] sp = tr.FullName.Split(' ');
+                        if (!sp[0].Equals("System.Void"))
+                            ret++;
+                    }
+                    else
+                    {
+                        if (!tr.FullName.Equals("System.Void"))
+                            ret++;
+                    }
+                }
+            }
+            level_after = level_after + ret - args;
+        }
     }
 
     public class i_callvirt : Inst
@@ -1986,38 +2106,38 @@ namespace Campy.ControlFlowGraph
         {
         }
 
-	    public override void ComputeStackLevel(ref int level_after)
-	    {
-	        // Successor is fallthrough.
-		    int args = 0;
-		    int ret = 0;
-		    object method = this.Operand;
-		    if (method as Mono.Cecil.MethodReference != null)
-		    {
-			    Mono.Cecil.MethodReference mr = method as Mono.Cecil.MethodReference;
-			    if (mr.HasThis)
-				    args++;
-			    args += mr.Parameters.Count;
-			    if (mr.MethodReturnType != null)
-			    {
-				    Mono.Cecil.MethodReturnType rt = mr.MethodReturnType;
-				    Mono.Cecil.TypeReference tr = rt.ReturnType;
-		            // Get type, may contain modifiers.
-				    if (tr.FullName.Contains(' '))
-				    {
-					    String[] sp = tr.FullName.Split(' ');
-					    if (!sp[0].Equals("System.Void"))
-						    ret++;
-				    }
-				    else
-				    {
-					    if (!tr.FullName.Equals("System.Void"))
-						    ret++;
-				    }
-			    }
-		    }
-		    level_after = level_after + ret - args;
-	    }
+        public override void ComputeStackLevel(ref int level_after)
+        {
+            // Successor is fallthrough.
+            int args = 0;
+            int ret = 0;
+            object method = this.Operand;
+            if (method as Mono.Cecil.MethodReference != null)
+            {
+                Mono.Cecil.MethodReference mr = method as Mono.Cecil.MethodReference;
+                if (mr.HasThis)
+                    args++;
+                args += mr.Parameters.Count;
+                if (mr.MethodReturnType != null)
+                {
+                    Mono.Cecil.MethodReturnType rt = mr.MethodReturnType;
+                    Mono.Cecil.TypeReference tr = rt.ReturnType;
+                    // Get type, may contain modifiers.
+                    if (tr.FullName.Contains(' '))
+                    {
+                        String[] sp = tr.FullName.Split(' ');
+                        if (!sp[0].Equals("System.Void"))
+                            ret++;
+                    }
+                    else
+                    {
+                        if (!tr.FullName.Equals("System.Void"))
+                            ret++;
+                    }
+                }
+            }
+            level_after = level_after + ret - args;
+        }
         public override Inst Convert(State state)
         {
             // Get function.
@@ -2099,7 +2219,7 @@ namespace Campy.ControlFlowGraph
         public i_ceq(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-		    Predicate = PredicateType.eq;
+            Predicate = PredicateType.eq;
             IsSigned = true;
         }
     }
@@ -2109,7 +2229,7 @@ namespace Campy.ControlFlowGraph
         public i_cgt(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-		    Predicate = PredicateType.gt;
+            Predicate = PredicateType.gt;
             IsSigned = true;
         }
     }
@@ -2119,7 +2239,7 @@ namespace Campy.ControlFlowGraph
         public i_cgt_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-		    Predicate = PredicateType.gt;
+            Predicate = PredicateType.gt;
             IsSigned = false;
         }
     }
@@ -2137,7 +2257,7 @@ namespace Campy.ControlFlowGraph
         public i_clt(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-		    Predicate = PredicateType.lt;
+            Predicate = PredicateType.lt;
             IsSigned = true;
         }
     }
@@ -2147,7 +2267,7 @@ namespace Campy.ControlFlowGraph
         public i_clt_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-		    Predicate = PredicateType.lt;
+            Predicate = PredicateType.lt;
             IsSigned = false;
         }
     }
@@ -2189,11 +2309,11 @@ namespace Campy.ControlFlowGraph
 
     public class i_conv_i8 : ConvertInst
     {
-	    public i_conv_i8(Mono.Cecil.Cil.Instruction i)
-			    : base(i)
-	    {
-	        dtype = LLVM.Int64Type();
-	    }
+        public i_conv_i8(Mono.Cecil.Cil.Instruction i)
+                : base(i)
+        {
+            dtype = LLVM.Int64Type();
+        }
     }
 
     public class i_conv_i : Inst
@@ -2467,10 +2587,19 @@ namespace Campy.ControlFlowGraph
         {
         }
 
-	public override void ComputeStackLevel(ref int level_after)
-	{
-		level_after++;
-	}
+        public override void ComputeStackLevel(ref int level_after)
+        {
+            level_after++;
+        }
+
+        public override Inst Convert(State state)
+        {
+            var rhs = state._stack.Pop();
+            state._stack.Push(rhs);
+            state._stack.Push(rhs);
+            return Next;
+        }
+
     }
 
     public class i_endfilter : Inst
@@ -2480,10 +2609,10 @@ namespace Campy.ControlFlowGraph
         {
         }
 
-	public override void ComputeStackLevel(ref int level_after)
-	{
-		level_after--;
-	}
+    public override void ComputeStackLevel(ref int level_after)
+    {
+        level_after--;
+    }
     }
 
     public class i_endfinally : Inst
@@ -2501,10 +2630,10 @@ namespace Campy.ControlFlowGraph
         {
         }
 
-	public override void ComputeStackLevel(ref int level_after)
-	{
-		level_after -= 3;
-	}
+    public override void ComputeStackLevel(ref int level_after)
+    {
+        level_after -= 3;
+    }
     }
 
     public class i_initobj : Inst
@@ -2514,10 +2643,10 @@ namespace Campy.ControlFlowGraph
         {
         }
 
-	public override void ComputeStackLevel(ref int level_after)
-	{
-		level_after--;
-	}
+    public override void ComputeStackLevel(ref int level_after)
+    {
+        level_after--;
+    }
     }
 
     public class i_isinst : Inst
@@ -3053,10 +3182,10 @@ namespace Campy.ControlFlowGraph
             _arg = arg;
         }
 
-	    public override void ComputeStackLevel(ref int level_after)
-	    {
-		    level_after++;
-	    }
+        public override void ComputeStackLevel(ref int level_after)
+        {
+            level_after++;
+        }
     }
 
     public class i_ldelem_any : ConvertLoadElement
@@ -3155,7 +3284,7 @@ namespace Campy.ControlFlowGraph
         }
     }
 
-    public class i_ldelema : ConvertLoadElement
+    public class i_ldelema : ConvertLoadElementA
     {
         public i_ldelema(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3186,13 +3315,13 @@ namespace Campy.ControlFlowGraph
         {
         }
 
-	public override void ComputeStackLevel(ref int level_after)
-	{
-		level_after++;
-	}
+    public override void ComputeStackLevel(ref int level_after)
+    {
+        level_after++;
+    }
     }
 
-    public class i_ldind_i1 : Inst
+    public class i_ldind_i1 : ConvertLoadIndirect
     {
         public i_ldind_i1(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3200,7 +3329,7 @@ namespace Campy.ControlFlowGraph
         }
     }
 
-    public class i_ldind_i2 : Inst
+    public class i_ldind_i2 : ConvertLoadIndirect
     {
         public i_ldind_i2(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3208,7 +3337,7 @@ namespace Campy.ControlFlowGraph
         }
     }
 
-    public class i_ldind_i4 : Inst
+    public class i_ldind_i4 : ConvertLoadIndirect
     {
         public i_ldind_i4(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3216,7 +3345,7 @@ namespace Campy.ControlFlowGraph
         }
     }
 
-    public class i_ldind_i8 : Inst
+    public class i_ldind_i8 : ConvertLoadIndirect
     {
         public i_ldind_i8(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3224,7 +3353,7 @@ namespace Campy.ControlFlowGraph
         }
     }
 
-    public class i_ldind_i : Inst
+    public class i_ldind_i : ConvertLoadIndirect
     {
         public i_ldind_i(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3232,7 +3361,7 @@ namespace Campy.ControlFlowGraph
         }
     }
 
-    public class i_ldind_r4 : Inst
+    public class i_ldind_r4 : ConvertLoadIndirect
     {
         public i_ldind_r4(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3240,7 +3369,7 @@ namespace Campy.ControlFlowGraph
         }
     }
 
-    public class i_ldind_r8 : Inst
+    public class i_ldind_r8 : ConvertLoadIndirect
     {
         public i_ldind_r8(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3248,7 +3377,7 @@ namespace Campy.ControlFlowGraph
         }
     }
 
-    public class i_ldind_ref : Inst
+    public class i_ldind_ref : ConvertLoadIndirect
     {
         public i_ldind_ref(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3256,7 +3385,7 @@ namespace Campy.ControlFlowGraph
         }
     }
 
-    public class i_ldind_u1 : Inst
+    public class i_ldind_u1 : ConvertLoadIndirect
     {
         public i_ldind_u1(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3264,7 +3393,7 @@ namespace Campy.ControlFlowGraph
         }
     }
 
-    public class i_ldind_u2 : Inst
+    public class i_ldind_u2 : ConvertLoadIndirect
     {
         public i_ldind_u2(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3272,7 +3401,7 @@ namespace Campy.ControlFlowGraph
         }
     }
 
-    public class i_ldind_u4 : Inst
+    public class i_ldind_u4 : ConvertLoadIndirect
     {
         public i_ldind_u4(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3396,10 +3525,10 @@ namespace Campy.ControlFlowGraph
         {
         }
 
-	public override void ComputeStackLevel(ref int level_after)
-	{
-		level_after++;
-	}
+    public override void ComputeStackLevel(ref int level_after)
+    {
+        level_after++;
+    }
     }
 
     public class i_ldobj : Inst
@@ -3416,10 +3545,10 @@ namespace Campy.ControlFlowGraph
             : base(i)
         {
         }
-	public override void ComputeStackLevel(ref int level_after)
-	{
-		level_after++;
-	}
+    public override void ComputeStackLevel(ref int level_after)
+    {
+        level_after++;
+    }
     }
 
     public class i_ldsflda : Inst
@@ -3429,10 +3558,10 @@ namespace Campy.ControlFlowGraph
         {
         }
 
-	public override void ComputeStackLevel(ref int level_after)
-	{
-		level_after++;
-	}
+    public override void ComputeStackLevel(ref int level_after)
+    {
+        level_after++;
+    }
     }
 
     public class i_ldstr : Inst
@@ -3442,10 +3571,10 @@ namespace Campy.ControlFlowGraph
         {
         }
 
-	public override void ComputeStackLevel(ref int level_after)
-	{
-		level_after++;
-	}
+    public override void ComputeStackLevel(ref int level_after)
+    {
+        level_after++;
+    }
     }
 
     public class i_ldtoken : Inst
@@ -3455,10 +3584,10 @@ namespace Campy.ControlFlowGraph
         {
         }
 
-	public override void ComputeStackLevel(ref int level_after)
-	{
-		level_after++;
-	}
+    public override void ComputeStackLevel(ref int level_after)
+    {
+        level_after++;
+    }
     }
 
     public class i_ldvirtftn : Inst
@@ -3540,37 +3669,37 @@ namespace Campy.ControlFlowGraph
         {
         }
 
-	public override void ComputeStackLevel(ref int level_after)
-	{
-	// Successor is fallthrough.
-		int args = 0;
-		int ret = 0;
-		object method = this.Operand;
-		if (method as Mono.Cecil.MethodReference != null)
-		{
-			Mono.Cecil.MethodReference mr = method as Mono.Cecil.MethodReference;
-			args += mr.Parameters.Count;
-			if (mr.MethodReturnType != null)
-			{
-				Mono.Cecil.MethodReturnType rt = mr.MethodReturnType;
-				Mono.Cecil.TypeReference tr = rt.ReturnType;
-	    // Get type, may contain modifiers.
-				if (tr.FullName.Contains(' '))
-				{
-					String[] sp = tr.FullName.Split(' ');
-					if (!sp[0].Equals("System.Void"))
-						ret++;
-				}
-				else
-				{
-					if (!tr.FullName.Equals("System.Void"))
-						ret++;
-				}
-			}
-			ret++;
-		}
-		level_after = level_after + ret - args;
-	}
+    public override void ComputeStackLevel(ref int level_after)
+    {
+    // Successor is fallthrough.
+        int args = 0;
+        int ret = 0;
+        object method = this.Operand;
+        if (method as Mono.Cecil.MethodReference != null)
+        {
+            Mono.Cecil.MethodReference mr = method as Mono.Cecil.MethodReference;
+            args += mr.Parameters.Count;
+            if (mr.MethodReturnType != null)
+            {
+                Mono.Cecil.MethodReturnType rt = mr.MethodReturnType;
+                Mono.Cecil.TypeReference tr = rt.ReturnType;
+        // Get type, may contain modifiers.
+                if (tr.FullName.Contains(' '))
+                {
+                    String[] sp = tr.FullName.Split(' ');
+                    if (!sp[0].Equals("System.Void"))
+                        ret++;
+                }
+                else
+                {
+                    if (!tr.FullName.Equals("System.Void"))
+                        ret++;
+                }
+            }
+            ret++;
+        }
+        level_after = level_after + ret - args;
+    }
     }
 
     public class i_newobj : Inst
@@ -3579,37 +3708,37 @@ namespace Campy.ControlFlowGraph
             : base(i)
         {
         }
-	public override void ComputeStackLevel(ref int level_after)
-	{
-	// Successor is fallthrough.
-		int args = 0;
-		int ret = 0;
-		object method = this.Operand;
-		if (method as Mono.Cecil.MethodReference != null)
-		{
-			Mono.Cecil.MethodReference mr = method as Mono.Cecil.MethodReference;
-			args += mr.Parameters.Count;
-			if (mr.MethodReturnType != null)
-			{
-				Mono.Cecil.MethodReturnType rt = mr.MethodReturnType;
-				Mono.Cecil.TypeReference tr = rt.ReturnType;
-	    // Get type, may contain modifiers.
-				if (tr.FullName.Contains(' '))
-				{
-					String[] sp = tr.FullName.Split(' ');
-					if (!sp[0].Equals("System.Void"))
-						ret++;
-				}
-				else
-				{
-					if (!tr.FullName.Equals("System.Void"))
-						ret++;
-				}
-			}
-			ret++;
-		}
-		level_after = level_after + ret - args;
-	}
+    public override void ComputeStackLevel(ref int level_after)
+    {
+    // Successor is fallthrough.
+        int args = 0;
+        int ret = 0;
+        object method = this.Operand;
+        if (method as Mono.Cecil.MethodReference != null)
+        {
+            Mono.Cecil.MethodReference mr = method as Mono.Cecil.MethodReference;
+            args += mr.Parameters.Count;
+            if (mr.MethodReturnType != null)
+            {
+                Mono.Cecil.MethodReturnType rt = mr.MethodReturnType;
+                Mono.Cecil.TypeReference tr = rt.ReturnType;
+        // Get type, may contain modifiers.
+                if (tr.FullName.Contains(' '))
+                {
+                    String[] sp = tr.FullName.Split(' ');
+                    if (!sp[0].Equals("System.Void"))
+                        ret++;
+                }
+                else
+                {
+                    if (!tr.FullName.Equals("System.Void"))
+                        ret++;
+                }
+            }
+            ret++;
+        }
+        level_after = level_after + ret - args;
+    }
     }
 
     public class i_no : Inst
@@ -3655,10 +3784,10 @@ namespace Campy.ControlFlowGraph
         {
         }
 
-	public override void ComputeStackLevel(ref int level_after)
-	{
-		level_after--;
-	}
+    public override void ComputeStackLevel(ref int level_after)
+    {
+        level_after--;
+    }
     }
 
     public class i_readonly : Inst
@@ -3708,19 +3837,19 @@ namespace Campy.ControlFlowGraph
         {
         }
 
-	    public override void ComputeStackLevel(ref int level_after)
-	    {
-	        // There are really two different stacks here:
-	        // one for the called method, and the other for the caller of the method.
-	        // When returning, the stack of the method is pretty much unchanged.
-	        // In fact the top of stack often contains the return value from the method.
-	        // Back in the caller, the stack is popped of all arguments to the callee.
-	        // And, the return value is pushed on the top of stack.
-	        // This is handled by the call instruction.
-	    }
+        public override void ComputeStackLevel(ref int level_after)
+        {
+            // There are really two different stacks here:
+            // one for the called method, and the other for the caller of the method.
+            // When returning, the stack of the method is pretty much unchanged.
+            // In fact the top of stack often contains the return value from the method.
+            // Back in the caller, the stack is popped of all arguments to the callee.
+            // And, the return value is pushed on the top of stack.
+            // This is handled by the call instruction.
+        }
 
-	    public override Inst Convert(State state)
-	    {
+        public override Inst Convert(State state)
+        {
             // There are really two different stacks here:
             // one for the called method, and the other for the caller of the method.
             // When returning, the stack of the method is pretty much unchanged.
@@ -3818,7 +3947,7 @@ namespace Campy.ControlFlowGraph
                 }
             }
             return Next;
-	    }
+        }
     }
 
     public class i_rethrow : Inst
@@ -3836,10 +3965,10 @@ namespace Campy.ControlFlowGraph
         {
         }
 
-	public override void ComputeStackLevel(ref int level_after)
-	{
-		level_after--;
-	}
+    public override void ComputeStackLevel(ref int level_after)
+    {
+        level_after--;
+    }
     }
 
     public class i_shr : Inst
@@ -3849,10 +3978,10 @@ namespace Campy.ControlFlowGraph
         {
         }
 
-	public override void ComputeStackLevel(ref int level_after)
-	{
-		level_after--;
-	}
+    public override void ComputeStackLevel(ref int level_after)
+    {
+        level_after--;
+    }
     }
 
     public class i_shr_un : Inst
@@ -3862,10 +3991,10 @@ namespace Campy.ControlFlowGraph
         {
         }
 
-	public override void ComputeStackLevel(ref int level_after)
-	{
-		level_after--;
-	}
+    public override void ComputeStackLevel(ref int level_after)
+    {
+        level_after--;
+    }
     }
 
     public class i_sizeof : Inst
@@ -3888,10 +4017,10 @@ namespace Campy.ControlFlowGraph
             _arg = arg;
         }
 
-	public override void ComputeStackLevel(ref int level_after)
-	{
-		level_after--;
-	}
+    public override void ComputeStackLevel(ref int level_after)
+    {
+        level_after--;
+    }
     }
 
     public class i_starg_s : Inst
@@ -3906,10 +4035,10 @@ namespace Campy.ControlFlowGraph
             _arg = arg;
         }
 
-	public override void ComputeStackLevel(ref int level_after)
-	{
-		level_after--;
-	}
+    public override void ComputeStackLevel(ref int level_after)
+    {
+        level_after--;
+    }
     }
 
     public class i_stelem_any : Inst
@@ -3919,10 +4048,10 @@ namespace Campy.ControlFlowGraph
         {
         }
 
-	public override void ComputeStackLevel(ref int level_after)
-	{
-		level_after = level_after - 3;
-	}
+    public override void ComputeStackLevel(ref int level_after)
+    {
+        level_after = level_after - 3;
+    }
     }
 
     public class i_stelem_i1 : Inst
@@ -3932,10 +4061,10 @@ namespace Campy.ControlFlowGraph
         {
         }
 
-	public override void ComputeStackLevel(ref int level_after)
-	{
-		level_after = level_after - 3;
-	}
+    public override void ComputeStackLevel(ref int level_after)
+    {
+        level_after = level_after - 3;
+    }
     }
 
     public class i_stelem_i2 : Inst
@@ -3945,10 +4074,10 @@ namespace Campy.ControlFlowGraph
         {
         }
 
-	public override void ComputeStackLevel(ref int level_after)
-	{
-		level_after = level_after - 3;
-	}
+    public override void ComputeStackLevel(ref int level_after)
+    {
+        level_after = level_after - 3;
+    }
     }
 
     public class i_stelem_i4 : Inst
@@ -3958,10 +4087,10 @@ namespace Campy.ControlFlowGraph
         {
         }
 
-	public override void ComputeStackLevel(ref int level_after)
-	{
-		level_after = level_after - 3;
-	}
+    public override void ComputeStackLevel(ref int level_after)
+    {
+        level_after = level_after - 3;
+    }
     }
 
     public class i_stelem_i8 : Inst
@@ -3971,10 +4100,10 @@ namespace Campy.ControlFlowGraph
         {
         }
 
-	public override void ComputeStackLevel(ref int level_after)
-	{
-		level_after = level_after - 3;
-	}
+    public override void ComputeStackLevel(ref int level_after)
+    {
+        level_after = level_after - 3;
+    }
     }
 
     public class i_stelem_i : Inst
@@ -3984,10 +4113,10 @@ namespace Campy.ControlFlowGraph
         {
         }
 
-	public override void ComputeStackLevel(ref int level_after)
-	{
-		level_after = level_after - 3;
-	}
+    public override void ComputeStackLevel(ref int level_after)
+    {
+        level_after = level_after - 3;
+    }
     }
 
     public class i_stelem_r4 : Inst
@@ -3997,10 +4126,10 @@ namespace Campy.ControlFlowGraph
         {
         }
 
-	public override void ComputeStackLevel(ref int level_after)
-	{
-		level_after = level_after - 3;
-	}
+    public override void ComputeStackLevel(ref int level_after)
+    {
+        level_after = level_after - 3;
+    }
     }
 
     public class i_stelem_r8 : Inst
@@ -4010,10 +4139,10 @@ namespace Campy.ControlFlowGraph
         {
         }
 
-	public override void ComputeStackLevel(ref int level_after)
-	{
-		level_after = level_after - 3;
-	}
+    public override void ComputeStackLevel(ref int level_after)
+    {
+        level_after = level_after - 3;
+    }
     }
 
     public class i_stelem_ref : Inst
@@ -4023,10 +4152,10 @@ namespace Campy.ControlFlowGraph
         {
         }
 
-	public override void ComputeStackLevel(ref int level_after)
-	{
-		level_after = level_after - 3;
-	}
+    public override void ComputeStackLevel(ref int level_after)
+    {
+        level_after = level_after - 3;
+    }
     }
 
     public class i_stfld : Inst
@@ -4036,114 +4165,74 @@ namespace Campy.ControlFlowGraph
         {
         }
 
-	public override void ComputeStackLevel(ref int level_after)
-	{
-		level_after = level_after - 2;
-	}
+    public override void ComputeStackLevel(ref int level_after)
+    {
+        level_after = level_after - 2;
+    }
     }
 
-    public class i_stind_i1 : Inst
+    public class i_stind_i1 : ConvertStoreIndirect
     {
         public i_stind_i1(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
-
-	public override void ComputeStackLevel(ref int level_after)
-	{
-		level_after = level_after - 2;
-	}
     }
 
-    public class i_stind_i2 : Inst
+    public class i_stind_i2 : ConvertStoreIndirect
     {
         public i_stind_i2(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
-
-	public override void ComputeStackLevel(ref int level_after)
-	{
-		level_after = level_after - 2;
-	}
     }
 
-    public class i_stind_i4 : Inst
+    public class i_stind_i4 : ConvertStoreIndirect
     {
         public i_stind_i4(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
-
-	public override void ComputeStackLevel(ref int level_after)
-	{
-		level_after = level_after - 2;
-	}
     }
 
-    public class i_stind_i8 : Inst
+    public class i_stind_i8 : ConvertStoreIndirect
     {
         public i_stind_i8(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
-
-	public override void ComputeStackLevel(ref int level_after)
-	{
-		level_after = level_after - 2;
-	}
     }
 
-    public class i_stind_i : Inst
+    public class i_stind_i : ConvertStoreIndirect
     {
         public i_stind_i(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-		}
-
-	public override void ComputeStackLevel(ref int level_after)
-	{
-		level_after = level_after - 2;
-	}
+        }
     }
 
-    public class i_stind_r4 : Inst
+    public class i_stind_r4 : ConvertStoreIndirect
     {
         public i_stind_r4(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
-
-	public override void ComputeStackLevel(ref int level_after)
-	{
-		level_after = level_after - 2;
-	}
     }
 
-    public class i_stind_r8 : Inst
+    public class i_stind_r8 : ConvertStoreIndirect
     {
         public i_stind_r8(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
-
-	public override void ComputeStackLevel(ref int level_after)
-	{
-		level_after = level_after - 2;
-	}
     }
 
-    public class i_stind_ref : Inst
+    public class i_stind_ref : ConvertStoreIndirect
     {
         public i_stind_ref(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
-
-	public override void ComputeStackLevel(ref int level_after)
-	{
-		level_after = level_after - 2;
-	}
     }
 
     public class i_stloc : StLoc
@@ -4215,10 +4304,10 @@ namespace Campy.ControlFlowGraph
         {
         }
 
-	public override void ComputeStackLevel(ref int level_after)
-	{
-		level_after -= 2;
-	}
+    public override void ComputeStackLevel(ref int level_after)
+    {
+        level_after -= 2;
+    }
     }
 
     public class i_stsfld : Inst
@@ -4228,10 +4317,10 @@ namespace Campy.ControlFlowGraph
         {
         }
 
-	public override void ComputeStackLevel(ref int level_after)
-	{
-		level_after--;
-	}
+    public override void ComputeStackLevel(ref int level_after)
+    {
+        level_after--;
+    }
     }
 
     public class i_sub : BinaryOpInst
@@ -4265,10 +4354,10 @@ namespace Campy.ControlFlowGraph
         {
         }
 
-	public override void ComputeStackLevel(ref int level_after)
-	{
-		level_after--;
-	}
+    public override void ComputeStackLevel(ref int level_after)
+    {
+        level_after--;
+    }
     }
 
     public class i_tail : Inst
