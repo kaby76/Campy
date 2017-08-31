@@ -25,11 +25,13 @@ namespace DeepCopyGPU
         private Asm _asm;
         private Dictionary<string, string> _type_name_map = new Dictionary<string, string>();
         private Dictionary<object, IntPtr> _allocated_objects = new Dictionary<object, IntPtr>();
+        private Dictionary<IntPtr, object> _allocated_buffers = new Dictionary<IntPtr, object>();
         private int _level = 0;
 
         public void ClearAllocatedObjects()
         {
-            _allocated_objects = new Dictionary<object, IntPtr>();
+            _allocated_buffers = new Dictionary<IntPtr, object>();
+            //_allocated_objects = new Dictionary<object, IntPtr>();
         }
 
         public Buffers()
@@ -598,7 +600,7 @@ namespace DeepCopyGPU
             }
         }
 
-        public unsafe void DeepCopyFromImplementation(IntPtr from, out object to, Type target_type, bool reset = true)
+        public unsafe void DeepCopyFromImplementation(IntPtr from, out object to, Type target_type, bool reset = true, bool sync = true)
         {
             try
             {
@@ -704,8 +706,13 @@ namespace DeepCopyGPU
                     IntPtr intptr_src = *(IntPtr*) (from);
                     byte* ptr = (byte*) intptr_src;
                     // For now, only one-dimension, given "len".
-                    var to_array = Array.CreateInstance(t_type.GetElementType(), new int[1] {len});
-                    _allocated_objects[to_array] = (IntPtr)ptr;
+                    Array to_array;
+                    if (sync)
+                        to_array = (Array) _allocated_objects.Where(p => p.Value == from).Select(p => p.Key)
+                            .FirstOrDefault();
+                    else
+                        to_array = Array.CreateInstance(t_type.GetElementType(), new int[1] {len});
+                    _allocated_buffers[(IntPtr)ptr] = to_array;
                     Cp((void*) ptr, to_array, t_type.GetElementType());
                     to = to_array;
                     return;
@@ -720,8 +727,12 @@ namespace DeepCopyGPU
                         return;
                     }
 
-                    to = Activator.CreateInstance(t_type);
-                    _allocated_objects[to] = ip;
+                    if (sync)
+                        to = _allocated_objects.Where(p => p.Value == ip).Select(p => p.Key)
+                            .FirstOrDefault();
+                    else
+                         to = Activator.CreateInstance(t_type);
+                    _allocated_buffers[ip] = to;
 
                     System.Reflection.FieldInfo[] ffi = f_type.GetFields();
                     System.Reflection.FieldInfo[] tfi = t_type.GetFields();
@@ -736,10 +747,9 @@ namespace DeepCopyGPU
                         {
                             int field_size = Marshal.SizeOf(typeof(IntPtr));
                             IntPtr ipv = (IntPtr) Marshal.PtrToStructure<IntPtr>(ip);
-                            if (_allocated_objects.ContainsValue(ipv))
+                            if (_allocated_buffers.ContainsKey(ipv))
                             {
-                                object tooo = _allocated_objects.Where(p => p.Value == ipv).Select(p => p.Key)
-                                    .FirstOrDefault();
+                                object tooo = _allocated_buffers[ipv];
                                 tfield.SetValue(to, tooo);
                             }
                             else
@@ -753,10 +763,9 @@ namespace DeepCopyGPU
                         {
                             int field_size = Marshal.SizeOf(typeof(IntPtr));
                             IntPtr ipv = (IntPtr) Marshal.PtrToStructure<IntPtr>(ip);
-                            if (_allocated_objects.ContainsValue(ipv))
+                            if (_allocated_buffers.ContainsKey(ipv))
                             {
-                                object tooo = _allocated_objects.Where(p => p.Value == ipv).Select(p => p.Key)
-                                    .FirstOrDefault();
+                                object tooo = _allocated_buffers[ipv];
                                 tfield.SetValue(to, tooo);
                             }
                             else
@@ -845,7 +854,7 @@ namespace DeepCopyGPU
         }
 
         /// <summary>
-        /// Allocated a GPU managed buffer.
+        /// Allocated a GPU buffer.
         /// Code based on https://www.codeproject.com/Articles/32125/Unmanaged-Arrays-in-C-No-Problem
         /// </summary>
         public IntPtr New(int bytes)
@@ -884,20 +893,6 @@ namespace DeepCopyGPU
             if (false)
             {
                 return Marshal.AllocHGlobal(bytes);
-            }
-        }
-
-        public IntPtr NewAndInit(Type t, int elementCount)
-        {
-            unsafe
-            {
-                if (!IsBlittable(t)) throw new Exception("Fucked!");
-                int newSizeInBytes = Marshal.SizeOf(t) * elementCount;
-                var result = Marshal.AllocHGlobal(newSizeInBytes);
-                byte* newArrayPointer = (byte*) result.ToPointer();
-                for (int i = 0; i < newSizeInBytes; i++)
-                    *(newArrayPointer + i) = 0;
-                return result;
             }
         }
 

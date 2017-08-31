@@ -1434,6 +1434,62 @@ namespace Campy.ControlFlowGraph
         }
     }
 
+    public class ConvertStoreElement : Inst
+    {
+        public ConvertStoreElement(Mono.Cecil.Cil.Instruction i)
+            : base(i)
+        {
+        }
+
+        public override void ComputeStackLevel(ref int level_after)
+        {
+            level_after = level_after - 3;
+        }
+
+        public override Inst Convert(State state)
+        {
+            Value v = state._stack.Pop();
+            System.Console.WriteLine(v.ToString());
+
+            Value i = state._stack.Pop();
+            System.Console.WriteLine(i.ToString());
+
+            Value a = state._stack.Pop();
+            System.Console.WriteLine(a.ToString());
+
+
+            TypeRef tr = LLVM.TypeOf(v.V);
+            System.Console.WriteLine(LLVM.PrintTypeToString(tr));
+            bool isPtr = v.T.isPointerTy();
+            bool isArr = v.T.isArrayTy();
+            bool isSt = v.T.isStructTy();
+            TypeKind kind = LLVM.GetTypeKind(tr);
+            bool isPtra = kind == TypeKind.PointerTypeKind;
+            bool isArra = kind == TypeKind.ArrayTypeKind;
+            bool isSta = kind == TypeKind.StructTypeKind;
+            ValueRef[] indexes = new ValueRef[1];
+            indexes[0] = i.V;
+            ValueRef load = LLVM.BuildExtractValue(Builder, v.V, 0, "");
+            ValueRef ll = LLVM.BuildInBoundsGEP(Builder, load, indexes, "");
+            var tt = LLVM.TypeOf(load);
+            System.Console.WriteLine(LLVM.PrintTypeToString(tt));
+            bool xInt = LLVM.GetTypeKind(tt) == TypeKind.IntegerTypeKind;
+            bool xP = LLVM.GetTypeKind(tt) == TypeKind.PointerTypeKind;
+            bool xA = LLVM.GetTypeKind(tt) == TypeKind.ArrayTypeKind;
+            System.Console.WriteLine(Converter.GetStringTypeOf(load));
+            if (tt == LLVM.Int32Type())
+                System.Console.WriteLine("int32");
+            ValueRef ssss = LLVM.SizeOf(tt);
+
+            var zz = LLVM.BuildLoad(Builder, ll, "");
+
+            //state._stack.Push(new Value(zz));
+            state._stack.Push(new Value(zz));
+            return Next;
+        }
+    }
+
+
     public class ConvertLoadElementA : Inst
     {
         public ConvertLoadElementA(Mono.Cecil.Cil.Instruction i)
@@ -1631,6 +1687,8 @@ namespace Campy.ControlFlowGraph
             return Next;
         }
     }
+
+
 
     public class i_add : BinaryOpInst
     {
@@ -4049,121 +4107,76 @@ namespace Campy.ControlFlowGraph
     }
     }
 
-    public class i_stelem_any : Inst
+    public class i_stelem_any : ConvertStoreElement
     {
         public i_stelem_any(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
-
-    public override void ComputeStackLevel(ref int level_after)
-    {
-        level_after = level_after - 3;
-    }
     }
 
-    public class i_stelem_i1 : Inst
+    public class i_stelem_i1 : ConvertStoreElement
     {
         public i_stelem_i1(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
-
-    public override void ComputeStackLevel(ref int level_after)
-    {
-        level_after = level_after - 3;
-    }
     }
 
-    public class i_stelem_i2 : Inst
+    public class i_stelem_i2 : ConvertStoreElement
     {
         public i_stelem_i2(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
-
-    public override void ComputeStackLevel(ref int level_after)
-    {
-        level_after = level_after - 3;
-    }
     }
 
-    public class i_stelem_i4 : Inst
+    public class i_stelem_i4 : ConvertStoreElement
     {
         public i_stelem_i4(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
-
-    public override void ComputeStackLevel(ref int level_after)
-    {
-        level_after = level_after - 3;
-    }
     }
 
-    public class i_stelem_i8 : Inst
+    public class i_stelem_i8 : ConvertStoreElement
     {
         public i_stelem_i8(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
-
-    public override void ComputeStackLevel(ref int level_after)
-    {
-        level_after = level_after - 3;
-    }
     }
 
-    public class i_stelem_i : Inst
+    public class i_stelem_i : ConvertStoreElement
     {
         public i_stelem_i(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
-
-    public override void ComputeStackLevel(ref int level_after)
-    {
-        level_after = level_after - 3;
-    }
     }
 
-    public class i_stelem_r4 : Inst
+    public class i_stelem_r4 : ConvertStoreElement
     {
         public i_stelem_r4(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
-
-    public override void ComputeStackLevel(ref int level_after)
-    {
-        level_after = level_after - 3;
-    }
     }
 
-    public class i_stelem_r8 : Inst
+    public class i_stelem_r8 : ConvertStoreElement
     {
         public i_stelem_r8(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
-
-    public override void ComputeStackLevel(ref int level_after)
-    {
-        level_after = level_after - 3;
-    }
     }
 
-    public class i_stelem_ref : Inst
+    public class i_stelem_ref : ConvertStoreElement
     {
         public i_stelem_ref(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
-
-    public override void ComputeStackLevel(ref int level_after)
-    {
-        level_after = level_after - 3;
-    }
     }
 
     public class i_stfld : Inst

@@ -113,16 +113,6 @@ namespace Campy
                 }
             }
 
-            //int[] v = { 'G', 'd', 'k', 'k', 'n', (char)31, 'v', 'n', 'q', 'k', 'c' };
-            //GCHandle handle = GCHandle.Alloc(v, GCHandleType.Pinned);
-            //IntPtr pointer = IntPtr.Zero;
-            //pointer = handle.AddrOfPinnedObject();
-
-            //IntPtr dptr = buffer.New(11 * sizeof(int));
-            // res = Cuda.cuMemcpyHtoD_v2(dptr, pointer, 11*sizeof(int));
-            // if (res != CUresult.CUDA_SUCCESS) throw new Exception();
-
-            //IntPtr[] x = new IntPtr[] { dptr };
             IntPtr[] x = parms1;
             GCHandle handle1 = GCHandle.Alloc(x, GCHandleType.Pinned);
             IntPtr pointer1 = IntPtr.Zero;
@@ -139,7 +129,7 @@ namespace Campy
             {
                 res = Cuda.cuLaunchKernel(helloWorld,
                     1, 1, 1, // grid has one block.
-                    2, 1, 1, // block has 2 threads.
+                    (uint)extent.Size(), 1, 1, // block has 2 threads.
                     0, // no shared memory
                     default(CUstream),
                     (IntPtr)kernelParams,
@@ -147,9 +137,11 @@ namespace Campy
                 );
             }
             if (res != CUresult.CUDA_SUCCESS) throw new Exception();
-            res = Cuda.cuCtxSynchronize();
+            res = Cuda.cuCtxSynchronize(); // Make sure it's copied back to host.
             if (res != CUresult.CUDA_SUCCESS) throw new Exception();
             buffer.DeepCopyFromImplementation(ptr, out object to, kernel.Target.GetType());
+            // Copy to target.
+            
             //res = Cuda.cuMemcpyDtoH_v2(pointer, dptr, 11 * sizeof(int));
             //if (res != CUresult.CUDA_SUCCESS) throw new Exception();
             //Cuda.cuCtxDestroy_v2(cuContext);
