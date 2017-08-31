@@ -84,7 +84,8 @@ namespace Campy
             int count = parameters.Count;
             if (bb.HasThis) count++;
 
-            IntPtr[] parms = new IntPtr[count];
+            IntPtr[] parms1 = new IntPtr[1];
+            IntPtr[] parms2 = new IntPtr[1];
             int current = 0;
             IntPtr ptr = IntPtr.Zero;
             if (count > 0)
@@ -97,7 +98,7 @@ namespace Campy
                     ptr = buffer.New(Marshal.SizeOf(btype));
                     buffer.DeepCopyToImplementation(kernel.Target, ptr);
 
-                    parms[current] = ptr;
+                    parms1[0] = ptr;
 
                     current++;
                 }
@@ -105,9 +106,10 @@ namespace Campy
                 //foreach (var p in parameters)
                 {
                     Type btype = buffer.CreateImplementationType(typeof(Index));
-                    var ptr2 = buffer.New(Marshal.SizeOf(btype));
-                    buffer.DeepCopyToImplementation(index, ptr2);
-                    parms[current] = ptr2;
+                    var s = Marshal.SizeOf(btype);
+                    var ptr2 = buffer.New(s);
+                //    buffer.DeepCopyToImplementation(index, ptr2);
+                    parms2[0] = ptr2;
                 }
             }
 
@@ -121,12 +123,17 @@ namespace Campy
             // if (res != CUresult.CUDA_SUCCESS) throw new Exception();
 
             //IntPtr[] x = new IntPtr[] { dptr };
-            IntPtr[] x = parms;
+            IntPtr[] x = parms1;
+            GCHandle handle1 = GCHandle.Alloc(x, GCHandleType.Pinned);
+            IntPtr pointer1 = IntPtr.Zero;
+            pointer1 = handle1.AddrOfPinnedObject();
+
+            IntPtr[] x2 = parms2;
             GCHandle handle2 = GCHandle.Alloc(x, GCHandleType.Pinned);
             IntPtr pointer2 = IntPtr.Zero;
             pointer2 = handle2.AddrOfPinnedObject();
 
-            IntPtr[] kp = new IntPtr[] { pointer2 };
+            IntPtr[] kp = new IntPtr[] { pointer1, pointer2 };
             res = CUresult.CUDA_SUCCESS;
             fixed (IntPtr* kernelParams = kp)
             {

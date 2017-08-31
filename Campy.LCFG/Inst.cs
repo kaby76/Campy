@@ -1032,8 +1032,82 @@ namespace Campy.ControlFlowGraph
 
         public override Inst Convert(State state)
         {
-            Value v = state._locals[_arg];
-            state._stack.Push(v);
+            var bb = this.Block;
+            var mn = bb.Method.FullName;
+            if (mn == "System.Int32 Campy.Types.Index::op_Implicit(Campy.Types.Index)")
+            {
+                //var context = LLVM.ContextCreate();
+                //// Load in basics for PTX kernel tid.
+                //var tidx = LLVM.AddFunction(
+                //    bb.Module,
+                //    "llvm.nvvm.read.ptx.sreg.tid.x",
+                //    LLVM.FunctionType(LLVM.Int32Type(),
+                //    new TypeRef[] { }, false));
+                //LLVM.AddFunction(
+                //    bb.Module,
+                //    "llvm.nvvm.read.ptx.sreg.tid.y",
+                //    LLVM.FunctionType(LLVM.Int32TypeInContext(context),
+                //    new TypeRef[] { }, false));
+                //LLVM.AddFunction(
+                //    bb.Module,
+                //    "llvm.nvvm.read.ptx.sreg.tid.z",
+                //    LLVM.FunctionType(LLVM.Int32TypeInContext(context),
+                //    new TypeRef[] { }, false));
+                //LLVM.AddFunction(
+                //    bb.Module,
+                //    "llvm.nvvm.read.ptx.sreg.ctaid.x",
+                //    LLVM.FunctionType(LLVM.Int32TypeInContext(context),
+                //    new TypeRef[] { }, false));
+                //LLVM.AddFunction(
+                //    bb.Module,
+                //    "llvm.nvvm.read.ptx.sreg.ctaid.y",
+                //    LLVM.FunctionType(LLVM.Int32TypeInContext(context),
+                //    new TypeRef[] { }, false));
+                //LLVM.AddFunction(
+                //    bb.Module,
+                //    "llvm.nvvm.read.ptx.sreg.ctaid.z",
+                //    LLVM.FunctionType(LLVM.Int32TypeInContext(context),
+                //    new TypeRef[] { }, false));
+                //LLVM.AddFunction(
+                //    bb.Module,
+                //    "llvm.nvvm.read.ptx.sreg.ntid.x",
+                //    LLVM.FunctionType(LLVM.Int32TypeInContext(context),
+                //    new TypeRef[] { }, false));
+                //LLVM.AddFunction(
+                //    bb.Module,
+                //    "llvm.nvvm.read.ptx.sreg.ntid.y",
+                //    LLVM.FunctionType(LLVM.Int32TypeInContext(context),
+                //    new TypeRef[] { }, false));
+                //LLVM.AddFunction(
+                //    bb.Module,
+                //    "llvm.nvvm.read.ptx.sreg.ntid.z",
+                //    LLVM.FunctionType(LLVM.Int32TypeInContext(context),
+                //    new TypeRef[] { }, false));
+                //LLVM.AddFunction(
+                //    bb.Module,
+                //    "llvm.nvvm.read.ptx.sreg.nctaid.x",
+                //    LLVM.FunctionType(LLVM.Int32TypeInContext(context),
+                //    new TypeRef[] { }, false));
+                //LLVM.AddFunction(
+                //    bb.Module,
+                //    "llvm.nvvm.read.ptx.sreg.nctaid.y",
+                //    LLVM.FunctionType(LLVM.Int32TypeInContext(context),
+                //    new TypeRef[] { }, false));
+                //LLVM.AddFunction(
+                //    bb.Module,
+                //    "llvm.nvvm.read.ptx.sreg.nctaid.z",
+                //    LLVM.FunctionType(LLVM.Int32TypeInContext(context),
+                //    new TypeRef[] { }, false));
+                //// Make bloody call!
+                var call = LLVM.BuildCall(bb.Builder, Converter.tidx, new ValueRef[] { }, "tidx");
+                System.Console.WriteLine("load " + new Value(call));
+                state._stack.Push(new Value(call));
+            }
+            else
+            {
+                Value v = state._locals[_arg];
+                state._stack.Push(v);
+            }
             return Next;
         }
     }
@@ -1393,15 +1467,25 @@ namespace Campy.ControlFlowGraph
             ValueRef load0 = LLVM.BuildExtractValue(Builder, v.V, 0, "");
             System.Console.WriteLine("load0 = " + new Value(load0).ToString());
 
+            // Add 12.
+            var bc = LLVM.BuildBitCast(Builder, load0, LLVM.PointerType(LLVM.Int8Type(), 0), "");
+            System.Console.WriteLine((new Value(bc)).ToString());
+            ValueRef[] indexes2 = new ValueRef[1];
+            indexes2[0] = LLVM.ConstInt(LLVM.Int32Type(), 12, false);
+            ValueRef bc2 = LLVM.BuildInBoundsGEP(Builder, bc, indexes2, "");
+            System.Console.WriteLine((new Value(bc2)).ToString());
+            var bc3 = LLVM.BuildBitCast(Builder, bc2, LLVM.PointerType(LLVM.Int32Type(), 0), "");
+
             // Now add in index to pointer.
-            ValueRef[] indexes0 = new ValueRef[1];
-            indexes0[0] = i.V;
-            ValueRef ll0 = LLVM.BuildInBoundsGEP(Builder, load0, indexes0, "");
-            System.Console.WriteLine((new Value(ll0)).ToString());
+            ValueRef[] indexes1 = new ValueRef[1];
+            indexes1[0] = i.V;
+            ValueRef ll1 = LLVM.BuildInBoundsGEP(Builder, bc3, indexes1, "");
+            System.Console.WriteLine((new Value(ll1)).ToString());
+
 
             // Return pointer.
 
-            var result = new Value(ll0);
+            var result = new Value(ll1);
             System.Console.WriteLine("Result = " + result.ToString());
             System.Console.WriteLine("Result type is " + LLVM.PrintTypeToString(result.T.T));
 
@@ -3867,84 +3951,8 @@ namespace Campy.ControlFlowGraph
             else
             {
                 var v = state._stack.Pop();
-
-                var bb = this.Block;
-                var mn = bb.Method.FullName;
-                if (mn == "System.Int32 Campy.Types.Index::op_Implicit(Campy.Types.Index)")
-                {
-                    //var context = LLVM.ContextCreate();
-                    //// Load in basics for PTX kernel tid.
-                    //var tidx = LLVM.AddFunction(
-                    //    bb.Module,
-                    //    "llvm.nvvm.read.ptx.sreg.tid.x",
-                    //    LLVM.FunctionType(LLVM.Int32Type(),
-                    //    new TypeRef[] { }, false));
-                    //LLVM.AddFunction(
-                    //    bb.Module,
-                    //    "llvm.nvvm.read.ptx.sreg.tid.y",
-                    //    LLVM.FunctionType(LLVM.Int32TypeInContext(context),
-                    //    new TypeRef[] { }, false));
-                    //LLVM.AddFunction(
-                    //    bb.Module,
-                    //    "llvm.nvvm.read.ptx.sreg.tid.z",
-                    //    LLVM.FunctionType(LLVM.Int32TypeInContext(context),
-                    //    new TypeRef[] { }, false));
-                    //LLVM.AddFunction(
-                    //    bb.Module,
-                    //    "llvm.nvvm.read.ptx.sreg.ctaid.x",
-                    //    LLVM.FunctionType(LLVM.Int32TypeInContext(context),
-                    //    new TypeRef[] { }, false));
-                    //LLVM.AddFunction(
-                    //    bb.Module,
-                    //    "llvm.nvvm.read.ptx.sreg.ctaid.y",
-                    //    LLVM.FunctionType(LLVM.Int32TypeInContext(context),
-                    //    new TypeRef[] { }, false));
-                    //LLVM.AddFunction(
-                    //    bb.Module,
-                    //    "llvm.nvvm.read.ptx.sreg.ctaid.z",
-                    //    LLVM.FunctionType(LLVM.Int32TypeInContext(context),
-                    //    new TypeRef[] { }, false));
-                    //LLVM.AddFunction(
-                    //    bb.Module,
-                    //    "llvm.nvvm.read.ptx.sreg.ntid.x",
-                    //    LLVM.FunctionType(LLVM.Int32TypeInContext(context),
-                    //    new TypeRef[] { }, false));
-                    //LLVM.AddFunction(
-                    //    bb.Module,
-                    //    "llvm.nvvm.read.ptx.sreg.ntid.y",
-                    //    LLVM.FunctionType(LLVM.Int32TypeInContext(context),
-                    //    new TypeRef[] { }, false));
-                    //LLVM.AddFunction(
-                    //    bb.Module,
-                    //    "llvm.nvvm.read.ptx.sreg.ntid.z",
-                    //    LLVM.FunctionType(LLVM.Int32TypeInContext(context),
-                    //    new TypeRef[] { }, false));
-                    //LLVM.AddFunction(
-                    //    bb.Module,
-                    //    "llvm.nvvm.read.ptx.sreg.nctaid.x",
-                    //    LLVM.FunctionType(LLVM.Int32TypeInContext(context),
-                    //    new TypeRef[] { }, false));
-                    //LLVM.AddFunction(
-                    //    bb.Module,
-                    //    "llvm.nvvm.read.ptx.sreg.nctaid.y",
-                    //    LLVM.FunctionType(LLVM.Int32TypeInContext(context),
-                    //    new TypeRef[] { }, false));
-                    //LLVM.AddFunction(
-                    //    bb.Module,
-                    //    "llvm.nvvm.read.ptx.sreg.nctaid.z",
-                    //    LLVM.FunctionType(LLVM.Int32TypeInContext(context),
-                    //    new TypeRef[] { }, false));
-                    //// Make bloody call!
-                    //var call = LLVM.BuildCall(bb.Builder, tidx, new ValueRef[] { }, "tidx");
-                    Value value = new Value(LLVM.ConstInt(LLVM.Int32Type(), (ulong)0, true));
-                    var i = LLVM.BuildRet(Builder, v.V);
-                    state._stack.Push(new Value(i));
-                }
-                else
-                {
-                    var i = LLVM.BuildRet(Builder, v.V);
-                    state._stack.Push(new Value(i));
-                }
+                var i = LLVM.BuildRet(Builder, v.V);
+                state._stack.Push(new Value(i));
             }
             return Next;
         }

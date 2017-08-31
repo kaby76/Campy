@@ -233,7 +233,8 @@ namespace DeepCopyGPU
                             System.Reflection.BindingFlags.Instance
                             | System.Reflection.BindingFlags.NonPublic
                             | System.Reflection.BindingFlags.Public
-                            | System.Reflection.BindingFlags.Static);
+                            //| System.Reflection.BindingFlags.Static
+                            );
                         var fields2 = ht.GetFields();
                         foreach (var field in fields)
                         {
@@ -282,7 +283,8 @@ namespace DeepCopyGPU
                             System.Reflection.BindingFlags.Instance
                             | System.Reflection.BindingFlags.NonPublic
                             | System.Reflection.BindingFlags.Public
-                            | System.Reflection.BindingFlags.Static);
+                          //  | System.Reflection.BindingFlags.Static
+                            );
                         var fields2 = ht.GetFields();
                         foreach (var field in fields)
                         {
@@ -830,7 +832,8 @@ namespace DeepCopyGPU
                 System.Reflection.BindingFlags.Instance
                 | System.Reflection.BindingFlags.NonPublic
                 | System.Reflection.BindingFlags.Public
-                | System.Reflection.BindingFlags.Static);
+                //| System.Reflection.BindingFlags.Static
+                );
             if (type.IsValueType && IsStruct(type))
                 sb.Append("struct {").AppendLine();
             else if (type.IsClass)
