@@ -7,31 +7,30 @@ namespace ConsoleApp4
     {
         static void Main(string[] args)
         {
-            var all = Campy.Types.Accelerator.GetAll();
-            int[] data = new[] { 1, 2, 3, 4, 5 };
+            //var all = Campy.Types.Accelerator.GetAll();
+            //int[] data = new[] { 1, 2, 3, 4, 5 };
 
-            Campy.Parallel.For(new Extent(5), idx =>
-            {
-                data[idx] += 1;
-            });
-            for (int i = 0; i < data.Length; ++i) System.Console.WriteLine(data[i]);
+            //Campy.Parallel.For(new Extent(5), idx =>
+            //{
+            //    data[idx] += 1;
+            //});
+            //for (int i = 0; i < data.Length; ++i) System.Console.WriteLine(data[i]);
 
             // FUTURE.
-            //int n = Bithacks.Power2(20);
-            //int[] data = new int[n];
-            //Extent e = new Extent(n);
-            //Campy.Parallel.For(new Extent(n), idx => data[idx] = 1);
-            //for (int level = 1; level < Bithacks.Log2(n); level++)
-            //{
-            //    int step = Bithacks.Power2(level);
-            //    Campy.Parallel.For(new Extent(n / step), idx =>
-            //    {
-            //        var i = step * idx;
-            //        data[i] = data[i] + data[i + step / 2];
-            //    });
-            //}
-            //for (int i = 0; i < data.Length; ++i)
-            //    System.Console.WriteLine(data[i]);
+            int n = Bithacks.Power2(4);
+            int[] data = new int[n];
+            Campy.Parallel.For(new Extent(n), idx => data[idx] = 1);
+            for (int level = 1; level < Bithacks.Log2(n); level++)
+            {
+                int step = Bithacks.Power2(level);
+                Campy.Parallel.For(new Extent(n / step), idx =>
+                {
+                    var i = step * idx;
+                    data[i] = data[i] + data[i + step / 2];
+                });
+            }
+            for (int i = 0; i < data.Length; ++i)
+                System.Console.WriteLine(data[i]);
         }
     }
 }

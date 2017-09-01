@@ -17,6 +17,20 @@ namespace Campy
 {
     public class Parallel
     {
+        private static Parallel Singleton = new Parallel();
+        private CFG _graph;
+        private Reader _reader;
+        private Converter _converter;
+
+        private Parallel()
+        {
+            Swigged.LLVM.Helper.Adjust.Path();
+            Cuda.cuInit(0);
+            _reader = new Reader();
+            _graph = _reader.Cfg;
+            _converter = new Campy.ControlFlowGraph.Converter(_graph);
+            var ok = GC.TryStartNoGCRegion(200000000);
+        }
 
         public static void For(Extent extent, _Kernel_type kernel)
         {
@@ -29,123 +43,113 @@ namespace Campy
 
         static public unsafe void For(AcceleratorView view, Extent extent, _Kernel_type kernel)
         {
-            Swigged.LLVM.Helper.Adjust.Path();
-            Cuda.cuInit(0);
+            GCHandle handle1 = default(GCHandle);
+            GCHandle handle2 = default(GCHandle);
 
-            Reader r = new Reader();
-            CFG g = r.Cfg;
-            CUresult res;
-            
-            Converter c = new Campy.ControlFlowGraph.Converter(g);
-
-            // Parse kernel instructions to determine basic block representation of all the code to compile.
-            int change_set_id = g.StartChangeSet();
-            r.AnalyzeMethod(kernel);
-            List<CFG.Vertex> cs = g.PopChangeSet(change_set_id);
-
-            // Very important note: Although we have the control flow graph of the code that is to
-            // be compiled, there is going to be generics used, e.g., ArrayView<int>, within the body
-            // of the code and in the called runtime library. We need to record the types for compiling
-            // and add that to compilation.
-            // https://stackoverflow.com/questions/5342345/how-do-generics-get-compiled-by-the-jit-compiler
-
-            // Create a list of generics called with types passed.
-            List<Type> list_of_data_types_used = c.FindAllTargets(kernel);
-
-            // Convert list into Mono data types.
-            List<Mono.Cecil.TypeDefinition> list_of_mono_data_types_used = new List<TypeDefinition>();
-            foreach (System.Type data_type_used in list_of_data_types_used)
+            try
             {
-                var mono_type = Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(data_type_used);
-                //if (mono_type == null) continue;
-                list_of_mono_data_types_used.Add(mono_type);
-            }
-            if (list_of_mono_data_types_used.Count != list_of_data_types_used.Count) throw new Exception("Cannot convert types properly to Mono.");
+                // Parse kernel instructions to determine basic block representation of all the code to compile.
+                int change_set_id = Singleton._graph.StartChangeSet();
+                Singleton._reader.AnalyzeMethod(kernel);
+                List<CFG.Vertex> cs = Singleton._graph.PopChangeSet(change_set_id);
 
-            // Instantiate all generics at this point.
-            cs = c.InstantiateGenerics(cs, list_of_data_types_used, list_of_mono_data_types_used);
+                // Very important note: Although we have the control flow graph of the code that is to
+                // be compiled, there is going to be generics used, e.g., ArrayView<int>, within the body
+                // of the code and in the called runtime library. We need to record the types for compiling
+                // and add that to compilation.
+                // https://stackoverflow.com/questions/5342345/how-do-generics-get-compiled-by-the-jit-compiler
 
-            // Compile methods with added type information.
-            c.CompileToLLVM(cs, list_of_mono_data_types_used);
+                // Create a list of generics called with types passed.
+                List<Type> list_of_data_types_used = Singleton._converter.FindAllTargets(kernel);
 
-            // Get basic block of entry.
-            var bb = cs.First();
-            var method = bb.Method;
+                // Convert list into Mono data types.
+                List<Mono.Cecil.TypeDefinition> list_of_mono_data_types_used = new List<TypeDefinition>();
+                foreach (System.Type data_type_used in list_of_data_types_used)
+                {
+                    list_of_mono_data_types_used.Add(
+                        ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(data_type_used));
+                }
 
-            var helloWorld = c.GetPtr(cs.First().Name);
+                // Instantiate all generics at this point.
+                cs = Singleton._converter.InstantiateGenerics(
+                    cs, list_of_data_types_used, list_of_mono_data_types_used);
 
-            var ok = GC.TryStartNoGCRegion(200000000);
-            var rank = extent._Rank;
-            Index index = new Index(extent.Size());
-            Buffers buffer = new Buffers();
+                // Compile methods with added type information.
+                Singleton._converter.CompileToLLVM(cs, list_of_mono_data_types_used);
 
-            // Set up parameters.
-            var parameters = method.Parameters;
-            int count = parameters.Count;
-            if (bb.HasThis) count++;
+                // Get basic block of entry.
+                var bb = cs.First();
+                var method = bb.Method;
+                var ptr_to_kernel = Singleton._converter.GetPtr(bb.Name);
 
-            IntPtr[] parms1 = new IntPtr[1];
-            IntPtr[] parms2 = new IntPtr[1];
-            int current = 0;
-            IntPtr ptr = IntPtr.Zero;
-            if (count > 0)
-            {
+                var rank = extent._Rank;
+                Index index = new Index(extent.Size());
+                Buffers buffer = new Buffers();
+
+                // Set up parameters.
+                var parameters = method.Parameters;
+                int count = parameters.Count;
+                if (bb.HasThis) count++;
+                if (!(count == 1 || count == 2)) throw new Exception("Expecting at least one parameter for kernel.");
+
+                IntPtr[] parm1 = new IntPtr[1];
+                IntPtr[] parm2 = new IntPtr[1];
+                int current = 0;
+                IntPtr ptr = IntPtr.Zero;
+
                 if (bb.HasThis)
                 {
-                    // kernel.Target is a class. Copy the entire class to managed memory.
                     Type type = kernel.Target.GetType();
                     Type btype = buffer.CreateImplementationType(type);
                     ptr = buffer.New(Marshal.SizeOf(btype));
                     buffer.DeepCopyToImplementation(kernel.Target, ptr);
-
-                    parms1[0] = ptr;
-
-                    current++;
+                    parm1[0] = ptr;
                 }
 
-                //foreach (var p in parameters)
                 {
                     Type btype = buffer.CreateImplementationType(typeof(Index));
                     var s = Marshal.SizeOf(btype);
                     var ptr2 = buffer.New(s);
-                //    buffer.DeepCopyToImplementation(index, ptr2);
-                    parms2[0] = ptr2;
+                    // buffer.DeepCopyToImplementation(index, ptr2);
+                    parm2[0] = ptr2;
                 }
+
+                IntPtr[] x1 = parm1;
+                handle1 = GCHandle.Alloc(x1, GCHandleType.Pinned);
+                IntPtr pointer1 = handle1.AddrOfPinnedObject();
+
+                IntPtr[] x2 = parm2;
+                handle2 = GCHandle.Alloc(x2, GCHandleType.Pinned);
+                IntPtr pointer2 = handle2.AddrOfPinnedObject();
+
+                IntPtr[] kp = new IntPtr[] {pointer1, pointer2};
+                var res = CUresult.CUDA_SUCCESS;
+                fixed (IntPtr* kernelParams = kp)
+                {
+                    res = Cuda.cuLaunchKernel(ptr_to_kernel,
+                        1, 1, 1, // grid has one block.
+                        (uint) extent.Size(), 1, 1, // n threads.
+                        0, // no shared memory
+                        default(CUstream),
+                        (IntPtr) kernelParams,
+                        (IntPtr) IntPtr.Zero
+                    );
+                }
+                if (res != CUresult.CUDA_SUCCESS) throw new Exception();
+                res = Cuda.cuCtxSynchronize(); // Make sure it's copied back to host.
+                if (res != CUresult.CUDA_SUCCESS) throw new Exception();
+                buffer.DeepCopyFromImplementation(ptr, out object to, kernel.Target.GetType());
             }
-
-            IntPtr[] x = parms1;
-            GCHandle handle1 = GCHandle.Alloc(x, GCHandleType.Pinned);
-            IntPtr pointer1 = IntPtr.Zero;
-            pointer1 = handle1.AddrOfPinnedObject();
-
-            IntPtr[] x2 = parms2;
-            GCHandle handle2 = GCHandle.Alloc(x, GCHandleType.Pinned);
-            IntPtr pointer2 = IntPtr.Zero;
-            pointer2 = handle2.AddrOfPinnedObject();
-
-            IntPtr[] kp = new IntPtr[] { pointer1, pointer2 };
-            res = CUresult.CUDA_SUCCESS;
-            fixed (IntPtr* kernelParams = kp)
+            catch (Exception e)
             {
-                res = Cuda.cuLaunchKernel(helloWorld,
-                    1, 1, 1, // grid has one block.
-                    (uint)extent.Size(), 1, 1, // block has 2 threads.
-                    0, // no shared memory
-                    default(CUstream),
-                    (IntPtr)kernelParams,
-                    (IntPtr)IntPtr.Zero
-                );
+                Console.WriteLine(e);
+                throw;
             }
-            if (res != CUresult.CUDA_SUCCESS) throw new Exception();
-            res = Cuda.cuCtxSynchronize(); // Make sure it's copied back to host.
-            if (res != CUresult.CUDA_SUCCESS) throw new Exception();
-            buffer.DeepCopyFromImplementation(ptr, out object to, kernel.Target.GetType());
-            // Copy to target.
-            
-            //res = Cuda.cuMemcpyDtoH_v2(pointer, dptr, 11 * sizeof(int));
-            //if (res != CUresult.CUDA_SUCCESS) throw new Exception();
-            //Cuda.cuCtxDestroy_v2(cuContext);
-            //return default(IntPtr);
+            finally
+            {
+                handle1.Free();
+                handle2.Free();
+            }
         }
 
         static public void For(TiledExtent extent, _Kernel_tiled_type kernel)

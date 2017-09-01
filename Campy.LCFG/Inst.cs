@@ -32,7 +32,7 @@ namespace Campy.ControlFlowGraph
         public virtual Inst Next { get; set; }
         public virtual void ComputeStackLevel(ref int level_after) { }
 
-        public virtual Inst Convert(State state)
+        public virtual Inst Convert(Converter converter, State state)
         {
             throw new Exception("Must have an implementation for Convert!");
             return null;
@@ -524,7 +524,7 @@ namespace Campy.ControlFlowGraph
             level_after--;
         }
 
-        public override Inst Convert(State state)
+        public override Inst Convert(Converter converter, State state)
         {
             var rhs = state._stack.Pop();
             var lhs = state._stack.Pop();
@@ -960,7 +960,7 @@ namespace Campy.ControlFlowGraph
             level_after++;
         }
 
-        public override Inst Convert(State state)
+        public override Inst Convert(Converter converter, State state)
         {
             Value value = state._arguments[_arg];
             state._stack.Push(value);
@@ -985,7 +985,7 @@ namespace Campy.ControlFlowGraph
             level_after++;
         }
 
-        public override Inst Convert(State state)
+        public override Inst Convert(Converter converter, State state)
         {
             Value value = new Value(LLVM.ConstInt(LLVM.Int32Type(), (ulong)_arg, true));
             state._stack.Push(value);
@@ -1006,7 +1006,7 @@ namespace Campy.ControlFlowGraph
             level_after++;
         }
 
-        public override Inst Convert(State state)
+        public override Inst Convert(Converter converter, State state)
         {
             Value value = new Value(LLVM.ConstInt(LLVM.Int64Type(), (ulong)_arg, true));
             state._stack.Push(value);
@@ -1030,7 +1030,7 @@ namespace Campy.ControlFlowGraph
             level_after++;
         }
 
-        public override Inst Convert(State state)
+        public override Inst Convert(Converter converter, State state)
         {
             var bb = this.Block;
             var mn = bb.Method.FullName;
@@ -1128,7 +1128,7 @@ namespace Campy.ControlFlowGraph
             level_after--;
         }
 
-        public override Inst Convert(State state)
+        public override Inst Convert(Converter converter, State state)
         {
             Value v = state._stack.Pop();
             state._locals[_arg] = v;
@@ -1181,7 +1181,7 @@ namespace Campy.ControlFlowGraph
         public virtual PredicateType Predicate { get; set; }
         public virtual bool IsSigned { get; set; }
 
-        public override Inst Convert(State state)
+        public override Inst Convert(Converter converter, State state)
         {
             Value v2 = state._stack.Pop();
             Value v1 = state._stack.Pop();
@@ -1270,7 +1270,7 @@ namespace Campy.ControlFlowGraph
         public virtual PredicateType Predicate { get; set; }
         public virtual bool IsSigned { get; set; }
 
-        public override Inst Convert(State state)
+        public override Inst Convert(Converter converter, State state)
         {
             Value v2 = state._stack.Pop();
             Value v1 = state._stack.Pop();
@@ -1374,7 +1374,7 @@ namespace Campy.ControlFlowGraph
         {
         }
 
-        public override Inst Convert(State state)
+        public override Inst Convert(Converter converter, State state)
         {
             Value vv = state._stack.Pop();
             ValueRef v = vv.V;
@@ -1397,38 +1397,42 @@ namespace Campy.ControlFlowGraph
             level_after--;
         }
 
-        public override Inst Convert(State state)
+        public override Inst Convert(Converter converter, State state)
         {
             Value i = state._stack.Pop();
             System.Console.WriteLine(i.ToString());
-            Value v = state._stack.Pop();
-            System.Console.WriteLine(v.ToString());
-            TypeRef tr = LLVM.TypeOf(v.V);
-            System.Console.WriteLine(LLVM.PrintTypeToString(tr));
-            bool isPtr = v.T.isPointerTy();
-            bool isArr = v.T.isArrayTy();
-            bool isSt = v.T.isStructTy();
-            TypeKind kind = LLVM.GetTypeKind(tr);
-            bool isPtra = kind == TypeKind.PointerTypeKind;
-            bool isArra = kind == TypeKind.ArrayTypeKind;
-            bool isSta = kind == TypeKind.StructTypeKind;
-            ValueRef[] indexes = new ValueRef[1];
-            indexes[0] = i.V;
-            ValueRef load = LLVM.BuildExtractValue(Builder, v.V, 0, "");
-            ValueRef ll = LLVM.BuildInBoundsGEP(Builder, load, indexes, "");
-            var tt = LLVM.TypeOf(load);
-            System.Console.WriteLine(LLVM.PrintTypeToString(tt));
-            bool xInt = LLVM.GetTypeKind(tt) == TypeKind.IntegerTypeKind;
-            bool xP = LLVM.GetTypeKind(tt) == TypeKind.PointerTypeKind;
-            bool xA = LLVM.GetTypeKind(tt) == TypeKind.ArrayTypeKind;
-            System.Console.WriteLine(Converter.GetStringTypeOf(load));
-            if (tt == LLVM.Int32Type())
-                System.Console.WriteLine("int32");
-            ValueRef ssss = LLVM.SizeOf(tt);
 
-            var zz = LLVM.BuildLoad(Builder, ll, "");
+            Value a = state._stack.Pop();
+            System.Console.WriteLine(a.ToString());
 
-            //state._stack.Push(new Value(zz));
+            TypeRef tr = LLVM.TypeOf(a.V);
+            bool isPtr = a.T.isPointerTy();
+            bool isArr = a.T.isArrayTy();
+            bool isSt = a.T.isStructTy();
+
+			// First, load array base.
+
+			ValueRef load0 = LLVM.BuildExtractValue(Builder, a.V, 0, "");
+			System.Console.WriteLine("load0 = " + new Value(load0).ToString());
+
+			// Add 12.
+			var bc = LLVM.BuildBitCast(Builder, load0, LLVM.PointerType(LLVM.Int8Type(), 0), "");
+			System.Console.WriteLine((new Value(bc)).ToString());
+			ValueRef[] indexes2 = new ValueRef[1];
+			indexes2[0] = LLVM.ConstInt(LLVM.Int32Type(), 12, false);
+			ValueRef bc2 = LLVM.BuildInBoundsGEP(Builder, bc, indexes2, "");
+			System.Console.WriteLine((new Value(bc2)).ToString());
+			var bc3 = LLVM.BuildBitCast(Builder, bc2, LLVM.PointerType(LLVM.Int32Type(), 0), "");
+
+			// Now add in index to pointer.
+			ValueRef[] indexes1 = new ValueRef[1];
+			indexes1[0] = i.V;
+			ValueRef ll1 = LLVM.BuildInBoundsGEP(Builder, bc3, indexes1, "");
+			System.Console.WriteLine((new Value(ll1)).ToString());
+
+            var zz = LLVM.BuildLoad(Builder, ll1, "");
+            System.Console.WriteLine(new Value(zz));
+
             state._stack.Push(new Value(zz));
             return Next;
         }
@@ -1446,7 +1450,7 @@ namespace Campy.ControlFlowGraph
             level_after = level_after - 3;
         }
 
-        public override Inst Convert(State state)
+        public override Inst Convert(Converter converter, State state)
         {
             Value v = state._stack.Pop();
             System.Console.WriteLine(v.ToString());
@@ -1457,70 +1461,14 @@ namespace Campy.ControlFlowGraph
             Value a = state._stack.Pop();
             System.Console.WriteLine(a.ToString());
 
-
-            TypeRef tr = LLVM.TypeOf(v.V);
-            System.Console.WriteLine(LLVM.PrintTypeToString(tr));
-            bool isPtr = v.T.isPointerTy();
-            bool isArr = v.T.isArrayTy();
-            bool isSt = v.T.isStructTy();
-            TypeKind kind = LLVM.GetTypeKind(tr);
-            bool isPtra = kind == TypeKind.PointerTypeKind;
-            bool isArra = kind == TypeKind.ArrayTypeKind;
-            bool isSta = kind == TypeKind.StructTypeKind;
-            ValueRef[] indexes = new ValueRef[1];
-            indexes[0] = i.V;
-            ValueRef load = LLVM.BuildExtractValue(Builder, v.V, 0, "");
-            ValueRef ll = LLVM.BuildInBoundsGEP(Builder, load, indexes, "");
-            var tt = LLVM.TypeOf(load);
-            System.Console.WriteLine(LLVM.PrintTypeToString(tt));
-            bool xInt = LLVM.GetTypeKind(tt) == TypeKind.IntegerTypeKind;
-            bool xP = LLVM.GetTypeKind(tt) == TypeKind.PointerTypeKind;
-            bool xA = LLVM.GetTypeKind(tt) == TypeKind.ArrayTypeKind;
-            System.Console.WriteLine(Converter.GetStringTypeOf(load));
-            if (tt == LLVM.Int32Type())
-                System.Console.WriteLine("int32");
-            ValueRef ssss = LLVM.SizeOf(tt);
-
-            var zz = LLVM.BuildLoad(Builder, ll, "");
-
-            //state._stack.Push(new Value(zz));
-            state._stack.Push(new Value(zz));
-            return Next;
-        }
-    }
-
-
-    public class ConvertLoadElementA : Inst
-    {
-        public ConvertLoadElementA(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
-
-        public override void ComputeStackLevel(ref int level_after)
-        {
-            level_after--;
-        }
-
-        public override Inst Convert(State state)
-        {
-            Value i = state._stack.Pop();
-            System.Console.WriteLine(i.ToString());
-            Value v = state._stack.Pop();
-            System.Console.WriteLine(v.ToString());
-            TypeRef tr = LLVM.TypeOf(v.V);
-            System.Console.WriteLine(LLVM.PrintTypeToString(tr));
-            bool isPtr = v.T.isPointerTy();
-            bool isArr = v.T.isArrayTy();
-            bool isSt = v.T.isStructTy();
-            TypeKind kind = LLVM.GetTypeKind(tr);
-            bool isPtra = kind == TypeKind.PointerTypeKind;
-            bool isArra = kind == TypeKind.ArrayTypeKind;
-            bool isSta = kind == TypeKind.StructTypeKind;
+            TypeRef tr = LLVM.TypeOf(a.V);
+            bool isPtr = a.T.isPointerTy();
+            bool isArr = a.T.isArrayTy();
+            bool isSt = a.T.isStructTy();
 
             // First, load array base.
 
-            ValueRef load0 = LLVM.BuildExtractValue(Builder, v.V, 0, "");
+            ValueRef load0 = LLVM.BuildExtractValue(Builder, a.V, 0, "");
             System.Console.WriteLine("load0 = " + new Value(load0).ToString());
 
             // Add 12.
@@ -1538,6 +1486,59 @@ namespace Campy.ControlFlowGraph
             ValueRef ll1 = LLVM.BuildInBoundsGEP(Builder, bc3, indexes1, "");
             System.Console.WriteLine((new Value(ll1)).ToString());
 
+            // Store.
+            var zz = LLVM.BuildStore(Builder, v.V, ll1);
+            System.Console.WriteLine(new Value(zz));
+
+            return Next;
+        }
+    }
+
+
+    public class ConvertLoadElementA : Inst
+    {
+        public ConvertLoadElementA(Mono.Cecil.Cil.Instruction i)
+            : base(i)
+        {
+        }
+
+        public override void ComputeStackLevel(ref int level_after)
+        {
+            level_after--;
+        }
+
+        public override Inst Convert(Converter converter, State state)
+        {
+            Value i = state._stack.Pop();
+            System.Console.WriteLine(i.ToString());
+
+            Value a = state._stack.Pop();
+            System.Console.WriteLine(a.ToString());
+
+            TypeRef tr = LLVM.TypeOf(a.V);
+            bool isPtr = a.T.isPointerTy();
+            bool isArr = a.T.isArrayTy();
+			bool isSt = a.T.isStructTy();
+			
+            // First, load array base.
+
+            ValueRef load0 = LLVM.BuildExtractValue(Builder, a.V, 0, "");
+            System.Console.WriteLine("load0 = " + new Value(load0).ToString());
+
+            // Add 12.
+            var bc = LLVM.BuildBitCast(Builder, load0, LLVM.PointerType(LLVM.Int8Type(), 0), "");
+            System.Console.WriteLine((new Value(bc)).ToString());
+            ValueRef[] indexes2 = new ValueRef[1];
+            indexes2[0] = LLVM.ConstInt(LLVM.Int32Type(), 12, false);
+            ValueRef bc2 = LLVM.BuildInBoundsGEP(Builder, bc, indexes2, "");
+            System.Console.WriteLine((new Value(bc2)).ToString());
+            var bc3 = LLVM.BuildBitCast(Builder, bc2, LLVM.PointerType(LLVM.Int32Type(), 0), "");
+
+            // Now add in index to pointer.
+            ValueRef[] indexes1 = new ValueRef[1];
+            indexes1[0] = i.V;
+            ValueRef ll1 = LLVM.BuildInBoundsGEP(Builder, bc3, indexes1, "");
+            System.Console.WriteLine((new Value(ll1)).ToString());
 
             // Return pointer.
 
@@ -1562,60 +1563,98 @@ namespace Campy.ControlFlowGraph
             // Stack level remains unchanged through instruction.
         }
 
-        public override Inst Convert(State state)
+        public override Inst Convert(Converter converter, State state)
         {
-            Value v = state._stack.Pop();
-            TypeRef tr = LLVM.TypeOf(v.V);
-            System.Console.WriteLine("tos = " + LLVM.PrintTypeToString(tr));
-            bool isPtr = v.T.isPointerTy();
-            bool isArr = v.T.isArrayTy();
-            bool isSt = v.T.isStructTy();
-            TypeKind kind = LLVM.GetTypeKind(tr);
-            bool isPtra = kind == TypeKind.PointerTypeKind;
-            bool isArra = kind == TypeKind.ArrayTypeKind;
-            bool isSta = kind == TypeKind.StructTypeKind;
-
-            if (isPtr)
             {
+                Value v = state._stack.Pop();
+                TypeRef tr = LLVM.TypeOf(v.V);
+                System.Console.WriteLine("tos = " + LLVM.PrintTypeToString(tr));
+                bool isPtr = v.T.isPointerTy();
+                bool isArr = v.T.isArrayTy();
+                bool isSt = v.T.isStructTy();
+                TypeKind kind = LLVM.GetTypeKind(tr);
+                bool isPtra = kind == TypeKind.PointerTypeKind;
+                bool isArra = kind == TypeKind.ArrayTypeKind;
+                bool isSta = kind == TypeKind.StructTypeKind;
 
-                uint offset = 0;
-                var yy = this.Instruction.Operand;
-                var field = yy as Mono.Cecil.FieldReference;
-                if (yy == null) throw new Exception("Cannot convert.");
-                var declaring_type_tr = field.DeclaringType;
-                var declaring_type = declaring_type_tr.Resolve();
-                foreach (var f in declaring_type.Fields)
+                if (isPtr)
                 {
-                    if (f.Name == field.Name) break;
-                    offset++;
+
+                    uint offset = 0;
+                    var yy = this.Instruction.Operand;
+                    var field = yy as Mono.Cecil.FieldReference;
+                    if (yy == null) throw new Exception("Cannot convert.");
+                    var declaring_type_tr = field.DeclaringType;
+                    var declaring_type = declaring_type_tr.Resolve();
+                    foreach (var f in declaring_type.Fields)
+                    {
+                        if (f.Name == field.Name) break;
+                        offset++;
+                    }
+
+                    var tt = LLVM.TypeOf(v.V);
+                    System.Console.WriteLine(LLVM.PrintTypeToString(tt));
+
+                    var addr = LLVM.BuildStructGEP(Builder, v.V, offset, "");
+                    var load = LLVM.BuildLoad(Builder, addr, "");
+
+                    //ValueRef load = LLVM.BuildExtractValue(Builder, v.V, offset, "");
+                    bool xInt = LLVM.GetTypeKind(tt) == TypeKind.IntegerTypeKind;
+                    bool xP = LLVM.GetTypeKind(tt) == TypeKind.PointerTypeKind;
+                    bool xA = LLVM.GetTypeKind(tt) == TypeKind.ArrayTypeKind;
+                    //System.Console.WriteLine(Converter.GetStringTypeOf(load));
+                    if (tt == LLVM.Int32Type())
+                        System.Console.WriteLine("int32");
+                    //ValueRef ssss = LLVM.SizeOf(tt);
+
+                    //var zz = LLVM.BuildLoad(Builder, load, "");
+                    //var zz = LLVM.BuildLoad(Builder, load, "");
+                    //state._stack.Push(new Value(zz));
+                    state._stack.Push(new Value(load));
+                }
+                else
+                {
+                    throw new Exception("Value type ldfld not implemented!");
                 }
 
-                var tt = LLVM.TypeOf(v.V);
-                System.Console.WriteLine(LLVM.PrintTypeToString(tt));
-
-                var addr = LLVM.BuildStructGEP(Builder, v.V, offset, "");
-                var load = LLVM.BuildLoad(Builder, addr, "");
-
-                //ValueRef load = LLVM.BuildExtractValue(Builder, v.V, offset, "");
-                bool xInt = LLVM.GetTypeKind(tt) == TypeKind.IntegerTypeKind;
-                bool xP = LLVM.GetTypeKind(tt) == TypeKind.PointerTypeKind;
-                bool xA = LLVM.GetTypeKind(tt) == TypeKind.ArrayTypeKind;
-                //System.Console.WriteLine(Converter.GetStringTypeOf(load));
-                if (tt == LLVM.Int32Type())
-                    System.Console.WriteLine("int32");
-                //ValueRef ssss = LLVM.SizeOf(tt);
-
-                //var zz = LLVM.BuildLoad(Builder, load, "");
-                //var zz = LLVM.BuildLoad(Builder, load, "");
-                //state._stack.Push(new Value(zz));
-                state._stack.Push(new Value(load));
+                return Next;
             }
-            else
             {
-                throw new Exception("Value type ldfld not implemented!");
-            }
 
-            return Next;
+				Value v = state._stack.Pop();
+				System.Console.WriteLine(v);
+
+				TypeRef tr = LLVM.TypeOf(v.V);
+				bool isPtr = v.T.isPointerTy();
+				bool isArr = v.T.isArrayTy();
+				bool isSt = v.T.isStructTy();
+
+				if (isPtr)
+				{
+					uint offset = 0;
+					var yy = this.Instruction.Operand;
+					var field = yy as Mono.Cecil.FieldReference;
+					if (yy == null) throw new Exception("Cannot convert.");
+					var declaring_type_tr = field.DeclaringType;
+					var declaring_type = declaring_type_tr.Resolve();
+					foreach (var f in declaring_type.Fields)
+					{
+						if (f.Name == field.Name) break;
+						offset++;
+					}
+
+					var load = LLVM.BuildExtractValue(Builder, v.V, offset, "");
+					System.Console.WriteLine(new Value(load));
+
+					state._stack.Push(new Value(load));
+				}
+				else
+				{
+					throw new Exception("Value type ldfld not implemented!");
+				}
+
+				return Next;
+			}
         }
     }
 
@@ -1631,7 +1670,7 @@ namespace Campy.ControlFlowGraph
             // No change in depth of stack.
         }
 
-        public override Inst Convert(State state)
+        public override Inst Convert(Converter converter, State state)
         {
             Value v = state._stack.Pop();
             System.Console.WriteLine("ConvertLoadIndirect into function " + v.ToString());
@@ -1666,7 +1705,7 @@ namespace Campy.ControlFlowGraph
             level_after -= 2;
         }
 
-        public override Inst Convert(State state)
+        public override Inst Convert(Converter converter, State state)
         {
             Value v = state._stack.Pop();
             Value a = state._stack.Pop();
@@ -1944,7 +1983,7 @@ namespace Campy.ControlFlowGraph
         {
         }
 
-        public override Inst Convert(State state)
+        public override Inst Convert(Converter converter, State state)
         {
             GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge = Block._Successors[0];
             int succ = edge.To;
@@ -1961,7 +2000,7 @@ namespace Campy.ControlFlowGraph
         {
         }
 
-        public override Inst Convert(State state)
+        public override Inst Convert(Converter converter, State state)
         {
             GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge = Block._Successors[0];
             int succ = edge.To;
@@ -1983,7 +2022,7 @@ namespace Campy.ControlFlowGraph
             level_after--;
         }
 
-        public override Inst Convert(State state)
+        public override Inst Convert(Converter converter, State state)
         {
             var v = state._stack.Pop();
             GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge1 = Block._Successors[0];
@@ -2017,7 +2056,7 @@ namespace Campy.ControlFlowGraph
             level_after--;
         }
 
-        public override Inst Convert(State state)
+        public override Inst Convert(Converter converter, State state)
         {
             var v = state._stack.Pop();
             GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge1 = Block._Successors[0];
@@ -2046,7 +2085,7 @@ namespace Campy.ControlFlowGraph
             level_after--;
         }
 
-        public override Inst Convert(State state)
+        public override Inst Convert(Converter converter, State state)
         {
             var v = state._stack.Pop();
             GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge1 = Block._Successors[0];
@@ -2075,7 +2114,7 @@ namespace Campy.ControlFlowGraph
             level_after--;
         }
 
-        public override Inst Convert(State state)
+        public override Inst Convert(Converter converter, State state)
         {
             var v = state._stack.Pop();
             GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge1 = Block._Successors[0];
@@ -2132,7 +2171,7 @@ namespace Campy.ControlFlowGraph
             level_after = level_after + ret - args;
         }
 
-        public override Inst Convert(State state)
+        public override Inst Convert(Converter converter, State state)
         {
             // Get function.
             var j = this;
@@ -2172,7 +2211,7 @@ namespace Campy.ControlFlowGraph
                     GraphLinkedList<int, CFG.Vertex, CFG.Edge> g = j.Block._Graph;
                     int k = g.NameSpace.BijectFromBasetype(node.Name);
                     CFG.Vertex v = g.VertexSpace[k];
-                    Converter c = Converter.GetConverter((CFG)g);
+                    Converter c = converter;
                     if (v.IsEntry && Converter.MethodName(v.Method) == name && c.IsFullyInstantiatedNode(v))
                         return true;
                     else return false;
@@ -2280,7 +2319,7 @@ namespace Campy.ControlFlowGraph
             }
             level_after = level_after + ret - args;
         }
-        public override Inst Convert(State state)
+        public override Inst Convert(Converter converter, State state)
         {
             // Get function.
             var j = this;
@@ -2320,7 +2359,7 @@ namespace Campy.ControlFlowGraph
                     GraphLinkedList<int, CFG.Vertex, CFG.Edge> g = j.Block._Graph;
                     int k = g.NameSpace.BijectFromBasetype(node.Name);
                     CFG.Vertex v = g.VertexSpace[k];
-                    Converter c = Converter.GetConverter((CFG)g);
+                    Converter c = converter;
                     if (v.IsEntry && Converter.MethodName(v.Method) == name && c.IsFullyInstantiatedNode(v))
                         return true;
                     else return false;
@@ -2734,7 +2773,7 @@ namespace Campy.ControlFlowGraph
             level_after++;
         }
 
-        public override Inst Convert(State state)
+        public override Inst Convert(Converter converter, State state)
         {
             var rhs = state._stack.Pop();
             state._stack.Push(rhs);
@@ -3564,7 +3603,7 @@ namespace Campy.ControlFlowGraph
             // No effect change in stack size.
         }
 
-        public override Inst Convert(State state)
+        public override Inst Convert(Converter converter, State state)
         {
             throw new Exception("ldlen does not work. Pass array length explicitly.");
             // Pointer passed is beginning of array, but length is represented
@@ -3897,7 +3936,7 @@ namespace Campy.ControlFlowGraph
             : base(i)
         {
         }
-        public override Inst Convert(State state)
+        public override Inst Convert(Converter converter, State state)
         {
             return Next;
         }
@@ -3990,7 +4029,7 @@ namespace Campy.ControlFlowGraph
             // This is handled by the call instruction.
         }
 
-        public override Inst Convert(State state)
+        public override Inst Convert(Converter converter, State state)
         {
             // There are really two different stacks here:
             // one for the called method, and the other for the caller of the method.

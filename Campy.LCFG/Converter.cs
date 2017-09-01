@@ -21,17 +21,10 @@ namespace Campy.ControlFlowGraph
     {
         private CFG _mcfg;
 
-        static Dictionary<CFG, Converter> _converters = new Dictionary<CFG, Converter>();
-
-        public static Converter GetConverter(CFG cfg)
-        {
-            return _converters[cfg];
-        }
-
         public Converter(CFG mcfg)
         {
             _mcfg = mcfg;
-            _converters[mcfg] = this;
+            global_module = CreateModule("global");
         }
 
         // Finally, we need a mapping of node to rewrites.
@@ -439,7 +432,6 @@ namespace Campy.ControlFlowGraph
 
         private void CompilePart1(IEnumerable<CFG.Vertex> basic_blocks_to_compile, List<Mono.Cecil.TypeDefinition> list_of_data_types_used)
         {
-            global_module = CreateModule("global");
             tidx = LLVM.AddFunction(
                 global_module,
                 "llvm.nvvm.read.ptx.sreg.tid.x",
@@ -644,43 +636,6 @@ namespace Campy.ControlFlowGraph
 
         private void CompilePart5(IEnumerable<CFG.Vertex> basic_blocks_to_compile, List<Mono.Cecil.TypeDefinition> list_of_data_types_used)
         {
-            return;
-            // In all entries (that is, a basic block which in an entry and
-            // has an LLVM Module created), declare external functions. Note,
-            // every function is defined in its own Module. We have to do this
-            // due to a restriction in LLVM.
-            foreach (CFG.Vertex bb in basic_blocks_to_compile)
-            {
-                if (!IsFullyInstantiatedNode(bb))
-                    continue;
-
-                foreach (Inst caller in Inst.CallInstructions)
-                {
-                    CFG.Vertex n = caller.Block;
-                    if (n != bb) continue;
-                    System.Console.WriteLine(caller);
-                    object method = caller.Operand;
-                    if (method as Mono.Cecil.MethodReference == null) throw new Exception("Cannot cast call instruction operand!");
-                    Mono.Cecil.MethodReference mr = method as Mono.Cecil.MethodReference;
-                    var name = MethodName(mr);
-                    // Find bb entry.
-                    CFG.Vertex the_entry = caller.Block._Graph.VertexNodes.Where(node
-                        =>
-                    {
-                        GraphLinkedList<int, CFG.Vertex, CFG.Edge> g = caller.Block._Graph;
-                        int k = g.NameSpace.BijectFromBasetype(node.Name);
-                        CFG.Vertex v = g.VertexSpace[k];
-                        Converter c = Converter.GetConverter((CFG)g);
-                        if (v.IsEntry && MethodName(v.Method) == name && c.IsFullyInstantiatedNode(v))
-                            return true;
-                        else return false;
-                    }).ToList().FirstOrDefault();
-                    System.Console.WriteLine("Found " + the_entry);
-
-                    // Within the basic block bb, set up declaration of method.
-                    AddExternFunction(bb, the_entry);
-                }
-            }
         }
 
         public void CompileToLLVM(List<CFG.Vertex> basic_blocks_to_compile, List<Mono.Cecil.TypeDefinition> list_of_data_types_used)
@@ -912,7 +867,7 @@ namespace Campy.ControlFlowGraph
                         var inst = bb.Instructions[i];
                         System.Console.WriteLine(inst);
                         last_inst = inst;
-                        inst = inst.Convert(bb.StateOut);
+                        inst = inst.Convert(this, bb.StateOut);
                         bb.StateOut.Dump();
                     }
                     if (last_inst != null && last_inst.OpCode.FlowControl == Mono.Cecil.Cil.FlowControl.Next)
