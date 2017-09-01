@@ -636,18 +636,6 @@ namespace Campy.ControlFlowGraph
 
         private void CompilePart5(IEnumerable<CFG.Vertex> basic_blocks_to_compile, List<Mono.Cecil.TypeDefinition> list_of_data_types_used)
         {
-        }
-
-        public void CompileToLLVM(List<CFG.Vertex> basic_blocks_to_compile, List<Mono.Cecil.TypeDefinition> list_of_data_types_used)
-        {
-            CompilePart1(basic_blocks_to_compile, list_of_data_types_used);
-
-            CompilePart2(basic_blocks_to_compile, list_of_data_types_used);
-
-            CompilePart3(basic_blocks_to_compile, list_of_data_types_used);
-
-            List<CFG.Vertex> entries = _mcfg.VertexNodes.Where(node => node.IsEntry).ToList();
-
             foreach (CFG.Vertex node in basic_blocks_to_compile)
             {
                 if (!IsFullyInstantiatedNode(node))
@@ -684,25 +672,11 @@ namespace Campy.ControlFlowGraph
                 }
                 node.HasReturnValue = ret > 0;
             }
+        }
 
-            foreach (CFG.Vertex node in _mcfg.VertexNodes)
-            {
-                if (node.IsEntry)
-                    continue;
-                CFG.Vertex e = node.Entry;
-                node.HasReturnValue = e.HasReturnValue;
-                node.NumberOfArguments = e.NumberOfArguments;
-                node.NumberOfLocals = e.NumberOfLocals;
-                node.HasThis = e.HasThis;
-            }
-
-            List<CFG.Vertex> unreachable;
-            List<CFG.Vertex> change_set_minus_unreachable;
-            CompilePart4(basic_blocks_to_compile, list_of_data_types_used, entries, out unreachable, out change_set_minus_unreachable);
-
-            CompilePart5(basic_blocks_to_compile, list_of_data_types_used);
-
-
+        private void CompilePart6(IEnumerable<CFG.Vertex> basic_blocks_to_compile, List<Mono.Cecil.TypeDefinition> list_of_data_types_used, List<CFG.Vertex> entries,
+            List<CFG.Vertex> unreachable, List<CFG.Vertex> change_set_minus_unreachable)
+        {
             {
                 List<CFG.Vertex> work = new List<CFG.Vertex>(change_set_minus_unreachable);
                 while (work.Count != 0)
@@ -752,7 +726,7 @@ namespace Campy.ControlFlowGraph
                                 // Warn if predecessor does not concur with another predecessor.
                                 CFG.Vertex llvm_nodex = node;
                                 llvm_nodex.StackLevelIn = llvm_pred.StackLevelOut;
-                                in_level = (int) llvm_nodex.StackLevelIn;
+                                in_level = (int)llvm_nodex.StackLevelIn;
                             }
                             // Warn if no predecessors have been visited.
                             if (in_level == -1)
@@ -761,7 +735,7 @@ namespace Campy.ControlFlowGraph
                             }
                         }
                         CFG.Vertex llvm_nodez = node;
-                        int level_after = (int) llvm_nodez.StackLevelIn;
+                        int level_after = (int)llvm_nodez.StackLevelIn;
                         int level_pre = level_after;
                         foreach (var i in llvm_nodez.Instructions)
                         {
@@ -770,7 +744,7 @@ namespace Campy.ControlFlowGraph
                             //System.Console.WriteLine("after inst " + i);
                             //System.Console.WriteLine("level = " + level_after);
                             Debug.Assert(level_after >= node.NumberOfLocals + node.NumberOfArguments
-                                 + (node.HasThis ? 1 : 0));
+                                         + (node.HasThis ? 1 : 0));
                         }
                         llvm_nodez.StackLevelOut = level_after;
                         // Verify return node that it makes sense.
@@ -816,6 +790,26 @@ namespace Campy.ControlFlowGraph
                     }
                 }
             }
+        }
+
+        public void CompileToLLVM(List<CFG.Vertex> basic_blocks_to_compile, List<Mono.Cecil.TypeDefinition> list_of_data_types_used)
+        {
+            CompilePart1(basic_blocks_to_compile, list_of_data_types_used);
+
+            CompilePart2(basic_blocks_to_compile, list_of_data_types_used);
+
+            CompilePart3(basic_blocks_to_compile, list_of_data_types_used);
+
+            List<CFG.Vertex> entries = _mcfg.VertexNodes.Where(node => node.IsEntry).ToList();
+
+            CompilePart5(basic_blocks_to_compile, list_of_data_types_used);
+
+            List<CFG.Vertex> unreachable;
+            List<CFG.Vertex> change_set_minus_unreachable;
+            CompilePart4(basic_blocks_to_compile, list_of_data_types_used, entries, out unreachable, out change_set_minus_unreachable);
+
+            CompilePart6(basic_blocks_to_compile, list_of_data_types_used, entries,
+                unreachable, change_set_minus_unreachable);
 
             {
                 // Get a list of nodes to compile.
