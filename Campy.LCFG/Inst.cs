@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Campy.Graphs;
+using Campy.LCFG;
 using Mono.Cecil.Cil;
 using Swigged.LLVM;
 
@@ -1415,11 +1416,11 @@ namespace Campy.ControlFlowGraph
 			ValueRef load0 = LLVM.BuildExtractValue(Builder, a.V, 0, "");
 			System.Console.WriteLine("load0 = " + new Value(load0).ToString());
 
-			// Add 12.
+			// Add 16.
 			var bc = LLVM.BuildBitCast(Builder, load0, LLVM.PointerType(LLVM.Int8Type(), 0), "");
 			System.Console.WriteLine((new Value(bc)).ToString());
 			ValueRef[] indexes2 = new ValueRef[1];
-			indexes2[0] = LLVM.ConstInt(LLVM.Int32Type(), 12, false);
+			indexes2[0] = LLVM.ConstInt(LLVM.Int32Type(), 16, false);
 			ValueRef bc2 = LLVM.BuildInBoundsGEP(Builder, bc, indexes2, "");
 			System.Console.WriteLine((new Value(bc2)).ToString());
 			var bc3 = LLVM.BuildBitCast(Builder, bc2, LLVM.PointerType(LLVM.Int32Type(), 0), "");
@@ -1471,11 +1472,11 @@ namespace Campy.ControlFlowGraph
             ValueRef load0 = LLVM.BuildExtractValue(Builder, a.V, 0, "");
             System.Console.WriteLine("load0 = " + new Value(load0).ToString());
 
-            // Add 12.
+            // Add 16.
             var bc = LLVM.BuildBitCast(Builder, load0, LLVM.PointerType(LLVM.Int8Type(), 0), "");
             System.Console.WriteLine((new Value(bc)).ToString());
             ValueRef[] indexes2 = new ValueRef[1];
-            indexes2[0] = LLVM.ConstInt(LLVM.Int32Type(), 12, false);
+            indexes2[0] = LLVM.ConstInt(LLVM.Int32Type(), 16, false);
             ValueRef bc2 = LLVM.BuildInBoundsGEP(Builder, bc, indexes2, "");
             System.Console.WriteLine((new Value(bc2)).ToString());
             var bc3 = LLVM.BuildBitCast(Builder, bc2, LLVM.PointerType(LLVM.Int32Type(), 0), "");
@@ -1525,11 +1526,11 @@ namespace Campy.ControlFlowGraph
             ValueRef load0 = LLVM.BuildExtractValue(Builder, a.V, 0, "");
             System.Console.WriteLine("load0 = " + new Value(load0).ToString());
 
-            // Add 12.
+            // Add 16.
             var bc = LLVM.BuildBitCast(Builder, load0, LLVM.PointerType(LLVM.Int8Type(), 0), "");
             System.Console.WriteLine((new Value(bc)).ToString());
             ValueRef[] indexes2 = new ValueRef[1];
-            indexes2[0] = LLVM.ConstInt(LLVM.Int32Type(), 12, false);
+            indexes2[0] = LLVM.ConstInt(LLVM.Int32Type(), 16, false);
             ValueRef bc2 = LLVM.BuildInBoundsGEP(Builder, bc, indexes2, "");
             System.Console.WriteLine((new Value(bc2)).ToString());
             var bc3 = LLVM.BuildBitCast(Builder, bc2, LLVM.PointerType(LLVM.Int32Type(), 0), "");
@@ -1572,23 +1573,46 @@ namespace Campy.ControlFlowGraph
                 bool isPtr = v.T.isPointerTy();
                 bool isArr = v.T.isArrayTy();
                 bool isSt = v.T.isStructTy();
-                TypeKind kind = LLVM.GetTypeKind(tr);
-                bool isPtra = kind == TypeKind.PointerTypeKind;
-                bool isArra = kind == TypeKind.ArrayTypeKind;
-                bool isSta = kind == TypeKind.StructTypeKind;
 
                 if (isPtr)
                 {
-
                     uint offset = 0;
                     var yy = this.Instruction.Operand;
                     var field = yy as Mono.Cecil.FieldReference;
                     if (yy == null) throw new Exception("Cannot convert.");
                     var declaring_type_tr = field.DeclaringType;
                     var declaring_type = declaring_type_tr.Resolve();
+
+                    // need to take into account padding fields. Unfortunately,
+                    // LLVM does not name elements in a struct/class. So, we must
+                    // compute padding and adjust.
+                    int size = 0;
                     foreach (var f in declaring_type.Fields)
                     {
-                        if (f.Name == field.Name) break;
+                        int field_size;
+                        int alignment;
+                        var ft = Campy.Types.Utils.ReflectionCecilInterop.ConvertToSystemReflectionType(f.FieldType);
+                        if (ft.IsArray || ft.IsClass)
+                        {
+                            field_size = Buffers.SizeOf(typeof(IntPtr));
+                            alignment = Buffers.Alignment(typeof(IntPtr));
+                        }
+                        else
+                        {
+                            field_size = Buffers.SizeOf(ft);
+                            alignment = Buffers.Alignment(ft);
+                        }
+                        int padding = Buffers.Padding(size, alignment);
+                        size = size + padding + field_size;
+                        if (padding != 0)
+                        {
+                            // Add in bytes to effect padding.
+                            for (int j = 0; j < padding; ++j)
+                                offset++;
+                        }
+
+                        if (f.Name == field.Name)
+                            break;
                         offset++;
                     }
 
@@ -1596,20 +1620,33 @@ namespace Campy.ControlFlowGraph
                     System.Console.WriteLine(LLVM.PrintTypeToString(tt));
 
                     var addr = LLVM.BuildStructGEP(Builder, v.V, offset, "");
-                    var load = LLVM.BuildLoad(Builder, addr, "");
+                    System.Console.WriteLine(new Value(addr));
 
-                    //ValueRef load = LLVM.BuildExtractValue(Builder, v.V, offset, "");
+                    var load = LLVM.BuildLoad(Builder, addr, "");
+                    System.Console.WriteLine(new Value(load));
+
                     bool xInt = LLVM.GetTypeKind(tt) == TypeKind.IntegerTypeKind;
                     bool xP = LLVM.GetTypeKind(tt) == TypeKind.PointerTypeKind;
                     bool xA = LLVM.GetTypeKind(tt) == TypeKind.ArrayTypeKind;
-                    //System.Console.WriteLine(Converter.GetStringTypeOf(load));
-                    if (tt == LLVM.Int32Type())
-                        System.Console.WriteLine("int32");
-                    //ValueRef ssss = LLVM.SizeOf(tt);
 
-                    //var zz = LLVM.BuildLoad(Builder, load, "");
-                    //var zz = LLVM.BuildLoad(Builder, load, "");
-                    //state._stack.Push(new Value(zz));
+                    // If load result is a pointer, then cast it to proper type.
+                    // This is because I had to avoid recursive data types in classes
+                    // as LLVM cannot handle these at all. So, all pointer types
+                    // were defined as void* in the LLVM field.
+
+                    var load_value = new Value(load);
+                    bool isPtrLoad = load_value.T.isPointerTy();
+                    if (isPtrLoad)
+                    {
+                        var mono_field_type = field.FieldType;
+                        TypeRef type = Converter.ConvertMonoTypeToLLVM(
+                            Block, mono_field_type,
+                            Block.LLVMTypeMap, Block.OpsFromOriginal);
+                        load = LLVM.BuildBitCast(Builder,
+                                load, type, "");
+                        System.Console.WriteLine(new Value(load));
+                    }
+
                     state._stack.Push(new Value(load));
                 }
                 else
@@ -1619,42 +1656,6 @@ namespace Campy.ControlFlowGraph
 
                 return Next;
             }
-            {
-
-				Value v = state._stack.Pop();
-				System.Console.WriteLine(v);
-
-				TypeRef tr = LLVM.TypeOf(v.V);
-				bool isPtr = v.T.isPointerTy();
-				bool isArr = v.T.isArrayTy();
-				bool isSt = v.T.isStructTy();
-
-				if (isPtr)
-				{
-					uint offset = 0;
-					var yy = this.Instruction.Operand;
-					var field = yy as Mono.Cecil.FieldReference;
-					if (yy == null) throw new Exception("Cannot convert.");
-					var declaring_type_tr = field.DeclaringType;
-					var declaring_type = declaring_type_tr.Resolve();
-					foreach (var f in declaring_type.Fields)
-					{
-						if (f.Name == field.Name) break;
-						offset++;
-					}
-
-					var load = LLVM.BuildExtractValue(Builder, v.V, offset, "");
-					System.Console.WriteLine(new Value(load));
-
-					state._stack.Push(new Value(load));
-				}
-				else
-				{
-					throw new Exception("Value type ldfld not implemented!");
-				}
-
-				return Next;
-			}
         }
     }
 

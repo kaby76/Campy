@@ -6,8 +6,8 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Campy.Types;
 using Campy.ControlFlowGraph;
+using Campy.LCFG;
 using Campy.Types.Utils;
-using DeepCopyGPU;
 using Mono.Cecil;
 using Swigged.Cuda;
 using Type = System.Type;
@@ -101,14 +101,14 @@ namespace Campy
                 {
                     Type type = kernel.Target.GetType();
                     Type btype = buffer.CreateImplementationType(type);
-                    ptr = buffer.New(Marshal.SizeOf(btype));
+                    ptr = buffer.New(Buffers.SizeOf(btype));
                     buffer.DeepCopyToImplementation(kernel.Target, ptr);
                     parm1[0] = ptr;
                 }
 
                 {
                     Type btype = buffer.CreateImplementationType(typeof(Index));
-                    var s = Marshal.SizeOf(btype);
+                    var s = Buffers.SizeOf(btype);
                     var ptr2 = buffer.New(s);
                     // buffer.DeepCopyToImplementation(index, ptr2);
                     parm2[0] = ptr2;

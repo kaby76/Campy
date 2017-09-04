@@ -85,7 +85,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Buffers.cs" />
     <Compile Include="Parallel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

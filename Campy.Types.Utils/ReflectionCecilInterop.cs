@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Campy.Utils;
 using Mono.Cecil;
 
@@ -61,39 +59,49 @@ namespace Campy.Types.Utils
 
         public static System.Type ConvertToSystemReflectionType(Mono.Cecil.TypeReference tr)
         {
+            Type result = null;
+            TypeReference element_type = null;
+
             // Find equivalent to type definition in Mono to System Reflection type.
             var td = tr.Resolve();
 
             // If the type isn't defined, can't do much about it. Just return null.
-            if (td == null) return null;
+            if (td == null)
+                return null;
 
-            String ss = tr.Module.FullyQualifiedName;
-
-            // get module.
-            String assembly_location = td.Module.FullyQualifiedName;
-
-            System.Reflection.Assembly assembly = System.Reflection.Assembly.LoadFile(assembly_location);
-
-            List<Type> types = new List<Type>();
-            StackQueue<Type> type_definitions = new StackQueue<Type>();
-            StackQueue<Type> type_definitions_closure = new StackQueue<Type>();
-            foreach (Type t in assembly.GetTypes())
+            if (tr.IsArray)
             {
-                type_definitions.Push(t);
+                // Get element type, and work on that first.
+                element_type = tr.GetElementType();
+                result = ConvertToSystemReflectionType(element_type);
+                // Create array type.
+                if (result == null) return null;
+                return result.MakeArrayType();
             }
-            while (type_definitions.Count > 0)
+            else
             {
-                Type t = type_definitions.Pop();
-                if (Campy.Utils.Utility.IsSimilarType(t, td))
-                    return t;
-                type_definitions_closure.Push(t);
-                foreach (Type ntd in t.GetNestedTypes())
-                    type_definitions.Push(ntd);
-            }
-            foreach (Type t in type_definitions_closure)
-            {
-                if (Campy.Utils.Utility.IsSimilarType(t, td))
-                    return t;
+                String ss = tr.Module.FullyQualifiedName;
+                String assembly_location = td.Module.FullyQualifiedName;
+                System.Reflection.Assembly assembly = System.Reflection.Assembly.LoadFile(assembly_location);
+                List<Type> types = new List<Type>();
+                StackQueue<Type> type_definitions = new StackQueue<Type>();
+                StackQueue<Type> type_definitions_closure = new StackQueue<Type>();
+                foreach (Type t in assembly.GetTypes())
+                    type_definitions.Push(t);
+                while (type_definitions.Count > 0)
+                {
+                    Type t = type_definitions.Pop();
+                    if (Campy.Utils.Utility.IsSimilarType(t, td))
+                        return t;
+                    type_definitions_closure.Push(t);
+                    foreach (Type ntd in t.GetNestedTypes())
+                        type_definitions.Push(ntd);
+                }
+                foreach (Type t in type_definitions_closure)
+                {
+                    if (Campy.Utils.Utility.IsSimilarType(t, td))
+                        return t;
+                }
             }
             return null;
         }

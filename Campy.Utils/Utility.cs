@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.Win32;
 using System.Text.RegularExpressions;
 using System.IO;
@@ -557,8 +555,6 @@ namespace Campy.Utils
 
         public static bool IsSimilarType(Type thisType, Mono.Cecil.TypeReference type)
         {
-            Mono.Cecil.TypeDefinition td = type.Resolve();
-
             // Ignore any 'ref' types
             if (thisType.IsByRef)
                 thisType = thisType.GetElementType();

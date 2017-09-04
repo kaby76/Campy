@@ -138,6 +138,7 @@
   <ItemGroup>
     <Compile Include="ABIParameterInfo.cs" />
     <Compile Include="ABIParameterInfoKind.cs" />
+    <Compile Include="Buffers.cs" />
     <Compile Include="CFG.cs" />
     <Compile Include="Inst.cs" />
     <Compile Include="Class.cs" />
