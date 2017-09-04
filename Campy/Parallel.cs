@@ -140,9 +140,12 @@ namespace Campy
                 var res = CUresult.CUDA_SUCCESS;
                 fixed (IntPtr* kernelParams = kp)
                 {
-                    res = Cuda.cuLaunchKernel(ptr_to_kernel,
-                        1, 1, 1, // grid has one block.
-                        (uint) extent.Size(), 1, 1, // n threads.
+                    linear_to_tile(extent.Size(), out dim3 tile_size, out dim3 tiles);
+
+                    res = Cuda.cuLaunchKernel(
+                        ptr_to_kernel,
+                        tiles.x, tiles.y, tiles.z, // grid has one block.
+                        tile_size.x, tile_size.y, tile_size.z, // n threads.
                         0, // no shared memory
                         default(CUstream),
                         (IntPtr) kernelParams,
@@ -174,6 +177,70 @@ namespace Campy
 
         static public void For(AcceleratorView view, TiledExtent extent, _Kernel_tiled_type kernel)
         {
+        }
+
+        struct dim3
+        {
+            public uint x;
+            public uint y;
+            public uint z;
+        }
+
+        private static void linear_to_tile(int size,
+            out dim3 tile_size, out dim3 tiles)
+        {
+            int max_dimensionality = 3;
+            int[] blocks = new int[10];
+            for (int j = 0; j < max_dimensionality; ++j)
+                blocks[j] = 1;
+            int[] max_threads = new int[]{ 1024, 1024, 64 };
+            int[] max_blocks = new int[] { 65535, 65535, 65535 };
+            int[] threads = new int[10];
+            for (int j = 0; j < max_dimensionality; ++j)
+                threads[j] = 1;
+            int b = size / (max_threads[0] * max_blocks[0]);
+            if (b == 0)
+            {
+                b = size / max_threads[0];
+                if (size % max_threads[0] != 0)
+                    b++;
+
+                if (b == 1)
+                    max_threads[0] = size;
+
+                // done. return the result.
+                blocks[0] = b;
+                threads[0] = max_threads[0];
+                make_results(blocks, threads, max_dimensionality, out tile_size, out tiles);
+                return;
+            }
+
+            int sqrt_size = (int)Math.Sqrt((float)size / max_threads[0]);
+            sqrt_size++;
+
+            int b2 = sqrt_size / max_blocks[1];
+            if (b2 == 0)
+            {
+                b = sqrt_size;
+
+                // done. return the result.
+                blocks[0] = blocks[1] = b;
+                threads[0] = max_threads[0];
+                make_results(blocks, threads, max_dimensionality, out tile_size, out tiles);
+                return;
+            }
+            throw new Exception();
+        }
+
+        private static void make_results(int[] blocks, int[] threads, int max_dimensionality,
+            out dim3 tile_size, out dim3 tiles)
+        {
+            tiles.x = (uint)blocks[0];
+            tiles.y = (uint)blocks[1];
+            tiles.z = (uint)blocks[2];
+            tile_size.x = (uint)threads[0];
+            tile_size.y = (uint)threads[1];
+            tile_size.z = (uint)threads[2];
         }
     }
 }

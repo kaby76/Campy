@@ -23,11 +23,82 @@ namespace Campy.ControlFlowGraph
         {
             _mcfg = mcfg;
             global_module = CreateModule("global");
-            tidx = LLVM.AddFunction(
-                global_module,
-                "llvm.nvvm.read.ptx.sreg.tid.x",
-                LLVM.FunctionType(LLVM.Int32Type(),
-                    new TypeRef[] { }, false));
+
+            built_in_functions.Add("llvm.nvvm.read.ptx.sreg.tid.x",
+                LLVM.AddFunction(
+                    global_module,
+                    "llvm.nvvm.read.ptx.sreg.tid.x",
+                    LLVM.FunctionType(LLVM.Int32Type(),
+                        new TypeRef[] { }, false)));
+            built_in_functions.Add("llvm.nvvm.read.ptx.sreg.tid.y",
+                LLVM.AddFunction(
+                    global_module,
+                    "llvm.nvvm.read.ptx.sreg.tid.y",
+                    LLVM.FunctionType(LLVM.Int32Type(),
+                        new TypeRef[] { }, false)));
+            built_in_functions.Add("llvm.nvvm.read.ptx.sreg.tid.z",
+                LLVM.AddFunction(
+                    global_module,
+                    "llvm.nvvm.read.ptx.sreg.tid.z",
+                    LLVM.FunctionType(LLVM.Int32Type(),
+                        new TypeRef[] { }, false)));
+
+            built_in_functions.Add("llvm.nvvm.read.ptx.sreg.ctaid.x",
+                LLVM.AddFunction(
+                    global_module,
+                    "llvm.nvvm.read.ptx.sreg.ctaid.x",
+                    LLVM.FunctionType(LLVM.Int32Type(),
+                        new TypeRef[] { }, false)));
+            built_in_functions.Add("llvm.nvvm.read.ptx.sreg.ctaid.y",
+                LLVM.AddFunction(
+                    global_module,
+                    "llvm.nvvm.read.ptx.sreg.ctaid.y",
+                    LLVM.FunctionType(LLVM.Int32Type(),
+                        new TypeRef[] { }, false)));
+            built_in_functions.Add("llvm.nvvm.read.ptx.sreg.ctaid.z",
+                LLVM.AddFunction(
+                    global_module,
+                    "llvm.nvvm.read.ptx.sreg.ctaid.z",
+                    LLVM.FunctionType(LLVM.Int32Type(),
+                        new TypeRef[] { }, false)));
+
+            built_in_functions.Add("llvm.nvvm.read.ptx.sreg.ntid.x",
+                LLVM.AddFunction(
+                    global_module,
+                    "llvm.nvvm.read.ptx.sreg.ntid.x",
+                    LLVM.FunctionType(LLVM.Int32Type(),
+                        new TypeRef[] { }, false)));
+            built_in_functions.Add("llvm.nvvm.read.ptx.sreg.ntid.y",
+                LLVM.AddFunction(
+                    global_module,
+                    "llvm.nvvm.read.ptx.sreg.ntid.y",
+                    LLVM.FunctionType(LLVM.Int32Type(),
+                        new TypeRef[] { }, false)));
+            built_in_functions.Add("llvm.nvvm.read.ptx.sreg.ntid.z",
+                LLVM.AddFunction(
+                    global_module,
+                    "llvm.nvvm.read.ptx.sreg.ntid.z",
+                    LLVM.FunctionType(LLVM.Int32Type(),
+                        new TypeRef[] { }, false)));
+
+            built_in_functions.Add("llvm.nvvm.read.ptx.sreg.nctaid.x",
+                LLVM.AddFunction(
+                    global_module,
+                    "llvm.nvvm.read.ptx.sreg.nctaid.x",
+                    LLVM.FunctionType(LLVM.Int32Type(),
+                        new TypeRef[] { }, false)));
+            built_in_functions.Add("llvm.nvvm.read.ptx.sreg.nctaid.y",
+                LLVM.AddFunction(
+                    global_module,
+                    "llvm.nvvm.read.ptx.sreg.nctaid.y",
+                    LLVM.FunctionType(LLVM.Int32Type(),
+                        new TypeRef[] { }, false)));
+            built_in_functions.Add("llvm.nvvm.read.ptx.sreg.nctaid.z",
+                LLVM.AddFunction(
+                    global_module,
+                    "llvm.nvvm.read.ptx.sreg.nctaid.z",
+                    LLVM.FunctionType(LLVM.Int32Type(),
+                        new TypeRef[] { }, false)));
         }
 
         // Finally, we need a mapping of node to rewrites.
@@ -424,7 +495,7 @@ namespace Campy.ControlFlowGraph
 
         public static ModuleRef global_module = default(ModuleRef);
         private List<ModuleRef> all_modules = new List<ModuleRef>();
-        public static ValueRef tidx;
+        public static Dictionary<string, ValueRef> built_in_functions = new Dictionary<string, ValueRef>();
 
         private ModuleRef CreateModule(string name)
         {
@@ -891,8 +962,8 @@ namespace Campy.ControlFlowGraph
                             var plm = llvm_node._Graph.VertexSpace[llvm_node._Graph.NameSpace.BijectFromBasetype(p)];
                             phi_blocks[c] = plm.BasicBlock;
                         }
-                        System.Console.WriteLine();
-                        System.Console.WriteLine("Node " + llvm_node.Name + " stack slot " + i + " types:");
+                        //System.Console.WriteLine();
+                        //System.Console.WriteLine("Node " + llvm_node.Name + " stack slot " + i + " types:");
                         for (int c = 0; c < count; ++c)
                         {
                             var vr = phi_vals[c];
@@ -914,10 +985,10 @@ namespace Campy.ControlFlowGraph
                 }
             }
 
-            foreach (var m in all_modules)
-            {
-                LLVM.DumpModule(m);
-            }
+            //foreach (var m in all_modules)
+            //{
+            //    LLVM.DumpModule(m);
+            //}
         }
 
         public List<System.Type> FindAllTargets(Delegate obj)
@@ -1294,7 +1365,7 @@ namespace Campy.ControlFlowGraph
                 throw new Exception("Error in JIT compilation.");
 
             ExecutionEngineRef engine;
-            LLVM.DumpModule(mod);
+            //LLVM.DumpModule(mod);
 
             string triple = "nvptx64-nvidia-cuda";
             TargetRef t2;
@@ -1332,7 +1403,7 @@ namespace Campy.ControlFlowGraph
                 //ptx = yo;
                 //System.Console.WriteLine(ptx);
                 ptx = ptx.Replace("3.2", "5.0");
-                System.Console.WriteLine(ptx);
+                //System.Console.WriteLine(ptx);
             }
             finally
             {

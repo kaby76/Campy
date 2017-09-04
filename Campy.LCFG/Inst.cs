@@ -1037,72 +1037,56 @@ namespace Campy.ControlFlowGraph
             var mn = bb.Method.FullName;
             if (mn == "System.Int32 Campy.Types.Index::op_Implicit(Campy.Types.Index)")
             {
-                //var context = LLVM.ContextCreate();
-                //// Load in basics for PTX kernel tid.
-                //var tidx = LLVM.AddFunction(
-                //    bb.Module,
-                //    "llvm.nvvm.read.ptx.sreg.tid.x",
-                //    LLVM.FunctionType(LLVM.Int32Type(),
-                //    new TypeRef[] { }, false));
-                //LLVM.AddFunction(
-                //    bb.Module,
-                //    "llvm.nvvm.read.ptx.sreg.tid.y",
-                //    LLVM.FunctionType(LLVM.Int32TypeInContext(context),
-                //    new TypeRef[] { }, false));
-                //LLVM.AddFunction(
-                //    bb.Module,
-                //    "llvm.nvvm.read.ptx.sreg.tid.z",
-                //    LLVM.FunctionType(LLVM.Int32TypeInContext(context),
-                //    new TypeRef[] { }, false));
-                //LLVM.AddFunction(
-                //    bb.Module,
-                //    "llvm.nvvm.read.ptx.sreg.ctaid.x",
-                //    LLVM.FunctionType(LLVM.Int32TypeInContext(context),
-                //    new TypeRef[] { }, false));
-                //LLVM.AddFunction(
-                //    bb.Module,
-                //    "llvm.nvvm.read.ptx.sreg.ctaid.y",
-                //    LLVM.FunctionType(LLVM.Int32TypeInContext(context),
-                //    new TypeRef[] { }, false));
-                //LLVM.AddFunction(
-                //    bb.Module,
-                //    "llvm.nvvm.read.ptx.sreg.ctaid.z",
-                //    LLVM.FunctionType(LLVM.Int32TypeInContext(context),
-                //    new TypeRef[] { }, false));
-                //LLVM.AddFunction(
-                //    bb.Module,
-                //    "llvm.nvvm.read.ptx.sreg.ntid.x",
-                //    LLVM.FunctionType(LLVM.Int32TypeInContext(context),
-                //    new TypeRef[] { }, false));
-                //LLVM.AddFunction(
-                //    bb.Module,
-                //    "llvm.nvvm.read.ptx.sreg.ntid.y",
-                //    LLVM.FunctionType(LLVM.Int32TypeInContext(context),
-                //    new TypeRef[] { }, false));
-                //LLVM.AddFunction(
-                //    bb.Module,
-                //    "llvm.nvvm.read.ptx.sreg.ntid.z",
-                //    LLVM.FunctionType(LLVM.Int32TypeInContext(context),
-                //    new TypeRef[] { }, false));
-                //LLVM.AddFunction(
-                //    bb.Module,
-                //    "llvm.nvvm.read.ptx.sreg.nctaid.x",
-                //    LLVM.FunctionType(LLVM.Int32TypeInContext(context),
-                //    new TypeRef[] { }, false));
-                //LLVM.AddFunction(
-                //    bb.Module,
-                //    "llvm.nvvm.read.ptx.sreg.nctaid.y",
-                //    LLVM.FunctionType(LLVM.Int32TypeInContext(context),
-                //    new TypeRef[] { }, false));
-                //LLVM.AddFunction(
-                //    bb.Module,
-                //    "llvm.nvvm.read.ptx.sreg.nctaid.z",
-                //    LLVM.FunctionType(LLVM.Int32TypeInContext(context),
-                //    new TypeRef[] { }, false));
-                //// Make bloody call!
-                var call = LLVM.BuildCall(bb.Builder, Converter.tidx, new ValueRef[] { }, "tidx");
-                System.Console.WriteLine("load " + new Value(call));
-                state._stack.Push(new Value(call));
+                //threadId
+                var tidx = Converter.built_in_functions["llvm.nvvm.read.ptx.sreg.tid.x"];
+                var tidy = Converter.built_in_functions["llvm.nvvm.read.ptx.sreg.tid.y"];
+                var tidz = Converter.built_in_functions["llvm.nvvm.read.ptx.sreg.tid.z"];
+
+                //blockIdx
+                var ctaidx = Converter.built_in_functions["llvm.nvvm.read.ptx.sreg.ctaid.x"];
+                var ctaidy = Converter.built_in_functions["llvm.nvvm.read.ptx.sreg.ctaid.y"];
+                var ctaidz = Converter.built_in_functions["llvm.nvvm.read.ptx.sreg.ctaid.z"];
+
+                //blockDim
+                var ntidx = Converter.built_in_functions["llvm.nvvm.read.ptx.sreg.ntid.x"];
+                var ntidy = Converter.built_in_functions["llvm.nvvm.read.ptx.sreg.ntid.y"];
+                var ntidz = Converter.built_in_functions["llvm.nvvm.read.ptx.sreg.ntid.z"];
+
+                //gridDim
+                var nctaidx = Converter.built_in_functions["llvm.nvvm.read.ptx.sreg.nctaid.x"];
+                var nctaidy = Converter.built_in_functions["llvm.nvvm.read.ptx.sreg.nctaid.y"];
+                var nctaidz = Converter.built_in_functions["llvm.nvvm.read.ptx.sreg.nctaid.z"];
+
+                var v_tidx = LLVM.BuildCall(bb.Builder, tidx, new ValueRef[] { }, "tidx");
+                var v_tidy = LLVM.BuildCall(bb.Builder, tidy, new ValueRef[] { }, "tidy");
+                var v_ntidx = LLVM.BuildCall(bb.Builder, ntidx, new ValueRef[] { }, "ntidx");
+                var v_ntidy = LLVM.BuildCall(bb.Builder, ntidy, new ValueRef[] { }, "ntidy");
+                var v_ctaidx = LLVM.BuildCall(bb.Builder, ctaidx, new ValueRef[] { }, "ctaidx");
+                var v_ctaidy = LLVM.BuildCall(bb.Builder, ctaidy, new ValueRef[] { }, "ctaidx");
+                var v_nctaidx = LLVM.BuildCall(bb.Builder, nctaidx, new ValueRef[] { }, "nctaidx");
+
+                //int i = (threadIdx.x
+                //         + blockDim.x * blockIdx.x
+                //         + blockDim.x * gridDim.x * blockDim.y * blockIdx.y
+                //         + blockDim.x * gridDim.x * threadIdx.y);
+
+                var t1 = v_tidx;
+
+                var t2 = LLVM.BuildMul(bb.Builder, v_ntidx, v_ctaidx, "");
+
+                var t3 = LLVM.BuildMul(bb.Builder, v_ntidx, v_nctaidx, "");
+                t3 = LLVM.BuildMul(bb.Builder, t3, v_ntidy, "");
+                t3 = LLVM.BuildMul(bb.Builder, t3, v_ctaidy, "");
+
+                var t4 = LLVM.BuildMul(bb.Builder, v_ntidx, v_nctaidx, "");
+                t4 = LLVM.BuildMul(bb.Builder, t4, v_tidy, "");
+
+                var sum = LLVM.BuildAdd(bb.Builder, t1, t2, "");
+                sum = LLVM.BuildAdd(bb.Builder, sum, t3, "");
+                sum = LLVM.BuildAdd(bb.Builder, sum, t4, "");
+
+                System.Console.WriteLine("load " + new Value(sum));
+                state._stack.Push(new Value(sum));
             }
             else
             {
