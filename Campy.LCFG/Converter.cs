@@ -443,7 +443,7 @@ namespace Campy.ControlFlowGraph
             LLVM.InitializeAllTargetInfos();
             LLVM.InitializeAllAsmPrinters();
 
-            foreach (var bb in basic_blocks_to_compile)
+            foreach (CFG.Vertex bb in basic_blocks_to_compile)
             {
                 System.Console.WriteLine("Compile part 1, node " + bb);
 
@@ -761,8 +761,27 @@ namespace Campy.ControlFlowGraph
             }
         }
 
+        private void CompilePart7(ref List<CFG.Vertex> basic_blocks_to_compile)
+        {
+            List<CFG.Vertex> weeded = new List<CFG.Vertex>();
+
+            // Remove any blocks already compiled.
+            foreach (var bb in basic_blocks_to_compile)
+            {
+                if (!bb.AlreadyCompiled)
+                {
+                    weeded.Add(bb);
+                    bb.AlreadyCompiled = true;
+                    System.Console.WriteLine("Comp " + bb.Name);
+                }
+            }
+            basic_blocks_to_compile = weeded;
+        }
+
         public void CompileToLLVM(List<CFG.Vertex> basic_blocks_to_compile, List<Mono.Cecil.TypeDefinition> list_of_data_types_used)
         {
+            CompilePart7(ref basic_blocks_to_compile);
+
             CompilePart1(basic_blocks_to_compile, list_of_data_types_used);
 
             CompilePart2(basic_blocks_to_compile, list_of_data_types_used);
@@ -1310,7 +1329,7 @@ namespace Campy.ControlFlowGraph
                 ptx = LLVM.GetBufferStart(buffer);
                 uint length = LLVM.GetBufferSize(buffer);
                 // Output the PTX assembly code. We can run this using the CUDA Driver API
-                ptx = yo;
+                //ptx = yo;
                 //System.Console.WriteLine(ptx);
                 ptx = ptx.Replace("3.2", "5.0");
                 System.Console.WriteLine(ptx);

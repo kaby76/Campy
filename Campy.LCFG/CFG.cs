@@ -129,6 +129,8 @@ namespace Campy.ControlFlowGraph
                 get;
                 set;
             }
+            public bool AlreadyCompiled { get; set; }
+
 
             public bool HasThis { get; set; }
 

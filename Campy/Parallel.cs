@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using Campy.Types;
@@ -9,6 +10,7 @@ using Campy.ControlFlowGraph;
 using Campy.LCFG;
 using Campy.Types.Utils;
 using Mono.Cecil;
+using Mono.Collections.Generic;
 using Swigged.Cuda;
 using Type = System.Type;
 using Swigged.LLVM;
@@ -78,8 +80,21 @@ namespace Campy
                 Singleton._converter.CompileToLLVM(cs, list_of_mono_data_types_used);
 
                 // Get basic block of entry.
-                var bb = cs.First();
-                var method = bb.Method;
+                CFG.Vertex bb;
+                MethodInfo method = kernel.Method;
+                if (!cs.Any())
+                {
+                    // Compiled previously. Look for basic block of entry.
+                    CFG.Vertex vvv = Singleton._graph.Entries.Where(v =>
+                        v.IsEntry && v.Method.Name == method.Name).FirstOrDefault();
+
+                    bb = vvv;
+                }
+                else
+                {
+                    bb = cs.First();
+                }
+
                 var ptr_to_kernel = Singleton._converter.GetPtr(bb.Name);
 
                 var rank = extent._Rank;
@@ -87,8 +102,7 @@ namespace Campy
                 Buffers buffer = new Buffers();
 
                 // Set up parameters.
-                var parameters = method.Parameters;
-                int count = parameters.Count;
+                int count = kernel.Method.GetParameters().Length;
                 if (bb.HasThis) count++;
                 if (!(count == 1 || count == 2)) throw new Exception("Expecting at least one parameter for kernel.");
 

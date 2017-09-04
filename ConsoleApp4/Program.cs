@@ -7,16 +7,6 @@ namespace ConsoleApp4
     {
         static void Main(string[] args)
         {
-            //var all = Campy.Types.Accelerator.GetAll();
-            //int[] data = new[] { 1, 2, 3, 4, 5 };
-
-            //Campy.Parallel.For(new Extent(5), idx =>
-            //{
-            //    data[idx] += 1;
-            //});
-            //for (int i = 0; i < data.Length; ++i) System.Console.WriteLine(data[i]);
-
-            // FUTURE.
             int n = Bithacks.Power2(4);
             int[] data = new int[n];
             Campy.Parallel.For(new Extent(n), idx => data[idx] = 1);
