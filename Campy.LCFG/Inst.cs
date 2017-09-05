@@ -31,13 +31,17 @@ namespace Campy.ControlFlowGraph
         public CFG.Vertex Block { get; set; }
         // Required instruction sequencing so we can translate groups of instructions.
         public virtual Inst Next { get; set; }
-        public virtual void ComputeStackLevel(ref int level_after) { }
+
+        public virtual void ComputeStackLevel(ref int level_after)
+        {
+            throw new Exception("Must have an implementation for ComputeStackLevel!");
+        }
 
         public virtual Inst Convert(Converter converter, State state)
         {
             throw new Exception("Must have an implementation for Convert!");
-            return null;
         }
+
         private State _state_in;
         public State StateIn
         {
@@ -1400,6 +1404,8 @@ namespace Campy.ControlFlowGraph
 			ValueRef load0 = LLVM.BuildExtractValue(Builder, a.V, 0, "");
 			System.Console.WriteLine("load0 = " + new Value(load0).ToString());
 
+            TypeRef trr = new Value(load0).T.T;
+             
 			// Add 16.
 			var bc = LLVM.BuildBitCast(Builder, load0, LLVM.PointerType(LLVM.Int8Type(), 0), "");
 			System.Console.WriteLine((new Value(bc)).ToString());
@@ -1407,10 +1413,13 @@ namespace Campy.ControlFlowGraph
 			indexes2[0] = LLVM.ConstInt(LLVM.Int32Type(), 16, false);
 			ValueRef bc2 = LLVM.BuildInBoundsGEP(Builder, bc, indexes2, "");
 			System.Console.WriteLine((new Value(bc2)).ToString());
-			var bc3 = LLVM.BuildBitCast(Builder, bc2, LLVM.PointerType(LLVM.Int32Type(), 0), "");
+            //var bc3 = LLVM.BuildBitCast(Builder, bc2,
+            //    LLVM.PointerType(LLVM.Int32Type(), 0), "");
+            var bc3 = LLVM.BuildBitCast(Builder, bc2,
+                trr, "");
 
-			// Now add in index to pointer.
-			ValueRef[] indexes1 = new ValueRef[1];
+            // Now add in index to pointer.
+            ValueRef[] indexes1 = new ValueRef[1];
 			indexes1[0] = i.V;
 			ValueRef ll1 = LLVM.BuildInBoundsGEP(Builder, bc3, indexes1, "");
 			System.Console.WriteLine((new Value(ll1)).ToString());
@@ -1627,11 +1636,117 @@ namespace Campy.ControlFlowGraph
                             Block, mono_field_type,
                             Block.LLVMTypeMap, Block.OpsFromOriginal);
                         load = LLVM.BuildBitCast(Builder,
-                                load, type, "");
+                            load, type, "");
                         System.Console.WriteLine(new Value(load));
                     }
 
                     state._stack.Push(new Value(load));
+                }
+                else
+                {
+                    throw new Exception("Value type ldfld not implemented!");
+                }
+
+                return Next;
+            }
+        }
+    }
+
+    public class ConvertStoreField : Inst
+    {
+        public ConvertStoreField(Mono.Cecil.Cil.Instruction i)
+            : base(i)
+        {
+        }
+
+        public override void ComputeStackLevel(ref int level_after)
+        {
+            level_after = level_after - 2;
+        }
+
+        public override Inst Convert(Converter converter, State state)
+        {
+            {
+                Value v = state._stack.Pop();
+                System.Console.WriteLine(v);
+
+                Value o = state._stack.Pop();
+                System.Console.WriteLine(o);
+
+                TypeRef tr = LLVM.TypeOf(o.V);
+                bool isPtr = o.T.isPointerTy();
+                bool isArr = o.T.isArrayTy();
+                bool isSt = o.T.isStructTy();
+                bool is_ptr = false;
+                if (isPtr)
+                {
+                    uint offset = 0;
+                    var yy = this.Instruction.Operand;
+                    var field = yy as Mono.Cecil.FieldReference;
+                    if (yy == null) throw new Exception("Cannot convert.");
+                    var declaring_type_tr = field.DeclaringType;
+                    var declaring_type = declaring_type_tr.Resolve();
+
+                    // need to take into account padding fields. Unfortunately,
+                    // LLVM does not name elements in a struct/class. So, we must
+                    // compute padding and adjust.
+                    int size = 0;
+                    foreach (var f in declaring_type.Fields)
+                    {
+                        int field_size;
+                        int alignment;
+                        var ft = Campy.Types.Utils.ReflectionCecilInterop.ConvertToSystemReflectionType(f.FieldType);
+                        if (ft.IsArray || ft.IsClass)
+                        {
+                            field_size = Buffers.SizeOf(typeof(IntPtr));
+                            alignment = Buffers.Alignment(typeof(IntPtr));
+                        }
+                        else
+                        {
+                            field_size = Buffers.SizeOf(ft);
+                            alignment = Buffers.Alignment(ft);
+                        }
+                        int padding = Buffers.Padding(size, alignment);
+                        size = size + padding + field_size;
+                        if (padding != 0)
+                        {
+                            // Add in bytes to effect padding.
+                            for (int j = 0; j < padding; ++j)
+                                offset++;
+                        }
+
+                        if (f.Name == field.Name)
+                        {
+                            is_ptr = f.FieldType.IsArray || f.FieldType.IsPointer;
+                            break;
+                        }
+                        offset++;
+                    }
+
+                    var addr = LLVM.BuildStructGEP(Builder, o.V, offset, "");
+                    System.Console.WriteLine(new Value(addr));
+
+                    // If value is a pointer, then cast it to void*.
+                    // This is because I had to avoid recursive data types in classes
+                    // as LLVM cannot handle these at all. So, all pointer types
+                    // were defined as void* in the LLVM field.
+                    var load = LLVM.BuildLoad(Builder, addr, "");
+
+                    var load_value = new Value(load);
+                    bool isPtrLoad = load_value.T.isPointerTy();
+                    if (isPtrLoad)
+                    {
+                        var mono_field_type = field.FieldType;
+                        TypeRef type = Converter.ConvertMonoTypeToLLVM(
+                            Block, mono_field_type,
+                            Block.LLVMTypeMap, Block.OpsFromOriginal);
+                        addr = LLVM.BuildBitCast(Builder,
+                            addr, type, "");
+                        System.Console.WriteLine(new Value(addr));
+                    }
+
+                    var store = LLVM.BuildStore(Builder, v.V, addr);
+                    System.Console.WriteLine(new Value(store));
                 }
                 else
                 {
@@ -1968,6 +2083,11 @@ namespace Campy.ControlFlowGraph
         {
         }
 
+        public override void ComputeStackLevel(ref int level_after)
+        {
+            // No change.
+        }
+
         public override Inst Convert(Converter converter, State state)
         {
             GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge = Block._Successors[0];
@@ -1983,6 +2103,11 @@ namespace Campy.ControlFlowGraph
         public i_br_s(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+        }
+
+        public override void ComputeStackLevel(ref int level_after)
+        {
+            // No change.
         }
 
         public override Inst Convert(Converter converter, State state)
@@ -3921,6 +4046,12 @@ namespace Campy.ControlFlowGraph
             : base(i)
         {
         }
+
+        public override void ComputeStackLevel(ref int level_after)
+        {
+            // No change.
+        }
+
         public override Inst Convert(Converter converter, State state)
         {
             return Next;
@@ -4203,17 +4334,12 @@ namespace Campy.ControlFlowGraph
         }
     }
 
-    public class i_stfld : Inst
+    public class i_stfld : ConvertStoreField
     {
         public i_stfld(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
-
-    public override void ComputeStackLevel(ref int level_after)
-    {
-        level_after = level_after - 2;
-    }
     }
 
     public class i_stind_i1 : ConvertStoreIndirect

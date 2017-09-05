@@ -1,8 +1,13 @@
-﻿using System.Runtime.InteropServices;
-using Campy.Types;
+﻿using Campy.Types;
 
 namespace ConsoleApp4
 {
+    class N
+    {
+        public int a;
+        public int b;
+    }
+
     class Program
     {
         static void Main(string[] args)
@@ -26,6 +31,18 @@ namespace ConsoleApp4
 
             for (int i = 0; i < data.Length; ++i)
                 System.Console.WriteLine(data[i]);
+
+            //N a = new N() { a = 1, b = 1 };
+            //N b = new N() { a = 1, b = 1 };
+            //N c = new N() { a = 1, b = 1 };
+            //N d = new N() { a = 1, b = 1 };
+            //N e = new N() { a = 1, b = 1 };
+            //N f = new N() { a = 1, b = 1 };
+            //N g = new N() { a = 1, b = 1 };
+            //N h = new N() { a = 1, b = 1 };
+            //N[] stuff = new N[] { a, b, c, d, e, f, g, h };
+
+            //Campy.Parallel.For(new Extent(8), idx => stuff[idx].a = stuff[idx].a + stuff[idx].b);
         }
     }
 }

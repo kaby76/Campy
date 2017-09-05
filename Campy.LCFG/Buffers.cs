@@ -834,7 +834,10 @@ namespace Campy.LCFG
                             ip = (IntPtr)((long)ip + Buffers.Padding((long)ip, Buffers.Alignment(typeof(IntPtr))));
                             int field_size = Buffers.SizeOf(typeof(IntPtr));
                             IntPtr ipv = (IntPtr)Marshal.PtrToStructure<IntPtr>(ip);
-                            if (_allocated_buffers.ContainsKey(ipv))
+                            if (ipv == IntPtr.Zero)
+                            {
+                            }
+                            else if (_allocated_buffers.ContainsKey(ipv))
                             {
                                 object tooo = _allocated_buffers[ipv];
                                 tfield.SetValue(to, tooo);
@@ -890,28 +893,73 @@ namespace Campy.LCFG
             }
         }
 
-        private unsafe void Cp(byte* destination_ptr, Array from, Type blittable_element_type)
+        private unsafe void Cp(byte* ip, Array from, Type blittable_element_type)
         {
-            int size_element = Buffers.SizeOf(blittable_element_type);
+            Type orig_element_type = from.GetType().GetElementType();
             for (int i = 0; i < from.Length; ++i)
             {
-                DeepCopyToImplementation(from.GetValue(i), destination_ptr);
-                destination_ptr = destination_ptr + size_element;
+                var from_element_value = from.GetValue(i);
+                if (orig_element_type.IsArray || orig_element_type.IsClass)
+                {
+                    if (from_element_value != null)
+                    {
+                        var size_element = SizeOf(blittable_element_type);
+                        if (_allocated_objects.ContainsKey(from_element_value))
+                        {
+                            IntPtr gp = _allocated_objects[from_element_value];
+                            DeepCopyToImplementation(gp, ip);
+                        }
+                        else
+                        {
+                            IntPtr gp = New(size_element);
+                            DeepCopyToImplementation(from_element_value, gp);
+                            DeepCopyToImplementation(gp, ip);
+                        }
+                        ip = (byte*)((long)ip
+                                     + Buffers.Padding((long)ip, Buffers.Alignment(typeof(IntPtr)))
+                                     + Buffers.SizeOf(typeof(IntPtr)));
+                    }
+                    else
+                    {
+                        from_element_value = IntPtr.Zero;
+                        DeepCopyToImplementation(from_element_value, ip);
+                        ip = (byte*)((long)ip
+                                     + Buffers.Padding((long)ip, Buffers.Alignment(typeof(IntPtr)))
+                                     + Buffers.SizeOf(typeof(IntPtr)));
+                    }
+                }
+                else
+                {
+                    int size_element = Buffers.SizeOf(blittable_element_type);
+                    DeepCopyToImplementation(from.GetValue(i), ip);
+                    ip = (byte*)((long)ip
+                        + Buffers.Padding((long)ip, Buffers.Alignment(blittable_element_type))
+                        + size_element);
+                }
             }
         }
 
-        private unsafe void Cp(void* src_ptr, Array to, Type blittable_element_type)
-        {
-            int size_element = Buffers.SizeOf(blittable_element_type);
+        private unsafe void Cp(void* src_ptr, Array to, Type from_element_type)
+		{
+			var to_element_type = to.GetType().GetElementType();
+            int from_size_element = Buffers.SizeOf(from_element_type);
             IntPtr mem = (IntPtr)src_ptr;
             for (int i = 0; i < to.Length; ++i)
             {
-                // copy.
-                object obj = Marshal.PtrToStructure(mem, blittable_element_type);
-                object to_obj = to.GetValue(i);
-                DeepCopyFromImplementation(mem, out to_obj, to.GetType().GetElementType());
-                to.SetValue(to_obj, i);
-                mem = new IntPtr((long)mem + size_element);
+                if (to_element_type.IsArray || to_element_type.IsClass)
+                {
+                    object obj = Marshal.PtrToStructure(mem, typeof(IntPtr));
+                    IntPtr obj_intptr = (IntPtr) obj;
+                    DeepCopyFromImplementation(obj_intptr, out object to_obj, to.GetType().GetElementType());
+                    to.SetValue(to_obj, i);
+                    mem = new IntPtr((long)mem + SizeOf(typeof(IntPtr)));
+                }
+                else
+                {
+                    DeepCopyFromImplementation(mem, out object to_obj, to.GetType().GetElementType());
+                    to.SetValue(to_obj, i);
+                    mem = new IntPtr((long)mem + from_size_element);
+                }
             }
         }
 

@@ -1403,7 +1403,7 @@ namespace Campy.ControlFlowGraph
                 //ptx = yo;
                 //System.Console.WriteLine(ptx);
                 ptx = ptx.Replace("3.2", "5.0");
-                //System.Console.WriteLine(ptx);
+                System.Console.WriteLine(ptx);
             }
             finally
             {
