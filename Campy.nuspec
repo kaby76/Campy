@@ -42,6 +42,7 @@ For further information, see https://github.com/kaby76/campy and http://campynet
     undocumented strings: ".NETFramework4.6.2", ".NETFramework4.5.2",
     ... Not sure if they work. --> 
     <dependencies>
+<!--
       <group targetFramework="net45">
         <dependency id="swigged.cuda" version="[8.0.6,)" />
         <dependency id="swigged.llvm" version="[4.0.14,)" />
@@ -72,6 +73,7 @@ For further information, see https://github.com/kaby76/campy and http://campynet
 	<dependency id="System.Runtime.InteropServices.RuntimeInformation" version="[4.3.0,)" />
 	<dependency id="System.Runtime.InteropServices" version="[4.1.0,)" />
       </group>
+-->
       <group targetFramework="net47">
         <dependency id="swigged.cuda" version="[8.0.6,)" />
         <dependency id="swigged.llvm" version="[4.0.14,)" />
@@ -85,13 +87,14 @@ For further information, see https://github.com/kaby76/campy and http://campynet
 	<dependency id="System.Runtime.InteropServices.RuntimeInformation" version="[4.3.0,)" />
       </group>
 
+<!--
       <group targetFramework="netcore1.0" />
       <group targetFramework="netcore1.1" />
       <group targetFramework="netstandard1.5" />
       <group targetFramework="netstandard1.6" />
       <group targetFramework="netstandard2.0" />
       
-<!--      <group targetFramework="Xamarin.iOS10">
+      <group targetFramework="Xamarin.iOS10">
       <group targetFramework="Xamarin.Mac20">      
       <group targetFramework="MonoAndroid">
 -->
