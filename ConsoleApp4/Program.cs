@@ -12,7 +12,7 @@ namespace ConsoleApp4
     {
         static void Main(string[] args)
         {
-            int n = Bithacks.Power2(4);
+            int n = Bithacks.Power2(16);
             int[] data = new int[n];
             Campy.Parallel.For(new Extent(n), idx => data[idx] = 1);
             for (int level = 1; level <= Bithacks.Log2(n); level++)
@@ -30,7 +30,7 @@ namespace ConsoleApp4
             }
 
             for (int i = 0; i < data.Length; ++i)
-                System.Console.WriteLine(data[i]);
+                System.Console.Write(data[i]);
 
             //N a = new N() { a = 1, b = 1 };
             //N b = new N() { a = 1, b = 1 };

@@ -1,0 +1,112 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <!-- The identifier that must be unique within the hosting gallery -->
+    <id>Campy</id>
+    <title>Campy</title>
+
+    <version>0.0.1-alpha</version>
+
+    <!-- Authors contain text that appears directly on the gallery -->
+    <authors>Ken Domino</authors>
+    
+    <!-- Owners are typically nuget.org identities that allow gallery
+            users to easily find other packages by the same owners.
+    -->
+    <owners>Ken Domino</owners>
+
+    <!-- License, project, icon links for the gallery -->
+    <projectUrl>https://github.com/kaby76/campy</projectUrl>
+<!--    <iconUrl></iconUrl> -->
+    <licenseUrl>https://raw.github.com/kaby76/campy/master/LICENSE</licenseUrl>
+
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>An API for the running of C# code on a GPU. For Windows (x64).</description>
+    <releaseNotes>
+* Version 0.0.1-alpha
+When building with Campy, select Platform = "AnyCPU", config = "Debug" or "Release", "Prefer 32-bit" unchecked.
+For further information, see https://github.com/kaby76/campy and http://campynet.com.
+    </releaseNotes>
+
+    <!-- Copyright information -->
+    <copyright>Copyright © 2017</copyright>
+
+    <!-- Tags appear in the gallery and can be used for tag searches -->
+    <tags>LLVM c# GPU parallel compiler</tags>
+
+    <!-- Dependencies are automatically installed when the package is
+    installed -->
+    <!-- For full list, see 
+    https://docs.microsoft.com/en-us/nuget/schema/target-frameworks
+    Note, I have seen some targetFramework="..." with some
+    undocumented strings: ".NETFramework4.6.2", ".NETFramework4.5.2",
+    ... Not sure if they work. --> 
+    <dependencies>
+      <group targetFramework="net45">
+        <dependency id="swigged.cuda" version="[8.0.6,)" />
+        <dependency id="swigged.llvm" version="[4.0.14,)" />
+	<dependency id="Mono.Cecil" version="[0.9.6.4,)" />
+
+	<dependency id="System.Console" version="[4.0.0,)" />
+	<dependency id="System.IO.FileSystem" version="[4.0.1,)" />
+	<dependency id="System.IO.FileSystem.Primitives" version="[4.0.1,)" />
+	<dependency id="System.Runtime" version="[4.1.0,)" />
+	<dependency id="System.Runtime.Extensions" version="[4.1.0,)" />
+	<dependency id="System.Runtime.InteropServices.RuntimeInformation" version="[4.3.0,)" />
+	<dependency id="System.Runtime.InteropServices" version="[4.1.0,)" />
+      </group>
+      <group targetFramework="net451" />
+      <group targetFramework="net452" />
+      <group targetFramework="net46" />
+      <group targetFramework="net461" />
+      <group targetFramework="net462">
+        <dependency id="swigged.cuda" version="[8.0.6,)" />
+        <dependency id="swigged.llvm" version="[4.0.14,)" />
+	<dependency id="Mono.Cecil" version="[0.9.6.4,)" />
+
+	<dependency id="System.Console" version="[4.0.0,)" />
+	<dependency id="System.IO.FileSystem" version="[4.0.1,)" />
+	<dependency id="System.IO.FileSystem.Primitives" version="[4.0.1,)" />
+	<dependency id="System.Runtime" version="[4.1.0,)" />
+	<dependency id="System.Runtime.Extensions" version="[4.1.0,)" />
+	<dependency id="System.Runtime.InteropServices.RuntimeInformation" version="[4.3.0,)" />
+	<dependency id="System.Runtime.InteropServices" version="[4.1.0,)" />
+      </group>
+      <group targetFramework="net47">
+        <dependency id="swigged.cuda" version="[8.0.6,)" />
+        <dependency id="swigged.llvm" version="[4.0.14,)" />
+	<dependency id="Mono.Cecil" version="[0.9.6.4,)" />
+
+	<dependency id="System.Console" version="[4.0.0,)" />
+	<dependency id="System.IO.FileSystem" version="[4.0.1,)" />
+	<dependency id="System.IO.FileSystem.Primitives" version="[4.0.1,)" />
+	<dependency id="System.Runtime" version="[4.1.0,)" />
+	<dependency id="System.Runtime.Extensions" version="[4.1.0,)" />
+	<dependency id="System.Runtime.InteropServices.RuntimeInformation" version="[4.3.0,)" />
+      </group>
+
+      <group targetFramework="netcore1.0" />
+      <group targetFramework="netcore1.1" />
+      <group targetFramework="netstandard1.5" />
+      <group targetFramework="netstandard1.6" />
+      <group targetFramework="netstandard2.0" />
+      
+<!--      <group targetFramework="Xamarin.iOS10">
+      <group targetFramework="Xamarin.Mac20">      
+      <group targetFramework="MonoAndroid">
+-->
+      
+    </dependencies>
+
+  </metadata>
+  
+  <files>
+    <file src="Campy\bin\Debug\Campy.dll" target="lib" />
+    <file src="Campy\bin\Debug\Campy.Graphs.dll" target="lib" />
+    <file src="Campy\bin\Debug\Campy.GraphAlgorithms.dll" target="lib" />
+    <file src="Campy\bin\Debug\Campy.LCFG.dll" target="lib" />
+    <file src="Campy\bin\Debug\Campy.Types.dll" target="lib" />
+    <file src="Campy\bin\Debug\Campy.Types.Utils.dll" target="lib" />
+    <file src="Campy\bin\Debug\Campy.Utils.dll" target="lib" />
+  </files>
+</package>
