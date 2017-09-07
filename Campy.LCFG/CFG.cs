@@ -362,7 +362,8 @@ namespace Campy.ControlFlowGraph
 
         public void OutputEntireGraph()
         {
-            return;
+            if (!Campy.Utils.Options.IsOn("graph_dump"))
+                return;
             System.Console.WriteLine("Graph:");
             System.Console.WriteLine();
             System.Console.WriteLine("List of entries blocks:");

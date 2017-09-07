@@ -58,6 +58,7 @@
     <Compile Include="Class1.cs" />
     <Compile Include="ForgivingArray.cs" />
     <Compile Include="MultiMap.cs" />
+    <Compile Include="Options.cs" />
     <Compile Include="StackQueue.cs" />
     <Compile Include="Utility.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

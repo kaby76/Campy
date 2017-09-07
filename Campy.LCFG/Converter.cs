@@ -439,9 +439,12 @@ namespace Campy.ControlFlowGraph
                             }
                         }
                     }
-
                 }
             }
+
+            this._mcfg.OutputEntireGraph();
+
+
 
             List<CFG.Vertex> new_change_set = _mcfg.PopChangeSet(change_set_id2);
             Dictionary<CFG.Vertex, CFG.Vertex> map_to_new_block = new Dictionary<CFG.Vertex, CFG.Vertex>();
@@ -1682,6 +1685,9 @@ namespace Campy.ControlFlowGraph
                 var p = LLVM.PointerType(s, 0);
                 previous_llvm_types_created_global.Add(tr, p);
                 // Create array of typerefs as argument to StructSetBody below.
+                // Note, tr is correct type, but tr.Resolve of a generic type turns the type
+                // into an uninstantiated generic type. E.g., List<int> contains a generic T[] containing the
+                // data. T could be a struct/value type, or T could be a class.
                 var fields = td.Fields;
                 var new_list = new Dictionary<TypeReference, System.Type>(generic_type_rewrite_rules);
                 foreach (var a in additional) new_list.Add(a.Key, a.Value);
@@ -1697,7 +1703,9 @@ namespace Campy.ControlFlowGraph
                     int field_size;
                     int alignment;
                     var ft = Campy.Types.Utils.ReflectionCecilInterop.ConvertToSystemReflectionType(field.FieldType);
-                    if (ft.IsArray || ft.IsClass)
+                    var bb = (field.FieldType.IsArray || !field.FieldType.IsValueType);
+                    //if (ft.IsArray || ft.IsClass)
+                    if (bb)
                     {
                         field_size = Buffers.SizeOf(typeof(IntPtr));
                         alignment = Buffers.Alignment(typeof(IntPtr));

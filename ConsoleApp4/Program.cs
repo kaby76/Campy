@@ -1,48 +1,113 @@
-﻿using Campy.Types;
+﻿using System.Collections.Generic;
+using Campy.Types;
 
 namespace ConsoleApp4
 {
     class N
     {
-        public int a;
-        public int b;
+        public int id;
+        public int level;
+        public bool visit;
+        public bool visited;
+        public N Left;
+        public N Right;
     }
 
     class Program
     {
+        private static int counter;
+
+        static void MakeIt(int current_height, N current_node, ref List<N> all_nodes)
+        {
+            if (current_height == 0)
+                return;
+            current_height--;
+            N l = new N();
+            l.id = counter++;
+            all_nodes.Add(l);
+
+            N r = new N();
+            r.id = counter++;
+            all_nodes.Add(r);
+
+            current_node.Left = l;
+            current_node.Right = r;
+
+            MakeIt(current_height, current_node.Left, ref all_nodes);
+            MakeIt(current_height, current_node.Right, ref all_nodes);
+        }
+
         static void Main(string[] args)
         {
-            int n = Bithacks.Power2(16);
-            int[] data = new int[n];
-            Campy.Parallel.For(new Extent(n), idx => data[idx] = 1);
-            for (int level = 1; level <= Bithacks.Log2(n); level++)
+            List<int> x = new List<int>();
+            for (int i = 0; i < 4; ++i) x.Add(0);
+            Campy.Parallel.For(new Extent(4), i =>
             {
-                int step = Bithacks.Power2(level);
-                Campy.Parallel.For(new Extent(n / step), idx =>
-                {
-                    var i = step * idx;
-                    data[i] = data[i] + data[i + step / 2];
-                });
-                System.Console.WriteLine("level " + level);
-                for (int i = 0; i < data.Length; ++i)
-                    System.Console.Write(data[i] + " ");
-                System.Console.WriteLine();
-            }
+                x[i] = i;
+            });
+            foreach (var e in x)
+                System.Console.Write(e + " ");
+            System.Console.WriteLine();
 
-            for (int i = 0; i < data.Length; ++i)
-                System.Console.Write(data[i]);
+            //int max_level = 16;
+            //int n = Bithacks.Power2(max_level);
+            //int[] data = new int[n];
+            //Campy.Parallel.For(new Extent(n), idx => data[idx] = 1);
+            //for (int level = 1; level <= Bithacks.Log2(n); level++)
+            //{
+            //    int step = Bithacks.Power2(level);
+            //    Campy.Parallel.For(new Extent(n / step), idx =>
+            //    {
+            //        var i = step * idx;
+            //        data[i] = data[i] + data[i + step / 2];
+            //    });
+            //    System.Console.WriteLine("level " + level);
+            //    for (int i = 0; i < data.Length; ++i)
+            //        System.Console.Write(data[i] + " ");
+            //    System.Console.WriteLine();
+            //}
 
-            //N a = new N() { a = 1, b = 1 };
-            //N b = new N() { a = 1, b = 1 };
-            //N c = new N() { a = 1, b = 1 };
-            //N d = new N() { a = 1, b = 1 };
-            //N e = new N() { a = 1, b = 1 };
-            //N f = new N() { a = 1, b = 1 };
-            //N g = new N() { a = 1, b = 1 };
-            //N h = new N() { a = 1, b = 1 };
-            //N[] stuff = new N[] { a, b, c, d, e, f, g, h };
+            //for (int i = 0; i < data.Length; ++i)
+            //    System.Console.Write(data[i]);
 
-            //Campy.Parallel.For(new Extent(8), idx => stuff[idx].a = stuff[idx].a + stuff[idx].b);
+            // Create complete binary tree.
+            //int max_level = 6;
+            //N root = new N();
+            //counter++;
+            //List<N> all_nodes = new List<N>();
+            //all_nodes.Add(root);
+            //MakeIt(max_level, root, ref all_nodes);
+            //int size = all_nodes.Count;
+            //Campy.Parallel.For(new Extent(size), i
+            //    =>
+            //{
+            //    if (i >= size) return;
+            //    N node = all_nodes[i];
+            //    if (!node.visit)
+            //        return;
+            //    node.visit = false;
+            //    node.visited = true;
+            //    N l = node.Left;
+            //    N r = node.Right;
+            //    if (l != null)
+            //    {
+            //        l.visit = true;
+            //        l.level = node.level + 1;
+            //    }
+            //    if (r != null)
+            //    {
+            //        r.visit = true;
+            //        r.level = node.level + 1;
+            //    }
+            //});
+
+            //for (int level = 0; level < max_level; ++level)
+            //{
+            //    Campy.Parallel.For(new Extent(Bithacks.Power2(level)), i =>
+            //    {
+
+            //    });
+            //}
         }
     }
 }
