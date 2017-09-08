@@ -13,12 +13,25 @@
     public class Reader
     {
         private CFG _cfg = new CFG();
+        private List<Mono.Cecil.ModuleDefinition> _loaded_modules = new List<ModuleDefinition>();
+        private List<Mono.Cecil.ModuleDefinition> _analyzed_modules = new List<ModuleDefinition>();
+        private StackQueue<Mono.Cecil.MethodDefinition> _methods_to_do = new StackQueue<Mono.Cecil.MethodDefinition>();
+        private List<string> _methods_avoid = new List<string>();
+        private List<string> _methods_done = new List<string>(); // No longer MethodDefition because there is no equivalence.
+
+        public Reader()
+        {
+            _methods_avoid.Add("System.Void System.ThrowHelper::ThrowArgumentOutOfRangeException()");    
+            _methods_avoid.Add("System.Void System.ThrowHelper::ThrowArgumentOutOfRangeException()");
+            _methods_avoid.Add("System.Void System.ArgumentOutOfRangeException::.ctor(System.String, System.String)");
+        }
 
         public CFG Cfg
         {
             get { return _cfg; }
             set { _cfg = value; }
         }
+
         public void AnalyzeThisAssembly()
         {
             if (Environment.Is64BitProcess)
@@ -117,11 +130,15 @@
 
         public void Add(Mono.Cecil.MethodDefinition definition)
         {
-            if (_methoddefs_done.Contains(definition.FullName))
+            if (definition == null)
                 return;
-            if (_methoddefs_to_do.Contains(definition))
+            if (_methods_avoid.Contains(definition.FullName))
                 return;
-            _methoddefs_to_do.Push(definition);
+            if (_methods_done.Contains(definition.FullName))
+                return;
+            if (_methods_to_do.Contains(definition))
+                return;
+            _methods_to_do.Push(definition);
         }
 
         public void AddAssembly(Assembly assembly)
@@ -132,11 +149,11 @@
 
         public void ExtractBasicBlocks()
         {
-            while (_methoddefs_to_do.Count > 0)
+            while (_methods_to_do.Count > 0)
             {
                 int change_set_id = this.Cfg.StartChangeSet();
 
-                Mono.Cecil.MethodDefinition definition = _methoddefs_to_do.Pop();
+                Mono.Cecil.MethodDefinition definition = _methods_to_do.Pop();
                 ExtractBasicBlocksOfMethod(definition);
 
                 var blocks = this.Cfg.PopChangeSet(change_set_id);
@@ -161,12 +178,6 @@
             }
         }
 
-        private List<Mono.Cecil.ModuleDefinition> _loaded_modules = new List<ModuleDefinition>();
-        private List<Mono.Cecil.ModuleDefinition> _analyzed_modules = new List<ModuleDefinition>();
-        // Everything revolves around the defined methods in Mono. The "to do" list contains
-        // all methods to convert into a CFG and then to SSA.
-        private StackQueue<Mono.Cecil.MethodDefinition> _methoddefs_to_do = new StackQueue<Mono.Cecil.MethodDefinition>();
-        private List<string> _methoddefs_done = new List<string>(); // No longer MethodDefition because there is no equivalence.
         private static MethodInfo GetMethodInfo(Action a)
         {
             return a.Method;
@@ -185,7 +196,7 @@
 
         private void ExtractBasicBlocksOfMethod(MethodDefinition definition)
         {
-            _methoddefs_done.Add(definition.FullName);
+            _methods_done.Add(definition.FullName);
 
             // Make sure definition assembly is loaded. The analysis of the method cannot
             // be done if the routine hasn't been loaded into Mono!

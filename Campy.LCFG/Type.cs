@@ -10,8 +10,6 @@ namespace Campy.ControlFlowGraph
 {
     public class Type
     {
-
-        internal Class Class;
         internal bool IsLocal;
 
         private TypeRef _type_ref;
@@ -263,10 +261,6 @@ namespace Campy.ControlFlowGraph
         public TypeDefinition TypeDefinitionCecil { get; private set; }
 
         public StackValueType StackType { get; private set; }
-
-        public Dictionary<FieldDefinition, Field> Fields { get; set; }
-
-        public TypeState State { get; set; }
 
         /// <inheritdoc/>
         public override string ToString()
