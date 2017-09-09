@@ -1585,7 +1585,8 @@ namespace Campy.ControlFlowGraph
                         int field_size;
                         int alignment;
                         var ft = Campy.Types.Utils.ReflectionCecilInterop.ConvertToSystemReflectionType(f.FieldType);
-                        if (ft.IsArray || ft.IsClass)
+                        var array_or_class = (f.FieldType.IsArray || !f.FieldType.IsValueType);
+                        if (array_or_class)
                         {
                             field_size = Buffers.SizeOf(typeof(IntPtr));
                             alignment = Buffers.Alignment(typeof(IntPtr));
@@ -1696,7 +1697,8 @@ namespace Campy.ControlFlowGraph
                         int field_size;
                         int alignment;
                         var ft = Campy.Types.Utils.ReflectionCecilInterop.ConvertToSystemReflectionType(f.FieldType);
-                        if (ft.IsArray || ft.IsClass)
+                        var array_or_class = (f.FieldType.IsArray || !f.FieldType.IsValueType);
+                        if (array_or_class)
                         {
                             field_size = Buffers.SizeOf(typeof(IntPtr));
                             alignment = Buffers.Alignment(typeof(IntPtr));
