@@ -362,7 +362,7 @@ namespace Campy.ControlFlowGraph
 
         public void OutputEntireGraph()
         {
-            if (!Campy.Utils.Options.IsOn("graph_dump"))
+            if (!Campy.Utils.Options.IsOn("graph_trace"))
                 return;
             System.Console.WriteLine("Graph:");
             System.Console.WriteLine();

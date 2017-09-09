@@ -1126,13 +1126,15 @@ namespace Campy.ControlFlowGraph
             var bb = GetBasicBlock(block_number);
             var method = bb.Method;
             var mod = Converter.global_module;
+
+            if (Campy.Utils.Options.IsOn("module_trace"))
+                LLVM.DumpModule(mod);
+
             MyString error = new MyString();
             LLVM.VerifyModule(mod, VerifierFailureAction.PrintMessageAction, error);
             System.Console.WriteLine(error);
             if (error.ToString() != "")
                 throw new Exception("Error in JIT compilation.");
-
-            //LLVM.DumpModule(mod);
 
             string triple = "nvptx64-nvidia-cuda";
             var b = LLVM.GetTargetFromTriple(triple, out TargetRef t2, error);
