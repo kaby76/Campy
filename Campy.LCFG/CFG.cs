@@ -15,6 +15,15 @@ namespace Campy.ControlFlowGraph
 
 
         private static int _node_number = 1;
+        private List<string> _methods_avoid = new List<string>();
+        public bool MethodAvoid(string full_name)
+        {
+            if (_methods_avoid.Contains(full_name))
+                return true;
+            else
+                return false;
+        }
+
 
         public int NewNodeNumber()
         {
@@ -31,6 +40,9 @@ namespace Campy.ControlFlowGraph
         public CFG()
             : base()
         {
+            _methods_avoid.Add("System.Void System.ThrowHelper::ThrowArgumentOutOfRangeException()");
+            _methods_avoid.Add("System.Void System.ThrowHelper::ThrowArgumentOutOfRangeException()");
+            _methods_avoid.Add("System.Void System.ArgumentOutOfRangeException::.ctor(System.String, System.String)");
         }
 
         private Dictionary<int, List<CFG.Vertex>> _change_set = new Dictionary<int, List<Vertex>>();
@@ -130,18 +142,11 @@ namespace Campy.ControlFlowGraph
                 set;
             }
             public bool AlreadyCompiled { get; set; }
-
-
             public bool HasThis { get; set; }
-
             public bool HasReturnValue { get; set; }
-
             public int? StackLevelIn { get; set; }
-
             public int? StackLevelOut { get; set; }
-
             public State StateIn { get; set; }
-
             public State StateOut { get; set; }
 
             private Vertex _entry;
@@ -219,8 +224,9 @@ namespace Campy.ControlFlowGraph
                 }
             }
 
-           // public Campy.Utils.MultiMap<Mono.Cecil.TypeReference, System.Type> node_type_map =
-           //     new Campy.Utils.MultiMap<TypeReference, System.Type>();
+
+            // public Campy.Utils.MultiMap<Mono.Cecil.TypeReference, System.Type> node_type_map =
+            //     new Campy.Utils.MultiMap<TypeReference, System.Type>();
 
             public Vertex()
                 : base()
@@ -323,6 +329,7 @@ namespace Campy.ControlFlowGraph
                     case FlowControl.Break:
                         break;
                     case FlowControl.Call:
+                        cfg.AddEdge(this.Name, result.Name);
                         break;
                     case FlowControl.Cond_Branch:
                         cfg.AddEdge(this.Name, result.Name);
@@ -340,9 +347,12 @@ namespace Campy.ControlFlowGraph
                         break;
                 }
 
-                //System.Console.WriteLine("After split");
-                //cfg.Dump();
-                //System.Console.WriteLine("-----------");
+                if (Campy.Utils.Options.IsOn("cfg_construction_trace"))
+                {
+                    System.Console.WriteLine("After split");
+                    cfg.OutputEntireGraph();
+                    System.Console.WriteLine("-----------");
+                }
                 return result;
             }
         }

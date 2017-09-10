@@ -461,8 +461,6 @@ namespace Campy.ControlFlowGraph
 
             this._mcfg.OutputEntireGraph();
 
-
-
             List<CFG.Vertex> new_change_set = _mcfg.PopChangeSet(change_set_id2);
             Dictionary<CFG.Vertex, CFG.Vertex> map_to_new_block = new Dictionary<CFG.Vertex, CFG.Vertex>();
             foreach (var v in new_change_set)
@@ -1002,10 +1000,8 @@ namespace Campy.ControlFlowGraph
                 }
             }
 
-            //foreach (var m in all_modules)
-            //{
-            //    LLVM.DumpModule(m);
-            //}
+            if (Utils.Options.IsOn("name_trace"))
+                NameTableTrace();
         }
 
         public List<System.Type> FindAllTargets(Delegate obj)
@@ -1116,22 +1112,22 @@ namespace Campy.ControlFlowGraph
             return data_used;
         }
 
-        public CFG.Vertex GetBasicBlock(int block_number)
+        public CFG.Vertex GetBasicBlock(int block_id)
         {
-            return _mcfg.VertexNodes.Where(i => i.IsEntry && i.Name == block_number).FirstOrDefault();
+            return _mcfg.VertexNodes.Where(i => i.IsEntry && i.Name == block_id).FirstOrDefault();
         }
 
-        public unsafe CUfunction GetPtr(int block_number)
+        public unsafe CUfunction GetPtr(int block_id)
         {
-            var bb = GetBasicBlock(block_number);
+            var bb = GetBasicBlock(block_id);
             var method = bb.Method;
-            var mod = Converter.global_module;
+            var module = Converter.global_module;
 
             if (Campy.Utils.Options.IsOn("module_trace"))
-                LLVM.DumpModule(mod);
+                LLVM.DumpModule(module);
 
             MyString error = new MyString();
-            LLVM.VerifyModule(mod, VerifierFailureAction.PrintMessageAction, error);
+            LLVM.VerifyModule(module, VerifierFailureAction.PrintMessageAction, error);
             System.Console.WriteLine(error);
             if (error.ToString() != "")
                 throw new Exception("Error in JIT compilation.");
@@ -1150,8 +1146,8 @@ namespace Campy.ControlFlowGraph
                 LLVM.MDStringInContext(context_ref, "kernel", 6),
                 LLVM.ConstInt(LLVM.Int32TypeInContext(context_ref), 1, false)
             });
-            LLVM.AddNamedMetadataOperand(mod, "nvvm.annotations", kernelMd);
-            LLVM.TargetMachineEmitToMemoryBuffer(tmr,mod,Swigged.LLVM.CodeGenFileType.AssemblyFile,
+            LLVM.AddNamedMetadataOperand(module, "nvvm.annotations", kernelMd);
+            LLVM.TargetMachineEmitToMemoryBuffer(tmr,module,Swigged.LLVM.CodeGenFileType.AssemblyFile,
                 error,out MemoryBufferRef buffer);
             string ptx = null;
             try
@@ -1215,6 +1211,16 @@ namespace Campy.ControlFlowGraph
             return _normalized_name[before];
         }
 
+        public void NameTableTrace()
+        {
+            System.Console.WriteLine("Name mapping table.");
+            foreach (var tuple in _normalized_name)
+            {
+                System.Console.WriteLine(tuple.Key);
+                System.Console.WriteLine(tuple.Value);
+                System.Console.WriteLine();
+            }
+        }
 
         public static TypeRef ConvertMonoTypeToLLVM(
             CFG.Vertex node,

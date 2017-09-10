@@ -2259,24 +2259,26 @@ namespace Campy.ControlFlowGraph
             if (method as Mono.Cecil.MethodReference != null)
             {
                 Mono.Cecil.MethodReference mr = method as Mono.Cecil.MethodReference;
-                if (mr.HasThis)
-                    args++;
-                args += mr.Parameters.Count;
-                if (mr.MethodReturnType != null)
                 {
-                    Mono.Cecil.MethodReturnType rt = mr.MethodReturnType;
-                    Mono.Cecil.TypeReference tr = rt.ReturnType;
-                    // Get type, may contain modifiers.
-                    if (tr.FullName.Contains(' '))
+                    if (mr.HasThis)
+                        args++;
+                    args += mr.Parameters.Count;
+                    if (mr.MethodReturnType != null)
                     {
-                        String[] sp = tr.FullName.Split(' ');
-                        if (!sp[0].Equals("System.Void"))
-                            ret++;
-                    }
-                    else
-                    {
-                        if (!tr.FullName.Equals("System.Void"))
-                            ret++;
+                        Mono.Cecil.MethodReturnType rt = mr.MethodReturnType;
+                        Mono.Cecil.TypeReference tr = rt.ReturnType;
+                        // Get type, may contain modifiers.
+                        if (tr.FullName.Contains(' '))
+                        {
+                            String[] sp = tr.FullName.Split(' ');
+                            if (!sp[0].Equals("System.Void"))
+                                ret++;
+                        }
+                        else
+                        {
+                            if (!tr.FullName.Equals("System.Void"))
+                                ret++;
+                        }
                     }
                 }
             }
@@ -2295,55 +2297,75 @@ namespace Campy.ControlFlowGraph
             if (method as Mono.Cecil.MethodReference != null)
             {
                 Mono.Cecil.MethodReference mr = method as Mono.Cecil.MethodReference;
-                if (mr.HasThis)
-                    nargs++;
-                nargs += mr.Parameters.Count;
-                if (mr.MethodReturnType != null)
+                CFG graph = (CFG)this.Block._Graph;
+                if (!graph.MethodAvoid(mr.FullName))
                 {
-                    Mono.Cecil.MethodReturnType rt = mr.MethodReturnType;
-                    Mono.Cecil.TypeReference tr = rt.ReturnType;
-                    // Get type, may contain modifiers.
-                    if (tr.FullName.Contains(' '))
+                    if (mr.HasThis)
+                        nargs++;
+                    nargs += mr.Parameters.Count;
+                    if (mr.MethodReturnType != null)
                     {
-                        String[] sp = tr.FullName.Split(' ');
-                        if (!sp[0].Equals("System.Void"))
-                            ret++;
+                        Mono.Cecil.MethodReturnType rt = mr.MethodReturnType;
+                        Mono.Cecil.TypeReference tr = rt.ReturnType;
+                        // Get type, may contain modifiers.
+                        if (tr.FullName.Contains(' '))
+                        {
+                            String[] sp = tr.FullName.Split(' ');
+                            if (!sp[0].Equals("System.Void"))
+                                ret++;
+                        }
+                        else
+                        {
+                            if (!tr.FullName.Equals("System.Void"))
+                                ret++;
+                        }
                     }
-                    else
+                    var name = Converter.MethodName(mr);
+                    // Find bb entry.
+                    CFG.Vertex the_entry = this.Block._Graph.VertexNodes.Where(node
+                        =>
                     {
-                        if (!tr.FullName.Equals("System.Void"))
-                            ret++;
+                        GraphLinkedList<int, CFG.Vertex, CFG.Edge> g = j.Block._Graph;
+                        int k = g.NameSpace.BijectFromBasetype(node.Name);
+                        CFG.Vertex v = g.VertexSpace[k];
+                        Converter c = converter;
+                        if (v.IsEntry && Converter.MethodName(v.Method) == name && c.IsFullyInstantiatedNode(v))
+                            return true;
+                        else return false;
+                    }).ToList().FirstOrDefault();
+
+                    if (the_entry != default(CFG.Vertex))
+                    {
+                        BuilderRef bu = this.Builder;
+                        ValueRef fv = the_entry.Function;
+                        ValueRef[] args = new ValueRef[nargs];
+                        for (int k = nargs - 1; k >= 0; --k)
+                            args[k] = state._stack.Pop().V;
+                        if (ret > 0)
+                        {
+                            var call = LLVM.BuildCall(Builder, fv, args, name);
+                            state._stack.Push(new Value(call));
+                        }
+                        else
+                        {
+                            var call = LLVM.BuildCall(Builder, fv, args, "");
+                        }
                     }
                 }
-                var name = Converter.MethodName(mr);
-                // Find bb entry.
-                CFG.Vertex the_entry = this.Block._Graph.VertexNodes.Where(node
-                    =>
+                else
                 {
-                    GraphLinkedList<int, CFG.Vertex, CFG.Edge> g = j.Block._Graph;
-                    int k = g.NameSpace.BijectFromBasetype(node.Name);
-                    CFG.Vertex v = g.VertexSpace[k];
-                    Converter c = converter;
-                    if (v.IsEntry && Converter.MethodName(v.Method) == name && c.IsFullyInstantiatedNode(v))
-                        return true;
-                    else return false;
-                }).ToList().FirstOrDefault();
+                    for (int k = nargs - 1; k >= 0; --k)
+                        state._stack.Pop();
 
-                if (the_entry != default(CFG.Vertex))
-                {
-                    BuilderRef bu = this.Builder;
-                    ValueRef fv = the_entry.Function;
-                    ValueRef[] args = new ValueRef[nargs];
-                    for (int k = nargs-1; k >= 0; --k)
-                        args[k] = state._stack.Pop().V;
+                    // Generate code to crash.
+
+
                     if (ret > 0)
                     {
-                        var call = LLVM.BuildCall(Builder, fv, args, name);
-                        state._stack.Push(new Value(call));
+                        state._stack.Push(new Value(LLVM.ConstInt(LLVM.Int32Type(), 0, false)));
                     }
                     else
                     {
-                        var call = LLVM.BuildCall(Builder, fv, args, "");
                     }
                 }
             }

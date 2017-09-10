@@ -16,14 +16,10 @@
         private List<Mono.Cecil.ModuleDefinition> _loaded_modules = new List<ModuleDefinition>();
         private List<Mono.Cecil.ModuleDefinition> _analyzed_modules = new List<ModuleDefinition>();
         private StackQueue<Mono.Cecil.MethodDefinition> _methods_to_do = new StackQueue<Mono.Cecil.MethodDefinition>();
-        private List<string> _methods_avoid = new List<string>();
         private List<string> _methods_done = new List<string>(); // No longer MethodDefition because there is no equivalence.
 
         public Reader()
         {
-            _methods_avoid.Add("System.Void System.ThrowHelper::ThrowArgumentOutOfRangeException()");    
-            _methods_avoid.Add("System.Void System.ThrowHelper::ThrowArgumentOutOfRangeException()");
-            _methods_avoid.Add("System.Void System.ArgumentOutOfRangeException::.ctor(System.String, System.String)");
         }
 
         public CFG Cfg
@@ -132,7 +128,7 @@
         {
             if (definition == null)
                 return;
-            if (_methods_avoid.Contains(definition.FullName))
+            if (_cfg.MethodAvoid(definition.FullName))
                 return;
             if (_methods_done.Contains(definition.FullName))
                 return;
