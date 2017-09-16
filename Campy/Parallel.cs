@@ -101,7 +101,7 @@ namespace Campy
                     bb = cs.First();
                 }
 
-                var ptr_to_kernel = Singleton._converter.GetPtr(bb.Name);
+                var ptr_to_kernel = Singleton._converter.GetCudaFunction(bb.Name);
 
                 var rank = extent._Rank;
                 Index index = new Index(extent.Size());

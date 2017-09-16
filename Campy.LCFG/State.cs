@@ -41,7 +41,7 @@ namespace Campy.ControlFlowGraph
             if (md.HasThis)
             {
                 TypeDefinition td = md.DeclaringType;
-                TypeRef type = Converter.ConvertMonoTypeToLLVM(bb, td, bb.LLVMTypeMap, bb.OpsFromOriginal);
+                TypeRef type = Converter.ConvertMonoTypeToLLVM(td, bb.LLVMTypeMap, bb.OpsFromOriginal);
                 var vx = new Value(LLVM.ConstInt(type, (ulong)0xdeadbeef, true));
                 _stack.Push(vx);
                 _this = _stack.Section(begin++, 1);
@@ -59,7 +59,7 @@ namespace Campy.ControlFlowGraph
                     int j = i - begin;
                     ParameterDefinition p = md.Parameters[j];
                     TypeReference tr = p.ParameterType;
-                    type = Converter.ConvertMonoTypeToLLVM(bb, tr, bb.LLVMTypeMap, bb.OpsFromOriginal);
+                    type = Converter.ConvertMonoTypeToLLVM(tr, bb.LLVMTypeMap, bb.OpsFromOriginal);
                 }
                 var vx = new Value(LLVM.ConstInt(type, (ulong)0xdeadbeef, true));
                 _stack.Push(vx);
@@ -87,7 +87,7 @@ namespace Campy.ControlFlowGraph
             if (bb._Predecessors.Count == 0)
             {
                 if (!bb.IsEntry) throw new Exception("Cannot handle dead code blocks.");
-                var fun = bb.Function;
+                var fun = bb.MethodValueRef;
                 uint begin = 0;
                 if (bb.HasThis)
                 {
@@ -119,7 +119,7 @@ namespace Campy.ControlFlowGraph
                 for (int i = 0; i < locals; ++i)
                 {
                     var tr = variables[i].VariableType;
-                    TypeRef type = Converter.ConvertMonoTypeToLLVM(bb, tr, bb.LLVMTypeMap, bb.OpsFromOriginal);
+                    TypeRef type = Converter.ConvertMonoTypeToLLVM(tr, bb.LLVMTypeMap, bb.OpsFromOriginal);
                     Value value = new Value(LLVM.ConstInt(type, (ulong)0, true));
                     _stack.Push(value);
                 }

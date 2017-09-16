@@ -1634,7 +1634,7 @@ namespace Campy.ControlFlowGraph
                     {
                         var mono_field_type = field.FieldType;
                         TypeRef type = Converter.ConvertMonoTypeToLLVM(
-                            Block, mono_field_type,
+                            mono_field_type,
                             Block.LLVMTypeMap, Block.OpsFromOriginal);
                         load = LLVM.BuildBitCast(Builder,
                             load, type, "");
@@ -1740,7 +1740,7 @@ namespace Campy.ControlFlowGraph
                     {
                         var mono_field_type = field.FieldType;
                         TypeRef type = Converter.ConvertMonoTypeToLLVM(
-                            Block, mono_field_type,
+                            mono_field_type,
                             Block.LLVMTypeMap, Block.OpsFromOriginal);
                         addr = LLVM.BuildBitCast(Builder,
                             addr, type, "");
@@ -2337,7 +2337,7 @@ namespace Campy.ControlFlowGraph
                     if (the_entry != default(CFG.Vertex))
                     {
                         BuilderRef bu = this.Builder;
-                        ValueRef fv = the_entry.Function;
+                        ValueRef fv = the_entry.MethodValueRef;
                         ValueRef[] args = new ValueRef[nargs];
                         for (int k = nargs - 1; k >= 0; --k)
                             args[k] = state._stack.Pop().V;
@@ -2502,7 +2502,7 @@ namespace Campy.ControlFlowGraph
                 if (the_entry != default(CFG.Vertex))
                 {
                     BuilderRef bu = this.Builder;
-                    ValueRef fv = the_entry.Function;
+                    ValueRef fv = the_entry.MethodValueRef;
                     ValueRef[] args = new ValueRef[nargs];
                     for (int k = nargs - 1; k >= 0; --k)
                         args[k] = state._stack.Pop().V;

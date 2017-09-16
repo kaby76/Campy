@@ -135,7 +135,7 @@ namespace Campy.ControlFlowGraph
             public List<Inst> Instructions { get; set; } = new List<Inst>();
 
             public BasicBlockRef BasicBlock { get; set; }
-            public ValueRef Function { get; set; }
+            public ValueRef MethodValueRef { get; set; }
             public BuilderRef Builder { get; set; }
             public ModuleRef Module {
                 get;

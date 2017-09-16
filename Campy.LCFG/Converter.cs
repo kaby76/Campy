@@ -11,7 +11,10 @@ using Mono.Cecil;
 using Swigged.LLVM;
 using System.Runtime.InteropServices;
 using Campy.LCFG;
+using Mono.Cecil.Cil;
 using Swigged.Cuda;
+using Mono.Cecil.Rocks;
+using Mono.Collections.Generic;
 
 namespace Campy.ControlFlowGraph
 {
@@ -19,8 +22,8 @@ namespace Campy.ControlFlowGraph
     {
         private CFG _mcfg;
         private static int _nn_id = 0;
-        public static ModuleRef global_module = default(ModuleRef);
-        private List<ModuleRef> all_modules = new List<ModuleRef>();
+        public static ModuleRef global_llvm_module = default(ModuleRef);
+        private List<ModuleRef> all_llvm_modules = new List<ModuleRef>();
         public static Dictionary<string, ValueRef> built_in_functions = new Dictionary<string, ValueRef>();
         Dictionary<Tuple<CFG.Vertex, Mono.Cecil.TypeReference, System.Type>, CFG.Vertex> mmap
             = new Dictionary<Tuple<CFG.Vertex, TypeReference, System.Type>, CFG.Vertex>(new Comparer());
@@ -28,18 +31,7 @@ namespace Campy.ControlFlowGraph
         Dictionary<CFG.Vertex, MultiMap<Mono.Cecil.TypeReference, System.Type>> map =
             new Dictionary<CFG.Vertex, MultiMap<TypeReference, System.Type>>();
         private static bool setup = true;
-        private static Mono.Cecil.TypeDefinition MonoInt16;
-        private static Mono.Cecil.TypeDefinition MonoUInt16;
-        private static Mono.Cecil.TypeDefinition MonoInt32;
-        private static Mono.Cecil.TypeDefinition MonoUInt32;
-        private static Mono.Cecil.TypeDefinition MonoInt64;
-        private static Mono.Cecil.TypeDefinition MonoUInt64;
-        private static Mono.Cecil.TypeDefinition MonoBoolean;
-        private static Mono.Cecil.TypeDefinition MonoChar;
-        private static Mono.Cecil.TypeDefinition MonoVoid;
-        private static Mono.Cecil.TypeDefinition MonoTypeDef;
-        private static Mono.Cecil.TypeDefinition MonoSystemType;
-        private static Mono.Cecil.TypeDefinition MonoSystemString;
+        private static Dictionary<TypeReference, TypeRef> basic_llvm_types_created = new Dictionary<TypeReference, TypeRef>();
         private static Dictionary<TypeReference, TypeRef> previous_llvm_types_created_global = new Dictionary<TypeReference, TypeRef>();
         private static Stack<bool> nested = new Stack<bool>();
         private static Dictionary<string, string> _normalized_name = new Dictionary<string, string>();
@@ -47,80 +39,134 @@ namespace Campy.ControlFlowGraph
         public Converter(CFG mcfg)
         {
             _mcfg = mcfg;
-            global_module = CreateModule("global");
+            global_llvm_module = CreateModule("global");
+            LLVM.EnablePrettyStackTrace();
+            var triple = LLVM.GetDefaultTargetTriple();
+            LLVM.SetTarget(global_llvm_module, triple);
+            LLVM.InitializeAllTargets();
+            LLVM.InitializeAllTargetMCs();
+            LLVM.InitializeAllTargetInfos();
+            LLVM.InitializeAllAsmPrinters();
+	        basic_llvm_types_created.Add(
+			    Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(typeof(Int16)),
+			    LLVM.Int16Type());
+
+	        basic_llvm_types_created.Add(
+			    Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(typeof(UInt16)),
+			    LLVM.Int16Type());
+
+	        basic_llvm_types_created.Add(
+			    Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(typeof(Int32)),
+			    LLVM.Int32Type());
+
+	        basic_llvm_types_created.Add(
+			    Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(typeof(UInt32)),
+			    LLVM.Int32Type());
+
+	        basic_llvm_types_created.Add(
+			    Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(typeof(Int64)),
+			    LLVM.Int64Type());
+
+	        basic_llvm_types_created.Add(
+			    Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(typeof(UInt64)),
+			    LLVM.Int64Type());
+
+	        basic_llvm_types_created.Add(
+			    Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(typeof(bool)),
+			    LLVM.Int1Type());
+
+	        basic_llvm_types_created.Add(
+			    Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(typeof(char)),
+			    LLVM.Int8Type());
+
+	        basic_llvm_types_created.Add(
+			    Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(typeof(void)),
+			    LLVM.VoidType());
+
+	        basic_llvm_types_created.Add(
+			    Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(typeof(Mono.Cecil.TypeDefinition)),
+			    LLVM.PointerType(LLVM.VoidType(), 0));
+
+	        basic_llvm_types_created.Add(
+			    Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(typeof(System.Type)),
+			    LLVM.PointerType(LLVM.VoidType(), 0));
+
+	        basic_llvm_types_created.Add(
+			    Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(typeof(string)),
+			    LLVM.PointerType(LLVM.VoidType(), 0));
 
             built_in_functions.Add("llvm.nvvm.read.ptx.sreg.tid.x",
                 LLVM.AddFunction(
-                    global_module,
+                    global_llvm_module,
                     "llvm.nvvm.read.ptx.sreg.tid.x",
                     LLVM.FunctionType(LLVM.Int32Type(),
                         new TypeRef[] { }, false)));
             built_in_functions.Add("llvm.nvvm.read.ptx.sreg.tid.y",
                 LLVM.AddFunction(
-                    global_module,
+                    global_llvm_module,
                     "llvm.nvvm.read.ptx.sreg.tid.y",
                     LLVM.FunctionType(LLVM.Int32Type(),
                         new TypeRef[] { }, false)));
             built_in_functions.Add("llvm.nvvm.read.ptx.sreg.tid.z",
                 LLVM.AddFunction(
-                    global_module,
+                    global_llvm_module,
                     "llvm.nvvm.read.ptx.sreg.tid.z",
                     LLVM.FunctionType(LLVM.Int32Type(),
                         new TypeRef[] { }, false)));
 
             built_in_functions.Add("llvm.nvvm.read.ptx.sreg.ctaid.x",
                 LLVM.AddFunction(
-                    global_module,
+                    global_llvm_module,
                     "llvm.nvvm.read.ptx.sreg.ctaid.x",
                     LLVM.FunctionType(LLVM.Int32Type(),
                         new TypeRef[] { }, false)));
             built_in_functions.Add("llvm.nvvm.read.ptx.sreg.ctaid.y",
                 LLVM.AddFunction(
-                    global_module,
+                    global_llvm_module,
                     "llvm.nvvm.read.ptx.sreg.ctaid.y",
                     LLVM.FunctionType(LLVM.Int32Type(),
                         new TypeRef[] { }, false)));
             built_in_functions.Add("llvm.nvvm.read.ptx.sreg.ctaid.z",
                 LLVM.AddFunction(
-                    global_module,
+                    global_llvm_module,
                     "llvm.nvvm.read.ptx.sreg.ctaid.z",
                     LLVM.FunctionType(LLVM.Int32Type(),
                         new TypeRef[] { }, false)));
 
             built_in_functions.Add("llvm.nvvm.read.ptx.sreg.ntid.x",
                 LLVM.AddFunction(
-                    global_module,
+                    global_llvm_module,
                     "llvm.nvvm.read.ptx.sreg.ntid.x",
                     LLVM.FunctionType(LLVM.Int32Type(),
                         new TypeRef[] { }, false)));
             built_in_functions.Add("llvm.nvvm.read.ptx.sreg.ntid.y",
                 LLVM.AddFunction(
-                    global_module,
+                    global_llvm_module,
                     "llvm.nvvm.read.ptx.sreg.ntid.y",
                     LLVM.FunctionType(LLVM.Int32Type(),
                         new TypeRef[] { }, false)));
             built_in_functions.Add("llvm.nvvm.read.ptx.sreg.ntid.z",
                 LLVM.AddFunction(
-                    global_module,
+                    global_llvm_module,
                     "llvm.nvvm.read.ptx.sreg.ntid.z",
                     LLVM.FunctionType(LLVM.Int32Type(),
                         new TypeRef[] { }, false)));
 
             built_in_functions.Add("llvm.nvvm.read.ptx.sreg.nctaid.x",
                 LLVM.AddFunction(
-                    global_module,
+                    global_llvm_module,
                     "llvm.nvvm.read.ptx.sreg.nctaid.x",
                     LLVM.FunctionType(LLVM.Int32Type(),
                         new TypeRef[] { }, false)));
             built_in_functions.Add("llvm.nvvm.read.ptx.sreg.nctaid.y",
                 LLVM.AddFunction(
-                    global_module,
+                    global_llvm_module,
                     "llvm.nvvm.read.ptx.sreg.nctaid.y",
                     LLVM.FunctionType(LLVM.Int32Type(),
                         new TypeRef[] { }, false)));
             built_in_functions.Add("llvm.nvvm.read.ptx.sreg.nctaid.z",
                 LLVM.AddFunction(
-                    global_module,
+                    global_llvm_module,
                     "llvm.nvvm.read.ptx.sreg.nctaid.z",
                     LLVM.FunctionType(LLVM.Int32Type(),
                         new TypeRef[] { }, false)));
@@ -515,20 +561,12 @@ namespace Campy.ControlFlowGraph
         private ModuleRef CreateModule(string name)
         {
             var new_module = LLVM.ModuleCreateWithName(name);
-            all_modules.Add(new_module);
+            all_llvm_modules.Add(new_module);
             return new_module;
         }
 
         private void CompilePart1(IEnumerable<CFG.Vertex> basic_blocks_to_compile, List<Mono.Cecil.TypeDefinition> list_of_data_types_used)
         {
-            LLVM.EnablePrettyStackTrace();
-            var triple = LLVM.GetDefaultTargetTriple();
-            LLVM.SetTarget(global_module, triple);
-            LLVM.InitializeAllTargets();
-            LLVM.InitializeAllTargetMCs();
-            LLVM.InitializeAllTargetInfos();
-            LLVM.InitializeAllAsmPrinters();
-
             foreach (CFG.Vertex bb in basic_blocks_to_compile)
             {
                 System.Console.WriteLine("Compile part 1, node " + bb);
@@ -551,7 +589,7 @@ namespace Campy.ControlFlowGraph
                 var parameters = method.Parameters;
                 System.Reflection.MethodBase mb = ReflectionCecilInterop.ConvertToSystemReflectionMethodInfo(method);
                 string mn = mb.DeclaringType.Assembly.GetName().Name;
-                ModuleRef mod = global_module; // LLVM.ModuleCreateWithName(mn);
+                ModuleRef mod = global_llvm_module; // LLVM.ModuleCreateWithName(mn);
                 bb.Module = mod;
                 uint count = (uint)mb.GetParameters().Count();
                 if (bb.HasThis) count++;
@@ -560,10 +598,10 @@ namespace Campy.ControlFlowGraph
                 if (count > 0)
                 {
                     if (bb.HasThis)
-                        param_types[current++] = ConvertMonoTypeToLLVM(bb,
+                        param_types[current++] = ConvertMonoTypeToLLVM(
                             Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(mb.DeclaringType), bb.LLVMTypeMap, bb.OpsFromOriginal);
                     foreach (var p in parameters)
-                        param_types[current++] = ConvertMonoTypeToLLVM(bb,
+                        param_types[current++] = ConvertMonoTypeToLLVM(
                             p.ParameterType, bb.LLVMTypeMap, bb.OpsFromOriginal);
                     foreach (var pp in param_types)
                     {
@@ -574,12 +612,12 @@ namespace Campy.ControlFlowGraph
 
                 TypeRef ret_type = default(TypeRef);
                 var mi2 = method.ReturnType;
-                ret_type = ConvertMonoTypeToLLVM(bb, mi2, bb.LLVMTypeMap, bb.OpsFromOriginal);
+                ret_type = ConvertMonoTypeToLLVM(mi2, bb.LLVMTypeMap, bb.OpsFromOriginal);
                 TypeRef met_type = LLVM.FunctionType(ret_type, param_types, false);
                 ValueRef fun = LLVM.AddFunction(mod, Converter.NormalizeName(Converter.MethodName(method)), met_type);
                 BasicBlockRef entry = LLVM.AppendBasicBlock(fun, bb.Name.ToString());
                 bb.BasicBlock = entry;
-                bb.Function = fun;
+                bb.MethodValueRef = fun;
                 BuilderRef builder = LLVM.CreateBuilder();
                 bb.Builder = builder;
                 LLVM.PositionBuilderAtEnd(builder, entry);
@@ -598,10 +636,10 @@ namespace Campy.ControlFlowGraph
                 {
                     var ent = bb.Entry;
                     var lvv_ent = ent;
-                    var fun = lvv_ent.Function;
+                    var fun = lvv_ent.MethodValueRef;
                     var llvm_bb = LLVM.AppendBasicBlock(fun, bb.Name.ToString());
                     bb.BasicBlock = llvm_bb;
-                    bb.Function = lvv_ent.Function;
+                    bb.MethodValueRef = lvv_ent.MethodValueRef;
                     BuilderRef builder = LLVM.CreateBuilder();
                     bb.Builder = builder;
                     LLVM.PositionBuilderAtEnd(builder, llvm_bb);
@@ -847,7 +885,7 @@ namespace Campy.ControlFlowGraph
             }
         }
 
-        private void CompilePart7(ref List<CFG.Vertex> basic_blocks_to_compile)
+        private List<CFG.Vertex> RemoveBasicBlocksAlreadyCompiled(List<CFG.Vertex> basic_blocks_to_compile)
         {
             List<CFG.Vertex> weeded = new List<CFG.Vertex>();
 
@@ -861,12 +899,12 @@ namespace Campy.ControlFlowGraph
                     System.Console.WriteLine("Comp " + bb.Name);
                 }
             }
-            basic_blocks_to_compile = weeded;
+            return weeded;
         }
 
         public void CompileToLLVM(List<CFG.Vertex> basic_blocks_to_compile, List<Mono.Cecil.TypeDefinition> list_of_data_types_used)
         {
-            CompilePart7(ref basic_blocks_to_compile);
+            basic_blocks_to_compile = RemoveBasicBlocksAlreadyCompiled(basic_blocks_to_compile);
 
             CompilePart1(basic_blocks_to_compile, list_of_data_types_used);
 
@@ -938,7 +976,8 @@ namespace Campy.ControlFlowGraph
                         inst = inst.Convert(this, bb.StateOut);
                         bb.StateOut.Dump();
                     }
-                    if (last_inst != null && last_inst.OpCode.FlowControl == Mono.Cecil.Cil.FlowControl.Next)
+                    if (last_inst != null && (last_inst.OpCode.FlowControl == Mono.Cecil.Cil.FlowControl.Next
+                        || last_inst.OpCode.FlowControl == FlowControl.Call))
                     {
                         // Need to insert instruction to branch to fall through.
                         GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge = bb._Successors[0];
@@ -1117,11 +1156,11 @@ namespace Campy.ControlFlowGraph
             return _mcfg.VertexNodes.Where(i => i.IsEntry && i.Name == block_id).FirstOrDefault();
         }
 
-        public unsafe CUfunction GetPtr(int block_id)
+        public unsafe CUfunction GetCudaFunction(int basic_block_id)
         {
-            var bb = GetBasicBlock(block_id);
-            var method = bb.Method;
-            var module = Converter.global_module;
+            var basic_block = GetBasicBlock(basic_block_id);
+            var method = basic_block.Method;
+            var module = Converter.global_llvm_module;
 
             if (Campy.Utils.Options.IsOn("module_trace"))
                 LLVM.DumpModule(module);
@@ -1142,7 +1181,7 @@ namespace Campy.ControlFlowGraph
             ValueRef kernelMd = LLVM.MDNodeInContext(
                 context_ref, new ValueRef[3]
             {
-                bb.Function,
+                basic_block.MethodValueRef,
                 LLVM.MDStringInContext(context_ref, "kernel", 6),
                 LLVM.ConstInt(LLVM.Int32TypeInContext(context_ref), 1, false)
             });
@@ -1153,9 +1192,133 @@ namespace Campy.ControlFlowGraph
             try
             {
                 ptx = LLVM.GetBufferStart(buffer);
+var ptx2 = @"//
+// Generated by LLVM NVPTX Back-End
+//
+
+		.version 5.0
+				.target sm_20
+				.address_size 64
+
+	// .globl       nn_6
+				.visible .func  (.param .b32 func_retval0) nn_7
+				(
+				 .param .b64 nn_7_param_0
+				)
+				;
+		.visible .func nn_8
+				(
+				 .param .b64 nn_8_param_0,
+				 .param .b32 nn_8_param_1,
+				 .param .b32 nn_8_param_2
+				)
+				;
+
+		.visible .entry nn_6(
+				     .param .u64 nn_6_param_0,
+				     .param .u64 nn_6_param_1
+				    )
+		{
+			.reg .b32       %r<3>;
+			.reg .b64       %rd<5>;
+
+			ld.param.u64    %rd1, [nn_6_param_0];
+			cvta.to.global.u64      %rd2, %rd1;
+			ld.param.u64    %rd3, [nn_6_param_1];
+			ld.global.u64   %rd4, [%rd2];
+			{ // callseq 0
+				.reg .b32 temp_param_reg;
+				.param .b64 param0;
+				st.param.b64    [param0+0], %rd3;
+				.param .b32 retval0;
+				call.uni (retval0),
+				nn_7,
+				(
+				 param0
+				);
+				ld.param.b32    %r1, [retval0+0];
+			} // callseq 0
+			{ // callseq 1
+				.reg .b32 temp_param_reg;
+				.param .b64 param0;
+				st.param.b64    [param0+0], %rd3;
+				.param .b32 retval0;
+				call.uni (retval0),
+				nn_7,
+				(
+				 param0
+				);
+				ld.param.b32    %r2, [retval0+0];
+			} // callseq 1
+			{ // callseq 2
+				.reg .b32 temp_param_reg;
+				.param .b64 param0;
+				st.param.b64    [param0+0], %rd4;
+				.param .b32 param1;
+				st.param.b32    [param1+0], %r1;
+				.param .b32 param2;
+				st.param.b32    [param2+0], %r2;
+				call.uni
+						nn_8,
+						(
+					param0,
+					param1,
+					param2
+						);
+			} // callseq 2
+			ret;
+		}
+
+	// .globl       nn_7
+		.visible .func  (.param .b32 func_retval0) nn_7(
+			.param .b64 nn_7_param_0
+			)
+		{
+			.reg .b32       %r<13>;
+
+			mov.u32 %r1, %tid.x;
+			mov.u32 %r2, %tid.y;
+			mov.u32 %r3, %ntid.x;
+			mov.u32 %r4, %ntid.y;
+			mov.u32 %r5, %ctaid.x;
+			mov.u32 %r6, %ctaid.y;
+			mov.u32 %r7, %nctaid.x;
+			mul.lo.s32      %r8, %r3, %r7;
+			mul.lo.s32      %r9, %r8, %r4;
+			mad.lo.s32      %r10, %r3, %r5, %r1;
+			mad.lo.s32      %r11, %r9, %r6, %r10;
+			mad.lo.s32      %r12, %r8, %r2, %r11;
+			st.param.b32    [func_retval0+0], %r12;
+			ret;
+		}
+
+	// .globl       nn_8
+		.visible .func nn_8(
+				    .param .b64 nn_8_param_0,
+				    .param .b32 nn_8_param_1,
+				    .param .b32 nn_8_param_2
+				   )
+		{
+			.reg .b32       %r<5>;
+			.reg .b64       %rd<5>;
+
+			ld.param.u64    %rd1, [nn_8_param_0];
+			ld.param.u32    %r1, [nn_8_param_1];
+			ld.u64  %rd2, [%rd1+8];
+			ld.param.u32    %r2, [nn_8_param_2];
+			mul.wide.s32    %rd3, %r1, 4;
+			add.s64         %rd4, %rd2, %rd3;
+			st.u32  [%rd4+16], %r2;
+//			ld.u32  %r3, [%rd1+28];
+//			add.s32         %r4, %r3, 1;
+//			st.u32  [%rd1+28], %r4;
+			ret;
+		}
+
+";
+
+
                 uint length = LLVM.GetBufferSize(buffer);
-                //ptx = yo;
-                //System.Console.WriteLine(ptx);
                 ptx = ptx.Replace("3.2", "5.0");
                 System.Console.WriteLine(ptx);
             }
@@ -1178,8 +1341,8 @@ namespace Campy.ControlFlowGraph
                 Cuda.cuGetErrorString(res, out IntPtr str);
                 throw new Exception();
             }
-            var the_name = Converter.NormalizeName(Converter.MethodName(bb.Method));
-            res = Cuda.cuModuleGetFunction(out CUfunction helloWorld, cuModule, the_name);
+            var normalized_method_name = Converter.NormalizeName(Converter.MethodName(basic_block.Method));
+            res = Cuda.cuModuleGetFunction(out CUfunction helloWorld, cuModule, normalized_method_name);
             if (res != CUresult.CUDA_SUCCESS) throw new Exception();
             return helloWorld;
         }
@@ -1223,12 +1386,18 @@ namespace Campy.ControlFlowGraph
         }
 
         public static TypeRef ConvertMonoTypeToLLVM(
-            CFG.Vertex node,
             Mono.Cecil.TypeReference tr,
             Dictionary<TypeReference, TypeRef> previous_llvm_types_created,
             Dictionary<TypeReference, System.Type> generic_type_rewrite_rules)
         {
             // Search for type if already converted.
+            foreach (var kv in basic_llvm_types_created)
+            {
+                if (kv.Key.Name == tr.Name)
+                {
+                    return kv.Value;
+                }
+            }
             foreach (var kv in previous_llvm_types_created_global)
             {
                 if (kv.Key.Name == tr.Name)
@@ -1249,96 +1418,14 @@ namespace Campy.ControlFlowGraph
                     return kv.Value;
             }
             TypeDefinition td = tr.Resolve();
-            if (setup)
-            {
-                MonoInt16 = Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(typeof(Int16));
-                if (MonoInt16 == null) throw new Exception("Bad initialization");
-                MonoUInt16 = Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(typeof(UInt16));
-                if (MonoUInt16 == null) throw new Exception("Bad initialization");
-                MonoInt32 = Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(typeof(Int32));
-                if (MonoInt32 == null) throw new Exception("Bad initialization");
-                MonoUInt32 = Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(typeof(UInt32));
-                if (MonoUInt32 == null) throw new Exception("Bad initialization");
-                MonoInt64 = Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(typeof(Int64));
-                if (MonoInt64 == null) throw new Exception("Bad initialization");
-                MonoUInt64 = Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(typeof(UInt64));
-                if (MonoUInt64 == null) throw new Exception("Bad initialization");
-                MonoBoolean = Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(typeof(Boolean));
-                if (MonoBoolean == null) throw new Exception("Bad initialization");
-                MonoChar = Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(typeof(Char));
-                if (MonoChar == null) throw new Exception("Bad initialization");
-                MonoVoid = Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(typeof(void));
-                if (MonoVoid == null) throw new Exception("Bad initialization");
-                MonoTypeDef = Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(typeof(Mono.Cecil.TypeDefinition));
-                if (MonoTypeDef == null) throw new Exception("Bad initialization");
-		        MonoSystemType = Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(typeof(System.Type));
-		        if (MonoSystemType == null) throw new Exception("Bad initialization");
-		        MonoSystemString = Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(typeof(System.String));
-		        if (MonoSystemString == null) throw new Exception("Bad initialization");
-                setup = false;
-            }
             // Check basic types using TypeDefinition's found and initialized in the above code.
-            if (td != null)
-            {
-                // I don't know why, but Resolve() of System.Int32[] (an arrary) returns a simple System.Int32, not
-                // an array. If always true, then use TypeReference as much as possible.
-                if (tr.FullName == MonoInt16.FullName)
-                {
-                    return LLVM.Int16Type();
-                }
-                else if (tr.FullName == MonoUInt16.FullName)
-                {
-                    return LLVM.Int16Type();
-                }
-                else if (tr.FullName == MonoInt32.FullName)
-                {
-                    return LLVM.Int32Type();
-                }
-                else if (tr.FullName == MonoUInt32.FullName)
-                {
-                    return LLVM.Int32Type();
-                }
-                else if (tr.FullName == MonoInt64.FullName)
-                {
-                    return LLVM.Int64Type();
-                }
-                else if (tr.FullName == MonoUInt64.FullName)
-                {
-                    return LLVM.Int64Type();
-                }
-                else if (tr.FullName == MonoBoolean.FullName)
-                {
-                    return LLVM.Int1Type();
-                }
-                else if (tr.FullName == MonoChar.FullName)
-                {
-                    return LLVM.Int8Type();
-                }
-                else if (tr.FullName == MonoVoid.FullName)
-                {
-                    return LLVM.VoidType();
-                }
-                else if (tr.FullName == MonoTypeDef.FullName)
-                {
-                    // Pass on compiling the system type. Too compilicated. For now, just pass void *.
-                    var typeref = LLVM.VoidType();
-                    var s = LLVM.PointerType(typeref, 0);
-                    return s;
-                }
-		        else if (tr.FullName == MonoSystemType.FullName)
-		        {
-			        var typeref = LLVM.VoidType();
-			        var s = LLVM.PointerType(typeref, 0);
-			        return s;
-		        }
-		        else if (tr.FullName == MonoSystemString.FullName)
-		        {
-			        var typeref = LLVM.VoidType();
-			        var s = LLVM.PointerType(typeref, 0);
-			        return s;
-		        }
-            }
-            
+
+            // I don't know why, but Resolve() of System.Int32[] (an arrary) returns a simple System.Int32, not
+            // an array. If always true, then use TypeReference as much as possible.
+
+            GenericInstanceType git = tr as GenericInstanceType;
+            TypeDefinition gtd = tr as TypeDefinition;
+
             if (tr.IsArray)
             {
                 ContextRef c = LLVM.ContextCreate();
@@ -1346,12 +1433,12 @@ namespace Campy.ControlFlowGraph
                 previous_llvm_types_created_global.Add(tr, s);
                 LLVM.StructSetBody(s, new TypeRef[2]
                 {
-                    LLVM.PointerType(ConvertMonoTypeToLLVM(node, tr.GetElementType(), previous_llvm_types_created, generic_type_rewrite_rules), 0),
+                    LLVM.PointerType(ConvertMonoTypeToLLVM(tr.GetElementType(), previous_llvm_types_created, generic_type_rewrite_rules), 0),
                     LLVM.Int64Type()
                 }, true);
 
                 var element_type = tr.GetElementType();
-                var e = ConvertMonoTypeToLLVM(node, element_type, previous_llvm_types_created, generic_type_rewrite_rules);
+                var e = ConvertMonoTypeToLLVM(element_type, previous_llvm_types_created, generic_type_rewrite_rules);
                 var p = LLVM.PointerType(e, 0);
                 var d = LLVM.GetUndef(p);
                 return s;
@@ -1367,7 +1454,7 @@ namespace Campy.ControlFlowGraph
                         // Match, and substitute.
                         var v = value;
                         var mv = Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(v);
-                        var e = ConvertMonoTypeToLLVM(node, mv, previous_llvm_types_created, generic_type_rewrite_rules);
+                        var e = ConvertMonoTypeToLLVM(mv, previous_llvm_types_created, generic_type_rewrite_rules);
                         previous_llvm_types_created_global.Add(tr, e);
                         return e;
                     }
@@ -1379,7 +1466,6 @@ namespace Campy.ControlFlowGraph
                 nested.Push(true); // LLVM cannot handle recursive types.. For now, if nested, make it void *.
                 Dictionary<TypeReference, System.Type> additional = new Dictionary<TypeReference, System.Type>();
                 var gp = tr.GenericParameters;
-                GenericInstanceType git = tr as GenericInstanceType;
                 Mono.Collections.Generic.Collection<TypeReference> ga = null;
                 if (git != null)
                 {
@@ -1423,6 +1509,7 @@ namespace Campy.ControlFlowGraph
                 // Note, tr is correct type, but tr.Resolve of a generic type turns the type
                 // into an uninstantiated generic type. E.g., List<int> contains a generic T[] containing the
                 // data. T could be a struct/value type, or T could be a class.
+
                 var fields = td.Fields;
                 var new_list = new Dictionary<TypeReference, System.Type>(generic_type_rewrite_rules);
                 foreach (var a in additional) new_list.Add(a.Key, a.Value);
@@ -1435,10 +1522,51 @@ namespace Campy.ControlFlowGraph
                 int offset = 0;
                 foreach (var field in fields)
                 {
+                    TypeReference field_type = field.FieldType;
+                    TypeReference instantiated_field_type = field.FieldType;
+
+                    if (git != null)
+                    {
+                        Collection<TypeReference> generic_args = git.GenericArguments;
+                        if (field.FieldType.IsArray)
+                        {
+                            var et = field.FieldType.GetElementType();
+                            var bbc = et.HasGenericParameters;
+                            var bbbbc = et.IsGenericParameter;
+                            var array = field.FieldType as ArrayType;
+                            int rank = array.Rank;
+                            if (bbc)
+                            {
+                                instantiated_field_type = et.MakeGenericInstanceType(generic_args.ToArray());
+                                instantiated_field_type = instantiated_field_type.MakeArrayType(rank);
+                            }
+                            else if (bbbbc)
+                            {
+                                instantiated_field_type = generic_args.First();
+                                instantiated_field_type = instantiated_field_type.MakeArrayType(rank);
+                            }
+                        }
+                        else
+                        {
+                            var et = field.FieldType;
+                            var bbc = et.HasGenericParameters;
+                            var bbbbc = et.IsGenericParameter;
+                            if (bbc)
+                            {
+                                instantiated_field_type = et.MakeGenericInstanceType(generic_args.ToArray());
+                            }
+                            else if (bbbbc)
+                            {
+                                instantiated_field_type = generic_args.First();
+                            }
+                        }
+                    }
+
+
                     int field_size;
                     int alignment;
-                    var ft = Campy.Types.Utils.ReflectionCecilInterop.ConvertToSystemReflectionType(field.FieldType);
-                    var array_or_class = (field.FieldType.IsArray || !field.FieldType.IsValueType);
+                    var ft = Campy.Types.Utils.ReflectionCecilInterop.ConvertToSystemReflectionType(instantiated_field_type);
+                    var array_or_class = (instantiated_field_type.IsArray || !instantiated_field_type.IsValueType);
                     if (array_or_class)
                     {
                         field_size = Buffers.SizeOf(typeof(IntPtr));
@@ -1457,12 +1585,10 @@ namespace Campy.ControlFlowGraph
                         for (int j = 0; j < padding; ++j)
                             list.Add(LLVM.Int8Type());
                     }
-                    var field_converted_type = ConvertMonoTypeToLLVM(node, field.FieldType, previous_llvm_types_created, new_list);
-                    System.Console.WriteLine("Created type for node " + node.Name + " :::: " + LLVM.PrintTypeToString(field_converted_type));
+                    var field_converted_type = ConvertMonoTypeToLLVM(instantiated_field_type, previous_llvm_types_created, new_list);
                     list.Add(field_converted_type);
                 }
                 LLVM.StructSetBody(s, list.ToArray(), true);
-                System.Console.WriteLine("Created class for node " + node.Name + " :::: " + LLVM.PrintTypeToString(s));
                 nested.Pop();
                 return p;
             }

@@ -54,10 +54,10 @@
       <HintPath>..\packages\swigged.cuda.8.0.6\lib\netstandard1.1\swigged.cuda.dll</HintPath>
     </Reference>
     <Reference Include="swigged.llvm, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\swigged.llvm.4.0.14\lib\netstandard1.5\swigged.llvm.dll</HintPath>
+      <HintPath>..\packages\swigged.llvm.5.0.1\lib\netstandard1.5\swigged.llvm.dll</HintPath>
     </Reference>
     <Reference Include="swigged.llvm.helper, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\swigged.llvm.4.0.14\lib\netstandard1.5\swigged.llvm.helper.dll</HintPath>
+      <HintPath>..\packages\swigged.llvm.5.0.1\lib\netstandard1.5\swigged.llvm.helper.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.AppContext, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
@@ -187,7 +187,7 @@
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\swigged.cuda.8.0.6\build\swigged.cuda.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\swigged.cuda.8.0.6\build\swigged.cuda.targets'))" />
-    <Error Condition="!Exists('..\packages\swigged.llvm.4.0.14\build\swigged.llvm.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\swigged.llvm.4.0.14\build\swigged.llvm.targets'))" />
+    <Error Condition="!Exists('..\packages\swigged.llvm.5.0.1\build\swigged.llvm.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\swigged.llvm.5.0.1\build\swigged.llvm.targets'))" />
   </Target>
-  <Import Project="..\packages\swigged.llvm.4.0.14\build\swigged.llvm.targets" Condition="Exists('..\packages\swigged.llvm.4.0.14\build\swigged.llvm.targets')" />
+  <Import Project="..\packages\swigged.llvm.5.0.1\build\swigged.llvm.targets" Condition="Exists('..\packages\swigged.llvm.5.0.1\build\swigged.llvm.targets')" />
 </Project>
