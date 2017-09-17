@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using Campy.Graphs;
 using Campy.LCFG;
+using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Swigged.LLVM;
 
@@ -1582,6 +1583,10 @@ namespace Campy.ControlFlowGraph
                     int size = 0;
                     foreach (var f in declaring_type.Fields)
                     {
+                        var attr = f.Attributes;
+                        if ((attr & FieldAttributes.Static) != 0)
+                            continue;
+
                         int field_size;
                         int alignment;
                         var ft = Campy.Types.Utils.ReflectionCecilInterop.ConvertToSystemReflectionType(f.FieldType);
@@ -1694,6 +1699,10 @@ namespace Campy.ControlFlowGraph
                     int size = 0;
                     foreach (var f in declaring_type.Fields)
                     {
+                        var attr = f.Attributes;
+                        if ((attr & FieldAttributes.Static) != 0)
+                            continue;
+
                         int field_size;
                         int alignment;
                         var ft = Campy.Types.Utils.ReflectionCecilInterop.ConvertToSystemReflectionType(f.FieldType);

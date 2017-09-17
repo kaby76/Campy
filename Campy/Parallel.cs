@@ -1,19 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Text;
 using Campy.Types;
 using Campy.ControlFlowGraph;
 using Campy.LCFG;
 using Campy.Types.Utils;
 using Mono.Cecil;
-using Mono.Collections.Generic;
 using Swigged.Cuda;
 using Type = System.Type;
-using Swigged.LLVM;
 
 namespace Campy
 {
@@ -147,6 +143,7 @@ namespace Campy
                 fixed (IntPtr* kernelParams = kp)
                 {
                     linear_to_tile(extent.Size(), out dim3 tile_size, out dim3 tiles);
+                    //linear_to_tile(1, out dim3 tile_size, out dim3 tiles);
 
                     res = Cuda.cuLaunchKernel(
                         ptr_to_kernel,

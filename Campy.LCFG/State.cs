@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using Campy.Graphs;
 using Campy.Utils;
 using Mono.Cecil;
 using Mono.Cecil.Cil;

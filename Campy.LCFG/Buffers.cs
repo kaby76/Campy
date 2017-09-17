@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
@@ -240,7 +241,6 @@ namespace Campy.LCFG
                             | System.Reflection.BindingFlags.Public
                             //| System.Reflection.BindingFlags.Static
                         );
-                        var fields2 = ht.GetFields();
                         foreach (var field in fields)
                         {
                             // For non-array type fields, just define the field as is.
@@ -290,7 +290,6 @@ namespace Campy.LCFG
                             | System.Reflection.BindingFlags.Public
                             //  | System.Reflection.BindingFlags.Static
                         );
-                        var fields2 = ht.GetFields();
                         foreach (var field in fields)
                         {
                             // For non-array type fields, just define the field as is.
@@ -365,7 +364,12 @@ namespace Campy.LCFG
             }
             else if (IsStruct(type) || type.IsClass)
             {
-                System.Reflection.FieldInfo[] fields = type.GetFields();
+                var fields = type.GetFields(
+                    System.Reflection.BindingFlags.Instance
+                    | System.Reflection.BindingFlags.NonPublic
+                    | System.Reflection.BindingFlags.Public
+                    //| System.Reflection.BindingFlags.Static
+                );
                 int size = 0;
                 foreach (System.Reflection.FieldInfo field in fields)
                 {
@@ -583,9 +587,19 @@ namespace Campy.LCFG
                         Type tr = blittable_type;
                         int size = SizeOf(tr);
                         void* ip = to_buffer;
-
-                        System.Reflection.FieldInfo[] ffi = f.GetFields();
-                        System.Reflection.FieldInfo[] tfi = tr.GetFields();
+                        var rffi = f.GetRuntimeFields();
+                        var ffi = f.GetFields(
+                            System.Reflection.BindingFlags.Instance
+                            | System.Reflection.BindingFlags.NonPublic
+                            | System.Reflection.BindingFlags.Public
+                            //| System.Reflection.BindingFlags.Static
+                        );
+                        var tfi = tr.GetFields(
+                            System.Reflection.BindingFlags.Instance
+                            | System.Reflection.BindingFlags.NonPublic
+                            | System.Reflection.BindingFlags.Public
+                            //| System.Reflection.BindingFlags.Static
+                        );
 
                         foreach (System.Reflection.FieldInfo fi in ffi)
                         {
@@ -636,8 +650,8 @@ namespace Campy.LCFG
                                     {
                                         var size2 = Buffers.SizeOf(tfield.FieldType);
                                         IntPtr gp = New(size2);
-                                        DeepCopyToImplementation(field_value, gp);
                                         DeepCopyToImplementation(gp, ip);
+                                        DeepCopyToImplementation(field_value, gp);
                                     }
                                 }
                                 else
@@ -699,6 +713,8 @@ namespace Campy.LCFG
 
                 if (t_type.FullName.Equals("System.Object"))
                 {
+                    to = null;
+                    return;
                     object o = Marshal.PtrToStructure<System.Object>(from);
                     to = o;
                     return;
@@ -820,8 +836,18 @@ namespace Campy.LCFG
                         to = Activator.CreateInstance(t_type);
                     _allocated_buffers[ip] = to;
 
-                    System.Reflection.FieldInfo[] ffi = f_type.GetFields();
-                    System.Reflection.FieldInfo[] tfi = t_type.GetFields();
+                    FieldInfo[] ffi = f_type.GetFields(
+                        System.Reflection.BindingFlags.Instance
+                        | System.Reflection.BindingFlags.NonPublic
+                        | System.Reflection.BindingFlags.Public
+                        //| System.Reflection.BindingFlags.Static
+                    );
+                    FieldInfo[] tfi = t_type.GetFields(
+                        System.Reflection.BindingFlags.Instance
+                        | System.Reflection.BindingFlags.NonPublic
+                        | System.Reflection.BindingFlags.Public
+                        //| System.Reflection.BindingFlags.Static
+                    );
 
                     for (int i = 0; i < ffi.Length; ++i)
                     {

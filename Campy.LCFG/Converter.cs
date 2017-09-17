@@ -15,6 +15,7 @@ using Mono.Cecil.Cil;
 using Swigged.Cuda;
 using Mono.Cecil.Rocks;
 using Mono.Collections.Generic;
+using FieldAttributes = Mono.Cecil.FieldAttributes;
 
 namespace Campy.ControlFlowGraph
 {
@@ -251,9 +252,9 @@ namespace Campy.ControlFlowGraph
 
             while (instantiated_nodes.Count > 0)
             {
-                CFG.Vertex lv = instantiated_nodes.Pop();
+                CFG.Vertex basic_block = instantiated_nodes.Pop();
 
-                System.Console.WriteLine("Considering " + lv.Name);
+                System.Console.WriteLine("Considering " + basic_block.Name);
 
                 // If a block associated with method contains generics,
                 // we need to duplicate the node and add in type information
@@ -262,11 +263,8 @@ namespace Campy.ControlFlowGraph
                 // "T", then we add in a mapping of T to the actual data type
                 // used, e.g., Integer, or what have you. When it is compiled,
                 // to LLVM, the mapped data type will be used!
-                MethodDefinition method = lv.Method;
+                MethodDefinition method = basic_block.Method;
                 var declaring_type = method.DeclaringType;
-                var method_has_generics = method.HasGenericParameters;
-                var method_contains_generics = method.ContainsGenericParameter;
-                var method_generic_instance = method.IsGenericInstance;
 
                 {
                     // Let's first consider the parameter types to the function.
@@ -285,20 +283,8 @@ namespace Campy.ControlFlowGraph
                             for (int i = 0; i < list_of_data_types_used.Count; ++i)
                             {
                                 var data_type_used = list_of_mono_data_types_used[i];
+                                if (data_type_used == null) continue;
                                 var sys_data_type_used = list_of_data_types_used[i];
-
-                                var data_type_used_has_generics = data_type_used.HasGenericParameters;
-                                var data_type_used_contains_generics = data_type_used.ContainsGenericParameter;
-                                var data_type_used_generic_instance = data_type_used.IsGenericInstance;
-
-                                var sys_data_type_used_is_generic_type = sys_data_type_used.IsGenericType;
-                                var sys_data_type_used_is_generic_parameter = sys_data_type_used.IsGenericParameter;
-                                var sys_data_type_used_contains_generics = sys_data_type_used.ContainsGenericParameters;
-                                if (sys_data_type_used_is_generic_type)
-                                {
-                                    var sys_data_type_used_get_generic_type_def = sys_data_type_used.GetGenericTypeDefinition();
-                                }
-
                                 if (declaring_type_of_considered_type.FullName.Equals(data_type_used.FullName))
                                 {
                                     // Find generic parameter corresponding to par.ParameterType
@@ -312,7 +298,7 @@ namespace Campy.ControlFlowGraph
                                     }
 
                                     // Match. First find rewrite node if previous created.
-                                    var previous = lv;
+                                    var previous = basic_block;
                                     for (; previous != null; previous = previous.PreviousVertex)
                                     {
                                         var old_node = FindInstantiatedBasicBlock(previous, type_to_consider, xx);
@@ -324,21 +310,21 @@ namespace Campy.ControlFlowGraph
                                     int new_node_id = _mcfg.NewNodeNumber();
                                     var new_node = _mcfg.AddVertex(new_node_id);
                                     var new_cfg_node = (CFG.Vertex)new_node;
-                                    new_cfg_node.Instructions = lv.Instructions;
-                                    new_cfg_node.Method = lv.Method;
-                                    new_cfg_node.PreviousVertex = lv;
+                                    new_cfg_node.Instructions = basic_block.Instructions;
+                                    new_cfg_node.Method = basic_block.Method;
+                                    new_cfg_node.PreviousVertex = basic_block;
                                     new_cfg_node.OpFromPreviousNode = new Tuple<TypeReference, System.Type>(type_to_consider, xx);
-                                    var previous_list = lv.OpsFromOriginal;
+                                    var previous_list = basic_block.OpsFromOriginal;
                                     if (previous_list != null) new_cfg_node.OpsFromOriginal = new Dictionary<TypeReference, System.Type>(previous_list);
                                     else new_cfg_node.OpsFromOriginal = new Dictionary<TypeReference, System.Type>();
                                     new_cfg_node.OpsFromOriginal.Add(new_cfg_node.OpFromPreviousNode.Item1, new_cfg_node.OpFromPreviousNode.Item2);
-                                    if (lv.OriginalVertex == null) new_cfg_node.OriginalVertex = lv;
-                                    else new_cfg_node.OriginalVertex = lv.OriginalVertex;
+                                    if (basic_block.OriginalVertex == null) new_cfg_node.OriginalVertex = basic_block;
+                                    else new_cfg_node.OriginalVertex = basic_block.OriginalVertex;
 
                                     // Add in rewrites.
                                     //new_cfg_node.node_type_map = new MultiMap<TypeReference, System.Type>(lv.node_type_map);
                                     //new_cfg_node.node_type_map.Add(type_to_consider, xx);
-                                    EnterInstantiatedBasicBlock(lv, type_to_consider, xx, new_cfg_node);
+                                    EnterInstantiatedBasicBlock(basic_block, type_to_consider, xx, new_cfg_node);
                                     System.Console.WriteLine("Adding new node " + new_cfg_node.Name);
 
                                     // Push this node back on the stack.
@@ -389,7 +375,7 @@ namespace Campy.ControlFlowGraph
                                     }
 
                                     // Match. First find rewrite node if previous created.
-                                    var previous = lv;
+                                    var previous = basic_block;
                                     for (; previous != null; previous = previous.PreviousVertex)
                                     {
                                         var old_node = FindInstantiatedBasicBlock(previous, type_to_consider, xx);
@@ -401,21 +387,21 @@ namespace Campy.ControlFlowGraph
                                     int new_node_id = _mcfg.NewNodeNumber();
                                     var new_node = _mcfg.AddVertex(new_node_id);
                                     var new_cfg_node = (CFG.Vertex)new_node;
-                                    new_cfg_node.Instructions = lv.Instructions;
-                                    new_cfg_node.Method = lv.Method;
-                                    new_cfg_node.PreviousVertex = lv;
+                                    new_cfg_node.Instructions = basic_block.Instructions;
+                                    new_cfg_node.Method = basic_block.Method;
+                                    new_cfg_node.PreviousVertex = basic_block;
                                     new_cfg_node.OpFromPreviousNode = new Tuple<TypeReference, System.Type>(type_to_consider, xx);
-                                    var previous_list = lv.OpsFromOriginal;
+                                    var previous_list = basic_block.OpsFromOriginal;
                                     if (previous_list != null) new_cfg_node.OpsFromOriginal = new Dictionary<TypeReference, System.Type>(previous_list);
                                     else new_cfg_node.OpsFromOriginal = new Dictionary<TypeReference, System.Type>();
                                     new_cfg_node.OpsFromOriginal.Add(new_cfg_node.OpFromPreviousNode.Item1, new_cfg_node.OpFromPreviousNode.Item2);
-                                    if (lv.OriginalVertex == null) new_cfg_node.OriginalVertex = lv;
-                                    else new_cfg_node.OriginalVertex = lv.OriginalVertex;
+                                    if (basic_block.OriginalVertex == null) new_cfg_node.OriginalVertex = basic_block;
+                                    else new_cfg_node.OriginalVertex = basic_block.OriginalVertex;
                                     
                                     // Add in rewrites.
                                     //new_cfg_node.node_type_map = new MultiMap<TypeReference, System.Type>(lv.node_type_map);
                                     //new_cfg_node.node_type_map.Add(type_to_consider, xx);
-                                    EnterInstantiatedBasicBlock(lv, type_to_consider, xx, new_cfg_node);
+                                    EnterInstantiatedBasicBlock(basic_block, type_to_consider, xx, new_cfg_node);
                                     System.Console.WriteLine("Adding new node " + new_cfg_node.Name);
 
                                     // Push this node back on the stack.
@@ -467,7 +453,7 @@ namespace Campy.ControlFlowGraph
                                     }
 
                                     // Match. First find rewrite node if previous created.
-                                    var previous = lv;
+                                    var previous = basic_block;
                                     for (; previous != null; previous = previous.PreviousVertex)
                                     {
                                         var old_node = FindInstantiatedBasicBlock(previous, type_to_consider, xx);
@@ -479,21 +465,21 @@ namespace Campy.ControlFlowGraph
                                     int new_node_id = _mcfg.NewNodeNumber();
                                     var new_node = _mcfg.AddVertex(new_node_id);
                                     var new_cfg_node = (CFG.Vertex)new_node;
-                                    new_cfg_node.Instructions = lv.Instructions;
-                                    new_cfg_node.Method = lv.Method;
-                                    new_cfg_node.PreviousVertex = lv;
+                                    new_cfg_node.Instructions = basic_block.Instructions;
+                                    new_cfg_node.Method = basic_block.Method;
+                                    new_cfg_node.PreviousVertex = basic_block;
                                     new_cfg_node.OpFromPreviousNode = new Tuple<TypeReference, System.Type>(type_to_consider, xx);
-                                    var previous_list = lv.OpsFromOriginal;
+                                    var previous_list = basic_block.OpsFromOriginal;
                                     if (previous_list != null) new_cfg_node.OpsFromOriginal = new Dictionary<TypeReference, System.Type>(previous_list);
                                     else new_cfg_node.OpsFromOriginal = new Dictionary<TypeReference, System.Type>();
                                     new_cfg_node.OpsFromOriginal.Add(new_cfg_node.OpFromPreviousNode.Item1, new_cfg_node.OpFromPreviousNode.Item2);
-                                    if (lv.OriginalVertex == null) new_cfg_node.OriginalVertex = lv;
-                                    else new_cfg_node.OriginalVertex = lv.OriginalVertex;
+                                    if (basic_block.OriginalVertex == null) new_cfg_node.OriginalVertex = basic_block;
+                                    else new_cfg_node.OriginalVertex = basic_block.OriginalVertex;
 
                                     // Add in rewrites.
                                     //new_cfg_node.node_type_map = new MultiMap<TypeReference, System.Type>(lv.node_type_map);
                                     //new_cfg_node.node_type_map.Add(type_to_consider, xx);
-                                    EnterInstantiatedBasicBlock(lv, type_to_consider, xx, new_cfg_node);
+                                    EnterInstantiatedBasicBlock(basic_block, type_to_consider, xx, new_cfg_node);
                                     System.Console.WriteLine("Adding new node " + new_cfg_node.Name);
 
                                     // Push this node back on the stack.
@@ -1133,7 +1119,14 @@ namespace Campy.ControlFlowGraph
 
                     System.Type target_type = node.GetType();
 
-                    FieldInfo[] target_type_fieldinfo = target_type.GetFields();
+                    FieldInfo[] target_type_fieldinfo = target_type.GetFields(
+                        System.Reflection.BindingFlags.Instance
+                        | System.Reflection.BindingFlags.NonPublic
+                        | System.Reflection.BindingFlags.Public
+                        //| System.Reflection.BindingFlags.Static
+                    );
+                    var rffi = target_type.GetRuntimeFields();
+
                     foreach (var field in target_type_fieldinfo)
                     {
                         var value = field.GetValue(node);
@@ -1509,19 +1502,19 @@ var ptx2 = @"//
                 // Note, tr is correct type, but tr.Resolve of a generic type turns the type
                 // into an uninstantiated generic type. E.g., List<int> contains a generic T[] containing the
                 // data. T could be a struct/value type, or T could be a class.
-
-                var fields = td.Fields;
+                
                 var new_list = new Dictionary<TypeReference, System.Type>(generic_type_rewrite_rules);
                 foreach (var a in additional) new_list.Add(a.Key, a.Value);
-                //(
-                //    System.Reflection.BindingFlags.Instance
-                //    | System.Reflection.BindingFlags.NonPublic
-                //    | System.Reflection.BindingFlags.Public
-                //    | System.Reflection.BindingFlags.Static);
+
                 List<TypeRef> list = new List<TypeRef>();
                 int offset = 0;
+                var fields = td.Fields;
                 foreach (var field in fields)
                 {
+                    FieldAttributes attr = field.Attributes;
+                    if ((attr & FieldAttributes.Static) != 0)
+                        continue;
+
                     TypeReference field_type = field.FieldType;
                     TypeReference instantiated_field_type = field.FieldType;
 

@@ -4,11 +4,9 @@
     using Mono.Cecil;
     using System.Collections.Generic;
     using System.Diagnostics;
-    using System.Linq.Expressions;
     using System.Linq;
     using System.Reflection;
     using System;
-    using Campy.Types;
 
     public class Reader
     {
