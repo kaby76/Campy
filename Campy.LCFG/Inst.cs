@@ -1640,7 +1640,7 @@ namespace Campy.ControlFlowGraph
                         var mono_field_type = field.FieldType;
                         TypeRef type = Converter.ConvertMonoTypeToLLVM(
                             mono_field_type,
-                            Block.LLVMTypeMap, Block.OpsFromOriginal);
+                            Block.OpsFromOriginal);
                         load = LLVM.BuildBitCast(Builder,
                             load, type, "");
                         System.Console.WriteLine(new Value(load));
@@ -1750,7 +1750,7 @@ namespace Campy.ControlFlowGraph
                         var mono_field_type = field.FieldType;
                         TypeRef type = Converter.ConvertMonoTypeToLLVM(
                             mono_field_type,
-                            Block.LLVMTypeMap, Block.OpsFromOriginal);
+                            Block.OpsFromOriginal);
                         addr = LLVM.BuildBitCast(Builder,
                             addr, type, "");
                         System.Console.WriteLine(new Value(addr));

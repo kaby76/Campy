@@ -28,14 +28,11 @@ namespace Campy.ControlFlowGraph
         public static Dictionary<string, ValueRef> built_in_functions = new Dictionary<string, ValueRef>();
         Dictionary<Tuple<CFG.Vertex, Mono.Cecil.TypeReference, System.Type>, CFG.Vertex> mmap
             = new Dictionary<Tuple<CFG.Vertex, TypeReference, System.Type>, CFG.Vertex>(new Comparer());
-        // Finally, we need a mapping of node to rewrites.
-        Dictionary<CFG.Vertex, MultiMap<Mono.Cecil.TypeReference, System.Type>> map =
-            new Dictionary<CFG.Vertex, MultiMap<TypeReference, System.Type>>();
         private static bool setup = true;
         private static Dictionary<TypeReference, TypeRef> basic_llvm_types_created = new Dictionary<TypeReference, TypeRef>();
         private static Dictionary<TypeReference, TypeRef> previous_llvm_types_created_global = new Dictionary<TypeReference, TypeRef>();
         private static Stack<bool> nested = new Stack<bool>();
-        private static Dictionary<string, string> _normalized_name = new Dictionary<string, string>();
+        private static Dictionary<string, string> _rename_to_legal_llvm_name_cache = new Dictionary<string, string>();
 
         public Converter(CFG mcfg)
         {
@@ -585,10 +582,12 @@ namespace Campy.ControlFlowGraph
                 {
                     if (bb.HasThis)
                         param_types[current++] = ConvertMonoTypeToLLVM(
-                            Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(mb.DeclaringType), bb.LLVMTypeMap, bb.OpsFromOriginal);
+                            Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(mb.DeclaringType),
+                            bb.OpsFromOriginal);
                     foreach (var p in parameters)
                         param_types[current++] = ConvertMonoTypeToLLVM(
-                            p.ParameterType, bb.LLVMTypeMap, bb.OpsFromOriginal);
+                            p.ParameterType,
+                            bb.OpsFromOriginal);
                     foreach (var pp in param_types)
                     {
                         string a = LLVM.PrintTypeToString(pp);
@@ -598,7 +597,7 @@ namespace Campy.ControlFlowGraph
 
                 TypeRef ret_type = default(TypeRef);
                 var mi2 = method.ReturnType;
-                ret_type = ConvertMonoTypeToLLVM(mi2, bb.LLVMTypeMap, bb.OpsFromOriginal);
+                ret_type = ConvertMonoTypeToLLVM(mi2, bb.OpsFromOriginal);
                 TypeRef met_type = LLVM.FunctionType(ret_type, param_types, false);
                 ValueRef fun = LLVM.AddFunction(mod, Converter.RenameToLegalLLVMName(Converter.MethodName(method)), met_type);
                 BasicBlockRef entry = LLVM.AppendBasicBlock(fun, bb.Name.ToString());
@@ -1243,16 +1242,16 @@ namespace Campy.ControlFlowGraph
         public static string RenameToLegalLLVMName(string before)
         {
             string result = "";
-            if (_normalized_name.ContainsKey(before))
-                return _normalized_name[before];
-            _normalized_name[before] = "nn_" + _nn_id++;
-            return _normalized_name[before];
+            if (_rename_to_legal_llvm_name_cache.ContainsKey(before))
+                return _rename_to_legal_llvm_name_cache[before];
+            _rename_to_legal_llvm_name_cache[before] = "nn_" + _nn_id++;
+            return _rename_to_legal_llvm_name_cache[before];
         }
 
         public void NameTableTrace()
         {
             System.Console.WriteLine("Name mapping table.");
-            foreach (var tuple in _normalized_name)
+            foreach (var tuple in _rename_to_legal_llvm_name_cache)
             {
                 System.Console.WriteLine(tuple.Key);
                 System.Console.WriteLine(tuple.Value);
@@ -1262,7 +1261,6 @@ namespace Campy.ControlFlowGraph
 
         public static TypeRef ConvertMonoTypeToLLVM(
             Mono.Cecil.TypeReference tr,
-            Dictionary<TypeReference, TypeRef> previous_llvm_types_created,
             Dictionary<TypeReference, System.Type> generic_type_rewrite_rules)
         {
             // Search for type if already converted.
@@ -1287,7 +1285,7 @@ namespace Campy.ControlFlowGraph
                     return kv.Value;
                 }
             }
-            foreach (var kv in previous_llvm_types_created)
+            foreach (var kv in previous_llvm_types_created_global)
             {
                 if (kv.Key.Name == tr.Name)
                     return kv.Value;
@@ -1308,12 +1306,12 @@ namespace Campy.ControlFlowGraph
                 previous_llvm_types_created_global.Add(tr, s);
                 LLVM.StructSetBody(s, new TypeRef[2]
                 {
-                    LLVM.PointerType(ConvertMonoTypeToLLVM(tr.GetElementType(), previous_llvm_types_created, generic_type_rewrite_rules), 0),
+                    LLVM.PointerType(ConvertMonoTypeToLLVM(tr.GetElementType(), generic_type_rewrite_rules), 0),
                     LLVM.Int64Type()
                 }, true);
 
                 var element_type = tr.GetElementType();
-                var e = ConvertMonoTypeToLLVM(element_type, previous_llvm_types_created, generic_type_rewrite_rules);
+                var e = ConvertMonoTypeToLLVM(element_type, generic_type_rewrite_rules);
                 var p = LLVM.PointerType(e, 0);
                 var d = LLVM.GetUndef(p);
                 return s;
@@ -1329,7 +1327,7 @@ namespace Campy.ControlFlowGraph
                         // Match, and substitute.
                         var v = value;
                         var mv = Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(v);
-                        var e = ConvertMonoTypeToLLVM(mv, previous_llvm_types_created, generic_type_rewrite_rules);
+                        var e = ConvertMonoTypeToLLVM(mv, generic_type_rewrite_rules);
                         previous_llvm_types_created_global.Add(tr, e);
                         return e;
                     }
@@ -1460,7 +1458,7 @@ namespace Campy.ControlFlowGraph
                         for (int j = 0; j < padding; ++j)
                             list.Add(LLVM.Int8Type());
                     }
-                    var field_converted_type = ConvertMonoTypeToLLVM(instantiated_field_type, previous_llvm_types_created, new_list);
+                    var field_converted_type = ConvertMonoTypeToLLVM(instantiated_field_type, new_list);
                     list.Add(field_converted_type);
                 }
                 LLVM.StructSetBody(s, list.ToArray(), true);

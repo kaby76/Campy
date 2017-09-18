@@ -39,7 +39,7 @@ namespace Campy.ControlFlowGraph
             if (md.HasThis)
             {
                 TypeDefinition td = md.DeclaringType;
-                TypeRef type = Converter.ConvertMonoTypeToLLVM(td, bb.LLVMTypeMap, bb.OpsFromOriginal);
+                TypeRef type = Converter.ConvertMonoTypeToLLVM(td, bb.OpsFromOriginal);
                 var vx = new Value(LLVM.ConstInt(type, (ulong)0xdeadbeef, true));
                 _stack.Push(vx);
                 _this = _stack.Section(begin++, 1);
@@ -57,7 +57,7 @@ namespace Campy.ControlFlowGraph
                     int j = i - begin;
                     ParameterDefinition p = md.Parameters[j];
                     TypeReference tr = p.ParameterType;
-                    type = Converter.ConvertMonoTypeToLLVM(tr, bb.LLVMTypeMap, bb.OpsFromOriginal);
+                    type = Converter.ConvertMonoTypeToLLVM(tr, bb.OpsFromOriginal);
                 }
                 var vx = new Value(LLVM.ConstInt(type, (ulong)0xdeadbeef, true));
                 _stack.Push(vx);
@@ -117,7 +117,7 @@ namespace Campy.ControlFlowGraph
                 for (int i = 0; i < locals; ++i)
                 {
                     var tr = variables[i].VariableType;
-                    TypeRef type = Converter.ConvertMonoTypeToLLVM(tr, bb.LLVMTypeMap, bb.OpsFromOriginal);
+                    TypeRef type = Converter.ConvertMonoTypeToLLVM(tr, bb.OpsFromOriginal);
                     Value value = new Value(LLVM.ConstInt(type, (ulong)0, true));
                     _stack.Push(value);
                 }
