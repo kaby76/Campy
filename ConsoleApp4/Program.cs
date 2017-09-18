@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel.Composition;
+using System.Linq;
 using Campy.Types;
 
 namespace ConsoleApp4
@@ -39,36 +41,38 @@ namespace ConsoleApp4
 
         static void Main(string[] args)
         {
-            List<int> x = new List<int>();
-            for (int i = 0; i < 4; ++i) x.Add(0);
-            Campy.Parallel.For(new Extent(4), i =>
-            {
-                x[i] = i;
-            });
-            foreach (var e in x)
-                System.Console.Write(e + " ");
-            System.Console.WriteLine();
-
-            //int max_level = 16;
-            //int n = Bithacks.Power2(max_level);
-            //int[] data = new int[n];
-            //Campy.Parallel.For(new Extent(n), idx => data[idx] = 1);
-            //for (int level = 1; level <= Bithacks.Log2(n); level++)
+            //List<int> x = new List<int>();
+            //for (int i = 0; i < 4; ++i) x.Add(0);
+            //Campy.Parallel.For(new Extent(4), i =>
             //{
-            //    int step = Bithacks.Power2(level);
-            //    Campy.Parallel.For(new Extent(n / step), idx =>
-            //    {
-            //        var i = step * idx;
-            //        data[i] = data[i] + data[i + step / 2];
-            //    });
-            //    System.Console.WriteLine("level " + level);
-            //    for (int i = 0; i < data.Length; ++i)
-            //        System.Console.Write(data[i] + " ");
-            //    System.Console.WriteLine();
-            //}
+            //    x[i] = i;
+            //});
+            //foreach (var e in x)
+            //    System.Console.Write(e + " ");
+            //System.Console.WriteLine();
 
-            //for (int i = 0; i < data.Length; ++i)
-            //    System.Console.Write(data[i]);
+            int max_level = 16;
+            int n = Bithacks.Power2(max_level);
+           // int[] data = new int[n];
+            List<int> data = Enumerable.Repeat(0, n).ToList();
+
+            Campy.Parallel.For(new Extent(n), idx => data[idx] = 1);
+            for (int level = 1; level <= Bithacks.Log2(n); level++)
+            {
+                int step = Bithacks.Power2(level);
+                Campy.Parallel.For(new Extent(n / step), idx =>
+                {
+                    var i = step * idx;
+                    data[i] = data[i] + data[i + step / 2];
+                });
+                System.Console.WriteLine("level " + level);
+                for (int i = 0; i < data.Count; ++i)
+                    System.Console.Write(data[i] + " ");
+                System.Console.WriteLine();
+            }
+
+            for (int i = 0; i < data.Count; ++i)
+                System.Console.Write(data[i]);
 
             // Create complete binary tree.
             //int max_level = 6;
@@ -77,7 +81,38 @@ namespace ConsoleApp4
             //List<N> all_nodes = new List<N>();
             //all_nodes.Add(root);
             //MakeIt(max_level, root, ref all_nodes);
+            //root.visit = true;
             //int size = all_nodes.Count;
+            //for (;;)
+            //{
+            //    bool changed = false;
+            //    for (int i = 0; i < size; ++i)
+            //    {
+            //        if (i >= size)
+            //            continue;
+            //        N node = all_nodes[i];
+            //        if (!node.visit)
+            //            continue;
+            //        node.visit = false;
+            //        node.visited = true;
+            //        N l = node.Left;
+            //        N r = node.Right;
+            //        if (l != null)
+            //        {
+            //            l.visit = true;
+            //            l.level = node.level + 1;
+            //            changed = true;
+            //        }
+            //        if (r != null)
+            //        {
+            //            r.visit = true;
+            //            r.level = node.level + 1;
+            //            changed = true;
+            //        }
+            //    }
+            //    if (!changed)
+            //        break;
+            //}
             //Campy.Parallel.For(new Extent(size), i
             //    =>
             //{
