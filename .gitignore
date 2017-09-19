@@ -18,3 +18,4 @@ Campy/obj/
 Campy/bin/
 Campy.Types/obj/
 Campy.Types/bin/
+*.nupkg

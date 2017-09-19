@@ -30,16 +30,16 @@ namespace Campy
             var ok = GC.TryStartNoGCRegion(200000000);
         }
 
-        public static void For(Extent extent, _Kernel_type kernel)
+        public static void For(int number_of_threads, _Kernel_type kernel)
         {
             AcceleratorView view = Accelerator.GetAutoSelectionView();
-            For(view, extent, kernel);
+            For(view, number_of_threads, kernel);
         }
 
         [DllImport("kernel32.dll", EntryPoint = "CopyMemory", SetLastError = false)]
         public static extern void CopyMemory(IntPtr dest, IntPtr src, uint count);
 
-        static public unsafe void For(AcceleratorView view, Extent extent, _Kernel_type kernel)
+        static public unsafe void For(AcceleratorView view, int number_of_threads, _Kernel_type kernel)
         {
 
             GCHandle handle1 = default(GCHandle);
@@ -105,8 +105,8 @@ namespace Campy
 
                 var ptr_to_kernel = Singleton._converter.GetCudaFunction(bb.Name);
 
-                var rank = extent._Rank;
-                Index index = new Index(extent.Size());
+                var rank = 1;
+                Index index = new Index(number_of_threads);
                 Buffers buffer = new Buffers();
 
                 // Set up parameters.
@@ -148,7 +148,7 @@ namespace Campy
                 var res = CUresult.CUDA_SUCCESS;
                 fixed (IntPtr* kernelParams = kp)
                 {
-                    linear_to_tile(extent.Size(), out dim3 tile_size, out dim3 tiles);
+                    linear_to_tile(number_of_threads, out dim3 tile_size, out dim3 tiles);
                     //linear_to_tile(1, out dim3 tile_size, out dim3 tiles);
 
                     res = Cuda.cuLaunchKernel(

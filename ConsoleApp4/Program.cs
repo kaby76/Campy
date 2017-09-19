@@ -51,7 +51,7 @@ namespace ConsoleApp4
 
             List<int> x = new List<int>();
             for (int i = 0; i < 4; ++i) x.Add(0);
-            Campy.Parallel.For(new Extent(4), i =>
+            Campy.Parallel.For(4, i =>
             {
                 x[i] = i;
             });
@@ -64,16 +64,16 @@ namespace ConsoleApp4
            // int[] data = new int[n];
             List<int> data = Enumerable.Repeat(0, n).ToList();
 
-            Campy.Parallel.For(new Extent(n), idx => data[idx] = 1);
+            Campy.Parallel.For(n, idx => data[idx] = 1);
             for (int level = 1; level <= Bithacks.Log2(n); level++)
             {
                 int step = Bithacks.Power2(level);
-                Campy.Parallel.For(new Extent(n / step), idx =>
+                Campy.Parallel.For(n / step, idx =>
                 {
                     var i = step * idx;
                     data[i] = data[i] + data[i + step / 2];
                 });
-                System.Console.WriteLine("level " + level);
+                //System.Console.WriteLine("level " + level);
                 //for (int i = 0; i < data.Count; ++i)
                 //    System.Console.Write(data[i] + " ");
                 //System.Console.WriteLine();

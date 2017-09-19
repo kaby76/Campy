@@ -1200,14 +1200,19 @@ namespace Campy.ControlFlowGraph
 
             MyString error = new MyString();
             LLVM.VerifyModule(module, VerifierFailureAction.PrintMessageAction, error);
-            System.Console.WriteLine(error);
             if (error.ToString() != "")
+            {
+                System.Console.WriteLine(error);
                 throw new Exception("Error in JIT compilation.");
+            }
 
             string triple = "nvptx64-nvidia-cuda";
             var b = LLVM.GetTargetFromTriple(triple, out TargetRef t2, error);
             if (error.ToString() != "")
+            {
+                System.Console.WriteLine(error);
                 throw new Exception("Error in JIT compilation.");
+            }
             TargetMachineRef tmr = LLVM.CreateTargetMachine(t2, triple, "", "",CodeGenOptLevel.CodeGenLevelDefault,
                 RelocMode.RelocDefault,CodeModel.CodeModelKernel);
             ContextRef context_ref = LLVM.ContextCreate();
