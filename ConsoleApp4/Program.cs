@@ -62,6 +62,7 @@ namespace ConsoleApp4
                 System.Console.WriteLine();
             }
 
+            if (false)
             {
                 int max_level = 16;
                 int n = Bithacks.Power2(max_level);
@@ -98,6 +99,7 @@ namespace ConsoleApp4
                 System.Console.WriteLine("sum = " + data[0]);
             }
 
+            if (false)
             {
                 // Create complete binary tree.
                 int max_level = 6;
