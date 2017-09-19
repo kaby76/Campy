@@ -49,39 +49,43 @@ namespace ConsoleApp4
             //Campy.Utils.Options.Set("dot_graph", true);
             //Campy.Utils.Options.Set("jit_trace", true);
 
-            List<int> x = new List<int>();
-            for (int i = 0; i < 4; ++i) x.Add(0);
-            Campy.Parallel.For(4, i =>
             {
-                x[i] = i;
-            });
-            foreach (var e in x)
-                System.Console.Write(e + " ");
-            System.Console.WriteLine();
-
-            int max_level = 16;
-            int n = Bithacks.Power2(max_level);
-           // int[] data = new int[n];
-            List<int> data = Enumerable.Repeat(0, n).ToList();
-
-            Campy.Parallel.For(n, idx => data[idx] = 1);
-            for (int level = 1; level <= Bithacks.Log2(n); level++)
-            {
-                int step = Bithacks.Power2(level);
-                Campy.Parallel.For(n / step, idx =>
+                List<int> x = new List<int>();
+                for (int i = 0; i < 4; ++i) x.Add(0);
+                Campy.Parallel.For(4, i =>
                 {
-                    var i = step * idx;
-                    data[i] = data[i] + data[i + step / 2];
+                    x[i] = i;
                 });
-                //System.Console.WriteLine("level " + level);
-                //for (int i = 0; i < data.Count; ++i)
-                //    System.Console.Write(data[i] + " ");
-                //System.Console.WriteLine();
+                foreach (var e in x)
+                    System.Console.Write(e + " ");
+                System.Console.WriteLine();
             }
 
-            //for (int i = 0; i < data.Count; ++i) System.Console.Write(data[i] + " ");
-            //System.Console.WriteLine();
-            System.Console.WriteLine("sum = " + data[0]);
+            {
+                int max_level = 16;
+                int n = Bithacks.Power2(max_level);
+                // int[] data = new int[n];
+                List<int> data = Enumerable.Repeat(0, n).ToList();
+
+                Campy.Parallel.For(n, idx => data[idx] = 1);
+                for (int level = 1; level <= Bithacks.Log2(n); level++)
+                {
+                    int step = Bithacks.Power2(level);
+                    Campy.Parallel.For(n / step, idx =>
+                    {
+                        var i = step * idx;
+                        data[i] = data[i] + data[i + step / 2];
+                    });
+                    //System.Console.WriteLine("level " + level);
+                    //for (int i = 0; i < data.Count; ++i)
+                    //    System.Console.Write(data[i] + " ");
+                    //System.Console.WriteLine();
+                }
+
+                //for (int i = 0; i < data.Count; ++i) System.Console.Write(data[i] + " ");
+                //System.Console.WriteLine();
+                System.Console.WriteLine("sum = " + data[0]);
+            }
 
             // Create complete binary tree.
             //int max_level = 6;
