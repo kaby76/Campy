@@ -272,7 +272,7 @@ namespace Campy.ControlFlowGraph
                     {
                         ParameterDefinition par = parameters[k];
                         var type_to_consider = par.ParameterType;
-                        type_to_consider = Converter.FromParameterDefitionToTypeReference(type_to_consider, method.DeclaringType as GenericInstanceType);
+                        type_to_consider = Converter.FromGenericParameterToTypeReference(type_to_consider, method.DeclaringType as GenericInstanceType);
                         if (type_to_consider.ContainsGenericParameter)
                         {
                             var declaring_type_of_considered_type = type_to_consider.DeclaringType;
@@ -542,7 +542,7 @@ namespace Campy.ControlFlowGraph
             return new_module;
         }
 
-        public static TypeReference FromParameterDefitionToTypeReference(TypeReference type_reference_of_parameter, GenericInstanceType git)
+        public static TypeReference FromGenericParameterToTypeReference(TypeReference type_reference_of_parameter, GenericInstanceType git)
         {
             if (git == null)
                 return type_reference_of_parameter;
@@ -605,7 +605,7 @@ namespace Campy.ControlFlowGraph
                         if (method.DeclaringType.IsGenericInstance && method.ContainsGenericParameter)
                         {
                             var git = method.DeclaringType as GenericInstanceType;
-                            type_reference_of_parameter = FromParameterDefitionToTypeReference(
+                            type_reference_of_parameter = FromGenericParameterToTypeReference(
                                 type_reference_of_parameter, git);
                         }
 
@@ -621,9 +621,8 @@ namespace Campy.ControlFlowGraph
                     }
                 }
 
-                TypeRef ret_type = default(TypeRef);
-                var mi2 = method.ReturnType;
-                ret_type = ConvertMonoTypeToLLVM(mi2, bb.OpsFromOriginal);
+                var mi2 = FromGenericParameterToTypeReference(method.ReturnType, method.DeclaringType as GenericInstanceType);
+                TypeRef ret_type = ConvertMonoTypeToLLVM(mi2, bb.OpsFromOriginal);
                 TypeRef met_type = LLVM.FunctionType(ret_type, param_types, false);
                 ValueRef fun = LLVM.AddFunction(mod, Converter.RenameToLegalLLVMName(Converter.MethodName(method)), met_type);
                 BasicBlockRef entry = LLVM.AppendBasicBlock(fun, bb.Name.ToString());

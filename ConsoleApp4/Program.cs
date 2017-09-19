@@ -72,7 +72,8 @@ namespace ConsoleApp4
             }
 
             for (int i = 0; i < data.Count; ++i)
-                System.Console.Write(data[i]);
+                System.Console.Write(data[i] + " ");
+            System.Console.WriteLine();
 
             // Create complete binary tree.
             //int max_level = 6;

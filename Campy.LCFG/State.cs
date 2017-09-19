@@ -57,7 +57,7 @@ namespace Campy.ControlFlowGraph
                     int j = i - begin;
                     ParameterDefinition p = md.Parameters[j];
                     TypeReference tr = p.ParameterType;
-                    tr = Converter.FromParameterDefitionToTypeReference(tr, md.DeclaringType as GenericInstanceType);
+                    tr = Converter.FromGenericParameterToTypeReference(tr, md.DeclaringType as GenericInstanceType);
                     type = Converter.ConvertMonoTypeToLLVM(tr, bb.OpsFromOriginal);
                 }
                 var vx = new Value(LLVM.ConstInt(type, (ulong)0xdeadbeef, true));
