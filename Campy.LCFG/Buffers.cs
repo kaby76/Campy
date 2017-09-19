@@ -1049,6 +1049,8 @@ namespace Campy.LCFG
                 // Allocate Unified Memory.
                 var size = bytes;
                 var res = Cuda.cuMemAllocManaged(out IntPtr pointer, (uint)size, (uint)Swigged.Cuda.CUmemAttach_flags.CU_MEM_ATTACH_GLOBAL);
+                if (Campy.Utils.Options.IsOn("memory_trace"))
+                    System.Console.WriteLine("Cu Alloc (" + bytes + " bytes) " + pointer);
                 if (res != CUresult.CUDA_SUCCESS) throw new Exception("cuMemAllocManged failed.");
                 return pointer;
             }
