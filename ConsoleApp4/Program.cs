@@ -79,9 +79,9 @@ namespace ConsoleApp4
                 //System.Console.WriteLine();
             }
 
-            for (int i = 0; i < data.Count; ++i)
-                System.Console.Write(data[i] + " ");
-            System.Console.WriteLine();
+            //for (int i = 0; i < data.Count; ++i) System.Console.Write(data[i] + " ");
+            //System.Console.WriteLine();
+            System.Console.WriteLine("sum = " + data[0]);
 
             // Create complete binary tree.
             //int max_level = 6;
