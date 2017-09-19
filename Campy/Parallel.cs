@@ -42,11 +42,6 @@ namespace Campy
         static public unsafe void For(AcceleratorView view, Extent extent, _Kernel_type kernel)
         {
 
-            Campy.Utils.Options.Set("graph_trace", true);
-            Campy.Utils.Options.Set("module_trace", true);
-            Campy.Utils.Options.Set("name_trace", true);
-            Campy.Utils.Options.Set("cfg_construction_trace", true);
-            
             GCHandle handle1 = default(GCHandle);
             GCHandle handle2 = default(GCHandle);
 

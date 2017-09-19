@@ -244,6 +244,9 @@ namespace Campy.ControlFlowGraph
 
             public void OutputEntireNode()
             {
+                if (!Campy.Utils.Options.IsOn("graph_trace"))
+                    return;
+
                 CFG.Vertex v = this;
                 Console.WriteLine();
                 Console.WriteLine("Node: " + v.Name + " ");
@@ -410,6 +413,9 @@ namespace Campy.ControlFlowGraph
 
         public void OutputDotGraph()
         {
+            if (!Campy.Utils.Options.IsOn("dot_graph"))
+                return;
+
             Dictionary<int,bool> visited = new Dictionary<int, bool>();
             System.Console.WriteLine("digraph {");
             foreach (IEdge<int> n in this.Edges)

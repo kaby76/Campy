@@ -2,6 +2,7 @@
 using System.ComponentModel.Composition;
 using System.Linq;
 using Campy.Types;
+using Campy.Utils;
 
 namespace ConsoleApp4
 {
@@ -41,15 +42,21 @@ namespace ConsoleApp4
 
         static void Main(string[] args)
         {
-            //List<int> x = new List<int>();
-            //for (int i = 0; i < 4; ++i) x.Add(0);
-            //Campy.Parallel.For(new Extent(4), i =>
-            //{
-            //    x[i] = i;
-            //});
-            //foreach (var e in x)
-            //    System.Console.Write(e + " ");
-            //System.Console.WriteLine();
+            //Campy.Utils.Options.Set("graph_trace", true);
+            //Campy.Utils.Options.Set("module_trace", true);
+            //Campy.Utils.Options.Set("name_trace", true);
+            //Campy.Utils.Options.Set("cfg_construction_trace", true);
+            //Campy.Utils.Options.Set("dot_graph", true);
+
+            List<int> x = new List<int>();
+            for (int i = 0; i < 4; ++i) x.Add(0);
+            Campy.Parallel.For(new Extent(4), i =>
+            {
+                x[i] = i;
+            });
+            foreach (var e in x)
+                System.Console.Write(e + " ");
+            System.Console.WriteLine();
 
             int max_level = 16;
             int n = Bithacks.Power2(max_level);
@@ -66,9 +73,9 @@ namespace ConsoleApp4
                     data[i] = data[i] + data[i + step / 2];
                 });
                 System.Console.WriteLine("level " + level);
-                for (int i = 0; i < data.Count; ++i)
-                    System.Console.Write(data[i] + " ");
-                System.Console.WriteLine();
+                //for (int i = 0; i < data.Count; ++i)
+                //    System.Console.Write(data[i] + " ");
+                //System.Console.WriteLine();
             }
 
             for (int i = 0; i < data.Count; ++i)

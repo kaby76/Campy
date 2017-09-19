@@ -1211,7 +1211,8 @@ namespace Campy.ControlFlowGraph
                 ptx = LLVM.GetBufferStart(buffer);
                 uint length = LLVM.GetBufferSize(buffer);
                 ptx = ptx.Replace("3.2", "5.0");
-                System.Console.WriteLine(ptx);
+                if (Campy.Utils.Options.IsOn("ptx_trace"))
+                    System.Console.WriteLine(ptx);
             }
             finally
             {
