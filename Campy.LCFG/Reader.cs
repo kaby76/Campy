@@ -162,7 +162,8 @@
 
                 Tuple<MethodReference, List<TypeReference>> definition = _methods_to_do.Pop();
 
-                System.Console.WriteLine("ExtractBasicBlocks for " + definition.Item1.FullName);
+                if (Campy.Utils.Options.IsOn("jit_trace"))
+                    System.Console.WriteLine("ExtractBasicBlocks for " + definition.Item1.FullName);
 
                 ExtractBasicBlocksOfMethod(definition);
 

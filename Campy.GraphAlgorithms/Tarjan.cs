@@ -52,17 +52,17 @@ namespace Campy.GraphAlgorithms
             // If v is a root node, pop the stack and generate an SCC
             if (LowLink[v] == Index[v])
             {
-                Console.Write("SCC: ");
+               // Console.Write("SCC: ");
 
                 T w;
                 do
                 {
                     w = S.Pop();
-                    Console.Write(w + " ");
+                //    Console.Write(w + " ");
                     yield return w;
                 } while (!w.Equals(v));
 
-                Console.WriteLine();
+            //    Console.WriteLine();
             }
         }
 

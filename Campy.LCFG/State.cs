@@ -92,7 +92,8 @@ namespace Campy.ControlFlowGraph
                 {
                     var par = LLVM.GetParam(fun, begin++);
                     var vx = new Value(par);
-                    System.Console.WriteLine("in state() " + vx.ToString());
+                    if (Campy.Utils.Options.IsOn("jit_trace"))
+                        System.Console.WriteLine("in state() " + vx.ToString());
                     _stack.Push(vx);
                     _this = _stack.Section((int)0, 1);
                 }
@@ -106,7 +107,8 @@ namespace Campy.ControlFlowGraph
                 {
                     ValueRef par = LLVM.GetParam(fun, i);
                     var vx = new Value(par);
-                    System.Console.WriteLine(" " + vx);
+                    if (Campy.Utils.Options.IsOn("jit_trace"))
+                        System.Console.WriteLine(" " + vx);
                     _stack.Push(vx);
                 }
 

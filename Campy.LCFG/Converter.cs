@@ -253,7 +253,8 @@ namespace Campy.ControlFlowGraph
             {
                 CFG.Vertex basic_block = instantiated_nodes.Pop();
 
-                System.Console.WriteLine("Considering " + basic_block.Name);
+                if (Campy.Utils.Options.IsOn("jit_trace"))
+                    System.Console.WriteLine("Considering " + basic_block.Name);
 
                 // If a block associated with method contains generics,
                 // we need to duplicate the node and add in type information
@@ -562,18 +563,21 @@ namespace Campy.ControlFlowGraph
         {
             foreach (CFG.Vertex bb in basic_blocks_to_compile)
             {
-                System.Console.WriteLine("Compile part 1, node " + bb);
+                if (Campy.Utils.Options.IsOn("jit_trace"))
+                    System.Console.WriteLine("Compile part 1, node " + bb);
 
                 // Skip all but entry blocks for now.
                 if (!bb.IsEntry)
                 {
-                    System.Console.WriteLine("skipping -- not an entry.");
+                    if (Campy.Utils.Options.IsOn("jit_trace"))
+                        System.Console.WriteLine("skipping -- not an entry.");
                     continue;
                 }
 
                 if (!IsFullyInstantiatedNode(bb))
                 {
-                    System.Console.WriteLine("skipping -- not fully instantiated block the contains generics.");
+                    if (Campy.Utils.Options.IsOn("jit_trace"))
+                        System.Console.WriteLine("skipping -- not fully instantiated block the contains generics.");
                     continue;
                 }
 
@@ -614,10 +618,13 @@ namespace Campy.ControlFlowGraph
                             bb.OpsFromOriginal);
                     }
 
-                    foreach (var pp in param_types)
+                    if (Campy.Utils.Options.IsOn("jit_trace"))
                     {
-                        string a = LLVM.PrintTypeToString(pp);
-                        System.Console.WriteLine(" " + a);
+                        foreach (var pp in param_types)
+                        {
+                            string a = LLVM.PrintTypeToString(pp);
+                            System.Console.WriteLine(" " + a);
+                        }
                     }
                 }
 
@@ -906,7 +913,6 @@ namespace Campy.ControlFlowGraph
                 {
                     weeded.Add(bb);
                     bb.AlreadyCompiled = true;
-                    System.Console.WriteLine("Comp " + bb.Name);
                 }
             }
             return weeded;
@@ -965,26 +971,36 @@ namespace Campy.ControlFlowGraph
                 foreach (int ob in order)
                 {
                     CFG.Vertex bb = _mcfg.VertexSpace[_mcfg.NameSpace.BijectFromBasetype(ob)];
-                    System.Console.WriteLine("State computations for node " + bb.Name);
+
+                    if (Campy.Utils.Options.IsOn("state_computation_trace"))
+                        System.Console.WriteLine("State computations for node " + bb.Name);
 
                     var state_in = new State(visited, bb, list_of_data_types_used);
-                    System.Console.WriteLine("state in output");
-                    state_in.Dump();
+                    if (Campy.Utils.Options.IsOn("state_computation_trace"))
+                    {
+                        System.Console.WriteLine("state in output");
+                        state_in.Dump();
+                    }
 
                     bb.StateIn = state_in;
                     bb.StateOut = new State(state_in);
 
-                    bb.OutputEntireNode();
-                    state_in.Dump();
+                    if (Campy.Utils.Options.IsOn("state_computation_trace"))
+                    {
+                        bb.OutputEntireNode();
+                        state_in.Dump();
+                    }
 
                     Inst last_inst = null;
                     for (int i = 0; i < bb.Instructions.Count; ++i)
                     {
                         var inst = bb.Instructions[i];
-                        System.Console.WriteLine(inst);
+                        if (Campy.Utils.Options.IsOn("state_computation_trace"))
+                            System.Console.WriteLine(inst);
                         last_inst = inst;
                         inst = inst.Convert(this, bb.StateOut);
-                        bb.StateOut.Dump();
+                        if (Campy.Utils.Options.IsOn("state_computation_trace"))
+                            bb.StateOut.Dump();
                     }
                     if (last_inst != null && (last_inst.OpCode.FlowControl == Mono.Cecil.Cil.FlowControl.Next
                         || last_inst.OpCode.FlowControl == FlowControl.Call))
@@ -1031,13 +1047,13 @@ namespace Campy.ControlFlowGraph
                         for (int c = 0; c < count; ++c)
                         {
                             var vr = phi_vals[c];
-                            System.Console.WriteLine(GetStringTypeOf(vr));
+                            //System.Console.WriteLine(GetStringTypeOf(vr));
                         }
 
                         LLVM.AddIncoming(res, phi_vals, phi_blocks);
                     }
                 }
-                System.Console.WriteLine("===========");
+
                 foreach (int ob in order)
                 {
                     CFG.Vertex node = _mcfg.VertexSpace[_mcfg.NameSpace.BijectFromBasetype(ob)];

@@ -47,6 +47,7 @@ namespace ConsoleApp4
             //Campy.Utils.Options.Set("name_trace", true);
             //Campy.Utils.Options.Set("cfg_construction_trace", true);
             //Campy.Utils.Options.Set("dot_graph", true);
+            //Campy.Utils.Options.Set("jit_trace", true);
 
             List<int> x = new List<int>();
             for (int i = 0; i < 4; ++i) x.Add(0);
