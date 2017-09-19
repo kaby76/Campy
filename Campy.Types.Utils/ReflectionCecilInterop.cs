@@ -5,6 +5,8 @@ using System.IO;
 using System.Linq;
 using Campy.Utils;
 using Mono.Cecil;
+using Mono.Cecil.Rocks;
+using Mono.Collections.Generic;
 
 namespace Campy.Types.Utils
 {
@@ -14,11 +16,46 @@ namespace Campy.Types.Utils
         /// <summary>
         /// ConvertToMonoCecilTypeDefinition is a very important function
         /// that converts Sysmtem.Types in C# into Mono Cecil data types. I would
-        /// prefer not to do this but Mono does not seem to do it.
+        /// prefer not to do this but Mono does not offer this functionality, it seems.
+        /// Normally a type is an easy conversion, except with arrays and generic types.
         /// </summary>
         /// <param name="ty"></param>
         /// <returns></returns>
-        public static Mono.Cecil.TypeDefinition ConvertToMonoCecilTypeDefinition(System.Type ty)
+        public static Mono.Cecil.TypeReference ConvertToMonoCecilTypeReference(System.Type ty)
+        {
+            var mono_type = FindSimilarMonoType(ty);
+            if (mono_type == null)
+            {
+                if (ty.IsArray)
+                {
+                    var element_type = ty.GetElementType();
+                    var result = FindSimilarMonoType(element_type);
+                    // Create array type.
+                    if (result == null) return null;
+                    ArrayType art = result.MakeArrayType();
+                    TypeReference type_reference = (TypeReference) art;
+                    return type_reference;
+                }
+            } else if (mono_type.HasGenericParameters && !mono_type.IsGenericInstance)
+            {
+                if (ty.IsConstructedGenericType)
+                {
+                    var j2 = ty.GetGenericArguments();
+                    List<TypeReference> list = new List<TypeReference>();
+                    foreach (var j3 in j2)
+                    {
+                        TypeReference m = ConvertToMonoCecilTypeReference(j3);
+                        list.Add(m);
+                    }
+                    var instantiated_type = mono_type.MakeGenericInstanceType(list.ToArray());
+                    return instantiated_type;
+                }
+                else throw new Exception("Cannot convert.");
+            }
+            return mono_type;
+        }
+
+        public static Mono.Cecil.TypeDefinition FindSimilarMonoType(System.Type ty)
         {
             // Get assembly name which encloses code for kernel.
             String kernel_assembly_file_name = ty.Assembly.Location;
@@ -50,7 +87,7 @@ namespace Campy.Types.Utils
             }
             foreach (Mono.Cecil.TypeDefinition td in type_definitions_closure)
             {
-               // System.Console.WriteLine("M Type = " + td);
+                // System.Console.WriteLine("M Type = " + td);
                 if (Campy.Utils.Utility.IsSimilarType(ty, td))
                     return td;
             }

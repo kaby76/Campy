@@ -13,7 +13,11 @@
         private CFG _cfg = new CFG();
         private List<Mono.Cecil.ModuleDefinition> _loaded_modules = new List<ModuleDefinition>();
         private List<Mono.Cecil.ModuleDefinition> _analyzed_modules = new List<ModuleDefinition>();
-        private StackQueue<Mono.Cecil.MethodDefinition> _methods_to_do = new StackQueue<Mono.Cecil.MethodDefinition>();
+
+        // After studying this for a while, I've come to the conclusion that decompiling methods
+        // requires type information, as methods/"this" could be generic. So, we create a list of
+        // Tuple<MethodDefition, List<TypeReference>> that indicates the method, and generic parameters.
+        private StackQueue<Tuple<Mono.Cecil.MethodReference, List<TypeReference>>> _methods_to_do = new StackQueue<Tuple<MethodReference, List<TypeReference>>>();
         private List<string> _methods_done = new List<string>(); // No longer MethodDefition because there is no equivalence.
 
         public Reader()
@@ -43,6 +47,15 @@
         {
             MethodInfo methodInfo = expr.Method;
             //var methodInfo = ((MethodCallExpression)expr.Body).Method;
+            if (methodInfo.IsGenericMethod)
+            {
+                
+            }
+            else if (methodInfo.DeclaringType.IsGenericType)
+            {
+                
+            }
+
             this.Add(methodInfo);
             this.ExtractBasicBlocks();
             _cfg.OutputEntireGraph();
@@ -117,12 +130,7 @@
                 Add(definition);
         }
 
-        public void Add(Mono.Cecil.MethodReference reference)
-        {
-            Add(reference.Resolve());
-        }
-
-        public void Add(Mono.Cecil.MethodDefinition definition)
+        public void Add(Mono.Cecil.MethodReference definition)
         {
             if (definition == null)
                 return;
@@ -130,9 +138,14 @@
                 return;
             if (_methods_done.Contains(definition.FullName))
                 return;
-            if (_methods_to_do.Contains(definition))
-                return;
-            _methods_to_do.Push(definition);
+            foreach (var tuple in _methods_to_do)
+            {
+                if (tuple.Item1.FullName == definition.FullName)
+                {
+                    return;
+                }
+            }
+            _methods_to_do.Push(new Tuple<MethodReference, List<TypeReference>>(definition, new List<TypeReference>()));
         }
 
         public void AddAssembly(Assembly assembly)
@@ -147,7 +160,10 @@
             {
                 int change_set_id = this.Cfg.StartChangeSet();
 
-                Mono.Cecil.MethodDefinition definition = _methods_to_do.Pop();
+                Tuple<MethodReference, List<TypeReference>> definition = _methods_to_do.Pop();
+
+                System.Console.WriteLine("ExtractBasicBlocks for " + definition.Item1.FullName);
+
                 ExtractBasicBlocksOfMethod(definition);
 
                 var blocks = this.Cfg.PopChangeSet(change_set_id);
@@ -164,8 +180,7 @@
                         if (method as Mono.Cecil.MethodReference != null)
                         {
                             Mono.Cecil.MethodReference mr = method as Mono.Cecil.MethodReference;
-                            Mono.Cecil.MethodDefinition md = mr.Resolve();
-                            Add(md);
+                            Add(mr);
                         }
                     }
                 }
@@ -188,32 +203,36 @@
             return module;
         }
 
-        private void ExtractBasicBlocksOfMethod(MethodDefinition definition)
+        private void ExtractBasicBlocksOfMethod(Tuple<MethodReference, List<TypeReference>> definition)
         {
-            _methods_done.Add(definition.FullName);
+            _methods_done.Add(definition.Item1.FullName);
 
             // Make sure definition assembly is loaded. The analysis of the method cannot
             // be done if the routine hasn't been loaded into Mono!
-            String full_name = definition.Module.FullyQualifiedName;
+            String full_name = definition.Item1.Module.FullyQualifiedName;
             LoadAssembly(full_name);
-            if (definition.Body == null)
+            MethodDefinition md = definition.Item1.Resolve();
+            if (md.Body == null)
             {
                 System.Console.WriteLine("WARNING: METHOD BODY NULL! " + definition);
                 return;
             }
-            int instruction_count = definition.Body.Instructions.Count;
+            int instruction_count = md.Body.Instructions.Count;
             StackQueue<Mono.Cecil.Cil.Instruction> leader_list = new StackQueue<Mono.Cecil.Cil.Instruction>();
 
             // Each method is a leader of a block.
             CFG.Vertex v = (CFG.Vertex)_cfg.AddVertex(_cfg.NewNodeNumber());
-            v.Method = definition;
-            v.HasReturnValue = definition.IsReuseSlot;
+            v.Method = definition.Item1;
+            v.HasReturnValue = definition.Item1.Resolve().IsReuseSlot;
             v.Entry = v;
             _cfg.Entries.Add(v);
             for (int j = 0; j < instruction_count; ++j)
             {
                 // accumulate jump to locations since these split blocks.
-                Mono.Cecil.Cil.Instruction mi = definition.Body.Instructions[j];
+
+                // NB: This gets generic code. We have to instantiate it.
+
+                Mono.Cecil.Cil.Instruction mi = definition.Item1.Resolve().Body.Instructions[j];
                 //System.Console.WriteLine(mi);
                 Inst i = Inst.Wrap(mi);
                 i.Block = v;
@@ -222,16 +241,12 @@
 
                 v.Instructions.Add(i);
 
-                if (fc == Mono.Cecil.Cil.FlowControl.Next)
-                    continue;
-                if (fc == Mono.Cecil.Cil.FlowControl.Branch
-                    || fc == Mono.Cecil.Cil.FlowControl.Cond_Branch)
+                if (fc == Mono.Cecil.Cil.FlowControl.Branch || fc == Mono.Cecil.Cil.FlowControl.Cond_Branch)
                 {
                     // Save leader target of branch.
                     object o = i.Operand;
                     // Two cases that I know of: operand is just and instruction,
                     // or operand is an array of instructions (via a switch instruction).
-
                     Mono.Cecil.Cil.Instruction oo = o as Mono.Cecil.Cil.Instruction;
                     Mono.Cecil.Cil.Instruction[] ooa = o as Mono.Cecil.Cil.Instruction[];
                     if (oo != null)
@@ -251,6 +266,8 @@
 
                 }
             }
+
+            // Accumalated splits are in "leader_list". These splits must be within the smae method.
             StackQueue<int> ordered_leader_list = new StackQueue<int>();
             for (int j = 0; j < instruction_count; ++j)
             {
@@ -258,7 +275,7 @@
                 // where to split blocks. However, it's ordered,
                 // so that splitting is done from last instruction in block
                 // to first instruction in block.
-                Mono.Cecil.Cil.Instruction i = definition.Body.Instructions[j];
+                Mono.Cecil.Cil.Instruction i = md.Body.Instructions[j];
                 //System.Console.WriteLine("Looking for " + i);
                 if (leader_list.Contains(i))
                     ordered_leader_list.Push(j);

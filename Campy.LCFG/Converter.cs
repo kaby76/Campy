@@ -31,7 +31,6 @@ namespace Campy.ControlFlowGraph
         private static bool setup = true;
         private static Dictionary<TypeReference, TypeRef> basic_llvm_types_created = new Dictionary<TypeReference, TypeRef>();
         private static Dictionary<TypeReference, TypeRef> previous_llvm_types_created_global = new Dictionary<TypeReference, TypeRef>();
-        private static Stack<bool> nested = new Stack<bool>();
         private static Dictionary<string, string> _rename_to_legal_llvm_name_cache = new Dictionary<string, string>();
 
         public Converter(CFG mcfg)
@@ -46,51 +45,51 @@ namespace Campy.ControlFlowGraph
             LLVM.InitializeAllTargetInfos();
             LLVM.InitializeAllAsmPrinters();
 	        basic_llvm_types_created.Add(
-			    Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(typeof(Int16)),
+			    Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeReference(typeof(Int16)),
 			    LLVM.Int16Type());
 
 	        basic_llvm_types_created.Add(
-			    Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(typeof(UInt16)),
+			    Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeReference(typeof(UInt16)),
 			    LLVM.Int16Type());
 
 	        basic_llvm_types_created.Add(
-			    Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(typeof(Int32)),
+			    Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeReference(typeof(Int32)),
 			    LLVM.Int32Type());
 
 	        basic_llvm_types_created.Add(
-			    Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(typeof(UInt32)),
+			    Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeReference(typeof(UInt32)),
 			    LLVM.Int32Type());
 
 	        basic_llvm_types_created.Add(
-			    Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(typeof(Int64)),
+			    Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeReference(typeof(Int64)),
 			    LLVM.Int64Type());
 
 	        basic_llvm_types_created.Add(
-			    Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(typeof(UInt64)),
+			    Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeReference(typeof(UInt64)),
 			    LLVM.Int64Type());
 
 	        basic_llvm_types_created.Add(
-			    Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(typeof(bool)),
+			    Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeReference(typeof(bool)),
 			    LLVM.Int1Type());
 
 	        basic_llvm_types_created.Add(
-			    Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(typeof(char)),
+			    Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeReference(typeof(char)),
 			    LLVM.Int8Type());
 
 	        basic_llvm_types_created.Add(
-			    Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(typeof(void)),
+			    Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeReference(typeof(void)),
 			    LLVM.VoidType());
 
 	        basic_llvm_types_created.Add(
-			    Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(typeof(Mono.Cecil.TypeDefinition)),
+			    Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeReference(typeof(Mono.Cecil.TypeDefinition)),
 			    LLVM.PointerType(LLVM.VoidType(), 0));
 
 	        basic_llvm_types_created.Add(
-			    Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(typeof(System.Type)),
+			    Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeReference(typeof(System.Type)),
 			    LLVM.PointerType(LLVM.VoidType(), 0));
 
 	        basic_llvm_types_created.Add(
-			    Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(typeof(string)),
+			    Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeReference(typeof(string)),
 			    LLVM.PointerType(LLVM.VoidType(), 0));
 
             built_in_functions.Add("llvm.nvvm.read.ptx.sreg.tid.x",
@@ -238,14 +237,17 @@ namespace Campy.ControlFlowGraph
         private bool TypeUsingGeneric()
         { return false; }
 
-        public List<CFG.Vertex> InstantiateGenerics(IEnumerable<CFG.Vertex> change_set, List<System.Type> list_of_data_types_used, List<Mono.Cecil.TypeDefinition> list_of_mono_data_types_used)
+        public List<CFG.Vertex> InstantiateGenerics(IEnumerable<CFG.Vertex> change_set, List<System.Type> list_of_data_types_used, List<Mono.Cecil.TypeReference> list_of_mono_data_types_used)
         {
             // Start a new change set so we can update edges and other properties for the new nodes
             // in the graph.
             int change_set_id2 = _mcfg.StartChangeSet();
 
+            // Perform in-order traversal to generate instantiated type information.
+            IEnumerable<CFG.Vertex> reverse_change_set = change_set.Reverse();
+
             // We need to do bookkeeping of what nodes to consider.
-            Stack<CFG.Vertex> instantiated_nodes = new Stack<CFG.Vertex>(change_set);
+            Stack<CFG.Vertex> instantiated_nodes = new Stack<CFG.Vertex>(reverse_change_set);
 
             while (instantiated_nodes.Count > 0)
             {
@@ -260,7 +262,7 @@ namespace Campy.ControlFlowGraph
                 // "T", then we add in a mapping of T to the actual data type
                 // used, e.g., Integer, or what have you. When it is compiled,
                 // to LLVM, the mapped data type will be used!
-                MethodDefinition method = basic_block.Method;
+                MethodReference method = basic_block.Method;
                 var declaring_type = method.DeclaringType;
 
                 {
@@ -270,7 +272,7 @@ namespace Campy.ControlFlowGraph
                     {
                         ParameterDefinition par = parameters[k];
                         var type_to_consider = par.ParameterType;
-                        var type_to_consider_system_type = Campy.Types.Utils.ReflectionCecilInterop.ConvertToSystemReflectionType(type_to_consider);
+                        type_to_consider = Converter.FromParameterDefitionToTypeReference(type_to_consider, method.DeclaringType as GenericInstanceType);
                         if (type_to_consider.ContainsGenericParameter)
                         {
                             var declaring_type_of_considered_type = type_to_consider.DeclaringType;
@@ -335,7 +337,6 @@ namespace Campy.ControlFlowGraph
                     {
                         var return_type = method.ReturnType;
                         var type_to_consider = return_type;
-                        var type_to_consider_system_type = Campy.Types.Utils.ReflectionCecilInterop.ConvertToSystemReflectionType(type_to_consider);
                         if (type_to_consider.ContainsGenericParameter)
                         {
                             var declaring_type_of_considered_type = type_to_consider.DeclaringType;
@@ -346,14 +347,7 @@ namespace Campy.ControlFlowGraph
                             {
                                 var data_type_used = list_of_mono_data_types_used[i];
                                 var sys_data_type_used = list_of_data_types_used[i];
-
-                                var data_type_used_has_generics = data_type_used.HasGenericParameters;
-                                var data_type_used_contains_generics = data_type_used.ContainsGenericParameter;
-                                var data_type_used_generic_instance = data_type_used.IsGenericInstance;
-
                                 var sys_data_type_used_is_generic_type = sys_data_type_used.IsGenericType;
-                                var sys_data_type_used_is_generic_parameter = sys_data_type_used.IsGenericParameter;
-                                var sys_data_type_used_contains_generics = sys_data_type_used.ContainsGenericParameters;
                                 if (sys_data_type_used_is_generic_type)
                                 {
                                     var sys_data_type_used_get_generic_type_def = sys_data_type_used.GetGenericTypeDefinition();
@@ -548,7 +542,23 @@ namespace Campy.ControlFlowGraph
             return new_module;
         }
 
-        private void CompilePart1(IEnumerable<CFG.Vertex> basic_blocks_to_compile, List<Mono.Cecil.TypeDefinition> list_of_data_types_used)
+        public static TypeReference FromParameterDefitionToTypeReference(TypeReference type_reference_of_parameter, GenericInstanceType git)
+        {
+            if (git == null)
+                return type_reference_of_parameter;
+            Collection<TypeReference> gp = git.GenericArguments;
+            // Map parameter to actual type.
+            if (type_reference_of_parameter.IsGenericParameter)
+            {
+                // Get arg number.
+                int num = Int32.Parse(type_reference_of_parameter.Name.Substring(1));
+                var yo = gp.ToArray()[num];
+                type_reference_of_parameter = yo;
+            }
+            return type_reference_of_parameter;
+        }
+
+        private void CompilePart1(IEnumerable<CFG.Vertex> basic_blocks_to_compile, List<Mono.Cecil.TypeReference> list_of_data_types_used)
         {
             foreach (CFG.Vertex bb in basic_blocks_to_compile)
             {
@@ -567,10 +577,11 @@ namespace Campy.ControlFlowGraph
                     continue;
                 }
 
-                MethodDefinition method = bb.Method;
+                MethodReference method = bb.Method;
                 bb.HasThis = method.HasThis;
-                var parameters = method.Parameters;
-                System.Reflection.MethodBase mb = ReflectionCecilInterop.ConvertToSystemReflectionMethodInfo(method);
+                List<ParameterDefinition> parameters = method.Parameters.ToList();
+                List<ParameterReference> instantiated_parameters = new List<ParameterReference>();
+                System.Reflection.MethodBase mb = ReflectionCecilInterop.ConvertToSystemReflectionMethodInfo(method.Resolve());
                 string mn = mb.DeclaringType.Assembly.GetName().Name;
                 ModuleRef mod = global_llvm_module; // LLVM.ModuleCreateWithName(mn);
                 bb.Module = mod;
@@ -581,13 +592,28 @@ namespace Campy.ControlFlowGraph
                 if (count > 0)
                 {
                     if (bb.HasThis)
+                    {
                         param_types[current++] = ConvertMonoTypeToLLVM(
-                            Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(mb.DeclaringType),
+                            method.DeclaringType,
                             bb.OpsFromOriginal);
+                    }
+
                     foreach (var p in parameters)
+                    {
+                        TypeReference type_reference_of_parameter = p.ParameterType;
+
+                        if (method.DeclaringType.IsGenericInstance && method.ContainsGenericParameter)
+                        {
+                            var git = method.DeclaringType as GenericInstanceType;
+                            type_reference_of_parameter = FromParameterDefitionToTypeReference(
+                                type_reference_of_parameter, git);
+                        }
+
                         param_types[current++] = ConvertMonoTypeToLLVM(
-                            p.ParameterType,
+                            type_reference_of_parameter,
                             bb.OpsFromOriginal);
+                    }
+
                     foreach (var pp in param_types)
                     {
                         string a = LLVM.PrintTypeToString(pp);
@@ -609,7 +635,7 @@ namespace Campy.ControlFlowGraph
             }
         }
 
-        private void CompilePart2(IEnumerable<CFG.Vertex> basic_blocks_to_compile, List<Mono.Cecil.TypeDefinition> list_of_data_types_used)
+        private void CompilePart2(IEnumerable<CFG.Vertex> basic_blocks_to_compile, List<Mono.Cecil.TypeReference> list_of_data_types_used)
         {
             foreach (var bb in basic_blocks_to_compile)
             {
@@ -632,7 +658,7 @@ namespace Campy.ControlFlowGraph
             }
         }
 
-        private void CompilePart3(IEnumerable<CFG.Vertex> basic_blocks_to_compile, List<Mono.Cecil.TypeDefinition> list_of_data_types_used)
+        private void CompilePart3(IEnumerable<CFG.Vertex> basic_blocks_to_compile, List<Mono.Cecil.TypeReference> list_of_data_types_used)
         {
             foreach (CFG.Vertex bb in basic_blocks_to_compile)
             {
@@ -650,7 +676,7 @@ namespace Campy.ControlFlowGraph
         }
 
 
-        private void CompilePart4(IEnumerable<CFG.Vertex> basic_blocks_to_compile, List<Mono.Cecil.TypeDefinition> list_of_data_types_used, List<CFG.Vertex> entries,
+        private void CompilePart4(IEnumerable<CFG.Vertex> basic_blocks_to_compile, List<Mono.Cecil.TypeReference> list_of_data_types_used, List<CFG.Vertex> entries,
             out List<CFG.Vertex> unreachable, out List<CFG.Vertex> change_set_minus_unreachable)
         {
             unreachable = new List<CFG.Vertex>();
@@ -712,7 +738,7 @@ namespace Campy.ControlFlowGraph
             return null;
         }
 
-        private void CompilePart5(IEnumerable<CFG.Vertex> basic_blocks_to_compile, List<Mono.Cecil.TypeDefinition> list_of_data_types_used)
+        private void CompilePart5(IEnumerable<CFG.Vertex> basic_blocks_to_compile, List<Mono.Cecil.TypeReference> list_of_data_types_used)
         {
             foreach (CFG.Vertex node in basic_blocks_to_compile)
             {
@@ -720,12 +746,12 @@ namespace Campy.ControlFlowGraph
                     continue;
 
                 int args = 0;
-                Mono.Cecil.MethodDefinition md = node.Method;
+                Mono.Cecil.MethodReference md = node.Method;
                 Mono.Cecil.MethodReference mr = node.Method;
                 args += mr.Parameters.Count;
                 node.NumberOfArguments = args;
                 node.HasThis = mr.HasThis;
-                int locals = md.Body.Variables.Count;
+                int locals = md.Resolve().Body.Variables.Count;
                 node.NumberOfLocals = locals;
                 int ret = 0;
                 if (mr.MethodReturnType != null)
@@ -752,7 +778,7 @@ namespace Campy.ControlFlowGraph
             }
         }
 
-        private void CompilePart6(IEnumerable<CFG.Vertex> basic_blocks_to_compile, List<Mono.Cecil.TypeDefinition> list_of_data_types_used, List<CFG.Vertex> entries,
+        private void CompilePart6(IEnumerable<CFG.Vertex> basic_blocks_to_compile, List<Mono.Cecil.TypeReference> list_of_data_types_used, List<CFG.Vertex> entries,
             List<CFG.Vertex> unreachable, List<CFG.Vertex> change_set_minus_unreachable)
         {
             {
@@ -887,7 +913,7 @@ namespace Campy.ControlFlowGraph
             return weeded;
         }
 
-        public void CompileToLLVM(List<CFG.Vertex> basic_blocks_to_compile, List<Mono.Cecil.TypeDefinition> list_of_data_types_used)
+        public void CompileToLLVM(List<CFG.Vertex> basic_blocks_to_compile, List<Mono.Cecil.TypeReference> list_of_data_types_used)
         {
             basic_blocks_to_compile = RemoveBasicBlocksAlreadyCompiled(basic_blocks_to_compile);
 
@@ -1261,212 +1287,221 @@ namespace Campy.ControlFlowGraph
 
         public static TypeRef ConvertMonoTypeToLLVM(
             Mono.Cecil.TypeReference tr,
-            Dictionary<TypeReference, System.Type> generic_type_rewrite_rules)
+            Dictionary<TypeReference, System.Type> generic_type_rewrite_rules,
+            int level = 0)
         {
-            // Search for type if already converted.
+            // Search for type if already converted. Note, there are several caches to search, each
+            // containing types with different properties.
+            // Also, NB: we use full name for the conversion, as types can be similarly named but within
+            // different owning classes.
             foreach (var kv in basic_llvm_types_created)
             {
-                if (kv.Key.Name == tr.Name)
+                if (kv.Key.FullName == tr.FullName)
                 {
                     return kv.Value;
                 }
             }
             foreach (var kv in previous_llvm_types_created_global)
             {
-                if (kv.Key.Name == tr.Name)
-                {
-                    if (nested.Any())
-                    {
-                        // LLVM cannot handle recursive types.. For now, if nested, make it void *.
-                        var typeref = LLVM.VoidType();
-                        var s = LLVM.PointerType(typeref, 0);
-                        return s;
-                    }
+                if (kv.Key.FullName == tr.FullName)
                     return kv.Value;
-                }
             }
             foreach (var kv in previous_llvm_types_created_global)
             {
-                if (kv.Key.Name == tr.Name)
+                if (kv.Key.FullName == tr.FullName)
                     return kv.Value;
             }
-            TypeDefinition td = tr.Resolve();
-            // Check basic types using TypeDefinition's found and initialized in the above code.
 
-            // I don't know why, but Resolve() of System.Int32[] (an arrary) returns a simple System.Int32, not
-            // an array. If always true, then use TypeReference as much as possible.
-
-            GenericInstanceType git = tr as GenericInstanceType;
-            TypeDefinition gtd = tr as TypeDefinition;
-
-            if (tr.IsArray)
+            try
             {
-                ContextRef c = LLVM.ContextCreate();
-                TypeRef s = LLVM.StructCreateNamed(c, Converter.RenameToLegalLLVMName(tr.ToString()));
-                previous_llvm_types_created_global.Add(tr, s);
-                LLVM.StructSetBody(s, new TypeRef[2]
-                {
-                    LLVM.PointerType(ConvertMonoTypeToLLVM(tr.GetElementType(), generic_type_rewrite_rules), 0),
-                    LLVM.Int64Type()
-                }, true);
+                TypeDefinition td = tr.Resolve();
+                // Check basic types using TypeDefinition's found and initialized in the above code.
 
-                var element_type = tr.GetElementType();
-                var e = ConvertMonoTypeToLLVM(element_type, generic_type_rewrite_rules);
-                var p = LLVM.PointerType(e, 0);
-                var d = LLVM.GetUndef(p);
-                return s;
-            }
-            else if (tr.IsGenericParameter)
-            {
-                foreach (var kvp in generic_type_rewrite_rules)
+                // I don't know why, but Resolve() of System.Int32[] (an arrary) returns a simple System.Int32, not
+                // an array. If always true, then use TypeReference as much as possible.
+
+                GenericInstanceType git = tr as GenericInstanceType;
+                TypeDefinition gtd = tr as TypeDefinition;
+
+                if (tr.IsArray)
                 {
-                    var key = kvp.Key;
-                    var value = kvp.Value;
-                    if (key.Name == tr.Name)
+                    ContextRef c = LLVM.ContextCreate();
+                    TypeRef s = LLVM.StructCreateNamed(c, Converter.RenameToLegalLLVMName(tr.ToString()));
+                    previous_llvm_types_created_global.Add(tr, s);
+                    LLVM.StructSetBody(s, new TypeRef[2]
                     {
-                        // Match, and substitute.
-                        var v = value;
-                        var mv = Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(v);
-                        var e = ConvertMonoTypeToLLVM(mv, generic_type_rewrite_rules);
-                        previous_llvm_types_created_global.Add(tr, e);
-                        return e;
-                    }
-                }
-                throw new Exception("Cannot convert " + tr.Name);
-            }
-            else if (td != null && td.IsClass)
-            {
-                nested.Push(true); // LLVM cannot handle recursive types.. For now, if nested, make it void *.
-                Dictionary<TypeReference, System.Type> additional = new Dictionary<TypeReference, System.Type>();
-                var gp = tr.GenericParameters;
-                Mono.Collections.Generic.Collection<TypeReference> ga = null;
-                if (git != null)
-                {
-                    ga = git.GenericArguments;
-                    Mono.Collections.Generic.Collection<GenericParameter> gg = td.GenericParameters;
-                    // Map parameter to instantiated type.
-                    for (int i = 0; i < gg.Count; ++i)
-                    {
-                        var pp = gg[i];
-                        var qq = ga[i];
-                        TypeReference trrr = pp as TypeReference;
-                        var system_type = Campy.Types.Utils.ReflectionCecilInterop.ConvertToSystemReflectionType(qq);
-                        if (system_type == null) throw new Exception("Failed to convert " + qq);
-                        additional[pp] = system_type;
-                    }
-                }
+                        LLVM.PointerType(ConvertMonoTypeToLLVM(tr.GetElementType(), generic_type_rewrite_rules, level+1), 0),
+                        LLVM.Int64Type()
+                    }, true);
 
-                if (tr.HasGenericParameters)
+                    var element_type = tr.GetElementType();
+                    var e = ConvertMonoTypeToLLVM(element_type, generic_type_rewrite_rules);
+                    var p = LLVM.PointerType(e, 0);
+                    var d = LLVM.GetUndef(p);
+                    return s;
+                }
+                else if (tr.IsGenericParameter)
                 {
-                    // The type is generic. Loop through all data types used in closure to see
-                    // how to compile this type.
                     foreach (var kvp in generic_type_rewrite_rules)
                     {
                         var key = kvp.Key;
                         var value = kvp.Value;
-
                         if (key.Name == tr.Name)
                         {
-                            // match.
-                            // Substitute tt for t.
-                            //return ConvertSystemTypeToLLVM(tt, list_of_data_types_used, black_box);
+                            // Match, and substitute.
+                            var v = value;
+                            var mv = Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeReference(v);
+                            var e = ConvertMonoTypeToLLVM(mv, generic_type_rewrite_rules, level+1);
+                            previous_llvm_types_created_global.Add(tr, e);
+                            return e;
                         }
                     }
+                    throw new Exception("Cannot convert " + tr.Name);
                 }
-                // Create a struct/class type.
-                ContextRef c = LLVM.ContextCreate();
-                TypeRef s = LLVM.StructCreateNamed(c, Converter.RenameToLegalLLVMName(tr.ToString()));
-                var p = LLVM.PointerType(s, 0);
-                previous_llvm_types_created_global.Add(tr, p);
-                // Create array of typerefs as argument to StructSetBody below.
-                // Note, tr is correct type, but tr.Resolve of a generic type turns the type
-                // into an uninstantiated generic type. E.g., List<int> contains a generic T[] containing the
-                // data. T could be a struct/value type, or T could be a class.
-                
-                var new_list = new Dictionary<TypeReference, System.Type>(generic_type_rewrite_rules);
-                foreach (var a in additional) new_list.Add(a.Key, a.Value);
-
-                List<TypeRef> list = new List<TypeRef>();
-                int offset = 0;
-                var fields = td.Fields;
-                foreach (var field in fields)
+                else if (td != null && td.IsClass)
                 {
-                    FieldAttributes attr = field.Attributes;
-                    if ((attr & FieldAttributes.Static) != 0)
-                        continue;
-
-                    TypeReference field_type = field.FieldType;
-                    TypeReference instantiated_field_type = field.FieldType;
-
+                    Dictionary<TypeReference, System.Type> additional = new Dictionary<TypeReference, System.Type>();
+                    var gp = tr.GenericParameters;
+                    Mono.Collections.Generic.Collection<TypeReference> ga = null;
                     if (git != null)
                     {
-                        Collection<TypeReference> generic_args = git.GenericArguments;
-                        if (field.FieldType.IsArray)
+                        ga = git.GenericArguments;
+                        Mono.Collections.Generic.Collection<GenericParameter> gg = td.GenericParameters;
+                        // Map parameter to instantiated type.
+                        for (int i = 0; i < gg.Count; ++i)
                         {
-                            var et = field.FieldType.GetElementType();
-                            var bbc = et.HasGenericParameters;
-                            var bbbbc = et.IsGenericParameter;
-                            var array = field.FieldType as ArrayType;
-                            int rank = array.Rank;
-                            if (bbc)
+                            var pp = gg[i];
+                            var qq = ga[i];
+                            TypeReference trrr = pp as TypeReference;
+                            var system_type = Campy.Types.Utils.ReflectionCecilInterop
+                                .ConvertToSystemReflectionType(qq);
+                            if (system_type == null) throw new Exception("Failed to convert " + qq);
+                            additional[pp] = system_type;
+                        }
+                    }
+
+                    if (tr.HasGenericParameters)
+                    {
+                        // The type is generic. Loop through all data types used in closure to see
+                        // how to compile this type.
+                        foreach (var kvp in generic_type_rewrite_rules)
+                        {
+                            var key = kvp.Key;
+                            var value = kvp.Value;
+
+                            if (key.Name == tr.Name)
                             {
-                                instantiated_field_type = et.MakeGenericInstanceType(generic_args.ToArray());
-                                instantiated_field_type = instantiated_field_type.MakeArrayType(rank);
+                                // match.
+                                // Substitute tt for t.
+                                //return ConvertSystemTypeToLLVM(tt, list_of_data_types_used, black_box);
                             }
-                            else if (bbbbc)
+                        }
+                    }
+                    // Create a struct/class type.
+                    ContextRef c = LLVM.ContextCreate();
+                    string llvm_name = Converter.RenameToLegalLLVMName(tr.ToString());
+                    TypeRef s = LLVM.StructCreateNamed(c, llvm_name);
+                    var p = LLVM.PointerType(s, 0);
+                    previous_llvm_types_created_global.Add(tr, p);
+                    // Create array of typerefs as argument to StructSetBody below.
+                    // Note, tr is correct type, but tr.Resolve of a generic type turns the type
+                    // into an uninstantiated generic type. E.g., List<int> contains a generic T[] containing the
+                    // data. T could be a struct/value type, or T could be a class.
+
+                    var new_list = new Dictionary<TypeReference, System.Type>(generic_type_rewrite_rules);
+                    foreach (var a in additional) new_list.Add(a.Key, a.Value);
+
+                    List<TypeRef> list = new List<TypeRef>();
+                    int offset = 0;
+                    var fields = td.Fields;
+                    foreach (var field in fields)
+                    {
+                        FieldAttributes attr = field.Attributes;
+                        if ((attr & FieldAttributes.Static) != 0)
+                            continue;
+
+                        TypeReference field_type = field.FieldType;
+                        TypeReference instantiated_field_type = field.FieldType;
+
+                        if (git != null)
+                        {
+                            Collection<TypeReference> generic_args = git.GenericArguments;
+                            if (field.FieldType.IsArray)
                             {
-                                instantiated_field_type = generic_args.First();
-                                instantiated_field_type = instantiated_field_type.MakeArrayType(rank);
+                                var et = field.FieldType.GetElementType();
+                                var bbc = et.HasGenericParameters;
+                                var bbbbc = et.IsGenericParameter;
+                                var array = field.FieldType as ArrayType;
+                                int rank = array.Rank;
+                                if (bbc)
+                                {
+                                    instantiated_field_type = et.MakeGenericInstanceType(generic_args.ToArray());
+                                    instantiated_field_type = instantiated_field_type.MakeArrayType(rank);
+                                }
+                                else if (bbbbc)
+                                {
+                                    instantiated_field_type = generic_args.First();
+                                    instantiated_field_type = instantiated_field_type.MakeArrayType(rank);
+                                }
                             }
+                            else
+                            {
+                                var et = field.FieldType;
+                                var bbc = et.HasGenericParameters;
+                                var bbbbc = et.IsGenericParameter;
+                                if (bbc)
+                                {
+                                    instantiated_field_type = et.MakeGenericInstanceType(generic_args.ToArray());
+                                }
+                                else if (bbbbc)
+                                {
+                                    instantiated_field_type = generic_args.First();
+                                }
+                            }
+                        }
+
+
+                        int field_size;
+                        int alignment;
+                        var ft =
+                            Campy.Types.Utils.ReflectionCecilInterop.ConvertToSystemReflectionType(
+                                instantiated_field_type);
+                        var array_or_class = (instantiated_field_type.IsArray || !instantiated_field_type.IsValueType);
+                        if (array_or_class)
+                        {
+                            field_size = Buffers.SizeOf(typeof(IntPtr));
+                            alignment = Buffers.Alignment(typeof(IntPtr));
                         }
                         else
                         {
-                            var et = field.FieldType;
-                            var bbc = et.HasGenericParameters;
-                            var bbbbc = et.IsGenericParameter;
-                            if (bbc)
-                            {
-                                instantiated_field_type = et.MakeGenericInstanceType(generic_args.ToArray());
-                            }
-                            else if (bbbbc)
-                            {
-                                instantiated_field_type = generic_args.First();
-                            }
+                            field_size = Buffers.SizeOf(ft);
+                            alignment = Buffers.Alignment(ft);
                         }
+                        int padding = Buffers.Padding(offset, alignment);
+                        offset = offset + padding + field_size;
+                        if (padding != 0)
+                        {
+                            // Add in bytes to effect padding.
+                            for (int j = 0; j < padding; ++j)
+                                list.Add(LLVM.Int8Type());
+                        }
+                        var field_converted_type = ConvertMonoTypeToLLVM(instantiated_field_type, new_list, level+1);
+                        list.Add(field_converted_type);
                     }
-
-
-                    int field_size;
-                    int alignment;
-                    var ft = Campy.Types.Utils.ReflectionCecilInterop.ConvertToSystemReflectionType(instantiated_field_type);
-                    var array_or_class = (instantiated_field_type.IsArray || !instantiated_field_type.IsValueType);
-                    if (array_or_class)
-                    {
-                        field_size = Buffers.SizeOf(typeof(IntPtr));
-                        alignment = Buffers.Alignment(typeof(IntPtr));
-                    }
-                    else
-                    {
-                        field_size = Buffers.SizeOf(ft);
-                        alignment = Buffers.Alignment(ft);
-                    }
-                    int padding = Buffers.Padding(offset, alignment);
-                    offset = offset + padding + field_size;
-                    if (padding != 0)
-                    {
-                        // Add in bytes to effect padding.
-                        for (int j = 0; j < padding; ++j)
-                            list.Add(LLVM.Int8Type());
-                    }
-                    var field_converted_type = ConvertMonoTypeToLLVM(instantiated_field_type, new_list);
-                    list.Add(field_converted_type);
+                    LLVM.StructSetBody(s, list.ToArray(), true);
+                    return p;
                 }
-                LLVM.StructSetBody(s, list.ToArray(), true);
-                nested.Pop();
-                return p;
+                else
+                    throw new Exception("Unknown type.");
             }
-            else
-                throw new Exception("Unknown type.");
+            catch (Exception e)
+            {
+                throw e;
+            }
+            finally
+            {
+                
+            }
         }
     }
 }

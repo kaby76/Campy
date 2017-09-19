@@ -4188,7 +4188,7 @@ namespace Campy.ControlFlowGraph
             // And, the return value is pushed on the top of stack.
             // This is handled by the call instruction.
             var ret = this.Block.Method.ReturnType;
-            var void_type = Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(typeof(void));
+            var void_type = Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeReference(typeof(void));
 
             if (ret == null || ret.FullName == void_type.FullName)
             {

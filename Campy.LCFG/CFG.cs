@@ -131,7 +131,7 @@ namespace Campy.ControlFlowGraph
             public CFG.Vertex PreviousVertex { get; set; }
             public Tuple<TypeReference, System.Type> OpFromPreviousNode { get; set; }
             public Dictionary<TypeReference, TypeRef> LLVMTypeMap = new Dictionary<TypeReference, TypeRef>();
-            public MethodDefinition Method { get; set; }
+            public MethodReference Method { get; set; }
             public List<Inst> Instructions { get; set; } = new List<Inst>();
 
             public BasicBlockRef BasicBlock { get; set; }

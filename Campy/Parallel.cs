@@ -57,33 +57,11 @@ namespace Campy
                 Singleton._reader.AnalyzeMethod(kernel);
                 List<CFG.Vertex> cs = Singleton._graph.PopChangeSet(change_set_id);
 
-                // Very important note: Although we have the control flow graph of the code that is to
-                // be compiled, there is going to be generics used, e.g., ArrayView<int>, within the body
-                // of the code and in the called runtime library. We need to record the types for compiling
-                // and add that to compilation.
-                // https://stackoverflow.com/questions/5342345/how-do-generics-get-compiled-by-the-jit-compiler
-
-                // Create a list of generics called with types passed.
-                List<Type> list_of_data_types_used = Singleton._converter.FindAllTargets(kernel);
-
-                // Convert list into Mono data types.
-                List<Mono.Cecil.TypeDefinition> list_of_mono_data_types_used = new List<TypeDefinition>();
-                foreach (System.Type data_type_used in list_of_data_types_used)
-                {
-                    list_of_mono_data_types_used.Add(
-                        ReflectionCecilInterop.ConvertToMonoCecilTypeDefinition(data_type_used));
-                }
-
-                // Instantiate all generics at this point.
-                cs = Singleton._converter.InstantiateGenerics(
-                    cs, list_of_data_types_used, list_of_mono_data_types_used);
-
-                // Compile methods with added type information.
-                Singleton._converter.CompileToLLVM(cs, list_of_mono_data_types_used);
+                MethodInfo method = kernel.Method;
+                object target = kernel.Target;
 
                 // Get basic block of entry.
                 CFG.Vertex bb;
-                MethodInfo method = kernel.Method;
                 if (!cs.Any())
                 {
                     // Compiled previously. Look for basic block of entry.
@@ -96,6 +74,39 @@ namespace Campy
                 {
                     bb = cs.First();
                 }
+
+
+                // Very important note: Although we have the control flow graph of the code that is to
+                // be compiled, there is going to be generics used, e.g., ArrayView<int>, within the body
+                // of the code and in the called runtime library. We need to record the types for compiling
+                // and add that to compilation.
+                // https://stackoverflow.com/questions/5342345/how-do-generics-get-compiled-by-the-jit-compiler
+
+                // Create a list of generics called with types passed.
+                List<Type> list_of_data_types_used = new List<Type>();
+                list_of_data_types_used.Add(target.GetType());
+                //Singleton._converter.FindAllTargets(kernel));
+
+                // Convert list into Mono data types.
+                List<Mono.Cecil.TypeReference> list_of_mono_data_types_used = new List<TypeReference>();
+                foreach (System.Type data_type_used in list_of_data_types_used)
+                {
+                    list_of_mono_data_types_used.Add(
+                        ReflectionCecilInterop.ConvertToMonoCecilTypeReference(data_type_used));
+                }
+
+                // In the same, in-order discovery of all methods, we're going to pass on
+                // type information. As we spread the type info from basic block to successors,
+                // copy the node with the type information associated with it if the type info
+                // results in a different interpretation/compilation of the function.
+                cs = Singleton._converter.InstantiateGenerics(
+                    cs, list_of_data_types_used, list_of_mono_data_types_used);
+
+                // Associate "this" with entry.
+                Dictionary<TypeReference, Type> ops = bb.OpsFromOriginal;
+
+                // Compile methods with added type information.
+                Singleton._converter.CompileToLLVM(cs, list_of_mono_data_types_used);
 
                 var ptr_to_kernel = Singleton._converter.GetCudaFunction(bb.Name);
 

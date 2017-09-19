@@ -28,7 +28,7 @@ namespace Campy.ControlFlowGraph
             _phi = new List<ValueRef>();
         }
 
-        public State(CFG.Vertex bb, MethodDefinition md, int args, int locals, int level)
+        public State(CFG.Vertex bb, MethodReference md, int args, int locals, int level)
         {
             // Set up state with args, locals, basic stack initial value of 0xDEADBEEF.
             // In addition, use type information from method to compute types for all args.
@@ -38,7 +38,7 @@ namespace Campy.ControlFlowGraph
 
             if (md.HasThis)
             {
-                TypeDefinition td = md.DeclaringType;
+                TypeReference td = md.DeclaringType;
                 TypeRef type = Converter.ConvertMonoTypeToLLVM(td, bb.OpsFromOriginal);
                 var vx = new Value(LLVM.ConstInt(type, (ulong)0xdeadbeef, true));
                 _stack.Push(vx);
@@ -57,6 +57,7 @@ namespace Campy.ControlFlowGraph
                     int j = i - begin;
                     ParameterDefinition p = md.Parameters[j];
                     TypeReference tr = p.ParameterType;
+                    tr = Converter.FromParameterDefitionToTypeReference(tr, md.DeclaringType as GenericInstanceType);
                     type = Converter.ConvertMonoTypeToLLVM(tr, bb.OpsFromOriginal);
                 }
                 var vx = new Value(LLVM.ConstInt(type, (ulong)0xdeadbeef, true));
@@ -67,7 +68,7 @@ namespace Campy.ControlFlowGraph
             _phi = new List<ValueRef>();
         }
 
-        public State(Dictionary<int, bool> visited, CFG.Vertex bb, List<Mono.Cecil.TypeDefinition> list_of_data_types_used)
+        public State(Dictionary<int, bool> visited, CFG.Vertex bb, List<Mono.Cecil.TypeReference> list_of_data_types_used)
         {
             // Set up a blank stack.
             _stack = new StackQueue<Value>();
@@ -112,7 +113,7 @@ namespace Campy.ControlFlowGraph
                 // Set up locals. I'm making an assumption that there is a 
                 // one to one and in order mapping of the locals with that
                 // defined for the method body by Mono.
-                Collection<VariableDefinition> variables = bb.Method.Body.Variables;
+                Collection<VariableDefinition> variables = bb.Method.Resolve().Body.Variables;
                 _locals = _stack.Section((int)(args+begin), locals);
                 for (int i = 0; i < locals; ++i)
                 {
