@@ -47,7 +47,9 @@ namespace ConsoleApp4
             Campy.Utils.Options.Set("dot_graph", true);
             Campy.Utils.Options.Set("jit_trace", true);
             Campy.Utils.Options.Set("memory_trace", true);
-
+            Campy.Utils.Options.Set("ptx_trace", true);
+            
+            if (false)
             {
                 List<int> x = new List<int>();
                 for (int i = 0; i < 4; ++i) x.Add(0);
@@ -87,10 +89,13 @@ namespace ConsoleApp4
                 float a = 10.1f;
 
                 Campy.Parallel.For(n, i => x[i] = i);
+                Campy.Parallel.For(n, i => y[i] = i);
                 Campy.Parallel.For(n, i => x[i] = i - 3);
+
                 Campy.Parallel.For(n, i =>
                 {
-                    y[i] = y[i] + a * x[i];
+                    //y[i] = y[i] + a * x[i];
+                    y[i] = x[i];
                 });
                 for (int i = 0; i < n; ++i) System.Console.Write(y[i] + " ");
                 System.Console.WriteLine();

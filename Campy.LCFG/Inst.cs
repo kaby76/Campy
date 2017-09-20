@@ -971,6 +971,9 @@ namespace Campy.ControlFlowGraph
         public override Inst Convert(Converter converter, State state)
         {
             Value value = state._arguments[_arg];
+            if (Campy.Utils.Options.IsOn("jit_trace"))
+                System.Console.WriteLine(value.ToString());
+
             state._stack.Push(value);
             return Next;
         }
@@ -2438,10 +2441,15 @@ namespace Campy.ControlFlowGraph
                         {
                             var call = LLVM.BuildCall(Builder, fv, args, name);
                             state._stack.Push(new Value(call));
+                            if (Campy.Utils.Options.IsOn("jit_trace"))
+                                System.Console.WriteLine(call.ToString());
+
                         }
                         else
                         {
                             var call = LLVM.BuildCall(Builder, fv, args, "");
+                            if (Campy.Utils.Options.IsOn("jit_trace"))
+                                System.Console.WriteLine(call.ToString());
                         }
                     }
                 }
