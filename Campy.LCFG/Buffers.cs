@@ -111,50 +111,20 @@ namespace Campy.LCFG
             try
             {
                 // Let's start with basic types.
-                if (hostType.FullName.Equals("System.Object"))
-                {
-                    return typeof(System.Object);
-                }
-                if (hostType.FullName.Equals("System.Int16"))
-                {
-                    return typeof(System.Int16);
-                }
-                if (hostType.FullName.Equals("System.Int32"))
-                {
-                    return typeof(System.Int32);
-                }
-                if (hostType.FullName.Equals("System.Int64"))
-                {
-                    return typeof(System.Int64);
-                }
-                if (hostType.FullName.Equals("System.UInt16"))
-                {
-                    return typeof(System.UInt16);
-                }
-                if (hostType.FullName.Equals("System.UInt32"))
-                {
-                    return typeof(System.UInt32);
-                }
-                if (hostType.FullName.Equals("System.UInt64"))
-                {
-                    return typeof(System.UInt64);
-                }
-                if (hostType.FullName.Equals("System.IntPtr"))
-                {
-                    return typeof(System.IntPtr);
-                }
-
+                if (hostType.FullName.Equals("System.Object")) return typeof(System.Object);
+                if (hostType.FullName.Equals("System.Int16")) return typeof(System.Int16);
+                if (hostType.FullName.Equals("System.Int32")) return typeof(System.Int32);
+                if (hostType.FullName.Equals("System.Int64")) return typeof(System.Int64);
+                if (hostType.FullName.Equals("System.UInt16")) return typeof(System.UInt16);
+                if (hostType.FullName.Equals("System.UInt32")) return typeof(System.UInt32);
+                if (hostType.FullName.Equals("System.UInt64")) return typeof(System.UInt64);
+                if (hostType.FullName.Equals("System.IntPtr")) return typeof(System.IntPtr);
                 // Map boolean into byte.
-                if (hostType.FullName.Equals("System.Boolean"))
-                {
-                    return typeof(System.Byte);
-                }
-
+                if (hostType.FullName.Equals("System.Boolean")) return typeof(System.Byte);
                 // Map char into uint16.
-                if (hostType.FullName.Equals("System.Char"))
-                {
-                    return typeof(System.UInt16);
-                }
+                if (hostType.FullName.Equals("System.Char")) return typeof(System.UInt16);
+                if (hostType.FullName.Equals("System.Single")) return typeof(System.Single);
+                if (hostType.FullName.Equals("System.Double")) return typeof(System.Double);
 
                 String name;
                 System.Reflection.TypeFilter tf;
@@ -513,6 +483,16 @@ namespace Campy.LCFG
                     Cp(to_buffer, v2);
                     return;
                 }
+                if (hostType.FullName.Equals("System.Single"))
+                {
+                    Cp(to_buffer, from);
+                    return;
+                }
+                if (hostType.FullName.Equals("System.Double"))
+                {
+                    Cp(to_buffer, from);
+                    return;
+                }
 
                 //// Declare inheritance types.
                 //Type bbt = null;
@@ -774,6 +754,18 @@ namespace Campy.LCFG
                 if (t_type.FullName.Equals("System.Char"))
                 {
                     to = (System.Char)from;
+                    return;
+                }
+                if (t_type.FullName.Equals("System.Single"))
+                {
+                    object o = Marshal.PtrToStructure<System.Single>(from);
+                    to = o;
+                    return;
+                }
+                if (t_type.FullName.Equals("System.Double"))
+                {
+                    object o = Marshal.PtrToStructure<System.Double>(from);
+                    to = o;
                     return;
                 }
 

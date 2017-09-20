@@ -1297,68 +1297,90 @@ namespace Campy.ControlFlowGraph
 
     public class ConvertInst : Inst
     {
-        protected TypeRef dtype;
+        protected Type dst;
+        protected bool _throw_exceptions;
 
-        ValueRef convert_full(ValueRef v, TypeRef dtype, bool is_unsigned)
+        Value convert_full(Value src)
         {
-            TypeRef stype = LLVM.TypeOf(v);
+            TypeRef stype = LLVM.TypeOf(src.V);
+            TypeRef dtype = dst.T;
+
             if (stype != dtype)
             {
                 bool ext = false;
 
                 /* Extend */
-                if (dtype == LLVM.Int64Type() && (stype == LLVM.Int32Type() || stype == LLVM.Int16Type() ||
-                                                  stype == LLVM.Int8Type()))
+                if (dtype == LLVM.Int64Type()
+                    && (stype == LLVM.Int32Type() || stype == LLVM.Int16Type() || stype == LLVM.Int8Type()))
                     ext = true;
-                else if (dtype == LLVM.Int32Type() && (stype == LLVM.Int16Type() || stype == LLVM.Int8Type()))
+                else if (dtype == LLVM.Int32Type()
+                    && (stype == LLVM.Int16Type() || stype == LLVM.Int8Type()))
                     ext = true;
-                else if (dtype == LLVM.Int16Type() && (stype == LLVM.Int8Type()))
+                else if (dtype == LLVM.Int16Type()
+                    && (stype == LLVM.Int8Type()))
                     ext = true;
 
                 if (ext)
-                    return is_unsigned
-                        ? LLVM.BuildZExt(Builder, v, dtype, "")
-                        : LLVM.BuildSExt(Builder, v, dtype, "");
+                    return new Value(
+                        dst.is_unsigned
+                        ? LLVM.BuildZExt(Builder, src.V, dtype, "")
+                        : LLVM.BuildSExt(Builder, src.V, dtype, ""));
 
                 if (dtype == LLVM.DoubleType() && stype == LLVM.FloatType())
-                    return LLVM.BuildFPExt(Builder, v, dtype, "");
+                    return new Value(LLVM.BuildFPExt(Builder, src.V, dtype, ""));
 
                 /* Trunc */
-                if (stype == LLVM.Int64Type() && (dtype == LLVM.Int32Type() || dtype == LLVM.Int16Type() ||
-                                                  dtype == LLVM.Int8Type()))
-                    return LLVM.BuildTrunc(Builder, v, dtype, "");
-                if (stype == LLVM.Int32Type() && (dtype == LLVM.Int16Type() || dtype == LLVM.Int8Type()))
-                    return LLVM.BuildTrunc(Builder, v, dtype, "");
-                if (stype == LLVM.Int16Type() && dtype == LLVM.Int8Type())
-                    return LLVM.BuildTrunc(Builder, v, dtype, "");
-                if (stype == LLVM.DoubleType() && dtype == LLVM.FloatType())
-                    return LLVM.BuildFPTrunc(Builder, v, dtype, "");
+                if (stype == LLVM.Int64Type()
+                    && (dtype == LLVM.Int32Type() || dtype == LLVM.Int16Type() || dtype == LLVM.Int8Type()))
+                    return new Value(LLVM.BuildTrunc(Builder, src.V, dtype, ""));
+                if (stype == LLVM.Int32Type()
+                    && (dtype == LLVM.Int16Type() || dtype == LLVM.Int8Type()))
+                    return new Value(LLVM.BuildTrunc(Builder, src.V, dtype, ""));
+                if (stype == LLVM.Int16Type()
+                    && dtype == LLVM.Int8Type())
+                    return new Value(LLVM.BuildTrunc(Builder, src.V, dtype, ""));
+                if (stype == LLVM.DoubleType()
+                    && dtype == LLVM.FloatType())
+                    return new Value(LLVM.BuildFPTrunc(Builder, src.V, dtype, ""));
+
+                if (stype == LLVM.Int64Type()
+                    && (dtype == LLVM.FloatType()))
+                    return new Value(LLVM.BuildSIToFP(Builder, src.V, dtype, ""));
+                if (stype == LLVM.Int32Type()
+                    && (dtype == LLVM.FloatType()))
+                    return new Value(LLVM.BuildSIToFP(Builder, src.V, dtype, ""));
+                if (stype == LLVM.Int64Type()
+                    && (dtype == LLVM.DoubleType()))
+                    return new Value(LLVM.BuildSIToFP(Builder, src.V, dtype, ""));
+                if (stype == LLVM.Int32Type()
+                    && (dtype == LLVM.DoubleType()))
+                    return new Value(LLVM.BuildSIToFP(Builder, src.V, dtype, ""));
 
                 //if (LLVM.GetTypeKind(stype) == LLVM.PointerTypeKind && LLVM.GetTypeKind(dtype) == LLVMPointerTypeKind)
-                //    return LLVM.BuildBitCast(Builder, v, dtype, "");
+                //    return LLVM.BuildBitCast(Builder, src, dtype, "");
                 //if (LLVM.GetTypeKind(dtype) == LLVM.PointerTypeKind)
-                //    return LLVM.BuildIntToPtr(Builder, v, dtype, "");
+                //    return LLVM.BuildIntToPtr(Builder, src, dtype, "");
                 //if (LLVM.GetTypeKind(stype) == LLVM.PointerTypeKind)
-                //    return LLVM.BuildPtrToInt(Builder, v, dtype, "");
+                //    return LLVM.BuildPtrToInt(Builder, src, dtype, "");
 
                 //if (mono_arch_is_soft_float())
                 //{
                 //    if (stype == LLVM.Int32Type() && dtype == LLVM.FloatType())
-                //        return LLVM.BuildBitCast(Builder, v, dtype, "");
+                //        return LLVM.BuildBitCast(Builder, src, dtype, "");
                 //    if (stype == LLVM.Int32Type() && dtype == LLVM.DoubleType())
-                //        return LLVM.BuildBitCast(Builder, LLVM.BuildZExt(Builder, v, LLVM.Int64Type(), ""), dtype, "");
+                //        return LLVM.BuildBitCast(Builder, LLVM.BuildZExt(Builder, src, LLVM.Int64Type(), ""), dtype, "");
                 //}
 
                 //if (LLVM.GetTypeKind(stype) == LLVM.VectorTypeKind && LLVM.GetTypeKind(dtype) == LLVMVectorTypeKind)
-                //    return LLVM.BuildBitCast(Builder, v, dtype, "");
+                //    return LLVM.BuildBitCast(Builder, src, dtype, "");
 
-                LLVM.DumpValue(v);
-                LLVM.DumpValue(LLVM.ConstNull(dtype));
-                return default(ValueRef);
+                //                LLVM.DumpValue(src);
+                //                LLVM.DumpValue(LLVM.ConstNull(dtype.T));
+                return new Value(default(ValueRef));
             }
             else
             {
-                return v;
+                return src;
             }
         }
 
@@ -1367,14 +1389,32 @@ namespace Campy.ControlFlowGraph
         {
         }
 
+        public override void ComputeStackLevel(ref int level_after)
+        {
+            // No change in stack level.
+        }
+
         public override Inst Convert(Converter converter, State state)
         {
-            Value vv = state._stack.Pop();
-            ValueRef v = vv.V;
-            // TypeRef dtype = LLVM.Int64Type();
-            ValueRef r = convert_full(v, dtype, false);
-            state._stack.Push(new Value(r, dtype));
+            Value s = state._stack.Pop();
+            if (Campy.Utils.Options.IsOn("jit_trace"))
+                System.Console.WriteLine(s.ToString());
+
+            Value d = convert_full(s);
+            if (Campy.Utils.Options.IsOn("jit_trace"))
+                System.Console.WriteLine(d.ToString());
+
+            state._stack.Push(d);
             return Next;
+        }
+    }
+
+    public class ConvertOvfInst : ConvertInst
+    {
+        public ConvertOvfInst(Mono.Cecil.Cil.Instruction i)
+            : base(i)
+        {
+            _throw_exceptions = true;
         }
     }
 
@@ -1489,7 +1529,8 @@ namespace Campy.ControlFlowGraph
             ValueRef bc2 = LLVM.BuildInBoundsGEP(Builder, bc, indexes2, "");
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine((new Value(bc2)).ToString());
-            var bc3 = LLVM.BuildBitCast(Builder, bc2, LLVM.PointerType(LLVM.Int32Type(), 0), "");
+            var bc3 = LLVM.BuildBitCast(Builder, bc2,
+                LLVM.TypeOf(load0), "");
 
             // Now add in index to pointer.
             ValueRef[] indexes1 = new ValueRef[1];
@@ -2652,7 +2693,7 @@ namespace Campy.ControlFlowGraph
         public i_conv_i1(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            dtype = LLVM.Int8Type();
+            dst = new Type(LLVM.Int8Type());
         }
     }
 
@@ -2661,7 +2702,7 @@ namespace Campy.ControlFlowGraph
         public i_conv_i2(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            dtype = LLVM.Int16Type();
+            dst = new Type(LLVM.Int16Type());
         }
     }
 
@@ -2670,7 +2711,7 @@ namespace Campy.ControlFlowGraph
         public i_conv_i4(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            dtype = LLVM.Int32Type();
+            dst = new Type(LLVM.Int32Type());
         }
     }
 
@@ -2679,239 +2720,268 @@ namespace Campy.ControlFlowGraph
         public i_conv_i8(Mono.Cecil.Cil.Instruction i)
                 : base(i)
         {
-            dtype = LLVM.Int64Type();
+            dst = new Type(LLVM.Int64Type());
         }
     }
 
-    public class i_conv_i : Inst
+    public class i_conv_i : ConvertInst
     {
         public i_conv_i(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+            dst = new Type(LLVM.Int32Type());
         }
     }
 
-    public class i_conv_ovf_i1 : Inst
+    public class i_conv_ovf_i1 : ConvertOvfInst
     {
         public i_conv_ovf_i1(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+            dst = new Type(LLVM.Int8Type());
         }
     }
 
-    public class i_conv_ovf_i1_un : Inst
+    public class i_conv_ovf_i1_un : ConvertOvfInst
     {
         public i_conv_ovf_i1_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+            dst = new Type(LLVM.Int8Type(), false);
         }
     }
 
-    public class i_conv_ovf_i2 : Inst
+    public class i_conv_ovf_i2 : ConvertOvfInst
     {
         public i_conv_ovf_i2(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+            dst = new Type(LLVM.Int16Type());
         }
     }
 
-    public class i_conv_ovf_i2_un : Inst
+    public class i_conv_ovf_i2_un : ConvertOvfInst
     {
         public i_conv_ovf_i2_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+            dst = new Type(LLVM.Int16Type(), false);
         }
     }
 
-    public class i_conv_ovf_i4 : Inst
+    public class i_conv_ovf_i4 : ConvertOvfInst
     {
         public i_conv_ovf_i4(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+            dst = new Type(LLVM.Int32Type());
         }
     }
 
-    public class i_conv_ovf_i4_un : Inst
+    public class i_conv_ovf_i4_un : ConvertOvfInst
     {
         public i_conv_ovf_i4_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+            dst = new Type(LLVM.Int32Type(), false);
         }
     }
 
-    public class i_conv_ovf_i8 : Inst
+    public class i_conv_ovf_i8 : ConvertOvfInst
     {
         public i_conv_ovf_i8(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+            dst = new Type(LLVM.Int64Type());
         }
     }
 
-    public class i_conv_ovf_i8_un : Inst
+    public class i_conv_ovf_i8_un : ConvertOvfInst
     {
         public i_conv_ovf_i8_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+            dst = new Type(LLVM.Int64Type(), false);
         }
     }
 
-    public class i_conv_ovf_i : Inst
+    public class i_conv_ovf_i : ConvertOvfInst
     {
         public i_conv_ovf_i(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+            dst = new Type(LLVM.Int32Type());
         }
     }
 
-    public class i_conv_ovf_i_un : Inst
+    public class i_conv_ovf_i_un : ConvertOvfInst
     {
         public i_conv_ovf_i_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+            dst = new Type(LLVM.Int32Type(), false);
         }
     }
 
-    public class i_conv_ovf_u1 : Inst
+    public class i_conv_ovf_u1 : ConvertOvfInst
     {
         public i_conv_ovf_u1(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+            dst = new Type(LLVM.Int8Type(), false);
         }
     }
 
-    public class i_conv_ovf_u1_un : Inst
+    public class i_conv_ovf_u1_un : ConvertOvfInst
     {
         public i_conv_ovf_u1_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+            dst = new Type(LLVM.Int8Type(), false);
         }
     }
 
-    public class i_conv_ovf_u2 : Inst
+    public class i_conv_ovf_u2 : ConvertOvfInst
     {
         public i_conv_ovf_u2(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+            dst = new Type(LLVM.Int16Type(), false);
         }
     }
 
-    public class i_conv_ovf_u2_un : Inst
+    public class i_conv_ovf_u2_un : ConvertOvfInst
     {
         public i_conv_ovf_u2_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+            dst = new Type(LLVM.Int16Type(), false);
         }
     }
 
-    public class i_conv_ovf_u4 : Inst
+    public class i_conv_ovf_u4 : ConvertOvfInst
     {
         public i_conv_ovf_u4(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+            dst = new Type(LLVM.Int32Type(), false);
         }
     }
 
-    public class i_conv_ovf_u4_un : Inst
+    public class i_conv_ovf_u4_un : ConvertOvfInst
     {
         public i_conv_ovf_u4_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+            dst = new Type(LLVM.Int32Type(), false);
         }
     }
 
-    public class i_conv_ovf_u8 : Inst
+    public class i_conv_ovf_u8 : ConvertOvfInst
     {
         public i_conv_ovf_u8(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+            dst = new Type(LLVM.Int64Type(), false);
         }
     }
 
-    public class i_conv_ovf_u8_un : Inst
+    public class i_conv_ovf_u8_un : ConvertOvfInst
     {
         public i_conv_ovf_u8_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+            dst = new Type(LLVM.Int64Type(), false);
         }
     }
 
-    public class i_conv_ovf_u : Inst
+    public class i_conv_ovf_u : ConvertOvfInst
     {
         public i_conv_ovf_u(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+            dst = new Type(LLVM.Int32Type(), false);
         }
     }
 
-    public class i_conv_ovf_u_un : Inst
+    public class i_conv_ovf_u_un : ConvertOvfInst
     {
         public i_conv_ovf_u_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+            dst = new Type(LLVM.Int32Type(), false);
         }
     }
 
-    public class i_conv_r4 : Inst
+    public class i_conv_r4 : ConvertInst
     {
         public i_conv_r4(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+            dst = new Type(LLVM.FloatType());
         }
     }
 
-    public class i_conv_r8 : Inst
+    public class i_conv_r8 : ConvertInst
     {
         public i_conv_r8(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+            dst = new Type(LLVM.DoubleType());
         }
     }
 
-    public class i_conv_r_un : Inst
+    public class i_conv_r_un : ConvertInst
     {
         public i_conv_r_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+            dst = new Type(LLVM.FloatType());
         }
     }
 
-    public class i_conv_u1 : Inst
+    public class i_conv_u1 : ConvertInst
     {
         public i_conv_u1(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+            dst = new Type(LLVM.Int8Type(), false);
         }
     }
 
-    public class i_conv_u2 : Inst
+    public class i_conv_u2 : ConvertInst
     {
         public i_conv_u2(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+            dst = new Type(LLVM.Int16Type(), false);
         }
     }
 
-    public class i_conv_u4 : Inst
+    public class i_conv_u4 : ConvertInst
     {
         public i_conv_u4(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+            dst = new Type(LLVM.Int32Type(), false);
         }
     }
 
-    public class i_conv_u8 : Inst
+    public class i_conv_u8 : ConvertInst
     {
         public i_conv_u8(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+            dst = new Type(LLVM.Int64Type(), false);
         }
     }
 
-    public class i_conv_u : Inst
+    public class i_conv_u : ConvertInst
     {
         public i_conv_u(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+            dst = new Type(LLVM.Int32Type(), false);
         }
     }
 

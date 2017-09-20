@@ -64,9 +64,19 @@ namespace Campy.ControlFlowGraph
 			    Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeReference(typeof(Int64)),
 			    LLVM.Int64Type());
 
-	        basic_llvm_types_created.Add(
-			    Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeReference(typeof(UInt64)),
-			    LLVM.Int64Type());
+            basic_llvm_types_created.Add(
+                Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeReference(typeof(UInt64)),
+                LLVM.Int64Type());
+
+
+            basic_llvm_types_created.Add(
+                Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeReference(typeof(float)),
+                LLVM.FloatType());
+
+            basic_llvm_types_created.Add(
+                Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeReference(typeof(double)),
+                LLVM.DoubleType());
+
 
 	        basic_llvm_types_created.Add(
 			    Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeReference(typeof(bool)),
@@ -995,7 +1005,7 @@ namespace Campy.ControlFlowGraph
                     for (int i = 0; i < bb.Instructions.Count; ++i)
                     {
                         var inst = bb.Instructions[i];
-                        if (Campy.Utils.Options.IsOn("state_computation_trace"))
+                        if (Campy.Utils.Options.IsOn("jit_trace"))
                             System.Console.WriteLine(inst);
                         last_inst = inst;
                         inst = inst.Convert(this, bb.StateOut);

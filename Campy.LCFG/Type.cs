@@ -11,12 +11,23 @@ namespace Campy.ControlFlowGraph
     public class Type
     {
         internal bool IsLocal;
-
         private TypeRef _type_ref;
+        private bool _signed;
 
-        public Type(TypeRef t)
+        public Type(TypeRef t, bool signed = true)
         {
             _type_ref = t;
+            _signed = signed;
+        }
+
+        public bool is_signed
+        {
+            get { return _signed; }
+        }
+
+        public bool is_unsigned
+        {
+            get { return !_signed; }
         }
 
         public TypeRef T
