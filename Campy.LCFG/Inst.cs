@@ -1457,23 +1457,23 @@ namespace Campy.ControlFlowGraph
             TypeRef trr = new Value(load0).T.T;
              
 			// Add 16.
-			var bc = LLVM.BuildBitCast(Builder, load0, LLVM.PointerType(LLVM.Int8Type(), 0), "");
-            if (Campy.Utils.Options.IsOn("jit_trace"))
-			    System.Console.WriteLine((new Value(bc)).ToString());
-			ValueRef[] indexes2 = new ValueRef[1];
-			indexes2[0] = LLVM.ConstInt(LLVM.Int32Type(), 16, false);
-			ValueRef bc2 = LLVM.BuildInBoundsGEP(Builder, bc, indexes2, "");
-            if (Campy.Utils.Options.IsOn("jit_trace"))
-			    System.Console.WriteLine((new Value(bc2)).ToString());
-            //var bc3 = LLVM.BuildBitCast(Builder, bc2,
-            //    LLVM.PointerType(LLVM.Int32Type(), 0), "");
-            var bc3 = LLVM.BuildBitCast(Builder, bc2,
-                trr, "");
+			//var bc = LLVM.BuildBitCast(Builder, load0, LLVM.PointerType(LLVM.Int8Type(), 0), "");
+   //         if (Campy.Utils.Options.IsOn("jit_trace"))
+			//    System.Console.WriteLine((new Value(bc)).ToString());
+			//ValueRef[] indexes2 = new ValueRef[1];
+			//indexes2[0] = LLVM.ConstInt(LLVM.Int32Type(), 16, false);
+			//ValueRef bc2 = LLVM.BuildInBoundsGEP(Builder, bc, indexes2, "");
+   //         if (Campy.Utils.Options.IsOn("jit_trace"))
+			//    System.Console.WriteLine((new Value(bc2)).ToString());
+   //         //var bc3 = LLVM.BuildBitCast(Builder, bc2,
+   //         //    LLVM.PointerType(LLVM.Int32Type(), 0), "");
+   //         var bc3 = LLVM.BuildBitCast(Builder, bc2,
+   //             trr, "");
 
             // Now add in index to pointer.
             ValueRef[] indexes1 = new ValueRef[1];
 			indexes1[0] = i.V;
-			ValueRef ll1 = LLVM.BuildInBoundsGEP(Builder, bc3, indexes1, "");
+			ValueRef ll1 = LLVM.BuildInBoundsGEP(Builder, load0, indexes1, "");
             if (Campy.Utils.Options.IsOn("jit_trace"))
 			    System.Console.WriteLine((new Value(ll1)).ToString());
 

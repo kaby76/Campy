@@ -63,7 +63,7 @@ namespace ConsoleApp4
                     System.Console.Write(e + " ");
                 System.Console.WriteLine();
             }
-            if (true)
+            if (false)
             {
                 int n = 16;
                 int[] data = new int[n];
@@ -89,7 +89,7 @@ namespace ConsoleApp4
                 System.Console.WriteLine("sum = " + data[0]);
             }
 
-            if (false)
+            if (true)
             {
                 // Saxpy (vector update).
                 int n = 16;
@@ -98,8 +98,8 @@ namespace ConsoleApp4
                 float a = 10.1f;
 
                 Campy.Parallel.For(n, i => x[i] = i);
-                Campy.Parallel.For(n, i => y[i] = i);
-                Campy.Parallel.For(n, i => x[i] = i - 3);
+                Campy.Parallel.For(n, i => y[i] = i - 1);
+                //Campy.Parallel.For(n, i => x[i] = i - 3);
 
                 Campy.Parallel.For(n, i =>
                 {
