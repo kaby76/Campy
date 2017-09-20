@@ -1,8 +1,5 @@
 ﻿using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.Linq;
-using Campy.Types;
-using Campy.Utils;
 
 namespace ConsoleApp4
 {
