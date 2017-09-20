@@ -48,7 +48,9 @@ namespace ConsoleApp4
             Campy.Utils.Options.Set("jit_trace", true);
             Campy.Utils.Options.Set("memory_trace", true);
             Campy.Utils.Options.Set("ptx_trace", true);
+            Campy.Utils.Options.Set("state_computation_trace", true);
             
+
             if (false)
             {
                 List<int> x = new List<int>();
@@ -60,6 +62,12 @@ namespace ConsoleApp4
                 foreach (var e in x)
                     System.Console.Write(e + " ");
                 System.Console.WriteLine();
+            }
+            if (true)
+            {
+                int n = 16;
+                int[] data = new int[n];
+                Campy.Parallel.For(n, i => data[i] = 1);
             }
 
             if (false)
@@ -81,6 +89,7 @@ namespace ConsoleApp4
                 System.Console.WriteLine("sum = " + data[0]);
             }
 
+            if (false)
             {
                 // Saxpy (vector update).
                 int n = 16;

@@ -68,7 +68,6 @@ namespace Campy.ControlFlowGraph
                 Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeReference(typeof(UInt64)),
                 LLVM.Int64Type());
 
-
             basic_llvm_types_created.Add(
                 Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeReference(typeof(float)),
                 LLVM.FloatType());
@@ -607,9 +606,9 @@ namespace Campy.ControlFlowGraph
                 {
                     if (bb.HasThis)
                     {
-                        param_types[current++] = ConvertMonoTypeToLLVM(
+                        param_types[current++] = LLVM.PointerType(ConvertMonoTypeToLLVM(
                             method.DeclaringType,
-                            bb.OpsFromOriginal);
+                            bb.OpsFromOriginal), 0);
                     }
 
                     foreach (var p in parameters)
@@ -626,6 +625,11 @@ namespace Campy.ControlFlowGraph
                         param_types[current++] = ConvertMonoTypeToLLVM(
                             type_reference_of_parameter,
                             bb.OpsFromOriginal);
+
+                        if (type_reference_of_parameter.IsArray)
+                            param_types[current - 1] = LLVM.PointerType(param_types[current - 1], 0);
+                        else if (type_reference_of_parameter.Resolve().IsClass)
+                            param_types[current - 1] = LLVM.PointerType(param_types[current - 1], 0);
                     }
 
                     if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -986,6 +990,7 @@ namespace Campy.ControlFlowGraph
                         System.Console.WriteLine("State computations for node " + bb.Name);
 
                     var state_in = new State(visited, bb, list_of_data_types_used);
+
                     if (Campy.Utils.Options.IsOn("state_computation_trace"))
                     {
                         System.Console.WriteLine("state in output");
@@ -1432,8 +1437,12 @@ namespace Campy.ControlFlowGraph
                     ContextRef c = LLVM.ContextCreate();
                     string llvm_name = Converter.RenameToLegalLLVMName(tr.ToString());
                     TypeRef s = LLVM.StructCreateNamed(c, llvm_name);
-                    var p = LLVM.PointerType(s, 0);
-                    previous_llvm_types_created_global.Add(tr, p);
+
+                    //var p = LLVM.PointerType(s, 0);
+
+                    previous_llvm_types_created_global.Add(tr, s);
+                    //previous_llvm_types_created_global.Add(tr, p);
+
                     // Create array of typerefs as argument to StructSetBody below.
                     // Note, tr is correct type, but tr.Resolve of a generic type turns the type
                     // into an uninstantiated generic type. E.g., List<int> contains a generic T[] containing the
@@ -1502,25 +1511,36 @@ namespace Campy.ControlFlowGraph
                         {
                             field_size = Buffers.SizeOf(typeof(IntPtr));
                             alignment = Buffers.Alignment(typeof(IntPtr));
+                            int padding = Buffers.Padding(offset, alignment);
+                            offset = offset + padding + field_size;
+                            if (padding != 0)
+                            {
+                                // Add in bytes to effect padding.
+                                for (int j = 0; j < padding; ++j)
+                                    list.Add(LLVM.Int8Type());
+                            }
+                            var field_converted_type = ConvertMonoTypeToLLVM(instantiated_field_type, new_list, level + 1);
+                            field_converted_type = LLVM.PointerType(field_converted_type, 0);
+                            list.Add(field_converted_type);
                         }
                         else
                         {
                             field_size = Buffers.SizeOf(ft);
                             alignment = Buffers.Alignment(ft);
+                            int padding = Buffers.Padding(offset, alignment);
+                            offset = offset + padding + field_size;
+                            if (padding != 0)
+                            {
+                                // Add in bytes to effect padding.
+                                for (int j = 0; j < padding; ++j)
+                                    list.Add(LLVM.Int8Type());
+                            }
+                            var field_converted_type = ConvertMonoTypeToLLVM(instantiated_field_type, new_list, level + 1);
+                            list.Add(field_converted_type);
                         }
-                        int padding = Buffers.Padding(offset, alignment);
-                        offset = offset + padding + field_size;
-                        if (padding != 0)
-                        {
-                            // Add in bytes to effect padding.
-                            for (int j = 0; j < padding; ++j)
-                                list.Add(LLVM.Int8Type());
-                        }
-                        var field_converted_type = ConvertMonoTypeToLLVM(instantiated_field_type, new_list, level+1);
-                        list.Add(field_converted_type);
                     }
                     LLVM.StructSetBody(s, list.ToArray(), true);
-                    return p;
+                    return s;
                 }
                 else
                     throw new Exception("Unknown type.");
