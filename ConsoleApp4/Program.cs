@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics.Eventing;
 using System.Linq;
 
 namespace ConsoleApp4
@@ -39,12 +40,12 @@ namespace ConsoleApp4
 
         static void Main(string[] args)
         {
-            //Campy.Utils.Options.Set("graph_trace", true);
-            //Campy.Utils.Options.Set("module_trace", true);
-            //Campy.Utils.Options.Set("name_trace", true);
-            //Campy.Utils.Options.Set("cfg_construction_trace", true);
-            //Campy.Utils.Options.Set("dot_graph", true);
-            //Campy.Utils.Options.Set("jit_trace", true);
+            Campy.Utils.Options.Set("graph_trace", true);
+            Campy.Utils.Options.Set("module_trace", true);
+            Campy.Utils.Options.Set("name_trace", true);
+            Campy.Utils.Options.Set("cfg_construction_trace", true);
+            Campy.Utils.Options.Set("dot_graph", true);
+            Campy.Utils.Options.Set("jit_trace", true);
             Campy.Utils.Options.Set("memory_trace", true);
 
             {
@@ -78,6 +79,23 @@ namespace ConsoleApp4
                 System.Console.WriteLine("sum = " + data[0]);
             }
 
+            {
+                // Saxpy (vector update).
+                int n = 16;
+                float[] x = new float[n];
+                float[] y = new float[n];
+                float a = 10.1f;
+
+                Campy.Parallel.For(n, i => x[i] = i);
+                Campy.Parallel.For(n, i => x[i] = i - 3);
+                Campy.Parallel.For(n, i =>
+                {
+                    y[i] = y[i] + a * x[i];
+                });
+                for (int i = 0; i < n; ++i) System.Console.Write(y[i] + " ");
+                System.Console.WriteLine();
+            }
+            if (false)
             {
                 int max_level = 16;
                 int n = Bithacks.Power2(max_level);

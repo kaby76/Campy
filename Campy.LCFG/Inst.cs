@@ -35,12 +35,14 @@ namespace Campy.ControlFlowGraph
 
         public virtual void ComputeStackLevel(ref int level_after)
         {
-            throw new Exception("Must have an implementation for ComputeStackLevel!");
+            throw new Exception("Must have an implementation for ComputeStackLevel! The instruction is: "
+                + this.ToString());
         }
 
         public virtual Inst Convert(Converter converter, State state)
         {
-            throw new Exception("Must have an implementation for Convert!");
+            throw new Exception("Must have an implementation for Convert! The instruction is: "
+                                + this.ToString());
         }
 
         private State _state_in;
