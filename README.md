@@ -7,7 +7,7 @@ reference types, methods, generics, lambdas, delegates, and closures. Other C#/G
 but do not offer a clean, boilerplate-free interface, supporting C# beyond value types.
 
 This project is in the early stage of development. Releases are currently for demonstration purposes.
-The only available method is essentially Campy.Parallel.For(), at it will undergo wild changes in signature
+The only available method is essentially Campy.Parallel.For(), and it will undergo wild changes in signature
 as I refine the programming model. There are also several debugging output
 switches (see example below).
 
