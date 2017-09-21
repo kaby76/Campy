@@ -89,27 +89,24 @@ namespace ConsoleApp4
                 System.Console.WriteLine("sum = " + data[0]);
             }
 
-            if (true)
+            if (false)
             {
                 // Saxpy (vector update).
-                int n = 16;
+                int n = 2;
                 float[] x = new float[n];
                 float[] y = new float[n];
-                float a = 10.1f;
+                float a = 10f;
 
                 Campy.Parallel.For(n, i => x[i] = i);
                 Campy.Parallel.For(n, i => y[i] = i - 1);
-                //Campy.Parallel.For(n, i => x[i] = i - 3);
-
                 Campy.Parallel.For(n, i =>
                 {
-                    //y[i] = y[i] + a * x[i];
-                    y[i] = x[i];
+                    y[i] = y[i] + a * x[i];
                 });
                 for (int i = 0; i < n; ++i) System.Console.Write(y[i] + " ");
                 System.Console.WriteLine();
             }
-            if (false)
+            if (true)
             {
                 int max_level = 16;
                 int n = Bithacks.Power2(max_level);

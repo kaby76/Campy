@@ -1735,7 +1735,97 @@ namespace Campy.ControlFlowGraph
                 }
                 else
                 {
-                    throw new Exception("Value type ldfld not implemented!");
+                    uint offset = 0;
+                    var yy = this.Instruction.Operand;
+                    var field = yy as Mono.Cecil.FieldReference;
+                    if (yy == null) throw new Exception("Cannot convert.");
+                    var declaring_type_tr = field.DeclaringType;
+                    var declaring_type = declaring_type_tr.Resolve();
+
+                    // need to take into account padding fields. Unfortunately,
+                    // LLVM does not name elements in a struct/class. So, we must
+                    // compute padding and adjust.
+                    int size = 0;
+                    foreach (var f in declaring_type.Fields)
+                    {
+                        var attr = f.Attributes;
+                        if ((attr & FieldAttributes.Static) != 0)
+                            continue;
+
+                        int field_size;
+                        int alignment;
+                        var ft = Campy.Types.Utils.ReflectionCecilInterop.ConvertToSystemReflectionType(f.FieldType);
+                        var array_or_class = (f.FieldType.IsArray || !f.FieldType.IsValueType);
+                        if (array_or_class)
+                        {
+                            field_size = Buffers.SizeOf(typeof(IntPtr));
+                            alignment = Buffers.Alignment(typeof(IntPtr));
+                        }
+                        else
+                        {
+                            field_size = Buffers.SizeOf(ft);
+                            alignment = Buffers.Alignment(ft);
+                        }
+                        int padding = Buffers.Padding(size, alignment);
+                        size = size + padding + field_size;
+                        if (padding != 0)
+                        {
+                            // Add in bytes to effect padding.
+                            for (int j = 0; j < padding; ++j)
+                                offset++;
+                        }
+
+                        if (f.Name == field.Name)
+                            break;
+                        offset++;
+                    }
+
+                    var tt = LLVM.TypeOf(v.V);
+                    if (Campy.Utils.Options.IsOn("jit_trace"))
+                        System.Console.WriteLine(LLVM.PrintTypeToString(tt));
+
+                    var addr = LLVM.BuildExtractValue(Builder, v.V, offset, "");
+                    if (Campy.Utils.Options.IsOn("jit_trace"))
+                        System.Console.WriteLine(new Value(addr));
+
+                    var load = LLVM.BuildLoad(Builder, addr, "");
+                    if (Campy.Utils.Options.IsOn("jit_trace"))
+                        System.Console.WriteLine(new Value(load));
+
+                    // Add extra load for pointer types like objects and arrays.
+                    //var you = Campy.Types.Utils.ReflectionCecilInterop.ConvertToSystemReflectionType(field.FieldType);
+                    //var array_or_classyou = (you.IsArray || !you.IsValueType);
+                    //if (array_or_classyou)
+                    //{
+                    //    load = LLVM.BuildLoad(Builder, load, "");
+                    //    if (Campy.Utils.Options.IsOn("jit_trace"))
+                    //        System.Console.WriteLine(new Value(load));
+                    //}
+
+                    bool xInt = LLVM.GetTypeKind(tt) == TypeKind.IntegerTypeKind;
+                    bool xP = LLVM.GetTypeKind(tt) == TypeKind.PointerTypeKind;
+                    bool xA = LLVM.GetTypeKind(tt) == TypeKind.ArrayTypeKind;
+
+                    // If load result is a pointer, then cast it to proper type.
+                    // This is because I had to avoid recursive data types in classes
+                    // as LLVM cannot handle these at all. So, all pointer types
+                    // were defined as void* in the LLVM field.
+
+                    var load_value = new Value(load);
+                    bool isPtrLoad = load_value.T.isPointerTy();
+                    if (isPtrLoad)
+                    {
+                        var mono_field_type = field.FieldType;
+                        TypeRef type = Converter.ConvertMonoTypeToLLVM(
+                            mono_field_type,
+                            Block.OpsFromOriginal);
+                        load = LLVM.BuildBitCast(Builder,
+                            load, type, "");
+                        if (Campy.Utils.Options.IsOn("jit_trace"))
+                            System.Console.WriteLine(new Value(load));
+                    }
+
+                    state._stack.Push(new Value(load));
                 }
 
                 return Next;
