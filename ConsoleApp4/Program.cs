@@ -40,15 +40,15 @@ namespace ConsoleApp4
 
         static void Main(string[] args)
         {
-            Campy.Utils.Options.Set("graph_trace", true);
-            Campy.Utils.Options.Set("module_trace", true);
-            Campy.Utils.Options.Set("name_trace", true);
-            Campy.Utils.Options.Set("cfg_construction_trace", true);
-            Campy.Utils.Options.Set("dot_graph", true);
-            Campy.Utils.Options.Set("jit_trace", true);
-            Campy.Utils.Options.Set("memory_trace", true);
-            Campy.Utils.Options.Set("ptx_trace", true);
-            Campy.Utils.Options.Set("state_computation_trace", true);
+            //Campy.Utils.Options.Set("graph_trace", true);
+            //Campy.Utils.Options.Set("module_trace", true);
+            //Campy.Utils.Options.Set("name_trace", true);
+            //Campy.Utils.Options.Set("cfg_construction_trace", true);
+            //Campy.Utils.Options.Set("dot_graph", true);
+            //Campy.Utils.Options.Set("jit_trace", true);
+            //Campy.Utils.Options.Set("memory_trace", true);
+            //Campy.Utils.Options.Set("ptx_trace", true);
+            //Campy.Utils.Options.Set("state_computation_trace", true);
             
 
             if (false)

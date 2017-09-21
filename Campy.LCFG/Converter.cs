@@ -1069,14 +1069,17 @@ namespace Campy.ControlFlowGraph
                     }
                 }
 
-                foreach (int ob in order)
+                if (Campy.Utils.Options.IsOn("state_computation_trace"))
                 {
-                    CFG.Vertex node = _mcfg.VertexSpace[_mcfg.NameSpace.BijectFromBasetype(ob)];
-                    CFG.Vertex llvm_node = node;
+                    foreach (int ob in order)
+                    {
+                        CFG.Vertex node = _mcfg.VertexSpace[_mcfg.NameSpace.BijectFromBasetype(ob)];
+                        CFG.Vertex llvm_node = node;
 
-                    node.OutputEntireNode();
-                    llvm_node.StateIn.Dump();
-                    llvm_node.StateOut.Dump();
+                        node.OutputEntireNode();
+                        llvm_node.StateIn.Dump();
+                        llvm_node.StateOut.Dump();
+                    }
                 }
             }
 
