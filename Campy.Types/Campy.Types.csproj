@@ -72,7 +72,6 @@
     <Compile Include="AcceleratorCuda.cs" />
     <Compile Include="AcceleratorView.cs" />
     <Compile Include="Array.cs" />
-    <Compile Include="ArrayView.cs" />
     <Compile Include="KernelTypes.cs" />
     <Compile Include="Extent.cs" />
     <Compile Include="Index.cs" />
