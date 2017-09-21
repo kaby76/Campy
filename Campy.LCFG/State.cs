@@ -227,7 +227,6 @@ namespace Campy.ControlFlowGraph
         {
             int args = _arguments.Len;
             int locs = _locals.Len;
-            int begin = 0;
             System.Console.WriteLine("This size = " + _this.Len);
             System.Console.WriteLine("Args size = " + _arguments.Len);
             System.Console.WriteLine("Locals size = " + _locals.Len);

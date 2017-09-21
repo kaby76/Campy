@@ -1,4 +1,7 @@
-﻿namespace Campy.ControlFlowGraph
+﻿using Mono.Cecil.Rocks;
+using Mono.Collections.Generic;
+
+namespace Campy.ControlFlowGraph
 {
     using Campy.Utils;
     using Mono.Cecil;
@@ -138,6 +141,17 @@
                 return;
             if (_methods_done.Contains(definition.FullName))
                 return;
+
+            // Get instantiated version of method if generic.
+            var generic = definition.HasGenericParameters;
+            var is_instance = definition.IsGenericInstance;
+            var declaring_type = definition.DeclaringType;
+            if (declaring_type != null)
+            {
+                var dt_generic_instance = declaring_type.IsGenericInstance;
+                var dt_generic = declaring_type.HasGenericParameters;
+            }
+
             foreach (var tuple in _methods_to_do)
             {
                 if (tuple.Item1.FullName == definition.FullName)
@@ -204,27 +218,128 @@
             return module;
         }
 
+        static MethodReference MakeGeneric(MethodReference method, TypeReference declaringType)
+        {
+            var reference = new MethodReference(method.Name, method.ReturnType, declaringType);
+            
+            foreach (ParameterDefinition parameter in method.Parameters)
+                reference.Parameters.Add(new ParameterDefinition(parameter.ParameterType));
+            return reference;
+        }
+
+        static TypeReference MakeGenericType(TypeReference type, params
+            TypeReference[] arguments)
+        {
+            if (type.GenericParameters.Count != arguments.Length)
+                throw new ArgumentException();
+
+            var instance = new GenericInstanceType(type);
+            foreach (var argument in arguments)
+                instance.GenericArguments.Add(argument);
+
+            return instance;
+        }
+
+        public static MethodReference MakeHostInstanceGeneric(
+            MethodReference self,
+            params TypeReference[] args)
+        {
+            var reference = new MethodReference(
+                self.Name,
+                self.ReturnType,
+                self.DeclaringType.MakeGenericInstanceType(args))
+            {
+                HasThis = self.HasThis,
+                ExplicitThis = self.ExplicitThis,
+                CallingConvention = self.CallingConvention
+            };
+
+            foreach (var parameter in self.Parameters)
+            {
+                reference.Parameters.Add(new ParameterDefinition(parameter.ParameterType));
+            }
+
+            foreach (var genericParam in self.GenericParameters)
+            {
+                reference.GenericParameters.Add(new GenericParameter(genericParam.Name, reference));
+            }
+
+            return reference;
+        }
+
+        public static MethodReference MakeHostInstanceGeneric2(
+            GenericInstanceType declaring_type,
+            MethodReference self
+            )
+        {
+            var reference = new MethodReference(
+                self.Name,
+                self.ReturnType,
+                declaring_type)
+            {
+                HasThis = self.HasThis,
+                ExplicitThis = self.ExplicitThis,
+                CallingConvention = self.CallingConvention
+            };
+
+            foreach (ParameterDefinition parameter in self.Parameters)
+            {
+                TypeReference type_reference_of_parameter = parameter.ParameterType;
+                
+                Collection<TypeReference> gp = declaring_type.GenericArguments;
+                // Map parameter to actual type.
+                if (type_reference_of_parameter.IsGenericParameter)
+                {
+                    // Get arg number.
+                    int num = Int32.Parse(type_reference_of_parameter.Name.Substring(1));
+                    var yo = gp.ToArray()[num];
+                    type_reference_of_parameter = yo;
+                }
+                reference.Parameters.Add(new ParameterDefinition(type_reference_of_parameter));
+            }
+
+            foreach (var genericParam in self.GenericParameters)
+            {
+                reference.GenericParameters.Add(new GenericParameter(genericParam.Name, reference));
+            }
+
+            return reference;
+        }
+
         private void ExtractBasicBlocksOfMethod(Tuple<MethodReference, List<TypeReference>> definition)
         {
-            _methods_done.Add(definition.Item1.FullName);
+            MethodReference item1 = definition.Item1;
+            List<TypeReference> item2 = definition.Item2;
+
+            _methods_done.Add(item1.FullName);
 
             // Make sure definition assembly is loaded. The analysis of the method cannot
             // be done if the routine hasn't been loaded into Mono!
-            String full_name = definition.Item1.Module.FullyQualifiedName;
+            String full_name = item1.Module.FullyQualifiedName;
             LoadAssembly(full_name);
-            MethodDefinition md = definition.Item1.Resolve();
+
+            var git = item1.DeclaringType as GenericInstanceType;
+            if (git != null)
+            {
+                var xx = MakeHostInstanceGeneric2(git, item1);
+                // We can rewrite the method to not contain generic parameters, but it ends up
+                // with Resolve() returning null.
+            }
+
+            // Resolve() tends to turn anything into mush. It removes type information
+            // per instruction. Use as a last resort!
+            MethodDefinition md = item1.Resolve();
             if (md.Body == null)
             {
-                System.Console.WriteLine("WARNING: METHOD BODY NULL! " + definition);
-                return;
+                throw new Exception("WARNING: METHOD BODY NULL! " + definition);
             }
             int instruction_count = md.Body.Instructions.Count;
             StackQueue<Mono.Cecil.Cil.Instruction> leader_list = new StackQueue<Mono.Cecil.Cil.Instruction>();
 
             // Each method is a leader of a block.
             CFG.Vertex v = (CFG.Vertex)_cfg.AddVertex(_cfg.NewNodeNumber());
-            v.Method = definition.Item1;
-            v.HasReturnValue = definition.Item1.Resolve().IsReuseSlot;
+            v.Method = item1;
+            v.HasReturnValue = item1.Resolve().IsReuseSlot;
             v.Entry = v;
             _cfg.Entries.Add(v);
             for (int j = 0; j < instruction_count; ++j)
@@ -233,7 +348,7 @@
 
                 // NB: This gets generic code. We have to instantiate it.
 
-                Mono.Cecil.Cil.Instruction mi = definition.Item1.Resolve().Body.Instructions[j];
+                Mono.Cecil.Cil.Instruction mi = item1.Resolve().Body.Instructions[j];
                 //System.Console.WriteLine(mi);
                 Inst i = Inst.Wrap(mi);
                 i.Block = v;

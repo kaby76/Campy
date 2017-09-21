@@ -28,7 +28,6 @@ namespace Campy.ControlFlowGraph
         public static Dictionary<string, ValueRef> built_in_functions = new Dictionary<string, ValueRef>();
         Dictionary<Tuple<CFG.Vertex, Mono.Cecil.TypeReference, System.Type>, CFG.Vertex> mmap
             = new Dictionary<Tuple<CFG.Vertex, TypeReference, System.Type>, CFG.Vertex>(new Comparer());
-        private static bool setup = true;
         private static Dictionary<TypeReference, TypeRef> basic_llvm_types_created = new Dictionary<TypeReference, TypeRef>();
         private static Dictionary<TypeReference, TypeRef> previous_llvm_types_created_global = new Dictionary<TypeReference, TypeRef>();
         private static Dictionary<string, string> _rename_to_legal_llvm_name_cache = new Dictionary<string, string>();
@@ -556,14 +555,31 @@ namespace Campy.ControlFlowGraph
         {
             if (git == null)
                 return type_reference_of_parameter;
-            Collection<TypeReference> gp = git.GenericArguments;
+            Collection<TypeReference> genericArguments = git.GenericArguments;
+            TypeDefinition td = git.Resolve();
+
             // Map parameter to actual type.
+
+            var t1 = type_reference_of_parameter.HasGenericParameters;
+            var t2 = type_reference_of_parameter.IsGenericInstance;
+            var t3 = type_reference_of_parameter.ContainsGenericParameter;
+            var t4 = type_reference_of_parameter.IsGenericParameter;
+
+
             if (type_reference_of_parameter.IsGenericParameter)
             {
-                // Get arg number.
-                int num = Int32.Parse(type_reference_of_parameter.Name.Substring(1));
-                var yo = gp.ToArray()[num];
+                var gp = type_reference_of_parameter as GenericParameter;
+                var num = gp.Position;
+                var yo = genericArguments.ToArray()[num];
                 type_reference_of_parameter = yo;
+            }
+            else if (type_reference_of_parameter.ContainsGenericParameter && type_reference_of_parameter.IsArray)
+            {
+                // Something in array isn't right.
+                var array_type = type_reference_of_parameter.GetElementType();
+                var element_type = FromGenericParameterToTypeReference(array_type, git);
+                ArrayType art = element_type.MakeArrayType();
+                type_reference_of_parameter = art;
             }
             return type_reference_of_parameter;
         }
@@ -625,10 +641,9 @@ namespace Campy.ControlFlowGraph
                         param_types[current++] = ConvertMonoTypeToLLVM(
                             type_reference_of_parameter,
                             bb.OpsFromOriginal);
-
                         if (type_reference_of_parameter.IsArray)
                             param_types[current - 1] = LLVM.PointerType(param_types[current - 1], 0);
-                        else if (type_reference_of_parameter.Resolve().IsClass)
+                        else if (! type_reference_of_parameter.IsValueType)
                             param_types[current - 1] = LLVM.PointerType(param_types[current - 1], 0);
                     }
 
@@ -752,11 +767,6 @@ namespace Campy.ControlFlowGraph
             return null;
         }
 
-        public static CFG.Vertex FindFullyInstantiatedMethod(MethodReference mr,
-            Dictionary<TypeReference, TypeReference> map)
-        {
-            return null;
-        }
 
         private void CompilePart5(IEnumerable<CFG.Vertex> basic_blocks_to_compile, List<Mono.Cecil.TypeReference> list_of_data_types_used)
         {
@@ -1306,7 +1316,6 @@ namespace Campy.ControlFlowGraph
         /// <returns></returns>
         public static string RenameToLegalLLVMName(string before)
         {
-            string result = "";
             if (_rename_to_legal_llvm_name_cache.ContainsKey(before))
                 return _rename_to_legal_llvm_name_cache[before];
             _rename_to_legal_llvm_name_cache[before] = "nn_" + _nn_id++;

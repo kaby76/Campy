@@ -19,3 +19,7 @@ Campy/bin/
 Campy.Types/obj/
 Campy.Types/bin/
 *.nupkg
+UnitTestProject1/bin/
+UnitTestProject1/obj/
+UnitTestProject2/bin/
+UnitTestProject2/obj/

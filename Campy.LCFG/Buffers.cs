@@ -2,15 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
-using System.Text;
 using Swigged.Cuda;
 
 namespace Campy.LCFG
@@ -27,7 +22,6 @@ namespace Campy.LCFG
     /// </summary>
     public class Buffers
     {
-        private CUcontext _pctx;
         private Asm _asm;
         private Dictionary<string, string> _type_name_map = new Dictionary<string, string>();
         private Dictionary<object, IntPtr> _allocated_objects = new Dictionary<object, IntPtr>();
@@ -427,8 +421,6 @@ namespace Campy.LCFG
                 if (hostType.FullName.Equals("System.Object"))
                 {
                     throw new Exception("Type is System.Object, but I don't know what to represent it as.");
-                    Cp(to_buffer, from);
-                    return;
                 }
                 if (hostType.FullName.Equals("System.Int16"))
                 {
@@ -695,9 +687,6 @@ namespace Campy.LCFG
                 {
                     to = null;
                     return;
-                    object o = Marshal.PtrToStructure<System.Object>(from);
-                    to = o;
-                    return;
                 }
                 if (t_type.FullName.Equals("System.Int16"))
                 {
@@ -769,10 +758,6 @@ namespace Campy.LCFG
                     return;
                 }
 
-                String name;
-                System.Reflection.TypeFilter tf;
-                Type bbt = null;
-
                 //// Declare inheritance types.
                 //if (declare_parent_chain)
                 //{
@@ -784,12 +769,12 @@ namespace Campy.LCFG
                 //    }
                 //}
 
-                name = f_type.FullName;
-                name = name.Replace("[", "\\[").Replace("]", "\\]");
-                tf = new System.Reflection.TypeFilter((Type t, object o) =>
-                {
-                    return t.FullName == name;
-                });
+                //var name = f_type.FullName;
+                //name = name.Replace("[", "\\[").Replace("]", "\\]");
+                //var tf = new System.Reflection.TypeFilter((Type t, object o) =>
+                //{
+                //    return t.FullName == name;
+                //});
 
 
                 if (t_type.IsArray)
@@ -1014,28 +999,28 @@ namespace Campy.LCFG
         /// </summary>
         public IntPtr New(int bytes)
         {
-            if (false)
-            {
-                // Let's try allocating a block of memory on the host. cuMemHostAlloc allocates bytesize
-                // bytes of host memory that is page-locked and accessible to the device.
-                // Note: cuMemHostAlloc and cuMemAllocHost seem to be almost identical except for the
-                // third parameter to cuMemHostAlloc that is used for the type of memory allocation.
-                var res = Cuda.cuMemHostAlloc(out IntPtr p, 10, (uint)Cuda.CU_MEMHOSTALLOC_DEVICEMAP);
-                if (res == CUresult.CUDA_SUCCESS) System.Console.WriteLine("Worked.");
-                else System.Console.WriteLine("Did not work.");
-            }
+            //if (false)
+            //{
+            //    // Let's try allocating a block of memory on the host. cuMemHostAlloc allocates bytesize
+            //    // bytes of host memory that is page-locked and accessible to the device.
+            //    // Note: cuMemHostAlloc and cuMemAllocHost seem to be almost identical except for the
+            //    // third parameter to cuMemHostAlloc that is used for the type of memory allocation.
+            //    var res = Cuda.cuMemHostAlloc(out IntPtr p, 10, (uint)Cuda.CU_MEMHOSTALLOC_DEVICEMAP);
+            //    if (res == CUresult.CUDA_SUCCESS) System.Console.WriteLine("Worked.");
+            //    else System.Console.WriteLine("Did not work.");
+            //}
 
-            if (false)
-            {
-                // Allocate CPU memory, pin it, then register it with GPU.
-                int f = new int();
-                GCHandle handle = GCHandle.Alloc(f, GCHandleType.Pinned);
-                IntPtr pointer = (IntPtr)handle;
-                var size = Marshal.SizeOf(f);
-                var res = Cuda.cuMemHostRegister_v2(pointer, (uint)size, (uint)Cuda.CU_MEMHOSTALLOC_DEVICEMAP);
-                if (res == CUresult.CUDA_SUCCESS) System.Console.WriteLine("Worked.");
-                else System.Console.WriteLine("Did not work.");
-            }
+            //if (false)
+            //{
+            //    // Allocate CPU memory, pin it, then register it with GPU.
+            //    int f = new int();
+            //    GCHandle handle = GCHandle.Alloc(f, GCHandleType.Pinned);
+            //    IntPtr pointer = (IntPtr)handle;
+            //    var size = Marshal.SizeOf(f);
+            //    var res = Cuda.cuMemHostRegister_v2(pointer, (uint)size, (uint)Cuda.CU_MEMHOSTALLOC_DEVICEMAP);
+            //    if (res == CUresult.CUDA_SUCCESS) System.Console.WriteLine("Worked.");
+            //    else System.Console.WriteLine("Did not work.");
+            //}
 
             {
                 // Allocate Unified Memory.
@@ -1047,10 +1032,10 @@ namespace Campy.LCFG
                 return pointer;
             }
 
-            if (false)
-            {
-                return Marshal.AllocHGlobal(bytes);
-            }
+            //if (false)
+            //{
+            //    return Marshal.AllocHGlobal(bytes);
+            //}
         }
 
         public void Free(IntPtr pointerToUnmanagedMemory)

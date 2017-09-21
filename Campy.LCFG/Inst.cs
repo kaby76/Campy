@@ -1269,7 +1269,13 @@ namespace Campy.ControlFlowGraph
         public override Inst Convert(Converter converter, State state)
         {
             Value v2 = state._stack.Pop();
+            if (Campy.Utils.Options.IsOn("jit_trace"))
+                System.Console.WriteLine(v2);
+
             Value v1 = state._stack.Pop();
+            if (Campy.Utils.Options.IsOn("jit_trace"))
+                System.Console.WriteLine(v1);
+
             // TODO Undoubtably, this will be much more complicated than my initial stab.
             Type t1 = v1.T;
             Type t2 = v2.T;
@@ -1293,7 +1299,6 @@ namespace Campy.ControlFlowGraph
                 return Next;
             }
             throw new Exception("Unhandled compare and branch.");
-            return Next;
         }
     }
 
@@ -1491,7 +1496,22 @@ namespace Campy.ControlFlowGraph
                 System.Console.WriteLine(a.ToString());
 
             // First, load array base.
-            ValueRef extract_value = LLVM.BuildExtractValue(Builder, a.V, 0, "");
+            //var you = Converter.FromGenericParameterToTypeReference(field.FieldType,
+            //    declaring_type_tr as GenericInstanceType);
+            //// Add extra load for pointer types like objects and arrays.
+            //var array_or_classyou = (you.IsArray || !you.IsValueType);
+            //if (array_or_classyou)
+            //{
+            //    load = LLVM.BuildLoad(Builder, load, "");
+            //    if (Campy.Utils.Options.IsOn("jit_trace"))
+            //        System.Console.WriteLine(new Value(load));
+            //}
+            var load = a.V;
+            load = LLVM.BuildLoad(Builder, load, "");
+            if (Campy.Utils.Options.IsOn("jit_trace"))
+                System.Console.WriteLine(new Value(load));
+
+            ValueRef extract_value = LLVM.BuildExtractValue(Builder, load, 0, "");
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(new Value(extract_value));
 
@@ -1581,12 +1601,23 @@ namespace Campy.ControlFlowGraph
                 if (isPtr)
                 {
                     uint offset = 0;
-                    var yy = this.Instruction.Operand;
-                    var field = yy as Mono.Cecil.FieldReference;
+                    object yy = this.Instruction.Operand;
+                    FieldReference field = yy as Mono.Cecil.FieldReference;
                     if (yy == null) throw new Exception("Cannot convert.");
-                    var declaring_type_tr = field.DeclaringType;
-                    var declaring_type = declaring_type_tr.Resolve();
 
+                    // The instruction may be generic, even if the method
+                    // is an instance. Convert field to generic instance type reference
+                    // if it is a generic, in the context of this basic block.
+
+                    TypeReference declaring_type_tr = field.DeclaringType;
+                    TypeDefinition declaring_type = declaring_type_tr.Resolve();
+
+                    if (!declaring_type.IsGenericInstance && declaring_type.HasGenericParameters)
+                    {
+                        // This is a red flag. We need to come up with a generic instance for type.
+                        declaring_type_tr = this.Block.Method.DeclaringType;
+                    }
+                    
                     // need to take into account padding fields. Unfortunately,
                     // LLVM does not name elements in a struct/class. So, we must
                     // compute padding and adjust.
@@ -1637,15 +1668,17 @@ namespace Campy.ControlFlowGraph
                     if (Campy.Utils.Options.IsOn("jit_trace"))
                         System.Console.WriteLine(new Value(load));
 
-                    // Add extra load for pointer types like objects and arrays.
-                    var you = Campy.Types.Utils.ReflectionCecilInterop.ConvertToSystemReflectionType(field.FieldType);
-                    var array_or_classyou  = (you.IsArray || !you.IsValueType);
-                    if (array_or_classyou)
-                    {
-                        load = LLVM.BuildLoad(Builder, load, "");
-                        if (Campy.Utils.Options.IsOn("jit_trace"))
-                            System.Console.WriteLine(new Value(load));
-                    }
+
+                    //var you = Converter.FromGenericParameterToTypeReference(field.FieldType,
+                    //    declaring_type_tr as GenericInstanceType);
+                    //// Add extra load for pointer types like objects and arrays.
+                    //var array_or_classyou  = (you.IsArray || !you.IsValueType);
+                    //if (array_or_classyou)
+                    //{
+                    //    load = LLVM.BuildLoad(Builder, load, "");
+                    //    if (Campy.Utils.Options.IsOn("jit_trace"))
+                    //        System.Console.WriteLine(new Value(load));
+                    //}
 
                     bool xInt = LLVM.GetTypeKind(tt) == TypeKind.IntegerTypeKind;
                     bool xP = LLVM.GetTypeKind(tt) == TypeKind.PointerTypeKind;
@@ -1658,17 +1691,17 @@ namespace Campy.ControlFlowGraph
 
                     var load_value = new Value(load);
                     bool isPtrLoad = load_value.T.isPointerTy();
-                    if (isPtrLoad)
-                    {
-                        var mono_field_type = field.FieldType;
-                        TypeRef type = Converter.ConvertMonoTypeToLLVM(
-                            mono_field_type,
-                            Block.OpsFromOriginal);
-                        load = LLVM.BuildBitCast(Builder,
-                            load, type, "");
-                        if (Campy.Utils.Options.IsOn("jit_trace"))
-                            System.Console.WriteLine(new Value(load));
-                    }
+                    //if (isPtrLoad)
+                    //{
+                    //    var mono_field_type = field.FieldType;
+                    //    TypeRef type = Converter.ConvertMonoTypeToLLVM(
+                    //        mono_field_type,
+                    //        Block.OpsFromOriginal);
+                    //    load = LLVM.BuildBitCast(Builder,
+                    //        load, type, "");
+                    //    if (Campy.Utils.Options.IsOn("jit_trace"))
+                    //        System.Console.WriteLine(new Value(load));
+                    //}
 
                     state._stack.Push(new Value(load));
                 }
@@ -3200,8 +3233,6 @@ namespace Campy.ControlFlowGraph
 
     public class i_ldarga : LoadArgInst
     {
-        int _arg;
-
         public i_ldarga(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
@@ -3213,8 +3244,6 @@ namespace Campy.ControlFlowGraph
 
     public class i_ldarga_s : LoadArgInst
     {
-        int _arg;
-
         public i_ldarga_s(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
@@ -3726,7 +3755,7 @@ namespace Campy.ControlFlowGraph
         }
     }
 
-    public class i_ldelem_ref : ConvertLoadElement
+    public class i_ldelem_ref : ConvertLoadElementA
     {
         public i_ldelem_ref(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3898,11 +3927,30 @@ namespace Campy.ControlFlowGraph
 
         public override Inst Convert(Converter converter, State state)
         {
-            throw new Exception("ldlen does not work. Pass array length explicitly.");
             // Pointer passed is beginning of array, but length is represented
             // in a 32-bit word 8 bytes before this address.
             Value v = state._stack.Pop();
-            ValueRef load = LLVM.BuildExtractValue(Builder, v.V, 1, "");
+            if (Campy.Utils.Options.IsOn("jit_trace"))
+                System.Console.WriteLine(v);
+
+            // Now subtract 8 from pointer.
+            var bc = LLVM.BuildBitCast(Builder, v.V, LLVM.PointerType(LLVM.Int8Type(), 0), "");
+            if (Campy.Utils.Options.IsOn("jit_trace"))
+                System.Console.WriteLine(new Value(bc));
+
+            var eight = LLVM.ConstInt(LLVM.Int32Type(), 8, false);
+            var new_pointer = LLVM.BuildSub(Builder, bc, eight, "");
+            if (Campy.Utils.Options.IsOn("jit_trace"))
+                System.Console.WriteLine(new Value(new_pointer));
+
+            new_pointer = LLVM.BuildBitCast(Builder, new_pointer, LLVM.TypeOf(v.V), "");
+            if (Campy.Utils.Options.IsOn("jit_trace"))
+                System.Console.WriteLine(new Value(new_pointer));
+
+            var load = LLVM.BuildLoad(Builder, new_pointer, "");
+            if (Campy.Utils.Options.IsOn("jit_trace"))
+                System.Console.WriteLine(new Value(load));
+
             state._stack.Push(new Value(load));
             return Next;
         }

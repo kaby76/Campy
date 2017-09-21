@@ -2,5 +2,6 @@
 	<s:String x:Key="/Default/Environment/AssemblyExplorer/XmlDocument/@EntryValue">&lt;AssemblyExplorer&gt;&#xD;
   &lt;Assembly Path="C:\Users\Kenne\Documents\Campy\ConsoleApp4\bin\Debug\std.swigged.llvm.dll" /&gt;&#xD;
   &lt;Assembly Path="C:\Users\Kenne\Documents\Campy\packages\System.Runtime.Extensions.4.1.0\lib\net462\System.Runtime.Extensions.dll" /&gt;&#xD;
+  &lt;Assembly Path="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7\System.Core.dll" /&gt;&#xD;
 &lt;/AssemblyExplorer&gt;</s:String>
 	<s:Int64 x:Key="/Default/Environment/SearchAndNavigation/DefaultOccurrencesGroupingIndex/@EntryValue">0</s:Int64></wpf:ResourceDictionary>

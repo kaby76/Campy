@@ -27,7 +27,7 @@ namespace Campy
             _reader = new Reader();
             _graph = _reader.Cfg;
             _converter = new Campy.ControlFlowGraph.Converter(_graph);
-            var ok = GC.TryStartNoGCRegion(200000000);
+           // var ok = GC.TryStartNoGCRegion(200000000);
         }
 
         public static void For(int number_of_threads, _Kernel_type kernel)
@@ -105,7 +105,6 @@ namespace Campy
 
                 var ptr_to_kernel = Singleton._converter.GetCudaFunction(bb.Name);
 
-                var rank = 1;
                 Index index = new Index(number_of_threads);
                 Buffers buffer = new Buffers();
 
@@ -116,7 +115,6 @@ namespace Campy
 
                 IntPtr[] parm1 = new IntPtr[1];
                 IntPtr[] parm2 = new IntPtr[1];
-                int current = 0;
                 IntPtr ptr = IntPtr.Zero;
 
                 if (bb.HasThis)

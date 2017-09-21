@@ -21,8 +21,6 @@ namespace Campy.GraphAlgorithms
                 Visited.Add(v, false);
         }
 
-        bool Terminate = false;
-
         public void VisitNodes(Func<NAME, bool> func, bool backwards = false)
         {
             if (Source.Count() != 0)
@@ -53,7 +51,6 @@ namespace Campy.GraphAlgorithms
                         bool term = func(uu);
                         if (term)
                         {
-                            Terminate = true;
                             return;
                         }
 

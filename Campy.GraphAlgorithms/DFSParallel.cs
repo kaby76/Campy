@@ -38,26 +38,6 @@ namespace Campy.GraphAlgorithms
         int CutOff = 3;
         Object obj = new Object();
 
-        void Dump()
-        {
-            return;
-            lock (obj)
-            {
-                // Dump all stacks.
-                for (int i = 0; i < NumberOfWorkers; ++i)
-                {
-                    System.Console.WriteLine("Stack " + i);
-                    for (int j = 0; j < Stack[i].Count; ++j)
-                    {
-                        System.Console.Write(j + ": " + Stack[i].PeekBottom(j).Item1 + " ");
-                        for (int k = 0; k < Stack[i].PeekBottom(j).Item2.Count; ++k)
-                            System.Console.Write(Stack[i].PeekBottom(j).Item2.PeekBottom(k) + " ");
-                        System.Console.WriteLine();
-                    }
-                }
-            }
-        }
-
 
         // Copy work from another thread to thread "index_successors".
         void GetWork(int index)
