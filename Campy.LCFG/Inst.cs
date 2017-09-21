@@ -1443,45 +1443,23 @@ namespace Campy.ControlFlowGraph
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(a.ToString());
 
-            TypeRef tr = LLVM.TypeOf(a.V);
-            bool isPtr = a.T.isPointerTy();
-            bool isArr = a.T.isArrayTy();
-            bool isSt = a.T.isStructTy();
-
 			// First, load array base.
-
-			ValueRef load0 = LLVM.BuildExtractValue(Builder, a.V, 0, "");
+			ValueRef extract_value = LLVM.BuildExtractValue(Builder, a.V, 0, "");
             if (Campy.Utils.Options.IsOn("jit_trace"))
-			    System.Console.WriteLine("load0 = " + new Value(load0).ToString());
-
-            TypeRef trr = new Value(load0).T.T;
+			    System.Console.WriteLine(new Value(extract_value));
              
-			// Add 16.
-			//var bc = LLVM.BuildBitCast(Builder, load0, LLVM.PointerType(LLVM.Int8Type(), 0), "");
-   //         if (Campy.Utils.Options.IsOn("jit_trace"))
-			//    System.Console.WriteLine((new Value(bc)).ToString());
-			//ValueRef[] indexes2 = new ValueRef[1];
-			//indexes2[0] = LLVM.ConstInt(LLVM.Int32Type(), 16, false);
-			//ValueRef bc2 = LLVM.BuildInBoundsGEP(Builder, bc, indexes2, "");
-   //         if (Campy.Utils.Options.IsOn("jit_trace"))
-			//    System.Console.WriteLine((new Value(bc2)).ToString());
-   //         //var bc3 = LLVM.BuildBitCast(Builder, bc2,
-   //         //    LLVM.PointerType(LLVM.Int32Type(), 0), "");
-   //         var bc3 = LLVM.BuildBitCast(Builder, bc2,
-   //             trr, "");
-
             // Now add in index to pointer.
             ValueRef[] indexes1 = new ValueRef[1];
 			indexes1[0] = i.V;
-			ValueRef ll1 = LLVM.BuildInBoundsGEP(Builder, load0, indexes1, "");
+			ValueRef gep = LLVM.BuildInBoundsGEP(Builder, extract_value, indexes1, "");
             if (Campy.Utils.Options.IsOn("jit_trace"))
-			    System.Console.WriteLine((new Value(ll1)).ToString());
+			    System.Console.WriteLine(new Value(gep));
 
-            var zz = LLVM.BuildLoad(Builder, ll1, "");
+            var load = LLVM.BuildLoad(Builder, gep, "");
             if (Campy.Utils.Options.IsOn("jit_trace"))
-                System.Console.WriteLine(new Value(zz));
+                System.Console.WriteLine(new Value(load));
 
-            state._stack.Push(new Value(zz));
+            state._stack.Push(new Value(load));
             return Next;
         }
     }
@@ -1512,40 +1490,22 @@ namespace Campy.ControlFlowGraph
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(a.ToString());
 
-            TypeRef tr = LLVM.TypeOf(a.V);
-            bool isPtr = a.T.isPointerTy();
-            bool isArr = a.T.isArrayTy();
-            bool isSt = a.T.isStructTy();
-
             // First, load array base.
-
-            ValueRef load0 = LLVM.BuildExtractValue(Builder, a.V, 0, "");
+            ValueRef extract_value = LLVM.BuildExtractValue(Builder, a.V, 0, "");
             if (Campy.Utils.Options.IsOn("jit_trace"))
-                System.Console.WriteLine("load0 = " + new Value(load0).ToString());
-
-            // Add 16.
-            //var bc = LLVM.BuildBitCast(Builder, load0, LLVM.PointerType(LLVM.Int8Type(), 0), "");
-            //if (Campy.Utils.Options.IsOn("jit_trace"))
-            //    System.Console.WriteLine((new Value(bc)).ToString());
-            //ValueRef[] indexes2 = new ValueRef[1];
-            //indexes2[0] = LLVM.ConstInt(LLVM.Int32Type(), 16, false);
-            //ValueRef bc2 = LLVM.BuildInBoundsGEP(Builder, bc, indexes2, "");
-            //if (Campy.Utils.Options.IsOn("jit_trace"))
-            //    System.Console.WriteLine((new Value(bc2)).ToString());
-            //load0 = LLVM.BuildBitCast(Builder, bc2,
-            //    LLVM.TypeOf(load0), "");
+                System.Console.WriteLine(new Value(extract_value));
 
             // Now add in index to pointer.
-            ValueRef[] indexes1 = new ValueRef[1];
-            indexes1[0] = i.V;
-            ValueRef ll1 = LLVM.BuildInBoundsGEP(Builder, load0, indexes1, "");
+            ValueRef[] indexes = new ValueRef[1];
+            indexes[0] = i.V;
+            ValueRef gep = LLVM.BuildInBoundsGEP(Builder, extract_value, indexes, "");
             if (Campy.Utils.Options.IsOn("jit_trace"))
-                System.Console.WriteLine((new Value(ll1)).ToString());
+                System.Console.WriteLine(new Value(gep));
 
             // Store.
-            var zz = LLVM.BuildStore(Builder, v.V, ll1);
+            var store = LLVM.BuildStore(Builder, v.V, gep);
             if (Campy.Utils.Options.IsOn("jit_trace"))
-                System.Console.WriteLine(new Value(zz));
+                System.Console.WriteLine(new Value(store));
 
             return Next;
         }
@@ -1574,42 +1534,20 @@ namespace Campy.ControlFlowGraph
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(a.ToString());
 
-            TypeRef tr = LLVM.TypeOf(a.V);
-            bool isPtr = a.T.isPointerTy();
-            bool isArr = a.T.isArrayTy();
-			bool isSt = a.T.isStructTy();
-			
             // First, load array base.
-
-            ValueRef load0 = LLVM.BuildExtractValue(Builder, a.V, 0, "");
+            ValueRef extract_value = LLVM.BuildExtractValue(Builder, a.V, 0, "");
             if (Campy.Utils.Options.IsOn("jit_trace"))
-                System.Console.WriteLine("load0 = " + new Value(load0).ToString());
-
-            // Add 16.
-            var bc = LLVM.BuildBitCast(Builder, load0, LLVM.PointerType(LLVM.Int8Type(), 0), "");
-            if (Campy.Utils.Options.IsOn("jit_trace"))
-                System.Console.WriteLine((new Value(bc)).ToString());
-            ValueRef[] indexes2 = new ValueRef[1];
-            indexes2[0] = LLVM.ConstInt(LLVM.Int32Type(), 16, false);
-            ValueRef bc2 = LLVM.BuildInBoundsGEP(Builder, bc, indexes2, "");
-            if (Campy.Utils.Options.IsOn("jit_trace"))
-                System.Console.WriteLine((new Value(bc2)).ToString());
-            var bc3 = LLVM.BuildBitCast(Builder, bc2, LLVM.PointerType(LLVM.Int32Type(), 0), "");
+                System.Console.WriteLine(new Value(extract_value));
 
             // Now add in index to pointer.
-            ValueRef[] indexes1 = new ValueRef[1];
-            indexes1[0] = i.V;
-            ValueRef ll1 = LLVM.BuildInBoundsGEP(Builder, bc3, indexes1, "");
-            if (Campy.Utils.Options.IsOn("jit_trace"))
-                System.Console.WriteLine((new Value(ll1)).ToString());
+            ValueRef[] indexes = new ValueRef[1];
+            indexes[0] = i.V;
+            ValueRef gep = LLVM.BuildInBoundsGEP(Builder, extract_value, indexes, "");
 
             // Return pointer.
-
-            var result = new Value(ll1);
+            var result = new Value(gep);
             if (Campy.Utils.Options.IsOn("jit_trace"))
-                System.Console.WriteLine("Result = " + result.ToString());
-            if (Campy.Utils.Options.IsOn("jit_trace"))
-                System.Console.WriteLine("Result type is " + LLVM.PrintTypeToString(result.T.T));
+                System.Console.WriteLine(result);
 
             state._stack.Push(result);
             return Next;
@@ -1632,9 +1570,10 @@ namespace Campy.ControlFlowGraph
         {
             {
                 Value v = state._stack.Pop();
-                TypeRef tr = LLVM.TypeOf(v.V);
                 if (Campy.Utils.Options.IsOn("jit_trace"))
-                    System.Console.WriteLine("tos = " + LLVM.PrintTypeToString(tr));
+                    System.Console.WriteLine(v);
+
+                TypeRef tr = LLVM.TypeOf(v.V);
                 bool isPtr = v.T.isPointerTy();
                 bool isArr = v.T.isArrayTy();
                 bool isSt = v.T.isStructTy();
@@ -1791,16 +1730,6 @@ namespace Campy.ControlFlowGraph
                     var load = LLVM.BuildLoad(Builder, addr, "");
                     if (Campy.Utils.Options.IsOn("jit_trace"))
                         System.Console.WriteLine(new Value(load));
-
-                    // Add extra load for pointer types like objects and arrays.
-                    //var you = Campy.Types.Utils.ReflectionCecilInterop.ConvertToSystemReflectionType(field.FieldType);
-                    //var array_or_classyou = (you.IsArray || !you.IsValueType);
-                    //if (array_or_classyou)
-                    //{
-                    //    load = LLVM.BuildLoad(Builder, load, "");
-                    //    if (Campy.Utils.Options.IsOn("jit_trace"))
-                    //        System.Console.WriteLine(new Value(load));
-                    //}
 
                     bool xInt = LLVM.GetTypeKind(tt) == TypeKind.IntegerTypeKind;
                     bool xP = LLVM.GetTypeKind(tt) == TypeKind.PointerTypeKind;

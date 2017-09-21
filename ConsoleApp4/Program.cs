@@ -89,7 +89,7 @@ namespace ConsoleApp4
                 System.Console.WriteLine("sum = " + data[0]);
             }
 
-            if (false)
+            if (true)
             {
                 // Saxpy (vector update).
                 int n = 2;
