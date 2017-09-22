@@ -949,8 +949,8 @@ namespace Campy.LCFG
         }
 
         private unsafe void Cp(void* src_ptr, Array to, Type from_element_type)
-		{
-			var to_element_type = to.GetType().GetElementType();
+        {
+            var to_element_type = to.GetType().GetElementType();
             int from_size_element = Buffers.SizeOf(from_element_type);
             IntPtr mem = (IntPtr)src_ptr;
             for (int i = 0; i < to.Length; ++i)

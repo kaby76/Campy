@@ -185,46 +185,46 @@ namespace Campy.Types.Utils
             else return null;
         }
 
-		public static String ConvertToCPPCLI(Type type, int level)
-		{
-			// Use reflection to create atring equivalent to type in C++ unmanaged world.
-			if (type.FullName.Equals("System.Int32"))
-			{
-				return "int";
-			}
-			else if (type.FullName.Equals("System.UInt32"))
-			{
-				return "unsigned int";
-			}
-			else if (type.FullName.Equals("System.Single"))
-			{
-				return "float";
-			}
-			else if (!type.IsValueType)
-			{
-				// Complex type.
-				String result = "";
-				String ind = "";
-				for (int i = 0; i < level; ++i)
-					ind += "    ";
-				result += ind + "ref struct " + type.Name + "\n";
-				result += ind + "{\n";
+        public static String ConvertToCPPCLI(Type type, int level)
+        {
+            // Use reflection to create atring equivalent to type in C++ unmanaged world.
+            if (type.FullName.Equals("System.Int32"))
+            {
+                return "int";
+            }
+            else if (type.FullName.Equals("System.UInt32"))
+            {
+                return "unsigned int";
+            }
+            else if (type.FullName.Equals("System.Single"))
+            {
+                return "float";
+            }
+            else if (!type.IsValueType)
+            {
+                // Complex type.
+                String result = "";
+                String ind = "";
+                for (int i = 0; i < level; ++i)
+                    ind += "    ";
+                result += ind + "ref struct " + type.Name + "\n";
+                result += ind + "{\n";
                 BindingFlags flags = BindingFlags.Public | BindingFlags.NonPublic |
-					BindingFlags.Static | BindingFlags.Instance |
-					BindingFlags.DeclaredOnly;
-				FieldInfo[] fields = type.GetFields(flags);
-				for (int i = 0; i < fields.Length; ++i)
-				{
-					FieldInfo fi = fields[i];
-					Type tf = fi.FieldType;
-					result += ConvertToCPPCLI(tf, level + 1) + " " + fi.Name + ";\n";
-				}
-				result += ind + "} " + type.Name + ";\n";
-				return result;
-			}
-			else return null;
-		}
-	}
+                    BindingFlags.Static | BindingFlags.Instance |
+                    BindingFlags.DeclaredOnly;
+                FieldInfo[] fields = type.GetFields(flags);
+                for (int i = 0; i < fields.Length; ++i)
+                {
+                    FieldInfo fi = fields[i];
+                    Type tf = fi.FieldType;
+                    result += ConvertToCPPCLI(tf, level + 1) + " " + fi.Name + ";\n";
+                }
+                result += ind + "} " + type.Name + ";\n";
+                return result;
+            }
+            else return null;
+        }
+    }
 }
 
 
