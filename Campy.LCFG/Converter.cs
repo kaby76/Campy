@@ -1377,7 +1377,8 @@ namespace Campy.ControlFlowGraph
                     var array_type = tr as ArrayType;
                     var element_type = array_type.ElementType;
                     ContextRef c = LLVM.ContextCreate();
-                    TypeRef s = LLVM.StructCreateNamed(c, Converter.RenameToLegalLLVMName(tr.ToString()));
+                    string type_name = Converter.RenameToLegalLLVMName(tr.ToString());
+                    TypeRef s = LLVM.StructCreateNamed(c, type_name);
                     previous_llvm_types_created_global.Add(tr, s);
                     LLVM.StructSetBody(s, new TypeRef[2]
                     {

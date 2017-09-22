@@ -1499,11 +1499,11 @@ namespace Campy.ControlFlowGraph
             ValueRef extract_value = LLVM.BuildExtractValue(Builder, load, 0, "");
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(new Value(extract_value));
-             
+
             // Now add in index to pointer.
-            ValueRef[] indexes1 = new ValueRef[1];
-            indexes1[0] = i.V;
-            ValueRef gep = LLVM.BuildInBoundsGEP(Builder, extract_value, indexes1, "");
+            ValueRef[] indexes = new ValueRef[1];
+            indexes[0] = i.V;
+            ValueRef gep = LLVM.BuildInBoundsGEP(Builder, extract_value, indexes, "");
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(new Value(gep));
 
@@ -1595,6 +1595,7 @@ namespace Campy.ControlFlowGraph
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(new Value(load));
 
+            // Load array base.
             ValueRef extract_value = LLVM.BuildExtractValue(Builder, load, 0, "");
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(new Value(extract_value));
@@ -1603,8 +1604,9 @@ namespace Campy.ControlFlowGraph
             ValueRef[] indexes = new ValueRef[1];
             indexes[0] = i.V;
             ValueRef gep = LLVM.BuildInBoundsGEP(Builder, extract_value, indexes, "");
+            if (Campy.Utils.Options.IsOn("jit_trace"))
+                    System.Console.WriteLine(new Value(gep));
 
-            // Return pointer.
             var result = new Value(gep);
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(result);
