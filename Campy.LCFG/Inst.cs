@@ -1495,17 +1495,17 @@ namespace Campy.ControlFlowGraph
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(new Value(load));
 
-			// First, load array base.
+            // Load array base.
             ValueRef extract_value = LLVM.BuildExtractValue(Builder, load, 0, "");
             if (Campy.Utils.Options.IsOn("jit_trace"))
-			    System.Console.WriteLine(new Value(extract_value));
+                System.Console.WriteLine(new Value(extract_value));
              
             // Now add in index to pointer.
             ValueRef[] indexes1 = new ValueRef[1];
-			indexes1[0] = i.V;
-			ValueRef gep = LLVM.BuildInBoundsGEP(Builder, extract_value, indexes1, "");
+            indexes1[0] = i.V;
+            ValueRef gep = LLVM.BuildInBoundsGEP(Builder, extract_value, indexes1, "");
             if (Campy.Utils.Options.IsOn("jit_trace"))
-			    System.Console.WriteLine(new Value(gep));
+                System.Console.WriteLine(new Value(gep));
 
             load = LLVM.BuildLoad(Builder, gep, "");
             if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -1542,17 +1542,6 @@ namespace Campy.ControlFlowGraph
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(a.ToString());
 
-            // First, load array base.
-            //var you = Converter.FromGenericParameterToTypeReference(field.FieldType,
-            //    declaring_type_tr as GenericInstanceType);
-            //// Add extra load for pointer types like objects and arrays.
-            //var array_or_classyou = (you.IsArray || !you.IsValueType);
-            //if (array_or_classyou)
-            //{
-            //    load = LLVM.BuildLoad(Builder, load, "");
-            //    if (Campy.Utils.Options.IsOn("jit_trace"))
-            //        System.Console.WriteLine(new Value(load));
-            //}
             var load = a.V;
             load = LLVM.BuildLoad(Builder, load, "");
             if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -1601,8 +1590,12 @@ namespace Campy.ControlFlowGraph
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(a.ToString());
 
-            // First, load array base.
-            ValueRef extract_value = LLVM.BuildExtractValue(Builder, a.V, 0, "");
+            var load = a.V;
+            load = LLVM.BuildLoad(Builder, load, "");
+            if (Campy.Utils.Options.IsOn("jit_trace"))
+                System.Console.WriteLine(new Value(load));
+
+            ValueRef extract_value = LLVM.BuildExtractValue(Builder, load, 0, "");
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(new Value(extract_value));
 
@@ -3970,27 +3963,21 @@ namespace Campy.ControlFlowGraph
 
         public override Inst Convert(Converter converter, State state)
         {
-            // Pointer passed is beginning of array, but length is represented
-            // in a 32-bit word 8 bytes before this address.
             Value v = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(v);
 
-            // Now subtract 8 from pointer.
-            var bc = LLVM.BuildBitCast(Builder, v.V, LLVM.PointerType(LLVM.Int8Type(), 0), "");
+            var load = v.V;
+            load = LLVM.BuildLoad(Builder, load, "");
             if (Campy.Utils.Options.IsOn("jit_trace"))
-                System.Console.WriteLine(new Value(bc));
+                System.Console.WriteLine(new Value(load));
 
-            var eight = LLVM.ConstInt(LLVM.Int32Type(), 8, false);
-            var new_pointer = LLVM.BuildSub(Builder, bc, eight, "");
+            // Load len.
+            load = LLVM.BuildExtractValue(Builder, load, 1, "");
             if (Campy.Utils.Options.IsOn("jit_trace"))
-                System.Console.WriteLine(new Value(new_pointer));
+                System.Console.WriteLine(new Value(load));
 
-            new_pointer = LLVM.BuildBitCast(Builder, new_pointer, LLVM.TypeOf(v.V), "");
-            if (Campy.Utils.Options.IsOn("jit_trace"))
-                System.Console.WriteLine(new Value(new_pointer));
-
-            var load = LLVM.BuildLoad(Builder, new_pointer, "");
+            load = LLVM.BuildTrunc(Builder, load, LLVM.Int32Type(), "");
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(new Value(load));
 

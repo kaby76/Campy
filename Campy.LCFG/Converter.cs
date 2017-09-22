@@ -575,9 +575,9 @@ namespace Campy.ControlFlowGraph
             }
             else if (type_reference_of_parameter.ContainsGenericParameter && type_reference_of_parameter.IsArray)
             {
-                // Something in array isn't right.
-                var array_type = type_reference_of_parameter.GetElementType();
-                var element_type = FromGenericParameterToTypeReference(array_type, git);
+                var array_type = type_reference_of_parameter as ArrayType;
+                var element_type = array_type.ElementType;
+                element_type = FromGenericParameterToTypeReference(element_type, git);
                 ArrayType art = element_type.MakeArrayType();
                 type_reference_of_parameter = art;
             }
@@ -1373,19 +1373,18 @@ namespace Campy.ControlFlowGraph
 
                 if (tr.IsArray)
                 {
+                    // Note: tr.GetElementType() is COMPLETELY WRONG! Use ArrayType.ElementType!
+                    var array_type = tr as ArrayType;
+                    var element_type = array_type.ElementType;
                     ContextRef c = LLVM.ContextCreate();
                     TypeRef s = LLVM.StructCreateNamed(c, Converter.RenameToLegalLLVMName(tr.ToString()));
                     previous_llvm_types_created_global.Add(tr, s);
                     LLVM.StructSetBody(s, new TypeRef[2]
                     {
-                        LLVM.PointerType(ConvertMonoTypeToLLVM(tr.GetElementType(), generic_type_rewrite_rules, level+1), 0),
+                        LLVM.PointerType(ConvertMonoTypeToLLVM(element_type, generic_type_rewrite_rules, level+1), 0),
                         LLVM.Int64Type()
                     }, true);
-
-                    var element_type = tr.GetElementType();
                     var e = ConvertMonoTypeToLLVM(element_type, generic_type_rewrite_rules);
-                    var p = LLVM.PointerType(e, 0);
-                    var d = LLVM.GetUndef(p);
                     return s;
                 }
                 else if (tr.IsGenericParameter)
@@ -1480,7 +1479,9 @@ namespace Campy.ControlFlowGraph
                             Collection<TypeReference> generic_args = git.GenericArguments;
                             if (field.FieldType.IsArray)
                             {
-                                var et = field.FieldType.GetElementType();
+                                var field_type_as_array_type = field.FieldType as ArrayType;
+                                //var et = field.FieldType.GetElementType();
+                                var et = field_type_as_array_type.ElementType;
                                 var bbc = et.HasGenericParameters;
                                 var bbbbc = et.IsGenericParameter;
                                 var array = field.FieldType as ArrayType;

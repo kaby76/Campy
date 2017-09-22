@@ -51,24 +51,41 @@ namespace ConsoleApp4
             Campy.Utils.Options.Set("ptx_trace", true);
             Campy.Utils.Options.Set("state_computation_trace", true);
 
-            if (true)
             {
                 int n = 4;
-                int[] t1 = new int[n];
-                Campy.Parallel.For(n, i => t1[i] = i);
-                for (int i = 0; i < n; ++i) if (t1[i] != i) throw new Exception("unequal");
+                int[] x = new int[n];
+                Campy.Parallel.For(n, i => x[i] = x.Length);
+                for (int i = 0; i < n; ++i) if (x[i] != x.Length)
+                    throw new Exception("unequal");
+            }
+            {
+                List<int> x = new List<int>();
+                int n = 4;
+                for (int i = 0; i < n; ++i) x.Add(0);
+                Campy.Parallel.For(n, i => x[i] = i);
+                Campy.Parallel.For(n, i => x[i] = x[i] * 2);
+                for (int i = 0; i < n; ++i) if (x[i] != 2 * i)
+                    throw new Exception("unequal");
+            }
 
-                float[] t2 = new float[n];
-                Campy.Parallel.For(n, i => t2[i] = 0.1f * i);
-                for (int i = 0; i < n; ++i) if (t2[i] != 0.1f * i) throw new Exception("unequal");
+            if (true)
+            {
+                int[][] jagged_array = new int[][]
+                {
+                    new int[] {1,3,5,7,9},
+                    new int[] {0,2,4,6},
+                    new int[] {11,22}
+                };
 
-                double[] t3 = new double[n];
-                Campy.Parallel.For(n, i => t3[i] = 0.1d * i);
-                for (int i = 0; i < n; ++i) if (t3[i] != 0.1d * i) throw new Exception("unequal");
-
-                System.Byte[] t4 = new System.Byte[n];
-                Campy.Parallel.For(n, i => t4[i] = (byte) (i + 1));
-                for (int i = 0; i < n; ++i) if (t4[i] != (byte) (i + 1)) throw new Exception("unequal");
+                Campy.Parallel.For(3, i =>
+                {
+                    //int sum = 0;
+                    //for (int j = 0; j < jagged_array[i].Length; ++j)
+                    //{
+                    //    sum += jagged_array[i][j];
+                    //}
+                    jagged_array[i][0] = jagged_array[i].Length;
+                });
             }
 
             //if (false)

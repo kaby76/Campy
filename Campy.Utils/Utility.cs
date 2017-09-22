@@ -4,6 +4,7 @@ using System.Text;
 using Microsoft.Win32;
 using System.Text.RegularExpressions;
 using System.IO;
+using Mono.Cecil;
 
 namespace Campy.Utils
 {
@@ -559,7 +560,17 @@ namespace Campy.Utils
             if (thisType.IsByRef)
                 thisType = thisType.GetElementType();
             if (type.IsByReference)
-                type = type.GetElementType();
+            {
+                if (type.IsArray)
+                {
+                    var array_type = type as ArrayType;
+                    type = array_type.ElementType;
+                }
+                else
+                {
+                    type = type.GetElementType();
+                }
+            }
 
             // Handle array types
             if (thisType.IsArray && type.IsArray)
@@ -569,7 +580,8 @@ namespace Campy.Utils
                 if (thisType.GetArrayRank() != at.Rank)
                     return false;
                 // Base type of array must be the same.
-                return IsSimilarType(thisType.GetElementType(), type.GetElementType());
+                var array_type = type as ArrayType;
+                return IsSimilarType(thisType.GetElementType(), array_type.ElementType);
             }
             if (thisType.IsArray && !type.IsArray)
                 return false;

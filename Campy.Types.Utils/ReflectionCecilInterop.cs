@@ -109,7 +109,9 @@ namespace Campy.Types.Utils
             if (tr.IsArray)
             {
                 // Get element type, and work on that first.
-                element_type = tr.GetElementType();
+                var array_type = tr as ArrayType;
+                element_type = array_type.ElementType;
+                //element_type = tr.GetElementType();
                 result = ConvertToSystemReflectionType(element_type);
                 // Create array type.
                 if (result == null) return null;
