@@ -1025,6 +1025,48 @@ namespace Campy.ControlFlowGraph
         }
     }
 
+    public class LDCInstR4 : Inst
+    {
+        public double _arg;
+
+        public LDCInstR4(Instruction i) : base(i)
+        {
+        }
+
+        public override void ComputeStackLevel(ref int level_after)
+        {
+            level_after++;
+        }
+
+        public override Inst Convert(Converter converter, State state)
+        {
+            Value value = new Value(LLVM.ConstReal(LLVM.FloatType(), _arg));
+            state._stack.Push(value);
+            return Next;
+        }
+    }
+
+    public class LDCInstR8 : Inst
+    {
+        public double _arg;
+
+        public LDCInstR8(Instruction i) : base(i)
+        {
+        }
+
+        public override void ComputeStackLevel(ref int level_after)
+        {
+            level_after++;
+        }
+
+        public override Inst Convert(Converter converter, State state)
+        {
+            Value value = new Value(LLVM.ConstReal(LLVM.DoubleType(), _arg));
+            state._stack.Push(value);
+            return Next;
+        }
+    }
+
     /// <summary>
     /// The LdLoc is a class for representing load local instructions.
     /// </summary>
@@ -3541,10 +3583,8 @@ namespace Campy.ControlFlowGraph
         }
     }
 
-    public class i_ldc_r4 : Inst
+    public class i_ldc_r4 : LDCInstR4
     {
-        public Single _arg;
-
         public i_ldc_r4(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
@@ -3612,10 +3652,8 @@ namespace Campy.ControlFlowGraph
         }
     }
 
-    public class i_ldc_r8 : Inst
+    public class i_ldc_r8 : LDCInstR8
     {
-        Double _arg;
-
         public i_ldc_r8(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {

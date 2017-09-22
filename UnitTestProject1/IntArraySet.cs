@@ -4,10 +4,10 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace UnitTestProject1
 {
     [TestClass]
-    public class UnitTest1
+    public class IntArraySet
     {
         [TestMethod]
-        public void TestMethod1()
+        public void IntArraySetT()
         {
             int n = 4;
             int[] x = new int[n];

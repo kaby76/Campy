@@ -153,7 +153,8 @@ namespace Campy.LCFG
 
                 if (hostType.IsArray)
                 {
-                    Type elementType = CreateImplementationType(hostType.GetElementType(), declare_parent_chain,
+                    Type elementType = CreateImplementationType(hostType.GetElementType(),
+                        declare_parent_chain,
                         declare_flatten_structure);
                     object array_obj = Array.CreateInstance(elementType, 0);
                     Type array_type = array_obj.GetType();

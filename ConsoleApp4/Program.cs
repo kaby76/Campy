@@ -53,33 +53,22 @@ namespace ConsoleApp4
 
             if (true)
             {
-                List<int> x = new List<int>();
                 int n = 4;
-                for (int i = 0; i < n; ++i) x.Add(0);
-                Campy.Parallel.For(n, i => x[i] = i);
-                Campy.Parallel.For(n, i => x[i] = x[i] * 2);
-                for (int i = 0; i < n; ++i) if (x[i] != 2 * i)
-                    throw new Exception("unequal");
-            }
+                int[] t1 = new int[n];
+                Campy.Parallel.For(n, i => t1[i] = i);
+                for (int i = 0; i < n; ++i) if (t1[i] != i) throw new Exception("unequal");
 
-            if (true)
-            {
-                // List of ints.
-                List<int> x = new List<int>();
-                int n = 4;
-                for (int i = 0; i < n; ++i) x.Add(0);
-                Campy.Parallel.For(n, i => x[i] = i);
-                foreach (var e in x) System.Console.Write(e + " ");
-                System.Console.WriteLine();
-            }
+                float[] t2 = new float[n];
+                Campy.Parallel.For(n, i => t2[i] = 0.1f * i);
+                for (int i = 0; i < n; ++i) if (t2[i] != 0.1f * i) throw new Exception("unequal");
 
-            if (true)
-            {
-                List<int> x = new List<int>();
-                for (int i = 0; i < 4; ++i) x.Add(0);
-                Campy.Parallel.For(4, i => x[i] = i);
-                foreach (var e in x) System.Console.Write(e + " ");
-                System.Console.WriteLine();
+                double[] t3 = new double[n];
+                Campy.Parallel.For(n, i => t3[i] = 0.1d * i);
+                for (int i = 0; i < n; ++i) if (t3[i] != 0.1d * i) throw new Exception("unequal");
+
+                System.Byte[] t4 = new System.Byte[n];
+                Campy.Parallel.For(n, i => t4[i] = (byte) (i + 1));
+                for (int i = 0; i < n; ++i) if (t4[i] != (byte) (i + 1)) throw new Exception("unequal");
             }
 
             //if (false)
