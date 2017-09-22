@@ -1382,8 +1382,10 @@ namespace Campy.ControlFlowGraph
                     previous_llvm_types_created_global.Add(tr, s);
                     LLVM.StructSetBody(s, new TypeRef[2]
                     {
-                        LLVM.PointerType(ConvertMonoTypeToLLVM(element_type, generic_type_rewrite_rules, level+1), 0),
-                        LLVM.Int64Type()
+                        (element_type.IsArray || !element_type.IsValueType)
+                            ? LLVM.PointerType(LLVM.PointerType(ConvertMonoTypeToLLVM(element_type, generic_type_rewrite_rules, level+1), 0), 0)
+                            : LLVM.PointerType(ConvertMonoTypeToLLVM(element_type, generic_type_rewrite_rules, level+1), 0)
+                        , LLVM.Int64Type()
                     }, true);
                     var e = ConvertMonoTypeToLLVM(element_type, generic_type_rewrite_rules);
                     return s;

@@ -59,6 +59,11 @@ namespace ConsoleApp4
                 });
             }
             {
+                int n = 4;
+                int[] x = new int[n];
+                Campy.Parallel.For(n, i => x[i] = x.Length);
+            }
+            {
                 int[][] jagged_array = new int[][]
                 {
                     new int[] {1, 3, 5, 7, 9},
@@ -74,7 +79,7 @@ namespace ConsoleApp4
 
                 Campy.Parallel.For(3, i =>
                 {
-                    jagged_array[i][0] = i; //jagged_array[i].Length;
+                    jagged_array[i][0] = i+43; //jagged_array[i].Length;
                 });
             }
 

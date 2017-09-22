@@ -1604,9 +1604,6 @@ namespace Campy.ControlFlowGraph
             ValueRef[] indexes = new ValueRef[1];
             indexes[0] = i.V;
             ValueRef gep = LLVM.BuildInBoundsGEP(Builder, extract_value, indexes, "");
-            if (Campy.Utils.Options.IsOn("jit_trace"))
-                    System.Console.WriteLine(new Value(gep));
-
             var result = new Value(gep);
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(result);
@@ -3793,7 +3790,7 @@ namespace Campy.ControlFlowGraph
         }
     }
 
-    public class i_ldelem_ref : ConvertLoadElementA
+    public class i_ldelem_ref : ConvertLoadElement
     {
         public i_ldelem_ref(Mono.Cecil.Cil.Instruction i)
             : base(i)

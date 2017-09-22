@@ -787,13 +787,18 @@ namespace Campy.LCFG
                     byte* ptr = (byte*)intptr_src;
                     // For now, only one-dimension, given "len".
                     Array to_array;
+                    Type to_element_type = t_type.GetElementType();
+                    Type from_element_type = to_element_type;
+                    if (to_element_type.IsArray || to_element_type.IsClass)
+                        from_element_type = typeof(IntPtr);
+                    // From type is just an intptr.
                     if (sync)
                         to_array = (Array)_allocated_objects.Where(p => p.Value == from).Select(p => p.Key)
                             .FirstOrDefault();
                     else
-                        to_array = Array.CreateInstance(t_type.GetElementType(), new int[1] { len });
+                        to_array = Array.CreateInstance(to_element_type, new int[1] { len });
                     _allocated_buffers[(IntPtr)ptr] = to_array;
-                    Cp((void*)ptr, to_array, t_type.GetElementType());
+                    Cp((void*)ptr, to_array, from_element_type);
                     to = to_array;
                     return;
                 }
