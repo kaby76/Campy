@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.Eventing;
 using System.Linq;
 
@@ -52,12 +53,13 @@ namespace ConsoleApp4
 
             if (true)
             {
-                // 1-dimensional array of ints.
+                List<int> x = new List<int>();
                 int n = 4;
-                int[] x = new int[n];
+                for (int i = 0; i < n; ++i) x.Add(0);
                 Campy.Parallel.For(n, i => x[i] = i);
-                foreach (var e in x) System.Console.Write(e + " ");
-                System.Console.WriteLine();
+                Campy.Parallel.For(n, i => x[i] = x[i] * 2);
+                for (int i = 0; i < n; ++i) if (x[i] != 2 * i)
+                    throw new Exception("unequal");
             }
 
             if (true)

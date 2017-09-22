@@ -1448,8 +1448,13 @@ namespace Campy.ControlFlowGraph
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(a.ToString());
 
+            var load = a.V;
+            load = LLVM.BuildLoad(Builder, load, "");
+            if (Campy.Utils.Options.IsOn("jit_trace"))
+                System.Console.WriteLine(new Value(load));
+
 			// First, load array base.
-			ValueRef extract_value = LLVM.BuildExtractValue(Builder, a.V, 0, "");
+            ValueRef extract_value = LLVM.BuildExtractValue(Builder, load, 0, "");
             if (Campy.Utils.Options.IsOn("jit_trace"))
 			    System.Console.WriteLine(new Value(extract_value));
              
@@ -1460,7 +1465,7 @@ namespace Campy.ControlFlowGraph
             if (Campy.Utils.Options.IsOn("jit_trace"))
 			    System.Console.WriteLine(new Value(gep));
 
-            var load = LLVM.BuildLoad(Builder, gep, "");
+            load = LLVM.BuildLoad(Builder, gep, "");
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(new Value(load));
 
