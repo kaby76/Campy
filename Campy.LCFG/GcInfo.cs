@@ -234,7 +234,7 @@ namespace Campy.ControlFlowGraph
         {
             if (type.isPointerTy())
             {
-                TypeRef tr = type.T;
+                TypeRef tr = type.IntermediateType;
                 return LLVM.GetPointerAddressSpace(tr) == ManagedAddressSpace;
             }
             return false;
@@ -249,14 +249,14 @@ namespace Campy.ControlFlowGraph
             }
             if (type.isArrayTy())
             {
-                TypeRef et = LLVM.GetElementType(type.T);
+                TypeRef et = LLVM.GetElementType(type.IntermediateType);
                 return isGcPointer(new Type(et));
             }
             if (type.isStructTy())
             {
-                uint count = LLVM.CountStructElementTypes(type.T);
+                uint count = LLVM.CountStructElementTypes(type.IntermediateType);
                 TypeRef[] dest = new TypeRef[count];
-                LLVM.GetStructElementTypes(type.T, dest);
+                LLVM.GetStructElementTypes(type.IntermediateType, dest);
                 foreach (TypeRef subtype in dest)
                 {
                     if (isGcType(new Type(subtype)))

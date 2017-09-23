@@ -53,10 +53,10 @@
       <HintPath>..\packages\swigged.cuda.8.0.6\lib\netstandard1.1\swigged.cuda.dll</HintPath>
     </Reference>
     <Reference Include="swigged.llvm, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\swigged.llvm.5.0.1\lib\netstandard1.5\swigged.llvm.dll</HintPath>
+      <HintPath>..\packages\swigged.llvm.5.0.2\lib\netstandard1.5\swigged.llvm.dll</HintPath>
     </Reference>
     <Reference Include="swigged.llvm.helper, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\swigged.llvm.5.0.1\lib\netstandard1.5\swigged.llvm.helper.dll</HintPath>
+      <HintPath>..\packages\swigged.llvm.5.0.2\lib\netstandard1.5\swigged.llvm.helper.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
@@ -135,10 +135,10 @@
     <Error Condition="!Exists('..\packages\MSTest.TestAdapter.1.2.0-beta3\build\net45\MSTest.TestAdapter.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\MSTest.TestAdapter.1.2.0-beta3\build\net45\MSTest.TestAdapter.props'))" />
     <Error Condition="!Exists('..\packages\MSTest.TestAdapter.1.2.0-beta3\build\net45\MSTest.TestAdapter.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\MSTest.TestAdapter.1.2.0-beta3\build\net45\MSTest.TestAdapter.targets'))" />
     <Error Condition="!Exists('..\packages\swigged.cuda.8.0.6\build\swigged.cuda.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\swigged.cuda.8.0.6\build\swigged.cuda.targets'))" />
-    <Error Condition="!Exists('..\packages\swigged.llvm.5.0.1\build\swigged.llvm.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\swigged.llvm.5.0.1\build\swigged.llvm.targets'))" />
+    <Error Condition="!Exists('..\packages\swigged.llvm.5.0.2\build\swigged.llvm.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\swigged.llvm.5.0.2\build\swigged.llvm.targets'))" />
   </Target>
   <Import Project="..\packages\Microsoft.NET.Test.Sdk.15.5.0-preview-20170914-09\build\net45\Microsoft.Net.Test.Sdk.targets" Condition="Exists('..\packages\Microsoft.NET.Test.Sdk.15.5.0-preview-20170914-09\build\net45\Microsoft.Net.Test.Sdk.targets')" />
   <Import Project="..\packages\MSTest.TestAdapter.1.2.0-beta3\build\net45\MSTest.TestAdapter.targets" Condition="Exists('..\packages\MSTest.TestAdapter.1.2.0-beta3\build\net45\MSTest.TestAdapter.targets')" />
   <Import Project="..\packages\swigged.cuda.8.0.6\build\swigged.cuda.targets" Condition="Exists('..\packages\swigged.cuda.8.0.6\build\swigged.cuda.targets')" />
-  <Import Project="..\packages\swigged.llvm.5.0.1\build\swigged.llvm.targets" Condition="Exists('..\packages\swigged.llvm.5.0.1\build\swigged.llvm.targets')" />
+  <Import Project="..\packages\swigged.llvm.5.0.2\build\swigged.llvm.targets" Condition="Exists('..\packages\swigged.llvm.5.0.2\build\swigged.llvm.targets')" />
 </Project>

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics.Eventing;
 using System.Linq;
+using Campy.Types;
 
 namespace ConsoleApp4
 {
@@ -52,10 +53,14 @@ namespace ConsoleApp4
             Campy.Utils.Options.Set("state_computation_trace", true);
 
             {
-                int[] x = new int[3];
-                Campy.Parallel.For(3, i =>
+                int n = 4;
+                System.UInt16[] t4 = new ushort[n];
+                Campy.Parallel.For(n, i => t4[i] = (ushort)(i + 1));
+                for (int i = 0; i < n; ++i) if (t4[i] != (ushort)(i + 1)) throw new Exception("unequal");
+                System.UInt16[] t8 = new ushort[n];
+                Campy.Parallel.For(n, (Index i) =>
                 {
-                    x[i] = x[i] + 11;
+                    t8[i] = (ushort)(t4[i] + i + 1);
                 });
             }
             {

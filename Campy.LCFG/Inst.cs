@@ -535,8 +535,17 @@ namespace Campy.ControlFlowGraph
         public override Inst Convert(Converter converter, State state)
         {
             var rhs = state._stack.Pop();
+            if (Campy.Utils.Options.IsOn("jit_trace"))
+                System.Console.WriteLine(rhs);
+
             var lhs = state._stack.Pop();
+            if (Campy.Utils.Options.IsOn("jit_trace"))
+                System.Console.WriteLine(lhs);
+
             var result = binaryOp(this.GetType(), lhs, rhs);
+            if (Campy.Utils.Options.IsOn("jit_trace"))
+                System.Console.WriteLine(result);
+
             state._stack.Push(result);
             return Next;
         }
@@ -739,7 +748,7 @@ namespace Campy.ControlFlowGraph
             Type CharPtrTy = new Type(Type.getInt8PtrTy(
                 LLVMContext,
                 BasePtr.T.getPointerAddressSpace()));
-            Value BasePtrCast = new Value(LLVM.BuildBitCast(Builder, BasePtr.V, CharPtrTy.T, ""));
+            Value BasePtrCast = new Value(LLVM.BuildBitCast(Builder, BasePtr.V, CharPtrTy.IntermediateType, ""));
             Value ResultPtr = new Value(LLVM.BuildInBoundsGEP(Builder, BasePtrCast.V, new ValueRef[] {Offset.V}, ""));
             return ResultPtr;
         }
@@ -774,7 +783,7 @@ namespace Campy.ControlFlowGraph
             // For now we "flatten" to byte offsets.
             Type CharPtrTy = new Type(Type.getInt8PtrTy(
                 LLVMContext, BasePtr.T.getPointerAddressSpace()));
-            Value BasePtrCast = new Value(LLVM.BuildBitCast(Builder, BasePtr.V, CharPtrTy.T, ""));
+            Value BasePtrCast = new Value(LLVM.BuildBitCast(Builder, BasePtr.V, CharPtrTy.IntermediateType, ""));
             Value NegOffset = new Value(LLVM.BuildNeg(Builder, Offset.V, ""));
             Value ResultPtr = new Value(LLVM.BuildGEP(Builder, BasePtrCast.V, new ValueRef[] { NegOffset.V }, ""));
             return ResultPtr;
@@ -793,15 +802,15 @@ namespace Campy.ControlFlowGraph
             }
             else if (SourceTy.isIntegerTy() && Ty.isIntegerTy())
             {
-                Result = new Value(LLVM.BuildIntCast(Builder, Node.V, Ty.T, ""));//SourceIsSigned);
+                Result = new Value(LLVM.BuildIntCast(Builder, Node.V, Ty.IntermediateType, ""));//SourceIsSigned);
             }
             else if (SourceTy.isFloatingPointTy() && Ty.isFloatingPointTy())
             {
-                Result = new Value(LLVM.BuildFPCast(Builder, Node.V, Ty.T, ""));
+                Result = new Value(LLVM.BuildFPCast(Builder, Node.V, Ty.IntermediateType, ""));
             }
             else if (SourceTy.isPointerTy() && Ty.isIntegerTy())
             {
-                Result = new Value(LLVM.BuildPtrToInt(Builder, Node.V, Ty.T, ""));
+                Result = new Value(LLVM.BuildPtrToInt(Builder, Node.V, Ty.IntermediateType, ""));
             }
             else
             {
@@ -942,7 +951,7 @@ namespace Campy.ControlFlowGraph
                 Debug.Assert(ResultType.isPointerTy());
                 Debug.Assert(ArithType.isIntegerTy());
 
-                Result = new Value(LLVM.BuildIntToPtr(Builder, Result.V, ResultType.T, ""));
+                Result = new Value(LLVM.BuildIntToPtr(Builder, Result.V, ResultType.IntermediateType, ""));
             }
 
             return Result;
@@ -1353,7 +1362,7 @@ namespace Campy.ControlFlowGraph
         Value convert_full(Value src)
         {
             TypeRef stype = LLVM.TypeOf(src.V);
-            TypeRef dtype = dst.T;
+            TypeRef dtype = dst.IntermediateType;
 
             if (stype != dtype)
             {

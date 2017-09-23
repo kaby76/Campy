@@ -1,22 +1,25 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Mono.Cecil;
 using Swigged.LLVM;
 
 namespace Campy.ControlFlowGraph
 {
     public class Type
     {
-        internal bool IsLocal;
-        private TypeRef _type_ref;
-        private bool _signed;
+        // ECMA 335: There really are many types associated with a "type".
+        // Storage type, Underlying type, Reduced type, Verification type,
+        // Intermediate type, ..., and these are just a few. See page 34+ for
+        // an informative description. Further information on verification types
+        // is on page 311. Basically, the stack used to compile
+        // must know which type is used for code generation.
 
-        public Type(TypeRef t, bool signed = true)
+        private readonly Mono.Cecil.TypeReference _cil_type;
+        private readonly bool _signed;
+        private readonly Mono.Cecil.TypeReference _verification_type;
+        private readonly TypeRef _intermediate_type_ref;
+
+        public Type(TypeRef intermediate_type, bool signed = true)
         {
-            _type_ref = t;
+            _intermediate_type_ref = intermediate_type;
             _signed = signed;
         }
 
@@ -30,21 +33,31 @@ namespace Campy.ControlFlowGraph
             get { return !_signed; }
         }
 
-        public TypeRef T
+        public Mono.Cecil.TypeReference VerificationType
         {
-            get { return _type_ref; }
+            get { return _verification_type; }
+        }
+
+        public TypeRef IntermediateType
+        {
+            get { return _intermediate_type_ref; }
+        }
+
+        public Mono.Cecil.TypeReference CilType
+        {
+            get { return _cil_type; }
         }
 
         public TypeKind GetKind()
         {
-            TypeKind kind = LLVM.GetTypeKind(_type_ref);
+            TypeKind kind = LLVM.GetTypeKind(_intermediate_type_ref);
             return kind;
         }
 
         /// Return true if this is one of the six floating-point types
         public bool isFloatingPointTy()
         {
-            TypeKind kind = LLVM.GetTypeKind(_type_ref);
+            TypeKind kind = LLVM.GetTypeKind(_intermediate_type_ref);
             return kind == TypeKind.HalfTypeKind || kind == TypeKind.FloatTypeKind ||
                    kind == TypeKind.DoubleTypeKind ||
                    kind == TypeKind.X86_FP80TypeKind || kind == TypeKind.FP128TypeKind ||
@@ -54,28 +67,28 @@ namespace Campy.ControlFlowGraph
         /// Return true if this is 'label'.
         public bool isLabelTy()
         {
-            TypeKind kind = LLVM.GetTypeKind(_type_ref);
+            TypeKind kind = LLVM.GetTypeKind(_intermediate_type_ref);
             return kind == TypeKind.LabelTypeKind;
         }
 
         /// Return true if this is 'metadata'.
         public bool isMetadataTy()
         {
-            TypeKind kind = LLVM.GetTypeKind(_type_ref);
+            TypeKind kind = LLVM.GetTypeKind(_intermediate_type_ref);
             return kind == TypeKind.MetadataTypeKind;
         }
 
         /// Return true if this is 'token'.
         public bool isTokenTy()
         {
-            TypeKind kind = LLVM.GetTypeKind(_type_ref);
+            TypeKind kind = LLVM.GetTypeKind(_intermediate_type_ref);
             return kind == TypeKind.TokenTypeKind;
         }
 
         /// True if this is an instance of IntegerType.
         public bool isIntegerTy()
         {
-            TypeKind kind = LLVM.GetTypeKind(_type_ref);
+            TypeKind kind = LLVM.GetTypeKind(_intermediate_type_ref);
             return kind == TypeKind.IntegerTypeKind;
         }
 
@@ -94,28 +107,28 @@ namespace Campy.ControlFlowGraph
         /// True if this is an instance of FunctionType.
         public bool isFunctionTy()
         {
-            TypeKind kind = LLVM.GetTypeKind(_type_ref);
+            TypeKind kind = LLVM.GetTypeKind(_intermediate_type_ref);
             return kind == TypeKind.FunctionTypeKind;
         }
 
         /// True if this is an instance of StructType.
         public bool isStructTy()
         {
-            TypeKind kind = LLVM.GetTypeKind(_type_ref);
+            TypeKind kind = LLVM.GetTypeKind(_intermediate_type_ref);
             return kind == TypeKind.StructTypeKind;
         }
 
         /// True if this is an instance of ArrayType.
         public bool isArrayTy()
         {
-            TypeKind kind = LLVM.GetTypeKind(_type_ref);
+            TypeKind kind = LLVM.GetTypeKind(_intermediate_type_ref);
             return kind == TypeKind.ArrayTypeKind;
         }
 
         /// True if this is an instance of PointerType.
         public bool isPointerTy()
         {
-            TypeKind kind = LLVM.GetTypeKind(_type_ref);
+            TypeKind kind = LLVM.GetTypeKind(_intermediate_type_ref);
             return kind == TypeKind.PointerTypeKind;
         }
 
@@ -128,7 +141,7 @@ namespace Campy.ControlFlowGraph
         /// True if this is an instance of VectorType.
         public bool isVectorTy()
         {
-            TypeKind kind = LLVM.GetTypeKind(_type_ref);
+            TypeKind kind = LLVM.GetTypeKind(_intermediate_type_ref);
             return kind == TypeKind.VectorTypeKind;
         }
 
@@ -139,13 +152,13 @@ namespace Campy.ControlFlowGraph
 
         public Type getPointerElementType()
         {
-            var r = LLVM.GetElementType(_type_ref);
+            var r = LLVM.GetElementType(_intermediate_type_ref);
             return new Type(r);
         }
 
         public UInt32 getPrimitiveSizeInBits()
         {
-            TypeKind kind = LLVM.GetTypeKind(_type_ref);
+            TypeKind kind = LLVM.GetTypeKind(_intermediate_type_ref);
             switch (kind)
             {
                 case TypeKind.HalfTypeKind: return 16;
@@ -157,7 +170,7 @@ namespace Campy.ControlFlowGraph
                 case TypeKind.X86_MMXTypeKind: return 64;
                 case TypeKind.IntegerTypeKind:
                 case TypeKind.VectorTypeKind:
-                    return LLVM.GetIntTypeWidth(_type_ref);
+                    return LLVM.GetIntTypeWidth(_intermediate_type_ref);
                 default: return 0;
             }
         }
@@ -169,7 +182,7 @@ namespace Campy.ControlFlowGraph
 
         public uint getPointerAddressSpace()
         {
-            return LLVM.GetPointerAddressSpace(_type_ref);
+            return LLVM.GetPointerAddressSpace(_intermediate_type_ref);
         }
 
         public static TypeRef getInt8PtrTy(Swigged.LLVM.ContextRef C, uint AS = 0)
@@ -188,95 +201,27 @@ namespace Campy.ControlFlowGraph
             return LLVM.VoidTypeInContext(C);
         }
 
-        public Type(TypeReference typeReference, TypeDefinition typeDefinition, TypeRef dataType, TypeRef valueType, TypeRef objectType, StackValueType stackType)
+        public override bool Equals(object obj)
         {
-            TypeReferenceCecil = typeReference;
-            TypeDefinitionCecil = typeDefinition;
-            DataTypeLLVM = dataType;
-            ObjectTypeLLVM = objectType;
-            StackType = stackType;
-            ValueTypeLLVM = valueType;
-            DefaultTypeLLVM = stackType == StackValueType.Object ? LLVM.PointerType(ObjectTypeLLVM, 0) : DataTypeLLVM;
-
-            switch (stackType)
-            {
-                case StackValueType.NativeInt:
-                    TypeOnStackLLVM = LLVM.PointerType(LLVM.Int8TypeInContext(LLVM.GetTypeContext(dataType)), 0);
-                    break;
-                case StackValueType.Float:
-                    TypeOnStackLLVM = LLVM.DoubleTypeInContext(LLVM.GetTypeContext(dataType));
-                    break;
-                case StackValueType.Int32:
-                    TypeOnStackLLVM = LLVM.Int32TypeInContext(LLVM.GetTypeContext(dataType));
-                    break;
-                case StackValueType.Int64:
-                    TypeOnStackLLVM = LLVM.Int64TypeInContext(LLVM.GetTypeContext(dataType));
-                    break;
-                case StackValueType.Value:
-                case StackValueType.Object:
-                case StackValueType.Reference:
-                    TypeOnStackLLVM = DefaultTypeLLVM;
-                    break;
-            }
+            if (obj as Type == null) return false;
+            return this.IntermediateType.Equals((obj as Type).IntermediateType);
         }
 
-        /// <summary>
-        /// Gets the LLVM default type.
-        /// </summary>
-        /// <value>
-        /// The LLVM default type.
-        /// </value>
-        public TypeRef DefaultTypeLLVM { get; private set; }
-
-        /// <summary>
-        /// Gets the LLVM object type (object header and <see cref="DataTypeLLVM"/>).
-        /// </summary>
-        /// <value>
-        /// The LLVM boxed type (object header and <see cref="DataTypeLLVM"/>).
-        /// </value>
-        public TypeRef ObjectTypeLLVM { get; private set; }
-
-        /// <summary>
-        /// Gets the LLVM data type.
-        /// </summary>
-        /// <value>
-        /// The LLVM data type (fields).
-        /// </value>
-        public TypeRef DataTypeLLVM { get; private set; }
-
-        /// <summary>
-        /// Gets the LLVM value type.
-        /// </summary>
-        /// <value>
-        /// The LLVM value type (fields).
-        /// </value>
-        public TypeRef ValueTypeLLVM { get; private set; }
-
-        /// <summary>
-        /// Gets the LLVM type when on the stack.
-        /// </summary>
-        /// <value>
-        /// The LLVM type when on the stack.
-        /// </value>
-        public TypeRef TypeOnStackLLVM { get; private set; }
-
-        /// <summary>
-        /// Gets the linkage to use for this type.
-        /// </summary>
-        /// <value>
-        /// The linkage type to use for this type.
-        /// </value>
-        public Linkage Linkage { get; set; }
-
-        public TypeReference TypeReferenceCecil { get; private set; }
-        public TypeDefinition TypeDefinitionCecil { get; private set; }
-
-        public StackValueType StackType { get; private set; }
-
-        /// <inheritdoc/>
         public override string ToString()
         {
-            return _type_ref.ToString();
+            return _intermediate_type_ref.ToString();
+        }
+
+        public static bool operator ==(Type a, Type b)
+        {
+            if (System.Object.ReferenceEquals(a, b)) return true;
+            if (((object) a == null) || ((object) b == null)) return false;
+            return a._intermediate_type_ref == b._intermediate_type_ref;
+        }
+
+        public static bool operator !=(Type a, Type b)
+        {
+            return !(a == b);
         }
     }
 }
