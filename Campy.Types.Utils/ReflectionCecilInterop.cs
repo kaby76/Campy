@@ -47,45 +47,6 @@ namespace Campy.Types.Utils
             return mono_type;
         }
 
-        private static Mono.Cecil.TypeDefinition FindSimilarMonoType(System.Type ty)
-        {
-            // Get assembly name which encloses code for kernel.
-            String kernel_assembly_file_name = ty.Assembly.Location;
-
-            // Get directory containing the assembly.
-            String full_path = Path.GetFullPath(kernel_assembly_file_name);
-            full_path = Path.GetDirectoryName(full_path);
-
-            // Decompile entire module using Mono.
-            Mono.Cecil.ModuleDefinition md = Mono.Cecil.ModuleDefinition.ReadModule(kernel_assembly_file_name);
-
-            // Examine all types, and all methods of types in order to find the lambda in Mono.Cecil.
-            List<Type> types = new List<Type>();
-            StackQueue<Mono.Cecil.TypeDefinition> type_definitions = new StackQueue<Mono.Cecil.TypeDefinition>();
-            StackQueue<Mono.Cecil.TypeDefinition> type_definitions_closure = new StackQueue<Mono.Cecil.TypeDefinition>();
-            foreach (Mono.Cecil.TypeDefinition td in md.Types)
-            {
-                type_definitions.Push(td);
-            }
-            while (type_definitions.Count > 0)
-            {
-                Mono.Cecil.TypeDefinition td = type_definitions.Pop();
-                //System.Console.WriteLine("M Type = " + td);
-                if (Campy.Utils.Utility.IsSimilarType(ty, td))
-                    return td;
-                type_definitions_closure.Push(td);
-                foreach (Mono.Cecil.TypeDefinition ntd in td.NestedTypes)
-                    type_definitions.Push(ntd);
-            }
-            foreach (Mono.Cecil.TypeDefinition td in type_definitions_closure)
-            {
-                // System.Console.WriteLine("M Type = " + td);
-                if (Campy.Utils.Utility.IsSimilarType(ty, td))
-                    return td;
-            }
-            return null;
-        }
-
         public static System.Type ToSystemType(this Mono.Cecil.TypeReference tr)
         {
             Type result = null;
@@ -137,7 +98,46 @@ namespace Campy.Types.Utils
             return null;
         }
 
-        public static Mono.Cecil.MethodDefinition ConvertToMonoCecilMethodDefinition(System.Reflection.MethodBase mi)
+        private static Mono.Cecil.TypeDefinition FindSimilarMonoType(System.Type ty)
+        {
+            // Get assembly name which encloses code for kernel.
+            String kernel_assembly_file_name = ty.Assembly.Location;
+
+            // Get directory containing the assembly.
+            String full_path = Path.GetFullPath(kernel_assembly_file_name);
+            full_path = Path.GetDirectoryName(full_path);
+
+            // Decompile entire module using Mono.
+            Mono.Cecil.ModuleDefinition md = Mono.Cecil.ModuleDefinition.ReadModule(kernel_assembly_file_name);
+
+            // Examine all types, and all methods of types in order to find the lambda in Mono.Cecil.
+            List<Type> types = new List<Type>();
+            StackQueue<Mono.Cecil.TypeDefinition> type_definitions = new StackQueue<Mono.Cecil.TypeDefinition>();
+            StackQueue<Mono.Cecil.TypeDefinition> type_definitions_closure = new StackQueue<Mono.Cecil.TypeDefinition>();
+            foreach (Mono.Cecil.TypeDefinition td in md.Types)
+            {
+                type_definitions.Push(td);
+            }
+            while (type_definitions.Count > 0)
+            {
+                Mono.Cecil.TypeDefinition td = type_definitions.Pop();
+                //System.Console.WriteLine("M Type = " + td);
+                if (Campy.Utils.Utility.IsSimilarType(ty, td))
+                    return td;
+                type_definitions_closure.Push(td);
+                foreach (Mono.Cecil.TypeDefinition ntd in td.NestedTypes)
+                    type_definitions.Push(ntd);
+            }
+            foreach (Mono.Cecil.TypeDefinition td in type_definitions_closure)
+            {
+                // System.Console.WriteLine("M Type = " + td);
+                if (Campy.Utils.Utility.IsSimilarType(ty, td))
+                    return td;
+            }
+            return null;
+        }
+
+        public static Mono.Cecil.MethodDefinition ToMonoMethodDefinition(this System.Reflection.MethodBase mi)
         {
             // Get assembly name which encloses code for kernel.
             String kernel_assembly_file_name = mi.DeclaringType.Assembly.Location;
@@ -188,7 +188,7 @@ namespace Campy.Types.Utils
             return null;
         }
 
-        public static System.Reflection.MethodBase ConvertToSystemReflectionMethodInfo(Mono.Cecil.MethodDefinition md)
+        public static System.Reflection.MethodBase ToSystemMethodInfo(this Mono.Cecil.MethodDefinition md)
         {
             System.Reflection.MethodInfo result = null;
             String md_name = Campy.Utils.Utility.NormalizeMonoCecilName(md.FullName);
@@ -213,12 +213,12 @@ namespace Campy.Types.Utils
             return result;
         }
 
-        public static bool IsStruct(System.Type t)
+        public static bool IsStruct(this System.Type t)
         {
             return t.IsValueType && !t.IsPrimitive && !t.IsEnum;
         }
 
-        public static bool IsStruct(Mono.Cecil.TypeReference t)
+        public static bool IsStruct(this Mono.Cecil.TypeReference t)
         {
             return t.IsValueType && !t.IsPrimitive;
         }
