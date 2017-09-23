@@ -223,7 +223,7 @@ namespace Campy.ControlFlowGraph
             _locals = _stack.Section(other._locals.Base, other._locals.Len);
         }
 
-        public void Dump()
+        public void OutputTrace()
         {
             int args = _arguments.Len;
             int locs = _locals.Len;

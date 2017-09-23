@@ -111,9 +111,6 @@ namespace Campy.GraphAlgorithms
                         // assign new stack.
                         Stack[index] = new_stack;
 
-                        // Dump stacks.
-                        //Dump();
-
                         done = true;
                     }
                 }

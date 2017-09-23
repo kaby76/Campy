@@ -1004,7 +1004,7 @@ namespace Campy.ControlFlowGraph
                     if (Campy.Utils.Options.IsOn("state_computation_trace"))
                     {
                         System.Console.WriteLine("state in output");
-                        state_in.Dump();
+                        state_in.OutputTrace();
                     }
 
                     bb.StateIn = state_in;
@@ -1013,7 +1013,7 @@ namespace Campy.ControlFlowGraph
                     if (Campy.Utils.Options.IsOn("state_computation_trace"))
                     {
                         bb.OutputEntireNode();
-                        state_in.Dump();
+                        state_in.OutputTrace();
                     }
 
                     Inst last_inst = null;
@@ -1025,7 +1025,7 @@ namespace Campy.ControlFlowGraph
                         last_inst = inst;
                         inst = inst.Convert(this, bb.StateOut);
                         if (Campy.Utils.Options.IsOn("state_computation_trace"))
-                            bb.StateOut.Dump();
+                            bb.StateOut.OutputTrace();
                     }
                     if (last_inst != null && (last_inst.OpCode.FlowControl == Mono.Cecil.Cil.FlowControl.Next
                         || last_inst.OpCode.FlowControl == FlowControl.Call))
@@ -1087,8 +1087,8 @@ namespace Campy.ControlFlowGraph
                         CFG.Vertex llvm_node = node;
 
                         node.OutputEntireNode();
-                        llvm_node.StateIn.Dump();
-                        llvm_node.StateOut.Dump();
+                        llvm_node.StateIn.OutputTrace();
+                        llvm_node.StateOut.OutputTrace();
                     }
                 }
             }

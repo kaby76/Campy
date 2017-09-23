@@ -1,31 +1,26 @@
-﻿using Mono.Cecil.Rocks;
-using Mono.Collections.Generic;
-
-namespace Campy.ControlFlowGraph
+﻿namespace Campy.ControlFlowGraph
 {
     using Campy.Utils;
     using Mono.Cecil;
+    using Mono.Cecil.Rocks;
+    using Mono.Collections.Generic;
+    using System;
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Linq;
     using System.Reflection;
-    using System;
 
     public class Reader
     {
         private CFG _cfg = new CFG();
-        private List<Mono.Cecil.ModuleDefinition> _loaded_modules = new List<ModuleDefinition>();
-        private List<Mono.Cecil.ModuleDefinition> _analyzed_modules = new List<ModuleDefinition>();
+        private List<ModuleDefinition> _loaded_modules = new List<ModuleDefinition>();
+        private List<ModuleDefinition> _analyzed_modules = new List<ModuleDefinition>();
 
         // After studying this for a while, I've come to the conclusion that decompiling methods
         // requires type information, as methods/"this" could be generic. So, we create a list of
         // Tuple<MethodDefition, List<TypeReference>> that indicates the method, and generic parameters.
-        private StackQueue<Tuple<Mono.Cecil.MethodReference, List<TypeReference>>> _methods_to_do = new StackQueue<Tuple<MethodReference, List<TypeReference>>>();
+        private StackQueue<Tuple<MethodReference, List<TypeReference>>> _methods_to_do = new StackQueue<Tuple<MethodReference, List<TypeReference>>>();
         private List<string> _methods_done = new List<string>(); // No longer MethodDefition because there is no equivalence.
-
-        public Reader()
-        {
-        }
 
         public CFG Cfg
         {
@@ -35,9 +30,6 @@ namespace Campy.ControlFlowGraph
 
         public void AnalyzeThisAssembly()
         {
-            if (Environment.Is64BitProcess)
-            {
-            }
             System.Diagnostics.StackTrace stack_trace = new System.Diagnostics.StackTrace(true);
             System.Diagnostics.StackFrame stack_frame = stack_trace.GetFrame(1);
             System.Reflection.Assembly assembly = stack_frame.GetMethod().DeclaringType.Assembly;
@@ -49,16 +41,6 @@ namespace Campy.ControlFlowGraph
         public void AnalyzeMethod(Campy.Types._Kernel_type expr)
         {
             MethodInfo methodInfo = expr.Method;
-            //var methodInfo = ((MethodCallExpression)expr.Body).Method;
-            if (methodInfo.IsGenericMethod)
-            {
-                
-            }
-            else if (methodInfo.DeclaringType.IsGenericType)
-            {
-                
-            }
-
             this.Add(methodInfo);
             this.ExtractBasicBlocks();
             _cfg.OutputEntireGraph();
@@ -67,12 +49,11 @@ namespace Campy.ControlFlowGraph
 
         public void AnalyzeMethod(MethodInfo methodInfo)
         {
-            //var methodInfo = ((MethodCallExpression)expr.Body).Method;
             this.Add(methodInfo);
             this.ExtractBasicBlocks();
         }
 
-        public void AnalyzeMethod(Mono.Cecil.MethodDefinition md)
+        public void AnalyzeMethod(MethodDefinition md)
         {
             this.Add(md);
             this.ExtractBasicBlocks();
@@ -95,45 +76,42 @@ namespace Campy.ControlFlowGraph
 
         public void Add(MethodInfo reference)
         {
-            Mono.Cecil.MethodDefinition definition = Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilMethodDefinition(reference);
+            MethodDefinition definition = Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilMethodDefinition(reference);
             Add(definition);
         }
 
         public void AddAssembly(String assembly_file_name)
         {
-            Mono.Cecil.ModuleDefinition module = LoadAssembly(assembly_file_name);
+            ModuleDefinition module = LoadAssembly(assembly_file_name);
             String full_name = System.IO.Path.GetFullPath(assembly_file_name);
-            foreach (Mono.Cecil.ModuleDefinition md in this._analyzed_modules)
+            foreach (ModuleDefinition md in this._analyzed_modules)
                 if (md.FullyQualifiedName.Equals(full_name))
                     return;
             _analyzed_modules.Add(module);
-            StackQueue<Mono.Cecil.TypeDefinition> type_definitions = new StackQueue<Mono.Cecil.TypeDefinition>();
-            StackQueue<Mono.Cecil.TypeDefinition> type_definitions_closure = new StackQueue<Mono.Cecil.TypeDefinition>();
-            foreach (Mono.Cecil.TypeDefinition td in module.Types)
-            {
+            StackQueue<TypeDefinition> type_definitions = new StackQueue<TypeDefinition>();
+            StackQueue<TypeDefinition> type_definitions_closure = new StackQueue<TypeDefinition>();
+            foreach (TypeDefinition td in module.Types)
                 type_definitions.Push(td);
-            }
             while (type_definitions.Count > 0)
             {
-                Mono.Cecil.TypeDefinition ty = type_definitions.Pop();
+                TypeDefinition ty = type_definitions.Pop();
                 type_definitions_closure.Push(ty);
-                foreach (Mono.Cecil.TypeDefinition ntd in ty.NestedTypes)
+                foreach (TypeDefinition ntd in ty.NestedTypes)
                     type_definitions.Push(ntd);
             }
-            foreach (Mono.Cecil.TypeDefinition td in type_definitions_closure)
-                foreach (Mono.Cecil.MethodDefinition definition in td.Methods)
+            foreach (TypeDefinition td in type_definitions_closure)
+                foreach (MethodDefinition definition in td.Methods)
                     Add(definition);
         }
 
         public void Add(Mono.Cecil.TypeReference type)
         {
-            // Add all methods of type.
-            Mono.Cecil.TypeDefinition type_defintion = type.Resolve();
-            foreach (Mono.Cecil.MethodDefinition definition in type_defintion.Methods)
+            TypeDefinition type_defintion = type.Resolve();
+            foreach (MethodDefinition definition in type_defintion.Methods)
                 Add(definition);
         }
 
-        public void Add(Mono.Cecil.MethodReference definition)
+        public void Add(MethodReference definition)
         {
             if (definition == null)
                 return;
@@ -192,9 +170,9 @@ namespace Campy.ControlFlowGraph
                         if (fc != Mono.Cecil.Cil.FlowControl.Call)
                             continue;
                         object method = i.Operand;
-                        if (method as Mono.Cecil.MethodReference != null)
+                        if (method as MethodReference != null)
                         {
-                            Mono.Cecil.MethodReference mr = method as Mono.Cecil.MethodReference;
+                            MethodReference mr = method as MethodReference;
                             Add(mr);
                         }
                     }
@@ -207,13 +185,13 @@ namespace Campy.ControlFlowGraph
             return a.Method;
         }
 
-        private Mono.Cecil.ModuleDefinition LoadAssembly(String assembly_file_name)
+        private ModuleDefinition LoadAssembly(String assembly_file_name)
         {
             String full_name = System.IO.Path.GetFullPath(assembly_file_name);
-            foreach (Mono.Cecil.ModuleDefinition md in this._loaded_modules)
+            foreach (ModuleDefinition md in this._loaded_modules)
                 if (md.FullyQualifiedName.Equals(full_name))
                     return md;
-            Mono.Cecil.ModuleDefinition module = ModuleDefinition.ReadModule(assembly_file_name);
+            ModuleDefinition module = ModuleDefinition.ReadModule(assembly_file_name);
             _loaded_modules.Add(module);
             return module;
         }
@@ -255,14 +233,10 @@ namespace Campy.ControlFlowGraph
             };
 
             foreach (var parameter in self.Parameters)
-            {
                 reference.Parameters.Add(new ParameterDefinition(parameter.ParameterType));
-            }
 
             foreach (var genericParam in self.GenericParameters)
-            {
                 reference.GenericParameters.Add(new GenericParameter(genericParam.Name, reference));
-            }
 
             return reference;
         }
@@ -299,9 +273,7 @@ namespace Campy.ControlFlowGraph
             }
 
             foreach (var genericParam in self.GenericParameters)
-            {
                 reference.GenericParameters.Add(new GenericParameter(genericParam.Name, reference));
-            }
 
             return reference;
         }
@@ -487,32 +459,33 @@ namespace Campy.ControlFlowGraph
                         break;
                     case Mono.Cecil.Cil.FlowControl.Call:
                         {
-                            // We no longer split at calls. Splitting causes
+                            // By default, we no longer split at calls. Splitting causes
                             // problems because interprocedural edges are
                             // produced. That's not good because it makes
                             // code too "messy".
+                            if (Campy.Utils.Options.IsOn("split_at_calls"))
+                            {
+                                object o = i.Operand;
+                                if (o as MethodReference != null)
+                                {
+                                    MethodReference r = o as MethodReference;
+                                    MethodDefinition d = r.Resolve();
+                                    IEnumerable<CFG.Vertex> target_node_list = _cfg.VertexNodes.Where(
+                                        (CFG.Vertex x) =>
+                                        {
+                                            return x.Method.FullName == r.FullName
+                                                   && x.Entry == x;
+                                        });
+                                    int c = target_node_list.Count();
+                                    if (c >= 1)
+                                    {
+                                        // target_node is the entry for a method. Also get the exit.
+                                        CFG.Vertex target_node = target_node_list.First();
+                                        CFG.Vertex exit_node = target_node.Exit;
+                                    }
+                                }
+                            }
                             break;
-
-                            //object o = i.Operand;
-                            //if (o as Mono.Cecil.MethodReference != null)
-                            //{
-                            //    Mono.Cecil.MethodReference r = o as Mono.Cecil.MethodReference;
-                            //    Mono.Cecil.MethodDefinition d = r.Resolve();
-                            //    IEnumerable<CFG.Vertex> target_node_list = _cfg.VertexNodes.Where(
-                            //        (CFG.Vertex x) =>
-                            //        {
-                            //            return x.Method.FullName == r.FullName
-                            //                && x.Entry == x;
-                            //        });
-                            //    int c = target_node_list.Count();
-                            //    if (c >= 1)
-                            //    {
-                            //        // target_node is the entry for a method. Also get the exit.
-                            //        CFG.Vertex target_node = target_node_list.First();
-                            //        CFG.Vertex exit_node = target_node.Exit;
-                            //    }
-                            //}
-                            //break;
                         }
                     case Mono.Cecil.Cil.FlowControl.Meta:
                         break;
