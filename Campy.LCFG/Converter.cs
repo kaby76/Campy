@@ -611,7 +611,7 @@ namespace Campy.ControlFlowGraph
                 bb.HasThis = method.HasThis;
                 List<ParameterDefinition> parameters = method.Parameters.ToList();
                 List<ParameterReference> instantiated_parameters = new List<ParameterReference>();
-                System.Reflection.MethodBase mb = ReflectionCecilInterop.ConvertToSystemReflectionMethodInfo(method.Resolve());
+                System.Reflection.MethodBase mb = method.Resolve().ToSystemMethodInfo();
                 string mn = mb.DeclaringType.Assembly.GetName().Name;
                 ModuleRef mod = global_llvm_module; // LLVM.ModuleCreateWithName(mn);
                 bb.Module = mod;

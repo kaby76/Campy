@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
+using Campy.Types.Utils;
 using Swigged.Cuda;
 
 namespace Campy.LCFG
@@ -71,11 +72,6 @@ namespace Campy.LCFG
         private static class IsBlittableCache<T>
         {
             public static readonly bool Value = IsBlittable(typeof(T));
-        }
-
-        public static bool IsStruct(System.Type t)
-        {
-            return t.IsValueType && !t.IsPrimitive && !t.IsEnum;
         }
 
 
@@ -176,7 +172,7 @@ namespace Campy.LCFG
 
                     return tb.CreateType();
                 }
-                else if (IsStruct(hostType))
+                else if (hostType.IsStruct())
                 {
                     TypeBuilder tb = null;
                     if (bbt != null)
@@ -292,7 +288,7 @@ namespace Campy.LCFG
         {
             if (type.IsArray || type.IsClass)
                 return 8;
-            else if (IsStruct(type))
+            else if (type.IsStruct())
             {
                 if (SizeOf(type) > 4)
                     return 8;
@@ -327,7 +323,7 @@ namespace Campy.LCFG
             {
                 throw new Exception("Cannot determine size of array without data.");
             }
-            else if (IsStruct(type) || type.IsClass)
+            else if (type.IsStruct() || type.IsClass)
             {
                 var fields = type.GetFields(
                     System.Reflection.BindingFlags.Instance
@@ -545,7 +541,7 @@ namespace Campy.LCFG
                     return;
                 }
 
-                if (IsStruct(hostType) || hostType.IsClass)
+                if (hostType.IsStruct() || hostType.IsClass)
                 {
                     if (_allocated_objects.ContainsKey(from))
                     {
@@ -635,7 +631,7 @@ namespace Campy.LCFG
                                 ip = (void*)((long)ip
                                              + Buffers.SizeOf(typeof(IntPtr)));
                             }
-                            else if (IsStruct(fi.FieldType))
+                            else if (fi.FieldType.IsStruct())
                             {
                                 throw new Exception("Whoops.");
                             }
@@ -803,7 +799,7 @@ namespace Campy.LCFG
                     return;
                 }
 
-                if (IsStruct(t_type) || t_type.IsClass)
+                if (t_type.IsStruct() || t_type.IsClass)
                 {
                     IntPtr ip = from;
                     if (ip == IntPtr.Zero)
@@ -978,7 +974,7 @@ namespace Campy.LCFG
             {
                 return type.GetElementType().FullName + "[]";
             }
-            if (type.IsValueType && !IsStruct(type))
+            if (type.IsValueType && !type.IsStruct())
             {
                 return type.FullName;
             }
@@ -989,7 +985,7 @@ namespace Campy.LCFG
                 | System.Reflection.BindingFlags.Public
                 //| System.Reflection.BindingFlags.Static
             );
-            if (type.IsValueType && IsStruct(type))
+            if (type.IsValueType && type.IsStruct())
                 sb.Append("struct {").AppendLine();
             else if (type.IsClass)
                 sb.Append("class {").AppendLine();

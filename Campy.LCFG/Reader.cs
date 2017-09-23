@@ -1,4 +1,6 @@
-﻿namespace Campy.ControlFlowGraph
+﻿using Campy.Types.Utils;
+
+namespace Campy.ControlFlowGraph
 {
     using Campy.Utils;
     using Mono.Cecil;
@@ -76,7 +78,7 @@
 
         public void Add(MethodInfo reference)
         {
-            MethodDefinition definition = Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilMethodDefinition(reference);
+            MethodDefinition definition = reference.ToMonoMethodDefinition();
             Add(definition);
         }
 
