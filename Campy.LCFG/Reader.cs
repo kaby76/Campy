@@ -364,7 +364,6 @@
                 // so that splitting is done from last instruction in block
                 // to first instruction in block.
                 Mono.Cecil.Cil.Instruction i = md.Body.Instructions[j];
-                //System.Console.WriteLine("Looking for " + i);
                 if (leader_list.Contains(i))
                     ordered_leader_list.Push(j);
             }
@@ -376,14 +375,12 @@
                 CFG.Vertex new_node = v.Split(i);
             }
 
-            //this.Dump();
-
             StackQueue<CFG.Vertex> stack = new StackQueue<CFG.Vertex>();
             foreach (CFG.Vertex node in _cfg.VertexNodes) stack.Push(node);
             while (stack.Count > 0)
             {
-                // Split blocks at branches, not including calls, with following
-                // instruction a leader of new block.
+                // Split blocks at branches. Set following instruction a leader
+                // of the new block.
                 CFG.Vertex node = stack.Pop();
                 int node_instruction_count = node.Instructions.Count;
                 for (int j = 0; j < node_instruction_count; ++j)
@@ -394,7 +391,8 @@
                     if (fc == Mono.Cecil.Cil.FlowControl.Next)
                         continue;
                     if (fc == Mono.Cecil.Cil.FlowControl.Call)
-                        continue;
+                        if (!Campy.Utils.Options.IsOn("split_at_calls"))
+                            continue;
                     if (fc == Mono.Cecil.Cil.FlowControl.Meta)
                         continue;
                     if (fc == Mono.Cecil.Cil.FlowControl.Phi)
@@ -407,7 +405,6 @@
                 }
             }
 
-            //this.Dump();
             stack = new StackQueue<CFG.Vertex>();
             foreach (CFG.Vertex node in _cfg.VertexNodes) stack.Push(node);
             while (stack.Count > 0)

@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using Campy.Graphs;
 using Campy.LCFG;
+using Campy.Types.Utils;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Swigged.LLVM;
@@ -1678,7 +1679,7 @@ namespace Campy.ControlFlowGraph
 
                         int field_size;
                         int alignment;
-                        var ft = Campy.Types.Utils.ReflectionCecilInterop.ConvertToSystemReflectionType(f.FieldType);
+                        var ft = f.FieldType.ToSystemType();
                         var array_or_class = (f.FieldType.IsArray || !f.FieldType.IsValueType);
                         if (array_or_class)
                         {
@@ -1774,7 +1775,7 @@ namespace Campy.ControlFlowGraph
 
                         int field_size;
                         int alignment;
-                        var ft = Campy.Types.Utils.ReflectionCecilInterop.ConvertToSystemReflectionType(f.FieldType);
+                        var ft = f.FieldType.ToSystemType();
                         var array_or_class = (f.FieldType.IsArray || !f.FieldType.IsValueType);
                         if (array_or_class)
                         {
@@ -1892,7 +1893,7 @@ namespace Campy.ControlFlowGraph
 
                         int field_size;
                         int alignment;
-                        var ft = Campy.Types.Utils.ReflectionCecilInterop.ConvertToSystemReflectionType(f.FieldType);
+                        var ft = f.FieldType.ToSystemType();
                         var array_or_class = (f.FieldType.IsArray || !f.FieldType.IsValueType);
                         if (array_or_class)
                         {
@@ -4424,7 +4425,7 @@ namespace Campy.ControlFlowGraph
             // And, the return value is pushed on the top of stack.
             // This is handled by the call instruction.
             var ret = this.Block.Method.ReturnType;
-            var void_type = Campy.Types.Utils.ReflectionCecilInterop.ConvertToMonoCecilTypeReference(typeof(void));
+            var void_type = typeof(void).ToMonoTypeReference();
 
             if (ret == null || ret.FullName == void_type.FullName)
             {

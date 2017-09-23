@@ -1,27 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using Campy.Utils;
-using Mono.Cecil;
-using Mono.Cecil.Rocks;
-using Mono.Collections.Generic;
-
+﻿
 namespace Campy.Types.Utils
 {
-    public class ReflectionCecilInterop
-    {
+    using Campy.Utils;
+    using Mono.Cecil;
+    using Mono.Cecil.Rocks;
+    using System;
+    using System.Collections.Generic;
+    using System.Diagnostics;
+    using System.IO;
+    using System.Linq;
 
-        /// <summary>
-        /// ConvertToMonoCecilTypeDefinition is a very important function
-        /// that converts Sysmtem.Types in C# into Mono Cecil data types. I would
-        /// prefer not to do this but Mono does not offer this functionality, it seems.
-        /// Normally a type is an easy conversion, except with arrays and generic types.
-        /// </summary>
-        /// <param name="ty"></param>
-        /// <returns></returns>
-        public static Mono.Cecil.TypeReference ConvertToMonoCecilTypeReference(System.Type ty)
+    public static class ReflectionCecilInterop
+    {
+        public static Mono.Cecil.TypeReference ToMonoTypeReference(this System.Type ty)
         {
             var mono_type = FindSimilarMonoType(ty);
             if (mono_type == null)
@@ -33,10 +24,11 @@ namespace Campy.Types.Utils
                     // Create array type.
                     if (result == null) return null;
                     ArrayType art = result.MakeArrayType();
-                    TypeReference type_reference = (TypeReference) art;
+                    TypeReference type_reference = (TypeReference)art;
                     return type_reference;
                 }
-            } else if (mono_type.HasGenericParameters && !mono_type.IsGenericInstance)
+            }
+            else if (mono_type.HasGenericParameters && !mono_type.IsGenericInstance)
             {
                 if (ty.IsConstructedGenericType)
                 {
@@ -44,7 +36,7 @@ namespace Campy.Types.Utils
                     List<TypeReference> list = new List<TypeReference>();
                     foreach (var j3 in j2)
                     {
-                        TypeReference m = ConvertToMonoCecilTypeReference(j3);
+                        TypeReference m = j3.ToMonoTypeReference();
                         list.Add(m);
                     }
                     var instantiated_type = mono_type.MakeGenericInstanceType(list.ToArray());
@@ -55,7 +47,7 @@ namespace Campy.Types.Utils
             return mono_type;
         }
 
-        public static Mono.Cecil.TypeDefinition FindSimilarMonoType(System.Type ty)
+        private static Mono.Cecil.TypeDefinition FindSimilarMonoType(System.Type ty)
         {
             // Get assembly name which encloses code for kernel.
             String kernel_assembly_file_name = ty.Assembly.Location;
@@ -94,7 +86,7 @@ namespace Campy.Types.Utils
             return null;
         }
 
-        public static System.Type ConvertToSystemReflectionType(Mono.Cecil.TypeReference tr)
+        public static System.Type ToSystemType(this Mono.Cecil.TypeReference tr)
         {
             Type result = null;
             TypeReference element_type = null;
@@ -112,7 +104,7 @@ namespace Campy.Types.Utils
                 var array_type = tr as ArrayType;
                 element_type = array_type.ElementType;
                 //element_type = tr.GetElementType();
-                result = ConvertToSystemReflectionType(element_type);
+                result = element_type.ToSystemType();
                 // Create array type.
                 if (result == null) return null;
                 return result.MakeArrayType();
@@ -143,18 +135,6 @@ namespace Campy.Types.Utils
                 }
             }
             return null;
-        }
-
-        public static Mono.Cecil.ModuleDefinition GetMonoCecilModuleDefinition(System.Delegate del)
-        {
-            System.Reflection.MethodInfo mi = del.Method;
-
-            // Get assembly name which encloses code for kernel.
-            String kernel_assembly_file_name = mi.DeclaringType.Assembly.Location;
-
-            // Decompile entire module.
-            Mono.Cecil.ModuleDefinition md = Mono.Cecil.ModuleDefinition.ReadModule(kernel_assembly_file_name);
-            return md;
         }
 
         public static Mono.Cecil.MethodDefinition ConvertToMonoCecilMethodDefinition(System.Reflection.MethodBase mi)
@@ -214,7 +194,7 @@ namespace Campy.Types.Utils
             String md_name = Campy.Utils.Utility.NormalizeMonoCecilName(md.FullName);
             // Get owning type.
             Mono.Cecil.TypeDefinition td = md.DeclaringType;
-            Type t = ConvertToSystemReflectionType(td);
+            Type t = td.ToSystemType();
             foreach (System.Reflection.MethodInfo mi in t.GetMethods(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.CreateInstance | System.Reflection.BindingFlags.Default))
             {
                 String full_name = string.Format("{0} {1}.{2}({3})", mi.ReturnType.FullName, Campy.Utils.Utility.RemoveGenericParameters(mi.ReflectedType), mi.Name, string.Join(",", mi.GetParameters().Select(o => string.Format("{0}", o.ParameterType)).ToArray()));
@@ -233,119 +213,6 @@ namespace Campy.Types.Utils
             return result;
         }
 
-        public static System.Reflection.MethodInfo FindMethod(String method)
-        {
-            // Split name into its parts, being type, namespace, type, parameters.
-            method = method.Trim();
-            method = method.Replace("  ", " ");
-            method = method.Replace(" (", "(");
-            method = method.Replace(" )", ")");
-            method = method.Replace(" .", ".");
-            method = method.Replace(". ", ".");
-            method = method.Replace(" ,", ",");
-            method = method.Replace(", ", ",");
-
-            int space = method.IndexOf(' ');
-            String return_type = "";
-            if (space >= 0)
-            {
-                return_type = method.Substring(0, space);
-                method = method.Substring(space + 1);
-            }
-            int parenthesis = method.IndexOf('(');
-            String full_name = method.Substring(0, parenthesis);
-            String parameters = method.Substring(parenthesis);
-            int method_index = full_name.LastIndexOf('.');
-            String name = full_name.Substring(method_index + 1);
-            if (method_index >= 0) full_name = full_name.Substring(0, method_index);
-            Type t = Type.GetType(full_name);
-            System.Reflection.BindingFlags flags = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic |
-                System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Instance |
-                System.Reflection.BindingFlags.DeclaredOnly;
-            System.Reflection.MethodInfo[] mi = t.GetMethods(flags);
-            foreach (System.Reflection.MethodInfo m in mi)
-            {
-                if (m.Name.Equals(name))
-                    return m;
-            }
-            return null;
-        }
-
-        public static System.Reflection.ConstructorInfo FindConstructor(String method)
-        {
-            // Split name into its parts, being type, namespace, type, parameters.
-            method = method.Trim();
-            method = method.Replace("  ", " ");
-            method = method.Replace(" (", "(");
-            method = method.Replace(" )", ")");
-            method = method.Replace(" .", ".");
-            method = method.Replace(". ", ".");
-            method = method.Replace(" ,", ",");
-            method = method.Replace(", ", ",");
-
-            int space = method.IndexOf(' ');
-            int parenthesis = method.IndexOf('(');
-            String full_name = method.Substring(0, parenthesis);
-            String parameters = method.Substring(parenthesis);
-            Type t = Type.GetType(full_name);
-            System.Reflection.BindingFlags flags = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic |
-                System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Instance |
-                System.Reflection.BindingFlags.DeclaredOnly;
-            System.Reflection.ConstructorInfo[] mi = t.GetConstructors(flags);
-            foreach (System.Reflection.ConstructorInfo m in mi)
-            {
-                // Parameters used to match function.
-                String mat = "";
-                System.Reflection.ParameterInfo[] pi = m.GetParameters();
-                foreach (System.Reflection.ParameterInfo p in pi)
-                {
-                    String s = p.ParameterType.Name;
-                    mat += s;
-                    mat += ",";
-                }
-                if (mat.Length > 0)
-                    mat = mat.Substring(0, mat.Length - 1);
-                if (mat.Equals(parameters))
-                    return m;
-            }
-            return null;
-        }
-
-        public static System.Type ConvertToBasicSystemReflectionType(Mono.Cecil.TypeDefinition td)
-        {
-            // Convert to System type based on name.
-            string str = td.FullName;
-            if (str.Equals("System.Boolean"))
-                return typeof(bool);
-            if (str.Equals("System.Byte"))
-                return typeof(byte);
-            if (str.Equals("System.Char"))
-                return typeof(char);
-            if (str.Equals("System.Decimal"))
-                return typeof(decimal);
-            if (str.Equals("System.Double"))
-                return typeof(double);
-            if (str.Equals("System.Single"))
-                return typeof(float);
-            if (str.Equals("System.Int32"))
-                return typeof(int);
-            if (str.Equals("System.Int64"))
-                return typeof(long);
-            if (str.Equals("System.SByte"))
-                return typeof(sbyte);
-            if (str.Equals("System.Int16"))
-                return typeof(short);
-            if (str.Equals("System.UInt32"))
-                return typeof(uint);
-            if (str.Equals("System.UInt64"))
-                return typeof(ulong);
-            if (str.Equals("System.UInt16"))
-                return typeof(ushort);
-            if (str.Equals("System.Void"))
-                return typeof(void);
-            return null;
-        }
-
         public static bool IsStruct(System.Type t)
         {
             return t.IsValueType && !t.IsPrimitive && !t.IsEnum;
@@ -354,92 +221,6 @@ namespace Campy.Types.Utils
         public static bool IsStruct(Mono.Cecil.TypeReference t)
         {
             return t.IsValueType && !t.IsPrimitive;
-        }
-
-        class TypesEnumerator : IEnumerable<Mono.Cecil.TypeDefinition>
-        {
-            Mono.Cecil.ModuleDefinition _module;
-
-            public TypesEnumerator(Mono.Cecil.ModuleDefinition module)
-            {
-                _module = module;
-            }
-
-            public IEnumerator<Mono.Cecil.TypeDefinition> GetEnumerator()
-            {
-                StackQueue<Mono.Cecil.TypeDefinition> type_definitions = new StackQueue<Mono.Cecil.TypeDefinition>();
-                StackQueue<Mono.Cecil.TypeDefinition> type_definitions_closure = new StackQueue<Mono.Cecil.TypeDefinition>();
-                foreach (Mono.Cecil.TypeDefinition td in _module.Types)
-                {
-                    type_definitions.Push(td);
-                }
-                while (type_definitions.Count > 0)
-                {
-                    Mono.Cecil.TypeDefinition td = type_definitions.Pop();
-                    type_definitions_closure.Push(td);
-                    foreach (Mono.Cecil.TypeDefinition ntd in td.NestedTypes)
-                        type_definitions.Push(ntd);
-                }
-                foreach (Mono.Cecil.TypeDefinition td in type_definitions_closure)
-                {
-                    yield return td;
-                }
-            }
-
-            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-            {
-                return GetEnumerator();
-            }
-        }
-
-        public static IEnumerable<Mono.Cecil.TypeDefinition> GetTypes(Mono.Cecil.ModuleDefinition module)
-        {
-            return new TypesEnumerator(module);
-        }
-
-
-        class MethodsEnumerator : IEnumerable<Mono.Cecil.MethodDefinition>
-        {
-            Mono.Cecil.ModuleDefinition _module;
-
-            public MethodsEnumerator(Mono.Cecil.ModuleDefinition module)
-            {
-                _module = module;
-            }
-
-            public IEnumerator<Mono.Cecil.MethodDefinition> GetEnumerator()
-            {
-                StackQueue<Mono.Cecil.TypeDefinition> type_definitions = new StackQueue<Mono.Cecil.TypeDefinition>();
-                StackQueue<Mono.Cecil.TypeDefinition> type_definitions_closure = new StackQueue<Mono.Cecil.TypeDefinition>();
-                foreach (Mono.Cecil.TypeDefinition td in _module.Types)
-                {
-                    type_definitions.Push(td);
-                }
-                while (type_definitions.Count > 0)
-                {
-                    Mono.Cecil.TypeDefinition td = type_definitions.Pop();
-                    type_definitions_closure.Push(td);
-                    foreach (Mono.Cecil.TypeDefinition ntd in td.NestedTypes)
-                        type_definitions.Push(ntd);
-                }
-                foreach (Mono.Cecil.TypeDefinition type in type_definitions_closure)
-                {
-                    foreach (Mono.Cecil.MethodDefinition method in type.Methods)
-                    {
-                        yield return method;
-                    }
-                }
-            }
-
-            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-            {
-                return GetEnumerator();
-            }
-        }
-
-        public static IEnumerable<Mono.Cecil.MethodDefinition> GetMethods(Mono.Cecil.ModuleDefinition module)
-        {
-            return new MethodsEnumerator(module);
         }
     }
 }

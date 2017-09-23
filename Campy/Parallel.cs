@@ -87,7 +87,7 @@ namespace Campy
                 foreach (System.Type data_type_used in list_of_data_types_used)
                 {
                     list_of_mono_data_types_used.Add(
-                        ReflectionCecilInterop.ConvertToMonoCecilTypeReference(data_type_used));
+                        data_type_used.ToMonoTypeReference());
                 }
 
                 // In the same, in-order discovery of all methods, we're going to pass on
