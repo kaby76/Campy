@@ -1743,7 +1743,7 @@ namespace Campy.ControlFlowGraph
                     //if (isPtrLoad)
                     //{
                     //    var mono_field_type = field.FieldType;
-                    //    TypeRef type = Converter.ConvertMonoTypeToLLVM(
+                    //    TypeRef type = Converter.ToTypeRef(
                     //        mono_field_type,
                     //        Block.OpsFromOriginal);
                     //    load = LLVM.BuildBitCast(Builder,
@@ -1827,9 +1827,7 @@ namespace Campy.ControlFlowGraph
                     if (isPtrLoad)
                     {
                         var mono_field_type = field.FieldType;
-                        TypeRef type = Converter.ConvertMonoTypeToLLVM(
-                            mono_field_type,
-                            Block.OpsFromOriginal);
+                        TypeRef type = mono_field_type.ToTypeRef(Block.OpsFromOriginal);
                         load = LLVM.BuildBitCast(Builder,
                             load, type, "");
                         if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -1937,9 +1935,7 @@ namespace Campy.ControlFlowGraph
                     if (isPtrLoad)
                     {
                         var mono_field_type = field.FieldType;
-                        TypeRef type = Converter.ConvertMonoTypeToLLVM(
-                            mono_field_type,
-                            Block.OpsFromOriginal);
+                        TypeRef type = mono_field_type.ToTypeRef(Block.OpsFromOriginal);
                         addr = LLVM.BuildBitCast(Builder,
                             addr, type, "");
                         if (Campy.Utils.Options.IsOn("jit_trace"))

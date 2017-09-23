@@ -19,6 +19,232 @@ using FieldAttributes = Mono.Cecil.FieldAttributes;
 
 namespace Campy.ControlFlowGraph
 {
+    public static class ConverterHelper
+    {
+        public static TypeRef ToTypeRef(
+            this Mono.Cecil.TypeReference tr,
+            Dictionary<TypeReference, System.Type> generic_type_rewrite_rules = null,
+            int level = 0)
+        {
+            if (generic_type_rewrite_rules == null) generic_type_rewrite_rules = new Dictionary<TypeReference, System.Type>();
+
+            // Search for type if already converted. Note, there are several caches to search, each
+            // containing types with different properties.
+            // Also, NB: we use full name for the conversion, as types can be similarly named but within
+            // different owning classes.
+            foreach (var kv in Converter.basic_llvm_types_created)
+            {
+                if (kv.Key.FullName == tr.FullName)
+                {
+                    return kv.Value;
+                }
+            }
+            foreach (var kv in Converter.previous_llvm_types_created_global)
+            {
+                if (kv.Key.FullName == tr.FullName)
+                    return kv.Value;
+            }
+            foreach (var kv in Converter.previous_llvm_types_created_global)
+            {
+                if (kv.Key.FullName == tr.FullName)
+                    return kv.Value;
+            }
+
+            try
+            {
+                TypeDefinition td = tr.Resolve();
+                // Check basic types using TypeDefinition's found and initialized in the above code.
+
+                // I don't know why, but Resolve() of System.Int32[] (an arrary) returns a simple System.Int32, not
+                // an array. If always true, then use TypeReference as much as possible.
+
+                GenericInstanceType git = tr as GenericInstanceType;
+                TypeDefinition gtd = tr as TypeDefinition;
+
+                if (tr.IsArray)
+                {
+                    // Note: mono_type_reference.GetElementType() is COMPLETELY WRONG! It does not function the same
+                    // as system_type.GetElementType(). Use ArrayType.ElementType!
+                    var array_type = tr as ArrayType;
+                    var element_type = array_type.ElementType;
+                    ContextRef c = LLVM.ContextCreate();
+                    string type_name = Converter.RenameToLegalLLVMName(tr.ToString());
+                    TypeRef s = LLVM.StructCreateNamed(c, type_name);
+                    Converter.previous_llvm_types_created_global.Add(tr, s);
+                    LLVM.StructSetBody(s, new TypeRef[2]
+                    {
+                        (element_type.IsArray || !element_type.IsValueType)
+                            ? LLVM.PointerType(LLVM.PointerType(ToTypeRef(element_type, generic_type_rewrite_rules, level+1), 0), 0)
+                            : LLVM.PointerType(ToTypeRef(element_type, generic_type_rewrite_rules, level+1), 0)
+                        , LLVM.Int64Type()
+                    }, true);
+                    var e = ToTypeRef(element_type, generic_type_rewrite_rules);
+                    return s;
+                }
+                else if (tr.IsGenericParameter)
+                {
+                    foreach (var kvp in generic_type_rewrite_rules)
+                    {
+                        var key = kvp.Key;
+                        var value = kvp.Value;
+                        if (key.Name == tr.Name)
+                        {
+                            // Match, and substitute.
+                            var v = value;
+                            var mv = v.ToMonoTypeReference();
+                            var e = ToTypeRef(mv, generic_type_rewrite_rules, level + 1);
+                            Converter.previous_llvm_types_created_global.Add(tr, e);
+                            return e;
+                        }
+                    }
+                    throw new Exception("Cannot convert " + tr.Name);
+                }
+                else if (td != null && td.IsClass)
+                {
+                    Dictionary<TypeReference, System.Type> additional = new Dictionary<TypeReference, System.Type>();
+                    var gp = tr.GenericParameters;
+                    Mono.Collections.Generic.Collection<TypeReference> ga = null;
+                    if (git != null)
+                    {
+                        ga = git.GenericArguments;
+                        Mono.Collections.Generic.Collection<GenericParameter> gg = td.GenericParameters;
+                        // Map parameter to instantiated type.
+                        for (int i = 0; i < gg.Count; ++i)
+                        {
+                            var pp = gg[i];
+                            var qq = ga[i];
+                            TypeReference trrr = pp as TypeReference;
+                            var system_type = qq
+                                .ToSystemType();
+                            if (system_type == null) throw new Exception("Failed to convert " + qq);
+                            additional[pp] = system_type;
+                        }
+                    }
+
+                    // Create a struct/class type.
+                    ContextRef c = LLVM.ContextCreate();
+                    string llvm_name = Converter.RenameToLegalLLVMName(tr.ToString());
+                    TypeRef s = LLVM.StructCreateNamed(c, llvm_name);
+
+                    //var p = LLVM.PointerType(s, 0);
+
+                    Converter.previous_llvm_types_created_global.Add(tr, s);
+                    //previous_llvm_types_created_global.Add(tr, p);
+
+                    // Create array of typerefs as argument to StructSetBody below.
+                    // Note, tr is correct type, but tr.Resolve of a generic type turns the type
+                    // into an uninstantiated generic type. E.g., List<int> contains a generic T[] containing the
+                    // data. T could be a struct/value type, or T could be a class.
+
+                    var new_list = new Dictionary<TypeReference, System.Type>(generic_type_rewrite_rules);
+                    foreach (var a in additional) new_list.Add(a.Key, a.Value);
+
+                    List<TypeRef> list = new List<TypeRef>();
+                    int offset = 0;
+                    var fields = td.Fields;
+                    foreach (var field in fields)
+                    {
+                        FieldAttributes attr = field.Attributes;
+                        if ((attr & FieldAttributes.Static) != 0)
+                            continue;
+
+                        TypeReference field_type = field.FieldType;
+                        TypeReference instantiated_field_type = field.FieldType;
+
+                        if (git != null)
+                        {
+                            Collection<TypeReference> generic_args = git.GenericArguments;
+                            if (field.FieldType.IsArray)
+                            {
+                                var field_type_as_array_type = field.FieldType as ArrayType;
+                                //var et = field.FieldType.GetElementType();
+                                var et = field_type_as_array_type.ElementType;
+                                var bbc = et.HasGenericParameters;
+                                var bbbbc = et.IsGenericParameter;
+                                var array = field.FieldType as ArrayType;
+                                int rank = array.Rank;
+                                if (bbc)
+                                {
+                                    instantiated_field_type = et.MakeGenericInstanceType(generic_args.ToArray());
+                                    instantiated_field_type = instantiated_field_type.MakeArrayType(rank);
+                                }
+                                else if (bbbbc)
+                                {
+                                    instantiated_field_type = generic_args.First();
+                                    instantiated_field_type = instantiated_field_type.MakeArrayType(rank);
+                                }
+                            }
+                            else
+                            {
+                                var et = field.FieldType;
+                                var bbc = et.HasGenericParameters;
+                                var bbbbc = et.IsGenericParameter;
+                                if (bbc)
+                                {
+                                    instantiated_field_type = et.MakeGenericInstanceType(generic_args.ToArray());
+                                }
+                                else if (bbbbc)
+                                {
+                                    instantiated_field_type = generic_args.First();
+                                }
+                            }
+                        }
+
+
+                        int field_size;
+                        int alignment;
+                        var ft =
+                            instantiated_field_type.ToSystemType();
+                        var array_or_class = (instantiated_field_type.IsArray || !instantiated_field_type.IsValueType);
+                        if (array_or_class)
+                        {
+                            field_size = Buffers.SizeOf(typeof(IntPtr));
+                            alignment = Buffers.Alignment(typeof(IntPtr));
+                            int padding = Buffers.Padding(offset, alignment);
+                            offset = offset + padding + field_size;
+                            if (padding != 0)
+                            {
+                                // Add in bytes to effect padding.
+                                for (int j = 0; j < padding; ++j)
+                                    list.Add(LLVM.Int8Type());
+                            }
+                            var field_converted_type = ToTypeRef(instantiated_field_type, new_list, level + 1);
+                            field_converted_type = LLVM.PointerType(field_converted_type, 0);
+                            list.Add(field_converted_type);
+                        }
+                        else
+                        {
+                            field_size = Buffers.SizeOf(ft);
+                            alignment = Buffers.Alignment(ft);
+                            int padding = Buffers.Padding(offset, alignment);
+                            offset = offset + padding + field_size;
+                            if (padding != 0)
+                            {
+                                // Add in bytes to effect padding.
+                                for (int j = 0; j < padding; ++j)
+                                    list.Add(LLVM.Int8Type());
+                            }
+                            var field_converted_type = ToTypeRef(instantiated_field_type, new_list, level + 1);
+                            list.Add(field_converted_type);
+                        }
+                    }
+                    LLVM.StructSetBody(s, list.ToArray(), true);
+                    return s;
+                }
+                else
+                    throw new Exception("Unknown type.");
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+            finally
+            {
+
+            }
+        }
+    }
+
     public class Converter
     {
         private CFG _mcfg;
@@ -28,9 +254,9 @@ namespace Campy.ControlFlowGraph
         public static Dictionary<string, ValueRef> built_in_functions = new Dictionary<string, ValueRef>();
         Dictionary<Tuple<CFG.Vertex, Mono.Cecil.TypeReference, System.Type>, CFG.Vertex> mmap
             = new Dictionary<Tuple<CFG.Vertex, TypeReference, System.Type>, CFG.Vertex>(new Comparer());
-        private static Dictionary<TypeReference, TypeRef> basic_llvm_types_created = new Dictionary<TypeReference, TypeRef>();
-        private static Dictionary<TypeReference, TypeRef> previous_llvm_types_created_global = new Dictionary<TypeReference, TypeRef>();
-        private static Dictionary<string, string> _rename_to_legal_llvm_name_cache = new Dictionary<string, string>();
+        internal static Dictionary<TypeReference, TypeRef> basic_llvm_types_created = new Dictionary<TypeReference, TypeRef>();
+        internal static Dictionary<TypeReference, TypeRef> previous_llvm_types_created_global = new Dictionary<TypeReference, TypeRef>();
+        internal static Dictionary<string, string> _rename_to_legal_llvm_name_cache = new Dictionary<string, string>();
 
         public Converter(CFG mcfg)
         {
@@ -623,9 +849,7 @@ namespace Campy.ControlFlowGraph
                 {
                     if (bb.HasThis)
                     {
-                        param_types[current++] = LLVM.PointerType(ConvertMonoTypeToLLVM(
-                            method.DeclaringType,
-                            bb.OpsFromOriginal), 0);
+                        param_types[current++] = LLVM.PointerType(method.DeclaringType.ToTypeRef(bb.OpsFromOriginal), 0);
                     }
 
                     foreach (var p in parameters)
@@ -639,9 +863,7 @@ namespace Campy.ControlFlowGraph
                                 type_reference_of_parameter, git);
                         }
 
-                        param_types[current++] = ConvertMonoTypeToLLVM(
-                            type_reference_of_parameter,
-                            bb.OpsFromOriginal);
+                        param_types[current++] = type_reference_of_parameter.ToTypeRef(bb.OpsFromOriginal);
                         if (type_reference_of_parameter.IsArray)
                             param_types[current - 1] = LLVM.PointerType(param_types[current - 1], 0);
                         else if (! type_reference_of_parameter.IsValueType)
@@ -659,7 +881,7 @@ namespace Campy.ControlFlowGraph
                 }
 
                 var mi2 = FromGenericParameterToTypeReference(method.ReturnType, method.DeclaringType as GenericInstanceType);
-                TypeRef ret_type = ConvertMonoTypeToLLVM(mi2, bb.OpsFromOriginal);
+                TypeRef ret_type = mi2.ToTypeRef(bb.OpsFromOriginal);
                 TypeRef met_type = LLVM.FunctionType(ret_type, param_types, false);
                 ValueRef fun = LLVM.AddFunction(mod, Converter.RenameToLegalLLVMName(Converter.MethodName(method)), met_type);
                 BasicBlockRef entry = LLVM.AppendBasicBlock(fun, bb.Name.ToString());
@@ -1331,244 +1553,6 @@ namespace Campy.ControlFlowGraph
                 System.Console.WriteLine(tuple.Key);
                 System.Console.WriteLine(tuple.Value);
                 System.Console.WriteLine();
-            }
-        }
-
-        public static TypeRef ConvertMonoTypeToLLVM(
-            Mono.Cecil.TypeReference tr,
-            Dictionary<TypeReference, System.Type> generic_type_rewrite_rules,
-            int level = 0)
-        {
-            // Search for type if already converted. Note, there are several caches to search, each
-            // containing types with different properties.
-            // Also, NB: we use full name for the conversion, as types can be similarly named but within
-            // different owning classes.
-            foreach (var kv in basic_llvm_types_created)
-            {
-                if (kv.Key.FullName == tr.FullName)
-                {
-                    return kv.Value;
-                }
-            }
-            foreach (var kv in previous_llvm_types_created_global)
-            {
-                if (kv.Key.FullName == tr.FullName)
-                    return kv.Value;
-            }
-            foreach (var kv in previous_llvm_types_created_global)
-            {
-                if (kv.Key.FullName == tr.FullName)
-                    return kv.Value;
-            }
-
-            try
-            {
-                TypeDefinition td = tr.Resolve();
-                // Check basic types using TypeDefinition's found and initialized in the above code.
-
-                // I don't know why, but Resolve() of System.Int32[] (an arrary) returns a simple System.Int32, not
-                // an array. If always true, then use TypeReference as much as possible.
-
-                GenericInstanceType git = tr as GenericInstanceType;
-                TypeDefinition gtd = tr as TypeDefinition;
-
-                if (tr.IsArray)
-                {
-                    // Note: mono_type_reference.GetElementType() is COMPLETELY WRONG! It does not function the same
-                    // as system_type.GetElementType(). Use ArrayType.ElementType!
-                    var array_type = tr as ArrayType;
-                    var element_type = array_type.ElementType;
-                    ContextRef c = LLVM.ContextCreate();
-                    string type_name = Converter.RenameToLegalLLVMName(tr.ToString());
-                    TypeRef s = LLVM.StructCreateNamed(c, type_name);
-                    previous_llvm_types_created_global.Add(tr, s);
-                    LLVM.StructSetBody(s, new TypeRef[2]
-                    {
-                        (element_type.IsArray || !element_type.IsValueType)
-                            ? LLVM.PointerType(LLVM.PointerType(ConvertMonoTypeToLLVM(element_type, generic_type_rewrite_rules, level+1), 0), 0)
-                            : LLVM.PointerType(ConvertMonoTypeToLLVM(element_type, generic_type_rewrite_rules, level+1), 0)
-                        , LLVM.Int64Type()
-                    }, true);
-                    var e = ConvertMonoTypeToLLVM(element_type, generic_type_rewrite_rules);
-                    return s;
-                }
-                else if (tr.IsGenericParameter)
-                {
-                    foreach (var kvp in generic_type_rewrite_rules)
-                    {
-                        var key = kvp.Key;
-                        var value = kvp.Value;
-                        if (key.Name == tr.Name)
-                        {
-                            // Match, and substitute.
-                            var v = value;
-                            var mv = v.ToMonoTypeReference();
-                            var e = ConvertMonoTypeToLLVM(mv, generic_type_rewrite_rules, level+1);
-                            previous_llvm_types_created_global.Add(tr, e);
-                            return e;
-                        }
-                    }
-                    throw new Exception("Cannot convert " + tr.Name);
-                }
-                else if (td != null && td.IsClass)
-                {
-                    Dictionary<TypeReference, System.Type> additional = new Dictionary<TypeReference, System.Type>();
-                    var gp = tr.GenericParameters;
-                    Mono.Collections.Generic.Collection<TypeReference> ga = null;
-                    if (git != null)
-                    {
-                        ga = git.GenericArguments;
-                        Mono.Collections.Generic.Collection<GenericParameter> gg = td.GenericParameters;
-                        // Map parameter to instantiated type.
-                        for (int i = 0; i < gg.Count; ++i)
-                        {
-                            var pp = gg[i];
-                            var qq = ga[i];
-                            TypeReference trrr = pp as TypeReference;
-                            var system_type = qq
-                                .ToSystemType();
-                            if (system_type == null) throw new Exception("Failed to convert " + qq);
-                            additional[pp] = system_type;
-                        }
-                    }
-
-                    if (tr.HasGenericParameters)
-                    {
-                        // The type is generic. Loop through all data types used in closure to see
-                        // how to compile this type.
-                        foreach (var kvp in generic_type_rewrite_rules)
-                        {
-                            var key = kvp.Key;
-                            var value = kvp.Value;
-
-                            if (key.Name == tr.Name)
-                            {
-                                // match.
-                                // Substitute tt for t.
-                                //return ConvertSystemTypeToLLVM(tt, list_of_data_types_used, black_box);
-                            }
-                        }
-                    }
-                    // Create a struct/class type.
-                    ContextRef c = LLVM.ContextCreate();
-                    string llvm_name = Converter.RenameToLegalLLVMName(tr.ToString());
-                    TypeRef s = LLVM.StructCreateNamed(c, llvm_name);
-
-                    //var p = LLVM.PointerType(s, 0);
-
-                    previous_llvm_types_created_global.Add(tr, s);
-                    //previous_llvm_types_created_global.Add(tr, p);
-
-                    // Create array of typerefs as argument to StructSetBody below.
-                    // Note, tr is correct type, but tr.Resolve of a generic type turns the type
-                    // into an uninstantiated generic type. E.g., List<int> contains a generic T[] containing the
-                    // data. T could be a struct/value type, or T could be a class.
-
-                    var new_list = new Dictionary<TypeReference, System.Type>(generic_type_rewrite_rules);
-                    foreach (var a in additional) new_list.Add(a.Key, a.Value);
-
-                    List<TypeRef> list = new List<TypeRef>();
-                    int offset = 0;
-                    var fields = td.Fields;
-                    foreach (var field in fields)
-                    {
-                        FieldAttributes attr = field.Attributes;
-                        if ((attr & FieldAttributes.Static) != 0)
-                            continue;
-
-                        TypeReference field_type = field.FieldType;
-                        TypeReference instantiated_field_type = field.FieldType;
-
-                        if (git != null)
-                        {
-                            Collection<TypeReference> generic_args = git.GenericArguments;
-                            if (field.FieldType.IsArray)
-                            {
-                                var field_type_as_array_type = field.FieldType as ArrayType;
-                                //var et = field.FieldType.GetElementType();
-                                var et = field_type_as_array_type.ElementType;
-                                var bbc = et.HasGenericParameters;
-                                var bbbbc = et.IsGenericParameter;
-                                var array = field.FieldType as ArrayType;
-                                int rank = array.Rank;
-                                if (bbc)
-                                {
-                                    instantiated_field_type = et.MakeGenericInstanceType(generic_args.ToArray());
-                                    instantiated_field_type = instantiated_field_type.MakeArrayType(rank);
-                                }
-                                else if (bbbbc)
-                                {
-                                    instantiated_field_type = generic_args.First();
-                                    instantiated_field_type = instantiated_field_type.MakeArrayType(rank);
-                                }
-                            }
-                            else
-                            {
-                                var et = field.FieldType;
-                                var bbc = et.HasGenericParameters;
-                                var bbbbc = et.IsGenericParameter;
-                                if (bbc)
-                                {
-                                    instantiated_field_type = et.MakeGenericInstanceType(generic_args.ToArray());
-                                }
-                                else if (bbbbc)
-                                {
-                                    instantiated_field_type = generic_args.First();
-                                }
-                            }
-                        }
-
-
-                        int field_size;
-                        int alignment;
-                        var ft =
-                            instantiated_field_type.ToSystemType();
-                        var array_or_class = (instantiated_field_type.IsArray || !instantiated_field_type.IsValueType);
-                        if (array_or_class)
-                        {
-                            field_size = Buffers.SizeOf(typeof(IntPtr));
-                            alignment = Buffers.Alignment(typeof(IntPtr));
-                            int padding = Buffers.Padding(offset, alignment);
-                            offset = offset + padding + field_size;
-                            if (padding != 0)
-                            {
-                                // Add in bytes to effect padding.
-                                for (int j = 0; j < padding; ++j)
-                                    list.Add(LLVM.Int8Type());
-                            }
-                            var field_converted_type = ConvertMonoTypeToLLVM(instantiated_field_type, new_list, level + 1);
-                            field_converted_type = LLVM.PointerType(field_converted_type, 0);
-                            list.Add(field_converted_type);
-                        }
-                        else
-                        {
-                            field_size = Buffers.SizeOf(ft);
-                            alignment = Buffers.Alignment(ft);
-                            int padding = Buffers.Padding(offset, alignment);
-                            offset = offset + padding + field_size;
-                            if (padding != 0)
-                            {
-                                // Add in bytes to effect padding.
-                                for (int j = 0; j < padding; ++j)
-                                    list.Add(LLVM.Int8Type());
-                            }
-                            var field_converted_type = ConvertMonoTypeToLLVM(instantiated_field_type, new_list, level + 1);
-                            list.Add(field_converted_type);
-                        }
-                    }
-                    LLVM.StructSetBody(s, list.ToArray(), true);
-                    return s;
-                }
-                else
-                    throw new Exception("Unknown type.");
-            }
-            catch (Exception e)
-            {
-                throw e;
-            }
-            finally
-            {
-                
             }
         }
     }

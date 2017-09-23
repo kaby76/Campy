@@ -23,6 +23,13 @@ namespace Campy.ControlFlowGraph
             _signed = signed;
         }
 
+        public Type(Mono.Cecil.TypeReference mono_type)
+        {
+            _cil_type = mono_type;
+            _intermediate_type_ref = _cil_type.ToTypeRef();
+            _signed = true;
+        }
+
         public bool is_signed
         {
             get { return _signed; }
@@ -148,12 +155,6 @@ namespace Campy.ControlFlowGraph
         public Type getScalarType()
         {
             return null;
-        }
-
-        public Type getPointerElementType()
-        {
-            var r = LLVM.GetElementType(_intermediate_type_ref);
-            return new Type(r);
         }
 
         public UInt32 getPrimitiveSizeInBits()

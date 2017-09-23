@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Campy.Utils;
 using Swigged.LLVM;
@@ -29,6 +30,14 @@ namespace Campy.ControlFlowGraph
             _value_ref = v;
             TypeRef t = LLVM.TypeOf(v);
             _type = new Type(t);
+        }
+
+        public Value(ValueRef v, Type t)
+        {
+            _value_ref = v;
+            TypeRef tt = LLVM.TypeOf(v);
+            Debug.Assert(t.IntermediateType == tt);
+            _type = t;
         }
 
         public override string ToString()

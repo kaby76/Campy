@@ -1,16 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Reflection;
-using System.Reflection.Emit;
-using System.Runtime.InteropServices;
-using System.Runtime.Serialization;
-using Campy.Types.Utils;
-using Swigged.Cuda;
-
-namespace Campy.LCFG
+﻿namespace Campy.LCFG
 {
+    using Campy.Types.Utils;
+    using Swigged.Cuda;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Reflection;
+    using System.Reflection.Emit;
+    using System.Runtime.InteropServices;
+    using System.Runtime.Serialization;
+    using System.Text;
+
     /// <summary>
     /// This code marshals C#/Net data structures that have an unknown implementation to/from
     /// the implementation for NVIDIA GPUs.
