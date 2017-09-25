@@ -39,10 +39,10 @@ namespace Campy.ControlFlowGraph
             if (md.HasThis)
             {
                 TypeReference type_reference = md.DeclaringType;
-                TypeRef type = type_reference.ToTypeRef(bb.OpsFromOriginal);
+                Type type = new Type(type_reference);
                 var vx = new Value(
-                    LLVM.ConstInt(type, (ulong)0xdeadbeef, true),
-                    new Type(type_reference));
+                    LLVM.ConstInt(type.IntermediateType, (ulong)0xdeadbeef, true),
+                    type);
                 _stack.Push(vx);
                 _this = _stack.Section(begin++, 1);
             }
@@ -93,7 +93,8 @@ namespace Campy.ControlFlowGraph
                 if (bb.HasThis)
                 {
                     var par = LLVM.GetParam(fun, begin++);
-                    var vx = new Value(par);
+                    var this_par_type = new Type(bb.Method.DeclaringType);
+                    var vx = new Value(par, this_par_type);
                     if (Campy.Utils.Options.IsOn("jit_trace"))
                         System.Console.WriteLine("in state() " + vx.ToString());
                     _stack.Push(vx);

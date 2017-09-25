@@ -1,4 +1,5 @@
 ﻿using System;
+using Campy.Types.Utils;
 using Swigged.LLVM;
 
 namespace Campy.ControlFlowGraph
@@ -12,22 +13,89 @@ namespace Campy.ControlFlowGraph
         // is on page 311. Basically, the stack used to compile
         // must know which type is used for code generation.
 
-        private readonly Mono.Cecil.TypeReference _cil_type;
         private readonly bool _signed;
+        private readonly Mono.Cecil.TypeReference _cil_type;
         private readonly Mono.Cecil.TypeReference _verification_type;
+        private readonly Mono.Cecil.TypeReference _stack_verification_type;
+        private readonly Mono.Cecil.TypeReference _intermediate_type;
         private readonly TypeRef _intermediate_type_ref;
 
-        public Type(TypeRef intermediate_type, bool signed = true)
+        private Type(TypeRef intermediate_type, bool signed = true)
         {
             _intermediate_type_ref = intermediate_type;
             _signed = signed;
         }
 
+        public Type(System.Type system_type)
+        {
+            var mono_type = system_type.ToMonoTypeReference();
+            _cil_type = mono_type;
+            _verification_type = InitVerificationType(_cil_type);
+            _stack_verification_type = InitStackVerificationType(_verification_type);
+            _intermediate_type_ref = _stack_verification_type.ToTypeRef();
+        }
+
         public Type(Mono.Cecil.TypeReference mono_type)
         {
             _cil_type = mono_type;
-            _intermediate_type_ref = _cil_type.ToTypeRef();
-            _signed = true;
+            _verification_type = InitVerificationType(_cil_type);
+            _stack_verification_type = InitStackVerificationType(_verification_type);
+            _intermediate_type_ref = _stack_verification_type.ToTypeRef();
+        }
+
+        private Mono.Cecil.TypeReference InitVerificationType(Mono.Cecil.TypeReference mono_type)
+        {
+            // Roughly encoding table on page 311.
+            if (_cil_type == typeof(sbyte).ToMonoTypeReference())
+                return typeof(sbyte).ToMonoTypeReference();
+            else if (_cil_type == typeof(byte).ToMonoTypeReference())
+                return typeof(sbyte).ToMonoTypeReference();
+            else if (_cil_type == typeof(bool).ToMonoTypeReference())
+                return typeof(sbyte).ToMonoTypeReference();
+
+            else if (_cil_type == typeof(short).ToMonoTypeReference())
+                return typeof(short).ToMonoTypeReference();
+            else if (_cil_type == typeof(ushort).ToMonoTypeReference())
+                return typeof(short).ToMonoTypeReference();
+            else if (_cil_type == typeof(char).ToMonoTypeReference())
+                return typeof(short).ToMonoTypeReference();
+
+            else if (_cil_type == typeof(int).ToMonoTypeReference())
+                return typeof(int).ToMonoTypeReference();
+            else if (_cil_type == typeof(uint).ToMonoTypeReference())
+                return typeof(int).ToMonoTypeReference();
+
+            else if (_cil_type == typeof(long).ToMonoTypeReference())
+                return typeof(long).ToMonoTypeReference();
+            else if (_cil_type == typeof(ulong).ToMonoTypeReference())
+                return typeof(long).ToMonoTypeReference();
+
+            else if (_cil_type == typeof(float).ToMonoTypeReference())
+                return typeof(float).ToMonoTypeReference();
+
+            else if (_cil_type == typeof(double).ToMonoTypeReference())
+                return typeof(double).ToMonoTypeReference();
+
+            else
+                return _cil_type;
+        }
+
+        private Mono.Cecil.TypeReference InitStackVerificationType(Mono.Cecil.TypeReference mono_type)
+        {
+            if (_verification_type == typeof(sbyte).ToMonoTypeReference())
+                return typeof(int).ToMonoTypeReference();
+            else if (_verification_type == typeof(short).ToMonoTypeReference())
+                return typeof(int).ToMonoTypeReference();
+            else if (_verification_type == typeof(int).ToMonoTypeReference())
+                return typeof(int).ToMonoTypeReference();
+            else if (_verification_type == typeof(long).ToMonoTypeReference())
+                return typeof(long).ToMonoTypeReference();
+            else if (_verification_type == typeof(float).ToMonoTypeReference())
+                return typeof(float).ToMonoTypeReference();
+            else if (_verification_type == typeof(double).ToMonoTypeReference())
+                return typeof(double).ToMonoTypeReference();
+            else
+                return _cil_type;
         }
 
         public bool is_signed

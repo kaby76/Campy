@@ -1266,8 +1266,13 @@ namespace Campy.ControlFlowGraph
                 else
                 {
                     // Set up for push of 0/1.
-                    var ret = LLVM.BuildZExt(Builder, cmp, LLVM.Int32Type(), "");
-                    state._stack.Push(new Value(ret, LLVM.Int32Type()));
+                    var return_type = new Type(typeof(bool));
+                    var ret_llvm = LLVM.BuildZExt(Builder, cmp, return_type.IntermediateType, "");
+                    var ret = new Value(ret_llvm, return_type);
+                    if (Campy.Utils.Options.IsOn("jit_trace"))
+                        System.Console.WriteLine(ret);
+
+                    state._stack.Push(ret);
                 }
             }
             return Next;
@@ -1357,13 +1362,14 @@ namespace Campy.ControlFlowGraph
 
     public class ConvertInst : Inst
     {
-        protected Type dst;
-        protected bool _throw_exceptions;
+        protected Type _dst;
+        protected bool _check_overflow;
+        protected bool _from_unsigned;
 
         Value convert_full(Value src)
         {
             TypeRef stype = LLVM.TypeOf(src.V);
-            TypeRef dtype = dst.IntermediateType;
+            TypeRef dtype = _dst.IntermediateType;
 
             if (stype != dtype)
             {
@@ -1382,7 +1388,7 @@ namespace Campy.ControlFlowGraph
 
                 if (ext)
                     return new Value(
-                        dst.is_unsigned
+                        _dst.is_unsigned
                         ? LLVM.BuildZExt(Builder, src.V, dtype, "")
                         : LLVM.BuildSExt(Builder, src.V, dtype, ""));
 
@@ -1474,7 +1480,26 @@ namespace Campy.ControlFlowGraph
         public ConvertOvfInst(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            _throw_exceptions = true;
+            _check_overflow = true;
+        }
+    }
+
+    public class ConvertOvfUnsInst : ConvertInst
+    {
+        public ConvertOvfUnsInst(Mono.Cecil.Cil.Instruction i)
+            : base(i)
+        {
+            _check_overflow = true;
+            _from_unsigned = true;
+        }
+    }
+
+    public class ConvertUnsInst : ConvertInst
+    {
+        public ConvertUnsInst(Mono.Cecil.Cil.Instruction i)
+            : base(i)
+        {
+            _from_unsigned = true;
         }
     }
 
@@ -2808,7 +2833,7 @@ namespace Campy.ControlFlowGraph
         public i_conv_i1(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            dst = new Type(LLVM.Int8Type());
+            _dst = new Type(typeof(sbyte));
         }
     }
 
@@ -2817,7 +2842,7 @@ namespace Campy.ControlFlowGraph
         public i_conv_i2(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            dst = new Type(LLVM.Int16Type());
+            _dst = new Type(typeof(short));
         }
     }
 
@@ -2826,7 +2851,7 @@ namespace Campy.ControlFlowGraph
         public i_conv_i4(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            dst = new Type(LLVM.Int32Type());
+            _dst = new Type(typeof(int));
         }
     }
 
@@ -2835,7 +2860,7 @@ namespace Campy.ControlFlowGraph
         public i_conv_i8(Mono.Cecil.Cil.Instruction i)
                 : base(i)
         {
-            dst = new Type(LLVM.Int64Type());
+            _dst = new Type(typeof(long));
         }
     }
 
@@ -2844,7 +2869,7 @@ namespace Campy.ControlFlowGraph
         public i_conv_i(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            dst = new Type(LLVM.Int32Type());
+            _dst = new Type(typeof(int));
         }
     }
 
@@ -2853,16 +2878,16 @@ namespace Campy.ControlFlowGraph
         public i_conv_ovf_i1(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            dst = new Type(LLVM.Int8Type());
+            _dst = new Type(typeof(sbyte));
         }
     }
 
-    public class i_conv_ovf_i1_un : ConvertOvfInst
+    public class i_conv_ovf_i1_un : ConvertOvfUnsInst
     {
         public i_conv_ovf_i1_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            dst = new Type(LLVM.Int8Type(), false);
+            _dst = new Type(typeof(sbyte));
         }
     }
 
@@ -2871,16 +2896,16 @@ namespace Campy.ControlFlowGraph
         public i_conv_ovf_i2(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            dst = new Type(LLVM.Int16Type());
+            _dst = new Type(typeof(short));
         }
     }
 
-    public class i_conv_ovf_i2_un : ConvertOvfInst
+    public class i_conv_ovf_i2_un : ConvertOvfUnsInst
     {
         public i_conv_ovf_i2_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            dst = new Type(LLVM.Int16Type(), false);
+            _dst = new Type(typeof(short));
         }
     }
 
@@ -2889,16 +2914,16 @@ namespace Campy.ControlFlowGraph
         public i_conv_ovf_i4(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            dst = new Type(LLVM.Int32Type());
+            _dst = new Type(typeof(int));
         }
     }
 
-    public class i_conv_ovf_i4_un : ConvertOvfInst
+    public class i_conv_ovf_i4_un : ConvertOvfUnsInst
     {
         public i_conv_ovf_i4_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            dst = new Type(LLVM.Int32Type(), false);
+            _dst = new Type(typeof(int));
         }
     }
 
@@ -2907,16 +2932,16 @@ namespace Campy.ControlFlowGraph
         public i_conv_ovf_i8(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            dst = new Type(LLVM.Int64Type());
+            _dst = new Type(typeof(long));
         }
     }
 
-    public class i_conv_ovf_i8_un : ConvertOvfInst
+    public class i_conv_ovf_i8_un : ConvertOvfUnsInst
     {
         public i_conv_ovf_i8_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            dst = new Type(LLVM.Int64Type(), false);
+            _dst = new Type(typeof(long));
         }
     }
 
@@ -2925,16 +2950,16 @@ namespace Campy.ControlFlowGraph
         public i_conv_ovf_i(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            dst = new Type(LLVM.Int32Type());
+            _dst = new Type(typeof(int));
         }
     }
 
-    public class i_conv_ovf_i_un : ConvertOvfInst
+    public class i_conv_ovf_i_un : ConvertOvfUnsInst
     {
         public i_conv_ovf_i_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            dst = new Type(LLVM.Int32Type(), false);
+            _dst = new Type(typeof(int));
         }
     }
 
@@ -2943,16 +2968,16 @@ namespace Campy.ControlFlowGraph
         public i_conv_ovf_u1(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            dst = new Type(LLVM.Int8Type(), false);
+            _dst = new Type(typeof(byte));
         }
     }
 
-    public class i_conv_ovf_u1_un : ConvertOvfInst
+    public class i_conv_ovf_u1_un : ConvertOvfUnsInst
     {
         public i_conv_ovf_u1_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            dst = new Type(LLVM.Int8Type(), false);
+            _dst = new Type(typeof(byte));
         }
     }
 
@@ -2961,16 +2986,16 @@ namespace Campy.ControlFlowGraph
         public i_conv_ovf_u2(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            dst = new Type(LLVM.Int16Type(), false);
+            _dst = new Type(typeof(ushort));
         }
     }
 
-    public class i_conv_ovf_u2_un : ConvertOvfInst
+    public class i_conv_ovf_u2_un : ConvertOvfUnsInst
     {
         public i_conv_ovf_u2_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            dst = new Type(LLVM.Int16Type(), false);
+            _dst = new Type(typeof(ushort));
         }
     }
 
@@ -2979,16 +3004,16 @@ namespace Campy.ControlFlowGraph
         public i_conv_ovf_u4(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            dst = new Type(LLVM.Int32Type(), false);
+            _dst = new Type(typeof(uint));
         }
     }
 
-    public class i_conv_ovf_u4_un : ConvertOvfInst
+    public class i_conv_ovf_u4_un : ConvertOvfUnsInst
     {
         public i_conv_ovf_u4_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            dst = new Type(LLVM.Int32Type(), false);
+            _dst = new Type(typeof(uint));
         }
     }
 
@@ -2997,16 +3022,16 @@ namespace Campy.ControlFlowGraph
         public i_conv_ovf_u8(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            dst = new Type(LLVM.Int64Type(), false);
+            _dst = new Type(typeof(ulong));
         }
     }
 
-    public class i_conv_ovf_u8_un : ConvertOvfInst
+    public class i_conv_ovf_u8_un : ConvertOvfUnsInst
     {
         public i_conv_ovf_u8_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            dst = new Type(LLVM.Int64Type(), false);
+            _dst = new Type(typeof(ulong));
         }
     }
 
@@ -3015,16 +3040,16 @@ namespace Campy.ControlFlowGraph
         public i_conv_ovf_u(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            dst = new Type(LLVM.Int32Type(), false);
+            _dst = new Type(typeof(uint));
         }
     }
 
-    public class i_conv_ovf_u_un : ConvertOvfInst
+    public class i_conv_ovf_u_un : ConvertOvfUnsInst
     {
         public i_conv_ovf_u_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            dst = new Type(LLVM.Int32Type(), false);
+            _dst = new Type(typeof(uint));
         }
     }
 
@@ -3033,7 +3058,7 @@ namespace Campy.ControlFlowGraph
         public i_conv_r4(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            dst = new Type(LLVM.FloatType());
+            _dst = new Type(typeof(float));
         }
     }
 
@@ -3042,16 +3067,16 @@ namespace Campy.ControlFlowGraph
         public i_conv_r8(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            dst = new Type(LLVM.DoubleType());
+            _dst = new Type(typeof(double));
         }
     }
 
-    public class i_conv_r_un : ConvertInst
+    public class i_conv_r_un : ConvertUnsInst
     {
         public i_conv_r_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            dst = new Type(LLVM.FloatType());
+            _dst = new Type(typeof(float));
         }
     }
 
@@ -3060,7 +3085,7 @@ namespace Campy.ControlFlowGraph
         public i_conv_u1(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            dst = new Type(LLVM.Int8Type(), false);
+            _dst = new Type(typeof(byte));
         }
     }
 
@@ -3069,7 +3094,7 @@ namespace Campy.ControlFlowGraph
         public i_conv_u2(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            dst = new Type(LLVM.Int16Type(), false);
+            _dst = new Type(typeof(ushort));
         }
     }
 
@@ -3078,7 +3103,7 @@ namespace Campy.ControlFlowGraph
         public i_conv_u4(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            dst = new Type(LLVM.Int32Type(), false);
+            _dst = new Type(typeof(uint));
         }
     }
 
@@ -3087,7 +3112,7 @@ namespace Campy.ControlFlowGraph
         public i_conv_u8(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            dst = new Type(LLVM.Int64Type(), false);
+            _dst = new Type(typeof(ulong));
         }
     }
 
@@ -3096,7 +3121,7 @@ namespace Campy.ControlFlowGraph
         public i_conv_u(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            dst = new Type(LLVM.Int32Type(), false);
+            _dst = new Type(typeof(uint));
         }
     }
 

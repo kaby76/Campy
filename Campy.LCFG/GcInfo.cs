@@ -204,22 +204,22 @@ namespace Campy.ControlFlowGraph
         // Flags based on Type of allocation.
         public void recordAlloca(Value Alloca)
         {
-            ValueRef vr = Alloca.V;
-            TypeRef alt = LLVM.GetAllocatedType(vr);
-            Debug.Assert(!hasRecord(Alloca), "Duplicate Allocation");
-            Type Type = new Type(alt);
-            AllocaFlags Flags = AllocaFlags.None;
+            //ValueRef vr = Alloca.V;
+            //TypeRef alt = LLVM.GetAllocatedType(vr);
+            //Debug.Assert(!hasRecord(Alloca), "Duplicate Allocation");
+            //Type Type = new Type(alt);
+            //AllocaFlags Flags = AllocaFlags.None;
 
-            if (GcInfo.isGcPointer(Type))
-            {
-                Flags = AllocaFlags.GcPointer;
-            }
-            else if (GcInfo.isGcAggregate(Type))
-            {
-                Flags = AllocaFlags.GcAggregate;
-            }
+            //if (GcInfo.isGcPointer(Type))
+            //{
+            //    Flags = AllocaFlags.GcPointer;
+            //}
+            //else if (GcInfo.isGcAggregate(Type))
+            //{
+            //    Flags = AllocaFlags.GcAggregate;
+            //}
 
-            AllocaMap[Alloca] = new AllocaInfo(GcInfo.InvalidPointerOffset, Flags);
+            //AllocaMap[Alloca] = new AllocaInfo(GcInfo.InvalidPointerOffset, Flags);
         }
 
     };
@@ -242,29 +242,29 @@ namespace Campy.ControlFlowGraph
 
         public static bool isGcAggregate(Type type)
         {
-            if (type.isVectorTy())
-            {
-                Type st = type.getScalarType();
-                return isGcPointer(st);
-            }
-            if (type.isArrayTy())
-            {
-                TypeRef et = LLVM.GetElementType(type.IntermediateType);
-                return isGcPointer(new Type(et));
-            }
-            if (type.isStructTy())
-            {
-                uint count = LLVM.CountStructElementTypes(type.IntermediateType);
-                TypeRef[] dest = new TypeRef[count];
-                LLVM.GetStructElementTypes(type.IntermediateType, dest);
-                foreach (TypeRef subtype in dest)
-                {
-                    if (isGcType(new Type(subtype)))
-                    {
-                        return true;
-                    }
-                }
-            }
+            //if (type.isVectorTy())
+            //{
+            //    Type st = type.getScalarType();
+            //    return isGcPointer(st);
+            //}
+            //if (type.isArrayTy())
+            //{
+            //    TypeRef et = LLVM.GetElementType(type.IntermediateType);
+            //    return isGcPointer(new Type(et));
+            //}
+            //if (type.isStructTy())
+            //{
+            //    uint count = LLVM.CountStructElementTypes(type.IntermediateType);
+            //    TypeRef[] dest = new TypeRef[count];
+            //    LLVM.GetStructElementTypes(type.IntermediateType, dest);
+            //    foreach (TypeRef subtype in dest)
+            //    {
+            //        if (isGcType(new Type(subtype)))
+            //        {
+            //            return true;
+            //        }
+            //    }
+            //}
             return false;
         }
 
@@ -285,8 +285,9 @@ namespace Campy.ControlFlowGraph
 
         public static bool isGcAllocation(Value value)
         {
-            var x = LLVM.GetAllocatedType(value.V);
-            return isGcType(new Type(x));
+            //var x = LLVM.GetAllocatedType(value.V);
+            //return isGcType(new Type(x));
+            return false;
         }
 
         public static bool isGcFunction(Function f)
