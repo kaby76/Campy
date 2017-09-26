@@ -25,7 +25,7 @@ namespace Campy.ControlFlowGraph
             set { _type = value; }
         }
 
-        private Value(ValueRef v)
+        public Value(ValueRef v)
         {
             _value_ref = v;
             TypeRef t = LLVM.TypeOf(v);

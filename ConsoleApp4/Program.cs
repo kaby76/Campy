@@ -54,6 +54,11 @@ namespace ConsoleApp4
 
             {
                 int n = 4;
+                int[] x = new int[n];
+                Campy.Parallel.For(n, i => x[i] = i);
+            }
+            {
+                int n = 4;
                 System.UInt16[] t4 = new ushort[n];
                 Campy.Parallel.For(n, i => t4[i] = (ushort)(i + 1));
                 for (int i = 0; i < n; ++i) if (t4[i] != (ushort)(i + 1)) throw new Exception("unequal");
@@ -62,11 +67,6 @@ namespace ConsoleApp4
                 {
                     t8[i] = (ushort)(t4[i] + i + 1);
                 });
-            }
-            {
-                int n = 4;
-                int[] x = new int[n];
-                Campy.Parallel.For(n, i => x[i] = x.Length);
             }
             {
                 int[][] jagged_array = new int[][]

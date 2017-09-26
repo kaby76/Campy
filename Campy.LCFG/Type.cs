@@ -20,7 +20,7 @@ namespace Campy.ControlFlowGraph
         private readonly Mono.Cecil.TypeReference _intermediate_type;
         private readonly TypeRef _intermediate_type_ref;
 
-        private Type(TypeRef intermediate_type, bool signed = true)
+        public Type(TypeRef intermediate_type, bool signed = true)
         {
             _intermediate_type_ref = intermediate_type;
             _signed = signed;
