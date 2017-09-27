@@ -98,7 +98,7 @@
       <Project>{a71ce04f-f0d2-46e0-bae8-06cf1ea50f96}</Project>
       <Name>Campy.Graphs</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Campy.LCFG\Campy.Compiler.csproj">
+    <ProjectReference Include="..\Campy.Compiler\Campy.Compiler.csproj">
       <Project>{ced2299a-4f97-4fb7-bfa8-a61b50e9986d}</Project>
       <Name>Campy.Compiler</Name>
     </ProjectReference>
