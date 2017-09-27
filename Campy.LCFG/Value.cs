@@ -52,7 +52,8 @@ namespace Campy.ControlFlowGraph
             {
                 string a = LLVM.PrintValueToString(_value_ref);
                 string b = LLVM.PrintTypeToString(LLVM.TypeOf(_value_ref));
-                return a + ":" + b;
+                string c = LLVM.PrintTypeToString(_type.IntermediateType);
+                return a + ":" + b + " " + c;
             }
             catch
             {

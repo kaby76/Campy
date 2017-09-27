@@ -70,16 +70,16 @@ namespace Campy.ControlFlowGraph
                     ContextRef c = LLVM.ContextCreate();
                     string type_name = Converter.RenameToLegalLLVMName(tr.ToString());
                     TypeRef s = LLVM.StructCreateNamed(c, type_name);
-                    Converter.previous_llvm_types_created_global.Add(tr, s);
+                    TypeRef p = LLVM.PointerType(s, 0);
+                    Converter.previous_llvm_types_created_global.Add(tr, p);
+                    var e = ToTypeRef(element_type, generic_type_rewrite_rules, level + 1);
                     LLVM.StructSetBody(s, new TypeRef[2]
                     {
-                        (element_type.IsArray || !element_type.IsValueType)
-                            ? LLVM.PointerType(LLVM.PointerType(ToTypeRef(element_type, generic_type_rewrite_rules, level+1), 0), 0)
-                            : LLVM.PointerType(ToTypeRef(element_type, generic_type_rewrite_rules, level+1), 0)
+                        LLVM.PointerType(e, 0)
                         , LLVM.Int64Type()
                     }, true);
-                    var e = ToTypeRef(element_type, generic_type_rewrite_rules);
-                    return s;
+                    System.Console.WriteLine(LLVM.PrintTypeToString(s));
+                    return p;
                 }
                 else if (tr.IsGenericParameter)
                 {
@@ -126,10 +126,8 @@ namespace Campy.ControlFlowGraph
                     string llvm_name = Converter.RenameToLegalLLVMName(tr.ToString());
                     TypeRef s = LLVM.StructCreateNamed(c, llvm_name);
 
-                    //var p = LLVM.PointerType(s, 0);
-
-                    Converter.previous_llvm_types_created_global.Add(tr, s);
-                    //previous_llvm_types_created_global.Add(tr, p);
+                    var p = LLVM.PointerType(s, 0);
+                    Converter.previous_llvm_types_created_global.Add(tr, p);
 
                     // Create array of typerefs as argument to StructSetBody below.
                     // Note, tr is correct type, but tr.Resolve of a generic type turns the type
@@ -209,7 +207,7 @@ namespace Campy.ControlFlowGraph
                                     list.Add(LLVM.Int8Type());
                             }
                             var field_converted_type = ToTypeRef(instantiated_field_type, new_list, level + 1);
-                            field_converted_type = LLVM.PointerType(field_converted_type, 0);
+                            field_converted_type = field_converted_type;
                             list.Add(field_converted_type);
                         }
                         else
@@ -229,7 +227,8 @@ namespace Campy.ControlFlowGraph
                         }
                     }
                     LLVM.StructSetBody(s, list.ToArray(), true);
-                    return s;
+                    System.Console.WriteLine(LLVM.PrintTypeToString(s));
+                    return p;
                 }
                 else
                     throw new Exception("Unknown type.");
@@ -849,7 +848,7 @@ namespace Campy.ControlFlowGraph
                 {
                     if (bb.HasThis)
                     {
-                        param_types[current++] = LLVM.PointerType(method.DeclaringType.ToTypeRef(bb.OpsFromOriginal), 0);
+                        param_types[current++] = method.DeclaringType.ToTypeRef();
                     }
 
                     foreach (var p in parameters)
@@ -864,10 +863,6 @@ namespace Campy.ControlFlowGraph
                         }
 
                         param_types[current++] = type_reference_of_parameter.ToTypeRef(bb.OpsFromOriginal);
-                        if (type_reference_of_parameter.IsArray)
-                            param_types[current - 1] = LLVM.PointerType(param_types[current - 1], 0);
-                        else if (! type_reference_of_parameter.IsValueType)
-                            param_types[current - 1] = LLVM.PointerType(param_types[current - 1], 0);
                     }
 
                     if (Campy.Utils.Options.IsOn("jit_trace"))
