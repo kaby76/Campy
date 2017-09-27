@@ -59,6 +59,11 @@ namespace ConsoleApp4
             }
             {
                 int n = 4;
+                int[] x = new int[n];
+                Campy.Parallel.For(n, i => x[i[0]] = i[0]);
+            }
+            {
+                int n = 4;
                 System.UInt16[] t4 = new ushort[n];
                 Campy.Parallel.For(n, i => t4[i] = (ushort)(i + 1));
                 for (int i = 0; i < n; ++i) if (t4[i] != (ushort)(i + 1)) throw new Exception("unequal");
