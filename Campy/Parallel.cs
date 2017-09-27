@@ -155,8 +155,8 @@ namespace Campy
                 var res = CUresult.CUDA_SUCCESS;
                 fixed (IntPtr* kernelParams = kp)
                 {
-                    linear_to_tile(number_of_threads, out dim3 tile_size, out dim3 tiles);
-                    //linear_to_tile(1, out dim3 tile_size, out dim3 tiles);
+                    MakeLinearTiling(number_of_threads, out dim3 tile_size, out dim3 tiles);
+                    //MakeLinearTiling(1, out dim3 tile_size, out dim3 tiles);
 
                     res = Cuda.cuLaunchKernel(
                         ptr_to_kernel,
@@ -195,15 +195,14 @@ namespace Campy
         {
         }
 
-        struct dim3
+        public struct dim3
         {
             public uint x;
             public uint y;
             public uint z;
         }
 
-        private static void linear_to_tile(int size,
-            out dim3 tile_size, out dim3 tiles)
+        public static void MakeLinearTiling(int size, out dim3 tile_size, out dim3 tiles)
         {
             int max_dimensionality = 3;
             int[] blocks = new int[10];
@@ -227,7 +226,7 @@ namespace Campy
                 // done. return the result.
                 blocks[0] = b;
                 threads[0] = max_threads[0];
-                make_results(blocks, threads, max_dimensionality, out tile_size, out tiles);
+                SetBlockAndThreadDim(blocks, threads, max_dimensionality, out tile_size, out tiles);
                 return;
             }
 
@@ -242,14 +241,13 @@ namespace Campy
                 // done. return the result.
                 blocks[0] = blocks[1] = b;
                 threads[0] = max_threads[0];
-                make_results(blocks, threads, max_dimensionality, out tile_size, out tiles);
+                SetBlockAndThreadDim(blocks, threads, max_dimensionality, out tile_size, out tiles);
                 return;
             }
             throw new Exception();
         }
 
-        private static void make_results(int[] blocks, int[] threads, int max_dimensionality,
-            out dim3 tile_size, out dim3 tiles)
+        private static void SetBlockAndThreadDim(int[] blocks, int[] threads, int max_dimensionality, out dim3 tile_size, out dim3 tiles)
         {
             tiles.x = (uint)blocks[0];
             tiles.y = (uint)blocks[1];
