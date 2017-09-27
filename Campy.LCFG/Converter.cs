@@ -17,7 +17,7 @@ using Mono.Cecil.Rocks;
 using Mono.Collections.Generic;
 using FieldAttributes = Mono.Cecil.FieldAttributes;
 
-namespace Campy.ControlFlowGraph
+namespace Campy.Compiler
 {
     public static class ConverterHelper
     {

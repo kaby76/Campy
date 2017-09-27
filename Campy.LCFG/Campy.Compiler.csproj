@@ -77,7 +77,6 @@
     <Compile Include="CFG.cs" />
     <Compile Include="Inst.cs" />
     <Compile Include="FunctionParameterType.cs" />
-    <Compile Include="FunctionSignature.cs" />
     <Compile Include="Function.cs" />
     <Compile Include="GcInfo.cs" />
     <Compile Include="IABI.cs" />

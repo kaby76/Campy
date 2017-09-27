@@ -1,6 +1,6 @@
 ﻿using Swigged.LLVM;
 
-namespace Campy.ControlFlowGraph
+namespace Campy.Compiler
 {
     using Campy.Graphs;
     using Mono.Cecil.Cil;

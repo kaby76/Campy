@@ -2,7 +2,7 @@
 using Campy.Types.Utils;
 using Swigged.LLVM;
 
-namespace Campy.ControlFlowGraph
+namespace Campy.Compiler
 {
     public class Type
     {

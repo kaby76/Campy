@@ -1,6 +1,6 @@
 ﻿using Campy.Types.Utils;
 
-namespace Campy.ControlFlowGraph
+namespace Campy.Compiler
 {
     using Campy.Utils;
     using Mono.Cecil;

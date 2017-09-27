@@ -5,7 +5,7 @@ using System.Linq;
 using Campy.Utils;
 using Swigged.LLVM;
 
-namespace Campy.ControlFlowGraph
+namespace Campy.Compiler
 {
     public class Value : IComparable
     {

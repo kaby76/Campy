@@ -9,7 +9,7 @@ using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Swigged.LLVM;
 
-namespace Campy.ControlFlowGraph
+namespace Campy.Compiler
 {
     /// <summary>
     /// Wrapper for CIL instructions that are implemented using Mono.Cecil.Cil.

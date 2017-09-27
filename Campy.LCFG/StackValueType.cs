@@ -1,4 +1,4 @@
-﻿namespace Campy.ControlFlowGraph
+﻿namespace Campy.Compiler
 {
     public enum StackValueType
     {

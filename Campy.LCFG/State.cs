@@ -6,7 +6,7 @@ using Mono.Cecil.Cil;
 using Mono.Collections.Generic;
 using Swigged.LLVM;
 
-namespace Campy.ControlFlowGraph
+namespace Campy.Compiler
 {
     public class State
     {

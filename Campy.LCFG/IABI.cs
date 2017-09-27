@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Campy.ControlFlowGraph
+namespace Campy.Compiler
 {
     /// <summary>
     /// Defines an ABI (how to pass parameters to function calls).

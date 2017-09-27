@@ -4,7 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using Campy.Types;
-using Campy.ControlFlowGraph;
+using Campy.Compiler;
 using Campy.LCFG;
 using Campy.Types.Utils;
 using Mono.Cecil;
@@ -15,7 +15,7 @@ namespace Campy
 {
     public class Parallel
     {
-        private static Parallel Singleton = new Parallel();
+        private static Parallel _singleton;
         private CFG _graph;
         private Reader _reader;
         private Converter _converter;
@@ -26,8 +26,17 @@ namespace Campy
             Cuda.cuInit(0);
             _reader = new Reader();
             _graph = _reader.Cfg;
-            _converter = new Campy.ControlFlowGraph.Converter(_graph);
+            _converter = new Campy.Compiler.Converter(_graph);
            // var ok = GC.TryStartNoGCRegion(200000000);
+        }
+
+        public static Parallel Singleton()
+        {
+            if (_singleton == null)
+            {
+                _singleton = new Parallel();
+            }
+            return _singleton;
         }
 
         public static void For(int number_of_threads, _Kernel_type kernel)
@@ -48,9 +57,9 @@ namespace Campy
             try
             {
                 // Parse kernel instructions to determine basic block representation of all the code to compile.
-                int change_set_id = Singleton._graph.StartChangeSet();
-                Singleton._reader.AnalyzeMethod(kernel);
-                List<CFG.Vertex> cs = Singleton._graph.PopChangeSet(change_set_id);
+                int change_set_id = Singleton()._graph.StartChangeSet();
+                Singleton()._reader.AnalyzeMethod(kernel);
+                List<CFG.Vertex> cs = Singleton()._graph.PopChangeSet(change_set_id);
 
                 MethodInfo method = kernel.Method;
                 object target = kernel.Target;
@@ -60,7 +69,7 @@ namespace Campy
                 if (!cs.Any())
                 {
                     // Compiled previously. Look for basic block of entry.
-                    CFG.Vertex vvv = Singleton._graph.Entries.Where(v =>
+                    CFG.Vertex vvv = Singleton()._graph.Entries.Where(v =>
                         v.IsEntry && v.Method.Name == method.Name).FirstOrDefault();
 
                     bb = vvv;
@@ -94,16 +103,16 @@ namespace Campy
                 // type information. As we spread the type info from basic block to successors,
                 // copy the node with the type information associated with it if the type info
                 // results in a different interpretation/compilation of the function.
-                cs = Singleton._converter.InstantiateGenerics(
+                cs = Singleton()._converter.InstantiateGenerics(
                     cs, list_of_data_types_used, list_of_mono_data_types_used);
 
                 // Associate "this" with entry.
                 Dictionary<TypeReference, Type> ops = bb.OpsFromOriginal;
 
                 // Compile methods with added type information.
-                Singleton._converter.CompileToLLVM(cs, list_of_mono_data_types_used);
+                Singleton()._converter.CompileToLLVM(cs, list_of_mono_data_types_used);
 
-                var ptr_to_kernel = Singleton._converter.GetCudaFunction(bb.Name);
+                var ptr_to_kernel = Singleton()._converter.GetCudaFunction(bb.Name);
 
                 Index index = new Index(number_of_threads);
                 Buffers buffer = new Buffers();
