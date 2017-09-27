@@ -1,5 +1,6 @@
 ﻿namespace Campy.LCFG
 {
+    using Campy.Compiler;
     using Campy.Types.Utils;
     using Swigged.Cuda;
     using System;
@@ -50,7 +51,7 @@
             return IsBlittableCache<T>.Value;
         }
 
-        public static bool IsBlittable(Type type)
+        public static bool IsBlittable(System.Type type)
         {
             if (type.IsArray)
             {
@@ -96,7 +97,7 @@
             }
         }
 
-        public Type CreateImplementationType(Type hostType, bool declare_parent_chain = true, bool declare_flatten_structure = false)
+        public System.Type CreateImplementationType(System.Type hostType, bool declare_parent_chain = true, bool declare_flatten_structure = false)
         {
             try
             {
@@ -118,13 +119,13 @@
 
                 String name;
                 System.Reflection.TypeFilter tf;
-                Type bbt = null;
+                System.Type bbt = null;
 
                 // Declare inheritance types.
                 if (declare_parent_chain)
                 {
                     // First, declare base type
-                    Type bt = hostType.BaseType;
+                    System.Type bt = hostType.BaseType;
                     bbt = bt;
                     if (bt != null && !bt.FullName.Equals("System.Object") && !bt.FullName.Equals("System.ValueType"))
                     {
@@ -134,13 +135,13 @@
 
                 name = hostType.FullName;
                 _type_name_map.TryGetValue(name, out string alt);
-                tf = new System.Reflection.TypeFilter((Type t, object o) =>
+                tf = new System.Reflection.TypeFilter((System.Type t, object o) =>
                 {
                     return t.FullName == name || t.FullName == alt;
                 });
 
                 // Find if blittable type for hostType was already performed.
-                Type[] types = _asm.mb.FindTypes(tf, null);
+                System.Type[] types = _asm.mb.FindTypes(tf, null);
 
                 // If blittable type was not created, create one with all fields corresponding
                 // to that in host, with special attention to arrays.
@@ -149,11 +150,11 @@
 
                 if (hostType.IsArray)
                 {
-                    Type elementType = CreateImplementationType(hostType.GetElementType(),
+                    System.Type elementType = CreateImplementationType(hostType.GetElementType(),
                         declare_parent_chain,
                         declare_flatten_structure);
                     object array_obj = Array.CreateInstance(elementType, 0);
-                    Type array_type = array_obj.GetType();
+                    var array_type = array_obj.GetType();
 
                     // For arrays, convert into a struct with first field being a
                     // pointer, and the second field a length.
@@ -193,7 +194,7 @@
                             | System.Reflection.TypeAttributes.Serializable);
                     }
                     _type_name_map[name] = tb.FullName;
-                    Type ht = hostType;
+                    System.Type ht = hostType;
                     while (ht != null)
                     {
                         var fields = ht.GetFields(
@@ -206,7 +207,7 @@
                         {
                             // For non-array type fields, just define the field as is.
                             // Recurse
-                            Type elementType = CreateImplementationType(field.FieldType, declare_parent_chain,
+                            System.Type elementType = CreateImplementationType(field.FieldType, declare_parent_chain,
                                 declare_flatten_structure);
                             // If elementType is a reference or array, then we need to convert it to a IntPtr.
                             if (elementType.IsClass || elementType.IsArray)
@@ -242,7 +243,7 @@
                             | System.Reflection.TypeAttributes.Serializable);
                     }
                     _type_name_map[name] = tb.FullName;
-                    Type ht = hostType;
+                    System.Type ht = hostType;
                     while (ht != null)
                     {
                         var fields = ht.GetFields(
@@ -255,7 +256,7 @@
                         {
                             // For non-array type fields, just define the field as is.
                             // Recurse
-                            Type elementType = CreateImplementationType(field.FieldType, declare_parent_chain,
+                            System.Type elementType = CreateImplementationType(field.FieldType, declare_parent_chain,
                                 declare_flatten_structure);
                             // If elementType is a reference or array, then we need to convert it to a IntPtr.
                             if (elementType.IsClass || elementType.IsArray)
@@ -284,7 +285,7 @@
         }
 
 
-        public static int Alignment(Type type)
+        public static int Alignment(System.Type type)
         {
             if (type.IsArray || type.IsClass)
                 return 8;
@@ -313,7 +314,7 @@
             return padding;
         }
 
-        public static int SizeOf(Type type)
+        public static int SizeOf(System.Type type)
         {
             int result = 0;
             // For arrays, structs, and classes, elements and fields must
@@ -358,7 +359,7 @@
 
         public int SizeOf(object obj)
         {
-            Type type = obj.GetType();
+            System.Type type = obj.GetType();
             if (type.IsArray)
             {
                 Array array = (Array)obj;
@@ -412,7 +413,7 @@
                     }
                 }
 
-                Type hostType = from.GetType();
+                System.Type hostType = from.GetType();
 
                 // Let's start with basic types.
                 if (hostType.FullName.Equals("System.Object"))
@@ -497,16 +498,16 @@
 
                 String name = hostType.FullName;
                 _type_name_map.TryGetValue(name, out string alt);
-                System.Reflection.TypeFilter tf = new System.Reflection.TypeFilter((Type t, object o) =>
+                System.Reflection.TypeFilter tf = new System.Reflection.TypeFilter((System.Type t, object o) =>
                 {
                     return t.FullName == name || t.FullName == alt;
                 });
 
                 // Find blittable type for hostType.
-                Type[] types = _asm.mb.FindTypes(tf, null);
+                System.Type[] types = _asm.mb.FindTypes(tf, null);
 
                 if (types.Length == 0) throw new Exception("Unknown type.");
-                Type blittable_type = types[0];
+                System.Type blittable_type = types[0];
 
                 if (hostType.IsArray)
                 {
@@ -552,8 +553,8 @@
                         if (from.GetType().IsClass)
                             _allocated_objects[from] = (IntPtr)to_buffer;
 
-                        Type f = from.GetType();
-                        Type tr = blittable_type;
+                        System.Type f = from.GetType();
+                        System.Type tr = blittable_type;
                         int size = SizeOf(tr);
                         void* ip = to_buffer;
                         var rffi = f.GetRuntimeFields();
@@ -668,7 +669,7 @@
             }
         }
 
-        public unsafe void DeepCopyFromImplementation(IntPtr from, out object to, Type target_type, bool reset = true, bool sync = true)
+        public unsafe void DeepCopyFromImplementation(IntPtr from, out object to, System.Type target_type, bool reset = true, bool sync = true)
         {
             try
             {
@@ -677,8 +678,8 @@
 
                 _level++;
 
-                Type t_type = target_type;
-                Type f_type = CreateImplementationType(t_type);
+                System.Type t_type = target_type;
+                System.Type f_type = CreateImplementationType(t_type);
 
                 if (t_type.FullName.Equals("System.Object"))
                 {
@@ -783,8 +784,8 @@
                     byte* ptr = (byte*)intptr_src;
                     // For now, only one-dimension, given "len".
                     Array to_array;
-                    Type to_element_type = t_type.GetElementType();
-                    Type from_element_type = to_element_type;
+                    System.Type to_element_type = t_type.GetElementType();
+                    System.Type from_element_type = to_element_type;
                     if (to_element_type.IsArray || to_element_type.IsClass)
                         from_element_type = typeof(IntPtr);
                     // From type is just an intptr.
@@ -898,9 +899,9 @@
             }
         }
 
-        private unsafe void Cp(byte* ip, Array from, Type blittable_element_type)
+        private unsafe void Cp(byte* ip, Array from, System.Type blittable_element_type)
         {
-            Type orig_element_type = from.GetType().GetElementType();
+            System.Type orig_element_type = from.GetType().GetElementType();
             for (int i = 0; i < from.Length; ++i)
             {
                 var from_element_value = from.GetValue(i);
@@ -944,7 +945,7 @@
             }
         }
 
-        private unsafe void Cp(void* src_ptr, Array to, Type from_element_type)
+        private unsafe void Cp(void* src_ptr, Array to, System.Type from_element_type)
         {
             var to_element_type = to.GetType().GetElementType();
             int from_size_element = Buffers.SizeOf(from_element_type);
@@ -1001,16 +1002,17 @@
         /// </summary>
         public IntPtr New(int bytes)
         {
-            //if (false)
-            //{
-            //    // Let's try allocating a block of memory on the host. cuMemHostAlloc allocates bytesize
-            //    // bytes of host memory that is page-locked and accessible to the device.
-            //    // Note: cuMemHostAlloc and cuMemAllocHost seem to be almost identical except for the
-            //    // third parameter to cuMemHostAlloc that is used for the type of memory allocation.
-            //    var res = Cuda.cuMemHostAlloc(out IntPtr p, 10, (uint)Cuda.CU_MEMHOSTALLOC_DEVICEMAP);
-            //    if (res == CUresult.CUDA_SUCCESS) System.Console.WriteLine("Worked.");
-            //    else System.Console.WriteLine("Did not work.");
-            //}
+            if (true)
+            {
+                // Let's try allocating a block of memory on the host. cuMemHostAlloc allocates bytesize
+                // bytes of host memory that is page-locked and accessible to the device.
+                // Note: cuMemHostAlloc and cuMemAllocHost seem to be almost identical except for the
+                // third parameter to cuMemHostAlloc that is used for the type of memory allocation.
+                var size = bytes;
+                var res = Cuda.cuMemHostAlloc(out IntPtr pointer, (uint)size, (uint)Cuda.CU_MEMHOSTALLOC_DEVICEMAP);
+                Converter.CheckCudaError(res);
+                return pointer;
+            }
 
             //if (false)
             //{
@@ -1030,7 +1032,7 @@
                 var res = Cuda.cuMemAllocManaged(out IntPtr pointer, (uint)size, (uint)Swigged.Cuda.CUmemAttach_flags.CU_MEM_ATTACH_GLOBAL);
                 if (Campy.Utils.Options.IsOn("memory_trace"))
                     System.Console.WriteLine("Cu Alloc (" + bytes + " bytes) " + pointer);
-                if (res != CUresult.CUDA_SUCCESS) throw new Exception("cuMemAllocManged failed.");
+                Converter.CheckCudaError(res);
                 return pointer;
             }
 
