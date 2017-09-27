@@ -89,10 +89,6 @@
     <Compile Include="Value.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Campy.GraphAlgorithms\Campy.GraphAlgorithms.csproj">
-      <Project>{cf1bc9ea-7789-48ab-8e0c-ae0969015a2f}</Project>
-      <Name>Campy.GraphAlgorithms</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Campy.Types.Utils\Campy.Types.Utils.csproj">
       <Project>{d0d755a3-3dbd-4a1e-9515-f8f544d68d18}</Project>
       <Name>Campy.Types.Utils</Name>

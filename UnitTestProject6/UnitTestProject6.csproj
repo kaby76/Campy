@@ -95,10 +95,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Campy.GraphAlgorithms\Campy.GraphAlgorithms.csproj">
-      <Project>{cf1bc9ea-7789-48ab-8e0c-ae0969015a2f}</Project>
-      <Name>Campy.GraphAlgorithms</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Campy.Graphs\Campy.Graphs.csproj">
       <Project>{a71ce04f-f0d2-46e0-bae8-06cf1ea50f96}</Project>
       <Name>Campy.Graphs</Name>

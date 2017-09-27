@@ -42,12 +42,23 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BFS.cs" />
+    <Compile Include="BFSParallel.cs" />
     <Compile Include="BinaryTreeAdjList.cs" />
+    <Compile Include="DFSInorder.cs" />
+    <Compile Include="DFSParallel.cs" />
+    <Compile Include="DFSPostorder.cs" />
+    <Compile Include="DFSPreorder.cs" />
     <Compile Include="IGraph.cs" />
     <Compile Include="ITree.cs" />
     <Compile Include="ITreeEdge.cs" />
     <Compile Include="ITreeVertex.cs" />
     <Compile Include="IVertex.cs" />
+    <Compile Include="Kosaraju.cs" />
+    <Compile Include="Partition.cs" />
+    <Compile Include="Tarjan.cs" />
+    <Compile Include="TopologicalSort.cs" />
+    <Compile Include="Transpose.cs" />
     <Compile Include="TreeAdjList.cs" />
     <Compile Include="TreeLinkedList.cs" />
     <Compile Include="BinaryTreeLinkList.cs" />
@@ -59,6 +70,12 @@
     <Compile Include="GraphLinkedList.cs" />
     <Compile Include="IEdge.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Campy.Utils\Campy.Utils.csproj">
+      <Project>{ed3c7742-647c-44f9-b64b-29866044a54a}</Project>
+      <Name>Campy.Utils</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
