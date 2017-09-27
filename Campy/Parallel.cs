@@ -159,9 +159,9 @@ namespace Campy
                         (IntPtr) IntPtr.Zero
                     );
                 }
-                if (res != CUresult.CUDA_SUCCESS) throw new Exception();
+                Converter.CheckCudaError(res);
                 res = Cuda.cuCtxSynchronize(); // Make sure it's copied back to host.
-                if (res != CUresult.CUDA_SUCCESS) throw new Exception();
+                Converter.CheckCudaError(res);
                 buffer.DeepCopyFromImplementation(ptr, out object to, kernel.Target.GetType());
             }
             catch (Exception e)

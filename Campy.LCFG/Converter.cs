@@ -1486,24 +1486,30 @@ namespace Campy.ControlFlowGraph
                 LLVM.DisposeMemoryBuffer(buffer);
             }
             var res = Cuda.cuDeviceGet(out int device, 0);
-            if (res != CUresult.CUDA_SUCCESS) throw new Exception();
+            CheckCudaError(res);
             res = Cuda.cuDeviceGetPCIBusId(out string pciBusId, 100, device);
-            if (res != CUresult.CUDA_SUCCESS) throw new Exception();
+            CheckCudaError(res);
             res = Cuda.cuDeviceGetName(out string name, 100, device);
-            if (res != CUresult.CUDA_SUCCESS) throw new Exception();
+            CheckCudaError(res);
             res = Cuda.cuCtxCreate_v2(out CUcontext cuContext, 0, device);
-            if (res != CUresult.CUDA_SUCCESS) throw new Exception();
+            CheckCudaError(res);
             IntPtr ptr = Marshal.StringToHGlobalAnsi(ptx);
             res = Cuda.cuModuleLoadData(out CUmodule cuModule, ptr);
-            if (res != CUresult.CUDA_SUCCESS)
-            {
-                Cuda.cuGetErrorString(res, out IntPtr str);
-                throw new Exception();
-            }
+            CheckCudaError(res);
             var normalized_method_name = Converter.RenameToLegalLLVMName(Converter.MethodName(basic_block.Method));
             res = Cuda.cuModuleGetFunction(out CUfunction helloWorld, cuModule, normalized_method_name);
-            if (res != CUresult.CUDA_SUCCESS) throw new Exception();
+            CheckCudaError(res);
             return helloWorld;
+        }
+
+        public static void CheckCudaError(Swigged.Cuda.CUresult res)
+        {
+            if (res != CUresult.CUDA_SUCCESS)
+            {
+                Cuda.cuGetErrorString(res, out IntPtr pStr);
+                var cuda_error = Marshal.PtrToStringAnsi(pStr);
+                throw new Exception("CUDA error: " + cuda_error);
+            }
         }
 
         public static string GetStringTypeOf(ValueRef v)
