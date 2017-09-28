@@ -59,7 +59,7 @@ namespace Campy
                 {
                     // Parse kernel instructions to determine basic block representation of all the code to compile.
                     int change_set_id = Singleton()._graph.StartChangeSet();
-                    Singleton()._reader.AnalyzeMethod(kernel);
+                    Singleton()._reader.AnalyzeMethod(kernel.Method);
                     List<CFG.Vertex> cs = Singleton()._graph.PopChangeSet(change_set_id);
 
                     MethodInfo method = kernel.Method;

@@ -66,8 +66,20 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Accelerator.cs" />
+    <Compile Include="AcceleratorCuda.cs" />
+    <Compile Include="AcceleratorView.cs" />
+    <Compile Include="Array.cs" />
+    <Compile Include="Extent.cs" />
+    <Compile Include="Index.cs" />
+    <Compile Include="KernelTypes.cs" />
     <Compile Include="Parallel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="QueuingMode.cs" />
+    <Compile Include="TiledBarrier.cs" />
+    <Compile Include="TiledExtent.cs" />
+    <Compile Include="TiledIndex.cs" />
+    <Compile Include="TiledStatic.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -81,10 +93,6 @@
     <ProjectReference Include="..\Campy.Compiler\Campy.Compiler.csproj">
       <Project>{ced2299a-4f97-4fb7-bfa8-a61b50e9986d}</Project>
       <Name>Campy.Compiler</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Campy.Types\Campy.Types.csproj">
-      <Project>{528fba1b-ff5f-493e-861d-e02a727f51ae}</Project>
-      <Name>Campy.Types</Name>
     </ProjectReference>
     <ProjectReference Include="..\Campy.Utils\Campy.Utils.csproj">
       <Project>{ed3c7742-647c-44f9-b64b-29866044a54a}</Project>

@@ -39,20 +39,14 @@ namespace Campy.Compiler
             _cfg.OutputEntireGraph();
         }
 
-        public void AnalyzeMethod(Campy.Types._Kernel_type expr)
+        public void AnalyzeMethod(MethodInfo methodInfo)
         {
-            MethodInfo methodInfo = expr.Method;
             this.Add(methodInfo);
             this.ExtractBasicBlocks();
             _cfg.OutputEntireGraph();
             _cfg.OutputDotGraph();
         }
 
-        public void AnalyzeMethod(MethodInfo methodInfo)
-        {
-            this.Add(methodInfo);
-            this.ExtractBasicBlocks();
-        }
 
         public void AnalyzeMethod(MethodDefinition md)
         {
