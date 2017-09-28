@@ -877,9 +877,11 @@ namespace Campy.Compiler
                 }
 
                 var mi2 = FromGenericParameterToTypeReference(method.ReturnType, method.DeclaringType as GenericInstanceType);
-                TypeRef ret_type = mi2.ToTypeRef(bb.OpsFromOriginal);
+                Type t_ret = new Type(mi2);
+                TypeRef ret_type = t_ret.IntermediateType;
                 TypeRef met_type = LLVM.FunctionType(ret_type, param_types, false);
-                ValueRef fun = LLVM.AddFunction(mod, Converter.RenameToLegalLLVMName(Converter.MethodName(method)), met_type);
+                ValueRef fun = LLVM.AddFunction(mod,
+                    Converter.RenameToLegalLLVMName(Converter.MethodName(method)), met_type);
                 BasicBlockRef entry = LLVM.AppendBasicBlock(fun, bb.Name.ToString());
                 bb.BasicBlock = entry;
                 bb.MethodValueRef = fun;

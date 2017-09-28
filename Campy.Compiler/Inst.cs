@@ -1556,6 +1556,23 @@ namespace Campy.Compiler
                 if (Campy.Utils.Options.IsOn("jit_trace"))
                     System.Console.WriteLine(new Value(load));
             }
+            else if (_dst == null)
+            {
+                var t_v = LLVM.TypeOf(load);
+                TypeRef t_to;
+                // Type information for instruction obtuse. 
+                // Use LLVM type and set stack type.
+                if (t_v == LLVM.Int8Type() || t_v == LLVM.Int16Type())
+                {
+                    load = LLVM.BuildIntCast(Builder, load, LLVM.Int32Type(), "");
+                    if (Campy.Utils.Options.IsOn("jit_trace"))
+                        System.Console.WriteLine(new Value(load));
+                }
+                else
+                    t_to = t_v;
+                var op = this.Operand;
+                var tt = op.GetType();
+            }
 
             state._stack.Push(new Value(load));
             return Next;
