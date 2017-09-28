@@ -1570,8 +1570,8 @@ namespace Campy.Compiler
                 }
                 else
                     t_to = t_v;
-                var op = this.Operand;
-                var tt = op.GetType();
+                //var op = this.Operand;
+                //var tt = op.GetType();
             }
 
             state._stack.Push(new Value(load));
