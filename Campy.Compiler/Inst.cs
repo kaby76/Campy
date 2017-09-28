@@ -1505,6 +1505,10 @@ namespace Campy.Compiler
 
     public class ConvertLoadElement : Inst
     {
+        protected Type _dst;
+        protected bool _check_overflow;
+        protected bool _from_unsigned;
+
         public ConvertLoadElement(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
@@ -1546,6 +1550,13 @@ namespace Campy.Compiler
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(new Value(load));
 
+            if (_dst != null &&_dst.IntermediateType != LLVM.TypeOf(load))
+            {
+                load = LLVM.BuildIntCast(Builder, load, _dst.IntermediateType, "");
+                if (Campy.Utils.Options.IsOn("jit_trace"))
+                    System.Console.WriteLine(new Value(load));
+            }
+
             state._stack.Push(new Value(load));
             return Next;
         }
@@ -1553,6 +1564,10 @@ namespace Campy.Compiler
 
     public class ConvertStoreElement : Inst
     {
+        protected Type _dst;
+        protected bool _check_overflow;
+        protected bool _from_unsigned;
+
         public ConvertStoreElement(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
@@ -1593,8 +1608,16 @@ namespace Campy.Compiler
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(new Value(gep));
 
+            var value = v.V;
+            if (_dst != null && _dst.VerificationType.ToTypeRef() != v.T.IntermediateType)
+            {
+                value = LLVM.BuildIntCast(Builder, value, _dst.VerificationType.ToTypeRef(), "");
+                if (Campy.Utils.Options.IsOn("jit_trace"))
+                    System.Console.WriteLine(new Value(value));
+            }
+
             // Store.
-            var store = LLVM.BuildStore(Builder, v.V, gep);
+            var store = LLVM.BuildStore(Builder, value, gep);
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(new Value(store));
 
@@ -3770,6 +3793,7 @@ namespace Campy.Compiler
         public i_ldelem_i1(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+            _dst = new Type(typeof(sbyte));
         }
     }
 
@@ -3778,6 +3802,7 @@ namespace Campy.Compiler
         public i_ldelem_i2(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+            _dst = new Type(typeof(short));
         }
     }
 
@@ -3786,6 +3811,7 @@ namespace Campy.Compiler
         public i_ldelem_i4(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+            _dst = new Type(typeof(int));
         }
     }
 
@@ -3794,6 +3820,7 @@ namespace Campy.Compiler
         public i_ldelem_i8(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+            _dst = new Type(typeof(long));
         }
     }
 
@@ -3810,6 +3837,7 @@ namespace Campy.Compiler
         public i_ldelem_r4(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+            _dst = new Type(typeof(float));
         }
     }
 
@@ -3818,6 +3846,7 @@ namespace Campy.Compiler
         public i_ldelem_r8(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+            _dst = new Type(typeof(double));
         }
     }
 
@@ -3834,6 +3863,7 @@ namespace Campy.Compiler
         public i_ldelem_u1(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+            _dst = new Type(typeof(byte));
         }
     }
 
@@ -3842,6 +3872,7 @@ namespace Campy.Compiler
         public i_ldelem_u2(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+            _dst = new Type(typeof(ushort));
         }
     }
 
@@ -3850,6 +3881,7 @@ namespace Campy.Compiler
         public i_ldelem_u4(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+            _dst = new Type(typeof(uint));
         }
     }
 
@@ -4566,6 +4598,7 @@ namespace Campy.Compiler
         public i_stelem_i1(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+            _dst = new Type(typeof(sbyte));
         }
     }
 
@@ -4574,6 +4607,7 @@ namespace Campy.Compiler
         public i_stelem_i2(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+            _dst = new Type(typeof(short));
         }
     }
 
@@ -4582,6 +4616,7 @@ namespace Campy.Compiler
         public i_stelem_i4(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+            _dst = new Type(typeof(int));
         }
     }
 
@@ -4590,6 +4625,7 @@ namespace Campy.Compiler
         public i_stelem_i8(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+            _dst = new Type(typeof(long));
         }
     }
 
@@ -4606,6 +4642,7 @@ namespace Campy.Compiler
         public i_stelem_r4(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+            _dst = new Type(typeof(float));
         }
     }
 
@@ -4614,6 +4651,7 @@ namespace Campy.Compiler
         public i_stelem_r8(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+            _dst = new Type(typeof(double));
         }
     }
 

@@ -46,34 +46,34 @@ namespace Campy.Compiler
         private Mono.Cecil.TypeReference InitVerificationType(Mono.Cecil.TypeReference mono_type)
         {
             // Roughly encoding table on page 311.
-            if (_cil_type == typeof(sbyte).ToMonoTypeReference())
+            if (_cil_type.FullName == typeof(sbyte).ToMonoTypeReference().FullName)
                 return typeof(sbyte).ToMonoTypeReference();
-            else if (_cil_type == typeof(byte).ToMonoTypeReference())
+            else if (_cil_type.FullName == typeof(byte).ToMonoTypeReference().FullName)
                 return typeof(sbyte).ToMonoTypeReference();
-            else if (_cil_type == typeof(bool).ToMonoTypeReference())
+            else if (_cil_type.FullName == typeof(bool).ToMonoTypeReference().FullName)
                 return typeof(sbyte).ToMonoTypeReference();
 
-            else if (_cil_type == typeof(short).ToMonoTypeReference())
+            else if (_cil_type.FullName == typeof(short).ToMonoTypeReference().FullName)
                 return typeof(short).ToMonoTypeReference();
-            else if (_cil_type == typeof(ushort).ToMonoTypeReference())
+            else if (_cil_type.FullName == typeof(ushort).ToMonoTypeReference().FullName)
                 return typeof(short).ToMonoTypeReference();
-            else if (_cil_type == typeof(char).ToMonoTypeReference())
+            else if (_cil_type.FullName == typeof(char).ToMonoTypeReference().FullName)
                 return typeof(short).ToMonoTypeReference();
 
-            else if (_cil_type == typeof(int).ToMonoTypeReference())
+            else if (_cil_type.FullName == typeof(int).ToMonoTypeReference().FullName)
                 return typeof(int).ToMonoTypeReference();
-            else if (_cil_type == typeof(uint).ToMonoTypeReference())
+            else if (_cil_type.FullName == typeof(uint).ToMonoTypeReference().FullName)
                 return typeof(int).ToMonoTypeReference();
 
-            else if (_cil_type == typeof(long).ToMonoTypeReference())
+            else if (_cil_type.FullName == typeof(long).ToMonoTypeReference().FullName)
                 return typeof(long).ToMonoTypeReference();
-            else if (_cil_type == typeof(ulong).ToMonoTypeReference())
+            else if (_cil_type.FullName == typeof(ulong).ToMonoTypeReference().FullName)
                 return typeof(long).ToMonoTypeReference();
 
-            else if (_cil_type == typeof(float).ToMonoTypeReference())
+            else if (_cil_type.FullName == typeof(float).ToMonoTypeReference().FullName)
                 return typeof(float).ToMonoTypeReference();
 
-            else if (_cil_type == typeof(double).ToMonoTypeReference())
+            else if (_cil_type.FullName == typeof(double).ToMonoTypeReference().FullName)
                 return typeof(double).ToMonoTypeReference();
 
             else
@@ -82,17 +82,17 @@ namespace Campy.Compiler
 
         private Mono.Cecil.TypeReference InitStackVerificationType(Mono.Cecil.TypeReference mono_type)
         {
-            if (_verification_type == typeof(sbyte).ToMonoTypeReference())
+            if (_verification_type.FullName == typeof(sbyte).ToMonoTypeReference().FullName)
                 return typeof(int).ToMonoTypeReference();
-            else if (_verification_type == typeof(short).ToMonoTypeReference())
+            else if (_verification_type.FullName == typeof(short).ToMonoTypeReference().FullName)
                 return typeof(int).ToMonoTypeReference();
-            else if (_verification_type == typeof(int).ToMonoTypeReference())
+            else if (_verification_type.FullName == typeof(int).ToMonoTypeReference().FullName)
                 return typeof(int).ToMonoTypeReference();
-            else if (_verification_type == typeof(long).ToMonoTypeReference())
+            else if (_verification_type.FullName == typeof(long).ToMonoTypeReference().FullName)
                 return typeof(long).ToMonoTypeReference();
-            else if (_verification_type == typeof(float).ToMonoTypeReference())
+            else if (_verification_type.FullName == typeof(float).ToMonoTypeReference().FullName)
                 return typeof(float).ToMonoTypeReference();
-            else if (_verification_type == typeof(double).ToMonoTypeReference())
+            else if (_verification_type.FullName == typeof(double).ToMonoTypeReference().FullName)
                 return typeof(double).ToMonoTypeReference();
             else
                 return _cil_type;
@@ -111,6 +111,11 @@ namespace Campy.Compiler
         public Mono.Cecil.TypeReference VerificationType
         {
             get { return _verification_type; }
+        }
+
+        public Mono.Cecil.TypeReference StackVerificationType
+        {
+            get { return _stack_verification_type; }
         }
 
         public TypeRef IntermediateType

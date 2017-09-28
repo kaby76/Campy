@@ -57,11 +57,11 @@ namespace ConsoleApp4
                 int[] x = new int[n];
                 Campy.Parallel.For(n, i => x[i] = i);
             }
-            {
-                int n = 4;
-                int[] x = new int[n];
-                Campy.Parallel.For(n, i => x[i[0]] = i[0]);
-            }
+            //{
+            //    int n = 4;
+            //    int[] x = new int[n];
+            //    Campy.Parallel.For(n, i => x[i[0]] = i[0]);
+            //}
             {
                 int n = 4;
                 System.UInt16[] t4 = new ushort[n];
