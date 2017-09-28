@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Campy.GraphAlgorithms
+﻿namespace Campy.Graphs
 {
     /// <summary>
     /// Take a subset of the graph, removing edges outside of any nodes that

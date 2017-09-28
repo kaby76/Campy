@@ -22,6 +22,13 @@ namespace UnitTestProject7
             for (int i = 0; i < 3; ++i)
                 if (jagged_array[i][0] != i) // jagged_array[i].Length)
                     throw new Exception("unequal");
+            Campy.Parallel.For(3, i =>
+            {
+                jagged_array[i][0] = jagged_array[i].Length;
+            });
+            for (int i = 0; i < 3; ++i)
+                if (jagged_array[i][0] != jagged_array[i].Length)
+                    throw new Exception("unequal");
         }
     }
 }

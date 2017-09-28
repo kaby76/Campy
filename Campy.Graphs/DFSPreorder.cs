@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Campy.Graphs;
 using Campy.Utils;
 
-namespace Campy.GraphAlgorithms
+namespace Campy.Graphs
 {
     // Algorithms adapted from "A NEW NON-RECURSIVE ALGORITHM FOR
     // BINARY SEARCH TREE TRAVERSAL", Akram Al-Rawi, Azzedine Lansari, Faouzi Bouslama

@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Collections;
-using Campy.Graphs;
 
-namespace Campy.GraphAlgorithms
+namespace Campy.Graphs
 {
 
     /// <summary>

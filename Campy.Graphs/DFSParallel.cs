@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using Campy.Graphs;
 using Campy.Utils;
 
-namespace Campy.GraphAlgorithms
+namespace Campy.Graphs
 {
     // Grama A, Karypis G, Kumar V, Gupta A. Introduction to Parallel
     // Computing. 2nd ed. Essex, England: Pearson Education Limited;

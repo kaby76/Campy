@@ -2,12 +2,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-using Campy.Graphs;
 
-namespace Campy.GraphAlgorithms
+namespace Campy.Graphs
 {
     public class Kosaraju<NAME> : IEnumerable<NAME>
     {

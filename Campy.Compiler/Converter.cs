@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using Campy.GraphAlgorithms;
+using Campy.Graphs;
 using Campy.Graphs;
 using Campy.Utils;
 using Mono.Cecil;
@@ -938,8 +938,8 @@ namespace Campy.Compiler
             {
                 // Create DFT order of all nodes from entries.
                 IEnumerable<int> objs = entries.Select(x => x.Name);
-                GraphAlgorithms.DFSPreorder<int>
-                    dfs = new GraphAlgorithms.DFSPreorder<int>(
+                Graphs.DFSPreorder<int>
+                    dfs = new Graphs.DFSPreorder<int>(
                         _mcfg,
                         objs
                     );
@@ -1038,8 +1038,8 @@ namespace Campy.Compiler
                 {
                     // Create DFT order of all nodes.
                     IEnumerable<int> objs = entries.Select(x => x.Name);
-                    GraphAlgorithms.DFSPreorder<int>
-                        dfs = new GraphAlgorithms.DFSPreorder<int>(
+                    Graphs.DFSPreorder<int>
+                        dfs = new Graphs.DFSPreorder<int>(
                             _mcfg,
                             objs
                         );
