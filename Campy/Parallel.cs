@@ -41,13 +41,13 @@ namespace Campy
         [DllImport("kernel32.dll", EntryPoint = "CopyMemory", SetLastError = false)]
         public static extern void CopyMemory(IntPtr dest, IntPtr src, uint count);
 
-        public static void For(int number_of_threads, _Kernel_type kernel)
+        public static void For(int number_of_threads, KernelType kernel)
         {
             AcceleratorView view = Accelerator.GetAutoSelectionView();
             For(view, number_of_threads, kernel);
         }
 
-        private static void For(AcceleratorView view, int number_of_threads, _Kernel_type kernel)
+        private static void For(AcceleratorView view, int number_of_threads, KernelType kernel)
         {
 
             GCHandle handle1 = default(GCHandle);
@@ -188,13 +188,13 @@ namespace Campy
             }
         }
 
-        private static void For(TiledExtent extent, _Kernel_tiled_type kernel)
+        private static void For(TiledExtent extent, KernelTiledType kernel)
         {
             AcceleratorView view = Accelerator.GetAutoSelectionView();
             For(view, extent, kernel);
         }
 
-        private static void For(AcceleratorView view, TiledExtent extent, _Kernel_tiled_type kernel)
+        private static void For(AcceleratorView view, TiledExtent extent, KernelTiledType kernel)
         {
         }
 
