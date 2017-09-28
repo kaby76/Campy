@@ -2,7 +2,7 @@
 
 namespace Campy.Utils
 {
-    public static class Class1
+    public static class EnumerableHelper
     {
         public static IEnumerable<T> ToIEnumerable<T>(this IEnumerator<T> enumerator)
         {
