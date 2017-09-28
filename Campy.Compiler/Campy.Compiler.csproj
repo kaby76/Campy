@@ -89,10 +89,6 @@
     <Compile Include="Value.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Campy.Types.Utils\Campy.Types.Utils.csproj">
-      <Project>{d0d755a3-3dbd-4a1e-9515-f8f544d68d18}</Project>
-      <Name>Campy.Types.Utils</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Campy.Types\Campy.Types.csproj">
       <Project>{528fba1b-ff5f-493e-861d-e02a727f51ae}</Project>
       <Name>Campy.Types</Name>

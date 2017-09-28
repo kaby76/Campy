@@ -103,10 +103,6 @@
       <Project>{ced2299a-4f97-4fb7-bfa8-a61b50e9986d}</Project>
       <Name>Campy.Compiler</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Campy.Types.Utils\Campy.Types.Utils.csproj">
-      <Project>{d0d755a3-3dbd-4a1e-9515-f8f544d68d18}</Project>
-      <Name>Campy.Types.Utils</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Campy.Types\Campy.Types.csproj">
       <Project>{528fba1b-ff5f-493e-861d-e02a727f51ae}</Project>
       <Name>Campy.Types</Name>

@@ -1,7 +1,6 @@
-﻿namespace Campy.LCFG
+﻿namespace Campy.Compiler
 {
-    using Campy.Compiler;
-    using Campy.Types.Utils;
+    using Campy.Utils;
     using Swigged.Cuda;
     using System;
     using System.Collections.Generic;

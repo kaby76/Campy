@@ -1,5 +1,5 @@
 ﻿using System;
-using Campy.Types.Utils;
+using Campy.Utils;
 using Swigged.LLVM;
 
 namespace Campy.Compiler
