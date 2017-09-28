@@ -2006,6 +2006,10 @@ namespace Campy.Compiler
 
     public class ConvertLoadIndirect : Inst
     {
+        protected Type _dst;
+        protected bool _check_overflow;
+        protected bool _from_unsigned;
+
         public ConvertLoadIndirect(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
@@ -3916,10 +3920,10 @@ namespace Campy.Compiler
         {
         }
 
-    public override void ComputeStackLevel(ref int level_after)
-    {
-        level_after++;
-    }
+        public override void ComputeStackLevel(ref int level_after)
+        {
+            level_after++;
+        }
     }
 
     public class i_ldind_i1 : ConvertLoadIndirect
@@ -3927,6 +3931,7 @@ namespace Campy.Compiler
         public i_ldind_i1(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+            _dst = new Type(typeof(sbyte));
         }
     }
 
@@ -3935,6 +3940,7 @@ namespace Campy.Compiler
         public i_ldind_i2(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+            _dst = new Type(typeof(short));
         }
     }
 
@@ -3943,6 +3949,7 @@ namespace Campy.Compiler
         public i_ldind_i4(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+            _dst = new Type(typeof(int));
         }
     }
 
@@ -3951,6 +3958,7 @@ namespace Campy.Compiler
         public i_ldind_i8(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+            _dst = new Type(typeof(long));
         }
     }
 
@@ -3967,6 +3975,7 @@ namespace Campy.Compiler
         public i_ldind_r4(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+            _dst = new Type(typeof(float));
         }
     }
 
@@ -3975,6 +3984,7 @@ namespace Campy.Compiler
         public i_ldind_r8(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+            _dst = new Type(typeof(double));
         }
     }
 
@@ -3991,6 +4001,7 @@ namespace Campy.Compiler
         public i_ldind_u1(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+            _dst = new Type(typeof(byte));
         }
     }
 
@@ -3999,6 +4010,7 @@ namespace Campy.Compiler
         public i_ldind_u2(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+             _dst = new Type(typeof(ushort));
         }
     }
 
@@ -4007,6 +4019,7 @@ namespace Campy.Compiler
         public i_ldind_u4(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+            _dst = new Type(typeof(uint));
         }
     }
 
