@@ -1615,6 +1615,18 @@ namespace Campy.Compiler
                 if (Campy.Utils.Options.IsOn("jit_trace"))
                     System.Console.WriteLine(new Value(value));
             }
+            else if (_dst == null)
+            {
+                var t_v = LLVM.TypeOf(value);
+                var t_d = LLVM.TypeOf(gep);
+                var t_e = LLVM.GetElementType(t_d);
+                if (t_v != t_e)
+                {
+                    value = LLVM.BuildIntCast(Builder, value, t_e, "");
+                    if (Campy.Utils.Options.IsOn("jit_trace"))
+                        System.Console.WriteLine(new Value(value));
+                }
+            }
 
             // Store.
             var store = LLVM.BuildStore(Builder, value, gep);
@@ -4592,10 +4604,10 @@ namespace Campy.Compiler
             _arg = arg;
         }
 
-    public override void ComputeStackLevel(ref int level_after)
-    {
-        level_after--;
-    }
+        public override void ComputeStackLevel(ref int level_after)
+        {
+            level_after--;
+        }
     }
 
     public class i_stelem_any : ConvertStoreElement

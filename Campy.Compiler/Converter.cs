@@ -848,7 +848,8 @@ namespace Campy.Compiler
                 {
                     if (bb.HasThis)
                     {
-                        param_types[current++] = method.DeclaringType.ToTypeRef();
+                        Type t = new Type(method.DeclaringType);
+                        param_types[current++] = t.IntermediateType;
                     }
 
                     foreach (var p in parameters)
@@ -861,8 +862,8 @@ namespace Campy.Compiler
                             type_reference_of_parameter = FromGenericParameterToTypeReference(
                                 type_reference_of_parameter, git);
                         }
-
-                        param_types[current++] = type_reference_of_parameter.ToTypeRef(bb.OpsFromOriginal);
+                        Type t = new Type(type_reference_of_parameter);
+                        param_types[current++] = t.IntermediateType;
                     }
 
                     if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -968,6 +969,8 @@ namespace Campy.Compiler
 
         public static string MethodName(MethodReference mr)
         {
+            return mr.FullName;
+
             // Method names for a method reference are sometimes not the
             // same, even though they are in principle referring to the same
             // method, especially for methods that contain generics. This function
