@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using Campy.Types;
 using Campy.Compiler;
 using Campy.Utils;
 using Mono.Cecil;
@@ -22,7 +21,8 @@ namespace Campy
         private Parallel()
         {
             Swigged.LLVM.Helper.Adjust.Path();
-            Cuda.cuInit(0);
+            var res = Cuda.cuInit(0);
+            Converter.CheckCudaError(res);
             _reader = new Reader();
             _graph = _reader.Cfg;
             _converter = new Campy.Compiler.Converter(_graph);

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Swigged.Cuda;
 
-namespace Campy.Types
+namespace Campy
 {
     internal class AcceleratorCuda : Accelerator
     {

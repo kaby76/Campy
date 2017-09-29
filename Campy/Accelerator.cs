@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace Campy.Types
+namespace Campy
 {
     public class Accelerator
     {

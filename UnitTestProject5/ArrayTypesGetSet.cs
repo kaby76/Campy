@@ -1,5 +1,5 @@
 ﻿using System;
-using Campy.Types;
+using Campy;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace UnitTestProject5

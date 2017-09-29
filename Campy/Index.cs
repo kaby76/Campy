@@ -1,4 +1,4 @@
-﻿namespace Campy.Types
+﻿namespace Campy
 {
     public class Index
     {

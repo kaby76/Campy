@@ -1,6 +1,6 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Campy.Types;
+using Campy;
 using System.Collections.Generic;
 
 namespace UnitTestProject8

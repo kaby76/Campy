@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Campy.Types
+namespace Campy
 {
     public class AcceleratorView
     {

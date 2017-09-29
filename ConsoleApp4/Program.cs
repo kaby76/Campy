@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.Eventing;
-using System.Linq;
-using Campy.Types;
+using Campy;
 
 namespace ConsoleApp4
 {
