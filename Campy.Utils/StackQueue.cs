@@ -220,15 +220,15 @@ namespace Campy.Utils
             }
         }
 
-        public ArraySection<T> Section(int start, int length)
+        public ListSection<T> Section(int start, int length)
         {
-            ArraySection<T> result = new ArraySection<T>(_items, start, length);
+            ListSection<T> result = new ListSection<T>(_items, start, length);
             return result;
         }
 
-        public ArraySection<T> Section(int length)
+        public ListSection<T> Section(int length)
         {
-            ArraySection<T> result = new ArraySection<T>(_items, this._top, length);
+            ListSection<T> result = new ListSection<T>(_items, this._top, length);
             return result;
         }
     }

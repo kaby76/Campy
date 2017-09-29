@@ -1,39 +1,36 @@
-Campy.GraphAlgorithms/obj/
-Campy.Graphs/obj/
-Campy.LCFG/obj/
-Campy.MCFG/obj/
-Campy.Types.Utils/obj/
-Campy.Utils/obj/
-ConsoleApp4/obj/
-ConsoleApp4/bin/
 packages/
-Campy.GraphAlgorithms/bin/
-.vs/
-Campy.Graphs/bin/
-Campy.LCFG/bin/
-Campy.MCFG/bin/
-Campy.Types.Utils/bin/
-Campy.Utils/bin/
-Campy/obj/
-Campy/bin/
-Campy.Types/obj/
-Campy.Types/bin/
 *.nupkg
-UnitTestProject1/bin/
-UnitTestProject1/obj/
-UnitTestProject2/bin/
-UnitTestProject2/obj/
-UnitTestProject3/bin/
-UnitTestProject3/obj/
-UnitTestProject4/bin/
-UnitTestProject4/obj/
-UnitTestProject5/bin/
-UnitTestProject5/obj/
-UnitTestProject6/bin/
-UnitTestProject6/obj/
-UnitTestProject7/bin/
-UnitTestProject7/obj/
-Campy.Compiler/bin/
-Campy.Compiler/obj/
-UnitTestProject8/bin/
-UnitTestProject8/obj/
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+
+# Visual Studio 2015 cache/options directory
+.vs/
+# Uncomment if you have tasks that create the project's static files in wwwroot
+#wwwroot/
+
+# MSTest test Results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+
+# NUNIT
+*.VisualState.xml
+TestResult.xml
+
+# NuGet Packages
+*.nupkg
+# The packages folder can be ignored because of Package Restore
+**/packages/*
+# except build/, which is used as an MSBuild target.
+!**/packages/build/
+# Uncomment if necessary however generally it will be regenerated when needed
+#!**/packages/repositories.config

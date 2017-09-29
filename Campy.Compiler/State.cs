@@ -12,9 +12,9 @@ namespace Campy.Compiler
     {
         // See ECMA 335, page 82.
         public StackQueue<Value> _stack;
-        public ArraySection<Value> _this; // Pointer to _stack, if there is a "this" pointer.
-        public ArraySection<Value> _arguments; // Pointer to _stack, if there are parameters for the method.
-        public ArraySection<Value> _locals; // Pointer to _stack, if there are local variables to the method.
+        public ListSection<Value> _this; // Pointer to _stack, if there is a "this" pointer.
+        public ListSection<Value> _arguments; // Pointer to _stack, if there are parameters for the method.
+        public ListSection<Value> _locals; // Pointer to _stack, if there are local variables to the method.
         public Dictionary<String, Value> _memory;
         public List<ValueRef> _phi;
 

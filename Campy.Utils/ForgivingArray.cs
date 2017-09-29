@@ -1,11 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Campy.Utils
 {
+    /// <summary>
+    /// ForgivingArray is a class that automatically expands in size if you try to index an "out of bounds" element.
+    /// So, no exception is thrown.
+    /// </summary>
+    /// <typeparam name="V"></typeparam>
     public class ForgivingArray<V>
     {
         int _size;

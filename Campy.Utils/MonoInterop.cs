@@ -10,7 +10,7 @@ namespace Campy.Utils
     using System.IO;
     using System.Linq;
 
-    public static class ReflectionCecilInterop
+    public static class MonoInterop
     {
         public static Mono.Cecil.TypeReference ToMonoTypeReference(this System.Type ty)
         {

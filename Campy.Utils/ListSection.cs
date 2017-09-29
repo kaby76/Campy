@@ -7,20 +7,22 @@ using System.Threading.Tasks;
 namespace Campy.Utils
 {
     /// <summary>
-    /// A data type to encapsulate sections of an array, acting as an array.
+    /// A data type to encapsulate sections of a list, acting itself as a list. The reason is so you do not need
+    /// to keep track off offsets.
+    /// NB: At the moment, there is no adjustment of offsets if you DELETE an element in the list! So, don't do that.
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class ArraySection<T>
+    public class ListSection<T>
     {
-        List<T> _arr;
+        List<T> _list;
         int _base;
         int _len;
 
-        public List<T> Arr
+        public List<T> List
         {
             get
             {
-                return _arr;
+                return _list;
             }
         }
 
@@ -40,9 +42,9 @@ namespace Campy.Utils
             }
         }
 
-        public ArraySection(List<T> arr, int b, int l)
+        public ListSection(List<T> list, int b, int l)
         {
-            _arr = arr;
+            _list = list;
             _base = b;
             _len = l;
         }
@@ -51,15 +53,15 @@ namespace Campy.Utils
         {
             get
             {
-                return _arr[_base + i];
+                return _list[_base + i];
             }
             set
             {
-                _arr[_base + i] = value;
+                _list[_base + i] = value;
             }
         }
 
-        static void Resize(ref ArraySection<T> arr, int new_length)
+        static void Resize(ref ListSection<T> arr, int new_length)
         {
         }
     }
