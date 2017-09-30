@@ -55,8 +55,22 @@ namespace ConsoleApp4
 
                 var t1 = new List<int>();
                 for (int i = 0; i < n; ++i) t1.Add(0);
-                Campy.Parallel.For(n, i => t1[i] = i);
-                for (int i = 0; i < n; ++i) if (t1[i] != i) throw new Exception("unequal");
+                Campy.Parallel.For(n, i =>
+                {
+                    if (i % 2 == 0)
+                        t1[i] = i * 20;
+                    else
+                        t1[i] = i * 30;
+                });
+                for (int i = 0; i < n; ++i)
+                    if (i % 2 == 0)
+                    {
+                        if (t1[i] != i * 20) throw new Exception("unequal");
+                    }
+                    else
+                    {
+                        if (t1[i] != i * 30) throw new Exception("unequal");
+                    }
 
                 var t2 = new List<float>();
                 for (int i = 0; i < n; ++i) t2.Add(0);
