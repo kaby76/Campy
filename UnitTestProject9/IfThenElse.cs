@@ -5,10 +5,10 @@ using System.Collections.Generic;
 namespace UnitTestProject9
 {
     [TestClass]
-    public class UnitTest1
+    public class IfThenElse
     {
         [TestMethod]
-        public void TestMethod1()
+        public void IfThenElseT()
         {
             int n = 4;
 

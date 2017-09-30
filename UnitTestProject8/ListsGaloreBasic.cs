@@ -6,10 +6,10 @@ using System.Collections.Generic;
 namespace UnitTestProject8
 {
     [TestClass]
-    public class UnitTest1
+    public class ListsGaloreBasic
     {
         [TestMethod]
-        public void TestMethod1()
+        public void ListsGaloreBasicT()
         {
             int n = 4;
 

@@ -4,10 +4,10 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace UnitTestProject7
 {
     [TestClass]
-    public class UnitTest1
+    public class JaggedArray
     {
         [TestMethod]
-        public void TestMethod1()
+        public void JaggedArrayT()
         {
             int[][] jagged_array = new int[][]
             {
