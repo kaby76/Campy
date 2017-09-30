@@ -1096,7 +1096,7 @@ namespace Campy.Compiler
         {
             var bb = this.Block;
             var mn = bb.Method.FullName;
-            if (mn == "System.Int32 Campy.Types.Index::op_Implicit(Campy.Types.Index)")
+            if (mn == "System.Int32 Campy.Index::op_Implicit(Campy.Index)")
             {
                 //threadId
                 var tidx = Converter.built_in_functions["llvm.nvvm.read.ptx.sreg.tid.x"];
