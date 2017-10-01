@@ -44,10 +44,16 @@ namespace Campy
         public static void For(int number_of_threads, KernelType kernel)
         {
             AcceleratorView view = Accelerator.GetAutoSelectionView();
-            For(view, number_of_threads, kernel);
+            For(view, new Extent(number_of_threads), kernel);
         }
 
-        private static void For(AcceleratorView view, int number_of_threads, KernelType kernel)
+        public static void For(Extent extent, KernelType kernel)
+        {
+            AcceleratorView view = Accelerator.GetAutoSelectionView();
+            For(view, extent, kernel);
+        }
+
+        private static void For(AcceleratorView view, Extent extent, KernelType kernel)
         {
 
             GCHandle handle1 = default(GCHandle);
@@ -115,7 +121,7 @@ namespace Campy
 
                     var ptr_to_kernel = Singleton()._converter.GetCudaFunction(bb.Name);
 
-                    Index index = new Index(number_of_threads);
+                    Index index = new Index(extent);
                     Buffers buffer = new Buffers();
 
                     // Set up parameters.
@@ -153,11 +159,13 @@ namespace Campy
                     handle2 = GCHandle.Alloc(x2, GCHandleType.Pinned);
                     IntPtr pointer2 = handle2.AddrOfPinnedObject();
 
-                    IntPtr[] kp = new IntPtr[] {pointer1, pointer2};
+                    IntPtr[] kp = new IntPtr[] { pointer1, pointer2 };
                     var res = CUresult.CUDA_SUCCESS;
                     fixed (IntPtr* kernelParams = kp)
                     {
-                        MakeLinearTiling(number_of_threads, out dim3 tile_size, out dim3 tiles);
+                        if (extent._Rank == 1)
+                            MakeLinearTiling(extent[0], out dim3 tile_size, out dim3 tiles);
+
                         //MakeLinearTiling(1, out dim3 tile_size, out dim3 tiles);
 
                         res = Cuda.cuLaunchKernel(
@@ -166,8 +174,8 @@ namespace Campy
                             tile_size.x, tile_size.y, tile_size.z, // n threads.
                             0, // no shared memory
                             default(CUstream),
-                            (IntPtr) kernelParams,
-                            (IntPtr) IntPtr.Zero
+                            (IntPtr)kernelParams,
+                            (IntPtr)IntPtr.Zero
                         );
                     }
                     Converter.CheckCudaError(res);

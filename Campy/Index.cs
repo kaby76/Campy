@@ -60,6 +60,16 @@
             this._M_base[0] = _I;
         }
 
+        public Index(Extent extent)
+        {
+            this._Rank = extent._Rank;
+            Index index = this;
+            int[] numArray = new int[index._Rank];
+            index._M_base = numArray;
+            for (int i = 0; i < _Rank; ++i)
+                this._M_base[i] = extent[i];
+        }
+
         public Index()
         {
             this._Rank = 1;

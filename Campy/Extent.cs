@@ -91,6 +91,14 @@
             return new TiledExtent(_I0, this);
         }
 
+        public int this[int i]
+        {
+            get
+            {
+                return this._M_base[i];
+            }
+        }
+
         public int Size()
         {
             int num = 1;
