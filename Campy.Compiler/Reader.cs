@@ -294,11 +294,25 @@ namespace Campy.Compiler
             }
 
             // Resolve() tends to turn anything into mush. It removes type information
-            // per instruction. Use as a last resort!
+            // per instruction. Use it anyways.
             MethodDefinition md = item1.Resolve();
+            if (md == null)
+            {
+                // Note, I read all that I can, including https://github.com/jbevain/cecil/wiki/Resolving
+                // According to that, this should just work. However, multi-dimensional arrays do not
+                // seem to "Resolve()", ie, null returned. I can't follow into zilch, so move on.
+                // Moreover, to add more confusion, a one dimensional array does, in facted, "Resolve()". 
+                // It would be very valuable to understand how to really get a resolved type.
+                // The implication is that there must be some custom code generated to implement the call.
+                // The code be inlined, or a call.
+                System.Console.WriteLine("No definition for " + item1.FullName);
+                System.Console.WriteLine(item1.IsDefinition ? "" : "Is not a definition at that!");
+                return;
+            }
             if (md.Body == null)
             {
-                throw new Exception("WARNING: METHOD BODY NULL! " + definition);
+                System.Console.WriteLine("WARNING: METHOD BODY NULL! " + definition);
+                return;
             }
             int instruction_count = md.Body.Instructions.Count;
             StackQueue<Mono.Cecil.Cil.Instruction> leader_list = new StackQueue<Mono.Cecil.Cil.Instruction>();

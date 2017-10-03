@@ -1,6 +1,9 @@
-﻿namespace Campy
+﻿using System.Collections;
+using System.Collections.Generic;
+
+namespace Campy
 {
-    public class Extent
+    public class Extent : IEnumerable<int>
     {
         internal static Extent default_value = new Extent();
         internal int[] _M_base;
@@ -105,6 +108,17 @@
             for (int index = 0; index < this._Rank; ++index)
                 num *= this._M_base[index];
             return num;
+        }
+
+        public IEnumerator<int> GetEnumerator()
+        {
+            for (int i = 0; i < _Rank; ++i)
+                 yield return this._M_base[i];
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
     }
 }

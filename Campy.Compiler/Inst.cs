@@ -2617,7 +2617,11 @@ namespace Campy.Compiler
                         else return false;
                     }).ToList().FirstOrDefault();
 
-                    if (the_entry != default(CFG.Vertex))
+                    if (the_entry == null)
+                    {
+                        throw new Exception("unimplemented.");
+                    }
+                    else
                     {
                         BuilderRef bu = this.Builder;
                         ValueRef fv = the_entry.MethodValueRef;

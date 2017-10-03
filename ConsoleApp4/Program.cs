@@ -148,13 +148,27 @@ namespace ConsoleApp4
             Campy.Utils.Options.Set("state_computation_trace", true);
 
             {
-                Extent e = new Extent(3, 5); // three rows, five columns.
-                int[,] a = new int[e[0], e[1]];
-                for (int i = 0; i < e[0]; ++i)
-                    for (int j = 0; j < e[1]; ++j)
-                        a[i, j] = (i+1) * (j+1);
-                Campy.Parallel.For(e, i =>
+                int e = 10;
+                int[] a = new int[e];
+                for (int i = 0; i < e; ++i)
+                    a[i] = (i + 1);
+                Campy.Parallel.For(e, d =>
                 {
+                    int i = d[0];
+                    //a[i, j] = a[i, j] * 2;
+                    var r = a[i];
+                });
+                Extent ex = new Extent(3, 5); // three rows, five columns.
+                int[,] b = new int[ex[0], ex[1]];
+                for (int i = 0; i < ex[0]; ++i)
+                    for (int j = 0; j < ex[1]; ++j)
+                        b[i, j] = (i + 1) * (j + 1);
+                Campy.Parallel.For(ex, d =>
+                {
+                    int i = d[0];
+                    int j = d[0];
+                    //a[i, j] = a[i, j] * 2;
+                    var r = b[i, j];
                 });
             }
             {

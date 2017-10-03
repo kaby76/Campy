@@ -159,12 +159,14 @@ namespace Campy
                     handle2 = GCHandle.Alloc(x2, GCHandleType.Pinned);
                     IntPtr pointer2 = handle2.AddrOfPinnedObject();
 
+                    // Compute number of total number of threads.
+                    int number_of_threads = extent.Aggregate(1, (acc, x) => acc * x);
+
                     IntPtr[] kp = new IntPtr[] { pointer1, pointer2 };
                     var res = CUresult.CUDA_SUCCESS;
                     fixed (IntPtr* kernelParams = kp)
                     {
-                        if (extent._Rank == 1)
-                            MakeLinearTiling(extent[0], out dim3 tile_size, out dim3 tiles);
+                        MakeLinearTiling(number_of_threads, out dim3 tile_size, out dim3 tiles);
 
                         //MakeLinearTiling(1, out dim3 tile_size, out dim3 tiles);
 

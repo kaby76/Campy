@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Campy.Utils
 {
@@ -16,6 +17,32 @@ namespace Campy.Utils
             while (enumerator.MoveNext())
             {
                 yield return enumerator.Current;
+            }
+        }
+
+
+
+        public static IEnumerable<TAccumulate> SelectAggregate<TSource, TAccumulate>(
+            this IEnumerable<TSource> source,
+            TAccumulate seed,
+            Func<TAccumulate, TSource, TAccumulate> func)
+        {
+            //source.CheckArgumentNull("source");
+            //func.CheckArgumentNull("func");
+            return source.SelectAggregateIterator(seed, func);
+        }
+
+        private static IEnumerable<TAccumulate> SelectAggregateIterator<TSource, TAccumulate>(
+            this IEnumerable<TSource> source,
+            TAccumulate seed,
+            Func<TAccumulate, TSource, TAccumulate> func)
+        {
+            TAccumulate previous = seed;
+            foreach (var item in source)
+            {
+                TAccumulate result = func(previous, item);
+                previous = result;
+                yield return result;
             }
         }
     }

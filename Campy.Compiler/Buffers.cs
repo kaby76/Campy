@@ -149,10 +149,18 @@
 
                 if (hostType.IsArray)
                 {
+                    int rank = hostType.GetArrayRank();
+
                     System.Type elementType = CreateImplementationType(hostType.GetElementType(),
                         declare_parent_chain,
                         declare_flatten_structure);
-                    object array_obj = Array.CreateInstance(elementType, 0);
+
+                    // Create a minimal array of the type given. We need this because
+                    // the element type must exist PRIOR to the definition of the array.
+                    // Great going Micrsoft! (Not!)
+                    int[] dims = new int[rank];
+                    for (int kk = 0; kk < rank; ++kk) dims[kk] = 1;
+                    object array_obj = Array.CreateInstance(elementType, dims);
                     var array_type = array_obj.GetType();
 
                     // For arrays, convert into a struct with first field being a
