@@ -17,7 +17,7 @@ namespace Campy.Utils
             return val;
         }
 
-        public static void Set(string option, bool value)
+        public static void Set(string option, bool value = true)
         {
             _boolean_options[option] = value;
         }

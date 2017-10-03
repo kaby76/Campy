@@ -909,9 +909,38 @@
         private unsafe void Cp(byte* ip, Array from, System.Type blittable_element_type)
         {
             System.Type orig_element_type = from.GetType().GetElementType();
-            for (int i = 0; i < from.Length; ++i)
+
+            // As the array could be multi-dimensional, we need to do a copy in row major order.
+            // This is essentially the same as doing a number conversion to a string and vice versa
+            // over the total number of elements in the entire multi-dimensional array.
+            // See https://stackoverflow.com/questions/7123490/how-compiler-is-converting-integer-to-string-and-vice-versa
+            // https://eli.thegreenplace.net/2015/memory-layout-of-multi-dimensional-arrays/
+            long total_size = 1;
+            for (int i = 0; i < from.Rank; ++i)
+                total_size *= from.GetLength(i);
+            System.Console.WriteLine("dim = " + from.Rank);
+            for (int j = 0; j < from.Rank; ++j)
             {
-                var from_element_value = from.GetValue(i);
+                int ind_size = from.GetLength(j);
+                System.Console.WriteLine(ind_size);
+            }
+            System.Console.WriteLine("total_size = " + total_size);
+            for (int i = 0; i < total_size; ++i)
+            {
+                int[] index = new int[from.Rank];
+                string s = "";
+                int c = i;
+                for (int j = from.Rank - 1; j >= 0; --j)
+                {
+                    int ind_size = from.GetLength(j);
+                    var remainder = c % ind_size;
+                    c = c / from.GetLength(j);
+                    index[j] = remainder;
+                    s = (char)((short)('0') + remainder) + s;
+                }
+                System.Console.WriteLine("index i = " + i + " equiv = " + s);
+                //sdfg
+                var from_element_value = from.GetValue(index);
                 if (orig_element_type.IsArray || orig_element_type.IsClass)
                 {
                     if (from_element_value != null)
@@ -944,7 +973,7 @@
                 else
                 {
                     int size_element = Buffers.SizeOf(blittable_element_type);
-                    DeepCopyToImplementation(from.GetValue(i), ip);
+                    DeepCopyToImplementation(from_element_value, ip);
                     ip = (byte*)((long)ip
                         + Buffers.Padding((long)ip, Buffers.Alignment(blittable_element_type))
                         + size_element);
@@ -954,23 +983,39 @@
 
         private unsafe void Cp(void* src_ptr, Array to, System.Type from_element_type)
         {
+            var to_type = to.GetType();
+            if (!to_type.IsArray)
+                throw new Exception("Expecting array.");
             var to_element_type = to.GetType().GetElementType();
             int from_size_element = Buffers.SizeOf(from_element_type);
             IntPtr mem = (IntPtr)src_ptr;
             for (int i = 0; i < to.Length; ++i)
             {
+                int[] index = new int[to.Rank];
+                string s = "";
+                int c = i;
+                for (int j = to.Rank - 1; j >= 0; --j)
+                {
+                    int ind_size = to.GetLength(j);
+                    var remainder = c % ind_size;
+                    c = c / to.GetLength(j);
+                    index[j] = remainder;
+                    s = (char)((short)('0') + remainder) + s;
+                }
+                System.Console.WriteLine("index i = " + i + " equiv = " + s);
+                //sdfg
                 if (to_element_type.IsArray || to_element_type.IsClass)
                 {
                     object obj = Marshal.PtrToStructure(mem, typeof(IntPtr));
                     IntPtr obj_intptr = (IntPtr) obj;
                     DeepCopyFromImplementation(obj_intptr, out object to_obj, to.GetType().GetElementType());
-                    to.SetValue(to_obj, i);
+                    to.SetValue(to_obj, index);
                     mem = new IntPtr((long)mem + SizeOf(typeof(IntPtr)));
                 }
                 else
                 {
                     DeepCopyFromImplementation(mem, out object to_obj, to.GetType().GetElementType());
-                    to.SetValue(to_obj, i);
+                    to.SetValue(to_obj, index);
                     mem = new IntPtr((long)mem + from_size_element);
                 }
             }

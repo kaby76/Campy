@@ -2619,7 +2619,10 @@ namespace Campy.Compiler
 
                     if (the_entry == null)
                     {
-                        throw new Exception("unimplemented.");
+                        if (!Options.IsOn("continue_with_no_resolve"))
+                            throw new Exception("unimplemented.");
+                        else
+                            return Next;
                     }
                     else
                     {
