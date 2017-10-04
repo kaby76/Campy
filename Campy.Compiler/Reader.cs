@@ -13,20 +13,39 @@ namespace Campy.Compiler
 
     public class Reader
     {
-        private CFG _cfg = new CFG();
-        private List<ModuleDefinition> _loaded_modules = new List<ModuleDefinition>();
-        private List<ModuleDefinition> _analyzed_modules = new List<ModuleDefinition>();
+        private CFG _cfg;
+        private List<ModuleDefinition> _loaded_modules;
+        private List<ModuleDefinition> _analyzed_modules;
 
         // After studying this for a while, I've come to the conclusion that decompiling methods
         // requires type information, as methods/"this" could be generic. So, we create a list of
         // Tuple<MethodDefition, List<TypeReference>> that indicates the method, and generic parameters.
-        private StackQueue<Tuple<MethodReference, List<TypeReference>>> _methods_to_do = new StackQueue<Tuple<MethodReference, List<TypeReference>>>();
-        private List<string> _methods_done = new List<string>(); // No longer MethodDefition because there is no equivalence.
+        private StackQueue<Tuple<MethodReference, List<TypeReference>>> _methods_to_do;
+        private List<string> _methods_done;
+
+        // Some methods references resolve to null. And, some methods we might want to substitute a
+        // different implementation that the one normally found through reference Resolve(). Retain a
+        // mapping of methods to be rewritten.
+        private Dictionary<string, string> _rewritten_runtime;
 
         public CFG Cfg
         {
             get { return _cfg; }
             set { _cfg = value; }
+        }
+
+        public Reader()
+        {
+            _cfg = new CFG();
+            _loaded_modules = new List<ModuleDefinition>();
+            _analyzed_modules = new List<ModuleDefinition>();
+            _methods_to_do = new StackQueue<Tuple<MethodReference, List<TypeReference>>>();
+            _methods_done = new List<string>();
+            _rewritten_runtime = new Dictionary<string, string>();
+            _rewritten_runtime.Add("System.Int32 System.Int32[0...,0...]::Get(System.Int32,System.Int32)",
+                "T Campy.Compiler.Runtime::get_multi_array(System.Array,System.Int32,System.Int32)");
+            _rewritten_runtime.Add("System.Void System.Int32[0...,0...]::Set(System.Int32,System.Int32,System.Int32)",
+                "System.Void Campy.Compiler.Runtime::set_multi_array(System.Array,System.Int32,System.Int32,T)");
         }
 
         public void AnalyzeThisAssembly()
@@ -117,6 +136,7 @@ namespace Campy.Compiler
 
             // Get instantiated version of method if generic.
             var generic = definition.HasGenericParameters;
+            var expl = definition.ExplicitThis;
             var is_instance = definition.IsGenericInstance;
             var declaring_type = definition.DeclaringType;
             if (declaring_type != null)
@@ -273,6 +293,26 @@ namespace Campy.Compiler
             return reference;
         }
 
+        private MethodDefinition GetDefinition(string name)
+        {
+            int index_of_colons = name.IndexOf("::");
+            int index_of_start_namespace = name.Substring(0, index_of_colons).LastIndexOf(" ") + 1;
+            string ns = name.Substring(index_of_start_namespace, index_of_colons - index_of_start_namespace);
+            ns = ns.Substring(0, ns.LastIndexOf("."));
+            ns = ns + ".dll";
+            var result2 = LoadAssembly(ns);
+            foreach (var type in result2.Types)
+            {
+                System.Console.WriteLine(type.FullName);
+                foreach (var method in type.Methods)
+                {
+                    if (method.FullName == name)
+                        return method;
+                }
+            }
+            return null;
+        }
+
         private void ExtractBasicBlocksOfMethod(Tuple<MethodReference, List<TypeReference>> definition)
         {
             MethodReference item1 = definition.Item1;
@@ -283,7 +323,7 @@ namespace Campy.Compiler
             // Make sure definition assembly is loaded. The analysis of the method cannot
             // be done if the routine hasn't been loaded into Mono!
             String full_name = item1.Module.FullyQualifiedName;
-            LoadAssembly(full_name);
+            var result = LoadAssembly(full_name);
 
             var git = item1.DeclaringType as GenericInstanceType;
             if (git != null)
@@ -294,33 +334,49 @@ namespace Campy.Compiler
             }
 
             // Resolve() tends to turn anything into mush. It removes type information
-            // per instruction. Use it anyways.
+            // per instruction. Set up for analysis of the method body, if there is one.
             MethodDefinition md = item1.Resolve();
+            Mono.Cecil.Cil.MethodBody body = null;
+            bool has_ret = false;
             if (md == null)
             {
-                // Note, I read all that I can, including https://github.com/jbevain/cecil/wiki/Resolving
-                // According to that, this should just work. However, multi-dimensional arrays do not
-                // seem to "Resolve()", ie, null returned. I can't follow into zilch, so move on.
-                // Moreover, to add more confusion, a one dimensional array does, in facted, "Resolve()". 
-                // It would be very valuable to understand how to really get a resolved type.
-                // The implication is that there must be some custom code generated to implement the call.
-                // The code be inlined, or a call.
+                // Note, some situations MethodDefinition.Resolve() return null.
+                // For a good introduction on Resolve(), see https://github.com/jbevain/cecil/wiki/Resolving
+                // According to that, it should always return non-null. However, multi-dimensional arrays do not
+                // seem to resolve. Moreover, to add more confusion, a one dimensional array do resolve,
+                // As arrays are so central to GPU programming, we need to substitute for System.Array code--that
+                // we cannot find--into code from a runtime library.
                 System.Console.WriteLine("No definition for " + item1.FullName);
                 System.Console.WriteLine(item1.IsDefinition ? "" : "Is not a definition at that!");
-                return;
+                var name = item1.FullName;
+                int[,] ar = new int[1, 1];
+                var found = _rewritten_runtime.ContainsKey(name);
+                if (found)
+                {
+                    string rewrite = _rewritten_runtime[name];
+                    var def = GetDefinition(rewrite);
+                    body = def.Body;
+                }
+                if (body == null)
+                    return;
             }
-            if (md.Body == null)
+            else if (md.Body == null)
             {
                 System.Console.WriteLine("WARNING: METHOD BODY NULL! " + definition);
                 return;
             }
-            int instruction_count = md.Body.Instructions.Count;
+            else
+            {
+                has_ret =  md.IsReuseSlot;
+                body = md.Body;
+            }
+            int instruction_count = body.Instructions.Count;
             StackQueue<Mono.Cecil.Cil.Instruction> leader_list = new StackQueue<Mono.Cecil.Cil.Instruction>();
 
             // Each method is a leader of a block.
             CFG.Vertex v = (CFG.Vertex)_cfg.AddVertex(_cfg.NewNodeNumber());
             v.Method = item1;
-            v.HasReturnValue = item1.Resolve().IsReuseSlot;
+            v.HasReturnValue = has_ret;
             v.Entry = v;
             _cfg.Entries.Add(v);
             for (int j = 0; j < instruction_count; ++j)
@@ -329,7 +385,7 @@ namespace Campy.Compiler
 
                 // NB: This gets generic code. We have to instantiate it.
 
-                Mono.Cecil.Cil.Instruction mi = item1.Resolve().Body.Instructions[j];
+                Mono.Cecil.Cil.Instruction mi = body.Instructions[j];
                 //System.Console.WriteLine(mi);
                 Inst i = Inst.Wrap(mi);
                 i.Block = v;
@@ -372,7 +428,7 @@ namespace Campy.Compiler
                 // where to split blocks. However, it's ordered,
                 // so that splitting is done from last instruction in block
                 // to first instruction in block.
-                Mono.Cecil.Cil.Instruction i = md.Body.Instructions[j];
+                Mono.Cecil.Cil.Instruction i = body.Instructions[j];
                 if (leader_list.Contains(i))
                     ordered_leader_list.Push(j);
             }

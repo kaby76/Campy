@@ -150,15 +150,6 @@ namespace ConsoleApp4
 
             {
                 int e = 10;
-                int[] a = new int[e];
-                for (int i = 0; i < e; ++i)
-                    a[i] = (i + 1);
-                Campy.Parallel.For(e, d =>
-                {
-                    int i = d[0];
-                    //a[i, j] = a[i, j] * 2;
-                    var r = a[i];
-                });
                 Extent ex = new Extent(3, 5); // three rows, five columns.
                 int[,] b = new int[ex[0], ex[1]];
                 for (int i = 0; i < ex[0]; ++i)
@@ -168,8 +159,7 @@ namespace ConsoleApp4
                 {
                     int i = d[0];
                     int j = d[0];
-                    //a[i, j] = a[i, j] * 2;
-                    var r = b[i, j];
+                    b[i, j] = b[i, j] * 2;
                 });
             }
             {

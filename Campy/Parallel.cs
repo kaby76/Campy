@@ -189,7 +189,7 @@ namespace Campy
             catch (Exception e)
             {
                 Console.WriteLine(e);
-                throw;
+                throw e;
             }
             finally
             {

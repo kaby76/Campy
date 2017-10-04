@@ -834,11 +834,13 @@ namespace Campy.Compiler
                 bb.HasThis = method.HasThis;
                 List<ParameterDefinition> parameters = method.Parameters.ToList();
                 List<ParameterReference> instantiated_parameters = new List<ParameterReference>();
-                System.Reflection.MethodBase mb = method.Resolve().ToSystemMethodInfo();
-                string mn = mb.DeclaringType.Assembly.GetName().Name;
+
                 ModuleRef mod = global_llvm_module; // LLVM.ModuleCreateWithName(mn);
                 bb.Module = mod;
-                uint count = (uint)mb.GetParameters().Count();
+
+                //uint count = (uint)mb.GetParameters().Count();
+                uint count = (uint)parameters.Count();
+
                 if (bb.HasThis) count++;
                 TypeRef[] param_types = new TypeRef[count];
                 int current = 0;
