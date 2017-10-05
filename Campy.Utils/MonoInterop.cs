@@ -12,8 +12,18 @@ namespace Campy.Utils
 
     public static class MonoInterop
     {
-        public static Mono.Cecil.TypeReference ToMonoTypeReference(this System.Type ty)
+        public static Mono.Cecil.TypeReference ToMonoTypeReference(this System.Type type)
         {
+            String kernel_assembly_file_name = type.Assembly.Location;
+            Mono.Cecil.ModuleDefinition md = Mono.Cecil.ModuleDefinition.ReadModule(kernel_assembly_file_name);
+            var reference = md.Import(type);
+            return reference;
+        }
+
+        private static Mono.Cecil.TypeReference ToMonoTypeReferenceAux(this System.Type ty)
+        {
+            throw new Exception("Use ModuleDefinition.Import() instead.");
+
             var mono_type = FindSimilarMonoType(ty);
             if (mono_type == null)
             {
@@ -137,7 +147,7 @@ namespace Campy.Utils
             return null;
         }
 
-        public static Mono.Cecil.MethodDefinition ToMonoMethodDefinition(this System.Reflection.MethodBase mi)
+        private static Mono.Cecil.MethodDefinition ToMonoMethodDefinition(this System.Reflection.MethodBase mi)
         {
             throw new Exception("Use ModuleDefinition.Import() instead.");
 
