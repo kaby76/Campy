@@ -139,6 +139,8 @@ namespace Campy.Utils
 
         public static Mono.Cecil.MethodDefinition ToMonoMethodDefinition(this System.Reflection.MethodBase mi)
         {
+            throw new Exception("Use ModuleDefinition.Import() instead.");
+
             // Get assembly name which encloses code for kernel.
             String kernel_assembly_file_name = mi.DeclaringType.Assembly.Location;
 

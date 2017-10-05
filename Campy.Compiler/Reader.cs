@@ -90,8 +90,10 @@ namespace Campy.Compiler
 
         public void Add(MethodInfo reference)
         {
-            MethodDefinition definition = reference.ToMonoMethodDefinition();
-            Add(definition);
+            String kernel_assembly_file_name = reference.DeclaringType.Assembly.Location;
+            Mono.Cecil.ModuleDefinition md = Mono.Cecil.ModuleDefinition.ReadModule(kernel_assembly_file_name);
+            MethodReference refer = md.Import(reference);
+            Add(refer);
         }
 
         public void AddAssembly(String assembly_file_name)
