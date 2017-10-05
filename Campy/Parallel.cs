@@ -21,8 +21,6 @@ namespace Campy
         private Parallel()
         {
             Swigged.LLVM.Helper.Adjust.Path();
-            var res = Cuda.cuInit(0);
-            Converter.CheckCudaError(res);
             _reader = new Reader();
             _graph = _reader.Cfg;
             _converter = new Campy.Compiler.Converter(_graph);
@@ -118,6 +116,8 @@ namespace Campy
 
                     // Compile methods with added type information.
                     Singleton()._converter.CompileToLLVM(cs, list_of_mono_data_types_used);
+
+                    Converter.CheckCudaError(Cuda.cuInit(0));
 
                     var ptr_to_kernel = Singleton()._converter.GetCudaFunction(bb.Name);
 
