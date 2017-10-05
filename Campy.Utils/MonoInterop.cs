@@ -30,7 +30,11 @@ namespace Campy.Utils
             if (type.IsGenericInstance)
             {
                 var genericInstance = (GenericInstanceType)type;
-                return string.Format("{0}.{1}[{2}]", genericInstance.Namespace, type.Name, String.Join(",", genericInstance.GenericArguments.Select(p => p.GetReflectionName()).ToArray()));
+                var y = string.Format("{0}.{1}[{2}]", genericInstance.Namespace, type.Name, String.Join(",", genericInstance.GenericArguments.Select(p => p.GetReflectionName()).ToArray()));
+                string ass = type.Module.Assembly.FullName;
+                System.Console.WriteLine("1name is " + y);
+                System.Console.WriteLine("ass = " + ass);
+                return y;
             }
             if (type.DeclaringType != null)
             {
@@ -38,9 +42,26 @@ namespace Campy.Utils
                 string suf = type.Name;
                 string ass = type.Module.Assembly.FullName;
                 string y = string.Format("{0}+{1},{2}", pre, suf, ass);
+                System.Console.WriteLine("2name is " + y);
                 return y;
             }
-            return type.FullName;
+            {
+                if (type.IsArray)
+                {
+                    var et = (type as ArrayType).ElementType;
+                    string ss2 = et.GetReflectionName();
+                    List<Int32>[] vvv = new List<int>[1];
+                    string ss = vvv.GetType().FullName;
+                    string y = string.Format("{0}[]", ss2);
+                    System.Console.WriteLine("2name is " + y);
+                    return y;
+                }
+                else
+                {
+                    string pre = type.FullName;
+                    return pre;
+                }
+            }
         }
 
         public static System.Type ToSystemType(this Mono.Cecil.TypeReference tr)
@@ -188,6 +209,7 @@ namespace Campy.Utils
         {
             Dictionary<TypeReference, System.Type> additional = new Dictionary<TypeReference, System.Type>();
             var mr_gp = method_reference.GenericParameters;
+            var mr_dt = method_reference.DeclaringType;
             var mr_hgp = method_reference.HasGenericParameters;
             var mr_dt_hgp = method_reference.DeclaringType.HasGenericParameters;
             var mr_igi = method_reference.IsGenericInstance;
@@ -199,8 +221,23 @@ namespace Campy.Utils
             }
             if (mr_dt_igi)
             {
-                GenericInstanceType i = method_reference.DeclaringType as GenericInstanceType;
-                var mr_dt_hga = i.HasGenericArguments;
+                GenericInstanceType git = mr_dt as GenericInstanceType;
+                var mr_dt_hga = git.HasGenericArguments;
+                Collection<TypeReference> ga = git.GenericArguments;
+                var e1 = git.ElementType;
+                var e2 = git.GetElementType();
+                Collection<GenericParameter> gg = e1.GenericParameters;
+                // Map parameter to instantiated type.
+                for (int i = 0; i < gg.Count; ++i)
+                {
+                    GenericParameter pp = gg[i];
+                    TypeReference qq = ga[i];
+                    TypeReference trrr = pp as TypeReference;
+                    var system_type = qq
+                        .ToSystemType();
+                    if (system_type == null) throw new Exception("Failed to convert " + qq);
+                    additional[pp] = system_type;
+                }
             }
             return;
             //Mono.Collections.Generic.Collection<TypeReference> ga = null;
