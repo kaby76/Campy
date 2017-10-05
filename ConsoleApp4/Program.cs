@@ -149,6 +149,17 @@ namespace ConsoleApp4
             Campy.Utils.Options.Set("continue_with_no_resolve");
 
             {
+                // List of ints.
+                List<int> x = new List<int>();
+                int n = 4;
+                for (int i = 0; i < n; ++i) x.Add(0);
+                Campy.Parallel.For(n, i => x[i] = i);
+                for (int i = 0; i < n; ++i) if (x[i] != i)
+                    throw new Exception("unequal");
+            }
+
+
+            {
                 int e = 10;
                 Extent ex = new Extent(3, 5); // three rows, five columns.
                 int[,] b = new int[ex[0], ex[1]];

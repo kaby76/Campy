@@ -43,9 +43,9 @@ namespace Campy.Compiler
             _methods_done = new List<string>();
             _rewritten_runtime = new Dictionary<string, string>();
             _rewritten_runtime.Add("System.Int32 System.Int32[0...,0...]::Get(System.Int32,System.Int32)",
-                "T Campy.Compiler.Runtime::get_multi_array(System.Array,System.Int32,System.Int32)");
+                "T Campy.Compiler.Runtime`1::get_multi_array(System.Array,System.Int32,System.Int32)");
             _rewritten_runtime.Add("System.Void System.Int32[0...,0...]::Set(System.Int32,System.Int32,System.Int32)",
-                "System.Void Campy.Compiler.Runtime::set_multi_array(System.Array,System.Int32,System.Int32,T)");
+                "System.Void Campy.Compiler.Runtime`1::set_multi_array(System.Array,System.Int32,System.Int32,T)");
         }
 
         public void AnalyzeThisAssembly()
@@ -120,39 +120,30 @@ namespace Campy.Compiler
 
         public void Add(Mono.Cecil.TypeReference type)
         {
-            TypeDefinition type_defintion = type.Resolve();
-            foreach (MethodDefinition definition in type_defintion.Methods)
+            // This call should never be used. Why?
+            // We cannot get methods from type reference, so we have to resolve the type
+            // to the definition. Unfortunately, that strips all generic type information from
+            // the type reference. For now just throw exception.
+            throw new Exception("Do not use this method. See code comments as to why.");
+            TypeDefinition type_definition = type.Resolve();
+            foreach (MethodDefinition definition in type_definition.Methods)
                 Add(definition);
         }
 
-        public void Add(MethodReference definition)
+        public void Add(MethodReference method_reference)
         {
-            if (definition == null)
+            if (method_reference == null)
                 return;
-            if (_cfg.MethodAvoid(definition.FullName))
+            if (_cfg.MethodAvoid(method_reference.FullName))
                 return;
-            if (_methods_done.Contains(definition.FullName))
+            if (_methods_done.Contains(method_reference.FullName))
                 return;
-
-            // Get instantiated version of method if generic.
-            var generic = definition.HasGenericParameters;
-            var expl = definition.ExplicitThis;
-            var is_instance = definition.IsGenericInstance;
-            var declaring_type = definition.DeclaringType;
-            if (declaring_type != null)
-            {
-                var dt_generic_instance = declaring_type.IsGenericInstance;
-                var dt_generic = declaring_type.HasGenericParameters;
-            }
-
             foreach (var tuple in _methods_to_do)
             {
-                if (tuple.Item1.FullName == definition.FullName)
-                {
+                if (tuple.Item1.FullName == method_reference.FullName)
                     return;
-                }
             }
-            _methods_to_do.Push(new Tuple<MethodReference, List<TypeReference>>(definition, new List<TypeReference>()));
+            _methods_to_do.Push(new Tuple<MethodReference, List<TypeReference>>(method_reference, new List<TypeReference>()));
         }
 
         public void AddAssembly(Assembly assembly)
