@@ -114,7 +114,7 @@ namespace Campy
                         cs, list_of_data_types_used, list_of_mono_data_types_used);
 
                     // Associate "this" with entry.
-                    Dictionary<TypeReference, Type> ops = bb.OpsFromOriginal;
+                    Dictionary<Tuple<TypeReference, GenericParameter>, Type> ops = bb.OpsFromOriginal;
 
                     // Compile methods with added type information.
                     Singleton()._converter.CompileToLLVM(cs, list_of_mono_data_types_used);

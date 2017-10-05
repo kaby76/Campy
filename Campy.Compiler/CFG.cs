@@ -127,9 +127,9 @@ namespace Campy.Compiler
             : GraphLinkedList<int, Vertex, Edge>.Vertex
         {
             public CFG.Vertex OriginalVertex { get; set; }
-            public Dictionary<TypeReference, System.Type> OpsFromOriginal { get; set; } = new Dictionary<TypeReference, System.Type>();
+            public Dictionary<Tuple<TypeReference, GenericParameter>, System.Type> OpsFromOriginal { get; set; } = new Dictionary<Tuple<TypeReference, GenericParameter>, System.Type>();
             public CFG.Vertex PreviousVertex { get; set; }
-            public Tuple<TypeReference, System.Type> OpFromPreviousNode { get; set; }
+            public Tuple<Tuple<TypeReference, GenericParameter>, System.Type> OpFromPreviousNode { get; set; }
             public Dictionary<TypeReference, TypeRef> LLVMTypeMap = new Dictionary<TypeReference, TypeRef>();
             public MethodReference Method { get; set; }
             public List<Inst> Instructions { get; set; } = new List<Inst>();

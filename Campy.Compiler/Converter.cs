@@ -21,10 +21,10 @@ namespace Campy.Compiler
     {
         public static TypeRef ToTypeRef(
             this Mono.Cecil.TypeReference tr,
-            Dictionary<TypeReference, System.Type> generic_type_rewrite_rules = null,
+            Dictionary<Tuple<TypeReference, GenericParameter>, System.Type> generic_type_rewrite_rules = null,
             int level = 0)
         {
-            if (generic_type_rewrite_rules == null) generic_type_rewrite_rules = new Dictionary<TypeReference, System.Type>();
+            if (generic_type_rewrite_rules == null) generic_type_rewrite_rules = new Dictionary<Tuple<TypeReference, GenericParameter>, System.Type>();
 
             // Search for type if already converted. Note, there are several caches to search, each
             // containing types with different properties.
@@ -83,9 +83,10 @@ namespace Campy.Compiler
                 {
                     foreach (var kvp in generic_type_rewrite_rules)
                     {
-                        var key = kvp.Key;
+                        Tuple<TypeReference, GenericParameter> key = kvp.Key;
                         var value = kvp.Value;
-                        if (key.Name == tr.Name)
+                        if (key.Item1.FullName == tr.FullName // NOT COMPLETE!
+                            )
                         {
                             // Match, and substitute.
                             var v = value;
@@ -99,7 +100,7 @@ namespace Campy.Compiler
                 }
                 else if (td != null && td.IsClass)
                 {
-                    Dictionary<TypeReference, System.Type> additional = new Dictionary<TypeReference, System.Type>();
+                    Dictionary<Tuple<TypeReference, GenericParameter>, System.Type> additional = new Dictionary<Tuple<TypeReference, GenericParameter>, System.Type>();
                     var gp = tr.GenericParameters;
                     Mono.Collections.Generic.Collection<TypeReference> ga = null;
                     if (git != null)
@@ -109,13 +110,13 @@ namespace Campy.Compiler
                         // Map parameter to instantiated type.
                         for (int i = 0; i < gg.Count; ++i)
                         {
-                            var pp = gg[i];
-                            var qq = ga[i];
+                            GenericParameter pp = gg[i];
+                            TypeReference qq = ga[i];
                             TypeReference trrr = pp as TypeReference;
-                            var system_type = qq
-                                .ToSystemType();
+                            var system_type = qq.ToSystemType();
+                            Tuple<TypeReference, GenericParameter> tr_gp = new Tuple<TypeReference, GenericParameter>(tr, pp);
                             if (system_type == null) throw new Exception("Failed to convert " + qq);
-                            additional[pp] = system_type;
+                            additional[tr_gp] = system_type;
                         }
                     }
 
@@ -132,8 +133,10 @@ namespace Campy.Compiler
                     // into an uninstantiated generic type. E.g., List<int> contains a generic T[] containing the
                     // data. T could be a struct/value type, or T could be a class.
 
-                    var new_list = new Dictionary<TypeReference, System.Type>(generic_type_rewrite_rules);
-                    foreach (var a in additional) new_list.Add(a.Key, a.Value);
+                    var new_list = new Dictionary<Tuple<TypeReference, GenericParameter>, System.Type>(
+                        generic_type_rewrite_rules);
+                    foreach (var a in additional)
+                        new_list.Add(a.Key, a.Value);
 
                     List<TypeRef> list = new List<TypeRef>();
                     int offset = 0;
@@ -444,7 +447,7 @@ namespace Campy.Compiler
             mmap[k] = bb;
         }
 
-        private CFG.Vertex Eval(CFG.Vertex current, Dictionary<TypeReference, System.Type> ops)
+        private CFG.Vertex Eval(CFG.Vertex current, Dictionary<Tuple<TypeReference, GenericParameter>, System.Type> ops)
         {
             // Start at current vertex, and find transition state given ops.
             CFG.Vertex result = current;
@@ -453,7 +456,8 @@ namespace Campy.Compiler
                 bool found = false;
                 foreach(var t in ops)
                 {
-                    var x = FindInstantiatedBasicBlock(current, t.Key, t.Value);
+                    Tuple<TypeReference, GenericParameter> k = t.Key;
+                    var x = FindInstantiatedBasicBlock(current, k.Item1, t.Value);
                     if (x != null)
                     {
                         current = x;
@@ -545,11 +549,18 @@ namespace Campy.Compiler
                                     new_cfg_node.Instructions = basic_block.Instructions;
                                     new_cfg_node.Method = basic_block.Method;
                                     new_cfg_node.PreviousVertex = basic_block;
-                                    new_cfg_node.OpFromPreviousNode = new Tuple<TypeReference, System.Type>(type_to_consider, xx);
+                                    var b = type_to_consider as GenericParameter;
+                                    var bb = new Tuple<TypeReference, GenericParameter>(type_to_consider, b);
+                                    new_cfg_node.OpFromPreviousNode = new Tuple<Tuple<TypeReference, GenericParameter>, System.Type>(bb, xx);
                                     var previous_list = basic_block.OpsFromOriginal;
-                                    if (previous_list != null) new_cfg_node.OpsFromOriginal = new Dictionary<TypeReference, System.Type>(previous_list);
-                                    else new_cfg_node.OpsFromOriginal = new Dictionary<TypeReference, System.Type>();
-                                    new_cfg_node.OpsFromOriginal.Add(new_cfg_node.OpFromPreviousNode.Item1, new_cfg_node.OpFromPreviousNode.Item2);
+                                    if (previous_list != null) new_cfg_node.OpsFromOriginal = new Dictionary<Tuple<TypeReference, GenericParameter>, System.Type>(previous_list);
+                                    else new_cfg_node.OpsFromOriginal = new Dictionary<Tuple<TypeReference, GenericParameter>, System.Type>();
+
+                                    var a = new_cfg_node.OpFromPreviousNode.Item1 as Tuple<TypeReference, GenericParameter>;
+
+                                    new_cfg_node.OpsFromOriginal.Add(
+                                        a,
+                                        new_cfg_node.OpFromPreviousNode.Item2);
                                     if (basic_block.OriginalVertex == null) new_cfg_node.OriginalVertex = basic_block;
                                     else new_cfg_node.OriginalVertex = basic_block.OriginalVertex;
 
@@ -614,11 +625,18 @@ namespace Campy.Compiler
                                     new_cfg_node.Instructions = basic_block.Instructions;
                                     new_cfg_node.Method = basic_block.Method;
                                     new_cfg_node.PreviousVertex = basic_block;
-                                    new_cfg_node.OpFromPreviousNode = new Tuple<TypeReference, System.Type>(type_to_consider, xx);
+                                    var b = type_to_consider as GenericParameter;
+                                    var bb = new Tuple<TypeReference, GenericParameter>(type_to_consider, b);
+                                    new_cfg_node.OpFromPreviousNode = new Tuple<Tuple<TypeReference, GenericParameter>, System.Type>(bb, xx);
                                     var previous_list = basic_block.OpsFromOriginal;
-                                    if (previous_list != null) new_cfg_node.OpsFromOriginal = new Dictionary<TypeReference, System.Type>(previous_list);
-                                    else new_cfg_node.OpsFromOriginal = new Dictionary<TypeReference, System.Type>();
-                                    new_cfg_node.OpsFromOriginal.Add(new_cfg_node.OpFromPreviousNode.Item1, new_cfg_node.OpFromPreviousNode.Item2);
+                                    if (previous_list != null) new_cfg_node.OpsFromOriginal = new Dictionary<Tuple<TypeReference, GenericParameter>, System.Type>(previous_list);
+                                    else new_cfg_node.OpsFromOriginal = new Dictionary<Tuple<TypeReference, GenericParameter>, System.Type>();
+
+                                    var a = new_cfg_node.OpFromPreviousNode.Item1 as Tuple<TypeReference, GenericParameter>;
+                                    new_cfg_node.OpsFromOriginal.Add(
+                                        a,
+                                        new_cfg_node.OpFromPreviousNode.Item2);
+
                                     if (basic_block.OriginalVertex == null) new_cfg_node.OriginalVertex = basic_block;
                                     else new_cfg_node.OriginalVertex = basic_block.OriginalVertex;
                                     
@@ -692,11 +710,17 @@ namespace Campy.Compiler
                                     new_cfg_node.Instructions = basic_block.Instructions;
                                     new_cfg_node.Method = basic_block.Method;
                                     new_cfg_node.PreviousVertex = basic_block;
-                                    new_cfg_node.OpFromPreviousNode = new Tuple<TypeReference, System.Type>(type_to_consider, xx);
+                                    var b = type_to_consider as GenericParameter;
+                                    var bb = new Tuple<TypeReference, GenericParameter>(type_to_consider, b);
+                                    new_cfg_node.OpFromPreviousNode = new Tuple<Tuple<TypeReference, GenericParameter>, System.Type>(bb, xx);
                                     var previous_list = basic_block.OpsFromOriginal;
-                                    if (previous_list != null) new_cfg_node.OpsFromOriginal = new Dictionary<TypeReference, System.Type>(previous_list);
-                                    else new_cfg_node.OpsFromOriginal = new Dictionary<TypeReference, System.Type>();
-                                    new_cfg_node.OpsFromOriginal.Add(new_cfg_node.OpFromPreviousNode.Item1, new_cfg_node.OpFromPreviousNode.Item2);
+                                    if (previous_list != null) new_cfg_node.OpsFromOriginal = new Dictionary<Tuple<TypeReference, GenericParameter>, System.Type>(previous_list);
+                                    else new_cfg_node.OpsFromOriginal = new Dictionary<Tuple<TypeReference, GenericParameter>, System.Type>();
+
+                                    Tuple<TypeReference, GenericParameter> a = new_cfg_node.OpFromPreviousNode.Item1;
+                                    new_cfg_node.OpsFromOriginal.Add(
+                                        a,
+                                        new_cfg_node.OpFromPreviousNode.Item2);
                                     if (basic_block.OriginalVertex == null) new_cfg_node.OriginalVertex = basic_block;
                                     else new_cfg_node.OriginalVertex = basic_block.OriginalVertex;
 
