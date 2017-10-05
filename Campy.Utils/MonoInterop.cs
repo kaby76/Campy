@@ -1,13 +1,10 @@
 ﻿
 namespace Campy.Utils
 {
-    using Campy.Utils;
     using Mono.Cecil;
-    using Mono.Cecil.Rocks;
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
-    using System.IO;
     using System.Linq;
 
     public static class MonoInterop
@@ -18,43 +15,6 @@ namespace Campy.Utils
             Mono.Cecil.ModuleDefinition md = Mono.Cecil.ModuleDefinition.ReadModule(kernel_assembly_file_name);
             var reference = md.Import(type);
             return reference;
-        }
-
-        private static Mono.Cecil.TypeReference ToMonoTypeReferenceAux(this System.Type ty)
-        {
-            throw new Exception("Use ModuleDefinition.Import() instead.");
-
-            var mono_type = FindSimilarMonoType(ty);
-            if (mono_type == null)
-            {
-                if (ty.IsArray)
-                {
-                    var element_type = ty.GetElementType();
-                    var result = FindSimilarMonoType(element_type);
-                    // Create array type.
-                    if (result == null) return null;
-                    ArrayType art = result.MakeArrayType();
-                    TypeReference type_reference = (TypeReference)art;
-                    return type_reference;
-                }
-            }
-            else if (mono_type.HasGenericParameters && !mono_type.IsGenericInstance)
-            {
-                if (ty.IsConstructedGenericType)
-                {
-                    var j2 = ty.GetGenericArguments();
-                    List<TypeReference> list = new List<TypeReference>();
-                    foreach (var j3 in j2)
-                    {
-                        TypeReference m = j3.ToMonoTypeReference();
-                        list.Add(m);
-                    }
-                    var instantiated_type = mono_type.MakeGenericInstanceType(list.ToArray());
-                    return instantiated_type;
-                }
-                else throw new Exception("Cannot convert.");
-            }
-            return mono_type;
         }
 
         public static System.Type ToSystemType(this Mono.Cecil.TypeReference tr)
@@ -108,98 +68,6 @@ namespace Campy.Utils
             return null;
         }
 
-        private static Mono.Cecil.TypeDefinition FindSimilarMonoType(System.Type ty)
-        {
-            // Get assembly name which encloses code for kernel.
-            String kernel_assembly_file_name = ty.Assembly.Location;
-
-            // Get directory containing the assembly.
-            String full_path = Path.GetFullPath(kernel_assembly_file_name);
-            full_path = Path.GetDirectoryName(full_path);
-
-            // Decompile entire module using Mono.
-            Mono.Cecil.ModuleDefinition md = Mono.Cecil.ModuleDefinition.ReadModule(kernel_assembly_file_name);
-
-            // Examine all types, and all methods of types in order to find the lambda in Mono.Cecil.
-            List<Type> types = new List<Type>();
-            StackQueue<Mono.Cecil.TypeDefinition> type_definitions = new StackQueue<Mono.Cecil.TypeDefinition>();
-            StackQueue<Mono.Cecil.TypeDefinition> type_definitions_closure = new StackQueue<Mono.Cecil.TypeDefinition>();
-            foreach (Mono.Cecil.TypeDefinition td in md.Types)
-            {
-                type_definitions.Push(td);
-            }
-            while (type_definitions.Count > 0)
-            {
-                Mono.Cecil.TypeDefinition td = type_definitions.Pop();
-                //System.Console.WriteLine("M Type = " + td);
-                if (Campy.Utils.Utility.IsSimilarType(ty, td))
-                    return td;
-                type_definitions_closure.Push(td);
-                foreach (Mono.Cecil.TypeDefinition ntd in td.NestedTypes)
-                    type_definitions.Push(ntd);
-            }
-            foreach (Mono.Cecil.TypeDefinition td in type_definitions_closure)
-            {
-                // System.Console.WriteLine("M Type = " + td);
-                if (Campy.Utils.Utility.IsSimilarType(ty, td))
-                    return td;
-            }
-            return null;
-        }
-
-        private static Mono.Cecil.MethodDefinition ToMonoMethodDefinition(this System.Reflection.MethodBase mi)
-        {
-            throw new Exception("Use ModuleDefinition.Import() instead.");
-
-            // Get assembly name which encloses code for kernel.
-            String kernel_assembly_file_name = mi.DeclaringType.Assembly.Location;
-
-            // Get directory containing the assembly.
-            String full_path = Path.GetFullPath(kernel_assembly_file_name);
-            full_path = Path.GetDirectoryName(full_path);
-
-            String kernel_full_name = null;
-            // Get full name of kernel, including normalization because they cannot be compared directly with Mono.Cecil names.
-            if (mi as System.Reflection.MethodInfo != null)
-            {
-                System.Reflection.MethodInfo mik = mi as System.Reflection.MethodInfo;
-                kernel_full_name = string.Format("{0} {1}.{2}({3})", mik.ReturnType.FullName, Campy.Utils.Utility.RemoveGenericParameters(mi.ReflectedType), mi.Name, string.Join(",", mi.GetParameters().Select(o => string.Format("{0}", o.ParameterType)).ToArray()));
-            }
-            else
-                kernel_full_name = string.Format("{0}.{1}({2})", Campy.Utils.Utility.RemoveGenericParameters(mi.ReflectedType), mi.Name, string.Join(",", mi.GetParameters().Select(o => string.Format("{0}", o.ParameterType)).ToArray()));
-
-            kernel_full_name = Campy.Utils.Utility.NormalizeSystemReflectionName(kernel_full_name);
-
-            // Decompile entire module.
-            Mono.Cecil.ModuleDefinition md = Mono.Cecil.ModuleDefinition.ReadModule(kernel_assembly_file_name);
-
-            // Examine all types, and all methods of types in order to find the lambda in Mono.Cecil.
-            List<Type> types = new List<Type>();
-            StackQueue<Mono.Cecil.TypeDefinition> type_definitions = new StackQueue<Mono.Cecil.TypeDefinition>();
-            StackQueue<Mono.Cecil.TypeDefinition> type_definitions_closure = new StackQueue<Mono.Cecil.TypeDefinition>();
-            foreach (Mono.Cecil.TypeDefinition td in md.Types)
-            {
-                type_definitions.Push(td);
-            }
-            while (type_definitions.Count > 0)
-            {
-                Mono.Cecil.TypeDefinition ty = type_definitions.Pop();
-                type_definitions_closure.Push(ty);
-                foreach (Mono.Cecil.TypeDefinition ntd in ty.NestedTypes)
-                    type_definitions.Push(ntd);
-            }
-            foreach (Mono.Cecil.TypeDefinition td in type_definitions_closure)
-            {
-                foreach (Mono.Cecil.MethodDefinition md2 in td.Methods)
-                {
-                    String md2_name = Campy.Utils.Utility.NormalizeMonoCecilName(md2.FullName);
-                    if (md2_name.Contains(kernel_full_name))
-                        return md2;
-                }
-            }
-            return null;
-        }
-
         public static System.Reflection.MethodBase ToSystemMethodInfo(this Mono.Cecil.MethodDefinition md)
         {
             System.Reflection.MethodInfo result = null;
@@ -233,6 +101,46 @@ namespace Campy.Utils
         public static bool IsStruct(this Mono.Cecil.TypeReference t)
         {
             return t.IsValueType && !t.IsPrimitive;
+        }
+
+
+        public static void Rewrite(this MethodReference method_reference)
+        {
+            Dictionary<TypeReference, System.Type> additional = new Dictionary<TypeReference, System.Type>();
+            var mr_gp = method_reference.GenericParameters;
+            var mr_hgp = method_reference.HasGenericParameters;
+            var mr_dt_hgp = method_reference.DeclaringType.HasGenericParameters;
+            var mr_igi = method_reference.IsGenericInstance;
+            var mr_dt_igi = method_reference.DeclaringType.IsGenericInstance;
+            if (mr_igi)
+            {
+                GenericInstanceMethod i = method_reference as GenericInstanceMethod;
+                var mr_hga = i.HasGenericArguments;
+            }
+            if (mr_dt_igi)
+            {
+                GenericInstanceType i = method_reference.DeclaringType as GenericInstanceType;
+                var mr_dt_hga = i.HasGenericArguments;
+            }
+            return;
+            //Mono.Collections.Generic.Collection<TypeReference> ga = null;
+            //if (git != null)
+            //{
+            //    ga = git.GenericArguments;
+            //    Mono.Collections.Generic.Collection<GenericParameter> gg = td.GenericParameters;
+            //    // Map parameter to instantiated type.
+            //    for (int i = 0; i < gg.Count; ++i)
+            //    {
+            //        var pp = gg[i];
+            //        var qq = ga[i];
+            //        TypeReference trrr = pp as TypeReference;
+            //        var system_type = qq
+            //            .ToSystemType();
+            //        if (system_type == null) throw new Exception("Failed to convert " + qq);
+            //        additional[pp] = system_type;
+            //    }
+            //}
+
         }
     }
 }

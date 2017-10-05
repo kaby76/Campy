@@ -120,18 +120,6 @@ namespace Campy.Compiler
                     Add(definition);
         }
 
-        public void Add(Mono.Cecil.TypeReference type)
-        {
-            // This call should never be used. Why?
-            // We cannot get methods from type reference, so we have to resolve the type
-            // to the definition. Unfortunately, that strips all generic type information from
-            // the type reference. For now just throw exception.
-            throw new Exception("Do not use this method. See code comments as to why.");
-            TypeDefinition type_definition = type.Resolve();
-            foreach (MethodDefinition definition in type_definition.Methods)
-                Add(definition);
-        }
-
         public void Add(MethodReference method_reference)
         {
             if (method_reference == null)
@@ -329,6 +317,9 @@ namespace Campy.Compiler
             // Resolve() tends to turn anything into mush. It removes type information
             // per instruction. Set up for analysis of the method body, if there is one.
             MethodDefinition md = item1.Resolve();
+
+            item1.Rewrite();
+
             Mono.Cecil.Cil.MethodBody body = null;
             bool has_ret = false;
             if (md == null)
