@@ -1755,7 +1755,6 @@ namespace Campy.Compiler
 
                         int field_size;
                         int alignment;
-                        var ft = f.FieldType.ToSystemType();
                         var array_or_class = (f.FieldType.IsArray || !f.FieldType.IsValueType);
                         if (array_or_class)
                         {
@@ -1764,6 +1763,7 @@ namespace Campy.Compiler
                         }
                         else
                         {
+                            var ft = f.FieldType.ToSystemType();
                             field_size = Buffers.SizeOf(ft);
                             alignment = Buffers.Alignment(ft);
                         }
@@ -1967,7 +1967,6 @@ namespace Campy.Compiler
 
                         int field_size;
                         int alignment;
-                        var ft = f.FieldType.ToSystemType();
                         var array_or_class = (f.FieldType.IsArray || !f.FieldType.IsValueType);
                         if (array_or_class)
                         {
@@ -1976,6 +1975,7 @@ namespace Campy.Compiler
                         }
                         else
                         {
+                            var ft = f.FieldType.ToSystemType();
                             field_size = Buffers.SizeOf(ft);
                             alignment = Buffers.Alignment(ft);
                         }
