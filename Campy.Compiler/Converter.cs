@@ -795,6 +795,7 @@ namespace Campy.Compiler
         private ModuleRef CreateModule(string name)
         {
             var new_module = LLVM.ModuleCreateWithName(name);
+            var context = LLVM.GetModuleContext(new_module);
             all_llvm_modules.Add(new_module);
             return new_module;
         }
@@ -909,6 +910,11 @@ namespace Campy.Compiler
                 BasicBlockRef entry = LLVM.AppendBasicBlock(fun, bb.Name.ToString());
                 bb.BasicBlock = entry;
                 bb.MethodValueRef = fun;
+                var t_fun = LLVM.TypeOf(fun);
+                var t_fun_con = LLVM.GetTypeContext(t_fun);
+                var context = LLVM.GetModuleContext(Converter.global_llvm_module);
+                if (t_fun_con != context) throw new Exception("not equal");
+                LLVM.VerifyFunction(fun, VerifierFailureAction.PrintMessageAction);
                 BuilderRef builder = LLVM.CreateBuilder();
                 bb.Builder = builder;
                 LLVM.PositionBuilderAtEnd(builder, entry);
@@ -928,6 +934,11 @@ namespace Campy.Compiler
                     var ent = bb.Entry;
                     var lvv_ent = ent;
                     var fun = lvv_ent.MethodValueRef;
+                    var t_fun = LLVM.TypeOf(fun);
+                    var t_fun_con = LLVM.GetTypeContext(t_fun);
+                    var context = LLVM.GetModuleContext(Converter.global_llvm_module);
+                    if (t_fun_con != context) throw new Exception("not equal");
+                    LLVM.VerifyFunction(fun, VerifierFailureAction.PrintMessageAction);
                     var llvm_bb = LLVM.AppendBasicBlock(fun, bb.Name.ToString());
                     bb.BasicBlock = llvm_bb;
                     bb.MethodValueRef = lvv_ent.MethodValueRef;
