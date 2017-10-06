@@ -1189,7 +1189,8 @@ namespace Campy.Compiler
             return weeded;
         }
 
-        public void CompileToLLVM(List<CFG.Vertex> basic_blocks_to_compile, List<Mono.Cecil.TypeReference> list_of_data_types_used)
+        public string CompileToLLVM(List<CFG.Vertex> basic_blocks_to_compile, List<Mono.Cecil.TypeReference> list_of_data_types_used,
+            int basic_block_id)
         {
             basic_blocks_to_compile = RemoveBasicBlocksAlreadyCompiled(basic_blocks_to_compile);
 
@@ -1342,6 +1343,58 @@ namespace Campy.Compiler
 
             if (Utils.Options.IsOn("name_trace"))
                 NameTableTrace();
+
+
+            {
+                var module = Converter.global_llvm_module;
+                var basic_block = GetBasicBlock(basic_block_id);
+
+                if (Campy.Utils.Options.IsOn("module_trace"))
+                    LLVM.DumpModule(module);
+
+                MyString error = new MyString();
+                LLVM.VerifyModule(module, VerifierFailureAction.PrintMessageAction, error);
+                if (error.ToString() != "")
+                {
+                    System.Console.WriteLine(error);
+                    throw new Exception("Error in JIT compilation.");
+                }
+
+                string triple = "nvptx64-nvidia-cuda";
+                var b = LLVM.GetTargetFromTriple(triple, out TargetRef t2, error);
+                if (error.ToString() != "")
+                {
+                    System.Console.WriteLine(error);
+                    throw new Exception("Error in JIT compilation.");
+                }
+                TargetMachineRef tmr = LLVM.CreateTargetMachine(t2, triple, "", "", CodeGenOptLevel.CodeGenLevelDefault,
+                    RelocMode.RelocDefault, CodeModel.CodeModelKernel);
+                ContextRef context_ref = LLVM.ContextCreate();
+                ValueRef kernelMd = LLVM.MDNodeInContext(
+                    context_ref, new ValueRef[3]
+                {
+                    basic_block.MethodValueRef,
+                    LLVM.MDStringInContext(context_ref, "kernel", 6),
+                    LLVM.ConstInt(LLVM.Int32TypeInContext(context_ref), 1, false)
+                });
+                LLVM.AddNamedMetadataOperand(module, "nvvm.annotations", kernelMd);
+                LLVM.TargetMachineEmitToMemoryBuffer(tmr, module, Swigged.LLVM.CodeGenFileType.AssemblyFile,
+                    error, out MemoryBufferRef buffer);
+                string ptx = null;
+                try
+                {
+                    ptx = LLVM.GetBufferStart(buffer);
+                    uint length = LLVM.GetBufferSize(buffer);
+                    ptx = ptx.Replace("3.2", "5.0");
+                    if (Campy.Utils.Options.IsOn("ptx_trace"))
+                        System.Console.WriteLine(ptx);
+                }
+                finally
+                {
+                    LLVM.DisposeMemoryBuffer(buffer);
+                }
+                return ptx;
+            }
         }
 
         public List<System.Type> FindAllTargets(Delegate obj)
@@ -1464,56 +1517,11 @@ namespace Campy.Compiler
             return _mcfg.VertexNodes.Where(i => i.IsEntry && i.Name == block_id).FirstOrDefault();
         }
 
-        public CUfunction GetCudaFunction(int basic_block_id)
+        public CUfunction GetCudaFunction(int basic_block_id, string ptx)
         {
             var basic_block = GetBasicBlock(basic_block_id);
             var method = basic_block.Method;
-            var module = Converter.global_llvm_module;
 
-            if (Campy.Utils.Options.IsOn("module_trace"))
-                LLVM.DumpModule(module);
-
-            MyString error = new MyString();
-            LLVM.VerifyModule(module, VerifierFailureAction.PrintMessageAction, error);
-            if (error.ToString() != "")
-            {
-                System.Console.WriteLine(error);
-                throw new Exception("Error in JIT compilation.");
-            }
-
-            string triple = "nvptx64-nvidia-cuda";
-            var b = LLVM.GetTargetFromTriple(triple, out TargetRef t2, error);
-            if (error.ToString() != "")
-            {
-                System.Console.WriteLine(error);
-                throw new Exception("Error in JIT compilation.");
-            }
-            TargetMachineRef tmr = LLVM.CreateTargetMachine(t2, triple, "", "",CodeGenOptLevel.CodeGenLevelDefault,
-                RelocMode.RelocDefault,CodeModel.CodeModelKernel);
-            ContextRef context_ref = LLVM.ContextCreate();
-            ValueRef kernelMd = LLVM.MDNodeInContext(
-                context_ref, new ValueRef[3]
-            {
-                basic_block.MethodValueRef,
-                LLVM.MDStringInContext(context_ref, "kernel", 6),
-                LLVM.ConstInt(LLVM.Int32TypeInContext(context_ref), 1, false)
-            });
-            LLVM.AddNamedMetadataOperand(module, "nvvm.annotations", kernelMd);
-            LLVM.TargetMachineEmitToMemoryBuffer(tmr,module,Swigged.LLVM.CodeGenFileType.AssemblyFile,
-                error,out MemoryBufferRef buffer);
-            string ptx = null;
-            try
-            {
-                ptx = LLVM.GetBufferStart(buffer);
-                uint length = LLVM.GetBufferSize(buffer);
-                ptx = ptx.Replace("3.2", "5.0");
-                if (Campy.Utils.Options.IsOn("ptx_trace"))
-                    System.Console.WriteLine(ptx);
-            }
-            finally
-            {
-                LLVM.DisposeMemoryBuffer(buffer);
-            }
             var res = Cuda.cuDeviceGet(out int device, 0);
             CheckCudaError(res);
             res = Cuda.cuDeviceGetPCIBusId(out string pciBusId, 100, device);

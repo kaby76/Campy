@@ -115,11 +115,12 @@ namespace Campy
                     Dictionary<Tuple<TypeReference, GenericParameter>, Type> ops = bb.OpsFromOriginal;
 
                     // Compile methods with added type information.
-                    Singleton()._converter.CompileToLLVM(cs, list_of_mono_data_types_used);
+                    string ptx = Singleton()._converter.CompileToLLVM(cs, list_of_mono_data_types_used,
+                        bb.Name);
 
                     Converter.CheckCudaError(Cuda.cuInit(0));
 
-                    var ptr_to_kernel = Singleton()._converter.GetCudaFunction(bb.Name);
+                    var ptr_to_kernel = Singleton()._converter.GetCudaFunction(bb.Name, ptx);
 
                     Index index = new Index(extent);
                     Buffers buffer = new Buffers();
