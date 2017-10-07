@@ -65,7 +65,8 @@ namespace Campy.Compiler
                     // as system_type.GetElementType(). Use ArrayType.ElementType!
                     var array_type = tr as ArrayType;
                     var element_type = array_type.ElementType;
-                    ContextRef c = LLVM.ContextCreate();
+                    // ContextRef c = LLVM.ContextCreate();
+                    ContextRef c = LLVM.GetModuleContext(Converter.global_llvm_module);
                     string type_name = Converter.RenameToLegalLLVMName(tr.ToString());
                     TypeRef s = LLVM.StructCreateNamed(c, type_name);
                     TypeRef p = LLVM.PointerType(s, 0);
@@ -121,7 +122,8 @@ namespace Campy.Compiler
                     }
 
                     // Create a struct/class type.
-                    ContextRef c = LLVM.ContextCreate();
+                    //ContextRef c = LLVM.ContextCreate();
+                    ContextRef c = LLVM.GetModuleContext(Converter.global_llvm_module);
                     string llvm_name = Converter.RenameToLegalLLVMName(tr.ToString());
                     TypeRef s = LLVM.StructCreateNamed(c, llvm_name);
 
@@ -902,6 +904,7 @@ namespace Campy.Compiler
                 }
 
                 var mi2 = FromGenericParameterToTypeReference(method.ReturnType, method.DeclaringType as GenericInstanceType);
+                //mi2 = FromGenericParameterToTypeReference(typeof(void).ToMonoTypeReference(), null);
                 Type t_ret = new Type(mi2);
                 TypeRef ret_type = t_ret.IntermediateType;
                 TypeRef met_type = LLVM.FunctionType(ret_type, param_types, false);
@@ -914,7 +917,7 @@ namespace Campy.Compiler
                 var t_fun_con = LLVM.GetTypeContext(t_fun);
                 var context = LLVM.GetModuleContext(Converter.global_llvm_module);
                 if (t_fun_con != context) throw new Exception("not equal");
-                LLVM.VerifyFunction(fun, VerifierFailureAction.PrintMessageAction);
+                //////////LLVM.VerifyFunction(fun, VerifierFailureAction.PrintMessageAction);
                 BuilderRef builder = LLVM.CreateBuilder();
                 bb.Builder = builder;
                 LLVM.PositionBuilderAtEnd(builder, entry);
@@ -1380,7 +1383,8 @@ namespace Campy.Compiler
                 }
                 TargetMachineRef tmr = LLVM.CreateTargetMachine(t2, triple, "", "", CodeGenOptLevel.CodeGenLevelDefault,
                     RelocMode.RelocDefault, CodeModel.CodeModelKernel);
-                ContextRef context_ref = LLVM.ContextCreate();
+                //ContextRef context_ref = LLVM.ContextCreate();
+                ContextRef context_ref = LLVM.GetModuleContext(Converter.global_llvm_module);
                 ValueRef kernelMd = LLVM.MDNodeInContext(
                     context_ref, new ValueRef[3]
                 {

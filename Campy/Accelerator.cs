@@ -37,9 +37,11 @@ namespace Campy
 
         public static AcceleratorView GetAutoSelectionView()
         {
-            var list = Accelerator.GetAll();
-            if (list.Count == 0) return default(AcceleratorView);
-            return new AcceleratorView(list.FirstOrDefault());
+            List<Accelerator> list = new List<Accelerator>();
+            //list = Accelerator.GetAll();
+            if (list.Count > 0)
+                return new AcceleratorView(list.FirstOrDefault());
+            return default(AcceleratorView);
         }
 
         public string GetDevicePath { get; internal set; }
