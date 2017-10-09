@@ -32,8 +32,6 @@ namespace Campy.Utils
                 var genericInstance = (GenericInstanceType)type;
                 var y = string.Format("{0}.{1}[{2}]", genericInstance.Namespace, type.Name, String.Join(",", genericInstance.GenericArguments.Select(p => p.GetReflectionName()).ToArray()));
                 string ass = type.Module.Assembly.FullName;
-                System.Console.WriteLine("1name is " + y);
-                System.Console.WriteLine("ass = " + ass);
                 return y;
             }
             if (type.DeclaringType != null)
@@ -42,7 +40,6 @@ namespace Campy.Utils
                 string suf = type.Name;
                 string ass = type.Module.Assembly.FullName;
                 string y = string.Format("{0}+{1},{2}", pre, suf, ass);
-                System.Console.WriteLine("2name is " + y);
                 return y;
             }
             {
@@ -53,7 +50,6 @@ namespace Campy.Utils
                     List<Int32>[] vvv = new List<int>[1];
                     string ss = vvv.GetType().FullName;
                     string y = string.Format("{0}[]", ss2);
-                    System.Console.WriteLine("2name is " + y);
                     return y;
                 }
                 else

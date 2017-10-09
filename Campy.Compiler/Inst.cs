@@ -2632,7 +2632,7 @@ namespace Campy.Compiler
                         var t_fun_con = LLVM.GetTypeContext(t_fun);
                         var context = LLVM.GetModuleContext(Converter.global_llvm_module);
                         if (t_fun_con != context) throw new Exception("not equal");
-                        LLVM.VerifyFunction(fv, VerifierFailureAction.PrintMessageAction);
+                        //LLVM.VerifyFunction(fv, VerifierFailureAction.PrintMessageAction);
                         ValueRef[] args = new ValueRef[nargs];
                         for (int k = nargs - 1; k >= 0; --k)
                             args[k] = state._stack.Pop().V;
@@ -2807,7 +2807,7 @@ namespace Campy.Compiler
                     var t_fun_con = LLVM.GetTypeContext(t_fun);
                     var context = LLVM.GetModuleContext(Converter.global_llvm_module);
                     if (t_fun_con != context) throw new Exception("not equal");
-                    LLVM.VerifyFunction(fv, VerifierFailureAction.PrintMessageAction);
+                    //LLVM.VerifyFunction(fv, VerifierFailureAction.PrintMessageAction);
                     ValueRef[] args = new ValueRef[nargs];
                     for (int k = nargs - 1; k >= 0; --k)
                         args[k] = state._stack.Pop().V;

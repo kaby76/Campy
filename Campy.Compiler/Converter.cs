@@ -77,7 +77,6 @@ namespace Campy.Compiler
                         LLVM.PointerType(e, 0)
                         , LLVM.Int64Type()
                     }, true);
-                    System.Console.WriteLine(LLVM.PrintTypeToString(s));
                     return p;
                 }
                 else if (tr.IsGenericParameter)
@@ -230,7 +229,6 @@ namespace Campy.Compiler
                         }
                     }
                     LLVM.StructSetBody(s, list.ToArray(), true);
-                    System.Console.WriteLine(LLVM.PrintTypeToString(s));
                     return p;
                 }
                 else
@@ -941,7 +939,7 @@ namespace Campy.Compiler
                     var t_fun_con = LLVM.GetTypeContext(t_fun);
                     var context = LLVM.GetModuleContext(Converter.global_llvm_module);
                     if (t_fun_con != context) throw new Exception("not equal");
-                    LLVM.VerifyFunction(fun, VerifierFailureAction.PrintMessageAction);
+                    //LLVM.VerifyFunction(fun, VerifierFailureAction.PrintMessageAction);
                     var llvm_bb = LLVM.AppendBasicBlock(fun, bb.Name.ToString());
                     bb.BasicBlock = llvm_bb;
                     bb.MethodValueRef = lvv_ent.MethodValueRef;

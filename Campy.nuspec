@@ -5,7 +5,7 @@
     <id>Campy</id>
     <title>Campy</title>
 
-    <version>0.0.2-alpha</version>
+    <version>0.0.3-alpha</version>
 
     <!-- Authors contain text that appears directly on the gallery -->
     <authors>Ken Domino</authors>
@@ -21,10 +21,13 @@
     <licenseUrl>https://raw.github.com/kaby76/campy/master/LICENSE</licenseUrl>
 
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>An API for the running of C# code on a GPU. For Windows (x64).</description>
+    <description>An API for the running of C# code on a GPU. At this moment, for Windows x64.</description>
     <releaseNotes>
+* Version 0.0.3-alpha
+Added greater stability for compilation of generics, classes, arrays. Demo and debug version only.
+
 * Version 0.0.2-alpha
-Adding in compilation of generics and classes. Problems in memory management and recompilation (speed) outstanding.
+Addedg in compilation of generics and classes. Problems in memory management and recompilation (speed) outstanding.
 Release for demonstration purposes only. Debug version only.
 
 * Version 0.0.1-alpha
@@ -82,8 +85,8 @@ For further information, see https://github.com/kaby76/campy and http://campynet
       </group>
 -->
       <group targetFramework="net47">
-        <dependency id="swigged.cuda" version="[8.0.6,)" />
-        <dependency id="swigged.llvm" version="[4.0.14,)" />
+        <dependency id="swigged.cuda" version="[9.0.0,)" />
+        <dependency id="swigged.llvm" version="[5.0.0,)" />
 	<dependency id="Mono.Cecil" version="[0.9.6.4,)" />
 
 	<dependency id="System.Console" version="[4.0.0,)" />
@@ -112,11 +115,15 @@ For further information, see https://github.com/kaby76/campy and http://campynet
   
   <files>
     <file src="Campy\bin\Debug\Campy.dll" target="lib" />
+    <file src="Campy\bin\Debug\Campy.pdb" target="lib" />
+
     <file src="Campy\bin\Debug\Campy.Graphs.dll" target="lib" />
-    <file src="Campy\bin\Debug\Campy.GraphAlgorithms.dll" target="lib" />
-    <file src="Campy\bin\Debug\Campy.LCFG.dll" target="lib" />
-    <file src="Campy\bin\Debug\Campy.Types.dll" target="lib" />
-    <file src="Campy\bin\Debug\Campy.Types.Utils.dll" target="lib" />
+    <file src="Campy\bin\Debug\Campy.Graphs.pdb" target="lib" />
+
+    <file src="Campy\bin\Debug\Campy.Compiler.dll" target="lib" />
+    <file src="Campy\bin\Debug\Campy.Compiler.pdb" target="lib" />
+
     <file src="Campy\bin\Debug\Campy.Utils.dll" target="lib" />
+    <file src="Campy\bin\Debug\Campy.Utils.pdb" target="lib" />
   </files>
 </package>

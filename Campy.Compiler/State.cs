@@ -93,7 +93,7 @@ namespace Campy.Compiler
                 var t_fun_con = LLVM.GetTypeContext(t_fun);
                 var context = LLVM.GetModuleContext(Converter.global_llvm_module);
                 if (t_fun_con != context) throw new Exception("not equal");
-                LLVM.VerifyFunction(fun, VerifierFailureAction.PrintMessageAction);
+                //LLVM.VerifyFunction(fun, VerifierFailureAction.PrintMessageAction);
                 uint begin = 0;
                 if (bb.HasThis)
                 {
