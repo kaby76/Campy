@@ -13,29 +13,29 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Campy.Compiler", "Campy.Com
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Campy", "Campy\Campy.csproj", "{453ABA79-5380-48A0-8C93-53A814977448}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTestProject1", "UnitTestProject1\UnitTestProject1.csproj", "{AE7F1BCF-AAC1-46B3-B610-C8D02A9C0CCB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntArraySet", "IntArraySet\IntArraySet.csproj", "{AE7F1BCF-AAC1-46B3-B610-C8D02A9C0CCB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTestProject2", "UnitTestProject2\UnitTestProject2.csproj", "{9B2094D4-90AB-477F-8F90-06B2F635A9B3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntListSet", "IntListSet\IntListSet.csproj", "{9B2094D4-90AB-477F-8F90-06B2F635A9B3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTestProject3", "UnitTestProject3\UnitTestProject3.csproj", "{478C99C1-FCA5-40D6-BBE2-A3FDD33CC686}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntArrayGetSet", "IntArrayGetSet\IntArrayGetSet.csproj", "{478C99C1-FCA5-40D6-BBE2-A3FDD33CC686}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTestProject4", "UnitTestProject4\UnitTestProject4.csproj", "{8BDCF7C4-4592-4CD5-BAF5-6D6E00DE86A8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntListGetSet", "IntListGetSet\IntListGetSet.csproj", "{8BDCF7C4-4592-4CD5-BAF5-6D6E00DE86A8}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{FD8F0C87-ED6C-498A-BE3A-B3B7F5B035C6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTestProject5", "UnitTestProject5\UnitTestProject5.csproj", "{B469EEBE-008C-4C95-A926-2E3BAF7E1996}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArrayTypesGetSet", "ArrayTypesGetSet\ArrayTypesGetSet.csproj", "{B469EEBE-008C-4C95-A926-2E3BAF7E1996}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTestProject6", "UnitTestProject6\UnitTestProject6.csproj", "{F7CD5EC0-F5DD-404A-A23D-57AF20013063}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArrayLengthUse", "ArrayLengthUse\ArrayLengthUse.csproj", "{F7CD5EC0-F5DD-404A-A23D-57AF20013063}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTestProject7", "UnitTestProject7\UnitTestProject7.csproj", "{E17F0F7C-E4FC-47BA-B40E-B9C986EF49B2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JaggedArray", "JaggedArray\JaggedArray.csproj", "{E17F0F7C-E4FC-47BA-B40E-B9C986EF49B2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTestProject8", "UnitTestProject8\UnitTestProject8.csproj", "{A4C83020-D57E-4227-8157-78138AB60D4C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ListsGaloreBasic", "ListsGaloreBasic\ListsGaloreBasic.csproj", "{A4C83020-D57E-4227-8157-78138AB60D4C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTestProject9", "UnitTestProject9\UnitTestProject9.csproj", "{71E48989-C6B8-4EAD-B6E7-09F366A8C160}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IfThenElse", "IfThenElse\IfThenElse.csproj", "{71E48989-C6B8-4EAD-B6E7-09F366A8C160}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTestProject10", "UnitTestProject10\UnitTestProject10.csproj", "{B2696F37-6A57-485E-887B-89A81FDD32B4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Saxpy", "Saxpy\Saxpy.csproj", "{B2696F37-6A57-485E-887B-89A81FDD32B4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTestProject11", "UnitTestProject11\UnitTestProject11.csproj", "{158305F2-E21C-4AB2-A75E-DAE9A6F46379}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JaggedArrayList", "JaggedArrayList\JaggedArrayList.csproj", "{158305F2-E21C-4AB2-A75E-DAE9A6F46379}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
