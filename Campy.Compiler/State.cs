@@ -133,8 +133,12 @@ namespace Campy.Compiler
                 for (int i = 0; i < locals; ++i)
                 {
                     var tr = variables[i].VariableType;
+                    Value value;
                     TypeRef type = tr.ToTypeRef(bb.OpsFromOriginal);
-                    Value value = new Value(LLVM.ConstInt(type, (ulong)0, true));
+                    if (LLVM.GetTypeKind(type) != TypeKind.PointerTypeKind)
+                        value = new Value(LLVM.ConstInt(type, (ulong)0, true));
+                    else
+                        value = new Value(LLVM.ConstPointerNull(type));
                     _stack.Push(value);
                 }
 
