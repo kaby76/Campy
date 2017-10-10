@@ -24,11 +24,11 @@ namespace UnitTestProject9
             for (int i = 0; i < n; ++i)
                 if (i % 2 == 0)
                 {
-                    if (t1[i] != i * 20) throw new Exception("unequal");
+                    if (t1[i] != i * 20) throw new Exception();
                 }
                 else
                 {
-                    if (t1[i] != i * 30) throw new Exception("unequal");
+                    if (t1[i] != i * 30) throw new Exception();
                 }
         }
     }

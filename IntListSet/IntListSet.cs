@@ -16,7 +16,7 @@ namespace UnitTestProject2
             for (int i = 0; i < n; ++i) x.Add(0);
             Campy.Parallel.For(n, i => x[i] = i);
             for (int i = 0; i < n; ++i) if (x[i] != i)
-                throw new Exception("unequal");
+                throw new Exception();
         }
     }
 }

@@ -16,7 +16,7 @@ namespace UnitTestProject4
             Campy.Parallel.For(n, i => x[i] = i);
             Campy.Parallel.For(n, i => x[i] = x[i] * 2);
             for (int i = 0; i < n; ++i) if (x[i] != 2 * i)
-                throw new Exception("unequal");
+                throw new Exception();
         }
     }
 }

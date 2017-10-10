@@ -20,7 +20,7 @@ namespace JaggedArrayList
             Campy.Parallel.For(n, i => x[i][0] = i);
             for (int i = 0; i < n; ++i)
                 if (x[i][0] != i)
-                    throw new Exception("unequal");
+                    throw new Exception();
         }
     }
 }

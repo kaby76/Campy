@@ -13,7 +13,7 @@ namespace UnitTestProject1
             int[] x = new int[n];
             Campy.Parallel.For(n, i => x[i] = i);
             for (int i = 0; i < n; ++i) if (x[i] != i)
-                throw new Exception("unequal");
+                throw new Exception();
         }
     }
 }

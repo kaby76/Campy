@@ -23,7 +23,7 @@ namespace UnitTestProject10
             });
             double[] answer = new double[] { -1, 10 };
             for (int i = 0; i < n; ++i)
-                if (answer[i] != y[i]) throw new Exception("unequal");
+                if (answer[i] != y[i]) throw new Exception();
         }
     }
 }
