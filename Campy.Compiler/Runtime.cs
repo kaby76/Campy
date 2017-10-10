@@ -4,41 +4,68 @@ namespace Campy.Compiler
 {
     public class Runtime
     {
-        public static unsafe int get_multi_array(void* arr, int i0)
+        // Arrays are implemented as a struct, with the data following the struct
+        // in row major format. Note, each dimension has a length that is recorded
+        // following the pointer p. The one shown here is for only one-dimensional
+        // arrays.
+        public unsafe struct A
+        {
+            public void* p;
+            public long d;
+            public long l;
+        }
+
+        public static unsafe int get_multi_array(A* arr, int i0)
         {
             int* a = *(int**) arr;
-            return *(a+i0);
+            return *(a + i0);
         }
 
-        public static unsafe int get_multi_array(void* arr, int i0, int i1)
+        public static unsafe int get_multi_array(A* arr, int i0, int i1)
         {
-            int* a = *(int**) arr;
-            byte* l = (byte*) arr;
-            l += sizeof(byte*);
-            int len = *(int*) l;
-            return *(a + len*i0 + i1);
+            int* a = (int*)(*arr).p;
+            int d = (int)(*arr).d;
+            byte* bp = (byte*)arr;
+            bp = bp + 24;
+            long o = 0;
+            long* lp = (long*)bp;
+            o = (*lp) * i0 + i1;
+            return *(a + o);
         }
 
-        public static unsafe int get_multi_array(void* arr, int i0, int i1, int i2)
+        public static unsafe int get_multi_array(A* arr, int i0, int i1, int i2)
         {
-            int* a = *(int**)arr;
-            byte* l = (byte*)arr;
-            l += sizeof(byte*);
-            int len0 = *(int*)l;
-            l += sizeof(byte*);
-            int len1 = *(int*)l;
-            return *(a + len0 * i0 + len1 * i1 + i2);
+            int* a = (int*)(*arr).p;
+            int d = (int)(*arr).d;
+            byte* bp = (byte*)arr;
+            bp = bp + 24;
+            long o = 0;
+            long* lp = (long*)bp;
+            o = (*lp) * i0 + i1;
+            return  *(a + o);
         }
 
-        public static unsafe void set_multi_array(void* arr, int i0, int value)
+        public static unsafe void set_multi_array(A* arr, int i0, int value)
         {
+            int* a = (int*)(*arr).p;
+            int d = (int)(*arr).d;
+            long o = i0;
+            *(a + o) = value;
         }
 
-        public static unsafe void set_multi_array(void* arr, int i0, int i1, int value)
+        public static unsafe void set_multi_array(A* arr, int i0, int i1, int value)
         {
+            int* a = (int*)(*arr).p;
+            int d = (int)(*arr).d;
+            byte* bp = (byte*)arr;
+            bp = bp + 24;
+            long o = 0;
+            long* lp = (long*)bp;
+            o = (*lp) * i0 + i1;
+            *(a + o) = value;
         }
 
-        public static unsafe void set_multi_array(void* arr, int i0, int i1, int i2, int value)
+        public static unsafe void set_multi_array(A* arr, int i0, int i1, int i2, int value)
         {
         }
     }

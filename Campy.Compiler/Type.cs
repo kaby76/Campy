@@ -261,7 +261,7 @@ namespace Campy.Compiler
 
         public static TypeRef getInt8PtrTy(Swigged.LLVM.ContextRef C, uint AS = 0)
         {
-            TypeRef re =  LLVM.Int8TypeInContext(C);
+            TypeRef re = LLVM.PointerType(LLVM.Int8TypeInContext(C), 0);
             return re;
         }
 

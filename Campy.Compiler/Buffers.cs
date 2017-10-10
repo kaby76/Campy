@@ -155,7 +155,7 @@
                         declare_parent_chain,
                         declare_flatten_structure);
 
-                    // Create a minimal array of the type given. We need this because
+                    // Create an array of the type given. We need this because
                     // the element type must exist PRIOR to the definition of the array.
                     // Great going Micrsoft! (Not!)
                     int[] dims = new int[rank];
@@ -163,8 +163,8 @@
                     object array_obj = Array.CreateInstance(elementType, dims);
                     var array_type = array_obj.GetType();
 
-                    // For arrays, convert into a struct with first field being a
-                    // pointer, and the second field a length.
+                    // For arrays, convert into the internal representation for runtime.
+                    // See Runtime.cs, struct A.
 
                     var tb = _asm.mb.DefineType(
                         array_type.FullName,
@@ -172,11 +172,11 @@
                         | System.Reflection.TypeAttributes.SequentialLayout
                         | System.Reflection.TypeAttributes.Serializable);
                     _type_name_map[hostType.FullName] = tb.FullName;
-
                     // Convert byte, int, etc., in host type to pointer in blittable type.
                     // With array, we need to also encode the length.
                     tb.DefineField("ptr", typeof(IntPtr), System.Reflection.FieldAttributes.Public);
-                    tb.DefineField("len", typeof(Int32), System.Reflection.FieldAttributes.Public);
+                    tb.DefineField("rank", typeof(Int64), System.Reflection.FieldAttributes.Public);
+                    tb.DefineField("len", typeof(Int64), System.Reflection.FieldAttributes.Public);
 
                     return tb.CreateType();
                 }
@@ -371,19 +371,23 @@
             {
                 Array array = (Array)obj;
                 var bytes = 0;
+                int rank = array.Rank;
                 var blittable_element_type = CreateImplementationType(array.GetType().GetElementType());
                 if (array.GetType().GetElementType().IsClass)
                 {
                     // We create a buffer for the class, and stuff a pointer in the array.
-                    bytes = Buffers.SizeOf(typeof(IntPtr)) // Pointer
-                            + Buffers.SizeOf(typeof(Int64)) // length
-                            + Buffers.SizeOf(typeof(IntPtr)) * array.Length; // elements
+                    bytes = Buffers.SizeOf(typeof(IntPtr)); // Pointer
+                    bytes += Buffers.SizeOf((typeof(Int64))); // Rank
+                    bytes += Buffers.SizeOf(typeof(Int64)) * rank; // Length for each dimension
+                    bytes += Buffers.SizeOf(typeof(IntPtr)) * array.Length; // Elements
                 }
                 else
                 {
-                    bytes = Buffers.SizeOf(typeof(IntPtr)) // Pointer
-                            + Buffers.SizeOf(typeof(Int64)) // length
-                            + Buffers.SizeOf(blittable_element_type) * array.Length; // elements
+                    // We create a buffer for the class, and stuff a pointer in the array.
+                    bytes = Buffers.SizeOf(typeof(IntPtr)); // Pointer
+                    bytes += Buffers.SizeOf((typeof(Int64))); // Rank
+                    bytes += Buffers.SizeOf(typeof(Int64)) * rank; // Length for each dimension
+                    bytes += Buffers.SizeOf(blittable_element_type) * array.Length; // Elements
                 }
                 return bytes;
             }
@@ -526,25 +530,26 @@
                     {
                         _allocated_objects[from] = (IntPtr)to_buffer;
 
-                        // An array is represented as a pointer/length struct.
+                        // An array is represented as a struct, Runtime::A.
                         // The data in the array is contained in the buffer following the length.
                         // The buffer allocated must be big enough to contain all data. Use
                         // Buffer.SizeOf(array) to get the representation buffer size.
                         // If the element is an array or a class, a buffer is allocated for each
                         // element, and an intptr used in the array.
-                        var a = (Array)from;
-                        var len = a.Length;
+                        Array a = (Array)from;
+                        int rank = a.Rank;
+                        int len = a.Length;
                         int bytes = SizeOf(a);
                         var destIntPtr = (byte*)to_buffer;
-                        byte* df0 = destIntPtr;
-                        byte* df1 = Buffers.SizeOf(typeof(IntPtr)) // Pointer
-                                    + destIntPtr;
-                        byte* df2 = Buffers.SizeOf(typeof(IntPtr)) // Pointer
-                                    + Buffers.SizeOf(typeof(Int64)) // length
-                                    + destIntPtr;
-                        Cp(df0, (IntPtr)df2); // Copy df2 to *df0
-                        Cp(df1, len);
-                        Cp(df2, a, CreateImplementationType(a.GetType().GetElementType()));
+                        byte* df_ptr = destIntPtr;
+                        byte* df_rank = df_ptr + Buffers.SizeOf(typeof(IntPtr));
+                        byte* df_length = df_rank + Buffers.SizeOf(typeof(Int64));
+                        byte* df_elements = df_length + Buffers.SizeOf(typeof(Int64)) * rank;
+                        Cp(df_ptr, (IntPtr)df_elements); // Copy df_elements to *df_ptr
+                        Cp(df_rank, rank);
+                        for (int i = 0; i < rank; ++i)
+                            Cp(df_length + i * Buffers.SizeOf(typeof(Int64)), a.GetLength(i));
+                        Cp(df_elements, a, CreateImplementationType(a.GetType().GetElementType()));
                     }
                     return;
                 }
@@ -785,24 +790,26 @@
                 if (t_type.IsArray)
                 {
                     // "from" is assumed to be a unmanaged buffer
-                    // with three fields, "ptr", "len", "data".
-                    int len = *(int*)((long)(byte*)from + Buffers.SizeOf(typeof(IntPtr)));
-                    IntPtr intptr_src = *(IntPtr*)(from);
-                    byte* ptr = (byte*)intptr_src;
-                    // For now, only one-dimension, given "len".
+                    // with record Runtime.A used.
+                    long * long_ptr = (long*)((long)(byte*)from);
+                    long_ptr++;
+                    int rank = (int)*long_ptr++;
                     Array to_array;
                     System.Type to_element_type = t_type.GetElementType();
                     System.Type from_element_type = to_element_type;
                     if (to_element_type.IsArray || to_element_type.IsClass)
                         from_element_type = typeof(IntPtr);
-                    // From type is just an intptr.
+                    int[] dims = new int[rank];
+                    for (int kk = 0; kk < rank; ++kk)
+                        dims[kk] = (int)*long_ptr++;
                     if (sync)
                         to_array = (Array)_allocated_objects.Where(p => p.Value == from).Select(p => p.Key)
                             .FirstOrDefault();
                     else
-                        to_array = Array.CreateInstance(to_element_type, new int[1] { len });
-                    _allocated_buffers[(IntPtr)ptr] = to_array;
-                    Cp((void*)ptr, to_array, from_element_type);
+                        to_array = Array.CreateInstance(to_element_type, dims);
+
+                    _allocated_buffers[(IntPtr)long_ptr] = to_array;
+                    Cp((void*)long_ptr, to_array, from_element_type);
                     to = to_array;
                     return;
                 }
@@ -1136,10 +1143,7 @@
 
         public unsafe void Cp(void* destPtr, object src)
         {
-            unsafe
-            {
-                Marshal.StructureToPtr(src, (IntPtr)destPtr, false);
-            }
+            Marshal.StructureToPtr(src, (IntPtr)destPtr, false);
         }
     }
 }

@@ -30,8 +30,9 @@ namespace Campy.Utils
             var to_type = ToSystemType2(type);
             if (type.IsGenericInstance)
             {
-                var genericInstance = (GenericInstanceType)type;
-                var y = string.Format("{0}.{1}[{2}]", genericInstance.Namespace, type.Name, String.Join(",", genericInstance.GenericArguments.Select(p => p.GetReflectionName()).ToArray()));
+                var genericInstance = (GenericInstanceType) type;
+                var y = string.Format("{0}.{1}[{2}]", genericInstance.Namespace, type.Name,
+                    String.Join(",", genericInstance.GenericArguments.Select(p => p.GetReflectionName()).ToArray()));
                 string ass = type.Module.Assembly.FullName;
                 return y;
             }
@@ -43,26 +44,24 @@ namespace Campy.Utils
                 string y = string.Format("{0}+{1},{2}", pre, suf, ass);
                 return y;
             }
+            if (type.IsArray)
             {
-                if (type.IsArray)
-                {
-                    var et = (type as ArrayType).ElementType;
-                    string ss2 = et.GetReflectionName();
-                    List<Int32>[] vvv = new List<int>[1];
-                    string ss = vvv.GetType().FullName;
-                    string y = string.Format("{0}[]", ss2);
-                    return y;
-                }
-                else if (type.FullName.StartsWith("System."))
-                {
-                    string pre = type.FullName;
-                    string y = pre;
-                    return y;
-                }
-                else
-                {
-                    return to_type.AssemblyQualifiedName;
-                }
+                var et = (type as ArrayType).ElementType;
+                string ss2 = et.GetReflectionName();
+                List<Int32>[] vvv = new List<int>[1];
+                string ss = vvv.GetType().FullName;
+                string y = string.Format("{0}[]", ss2);
+                return y;
+            }
+            else if (type.FullName.StartsWith("System."))
+            {
+                string pre = type.FullName;
+                string y = pre;
+                return y;
+            }
+            else
+            {
+                return to_type.AssemblyQualifiedName;
             }
         }
 

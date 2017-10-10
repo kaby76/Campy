@@ -72,9 +72,10 @@ namespace Campy.Compiler
                     TypeRef p = LLVM.PointerType(s, 0);
                     Converter.previous_llvm_types_created_global.Add(tr, p);
                     var e = ToTypeRef(element_type, generic_type_rewrite_rules, level + 1);
-                    LLVM.StructSetBody(s, new TypeRef[2]
+                    LLVM.StructSetBody(s, new TypeRef[3]
                     {
                         LLVM.PointerType(e, 0)
+                        , LLVM.Int64Type()
                         , LLVM.Int64Type()
                     }, true);
                     return p;

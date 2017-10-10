@@ -214,11 +214,9 @@ namespace ConsoleApp4
                 for (int i = 0; i < ex[0]; ++i)
                     for (int j = 0; j < ex[1]; ++j)
                         b[i, j] = (i + 1) * (j + 1);
-                Campy.Parallel.For(ex, d =>
+                Campy.Parallel.For(3, d =>
                 {
-                    int i = d[0];
-                    int j = d[0];
-                    b[i, j] = b[i, j] * 2;
+                    b[d, d] = 33 + d;
                 });
             }
             //{

@@ -43,9 +43,9 @@ namespace Campy.Compiler
             _methods_done = new List<string>();
             _rewritten_runtime = new Dictionary<string, string>();
             _rewritten_runtime.Add("System.Int32 System.Int32[0...,0...]::Get(System.Int32,System.Int32)",
-                "System.Int32 Campy.Compiler.Runtime::get_multi_array(System.Void*,System.Int32,System.Int32)");
+                "System.Int32 Campy.Compiler.Runtime::get_multi_array(Campy.Compiler.Runtime/A*,System.Int32,System.Int32)");
             _rewritten_runtime.Add("System.Void System.Int32[0...,0...]::Set(System.Int32,System.Int32,System.Int32)",
-                "System.Void Campy.Compiler.Runtime::set_multi_array(System.Void*,System.Int32,System.Int32,System.Int32)");
+                "System.Void Campy.Compiler.Runtime::set_multi_array(Campy.Compiler.Runtime/A*,System.Int32,System.Int32,System.Int32)");
         }
 
         public void AnalyzeThisAssembly()

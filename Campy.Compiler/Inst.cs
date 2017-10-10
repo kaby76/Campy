@@ -745,11 +745,22 @@ namespace Campy.Compiler
 
             // Build an LLVM GEP for the resulting address.
             // For now we "flatten" to byte offsets.
-            Type CharPtrTy = new Type(Type.getInt8PtrTy(
+
+            Type CharPtrTy = new Type(
+                Type.getInt8PtrTy(
                 LLVM.GetModuleContext(Converter.global_llvm_module),
                 BasePtr.T.getPointerAddressSpace()));
+            if (Campy.Utils.Options.IsOn("jit_trace"))
+                System.Console.WriteLine(CharPtrTy);
+
             Value BasePtrCast = new Value(LLVM.BuildBitCast(Builder, BasePtr.V, CharPtrTy.IntermediateType, ""));
+            if (Campy.Utils.Options.IsOn("jit_trace"))
+                System.Console.WriteLine(BasePtrCast);
+
             Value ResultPtr = new Value(LLVM.BuildInBoundsGEP(Builder, BasePtrCast.V, new ValueRef[] {Offset.V}, ""));
+            if (Campy.Utils.Options.IsOn("jit_trace"))
+                System.Console.WriteLine(ResultPtr);
+
             return ResultPtr;
         }
 
@@ -2053,29 +2064,54 @@ namespace Campy.Compiler
             Value v = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine("ConvertLoadIndirect into function " + v.ToString());
+
             TypeRef tr = LLVM.TypeOf(v.V);
-            bool isPtr = v.T.isPointerTy();
-            bool isArr = v.T.isArrayTy();
-            bool isSt = v.T.isStructTy();
             TypeKind kind = LLVM.GetTypeKind(tr);
-            bool isPtra = kind == TypeKind.PointerTypeKind;
-            bool isArra = kind == TypeKind.ArrayTypeKind;
-            bool isSta = kind == TypeKind.StructTypeKind;
+
             ValueRef[] indexes = new ValueRef[0];
-            ValueRef load = v.V;
-            ValueRef ll = LLVM.BuildInBoundsGEP(Builder, load, indexes, "");
+            ValueRef gep = LLVM.BuildInBoundsGEP(Builder, v.V, indexes, "");
             if (Campy.Utils.Options.IsOn("jit_trace"))
-                System.Console.WriteLine(new Value(ll).ToString());
-            var zz = LLVM.BuildLoad(Builder, ll, "");
+                System.Console.WriteLine(new Value(gep).ToString());
+
+            var load = LLVM.BuildLoad(Builder, gep, "");
             if (Campy.Utils.Options.IsOn("jit_trace"))
-                System.Console.WriteLine("zz = " + new Value(zz).ToString());
-            state._stack.Push(new Value(zz));
+                System.Console.WriteLine("load = " + new Value(load).ToString());
+
+            if (_dst != null && _dst.IntermediateType != LLVM.TypeOf(load))
+            {
+                load = LLVM.BuildIntCast(Builder, load, _dst.IntermediateType, "");
+                if (Campy.Utils.Options.IsOn("jit_trace"))
+                    System.Console.WriteLine(new Value(load));
+            }
+            else if (_dst == null)
+            {
+                var t_v = LLVM.TypeOf(load);
+                TypeRef t_to;
+                // Type information for instruction obtuse. 
+                // Use LLVM type and set stack type.
+                if (t_v == LLVM.Int8Type() || t_v == LLVM.Int16Type())
+                {
+                    load = LLVM.BuildIntCast(Builder, load, LLVM.Int32Type(), "");
+                    if (Campy.Utils.Options.IsOn("jit_trace"))
+                        System.Console.WriteLine(new Value(load));
+                }
+                else
+                    t_to = t_v;
+                //var op = this.Operand;
+                //var tt = op.GetType();
+            }
+
+            state._stack.Push(new Value(load));
             return Next;
         }
     }
 
     public class ConvertStoreIndirect : Inst
     {
+        protected Type _dst;
+        protected bool _check_overflow;
+        protected bool _from_unsigned;
+
         public ConvertStoreIndirect(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
@@ -2089,22 +2125,46 @@ namespace Campy.Compiler
         public override Inst Convert(Converter converter, State state)
         {
             Value v = state._stack.Pop();
+            if (Campy.Utils.Options.IsOn("jit_trace"))
+                System.Console.WriteLine(v);
+
             Value a = state._stack.Pop();
-
             if (Campy.Utils.Options.IsOn("jit_trace"))
-                System.Console.WriteLine("ConvertStoreIndirect into function v " + v.ToString());
-            if (Campy.Utils.Options.IsOn("jit_trace"))
-                System.Console.WriteLine("ConvertLoadIndirect into function a " + a.ToString());
-
-            TypeRef tr = LLVM.TypeOf(a.V);
-            bool isPtr = a.T.isPointerTy();
+                System.Console.WriteLine(a);
 
             ValueRef[] indexes = new ValueRef[0];
-            ValueRef load = a.V;
-            ValueRef ll = LLVM.BuildInBoundsGEP(Builder, load, indexes, "");
+            ValueRef gep = LLVM.BuildInBoundsGEP(Builder, a.V, indexes, "");
             if (Campy.Utils.Options.IsOn("jit_trace"))
-                System.Console.WriteLine(new Value(ll).ToString());
-            var zz = LLVM.BuildStore(Builder, v.V, ll);
+                System.Console.WriteLine(new Value(gep));
+
+            // Cast long into a pointer of the given dst type.
+            var ptr = LLVM.BuildPointerCast(Builder, gep,
+                LLVM.PointerType(_dst.VerificationType.ToTypeRef(), 0), "");
+            if (Campy.Utils.Options.IsOn("jit_trace"))
+                System.Console.WriteLine(new Value(ptr));
+
+
+            var value = v.V;
+            if (_dst != null && _dst.VerificationType.ToTypeRef() != v.T.IntermediateType)
+            {
+                value = LLVM.BuildIntCast(Builder, value, _dst.VerificationType.ToTypeRef(), "");
+                if (Campy.Utils.Options.IsOn("jit_trace"))
+                    System.Console.WriteLine(new Value(value));
+            }
+            else if (_dst == null)
+            {
+                var t_v = LLVM.TypeOf(value);
+                var t_d = LLVM.TypeOf(gep);
+                var t_e = LLVM.GetElementType(t_d);
+                if (t_v != t_e)
+                {
+                    value = LLVM.BuildIntCast(Builder, value, t_e, "");
+                    if (Campy.Utils.Options.IsOn("jit_trace"))
+                        System.Console.WriteLine(new Value(value));
+                }
+            }
+            
+            var zz = LLVM.BuildStore(Builder, value, ptr);
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine("Store = " + new Value(zz).ToString());
 
@@ -4092,8 +4152,11 @@ namespace Campy.Compiler
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(new Value(load));
 
+            // The length of an array is the product of all dimensions, but this instruction
+            // is only used for 1d arrays.
+
             // Load len.
-            load = LLVM.BuildExtractValue(Builder, load, 1, "");
+            load = LLVM.BuildExtractValue(Builder, load, 2, "");
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(new Value(load));
 
@@ -4750,6 +4813,7 @@ namespace Campy.Compiler
         public i_stind_i1(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+            _dst = new Type(typeof(sbyte));
         }
     }
 
@@ -4758,6 +4822,7 @@ namespace Campy.Compiler
         public i_stind_i2(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+            _dst = new Type(typeof(short));
         }
     }
 
@@ -4766,6 +4831,7 @@ namespace Campy.Compiler
         public i_stind_i4(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+            _dst = new Type(typeof(int));
         }
     }
 
@@ -4774,6 +4840,7 @@ namespace Campy.Compiler
         public i_stind_i8(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+            _dst = new Type(typeof(long));
         }
     }
 
@@ -4790,6 +4857,7 @@ namespace Campy.Compiler
         public i_stind_r4(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+            _dst = new Type(typeof(float));
         }
     }
 
@@ -4798,6 +4866,7 @@ namespace Campy.Compiler
         public i_stind_r8(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+            _dst = new Type(typeof(double));
         }
     }
 
