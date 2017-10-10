@@ -499,7 +499,7 @@ namespace Campy.Compiler
                 // "T", then we add in a mapping of T to the actual data type
                 // used, e.g., Integer, or what have you. When it is compiled,
                 // to LLVM, the mapped data type will be used!
-                MethodReference method = basic_block.Method;
+                MethodReference method = basic_block.ExpectedCalleeSignature;
                 var declaring_type = method.DeclaringType;
 
                 {
@@ -547,7 +547,8 @@ namespace Campy.Compiler
                                     var new_node = _mcfg.AddVertex(new_node_id);
                                     var new_cfg_node = (CFG.Vertex)new_node;
                                     new_cfg_node.Instructions = basic_block.Instructions;
-                                    new_cfg_node.Method = basic_block.Method;
+                                    new_cfg_node.ExpectedCalleeSignature = basic_block.ExpectedCalleeSignature;
+                                    new_cfg_node.RewrittenCalleeSignature = basic_block.RewrittenCalleeSignature;
                                     new_cfg_node.PreviousVertex = basic_block;
                                     var b = type_to_consider as GenericParameter;
                                     var bb = new Tuple<TypeReference, GenericParameter>(type_to_consider, b);
@@ -623,7 +624,8 @@ namespace Campy.Compiler
                                     var new_node = _mcfg.AddVertex(new_node_id);
                                     var new_cfg_node = (CFG.Vertex)new_node;
                                     new_cfg_node.Instructions = basic_block.Instructions;
-                                    new_cfg_node.Method = basic_block.Method;
+                                    new_cfg_node.ExpectedCalleeSignature = basic_block.ExpectedCalleeSignature;
+                                    new_cfg_node.RewrittenCalleeSignature = basic_block.RewrittenCalleeSignature;
                                     new_cfg_node.PreviousVertex = basic_block;
                                     var b = type_to_consider as GenericParameter;
                                     var bb = new Tuple<TypeReference, GenericParameter>(type_to_consider, b);
@@ -708,7 +710,8 @@ namespace Campy.Compiler
                                     var new_node = _mcfg.AddVertex(new_node_id);
                                     var new_cfg_node = (CFG.Vertex)new_node;
                                     new_cfg_node.Instructions = basic_block.Instructions;
-                                    new_cfg_node.Method = basic_block.Method;
+                                    new_cfg_node.ExpectedCalleeSignature = basic_block.ExpectedCalleeSignature;
+                                    new_cfg_node.RewrittenCalleeSignature = basic_block.RewrittenCalleeSignature;
                                     new_cfg_node.PreviousVertex = basic_block;
                                     var b = type_to_consider as GenericParameter;
                                     var bb = new Tuple<TypeReference, GenericParameter>(type_to_consider, b);
@@ -855,7 +858,7 @@ namespace Campy.Compiler
                     continue;
                 }
 
-                MethodReference method = bb.Method;
+                MethodReference method = bb.ExpectedCalleeSignature;
                 bb.HasThis = method.HasThis;
                 List<ParameterDefinition> parameters = method.Parameters.ToList();
                 List<ParameterReference> instantiated_parameters = new List<ParameterReference>();
@@ -1035,17 +1038,17 @@ namespace Campy.Compiler
                     continue;
 
                 int args = 0;
-                Mono.Cecil.MethodReference md = node.Method;
-                Mono.Cecil.MethodReference mr = node.Method;
-                args += mr.Parameters.Count;
+                Mono.Cecil.MethodReference md = node.ExpectedCalleeSignature;
+                Mono.Cecil.MethodReference mr = node.RewrittenCalleeSignature;
+                args += md.Parameters.Count;
                 node.NumberOfArguments = args;
-                node.HasThis = mr.HasThis;
-                int locals = md.Resolve().Body.Variables.Count;
+                node.HasThis = md.HasThis;
+                int locals = mr.Resolve().Body.Variables.Count;
                 node.NumberOfLocals = locals;
                 int ret = 0;
-                if (mr.MethodReturnType != null)
+                if (md.MethodReturnType != null)
                 {
-                    Mono.Cecil.MethodReturnType rt = mr.MethodReturnType;
+                    Mono.Cecil.MethodReturnType rt = md.MethodReturnType;
                     Mono.Cecil.TypeReference tr = rt.ReturnType;
                     // Get type, may contain modifiers.
                     // Note, the return type must be examined in order
@@ -1108,7 +1111,7 @@ namespace Campy.Compiler
                             foreach (CFG.Vertex pred in _mcfg.PredecessorNodes(node))
                             {
                                 // Do not consider interprocedural edges when computing stack size.
-                                if (pred.Method != node.Method)
+                                if (pred.ExpectedCalleeSignature != node.ExpectedCalleeSignature)
                                     continue;
                                 // If predecessor has not been visited, warn and do not consider.
                                 var llvm_pred = pred;
@@ -1157,7 +1160,7 @@ namespace Campy.Compiler
                         foreach (CFG.Vertex succ in node._Graph.SuccessorNodes(node))
                         {
                             // If it's an interprocedural edge, nothing to pass on.
-                            if (succ.Method != node.Method)
+                            if (succ.ExpectedCalleeSignature != node.ExpectedCalleeSignature)
                                 continue;
                             // If it's recursive, nothing more to do.
                             if (succ.IsEntry)
@@ -1243,10 +1246,8 @@ namespace Campy.Compiler
                 {
                     CFG.Vertex node = _mcfg.VertexSpace[_mcfg.NameSpace.BijectFromBasetype(ob)];
                     CFG.Vertex llvm_node = node;
-                    llvm_node.StateIn = new State(node, node.Method, llvm_node.NumberOfArguments, llvm_node.NumberOfLocals,
-                        (int) llvm_node.StackLevelIn);
-                    llvm_node.StateOut = new State(node, node.Method, llvm_node.NumberOfArguments, llvm_node.NumberOfLocals,
-                        (int) llvm_node.StackLevelOut);
+                    llvm_node.StateIn = new State(node, true);
+                    llvm_node.StateOut = new State(node, false);
                 }
 
                 Dictionary<int, bool> visited = new Dictionary<int, bool>();
@@ -1533,7 +1534,7 @@ namespace Campy.Compiler
         public CUfunction GetCudaFunction(int basic_block_id, string ptx)
         {
             var basic_block = GetBasicBlock(basic_block_id);
-            var method = basic_block.Method;
+            var method = basic_block.ExpectedCalleeSignature;
 
             var res = Cuda.cuDeviceGet(out int device, 0);
             CheckCudaError(res);
@@ -1546,7 +1547,7 @@ namespace Campy.Compiler
             IntPtr ptr = Marshal.StringToHGlobalAnsi(ptx);
             res = Cuda.cuModuleLoadData(out CUmodule cuModule, ptr);
             CheckCudaError(res);
-            var normalized_method_name = Converter.RenameToLegalLLVMName(Converter.MethodName(basic_block.Method));
+            var normalized_method_name = Converter.RenameToLegalLLVMName(Converter.MethodName(basic_block.ExpectedCalleeSignature));
             res = Cuda.cuModuleGetFunction(out CUfunction helloWorld, cuModule, normalized_method_name);
             CheckCudaError(res);
             return helloWorld;

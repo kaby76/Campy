@@ -28,8 +28,13 @@ namespace Campy.Compiler
             _phi = new List<ValueRef>();
         }
 
-        public State(CFG.Vertex bb, MethodReference md, int args, int locals, int level)
+        public State(CFG.Vertex basic_block, bool use_in = true)
         {
+            MethodReference md = basic_block.ExpectedCalleeSignature;
+            int args = basic_block.NumberOfArguments;
+            int locals = basic_block.NumberOfLocals;
+            int level = use_in ? (int)basic_block.StackLevelIn : (int)basic_block.StackLevelOut;
+                
             // Set up state with args, locals, basic stack initial value of 0xDEADBEEF.
             // In addition, use type information from method to compute types for all args.
             _stack = new StackQueue<Value>();
@@ -60,7 +65,7 @@ namespace Campy.Compiler
                     ParameterDefinition p = md.Parameters[j];
                     TypeReference tr = p.ParameterType;
                     tr = Converter.FromGenericParameterToTypeReference(tr, md.DeclaringType as GenericInstanceType);
-                    type = tr.ToTypeRef(bb.OpsFromOriginal);
+                    type = tr.ToTypeRef(basic_block.OpsFromOriginal);
                 }
                 var vx = new Value(LLVM.ConstInt(type, (ulong)0xdeadbeef, true));
                 _stack.Push(vx);
@@ -98,7 +103,7 @@ namespace Campy.Compiler
                 if (bb.HasThis)
                 {
                     var par = LLVM.GetParam(fun, begin++);
-                    var this_par_type = new Type(bb.Method.DeclaringType);
+                    var this_par_type = new Type(bb.ExpectedCalleeSignature.DeclaringType);
                     var vx = new Value(par, this_par_type);
                     if (Campy.Utils.Options.IsOn("jit_trace"))
                         System.Console.WriteLine("in state() " + vx.ToString());
@@ -123,7 +128,7 @@ namespace Campy.Compiler
                 // Set up locals. I'm making an assumption that there is a 
                 // one to one and in order mapping of the locals with that
                 // defined for the method body by Mono.
-                Collection<VariableDefinition> variables = bb.Method.Resolve().Body.Variables;
+                Collection<VariableDefinition> variables = bb.RewrittenCalleeSignature.Resolve().Body.Variables;
                 _locals = _stack.Section((int)(args+begin), locals);
                 for (int i = 0; i < locals; ++i)
                 {

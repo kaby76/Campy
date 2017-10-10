@@ -21,7 +21,8 @@ namespace Campy.Utils
 
         public static Type ToSystemTypeAux(this TypeReference type)
         {
-            return Type.GetType(type.GetReflectionName(), true);
+            string y = type.GetReflectionName();
+            return Type.GetType(y, true);
         }
 
         private static string GetReflectionName(this TypeReference type)
@@ -52,10 +53,15 @@ namespace Campy.Utils
                     string y = string.Format("{0}[]", ss2);
                     return y;
                 }
-                else
+                else if (type.FullName.StartsWith("System."))
                 {
                     string pre = type.FullName;
-                    return pre;
+                    string y = pre;
+                    return y;
+                }
+                else
+                {
+                    return to_type.AssemblyQualifiedName;
                 }
             }
         }
@@ -200,60 +206,5 @@ namespace Campy.Utils
             return t.IsValueType && !t.IsPrimitive;
         }
 
-
-        public static void Rewrite(this MethodReference method_reference)
-        {
-            Dictionary<TypeReference, System.Type> additional = new Dictionary<TypeReference, System.Type>();
-            var mr_gp = method_reference.GenericParameters;
-            var mr_dt = method_reference.DeclaringType;
-            var mr_hgp = method_reference.HasGenericParameters;
-            var mr_dt_hgp = method_reference.DeclaringType.HasGenericParameters;
-            var mr_igi = method_reference.IsGenericInstance;
-            var mr_dt_igi = method_reference.DeclaringType.IsGenericInstance;
-            if (mr_igi)
-            {
-                GenericInstanceMethod i = method_reference as GenericInstanceMethod;
-                var mr_hga = i.HasGenericArguments;
-            }
-            if (mr_dt_igi)
-            {
-                GenericInstanceType git = mr_dt as GenericInstanceType;
-                var mr_dt_hga = git.HasGenericArguments;
-                Collection<TypeReference> ga = git.GenericArguments;
-                var e1 = git.ElementType;
-                var e2 = git.GetElementType();
-                Collection<GenericParameter> gg = e1.GenericParameters;
-                // Map parameter to instantiated type.
-                for (int i = 0; i < gg.Count; ++i)
-                {
-                    GenericParameter pp = gg[i];
-                    TypeReference qq = ga[i];
-                    TypeReference trrr = pp as TypeReference;
-                    var system_type = qq
-                        .ToSystemType();
-                    if (system_type == null) throw new Exception("Failed to convert " + qq);
-                    additional[pp] = system_type;
-                }
-            }
-            return;
-            //Mono.Collections.Generic.Collection<TypeReference> ga = null;
-            //if (git != null)
-            //{
-            //    ga = git.GenericArguments;
-            //    Mono.Collections.Generic.Collection<GenericParameter> gg = td.GenericParameters;
-            //    // Map parameter to instantiated type.
-            //    for (int i = 0; i < gg.Count; ++i)
-            //    {
-            //        var pp = gg[i];
-            //        var qq = ga[i];
-            //        TypeReference trrr = pp as TypeReference;
-            //        var system_type = qq
-            //            .ToSystemType();
-            //        if (system_type == null) throw new Exception("Failed to convert " + qq);
-            //        additional[pp] = system_type;
-            //    }
-            //}
-
-        }
     }
 }

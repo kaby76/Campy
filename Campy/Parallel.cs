@@ -75,7 +75,7 @@ namespace Campy
                     {
                         // Compiled previously. Look for basic block of entry.
                         CFG.Vertex vvv = Singleton()._graph.Entries.Where(v =>
-                            v.IsEntry && v.Method.Name == method.Name).FirstOrDefault();
+                            v.IsEntry && v.ExpectedCalleeSignature.Name == method.Name).FirstOrDefault();
 
                         bb = vvv;
                     }

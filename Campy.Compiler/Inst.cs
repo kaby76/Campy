@@ -684,7 +684,7 @@ namespace Campy.Compiler
                     if ((Size1 <= TargetPointerSizeInBits) &&
                         (Size2 <= TargetPointerSizeInBits))
                     {
-                        return new Type(Type.getIntNTy(LLVMContext,
+                        return new Type(Type.getIntNTy(LLVM.GetModuleContext(Converter.global_llvm_module),
                             TargetPointerSizeInBits));
                     }
                 }
@@ -693,7 +693,7 @@ namespace Campy.Compiler
                     if (IsSub && GcInfo.isGcPointer(Type2))
                     {
                         // The difference of two managed pointers is a native int.
-                        return new Type(Type.getIntNTy(LLVMContext,
+                        return new Type(Type.getIntNTy(LLVM.GetModuleContext(Converter.global_llvm_module),
                             TargetPointerSizeInBits));
                     }
                     else if (IsStrictlyAddOrSub && Type2IsInt && (Size1 >= Size2))
@@ -746,7 +746,7 @@ namespace Campy.Compiler
             // Build an LLVM GEP for the resulting address.
             // For now we "flatten" to byte offsets.
             Type CharPtrTy = new Type(Type.getInt8PtrTy(
-                LLVMContext,
+                LLVM.GetModuleContext(Converter.global_llvm_module),
                 BasePtr.T.getPointerAddressSpace()));
             Value BasePtrCast = new Value(LLVM.BuildBitCast(Builder, BasePtr.V, CharPtrTy.IntermediateType, ""));
             Value ResultPtr = new Value(LLVM.BuildInBoundsGEP(Builder, BasePtrCast.V, new ValueRef[] {Offset.V}, ""));
@@ -782,7 +782,7 @@ namespace Campy.Compiler
             // Build an LLVM GEP for the resulting address.
             // For now we "flatten" to byte offsets.
             Type CharPtrTy = new Type(Type.getInt8PtrTy(
-                LLVMContext, BasePtr.T.getPointerAddressSpace()));
+                LLVM.GetModuleContext(Converter.global_llvm_module), BasePtr.T.getPointerAddressSpace()));
             Value BasePtrCast = new Value(LLVM.BuildBitCast(Builder, BasePtr.V, CharPtrTy.IntermediateType, ""));
             Value NegOffset = new Value(LLVM.BuildNeg(Builder, Offset.V, ""));
             Value ResultPtr = new Value(LLVM.BuildGEP(Builder, BasePtrCast.V, new ValueRef[] { NegOffset.V }, ""));
@@ -852,7 +852,7 @@ namespace Campy.Compiler
                     // Arithmetic with overflow must use an appropriately-sized integer to
                     // perform the arithmetic, then convert the result back to the pointer
                     // type.
-                    ArithType = new Type(Type.getIntNTy(LLVMContext, TargetPointerSizeInBits));
+                    ArithType = new Type(Type.getIntNTy(LLVM.GetModuleContext(Converter.global_llvm_module), TargetPointerSizeInBits));
                 }
             }
 
@@ -1095,7 +1095,7 @@ namespace Campy.Compiler
         public override Inst Convert(Converter converter, State state)
         {
             var bb = this.Block;
-            var mn = bb.Method.FullName;
+            var mn = bb.ExpectedCalleeSignature.FullName;
             if (mn == "System.Int32 Campy.Index::op_Implicit(Campy.Index)")
             {
                 //threadId
@@ -1740,7 +1740,7 @@ namespace Campy.Compiler
                     if (!declaring_type.IsGenericInstance && declaring_type.HasGenericParameters)
                     {
                         // This is a red flag. We need to come up with a generic instance for type.
-                        declaring_type_tr = this.Block.Method.DeclaringType;
+                        declaring_type_tr = this.Block.ExpectedCalleeSignature.DeclaringType;
                     }
                     
                     // need to take into account padding fields. Unfortunately,
@@ -2612,7 +2612,7 @@ namespace Campy.Compiler
                         int k = g.NameSpace.BijectFromBasetype(node.Name);
                         CFG.Vertex v = g.VertexSpace[k];
                         Converter c = converter;
-                        if (v.IsEntry && Converter.MethodName(v.Method) == name && c.IsFullyInstantiatedNode(v))
+                        if (v.IsEntry && Converter.MethodName(v.ExpectedCalleeSignature) == name && c.IsFullyInstantiatedNode(v))
                             return true;
                         else return false;
                     }).ToList().FirstOrDefault();
@@ -2794,7 +2794,7 @@ namespace Campy.Compiler
                     int k = g.NameSpace.BijectFromBasetype(node.Name);
                     CFG.Vertex v = g.VertexSpace[k];
                     Converter c = converter;
-                    if (v.IsEntry && Converter.MethodName(v.Method) == name && c.IsFullyInstantiatedNode(v))
+                    if (v.IsEntry && Converter.MethodName(v.ExpectedCalleeSignature) == name && c.IsFullyInstantiatedNode(v))
                         return true;
                     else return false;
                 }).ToList().FirstOrDefault();
@@ -4535,7 +4535,7 @@ namespace Campy.Compiler
             // Back in the caller, the stack is popped of all arguments to the callee.
             // And, the return value is pushed on the top of stack.
             // This is handled by the call instruction.
-            var ret = this.Block.Method.ReturnType;
+            var ret = this.Block.ExpectedCalleeSignature.ReturnType;
             var void_type = typeof(void).ToMonoTypeReference();
 
             if (ret == null || ret.FullName == void_type.FullName)
@@ -4567,10 +4567,10 @@ namespace Campy.Compiler
         {
         }
 
-    public override void ComputeStackLevel(ref int level_after)
-    {
-        level_after--;
-    }
+        public override void ComputeStackLevel(ref int level_after)
+        {
+            level_after--;
+        }
     }
 
     public class i_shr : Inst
@@ -4580,10 +4580,10 @@ namespace Campy.Compiler
         {
         }
 
-    public override void ComputeStackLevel(ref int level_after)
-    {
-        level_after--;
-    }
+        public override void ComputeStackLevel(ref int level_after)
+        {
+            level_after--;
+        }
     }
 
     public class i_shr_un : Inst
@@ -4593,10 +4593,10 @@ namespace Campy.Compiler
         {
         }
 
-    public override void ComputeStackLevel(ref int level_after)
-    {
-        level_after--;
-    }
+        public override void ComputeStackLevel(ref int level_after)
+        {
+            level_after--;
+        }
     }
 
     public class i_sizeof : Inst
@@ -4604,6 +4604,22 @@ namespace Campy.Compiler
         public i_sizeof(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+        }
+
+        public override void ComputeStackLevel(ref int level_after)
+        {
+            level_after++;
+        }
+
+        public override Inst Convert(Converter converter, State state)
+        {
+            object operand = this.Operand;
+            System.Type t = operand.GetType();
+            if (t.FullName == "Mono.Cecil.PointerType")
+                state._stack.Push(new Value(LLVM.ConstInt(LLVM.Int32Type(), 8, false)));
+            else
+                throw new Exception("Unimplemented sizeof");
+            return Next;
         }
     }
 
@@ -4619,10 +4635,10 @@ namespace Campy.Compiler
             _arg = arg;
         }
 
-    public override void ComputeStackLevel(ref int level_after)
-    {
-        level_after--;
-    }
+        public override void ComputeStackLevel(ref int level_after)
+        {
+            level_after--;
+        }
     }
 
     public class i_starg_s : Inst

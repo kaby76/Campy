@@ -137,16 +137,38 @@ namespace ConsoleApp4
 
         static void Main(string[] args)
         {
-            //Campy.Utils.Options.Set("graph_trace");
-            //Campy.Utils.Options.Set("module_trace");
-            //Campy.Utils.Options.Set("name_trace");
-            //Campy.Utils.Options.Set("cfg_construction_trace");
-            //Campy.Utils.Options.Set("dot_graph");
-            //Campy.Utils.Options.Set("jit_trace");
-            //Campy.Utils.Options.Set("memory_trace");
-            //Campy.Utils.Options.Set("ptx_trace");
-            //Campy.Utils.Options.Set("state_computation_trace");
-            //Campy.Utils.Options.Set("continue_with_no_resolve");
+            Campy.Utils.Options.Set("graph_trace");
+            Campy.Utils.Options.Set("module_trace");
+            Campy.Utils.Options.Set("name_trace");
+            Campy.Utils.Options.Set("cfg_construction_trace");
+            Campy.Utils.Options.Set("dot_graph");
+            Campy.Utils.Options.Set("jit_trace");
+            Campy.Utils.Options.Set("memory_trace");
+            Campy.Utils.Options.Set("ptx_trace");
+            Campy.Utils.Options.Set("state_computation_trace");
+            Campy.Utils.Options.Set("continue_with_no_resolve");
+            //{
+            //    int n = 4;
+
+            //    var t1 = new List<int>();
+            //    for (int i = 0; i < n; ++i) t1.Add(0);
+            //    Campy.Parallel.For(n, i =>
+            //    {
+            //        if (i % 2 == 0)
+            //            t1[i] = i * 20;
+            //        else
+            //            t1[i] = i * 30;
+            //    });
+            //    for (int i = 0; i < n; ++i)
+            //        if (i % 2 == 0)
+            //        {
+            //            if (t1[i] != i * 20) throw new Exception("unequal");
+            //        }
+            //        else
+            //        {
+            //            if (t1[i] != i * 30) throw new Exception("unequal");
+            //        }
+            //}
             //{
             //    int[][] jagged_array = new int[][]
             //    {
@@ -170,35 +192,35 @@ namespace ConsoleApp4
             //            throw new Exception("unequal");
             //}
 
-            {
-                // List of ints.
-                List<List<int>> x = new List<List<int>>();
-                int n = 4;
-                for (int i = 0; i < n; ++i)
-                    x.Add(new List<int>());
-                for (int i = 0; i < n; ++i)
-                    x[i].Add(0);
-                Campy.Parallel.For(n, i => x[i][0] = i);
-                for (int i = 0; i < n; ++i)
-                    if (x[i][0] != i)
-                        throw new Exception("unequal");
-            }
-
-
             //{
-            //    int e = 10;
-            //    Extent ex = new Extent(3, 5); // three rows, five columns.
-            //    int[,] b = new int[ex[0], ex[1]];
-            //    for (int i = 0; i < ex[0]; ++i)
-            //        for (int j = 0; j < ex[1]; ++j)
-            //            b[i, j] = (i + 1) * (j + 1);
-            //    Campy.Parallel.For(ex, d =>
-            //    {
-            //        int i = d[0];
-            //        int j = d[0];
-            //        b[i, j] = b[i, j] * 2;
-            //    });
+            //    // List of ints.
+            //    List<List<int>> x = new List<List<int>>();
+            //    int n = 4;
+            //    for (int i = 0; i < n; ++i)
+            //        x.Add(new List<int>());
+            //    for (int i = 0; i < n; ++i)
+            //        x[i].Add(0);
+            //    Campy.Parallel.For(n, i => x[i][0] = i);
+            //    for (int i = 0; i < n; ++i)
+            //        if (x[i][0] != i)
+            //            throw new Exception("unequal");
             //}
+
+
+            {
+                int e = 10;
+                Extent ex = new Extent(3, 5); // three rows, five columns.
+                int[,] b = new int[ex[0], ex[1]];
+                for (int i = 0; i < ex[0]; ++i)
+                    for (int j = 0; j < ex[1]; ++j)
+                        b[i, j] = (i + 1) * (j + 1);
+                Campy.Parallel.For(ex, d =>
+                {
+                    int i = d[0];
+                    int j = d[0];
+                    b[i, j] = b[i, j] * 2;
+                });
+            }
             //{
             //    Complex[] input = { 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0 };
 

@@ -118,7 +118,7 @@ namespace Campy.Compiler
         public Vertex FindEntry(Mono.Cecil.MethodReference mr)
         {
             foreach (CFG.Vertex node in this.VertexNodes)
-                if (node.Method == mr)
+                if (node.ExpectedCalleeSignature == mr)
                     return node;
             return null;
         }
@@ -131,7 +131,8 @@ namespace Campy.Compiler
             public CFG.Vertex PreviousVertex { get; set; }
             public Tuple<Tuple<TypeReference, GenericParameter>, System.Type> OpFromPreviousNode { get; set; }
             public Dictionary<TypeReference, TypeRef> LLVMTypeMap = new Dictionary<TypeReference, TypeRef>();
-            public MethodReference Method { get; set; }
+            public MethodReference ExpectedCalleeSignature { get; set; }
+            public MethodReference RewrittenCalleeSignature { get; set; }
             public List<Inst> Instructions { get; set; } = new List<Inst>();
 
             public BasicBlockRef BasicBlock { get; set; }
@@ -236,7 +237,7 @@ namespace Campy.Compiler
             public Vertex(Vertex copy)
                 : base()
             {
-                Method = copy.Method;
+                ExpectedCalleeSignature = copy.ExpectedCalleeSignature;
                 this.Instructions = copy.Instructions;
                 HasReturnValue = copy.HasReturnValue;
 
@@ -250,7 +251,7 @@ namespace Campy.Compiler
                 CFG.Vertex v = this;
                 Console.WriteLine();
                 Console.WriteLine("Node: " + v.Name + " ");
-                Console.WriteLine(new String(' ', 4) + "Method " + v.Method.FullName);
+                Console.WriteLine(new String(' ', 4) + "Method " + v.ExpectedCalleeSignature.FullName);
                 Console.WriteLine(new String(' ', 4) + "HasThis   " + v.HasThis);
                 Console.WriteLine(new String(' ', 4) + "Args   " + v.NumberOfArguments);
                 Console.WriteLine(new String(' ', 4) + "Locals " + v.NumberOfLocals);
@@ -288,7 +289,8 @@ namespace Campy.Compiler
                 // Split this node into two nodes, with all instructions after "i" in new node.
                 var cfg = (CFG)this._Graph;
                 Vertex result = (Vertex)cfg.AddVertex(cfg.NewNodeNumber());
-                result.Method = this.Method;
+                result.ExpectedCalleeSignature = this.ExpectedCalleeSignature;
+                result.RewrittenCalleeSignature = this.RewrittenCalleeSignature;
                 result.HasReturnValue = this.HasReturnValue;
                 result._entry = this._entry;
 
@@ -367,7 +369,7 @@ namespace Campy.Compiler
             {
                 CFG.Vertex f = (CFG.Vertex)this.from;
                 CFG.Vertex t = (CFG.Vertex)this.to;
-                if (f.Method != t.Method)
+                if (f.ExpectedCalleeSignature != t.ExpectedCalleeSignature)
                     return true;
                 return false;
             }
@@ -385,7 +387,7 @@ namespace Campy.Compiler
             {
                 System.Console.Write("{0,8}", n);
                 System.Console.Write(new string(' ', 4));
-                System.Console.WriteLine(n.Method.FullName);
+                System.Console.WriteLine(n.ExpectedCalleeSignature.FullName);
             }
             System.Console.WriteLine();
             System.Console.WriteLine("List of callers:");
@@ -466,7 +468,7 @@ namespace Campy.Compiler
                 {
                     foreach (CFG.Vertex next in _node._Graph.SuccessorNodes(current))
                     {
-                        if (next.IsEntry && next.Method != _node.Method)
+                        if (next.IsEntry && next.ExpectedCalleeSignature != _node.ExpectedCalleeSignature)
                             yield return next;
                     }
                 }
