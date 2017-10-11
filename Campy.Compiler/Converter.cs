@@ -111,6 +111,137 @@ namespace Campy.Compiler
                     }
                     throw new Exception("Cannot convert " + tr.Name);
                 }
+                else if (td != null && td.IsValueType)
+                {
+                    // Struct!!!!!
+                    Dictionary<Tuple<TypeReference, GenericParameter>, System.Type> additional = new Dictionary<Tuple<TypeReference, GenericParameter>, System.Type>();
+                    var gp = tr.GenericParameters;
+                    Mono.Collections.Generic.Collection<TypeReference> ga = null;
+                    if (git != null)
+                    {
+                        ga = git.GenericArguments;
+                        Mono.Collections.Generic.Collection<GenericParameter> gg = td.GenericParameters;
+                        // Map parameter to instantiated type.
+                        for (int i = 0; i < gg.Count; ++i)
+                        {
+                            GenericParameter pp = gg[i];
+                            TypeReference qq = ga[i];
+                            TypeReference trrr = pp as TypeReference;
+                            var system_type = qq.ToSystemType();
+                            Tuple<TypeReference, GenericParameter> tr_gp = new Tuple<TypeReference, GenericParameter>(tr, pp);
+                            if (system_type == null) throw new Exception("Failed to convert " + qq);
+                            additional[tr_gp] = system_type;
+                        }
+                    }
+
+                    // Create a struct type.
+                    ContextRef c = LLVM.GetModuleContext(Converter.global_llvm_module);
+                    string llvm_name = Converter.RenameToLegalLLVMName(tr.ToString());
+                    TypeRef s = LLVM.StructCreateNamed(c, llvm_name);
+
+                    Converter.previous_llvm_types_created_global.Add(tr, s);
+
+                    // Create array of typerefs as argument to StructSetBody below.
+                    // Note, tr is correct type, but tr.Resolve of a generic type turns the type
+                    // into an uninstantiated generic type. E.g., List<int> contains a generic T[] containing the
+                    // data. T could be a struct/value type, or T could be a class.
+
+                    var new_list = new Dictionary<Tuple<TypeReference, GenericParameter>, System.Type>(
+                        generic_type_rewrite_rules);
+                    foreach (var a in additional)
+                        new_list.Add(a.Key, a.Value);
+
+                    List<TypeRef> list = new List<TypeRef>();
+                    int offset = 0;
+                    var fields = td.Fields;
+                    foreach (var field in fields)
+                    {
+                        FieldAttributes attr = field.Attributes;
+                        if ((attr & FieldAttributes.Static) != 0)
+                            continue;
+
+                        TypeReference field_type = field.FieldType;
+                        TypeReference instantiated_field_type = field.FieldType;
+
+                        if (git != null)
+                        {
+                            Collection<TypeReference> generic_args = git.GenericArguments;
+                            if (field.FieldType.IsArray)
+                            {
+                                var field_type_as_array_type = field.FieldType as ArrayType;
+                                //var et = field.FieldType.GetElementType();
+                                var et = field_type_as_array_type.ElementType;
+                                var bbc = et.HasGenericParameters;
+                                var bbbbc = et.IsGenericParameter;
+                                var array = field.FieldType as ArrayType;
+                                int rank = array.Rank;
+                                if (bbc)
+                                {
+                                    instantiated_field_type = et.MakeGenericInstanceType(generic_args.ToArray());
+                                    instantiated_field_type = instantiated_field_type.MakeArrayType(rank);
+                                }
+                                else if (bbbbc)
+                                {
+                                    instantiated_field_type = generic_args.First();
+                                    instantiated_field_type = instantiated_field_type.MakeArrayType(rank);
+                                }
+                            }
+                            else
+                            {
+                                var et = field.FieldType;
+                                var bbc = et.HasGenericParameters;
+                                var bbbbc = et.IsGenericParameter;
+                                if (bbc)
+                                {
+                                    instantiated_field_type = et.MakeGenericInstanceType(generic_args.ToArray());
+                                }
+                                else if (bbbbc)
+                                {
+                                    instantiated_field_type = generic_args.First();
+                                }
+                            }
+                        }
+
+                        int field_size;
+                        int alignment;
+                        var ft =
+                            instantiated_field_type.ToSystemType();
+                        var array_or_class = (instantiated_field_type.IsArray || !instantiated_field_type.IsValueType);
+                        if (array_or_class)
+                        {
+                            field_size = Buffers.SizeOf(typeof(IntPtr));
+                            alignment = Buffers.Alignment(typeof(IntPtr));
+                            int padding = Buffers.Padding(offset, alignment);
+                            offset = offset + padding + field_size;
+                            if (padding != 0)
+                            {
+                                // Add in bytes to effect padding.
+                                for (int j = 0; j < padding; ++j)
+                                    list.Add(LLVM.Int8Type());
+                            }
+                            var field_converted_type = ToTypeRef(instantiated_field_type, new_list, level + 1);
+                            field_converted_type = field_converted_type;
+                            list.Add(field_converted_type);
+                        }
+                        else
+                        {
+                            field_size = Buffers.SizeOf(ft);
+                            alignment = Buffers.Alignment(ft);
+                            int padding = Buffers.Padding(offset, alignment);
+                            offset = offset + padding + field_size;
+                            if (padding != 0)
+                            {
+                                // Add in bytes to effect padding.
+                                for (int j = 0; j < padding; ++j)
+                                    list.Add(LLVM.Int8Type());
+                            }
+                            var field_converted_type = ToTypeRef(instantiated_field_type, new_list, level + 1);
+                            list.Add(field_converted_type);
+                        }
+                    }
+                    LLVM.StructSetBody(s, list.ToArray(), true);
+                    return s;
+                }
                 else if (td != null && td.IsClass)
                 {
                     Dictionary<Tuple<TypeReference, GenericParameter>, System.Type> additional = new Dictionary<Tuple<TypeReference, GenericParameter>, System.Type>();

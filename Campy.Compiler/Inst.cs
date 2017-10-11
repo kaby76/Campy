@@ -999,6 +999,31 @@ namespace Campy.Compiler
         }
     }
 
+    public class StoreArgInst : Inst
+    {
+        public int _arg;
+
+        public StoreArgInst(Mono.Cecil.Cil.Instruction i) : base(i)
+        {
+        }
+
+        public override void ComputeStackLevel(ref int level_after)
+        {
+            level_after--;
+        }
+
+        public override Inst Convert(Converter converter, State state)
+        {
+            Value value = state._stack.Pop();
+            if (Campy.Utils.Options.IsOn("jit_trace"))
+                System.Console.WriteLine(value);
+
+            state._arguments[_arg] = value;
+
+            return Next;
+        }
+    }
+
     /// <summary>
     /// The LDCInstI4 and LDCInstI8 are classes for representing load constant instructions. The constant
     /// of the instruction is encoded here.
@@ -4437,37 +4462,37 @@ namespace Campy.Compiler
         {
         }
 
-    public override void ComputeStackLevel(ref int level_after)
-    {
-    // Successor is fallthrough.
-        int args = 0;
-        int ret = 0;
-        object method = this.Operand;
-        if (method as Mono.Cecil.MethodReference != null)
+        public override void ComputeStackLevel(ref int level_after)
         {
-            Mono.Cecil.MethodReference mr = method as Mono.Cecil.MethodReference;
-            args += mr.Parameters.Count;
-            if (mr.MethodReturnType != null)
+        // Successor is fallthrough.
+            int args = 0;
+            int ret = 0;
+            object method = this.Operand;
+            if (method as Mono.Cecil.MethodReference != null)
             {
-                Mono.Cecil.MethodReturnType rt = mr.MethodReturnType;
-                Mono.Cecil.TypeReference tr = rt.ReturnType;
-        // Get type, may contain modifiers.
-                if (tr.FullName.Contains(' '))
+                Mono.Cecil.MethodReference mr = method as Mono.Cecil.MethodReference;
+                args += mr.Parameters.Count;
+                if (mr.MethodReturnType != null)
                 {
-                    String[] sp = tr.FullName.Split(' ');
-                    if (!sp[0].Equals("System.Void"))
-                        ret++;
+                    Mono.Cecil.MethodReturnType rt = mr.MethodReturnType;
+                    Mono.Cecil.TypeReference tr = rt.ReturnType;
+            // Get type, may contain modifiers.
+                    if (tr.FullName.Contains(' '))
+                    {
+                        String[] sp = tr.FullName.Split(' ');
+                        if (!sp[0].Equals("System.Void"))
+                            ret++;
+                    }
+                    else
+                    {
+                        if (!tr.FullName.Equals("System.Void"))
+                            ret++;
+                    }
                 }
-                else
-                {
-                    if (!tr.FullName.Equals("System.Void"))
-                        ret++;
-                }
+                ret++;
             }
-            ret++;
+            level_after = level_after + ret - args;
         }
-        level_after = level_after + ret - args;
-    }
     }
 
     public class i_newobj : Inst
@@ -4667,6 +4692,25 @@ namespace Campy.Compiler
         {
             level_after--;
         }
+
+        public override Inst Convert(Converter converter, State state)
+        {
+            var rhs = state._stack.Pop();
+            if (Campy.Utils.Options.IsOn("jit_trace"))
+                System.Console.WriteLine(rhs);
+
+            var lhs = state._stack.Pop();
+            if (Campy.Utils.Options.IsOn("jit_trace"))
+                System.Console.WriteLine(lhs);
+
+            var result = LLVM.BuildShl(Builder, lhs.V, rhs.V, "");
+            if (Campy.Utils.Options.IsOn("jit_trace"))
+                System.Console.WriteLine(new Value(result));
+
+            state._stack.Push(new Value(result));
+
+            return Next;
+        }
     }
 
     public class i_shr : Inst
@@ -4679,6 +4723,25 @@ namespace Campy.Compiler
         public override void ComputeStackLevel(ref int level_after)
         {
             level_after--;
+        }
+
+        public override Inst Convert(Converter converter, State state)
+        {
+            var rhs = state._stack.Pop();
+            if (Campy.Utils.Options.IsOn("jit_trace"))
+                System.Console.WriteLine(rhs);
+
+            var lhs = state._stack.Pop();
+            if (Campy.Utils.Options.IsOn("jit_trace"))
+                System.Console.WriteLine(lhs);
+
+            var result = LLVM.BuildAShr(Builder, lhs.V, rhs.V, "");
+            if (Campy.Utils.Options.IsOn("jit_trace"))
+                System.Console.WriteLine(new Value(result));
+
+            state._stack.Push(new Value(result));
+
+            return Next;
         }
     }
 
@@ -4719,10 +4782,8 @@ namespace Campy.Compiler
         }
     }
 
-    public class i_starg : Inst
+    public class i_starg : StoreArgInst
     {
-        int _arg;
-
         public i_starg(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
@@ -4730,28 +4791,16 @@ namespace Campy.Compiler
             int arg = pr.Index;
             _arg = arg;
         }
-
-        public override void ComputeStackLevel(ref int level_after)
-        {
-            level_after--;
-        }
     }
 
-    public class i_starg_s : Inst
+    public class i_starg_s : StoreArgInst
     {
-        int _arg;
-
         public i_starg_s(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
             Mono.Cecil.ParameterReference pr = i.Operand as Mono.Cecil.ParameterReference;
             int arg = pr.Index;
             _arg = arg;
-        }
-
-        public override void ComputeStackLevel(ref int level_after)
-        {
-            level_after--;
         }
     }
 

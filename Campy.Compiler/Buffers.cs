@@ -814,7 +814,7 @@
                     return;
                 }
 
-                if (t_type.IsStruct() || t_type.IsClass)
+                if (t_type.IsClass)
                 {
                     IntPtr ip = from;
                     if (ip == IntPtr.Zero)
@@ -841,6 +841,85 @@
                         | System.Reflection.BindingFlags.NonPublic
                         | System.Reflection.BindingFlags.Public
                         //| System.Reflection.BindingFlags.Static
+                    );
+
+                    for (int i = 0; i < ffi.Length; ++i)
+                    {
+                        var ffield = ffi[i];
+                        var tfield = tfi.Where(k => k.Name == ffield.Name).FirstOrDefault();
+                        if (tfield == null) throw new ArgumentException("Field not found.");
+                        // Note, special case all field types.
+                        if (tfield.FieldType.IsArray)
+                        {
+                            ip = (IntPtr)((long)ip + Buffers.Padding((long)ip, Buffers.Alignment(typeof(IntPtr))));
+                            int field_size = Buffers.SizeOf(typeof(IntPtr));
+                            IntPtr ipv = (IntPtr)Marshal.PtrToStructure<IntPtr>(ip);
+                            if (ipv == IntPtr.Zero)
+                            {
+                            }
+                            else if (_allocated_buffers.ContainsKey(ipv))
+                            {
+                                object tooo = _allocated_buffers[ipv];
+                                tfield.SetValue(to, tooo);
+                            }
+                            else
+                            {
+                                DeepCopyFromImplementation(ipv, out object tooo, tfield.FieldType);
+                                tfield.SetValue(to, tooo);
+                            }
+                            ip = (IntPtr)((long)ip + field_size);
+                        }
+                        else if (tfield.FieldType.IsClass)
+                        {
+                            ip = (IntPtr)((long)ip + Buffers.Padding((long)ip, Buffers.Alignment(typeof(IntPtr))));
+                            int field_size = Buffers.SizeOf(typeof(IntPtr));
+                            IntPtr ipv = (IntPtr)Marshal.PtrToStructure<IntPtr>(ip);
+                            if (_allocated_buffers.ContainsKey(ipv))
+                            {
+                                object tooo = _allocated_buffers[ipv];
+                                tfield.SetValue(to, tooo);
+                            }
+                            else
+                            {
+                                DeepCopyFromImplementation(ipv, out object tooo, tfield.FieldType);
+                                tfield.SetValue(to, tooo);
+                            }
+                            ip = (IntPtr)((long)ip + field_size);
+                        }
+                        else
+                        {
+                            int field_size = Buffers.SizeOf(ffield.FieldType);
+                            ip = (IntPtr)((long)ip + Buffers.Padding((long)ip, Buffers.Alignment(ffield.FieldType)));
+                            DeepCopyFromImplementation(ip, out object tooo, tfield.FieldType);
+                            tfield.SetValue(to, tooo);
+                            ip = (IntPtr)((long)ip + field_size);
+                        }
+                    }
+
+                    return;
+                } else if (t_type.IsStruct())
+                {
+                    IntPtr ip = from;
+                    if (ip == IntPtr.Zero)
+                    {
+                        to = null;
+                        return;
+                    }
+
+                    to = Activator.CreateInstance(t_type);
+                    _allocated_buffers[ip] = to;
+
+                    FieldInfo[] ffi = f_type.GetFields(
+                        System.Reflection.BindingFlags.Instance
+                        | System.Reflection.BindingFlags.NonPublic
+                        | System.Reflection.BindingFlags.Public
+                    //| System.Reflection.BindingFlags.Static
+                    );
+                    FieldInfo[] tfi = t_type.GetFields(
+                        System.Reflection.BindingFlags.Instance
+                        | System.Reflection.BindingFlags.NonPublic
+                        | System.Reflection.BindingFlags.Public
+                    //| System.Reflection.BindingFlags.Static
                     );
 
                     for (int i = 0; i < ffi.Length; ++i)

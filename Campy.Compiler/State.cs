@@ -133,12 +133,12 @@ namespace Campy.Compiler
                 for (int i = 0; i < locals; ++i)
                 {
                     var tr = variables[i].VariableType;
+                    Type type = new Type(tr);
                     Value value;
-                    TypeRef type = tr.ToTypeRef(bb.OpsFromOriginal);
-                    if (LLVM.GetTypeKind(type) != TypeKind.PointerTypeKind)
-                        value = new Value(LLVM.ConstInt(type, (ulong)0, true));
+                    if (LLVM.GetTypeKind(type.IntermediateType) != TypeKind.PointerTypeKind)
+                        value = new Value(LLVM.ConstInt(type.IntermediateType, (ulong)0, true));
                     else
-                        value = new Value(LLVM.ConstPointerNull(type));
+                        value = new Value(LLVM.ConstPointerNull(type.IntermediateType));
                     _stack.Push(value);
                 }
 
@@ -194,11 +194,12 @@ namespace Campy.Compiler
                 for (int i = 0; i < size; ++i)
                 {
                     {
-                        Value value = new Value(LLVM.ConstInt(LLVM.Int32Type(), (ulong)0, true));
-                        _stack.Push(value);
+                        Value f = new Value(LLVM.ConstInt(LLVM.Int32Type(), (ulong)0, true));
+                        _stack.Push(f);
                     }
                     var count = bb._Predecessors.Count;
-                    var v = p_llvm_node.StateOut._stack[i].V;
+                    var value = p_llvm_node.StateOut._stack[i];
+                    var v = value.V;
                     TypeRef tr = LLVM.TypeOf(v);
                     ValueRef res = LLVM.BuildPhi(bb.Builder, tr, "");
                     _phi.Add(res);
