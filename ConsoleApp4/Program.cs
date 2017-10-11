@@ -91,22 +91,44 @@ namespace ConsoleApp4
 
             for (int N = 2; N <= buffer.Length; N <<= 1)
             {
+                int step = N / 2;
+                int bstep = N;
+                System.Console.WriteLine("Step " + step);
+                System.Console.WriteLine("Bstep = " + bstep);
                 for (int i = 0; i < buffer.Length; i += N)
                 {
                     for (int k = 0; k < N / 2; k++)
                     {
                         int evenIndex = i + k;
                         int oddIndex = i + k + (N / 2);
-                        var even = buffer[evenIndex];
-                        var odd = buffer[oddIndex];
 
-                        double term = -2 * Math.PI * k / (double)N;
+                        System.Console.WriteLine(evenIndex + " " + oddIndex + " " + k);
+
+                        var even = copy[evenIndex];
+                        var odd = copy[oddIndex];
+
+                        double term = -2 * Math.PI * k / (double) N;
                         Complex exp = new Complex(Math.Cos(term), Math.Sin(term)) * odd;
 
-                        buffer[evenIndex] = even + exp;
-                        buffer[oddIndex] = even - exp;
+                        copy[evenIndex] = even + exp;
+                        copy[oddIndex] = even - exp;
                     }
                 }
+
+                Campy.Parallel.For(0, buffer.Length / 2, d =>
+                {
+                    var i = d % step + N * (d / step);
+                    int evenIndex = i;
+                    int oddIndex = i + step;
+                    var even = buffer[evenIndex];
+                    var odd = buffer[oddIndex];
+
+                    double term = -2 * Math.PI * 1 / (double)N;
+                    Complex exp = new Complex(Math.Cos(term), Math.Sin(term)) * odd;
+
+                    buffer[evenIndex] = even + exp;
+                    buffer[oddIndex] = even - exp;
+                });
             }
         }
 
@@ -125,7 +147,7 @@ namespace ConsoleApp4
             Campy.Utils.Options.Set("continue_with_no_resolve");
 
             {
-                Complex[] input = { 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0 };
+                Complex[] input = { 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
 
                 //FFT(input);
                 FFTGPU(input);
