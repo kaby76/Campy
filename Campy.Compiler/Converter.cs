@@ -401,6 +401,7 @@ namespace Campy.Compiler
         internal static Dictionary<TypeReference, TypeRef> basic_llvm_types_created = new Dictionary<TypeReference, TypeRef>();
         internal static Dictionary<TypeReference, TypeRef> previous_llvm_types_created_global = new Dictionary<TypeReference, TypeRef>();
         internal static Dictionary<string, string> _rename_to_legal_llvm_name_cache = new Dictionary<string, string>();
+        public int _start_index;
 
         public Converter(CFG mcfg)
         {
@@ -938,7 +939,6 @@ namespace Campy.Compiler
             return result;
         }
 
-
         private ModuleRef CreateModule(string name)
         {
             var new_module = LLVM.ModuleCreateWithName(name);
@@ -1114,7 +1114,6 @@ namespace Campy.Compiler
             }
         }
 
-
         private void CompilePart4(IEnumerable<CFG.Vertex> basic_blocks_to_compile, List<Mono.Cecil.TypeReference> list_of_data_types_used, List<CFG.Vertex> entries,
             out List<CFG.Vertex> unreachable, out List<CFG.Vertex> change_set_minus_unreachable)
         {
@@ -1172,7 +1171,6 @@ namespace Campy.Compiler
             }
             return null;
         }
-
 
         private void CompilePart5(IEnumerable<CFG.Vertex> basic_blocks_to_compile, List<Mono.Cecil.TypeReference> list_of_data_types_used)
         {
@@ -1349,8 +1347,10 @@ namespace Campy.Compiler
         }
 
         public string CompileToLLVM(List<CFG.Vertex> basic_blocks_to_compile, List<Mono.Cecil.TypeReference> list_of_data_types_used,
-            int basic_block_id)
+            int basic_block_id, int start_index = 0)
         {
+            _start_index = start_index;
+
             basic_blocks_to_compile = RemoveBasicBlocksAlreadyCompiled(basic_blocks_to_compile);
 
             CompilePart1(basic_blocks_to_compile, list_of_data_types_used);

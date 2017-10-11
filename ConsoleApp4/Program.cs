@@ -81,9 +81,8 @@ namespace ConsoleApp4
                 copy[swapPos] = temp;
             }
 
-            Campy.Parallel.For(buffer.Length / 2 - 1, k =>
+            Campy.Parallel.For(1, buffer.Length / 2, j =>
             {
-                int j = k + 1;
                 int swapPos = BitReverse(j, bits);
                 var temp = buffer[j];
                 buffer[j] = buffer[swapPos];
@@ -96,7 +95,6 @@ namespace ConsoleApp4
                 {
                     for (int k = 0; k < N / 2; k++)
                     {
-
                         int evenIndex = i + k;
                         int oddIndex = i + k + (N / 2);
                         var even = buffer[evenIndex];
@@ -107,7 +105,6 @@ namespace ConsoleApp4
 
                         buffer[evenIndex] = even + exp;
                         buffer[oddIndex] = even - exp;
-
                     }
                 }
             }

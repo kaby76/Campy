@@ -1181,6 +1181,8 @@ namespace Campy.Compiler
                 var sum = LLVM.BuildAdd(bb.Builder, t1, t2, "");
                 sum = LLVM.BuildAdd(bb.Builder, sum, t3, "");
                 sum = LLVM.BuildAdd(bb.Builder, sum, t4, "");
+                sum = LLVM.BuildAdd(bb.Builder, sum, LLVM.ConstInt(LLVM.Int32Type(),
+                    (ulong)converter._start_index, false), "");
 
                 if (Campy.Utils.Options.IsOn("jit_trace"))
                     System.Console.WriteLine("load " + new Value(sum));
