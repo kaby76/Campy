@@ -46,6 +46,8 @@ namespace Campy.Compiler
                 "System.Int32 Campy.Compiler.Runtime::get_multi_array(Campy.Compiler.Runtime/A*,System.Int32,System.Int32)");
             _rewritten_runtime.Add("System.Void System.Int32[0...,0...]::Set(System.Int32,System.Int32,System.Int32)",
                 "System.Void Campy.Compiler.Runtime::set_multi_array(Campy.Compiler.Runtime/A*,System.Int32,System.Int32,System.Int32)");
+            _rewritten_runtime.Add("System.Int32 System.Array::GetLength(System.Int32)",
+                "System.Int32 Campy.Compiler.Runtime::get_length_multi_array(Campy.Compiler.Runtime/A*,System.Int32)");
         }
 
         public void AnalyzeThisAssembly()
@@ -297,10 +299,15 @@ namespace Campy.Compiler
 
         public MethodDefinition Rewrite(MethodReference method_reference)
         {
-            Mono.Cecil.Cil.MethodBody body = null;
-            bool has_ret = false;
             MethodDefinition method_definition = method_reference.Resolve();
-            
+            var name = method_reference.FullName;
+            var found = _rewritten_runtime.ContainsKey(name);
+            if (found)
+            {
+                string rewrite = _rewritten_runtime[name];
+                MethodDefinition def = GetDefinition(rewrite);
+                method_definition = def;
+            }
             if (method_definition == null)
             {
                 // Note, some situations MethodDefinition.Resolve() return null.
@@ -311,17 +318,7 @@ namespace Campy.Compiler
                 // we cannot find--into code from a runtime library.
                 System.Console.WriteLine("No definition for " + method_reference.FullName);
                 System.Console.WriteLine(method_reference.IsDefinition ? "" : "Is not a definition at that!");
-                var name = method_reference.FullName;
-                int[,] ar = new int[1, 1];
-                var found = _rewritten_runtime.ContainsKey(name);
-                if (found)
-                {
-                    string rewrite = _rewritten_runtime[name];
-                    MethodDefinition def = GetDefinition(rewrite);
-                    method_definition = def;
-                }
-                if (method_definition == null || method_definition.Body == null)
-                    return null;
+                return null;
             }
             else if (method_definition.Body == null)
             {

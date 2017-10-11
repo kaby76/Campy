@@ -2693,9 +2693,20 @@ namespace Campy.Compiler
                         var context = LLVM.GetModuleContext(Converter.global_llvm_module);
                         if (t_fun_con != context) throw new Exception("not equal");
                         //LLVM.VerifyFunction(fv, VerifierFailureAction.PrintMessageAction);
+
+                        // Set up args, type casting if required.
+
                         ValueRef[] args = new ValueRef[nargs];
                         for (int k = nargs - 1; k >= 0; --k)
-                            args[k] = state._stack.Pop().V;
+                        {
+                            Value value = state._stack.Pop();
+                            System.Console.WriteLine(value);
+                            ValueRef par = LLVM.GetParam(fv, (uint)k);
+                            System.Console.WriteLine(new Value(par));
+                            //if (LLVM.TypeOf(value) != )
+                            args[k] = value.V;
+                        }
+
                         if (ret > 0)
                         {
                             var call = LLVM.BuildCall(Builder, fv, args, name);
@@ -2868,9 +2879,31 @@ namespace Campy.Compiler
                     var context = LLVM.GetModuleContext(Converter.global_llvm_module);
                     if (t_fun_con != context) throw new Exception("not equal");
                     //LLVM.VerifyFunction(fv, VerifierFailureAction.PrintMessageAction);
+
+                    // Set up args, type casting if required.
+
                     ValueRef[] args = new ValueRef[nargs];
                     for (int k = nargs - 1; k >= 0; --k)
-                        args[k] = state._stack.Pop().V;
+                    {
+                        Value v = state._stack.Pop();
+                        System.Console.WriteLine(v);
+                        ValueRef par = LLVM.GetParam(fv, (uint)k);
+                        System.Console.WriteLine(new Value(par));
+                        ValueRef value = v.V;
+                        if (LLVM.TypeOf(value) != LLVM.TypeOf(par))
+                        {
+                            if (LLVM.GetTypeKind(LLVM.TypeOf(par)) == TypeKind.PointerTypeKind)
+                            {
+                                value = LLVM.BuildPointerCast(Builder, value, LLVM.TypeOf(par), "");
+                            }
+                            else
+                            {
+                                value = LLVM.BuildBitCast(Builder, value, LLVM.TypeOf(par), "");
+                            }
+                        }
+                        args[k] = value;
+                    }
+
                     if (ret > 0)
                     {
                         var call = LLVM.BuildCall(Builder, fv, args, name);

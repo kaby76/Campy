@@ -59,7 +59,19 @@ namespace Campy.Compiler
                 GenericInstanceType git = tr as GenericInstanceType;
                 TypeDefinition gtd = tr as TypeDefinition;
 
-                if (tr.IsArray)
+                // System.Array is not considered an "array", rather a "class". So, we need to handle
+                // this type.
+                if (tr.FullName == "System.Array")
+                {
+                    // Create a basic int[] and call it the day.
+                    var original_tr = tr;
+
+                    tr = typeof(int[]).ToMonoTypeReference();
+                    var p = tr.ToTypeRef(generic_type_rewrite_rules, level + 1);
+                    Converter.previous_llvm_types_created_global.Add(original_tr, p);
+                    return p;
+                }
+                else if (tr.IsArray)
                 {
                     // Note: mono_type_reference.GetElementType() is COMPLETELY WRONG! It does not function the same
                     // as system_type.GetElementType(). Use ArrayType.ElementType!

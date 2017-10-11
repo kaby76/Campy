@@ -216,7 +216,7 @@ namespace ConsoleApp4
                         b[i, j] = (i + 1) * (j + 1);
                 Campy.Parallel.For(3, d =>
                 {
-                    b[d, d] = 33 + d;
+                    b[d, d] = b.GetLength(0);
                 });
             }
             //{

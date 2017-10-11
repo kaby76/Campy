@@ -8,6 +8,7 @@ namespace Campy.Compiler
         // in row major format. Note, each dimension has a length that is recorded
         // following the pointer p. The one shown here is for only one-dimensional
         // arrays.
+        // Calls have to be casted to this type.
         public unsafe struct A
         {
             public void* p;
@@ -15,9 +16,17 @@ namespace Campy.Compiler
             public long l;
         }
 
+        public static unsafe int get_length_multi_array(A* arr, int i0)
+        {
+            byte* bp = (byte*)arr;
+            bp = bp + 16 + 8 * i0;
+            long* lp = (long*)bp;
+            return (int) *lp;
+        }
+
         public static unsafe int get_multi_array(A* arr, int i0)
         {
-            int* a = *(int**) arr;
+            int* a = *(int**)arr;
             return *(a + i0);
         }
 
