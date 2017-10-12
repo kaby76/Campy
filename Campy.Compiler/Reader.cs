@@ -318,12 +318,12 @@ namespace Campy.Compiler
                 // we cannot find--into code from a runtime library.
                 System.Console.WriteLine("No definition for " + method_reference.FullName);
                 System.Console.WriteLine(method_reference.IsDefinition ? "" : "Is not a definition at that!");
-                return null;
+                throw new Exception("No code for method.");
             }
             else if (method_definition.Body == null)
             {
                 System.Console.WriteLine("WARNING: METHOD BODY NULL! " + method_definition);
-                return null;
+                throw new Exception("No code for method.");
             }
             Dictionary<TypeReference, System.Type> additional = new Dictionary<TypeReference, System.Type>();
             var mr_gp = method_reference.GenericParameters;

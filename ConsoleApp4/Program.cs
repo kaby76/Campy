@@ -93,16 +93,12 @@ namespace ConsoleApp4
             {
                 int step = N / 2;
                 int bstep = N;
-                System.Console.WriteLine("Step " + step);
-                System.Console.WriteLine("Bstep = " + bstep);
                 for (int i = 0; i < buffer.Length; i += N)
                 {
                     for (int k = 0; k < N / 2; k++)
                     {
                         int evenIndex = i + k;
                         int oddIndex = i + k + (N / 2);
-
-                        System.Console.WriteLine(evenIndex + " " + oddIndex + " " + k);
 
                         var even = copy[evenIndex];
                         var odd = copy[oddIndex];
@@ -115,6 +111,11 @@ namespace ConsoleApp4
                     }
                 }
 
+            }
+            for (int N = 2; N <= buffer.Length; N <<= 1)
+            {
+                int step = N / 2;
+                int bstep = N;
                 Campy.Parallel.For(0, buffer.Length / 2, d =>
                 {
                     var i = d % step + N * (d / step);
