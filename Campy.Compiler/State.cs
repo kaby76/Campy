@@ -135,10 +135,16 @@ namespace Campy.Compiler
                     var tr = variables[i].VariableType;
                     Type type = new Type(tr);
                     Value value;
-                    if (LLVM.GetTypeKind(type.IntermediateType) != TypeKind.PointerTypeKind)
-                        value = new Value(LLVM.ConstInt(type.IntermediateType, (ulong)0, true));
-                    else
+                    if (LLVM.GetTypeKind(type.IntermediateType) == TypeKind.PointerTypeKind)
                         value = new Value(LLVM.ConstPointerNull(type.IntermediateType));
+                    else if (LLVM.GetTypeKind(type.IntermediateType) == TypeKind.DoubleTypeKind)
+                        value = new Value(LLVM.ConstReal(LLVM.DoubleType(), 0));
+                    else if (LLVM.GetTypeKind(type.IntermediateType) == TypeKind.IntegerTypeKind)
+                        value = new Value(LLVM.ConstInt(type.IntermediateType, (ulong)0, true));
+                    else if (LLVM.GetTypeKind(type.IntermediateType) == TypeKind.StructTypeKind)
+                        value = new Value(LLVM.ConstPointerNull(type.IntermediateType));
+                    else
+                        throw new Exception("Unhandled type");
                     _stack.Push(value);
                 }
 

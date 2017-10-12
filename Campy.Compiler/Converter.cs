@@ -1122,13 +1122,14 @@ namespace Campy.Compiler
             {
                 // Create DFT order of all nodes from entries.
                 IEnumerable<int> objs = entries.Select(x => x.Name);
+                //var ordered_list = new Tarjan<int>(_mcfg).Reverse();
                 Graphs.DFSPreorder<int>
-                    dfs = new Graphs.DFSPreorder<int>(
+                    ordered_list = new Graphs.DFSPreorder<int>(
                         _mcfg,
                         objs
                     );
                 List<CFG.Vertex> visited = new List<CFG.Vertex>();
-                foreach (int ob in dfs)
+                foreach (int ob in ordered_list)
                 {
                     CFG.Vertex node = _mcfg.VertexSpace[_mcfg.NameSpace.BijectFromBasetype(ob)];
                     if (!IsFullyInstantiatedNode(node))
@@ -1220,17 +1221,19 @@ namespace Campy.Compiler
                 while (work.Count != 0)
                 {
                     // Create DFT order of all nodes.
-                    IEnumerable<int> objs = entries.Select(x => x.Name);
-                    Graphs.DFSPreorder<int>
-                        dfs = new Graphs.DFSPreorder<int>(
-                            _mcfg,
-                            objs
-                        );
+                    var ordered_list = new Tarjan<int>(_mcfg).Reverse();
+
+                    //IEnumerable<int> objs = entries.Select(x => x.Name);
+                    //Graphs.DFSPreorder<int>
+                    //    ordered_list = new Graphs.DFSPreorder<int>(
+                    //        _mcfg,
+                    //        objs
+                    //    );
 
                     List<CFG.Vertex> visited = new List<CFG.Vertex>();
                     // Compute stack size for each basic block, processing nodes on work list
                     // in DFT order.
-                    foreach (int ob in dfs)
+                    foreach (int ob in ordered_list)
                     {
                         CFG.Vertex node = _mcfg.VertexSpace[_mcfg.NameSpace.BijectFromBasetype(ob)];
                         var llvm_node = node;
@@ -1275,10 +1278,10 @@ namespace Campy.Compiler
                         CFG.Vertex llvm_nodez = node;
                         int level_after = (int)llvm_nodez.StackLevelIn;
                         int level_pre = level_after;
-                        foreach (var i in llvm_nodez.Instructions)
+                        foreach (var inst in llvm_nodez.Instructions)
                         {
                             level_pre = level_after;
-                            i.ComputeStackLevel(ref level_after);
+                            inst.ComputeStackLevel(ref level_after);
                             //System.Console.WriteLine("after inst " + i);
                             //System.Console.WriteLine("level = " + level_after);
                             Debug.Assert(level_after >= node.NumberOfLocals + node.NumberOfArguments

@@ -1392,6 +1392,23 @@ namespace Campy.Compiler
                 LLVM.BuildCondBr(Builder, cmp, s1.BasicBlock, s2.BasicBlock);
                 return Next;
             }
+            if (t1.isFloatingPointTy() && t2.isFloatingPointTy())
+            {
+                IntPredicate op;
+                if (IsSigned) op = _int_pred[(int)Predicate];
+                else op = _uint_pred[(int)Predicate];
+
+                cmp = LLVM.BuildICmp(Builder, op, v1.V, v2.V, "");
+
+                GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge1 = Block._Successors[0];
+                GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge2 = Block._Successors[1];
+                int succ1 = edge1.To;
+                int succ2 = edge2.To;
+                var s1 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ1)];
+                var s2 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ2)];
+                LLVM.BuildCondBr(Builder, cmp, s1.BasicBlock, s2.BasicBlock);
+                return Next;
+            }
             throw new Exception("Unhandled compare and branch.");
         }
     }
@@ -1919,11 +1936,7 @@ namespace Campy.Compiler
                     if (Campy.Utils.Options.IsOn("jit_trace"))
                         System.Console.WriteLine(LLVM.PrintTypeToString(tt));
 
-                    var addr = LLVM.BuildExtractValue(Builder, v.V, offset, "");
-                    if (Campy.Utils.Options.IsOn("jit_trace"))
-                        System.Console.WriteLine(new Value(addr));
-
-                    var load = LLVM.BuildLoad(Builder, addr, "");
+                    var load = LLVM.BuildExtractValue(Builder, v.V, offset, "");
                     if (Campy.Utils.Options.IsOn("jit_trace"))
                         System.Console.WriteLine(new Value(load));
 
@@ -2057,6 +2070,76 @@ namespace Campy.Compiler
                     }
 
                     var store = LLVM.BuildStore(Builder, v.V, addr);
+                    if (Campy.Utils.Options.IsOn("jit_trace"))
+                        System.Console.WriteLine(new Value(store));
+                }
+                else if (isSt)
+                {
+                    uint offset = 0;
+                    var yy = this.Instruction.Operand;
+                    var field = yy as Mono.Cecil.FieldReference;
+                    if (yy == null) throw new Exception("Cannot convert.");
+                    var declaring_type_tr = field.DeclaringType;
+                    var declaring_type = declaring_type_tr.Resolve();
+
+                    // need to take into account padding fields. Unfortunately,
+                    // LLVM does not name elements in a struct/class. So, we must
+                    // compute padding and adjust.
+                    int size = 0;
+                    foreach (var f in declaring_type.Fields)
+                    {
+                        var attr = f.Attributes;
+                        if ((attr & FieldAttributes.Static) != 0)
+                            continue;
+
+                        int field_size;
+                        int alignment;
+                        var array_or_class = (f.FieldType.IsArray || !f.FieldType.IsValueType);
+                        if (array_or_class)
+                        {
+                            field_size = Buffers.SizeOf(typeof(IntPtr));
+                            alignment = Buffers.Alignment(typeof(IntPtr));
+                        }
+                        else
+                        {
+                            var ft = f.FieldType.ToSystemType();
+                            field_size = Buffers.SizeOf(ft);
+                            alignment = Buffers.Alignment(ft);
+                        }
+                        int padding = Buffers.Padding(size, alignment);
+                        size = size + padding + field_size;
+                        if (padding != 0)
+                        {
+                            // Add in bytes to effect padding.
+                            for (int j = 0; j < padding; ++j)
+                                offset++;
+                        }
+
+                        if (f.Name == field.Name)
+                        {
+                            is_ptr = f.FieldType.IsArray || f.FieldType.IsPointer;
+                            break;
+                        }
+                        offset++;
+                    }
+
+                    var value = LLVM.BuildExtractValue(Builder, o.V, offset, "");
+                    if (Campy.Utils.Options.IsOn("jit_trace"))
+                        System.Console.WriteLine(new Value(value));
+
+                    var load_value = new Value(value);
+                    bool isPtrLoad = load_value.T.isPointerTy();
+                    if (isPtrLoad)
+                    {
+                        var mono_field_type = field.FieldType;
+                        TypeRef type = mono_field_type.ToTypeRef(Block.OpsFromOriginal);
+                        value = LLVM.BuildBitCast(Builder,
+                            value, type, "");
+                        if (Campy.Utils.Options.IsOn("jit_trace"))
+                            System.Console.WriteLine(new Value(value));
+                    }
+
+                    var store = LLVM.BuildStore(Builder, v.V, value);
                     if (Campy.Utils.Options.IsOn("jit_trace"))
                         System.Console.WriteLine(new Value(store));
                 }
@@ -2726,12 +2809,23 @@ namespace Campy.Compiler
                         ValueRef[] args = new ValueRef[nargs];
                         for (int k = nargs - 1; k >= 0; --k)
                         {
-                            Value value = state._stack.Pop();
-                            System.Console.WriteLine(value);
+                            Value v = state._stack.Pop();
+                            System.Console.WriteLine(v);
                             ValueRef par = LLVM.GetParam(fv, (uint)k);
                             System.Console.WriteLine(new Value(par));
-                            //if (LLVM.TypeOf(value) != )
-                            args[k] = value.V;
+                            ValueRef value = v.V;
+                            if (LLVM.TypeOf(value) != LLVM.TypeOf(par))
+                            {
+                                if (LLVM.GetTypeKind(LLVM.TypeOf(par)) == TypeKind.PointerTypeKind)
+                                {
+                                    value = LLVM.BuildPointerCast(Builder, value, LLVM.TypeOf(par), "");
+                                }
+                                else
+                                {
+                                    value = LLVM.BuildBitCast(Builder, value, LLVM.TypeOf(par), "");
+                                }
+                            }
+                            args[k] = value;
                         }
 
                         if (ret > 0)
@@ -4455,6 +4549,26 @@ namespace Campy.Compiler
             : base(i)
         {
         }
+
+        public override void ComputeStackLevel(ref int level_after)
+        {
+            // No change in stack depth.
+        }
+
+        public override Inst Convert(Converter converter, State state)
+        {
+            var rhs = state._stack.Pop();
+            if (Campy.Utils.Options.IsOn("jit_trace"))
+                System.Console.WriteLine(rhs);
+
+            var neg = LLVM.BuildNeg(Builder, rhs.V, "");
+            if (Campy.Utils.Options.IsOn("jit_trace"))
+                System.Console.WriteLine(new Value(neg));
+
+            state._stack.Push(new Value(neg));
+
+            return Next;
+        }
     }
 
     public class i_newarr : Inst
@@ -4503,37 +4617,133 @@ namespace Campy.Compiler
             : base(i)
         {
         }
-    public override void ComputeStackLevel(ref int level_after)
-    {
-    // Successor is fallthrough.
-        int args = 0;
-        int ret = 0;
-        object method = this.Operand;
-        if (method as Mono.Cecil.MethodReference != null)
+
+        public override void ComputeStackLevel(ref int level_after)
         {
-            Mono.Cecil.MethodReference mr = method as Mono.Cecil.MethodReference;
-            args += mr.Parameters.Count;
-            if (mr.MethodReturnType != null)
+        // Successor is fallthrough.
+            int args = 0;
+            int ret = 0;
+            object method = this.Operand;
+            if (method as Mono.Cecil.MethodReference != null)
             {
-                Mono.Cecil.MethodReturnType rt = mr.MethodReturnType;
-                Mono.Cecil.TypeReference tr = rt.ReturnType;
-        // Get type, may contain modifiers.
-                if (tr.FullName.Contains(' '))
+                Mono.Cecil.MethodReference mr = method as Mono.Cecil.MethodReference;
+                args += mr.Parameters.Count;
+                if (mr.MethodReturnType != null)
                 {
-                    String[] sp = tr.FullName.Split(' ');
-                    if (!sp[0].Equals("System.Void"))
-                        ret++;
+                    Mono.Cecil.MethodReturnType rt = mr.MethodReturnType;
+                    Mono.Cecil.TypeReference tr = rt.ReturnType;
+            // Get type, may contain modifiers.
+                    if (tr.FullName.Contains(' '))
+                    {
+                        String[] sp = tr.FullName.Split(' ');
+                        if (!sp[0].Equals("System.Void"))
+                            ret++;
+                    }
+                    else
+                    {
+                        if (!tr.FullName.Equals("System.Void"))
+                            ret++;
+                    }
                 }
-                else
-                {
-                    if (!tr.FullName.Equals("System.Void"))
-                        ret++;
-                }
+                ret++;
             }
-            ret++;
+            level_after = level_after + ret - args;
         }
-        level_after = level_after + ret - args;
-    }
+
+        public override Inst Convert(Converter converter, State state)
+        {
+            // Create a new object of a reference type or a new instance of a value type.
+            object operand = this.Operand;
+            
+            // Get the type of object to create.
+            MethodReference method = operand as MethodReference;
+            TypeReference type = method.DeclaringType;
+
+            if (type == null)
+                throw new Exception("Cannot get type of object/value for newobj instruction.");
+
+            if (!type.IsValueType)
+                throw new Exception("Cannot allocate object references yet--not implemented.");
+
+            // Create type.
+            var llvm_type = type.ToTypeRef();
+            var td = type.Resolve();
+
+            var inst = this;
+
+            int nargs = 0;
+            int ret = 0;
+
+            CFG graph = (CFG)this.Block._Graph;
+
+            nargs += method.Parameters.Count;
+            var name = Converter.MethodName(method);
+            CFG.Vertex the_entry = this.Block._Graph.VertexNodes.Where(node
+                =>
+            {
+                GraphLinkedList<int, CFG.Vertex, CFG.Edge> g = inst.Block._Graph;
+                int k = g.NameSpace.BijectFromBasetype(node.Name);
+                CFG.Vertex v = g.VertexSpace[k];
+                Converter c = converter;
+                if (v.IsEntry && Converter.MethodName(v.ExpectedCalleeSignature) == name && c.IsFullyInstantiatedNode(v))
+                    return true;
+                else return false;
+            }).ToList().FirstOrDefault();
+
+            if (the_entry == null)
+            {
+                if (!Options.IsOn("continue_with_no_resolve"))
+                    throw new Exception("unimplemented.");
+                else
+                    return Next;
+            }
+
+            // First, create a struct.
+            var new_obj = LLVM.BuildAlloca(Builder, llvm_type, "");
+
+            BuilderRef bu = this.Builder;
+            ValueRef fv = the_entry.MethodValueRef;
+            var t_fun = LLVM.TypeOf(fv);
+            var t_fun_con = LLVM.GetTypeContext(t_fun);
+            var context = LLVM.GetModuleContext(Converter.global_llvm_module);
+            if (t_fun_con != context) throw new Exception("not equal");
+
+            // Set up args, type casting if required.
+            ValueRef[] args = new ValueRef[nargs+1];
+            for (int k = nargs; k >= 1; --k)
+            {
+                Value v = state._stack.Pop();
+                System.Console.WriteLine(v);
+                ValueRef par = LLVM.GetParam(fv, (uint)k);
+                System.Console.WriteLine(new Value(par));
+                ValueRef value = v.V;
+                if (LLVM.TypeOf(value) != LLVM.TypeOf(par))
+                {
+                    if (LLVM.GetTypeKind(LLVM.TypeOf(par)) == TypeKind.PointerTypeKind)
+                    {
+                        value = LLVM.BuildPointerCast(Builder, value, LLVM.TypeOf(par), "");
+                    }
+                    else
+                    {
+                        value = LLVM.BuildBitCast(Builder, value, LLVM.TypeOf(par), "");
+                    }
+                }
+                args[k] = value;
+            }
+            args[0] = new_obj;
+
+            var call = LLVM.BuildCall(Builder, fv, args, "");
+            if (Campy.Utils.Options.IsOn("jit_trace"))
+                System.Console.WriteLine(new Value(call));
+
+            var load = LLVM.BuildLoad(Builder, new_obj, "");
+            if (Campy.Utils.Options.IsOn("jit_trace"))
+                System.Console.WriteLine(new Value(load));
+
+            state._stack.Push(new Value(load));
+
+            return Next;
+        }
     }
 
     public class i_no : Inst

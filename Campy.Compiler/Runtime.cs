@@ -77,5 +77,28 @@ namespace Campy.Compiler
         public static unsafe void set_multi_array(A* arr, int i0, int i1, int i2, int value)
         {
         }
+
+        public static double Sine(double x)
+        {
+            const double PI = 3.14159265358979323846264338327950288f;
+            const double PI_SQR = 9.86960440108935861883449099987615114f;
+            const double B = 4 / PI;
+            const double C = -4 / PI_SQR;
+            const double P = 0.225;
+
+            double xp = x < 0 ? -x : x;
+            double y = B * x + C * x * xp;
+            double yp = y < 0 ? -y : y;
+            y = P * (y * yp - y) + y;
+            return y;
+        }
+
+        public double Cosine(double x)
+        {
+            const double PID2 = 1.57079632679489661923132169163975144f;
+            const double hpi = PID2;
+            x += hpi; //shift for cosine
+            return Sine(x);
+        }
     }
 }
