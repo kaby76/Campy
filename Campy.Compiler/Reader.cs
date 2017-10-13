@@ -10,6 +10,7 @@ namespace Campy.Compiler
     using System.Diagnostics;
     using System.Linq;
     using System.Reflection;
+    using Mono.Cecil.Cil;
 
     public class Reader
     {
@@ -62,26 +63,24 @@ namespace Campy.Compiler
             _cfg.OutputDotGraph();
         }
 
-        public void Add(MethodInfo reference)
+        public void Add(MethodInfo method_info)
         {
-            String kernel_assembly_file_name = reference.DeclaringType.Assembly.Location;
+            String kernel_assembly_file_name = method_info.DeclaringType.Assembly.Location;
             Mono.Cecil.ModuleDefinition md = Mono.Cecil.ModuleDefinition.ReadModule(kernel_assembly_file_name);
-            MethodReference refer = md.Import(reference);
-            Add(refer);
+            MethodReference method_reference = md.Import(method_info);
+            Add(method_reference);
         }
 
         public void Add(MethodReference method_reference)
         {
-            if (method_reference == null)
-                return;
-            if (_cfg.MethodAvoid(method_reference.FullName))
-                return;
-            if (_methods_done.Contains(method_reference.FullName))
-                return;
+            // Do not analyze if nonsense.
+            if (method_reference == null) return;
+            // Do not analyze if already being or has been considered.
+            if (_cfg.MethodAvoid(method_reference.FullName)) return;
+            if (_methods_done.Contains(method_reference.FullName)) return;
             foreach (var tuple in _methods_to_do)
             {
-                if (tuple.Item1.FullName == method_reference.FullName)
-                    return;
+                if (tuple.Item1.FullName == method_reference.FullName) return;
             }
             _methods_to_do.Push(new Tuple<MethodReference, List<TypeReference>>(method_reference, new List<TypeReference>()));
         }
@@ -322,44 +321,39 @@ namespace Campy.Compiler
 
         private void ExtractBasicBlocksOfMethod(Tuple<MethodReference, List<TypeReference>> definition)
         {
-            MethodReference item1 = definition.Item1;
+            MethodReference original_method_reference = definition.Item1;
             List<TypeReference> item2 = definition.Item2;
-
-            _methods_done.Add(item1.FullName);
-
-            // Make sure definition assembly is loaded. The analysis of the method cannot
-            // be done if the routine hasn't been loaded into Mono!
-            String full_name = item1.Module.FullyQualifiedName;
+            String full_name = original_method_reference.Module.FullyQualifiedName;
             var result = LoadAssembly(full_name);
 
-            var git = item1.DeclaringType as GenericInstanceType;
-            if (git != null)
-            {
-                var xx = MakeHostInstanceGeneric2(git, item1);
-                // We can rewrite the method to not contain generic parameters, but it ends up
-                // with Resolve() returning null.
-            }
+            _methods_done.Add(original_method_reference.FullName);
 
             // Resolve() tends to turn anything into mush. It removes type information
-            // per instruction. Set up for analysis of the method body, if there is one.
+            // per instruction. Set up for analysis for resolved method reference or a substituted
+            // method reforence for inscrutible NET runtime.
 
-            MethodDefinition method_definition = Rewrite(item1);
-            if (method_definition == null)
-                return;
+            MethodDefinition method_definition = Rewrite(original_method_reference);
+            if (method_definition == null) return;
+
+            _methods_done.Add(method_definition.FullName);
+
+            // Rewrite all instructions in block so as it makes sense.
+            // In particular, replace references to runtime with instructions in Campy runtime.
+            // Some NET runtime cannot be discovered (e.g., multidimensional get and set, and Math
+            // methods).
+            List<Mono.Cecil.Cil.Instruction> rewritten_instructions = RewriteCilCodeBlock(method_definition.Body);
 
             int change_set = _cfg.StartChangeSet();
 
-            var has_ret = method_definition.IsReuseSlot;
-            var body = method_definition.Body;
-
-            int instruction_count = body.Instructions.Count;
+            int instruction_count = rewritten_instructions.Count;
             List<Mono.Cecil.Cil.Instruction> split_point = new List<Mono.Cecil.Cil.Instruction>();
 
             // Each method is a leader of a block.
             CFG.Vertex v = (CFG.Vertex)_cfg.AddVertex(_cfg.NewNodeNumber());
 
-            v.ExpectedCalleeSignature = item1;
+            v.ExpectedCalleeSignature = original_method_reference;
             v.RewrittenCalleeSignature = method_definition;
+            var has_ret = method_definition.IsReuseSlot;
             v.HasReturnValue = has_ret;
             v.Entry = v;
             _cfg.Entries.Add(v);
@@ -367,7 +361,7 @@ namespace Campy.Compiler
             // Add instructions to the basic block.
             for (int j = 0; j < instruction_count; ++j)
             {
-                Mono.Cecil.Cil.Instruction mi = body.Instructions[j];
+                Mono.Cecil.Cil.Instruction mi = rewritten_instructions[j];
                 Inst i = Inst.Wrap(mi);
                 i.Block = v;
                 Mono.Cecil.Cil.OpCode op = i.OpCode;
@@ -445,7 +439,7 @@ namespace Campy.Compiler
                 // where to split blocks. However, it's ordered,
                 // so that splitting is done from last instruction in block
                 // to first instruction in block.
-                Mono.Cecil.Cil.Instruction i = body.Instructions[j];
+                Mono.Cecil.Cil.Instruction i = rewritten_instructions[j];
                 if (split_point.Contains(i))
                     ordered_leader_list.Add(i);
             }
@@ -529,7 +523,7 @@ namespace Campy.Compiler
                     //case Mono.Cecil.Cil.FlowControl.Return:
                     //case Mono.Cecil.Cil.FlowControl.Throw:
                         {
-                            int next = body.Instructions.ToList().FindIndex(
+                            int next = rewritten_instructions.FindIndex(
                                            n =>
                                            {
                                                var r = n == last_instruction.Instruction &&
@@ -541,9 +535,9 @@ namespace Campy.Compiler
                             if (next < 0)
                                 break;
                             next += 1;
-                            if (next >= body.Instructions.Count)
+                            if (next >= rewritten_instructions.Count)
                                 break;
-                            var next_instruction = body.Instructions[next];
+                            var next_instruction = rewritten_instructions[next];
                             var owner = _cfg.VertexNodes.Where(
                                 n => n.Instructions.Where(ins => ins.Instruction == next_instruction).Any()).ToList();
                             if (owner.Count != 1)
@@ -564,6 +558,14 @@ namespace Campy.Compiler
 
             // At this point, the given method has been converted into a bunch of basic blocks,
             // and are part of the CFG.
+        }
+
+        private List<Instruction> RewriteCilCodeBlock(Mono.Cecil.Cil.MethodBody body)
+        {
+            List<Instruction> result = new List<Instruction>();
+            foreach (var i in body.Instructions)
+                result.Add(i);
+            return result;
         }
     }
 }
