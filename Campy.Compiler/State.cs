@@ -103,8 +103,9 @@ namespace Campy.Compiler
                 if (bb.HasThis)
                 {
                     var par = LLVM.GetParam(fun, begin++);
+                    var tt = LLVM.TypeOf(par);
                     var this_par_type = new Type(bb.ExpectedCalleeSignature.DeclaringType);
-                    var vx = new Value(par, this_par_type);
+                    var vx = new Value(par, new Type(tt));
                     if (Campy.Utils.Options.IsOn("jit_trace"))
                         System.Console.WriteLine("in state() " + vx.ToString());
                     _stack.Push(vx);

@@ -1357,6 +1357,16 @@ namespace Campy.Compiler
             Swigged.LLVM.IntPredicate.IntULE,
         };
 
+        public Swigged.LLVM.RealPredicate[] _real_pred = new Swigged.LLVM.RealPredicate[]
+        {
+            Swigged.LLVM.RealPredicate.RealOEQ,
+            Swigged.LLVM.RealPredicate.RealONE,
+            Swigged.LLVM.RealPredicate.RealOGT,
+            Swigged.LLVM.RealPredicate.RealOLT,
+            Swigged.LLVM.RealPredicate.RealOGE,
+            Swigged.LLVM.RealPredicate.RealOLE,
+        };
+
         public virtual PredicateType Predicate { get; set; }
         public virtual bool IsSigned { get; set; }
 
@@ -1389,16 +1399,29 @@ namespace Campy.Compiler
                 int succ2 = edge2.To;
                 var s1 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ1)];
                 var s2 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ2)];
+                // Now, in order to select the correct branch, we need to know what
+                // edge represents the "true" branch. During construction, there is
+                // no guarentee that the order is consistent.
+                var owner = Block._Graph.VertexNodes.Where(
+                    n => n.Instructions.Where(ins => ins.Instruction == this.Instruction).Any()).ToList();
+                if (owner.Count != 1)
+                    throw new Exception("Cannot find instruction!");
+                CFG.Vertex true_node = owner.FirstOrDefault();
+                if (s2 == true_node)
+                {
+                    s1 = s2;
+                    s2 = true_node;
+                }
                 LLVM.BuildCondBr(Builder, cmp, s1.BasicBlock, s2.BasicBlock);
                 return Next;
             }
             if (t1.isFloatingPointTy() && t2.isFloatingPointTy())
             {
-                IntPredicate op;
-                if (IsSigned) op = _int_pred[(int)Predicate];
-                else op = _uint_pred[(int)Predicate];
+                RealPredicate op;
+                if (IsSigned) op = _real_pred[(int)Predicate];
+                else op = _real_pred[(int)Predicate];
 
-                cmp = LLVM.BuildICmp(Builder, op, v1.V, v2.V, "");
+                cmp = LLVM.BuildFCmp(Builder, op, v1.V, v2.V, "");
 
                 GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge1 = Block._Successors[0];
                 GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge2 = Block._Successors[1];
@@ -1406,6 +1429,19 @@ namespace Campy.Compiler
                 int succ2 = edge2.To;
                 var s1 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ1)];
                 var s2 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ2)];
+                // Now, in order to select the correct branch, we need to know what
+                // edge represents the "true" branch. During construction, there is
+                // no guarentee that the order is consistent.
+                var owner = Block._Graph.VertexNodes.Where(
+                    n => n.Instructions.Where(ins => ins.Instruction == this.Instruction).Any()).ToList();
+                if (owner.Count != 1)
+                    throw new Exception("Cannot find instruction!");
+                CFG.Vertex true_node = owner.FirstOrDefault();
+                if (s2 == true_node)
+                {
+                    s1 = s2;
+                    s2 = true_node;
+                }
                 LLVM.BuildCondBr(Builder, cmp, s1.BasicBlock, s2.BasicBlock);
                 return Next;
             }
@@ -4628,7 +4664,14 @@ namespace Campy.Compiler
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(rhs);
 
-            var neg = LLVM.BuildNeg(Builder, rhs.V, "");
+            var @typeof = LLVM.TypeOf(rhs.V);
+            var kindof = LLVM.GetTypeKind(@typeof);
+            ValueRef neg;
+            if (kindof == TypeKind.DoubleTypeKind || kindof == TypeKind.FloatTypeKind)
+                neg = LLVM.BuildFNeg(Builder, rhs.V, "");
+            else
+                neg = LLVM.BuildNeg(Builder, rhs.V, "");
+
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(new Value(neg));
 

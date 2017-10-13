@@ -1021,7 +1021,16 @@ namespace Campy.Compiler
                     if (bb.HasThis)
                     {
                         Type t = new Type(method.DeclaringType);
-                        param_types[current++] = t.IntermediateType;
+                        if (method.DeclaringType.IsValueType)
+                        {
+                            // Parameter "this" is a struct, but code in body of method assumes
+                            // a pointer is passed. Make the parameter a pointer.
+                            param_types[current++] = LLVM.PointerType(t.IntermediateType, 0);
+                        }
+                        else
+                        {
+                            param_types[current++] = t.IntermediateType;
+                        }
                     }
 
                     foreach (var p in parameters)
