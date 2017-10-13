@@ -2691,6 +2691,11 @@ namespace Campy.Compiler
             // We need to compare the value popped with 0/1.
             var v2 = LLVM.ConstInt(LLVM.Int32Type(), 0, false);
             var v3 = LLVM.BuildICmp(Builder, IntPredicate.IntEQ, v.V, v2, "");
+
+            // Now, in order to select the correct branch, we need to know what
+            // edge represents the "true" branch. During construction, there is
+            // no guarentee that the order is consistent.
+            
             LLVM.BuildCondBr(Builder, v3, s1.BasicBlock, s2.BasicBlock);
             return Next;
         }
