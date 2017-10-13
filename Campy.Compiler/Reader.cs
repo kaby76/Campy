@@ -54,16 +54,6 @@ namespace Campy.Compiler
                 "System.Double Campy.Compiler.Runtime::Cosine(System.Double)");
         }
 
-        public void AnalyzeThisAssembly()
-        {
-            System.Diagnostics.StackTrace stack_trace = new System.Diagnostics.StackTrace(true);
-            System.Diagnostics.StackFrame stack_frame = stack_trace.GetFrame(1);
-            System.Reflection.Assembly assembly = stack_frame.GetMethod().DeclaringType.Assembly;
-            this.AddAssembly(assembly);
-            this.ExtractBasicBlocks();
-            _cfg.OutputEntireGraph();
-        }
-
         public void AnalyzeMethod(MethodInfo methodInfo)
         {
             this.Add(methodInfo);
@@ -72,58 +62,12 @@ namespace Campy.Compiler
             _cfg.OutputDotGraph();
         }
 
-
-        public void AnalyzeMethod(MethodDefinition md)
-        {
-            this.Add(md);
-            this.ExtractBasicBlocks();
-        }
-
-
-        public void Add(System.Type type)
-        {
-            // Add all methods of type.
-            BindingFlags findFlags = BindingFlags.NonPublic |
-                                                BindingFlags.Public |
-                                                BindingFlags.Static |
-                                                BindingFlags.Instance |
-                                                BindingFlags.InvokeMethod |
-                                                BindingFlags.OptionalParamBinding |
-                                                BindingFlags.DeclaredOnly;
-            foreach (System.Reflection.MethodInfo definition in type.GetMethods(findFlags))
-                Add(definition);
-        }
-
         public void Add(MethodInfo reference)
         {
             String kernel_assembly_file_name = reference.DeclaringType.Assembly.Location;
             Mono.Cecil.ModuleDefinition md = Mono.Cecil.ModuleDefinition.ReadModule(kernel_assembly_file_name);
             MethodReference refer = md.Import(reference);
             Add(refer);
-        }
-
-        public void AddAssembly(String assembly_file_name)
-        {
-            ModuleDefinition module = LoadAssembly(assembly_file_name);
-            String full_name = System.IO.Path.GetFullPath(assembly_file_name);
-            foreach (ModuleDefinition md in this._analyzed_modules)
-                if (md.FullyQualifiedName.Equals(full_name))
-                    return;
-            _analyzed_modules.Add(module);
-            StackQueue<TypeDefinition> type_definitions = new StackQueue<TypeDefinition>();
-            StackQueue<TypeDefinition> type_definitions_closure = new StackQueue<TypeDefinition>();
-            foreach (TypeDefinition td in module.Types)
-                type_definitions.Push(td);
-            while (type_definitions.Count > 0)
-            {
-                TypeDefinition ty = type_definitions.Pop();
-                type_definitions_closure.Push(ty);
-                foreach (TypeDefinition ntd in ty.NestedTypes)
-                    type_definitions.Push(ntd);
-            }
-            foreach (TypeDefinition td in type_definitions_closure)
-                foreach (MethodDefinition definition in td.Methods)
-                    Add(definition);
         }
 
         public void Add(MethodReference method_reference)
@@ -140,12 +84,6 @@ namespace Campy.Compiler
                     return;
             }
             _methods_to_do.Push(new Tuple<MethodReference, List<TypeReference>>(method_reference, new List<TypeReference>()));
-        }
-
-        public void AddAssembly(Assembly assembly)
-        {
-            String assembly_file_name = assembly.Location;
-            AddAssembly(assembly_file_name);
         }
 
         public void ExtractBasicBlocks()
@@ -517,6 +455,8 @@ namespace Campy.Compiler
             {
                 var owner = _cfg.VertexNodes.Where(
                     n => n.Instructions.Where(ins => ins.Instruction == i).Any()).ToList();
+                // Check if there are multiple nodes with the same instruction or if there isn't
+                // any node found containing the instruction. Either way, it's a programming error.
                 if (owner.Count != 1)
                     throw new Exception("Cannot find instruction!");
                 CFG.Vertex target_node = owner.FirstOrDefault();
