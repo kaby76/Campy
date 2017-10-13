@@ -296,16 +296,24 @@ namespace Campy.Compiler
 
                 int count = Instructions.Count;
 
+                if (Campy.Utils.Options.IsOn("cfg_construction_trace"))
+                {
+                    System.Console.WriteLine("Split node " + this.Name + " at instruction " + Instructions[i].Instruction);
+                    System.Console.WriteLine("Node prior to split:");
+                    OutputEntireNode();
+                    System.Console.WriteLine("New node is " + result.Name);
+                }
+
                 // Add instructions from split point to new block.
                 for (int j = i; j < count; ++j)
                 {
-                    Inst newInst = Inst.Wrap(Instructions[j].Instruction);
-                    CFG.Vertex v = newInst.Block;
-                    newInst.Block = (CFG.Vertex) result;
-                    result.Instructions.Add(newInst);
+                    Inst inst_to_move = Inst.Wrap(Instructions[j].Instruction);
+                    CFG.Vertex v = inst_to_move.Block;
+                    inst_to_move.Block = (CFG.Vertex) result;
+                    result.Instructions.Add(inst_to_move);
                 }
 
-                // Remove instructions from previous block.
+                // Remove instructions from this block.
                 for (int j = i; j < count; ++j)
                 {
                     this.Instructions.RemoveAt(i);
@@ -326,38 +334,15 @@ namespace Campy.Compiler
                     cfg.AddEdge(result, succ);
                 }
 
-                // Add fall-through branch from pred to succ block.
-                switch (last_instruction.OpCode.FlowControl)
-                {
-                    case FlowControl.Branch:
-                        break;
-                    case FlowControl.Break:
-                        break;
-                    case FlowControl.Call:
-                        cfg.AddEdge(this.Name, result.Name);
-                        break;
-                    case FlowControl.Cond_Branch:
-                        cfg.AddEdge(this.Name, result.Name);
-                        break;
-                    case FlowControl.Meta:
-                        break;
-                    case FlowControl.Next:
-                        cfg.AddEdge(this.Name, result.Name);
-                        break;
-                    case FlowControl.Phi:
-                        break;
-                    case FlowControl.Return:
-                        break;
-                    case FlowControl.Throw:
-                        break;
-                }
-
                 if (Campy.Utils.Options.IsOn("cfg_construction_trace"))
                 {
-                    System.Console.WriteLine("After split");
-                    cfg.OutputEntireGraph();
-                    System.Console.WriteLine("-----------");
+                    System.Console.WriteLine("Node after split:");
+                    OutputEntireNode();
+                    System.Console.WriteLine("Newly created node:");
+                    result.OutputEntireNode();
+                    System.Console.WriteLine();
                 }
+
                 return result;
             }
         }

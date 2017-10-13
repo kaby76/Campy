@@ -81,6 +81,17 @@ namespace ConsoleApp4
                 copy[swapPos] = temp;
             }
 
+            Campy.Utils.Options.Set("graph_trace");
+            Campy.Utils.Options.Set("module_trace");
+            Campy.Utils.Options.Set("name_trace");
+            Campy.Utils.Options.Set("cfg_construction_trace");
+            Campy.Utils.Options.Set("dot_graph");
+            Campy.Utils.Options.Set("jit_trace");
+            Campy.Utils.Options.Set("memory_trace");
+            Campy.Utils.Options.Set("ptx_trace");
+            Campy.Utils.Options.Set("state_computation_trace");
+            Campy.Utils.Options.Set("continue_with_no_resolve");
+
             Campy.Parallel.For(1, buffer.Length / 2, j =>
             {
                 int swapPos = BitReverse(j, bits);
@@ -88,17 +99,6 @@ namespace ConsoleApp4
                 buffer[j] = buffer[swapPos];
                 buffer[swapPos] = temp;
             });
-
-            Campy.Utils.Options.Set("graph_trace");
-            Campy.Utils.Options.Set("module_trace");
-            Campy.Utils.Options.Set("name_trace");
-            //Campy.Utils.Options.Set("cfg_construction_trace");
-            Campy.Utils.Options.Set("dot_graph");
-            Campy.Utils.Options.Set("jit_trace");
-            Campy.Utils.Options.Set("memory_trace");
-            Campy.Utils.Options.Set("ptx_trace");
-            Campy.Utils.Options.Set("state_computation_trace");
-            Campy.Utils.Options.Set("continue_with_no_resolve");
 
             for (int N = 2; N <= buffer.Length; N <<= 1)
             {

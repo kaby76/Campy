@@ -201,7 +201,7 @@ namespace Campy.Compiler
         static MethodReference MakeGeneric(MethodReference method, TypeReference declaringType)
         {
             var reference = new MethodReference(method.Name, method.ReturnType, declaringType);
-            
+
             foreach (ParameterDefinition parameter in method.Parameters)
                 reference.Parameters.Add(new ParameterDefinition(parameter.ParameterType));
             return reference;
@@ -261,7 +261,7 @@ namespace Campy.Compiler
             foreach (ParameterDefinition parameter in self.Parameters)
             {
                 TypeReference type_reference_of_parameter = parameter.ParameterType;
-                
+
                 Collection<TypeReference> gp = declaring_type.GenericArguments;
                 // Map parameter to actual type.
                 if (type_reference_of_parameter.IsGenericParameter)
@@ -409,11 +409,13 @@ namespace Campy.Compiler
             if (method_definition == null)
                 return;
 
+            int change_set = _cfg.StartChangeSet();
+
             var has_ret = method_definition.IsReuseSlot;
             var body = method_definition.Body;
 
             int instruction_count = body.Instructions.Count;
-            StackQueue<Mono.Cecil.Cil.Instruction> leader_list = new StackQueue<Mono.Cecil.Cil.Instruction>();
+            List<Mono.Cecil.Cil.Instruction> split_point = new List<Mono.Cecil.Cil.Instruction>();
 
             // Each method is a leader of a block.
             CFG.Vertex v = (CFG.Vertex)_cfg.AddVertex(_cfg.NewNodeNumber());
@@ -423,49 +425,82 @@ namespace Campy.Compiler
             v.HasReturnValue = has_ret;
             v.Entry = v;
             _cfg.Entries.Add(v);
+
+            // Add instructions to the basic block.
             for (int j = 0; j < instruction_count; ++j)
             {
-                // accumulate jump to locations since these split blocks.
-
-                // NB: This gets generic code. We have to instantiate it.
-
                 Mono.Cecil.Cil.Instruction mi = body.Instructions[j];
-                //System.Console.WriteLine(mi);
                 Inst i = Inst.Wrap(mi);
                 i.Block = v;
                 Mono.Cecil.Cil.OpCode op = i.OpCode;
                 Mono.Cecil.Cil.FlowControl fc = op.FlowControl;
-
                 v.Instructions.Add(i);
+            }
 
-                if (fc == Mono.Cecil.Cil.FlowControl.Branch || fc == Mono.Cecil.Cil.FlowControl.Cond_Branch)
+            // Accumulate targets of jumps. These are split points for block "v".
+            // Accumalated splits are in "leader_list" following this for-loop.
+            for (int j = 0; j < instruction_count; ++j)
+            {
+                Inst i = v.Instructions[j];
+                Mono.Cecil.Cil.OpCode op = i.OpCode;
+                Mono.Cecil.Cil.FlowControl fc = op.FlowControl;
+
+                switch (fc)
                 {
-                    // Save leader target of branch.
-                    object o = i.Operand;
-                    // Two cases that I know of: operand is just and instruction,
-                    // or operand is an array of instructions (via a switch instruction).
-                    Mono.Cecil.Cil.Instruction oo = o as Mono.Cecil.Cil.Instruction;
-                    Mono.Cecil.Cil.Instruction[] ooa = o as Mono.Cecil.Cil.Instruction[];
-                    if (oo != null)
-                    {
-                        leader_list.Push(oo);
-                    }
-                    else if (ooa != null)
-                    {
-                        foreach (Mono.Cecil.Cil.Instruction ins in ooa)
+                    case Mono.Cecil.Cil.FlowControl.Branch:
+                    case Mono.Cecil.Cil.FlowControl.Cond_Branch:
                         {
-                            Debug.Assert(ins != null);
-                            leader_list.Push(ins);
+                            object o = i.Operand;
+                            // Two cases of branches:
+                            // 1) operand is a single instruction;
+                            // 2) operand is an array of instructions via a switch instruction.
+                            Mono.Cecil.Cil.Instruction single_instruction = o as Mono.Cecil.Cil.Instruction;
+                            Mono.Cecil.Cil.Instruction[] list_of_instructions = o as Mono.Cecil.Cil.Instruction[];
+                            if (single_instruction != null)
+                            {
+                                if (!split_point.Contains(single_instruction))
+                                    split_point.Add(single_instruction);
+                            }
+                            else if (list_of_instructions != null)
+                            {
+                                foreach (var ins in list_of_instructions)
+                                {
+                                    Debug.Assert(ins != null);
+                                    if (!split_point.Contains(single_instruction))
+                                        split_point.Add(ins);
+                                }
+                            }
+                            else
+                                throw new Exception("Unknown operand type for basic block partitioning.");
                         }
-                    }
-                    else
-                        throw new Exception("Unknown operand type for basic block partitioning.");
+                        break;
+                }
 
+                // Split blocks after certain instructions, too.
+                switch (fc)
+                {
+                    case Mono.Cecil.Cil.FlowControl.Branch:
+                    case Mono.Cecil.Cil.FlowControl.Call:
+                    case Mono.Cecil.Cil.FlowControl.Cond_Branch:
+                    case Mono.Cecil.Cil.FlowControl.Return:
+                    case Mono.Cecil.Cil.FlowControl.Throw:
+                        {
+                            if (fc == Mono.Cecil.Cil.FlowControl.Call && ! Campy.Utils.Options.IsOn("split_at_calls"))
+                                break;
+                            if (j + 1 < instruction_count)
+                            {
+                                var ins = v.Instructions[j + 1].Instruction;
+                                if (!split_point.Contains(ins))
+                                    split_point.Add(ins);
+                            }
+                        }
+                        break;
                 }
             }
 
-            // Accumalated splits are in "leader_list". These splits must be within the smae method.
-            StackQueue<int> ordered_leader_list = new StackQueue<int>();
+            // Note, we assume that these splits are within the same method.
+            // Order the list according to offset from beginning of the method.
+            List<Mono.Cecil.Cil.Instruction> ordered_leader_list = new List<Mono.Cecil.Cil.Instruction>();
             for (int j = 0; j < instruction_count; ++j)
             {
                 // Order jump targets. These denote locations
@@ -473,66 +508,43 @@ namespace Campy.Compiler
                 // so that splitting is done from last instruction in block
                 // to first instruction in block.
                 Mono.Cecil.Cil.Instruction i = body.Instructions[j];
-                if (leader_list.Contains(i))
-                    ordered_leader_list.Push(j);
+                if (split_point.Contains(i))
+                    ordered_leader_list.Add(i);
             }
 
-            // Split block at jump targets in reverse.
-            while (ordered_leader_list.Count > 0)
+            // Split block at all jump targets.
+            foreach (var i in ordered_leader_list)
             {
-                int i = ordered_leader_list.Pop();
-                CFG.Vertex new_node = v.Split(i);
+                var owner = _cfg.VertexNodes.Where(
+                    n => n.Instructions.Where(ins => ins.Instruction == i).Any()).ToList();
+                if (owner.Count != 1)
+                    throw new Exception("Cannot find instruction!");
+                CFG.Vertex target_node = owner.FirstOrDefault();
+                var j = target_node.Instructions.FindIndex(a => a.Instruction == i);
+                CFG.Vertex new_node = target_node.Split(j);
             }
 
-            StackQueue<CFG.Vertex> stack = new StackQueue<CFG.Vertex>();
-            foreach (CFG.Vertex node in _cfg.VertexNodes) stack.Push(node);
-            while (stack.Count > 0)
+            // Add in all edges.
+            var list_new_nodes = _cfg.PopChangeSet(change_set);
+            foreach (var node in list_new_nodes)
             {
-                // Split blocks at branches. Set following instruction a leader
-                // of the new block.
-                CFG.Vertex node = stack.Pop();
                 int node_instruction_count = node.Instructions.Count;
-                for (int j = 0; j < node_instruction_count; ++j)
-                {
-                    Inst i = node.Instructions[j];
-                    Mono.Cecil.Cil.OpCode op = i.OpCode;
-                    Mono.Cecil.Cil.FlowControl fc = op.FlowControl;
-                    if (fc == Mono.Cecil.Cil.FlowControl.Next)
-                        continue;
-                    if (fc == Mono.Cecil.Cil.FlowControl.Call)
-                        if (!Campy.Utils.Options.IsOn("split_at_calls"))
-                            continue;
-                    if (fc == Mono.Cecil.Cil.FlowControl.Meta)
-                        continue;
-                    if (fc == Mono.Cecil.Cil.FlowControl.Phi)
-                        continue;
-                    if (j + 1 >= node_instruction_count)
-                        continue;
-                    CFG.Vertex new_node = node.Split(j + 1);
-                    stack.Push(new_node);
-                    break;
-                }
-            }
+                Inst last_instruction = node.Instructions[node_instruction_count - 1];
 
-            stack = new StackQueue<CFG.Vertex>();
-            foreach (CFG.Vertex node in _cfg.VertexNodes) stack.Push(node);
-            while (stack.Count > 0)
-            {
-                // Add in all final non-fallthrough branch edges.
-                CFG.Vertex node = stack.Pop();
-                int node_instruction_count = node.Instructions.Count;
-                Inst i = node.Instructions[node_instruction_count - 1];
-                Mono.Cecil.Cil.OpCode op = i.OpCode;
+                Mono.Cecil.Cil.OpCode op = last_instruction.OpCode;
                 Mono.Cecil.Cil.FlowControl fc = op.FlowControl;
+
+                // Add jump edge.
                 switch (fc)
                 {
                     case Mono.Cecil.Cil.FlowControl.Branch:
                     case Mono.Cecil.Cil.FlowControl.Cond_Branch:
                         {
                             // Two cases: i.Operand is a single instruction, or an array of instructions.
-                            if (i.Operand as Mono.Cecil.Cil.Instruction != null)
+                            if (last_instruction.Operand as Mono.Cecil.Cil.Instruction != null)
                             {
-                                Mono.Cecil.Cil.Instruction target_instruction = i.Operand as Mono.Cecil.Cil.Instruction;
+                                Mono.Cecil.Cil.Instruction target_instruction =
+                                    last_instruction.Operand as Mono.Cecil.Cil.Instruction;
                                 CFG.Vertex target_node = _cfg.VertexNodes.First(
                                     (CFG.Vertex x) =>
                                     {
@@ -542,9 +554,10 @@ namespace Campy.Compiler
                                     });
                                 _cfg.AddEdge(node, target_node);
                             }
-                            else if (i.Operand as Mono.Cecil.Cil.Instruction[] != null)
+                            else if (last_instruction.Operand as Mono.Cecil.Cil.Instruction[] != null)
                             {
-                                foreach (Mono.Cecil.Cil.Instruction target_instruction in (i.Operand as Mono.Cecil.Cil.Instruction[]))
+                                foreach (Mono.Cecil.Cil.Instruction target_instruction in
+                                    (last_instruction.Operand as Mono.Cecil.Cil.Instruction[]))
                                 {
                                     CFG.Vertex target_node = _cfg.VertexNodes.First(
                                         (CFG.Vertex x) =>
@@ -561,50 +574,51 @@ namespace Campy.Compiler
                                 throw new Exception("Unknown operand type for conditional branch.");
                             break;
                         }
-                    case Mono.Cecil.Cil.FlowControl.Break:
-                        break;
+                }
+
+                // Add fall through edge.
+                switch (fc)
+                {
+                    //case Mono.Cecil.Cil.FlowControl.Branch:
+                    //case Mono.Cecil.Cil.FlowControl.Break:
                     case Mono.Cecil.Cil.FlowControl.Call:
-                        {
-                            // By default, we no longer split at calls. Splitting causes
-                            // problems because interprocedural edges are
-                            // produced. That's not good because it makes
-                            // code too "messy".
-                            if (Campy.Utils.Options.IsOn("split_at_calls"))
-                            {
-                                object o = i.Operand;
-                                if (o as MethodReference != null)
-                                {
-                                    MethodReference r = o as MethodReference;
-                                    MethodDefinition d = r.Resolve();
-                                    IEnumerable<CFG.Vertex> target_node_list = _cfg.VertexNodes.Where(
-                                        (CFG.Vertex x) =>
-                                        {
-                                            return x.ExpectedCalleeSignature.FullName == r.FullName
-                                                   && x.Entry == x;
-                                        });
-                                    int c = target_node_list.Count();
-                                    if (c >= 1)
-                                    {
-                                        // target_node is the entry for a method. Also get the exit.
-                                        CFG.Vertex target_node = target_node_list.First();
-                                        CFG.Vertex exit_node = target_node.Exit;
-                                    }
-                                }
-                            }
-                            break;
-                        }
+                    case Mono.Cecil.Cil.FlowControl.Cond_Branch:
                     case Mono.Cecil.Cil.FlowControl.Meta:
-                        break;
                     case Mono.Cecil.Cil.FlowControl.Next:
-                        break;
                     case Mono.Cecil.Cil.FlowControl.Phi:
-                        break;
-                    case Mono.Cecil.Cil.FlowControl.Return:
-                        break;
-                    case Mono.Cecil.Cil.FlowControl.Throw:
+                    //case Mono.Cecil.Cil.FlowControl.Return:
+                    //case Mono.Cecil.Cil.FlowControl.Throw:
+                        {
+                            int next = body.Instructions.ToList().FindIndex(
+                                           n =>
+                                           {
+                                               var r = n == last_instruction.Instruction &&
+                                                       n.Offset == last_instruction.Instruction.Offset
+                                                   ;
+                                               return r;
+                                           }
+                                   );
+                            if (next < 0)
+                                break;
+                            next += 1;
+                            if (next >= body.Instructions.Count)
+                                break;
+                            var next_instruction = body.Instructions[next];
+                            var owner = _cfg.VertexNodes.Where(
+                                n => n.Instructions.Where(ins => ins.Instruction == next_instruction).Any()).ToList();
+                            if (owner.Count != 1)
+                                throw new Exception("Cannot find instruction!");
+                            CFG.Vertex target_node = owner.FirstOrDefault();
+                            System.Console.WriteLine("Create edge a " + node.Name + " to " + target_node.Name);
+                            _cfg.AddEdge(node, target_node);
+                        }
                         break;
                 }
             }
+            System.Console.WriteLine();
+            _cfg.OutputDotGraph();
+            _cfg.OutputEntireGraph();
+            System.Console.WriteLine();
 
             //this.Dump();
 

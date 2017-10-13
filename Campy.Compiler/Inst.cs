@@ -2589,6 +2589,8 @@ namespace Campy.Compiler
 
         public override Inst Convert(Converter converter, State state)
         {
+            object operand = this.Operand;
+            Instruction instruction = operand as Instruction;
             var v = state._stack.Pop();
             GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge1 = Block._Successors[0];
             GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge2 = Block._Successors[1];
@@ -2596,7 +2598,24 @@ namespace Campy.Compiler
             int succ2 = edge2.To;
             var s1 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ1)];
             var s2 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ2)];
-            LLVM.BuildCondBr(Builder, v.V, s1.BasicBlock, s2.BasicBlock);
+            // We need to compare the value popped with 0/1.
+            var v2 = LLVM.ConstInt(LLVM.Int32Type(), 1, false);
+            var v3 = LLVM.BuildICmp(Builder, IntPredicate.IntEQ, v.V, v2, "");
+
+            // Now, in order to select the correct branch, we need to know what
+            // edge represents the "true" branch. During construction, there is
+            // no guarentee that the order is consistent.
+            var owner = Block._Graph.VertexNodes.Where(
+                n => n.Instructions.Where(ins => ins.Instruction == instruction).Any()).ToList();
+            if (owner.Count != 1)
+                throw new Exception("Cannot find instruction!");
+            CFG.Vertex true_node = owner.FirstOrDefault();
+            if (s2 == true_node)
+            {
+                s1 = s2;
+                s2 = true_node;
+            }
+            LLVM.BuildCondBr(Builder, v3, s2.BasicBlock, s1.BasicBlock);
             return Next;
         }
     }
@@ -2623,6 +2642,8 @@ namespace Campy.Compiler
 
         public override Inst Convert(Converter converter, State state)
         {
+            object operand = this.Operand;
+            Instruction instruction = operand as Instruction;
             var v = state._stack.Pop();
             GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge1 = Block._Successors[0];
             GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge2 = Block._Successors[1];
@@ -2633,7 +2654,21 @@ namespace Campy.Compiler
             // We need to compare the value popped with 0/1.
             var v2 = LLVM.ConstInt(LLVM.Int32Type(), 1, false);
             var v3 = LLVM.BuildICmp(Builder, IntPredicate.IntEQ, v.V, v2, "");
-            LLVM.BuildCondBr(Builder, v3, s1.BasicBlock, s2.BasicBlock);
+
+            // Now, in order to select the correct branch, we need to know what
+            // edge represents the "true" branch. During construction, there is
+            // no guarentee that the order is consistent.
+            var owner = Block._Graph.VertexNodes.Where(
+                n => n.Instructions.Where(ins => ins.Instruction == instruction).Any()).ToList();
+            if (owner.Count != 1)
+                throw new Exception("Cannot find instruction!");
+            CFG.Vertex true_node = owner.FirstOrDefault();
+            if (s2 == true_node)
+            {
+                s1 = s2;
+                s2 = true_node;
+            }
+            LLVM.BuildCondBr(Builder, v3, s2.BasicBlock, s1.BasicBlock);
             return Next;
         }
     }
@@ -2652,6 +2687,8 @@ namespace Campy.Compiler
 
         public override Inst Convert(Converter converter, State state)
         {
+            object operand = this.Operand;
+            Instruction instruction = operand as Instruction;
             var v = state._stack.Pop();
             GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge1 = Block._Successors[0];
             GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge2 = Block._Successors[1];
@@ -2660,8 +2697,22 @@ namespace Campy.Compiler
             var s1 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ1)];
             var s2 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ2)];
             // We need to compare the value popped with 0/1.
-            var v2 = LLVM.ConstInt(LLVM.Int32Type(), 0, false);
+            var v2 = LLVM.ConstInt(LLVM.Int32Type(), 1, false);
             var v3 = LLVM.BuildICmp(Builder, IntPredicate.IntEQ, v.V, v2, "");
+
+            // Now, in order to select the correct branch, we need to know what
+            // edge represents the "true" branch. During construction, there is
+            // no guarentee that the order is consistent.
+            var owner = Block._Graph.VertexNodes.Where(
+                n => n.Instructions.Where(ins => ins.Instruction == instruction).Any()).ToList();
+            if (owner.Count != 1)
+                throw new Exception("Cannot find instruction!");
+            CFG.Vertex true_node = owner.FirstOrDefault();
+            if (s2 == true_node)
+            {
+                s1 = s2;
+                s2 = true_node;
+            }
             LLVM.BuildCondBr(Builder, v3, s1.BasicBlock, s2.BasicBlock);
             return Next;
         }
@@ -2681,6 +2732,8 @@ namespace Campy.Compiler
 
         public override Inst Convert(Converter converter, State state)
         {
+            object operand = this.Operand;
+            Instruction instruction = operand as Instruction;
             var v = state._stack.Pop();
             GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge1 = Block._Successors[0];
             GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge2 = Block._Successors[1];
@@ -2689,13 +2742,22 @@ namespace Campy.Compiler
             var s1 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ1)];
             var s2 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ2)];
             // We need to compare the value popped with 0/1.
-            var v2 = LLVM.ConstInt(LLVM.Int32Type(), 0, false);
+            var v2 = LLVM.ConstInt(LLVM.Int32Type(), 1, false);
             var v3 = LLVM.BuildICmp(Builder, IntPredicate.IntEQ, v.V, v2, "");
 
             // Now, in order to select the correct branch, we need to know what
             // edge represents the "true" branch. During construction, there is
             // no guarentee that the order is consistent.
-            
+            var owner = Block._Graph.VertexNodes.Where(
+                n => n.Instructions.Where(ins => ins.Instruction == instruction).Any()).ToList();
+            if (owner.Count != 1)
+                throw new Exception("Cannot find instruction!");
+            CFG.Vertex true_node = owner.FirstOrDefault();
+            if (s2 == true_node)
+            {
+                s1 = s2;
+                s2 = true_node;
+            }
             LLVM.BuildCondBr(Builder, v3, s1.BasicBlock, s2.BasicBlock);
             return Next;
         }

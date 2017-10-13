@@ -1122,17 +1122,21 @@ namespace Campy.Compiler
             {
                 // Create DFT order of all nodes from entries.
                 IEnumerable<int> objs = entries.Select(x => x.Name);
-                //var ordered_list = new Tarjan<int>(_mcfg).Reverse();
-                Graphs.DFSPreorder<int>
-                    ordered_list = new Graphs.DFSPreorder<int>(
-                        _mcfg,
-                        objs
-                    );
+                var ordered_list = new Tarjan<int>(_mcfg).Reverse().ToList();
+
+                //Graphs.DFSPreorder<int>
+                //    ordered_list = new Graphs.DFSPreorder<int>(
+                //        _mcfg,
+                //        objs
+                //    );
+
                 List<CFG.Vertex> visited = new List<CFG.Vertex>();
                 foreach (int ob in ordered_list)
                 {
                     CFG.Vertex node = _mcfg.VertexSpace[_mcfg.NameSpace.BijectFromBasetype(ob)];
                     if (!IsFullyInstantiatedNode(node))
+                        continue;
+                    if (visited.Contains(node))
                         continue;
                     visited.Add(node);
                 }
@@ -1213,120 +1217,120 @@ namespace Campy.Compiler
             }
         }
 
-        private void CompilePart6(IEnumerable<CFG.Vertex> basic_blocks_to_compile, List<Mono.Cecil.TypeReference> list_of_data_types_used, List<CFG.Vertex> entries,
+        private void CompilePart6(IEnumerable<CFG.Vertex> basic_blocks_to_compile,
+            List<Mono.Cecil.TypeReference> list_of_data_types_used, List<CFG.Vertex> entries,
             List<CFG.Vertex> unreachable, List<CFG.Vertex> change_set_minus_unreachable)
         {
+            List<CFG.Vertex> work = new List<CFG.Vertex>(change_set_minus_unreachable);
+            while (work.Count != 0)
             {
-                List<CFG.Vertex> work = new List<CFG.Vertex>(change_set_minus_unreachable);
-                while (work.Count != 0)
+                // Create DFT order of all nodes.
+                var ordered_list = new Tarjan<int>(_mcfg).Reverse().ToList();
+
+                //IEnumerable<int> objs = entries.Select(x => x.Name);
+                //Graphs.DFSPreorder<int>
+                //    ordered_list = new Graphs.DFSPreorder<int>(
+                //        _mcfg,
+                //        objs
+                //    );
+
+                List<CFG.Vertex> visited = new List<CFG.Vertex>();
+                // Compute stack size for each basic block, processing nodes on work list
+                // in DFT order.
+                foreach (int ob in ordered_list)
                 {
-                    // Create DFT order of all nodes.
-                    var ordered_list = new Tarjan<int>(_mcfg).Reverse();
-
-                    //IEnumerable<int> objs = entries.Select(x => x.Name);
-                    //Graphs.DFSPreorder<int>
-                    //    ordered_list = new Graphs.DFSPreorder<int>(
-                    //        _mcfg,
-                    //        objs
-                    //    );
-
-                    List<CFG.Vertex> visited = new List<CFG.Vertex>();
-                    // Compute stack size for each basic block, processing nodes on work list
-                    // in DFT order.
-                    foreach (int ob in ordered_list)
+                    CFG.Vertex node = _mcfg.VertexSpace[_mcfg.NameSpace.BijectFromBasetype(ob)];
+                    var llvm_node = node;
+                    visited.Add(node);
+                    if (!(work.Contains(node)))
                     {
-                        CFG.Vertex node = _mcfg.VertexSpace[_mcfg.NameSpace.BijectFromBasetype(ob)];
-                        var llvm_node = node;
-                        visited.Add(node);
-                        if (!(work.Contains(node)))
+                        continue;
+                    }
+                    work.Remove(node);
+
+                    // Use predecessor information to get initial stack size.
+                    if (node.IsEntry)
+                    {
+                        CFG.Vertex llvm_nodex = node;
+                        llvm_nodex.StackLevelIn =
+                            node.NumberOfLocals + node.NumberOfArguments + (node.HasThis ? 1 : 0);
+                    }
+                    else
+                    {
+                        int in_level = -1;
+                        foreach (CFG.Vertex pred in _mcfg.PredecessorNodes(node))
+                        {
+                            // Do not consider interprocedural edges when computing stack size.
+                            if (pred.ExpectedCalleeSignature != node.ExpectedCalleeSignature)
+                                continue;
+                            // If predecessor has not been visited, warn and do not consider.
+                            var llvm_pred = pred;
+                            if (llvm_pred.StackLevelOut == null)
+                            {
+                                continue;
+                            }
+                            // Warn if predecessor does not concur with another predecessor.
+                            CFG.Vertex llvm_nodex = node;
+                            llvm_nodex.StackLevelIn = llvm_pred.StackLevelOut;
+                            in_level = (int) llvm_nodex.StackLevelIn;
+                        }
+                        // Warn if no predecessors have been visited.
+                        if (in_level == -1)
                         {
                             continue;
                         }
-                        work.Remove(node);
-
-                        // Use predecessor information to get initial stack size.
-                        if (node.IsEntry)
-                        {
-                            CFG.Vertex llvm_nodex = node;
-                            llvm_nodex.StackLevelIn = node.NumberOfLocals + node.NumberOfArguments + (node.HasThis ? 1 : 0);
-                        }
+                    }
+                    CFG.Vertex llvm_nodez = node;
+                    int level_after = (int) llvm_nodez.StackLevelIn;
+                    int level_pre = level_after;
+                    foreach (var inst in llvm_nodez.Instructions)
+                    {
+                        level_pre = level_after;
+                        inst.ComputeStackLevel(ref level_after);
+                        //System.Console.WriteLine("after inst " + i);
+                        //System.Console.WriteLine("level = " + level_after);
+                        Debug.Assert(level_after >= node.NumberOfLocals + node.NumberOfArguments
+                                     + (node.HasThis ? 1 : 0));
+                    }
+                    llvm_nodez.StackLevelOut = level_after;
+                    // Verify return node that it makes sense.
+                    if (node.IsReturn && !unreachable.Contains(node))
+                    {
+                        if (llvm_nodez.StackLevelOut ==
+                            node.NumberOfArguments
+                            + node.NumberOfLocals
+                            + (node.HasThis ? 1 : 0)
+                            + (node.HasReturnValue ? 1 : 0))
+                            ;
                         else
                         {
-                            int in_level = -1;
-                            foreach (CFG.Vertex pred in _mcfg.PredecessorNodes(node))
-                            {
-                                // Do not consider interprocedural edges when computing stack size.
-                                if (pred.ExpectedCalleeSignature != node.ExpectedCalleeSignature)
-                                    continue;
-                                // If predecessor has not been visited, warn and do not consider.
-                                var llvm_pred = pred;
-                                if (llvm_pred.StackLevelOut == null)
-                                {
-                                    continue;
-                                }
-                                // Warn if predecessor does not concur with another predecessor.
-                                CFG.Vertex llvm_nodex = node;
-                                llvm_nodex.StackLevelIn = llvm_pred.StackLevelOut;
-                                in_level = (int)llvm_nodex.StackLevelIn;
-                            }
-                            // Warn if no predecessors have been visited.
-                            if (in_level == -1)
-                            {
-                                continue;
-                            }
+                            throw new Exception("Failed stack level out check");
                         }
-                        CFG.Vertex llvm_nodez = node;
-                        int level_after = (int)llvm_nodez.StackLevelIn;
-                        int level_pre = level_after;
-                        foreach (var inst in llvm_nodez.Instructions)
+                    }
+                    foreach (CFG.Vertex succ in node._Graph.SuccessorNodes(node))
+                    {
+                        // If it's an interprocedural edge, nothing to pass on.
+                        if (succ.ExpectedCalleeSignature != node.ExpectedCalleeSignature)
+                            continue;
+                        // If it's recursive, nothing more to do.
+                        if (succ.IsEntry)
+                            continue;
+                        // If it's a return, nothing more to do also.
+                        if (node.Instructions.Last() as i_ret != null)
+                            continue;
+                        // Nothing to update if no change.
+                        CFG.Vertex llvm_succ = node;
+                        if (llvm_succ.StackLevelIn > level_after)
                         {
-                            level_pre = level_after;
-                            inst.ComputeStackLevel(ref level_after);
-                            //System.Console.WriteLine("after inst " + i);
-                            //System.Console.WriteLine("level = " + level_after);
-                            Debug.Assert(level_after >= node.NumberOfLocals + node.NumberOfArguments
-                                         + (node.HasThis ? 1 : 0));
+                            continue;
                         }
-                        llvm_nodez.StackLevelOut = level_after;
-                        // Verify return node that it makes sense.
-                        if (node.IsReturn && !unreachable.Contains(node))
+                        else if (llvm_succ.StackLevelIn == level_after)
                         {
-                            if (llvm_nodez.StackLevelOut ==
-                                node.NumberOfArguments
-                                + node.NumberOfLocals
-                                + (node.HasThis ? 1 : 0)
-                                + (node.HasReturnValue ? 1 : 0))
-                                ;
-                            else
-                            {
-                                throw new Exception("Failed stack level out check");
-                            }
+                            continue;
                         }
-                        foreach (CFG.Vertex succ in node._Graph.SuccessorNodes(node))
+                        if (!work.Contains(succ))
                         {
-                            // If it's an interprocedural edge, nothing to pass on.
-                            if (succ.ExpectedCalleeSignature != node.ExpectedCalleeSignature)
-                                continue;
-                            // If it's recursive, nothing more to do.
-                            if (succ.IsEntry)
-                                continue;
-                            // If it's a return, nothing more to do also.
-                            if (node.Instructions.Last() as i_ret != null)
-                                continue;
-                            // Nothing to update if no change.
-                            CFG.Vertex llvm_succ = node;
-                            if (llvm_succ.StackLevelIn > level_after)
-                            {
-                                continue;
-                            }
-                            else if (llvm_succ.StackLevelIn == level_after)
-                            {
-                                continue;
-                            }
-                            if (!work.Contains(succ))
-                            {
-                                work.Add(succ);
-                            }
+                            work.Add(succ);
                         }
                     }
                 }
