@@ -4809,7 +4809,13 @@ namespace Campy.Compiler
             }
 
             // First, create a struct.
+            var entry = this.Block.Entry.BasicBlock;
+            var beginning = LLVM.GetFirstInstruction(entry);
+            LLVM.PositionBuilderBefore(Builder, beginning);
             var new_obj = LLVM.BuildAlloca(Builder, llvm_type, "");
+            LLVM.PositionBuilderAtEnd(Builder, this.Block.BasicBlock);
+            if (Campy.Utils.Options.IsOn("jit_trace"))
+                System.Console.WriteLine(new Value(new_obj));
 
             BuilderRef bu = this.Builder;
             ValueRef fv = the_entry.MethodValueRef;

@@ -100,5 +100,10 @@ namespace Campy.Compiler
             x += hpi; //shift for cosine
             return Sine(x);
         }
+
+        public double Abs(double x)
+        {
+            return x > 0 ? x : -x;
+        }
     }
 }

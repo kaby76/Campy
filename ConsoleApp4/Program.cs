@@ -81,16 +81,6 @@ namespace ConsoleApp4
                 copy[swapPos] = temp;
             }
 
-            Campy.Utils.Options.Set("graph_trace");
-            Campy.Utils.Options.Set("module_trace");
-            Campy.Utils.Options.Set("name_trace");
-            Campy.Utils.Options.Set("cfg_construction_trace");
-            Campy.Utils.Options.Set("dot_graph");
-            Campy.Utils.Options.Set("jit_trace");
-            Campy.Utils.Options.Set("memory_trace");
-            Campy.Utils.Options.Set("ptx_trace");
-            Campy.Utils.Options.Set("state_computation_trace");
-            Campy.Utils.Options.Set("continue_with_no_resolve");
 
             Campy.Parallel.For(1, buffer.Length / 2, j =>
             {
@@ -144,9 +134,66 @@ namespace ConsoleApp4
             }
         }
 
+        static void StartDebugging()
+        {
+            Campy.Utils.Options.Set("graph_trace");
+            Campy.Utils.Options.Set("module_trace");
+            Campy.Utils.Options.Set("name_trace");
+            Campy.Utils.Options.Set("cfg_construction_trace");
+            Campy.Utils.Options.Set("dot_graph");
+            Campy.Utils.Options.Set("jit_trace");
+            Campy.Utils.Options.Set("memory_trace");
+            Campy.Utils.Options.Set("ptx_trace");
+            Campy.Utils.Options.Set("state_computation_trace");
+            Campy.Utils.Options.Set("continue_with_no_resolve");
+
+        }
 
         static void Main(string[] args)
         {
+            double pi = 3.141592653589793;
+            int num = 10;
+            double[] dodo1 = new double[num];
+            double[] dodo2 = new double[num];
+            double[] dodo3 = new double[num];
+
+            StartDebugging();
+
+            for (int i = 0; i < num; ++i)
+            {
+                dodo1[i] = Campy.Compiler.Runtime.Sine(-0.1 * i);
+            }
+            Campy.Parallel.For(0, num, i =>
+            {
+                dodo2[i] = Campy.Compiler.Runtime.Sine(-0.1 * i);
+            });
+            Campy.Parallel.For(0, num, i =>
+            {
+                dodo3[i] = Math.Sin(-0.1 * i);
+            });
+
+            Complex[] wonder1 = new Complex[num * 4];
+            Complex[] wonder2 = new Complex[num * 4];
+            Complex[] wonder3 = new Complex[num * 4];
+            Campy.Parallel.For(0, num, i =>
+            {
+                double v = (4 * i) / 10;
+                wonder1[i] = new Complex(1, 1);
+            });
+            Campy.Parallel.For(0, num, i =>
+            {
+                double v = (4 * i) / 10;
+                wonder2[i] = new Complex(1 + v, 1 + v);
+            });
+            Campy.Parallel.For(0, num, i =>
+            {
+                double v = 4 * i / 10;
+                Complex aa = new Complex(0.5 + v, 1 + v);
+                Complex bb = new Complex(1 + v, 1 + v);
+                Complex o1 = aa + bb;
+                wonder3[4 * i + 0] = o1;
+            });
+
 
             {
                 Complex[] input = { 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };

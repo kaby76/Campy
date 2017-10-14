@@ -1552,22 +1552,30 @@ namespace Campy.Compiler
                     LLVM.ConstInt(LLVM.Int32TypeInContext(context_ref), 1, false)
                 });
                 LLVM.AddNamedMetadataOperand(module, "nvvm.annotations", kernelMd);
-                LLVM.TargetMachineEmitToMemoryBuffer(tmr, module, Swigged.LLVM.CodeGenFileType.AssemblyFile,
-                    error, out MemoryBufferRef buffer);
-                string ptx = null;
                 try
                 {
-                    ptx = LLVM.GetBufferStart(buffer);
-                    uint length = LLVM.GetBufferSize(buffer);
-                    ptx = ptx.Replace("3.2", "5.0");
-                    if (Campy.Utils.Options.IsOn("ptx_trace"))
-                        System.Console.WriteLine(ptx);
+                    LLVM.TargetMachineEmitToMemoryBuffer(tmr, module, Swigged.LLVM.CodeGenFileType.AssemblyFile,
+                        error, out MemoryBufferRef buffer);
+                    string ptx = null;
+                    try
+                    {
+                        ptx = LLVM.GetBufferStart(buffer);
+                        uint length = LLVM.GetBufferSize(buffer);
+                        ptx = ptx.Replace("3.2", "5.0");
+                        if (Campy.Utils.Options.IsOn("ptx_trace"))
+                            System.Console.WriteLine(ptx);
+                    }
+                    finally
+                    {
+                        LLVM.DisposeMemoryBuffer(buffer);
+                    }
+                    return ptx;
                 }
-                finally
+                catch (Exception)
                 {
-                    LLVM.DisposeMemoryBuffer(buffer);
+                    Console.WriteLine();
+                    throw;
                 }
-                return ptx;
             }
         }
 

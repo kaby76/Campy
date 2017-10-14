@@ -53,6 +53,8 @@ namespace Campy.Compiler
                 "System.Double Campy.Compiler.Runtime::Sine(System.Double)");
             _rewritten_runtime.Add("System.Double System.Math::Cos(System.Double)",
                 "System.Double Campy.Compiler.Runtime::Cosine(System.Double)");
+            _rewritten_runtime.Add("System.Double System.Math::Abs(System.Double)",
+                "System.Double Campy.Compiler.Runtime::Abs(System.Double)");
         }
 
         public void AnalyzeMethod(MethodInfo methodInfo)
@@ -227,10 +229,8 @@ namespace Campy.Compiler
             var result2 = LoadAssembly(ns);
             foreach (var type in result2.Types)
             {
-                System.Console.WriteLine("type is " + type.FullName);
                 foreach (var method in type.Methods)
                 {
-                    System.Console.WriteLine("method is " + method.FullName);
                     if (method.FullName == name)
                         return method;
                 }
