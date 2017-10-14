@@ -4812,7 +4812,7 @@ namespace Campy.Compiler
             var entry = this.Block.Entry.BasicBlock;
             var beginning = LLVM.GetFirstInstruction(entry);
             LLVM.PositionBuilderBefore(Builder, beginning);
-            var new_obj = LLVM.BuildAlloca(Builder, llvm_type, "");
+            var new_obj = LLVM.BuildAlloca(Builder, llvm_type, ""); // Allocates struct on stack, but returns a pointer to struct.
             LLVM.PositionBuilderAtEnd(Builder, this.Block.BasicBlock);
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(new Value(new_obj));
@@ -4993,6 +4993,8 @@ namespace Campy.Compiler
             }
             else
             {
+                // See this on struct return--https://groups.google.com/forum/#!topic/llvm-dev/RSnV-Vr17nI
+                // The following fails for return structs!
                 var v = state._stack.Pop();
                 var i = LLVM.BuildRet(Builder, v.V);
                 state._stack.Push(new Value(i));
