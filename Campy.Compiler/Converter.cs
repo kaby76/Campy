@@ -1295,7 +1295,7 @@ namespace Campy.Compiler
                     foreach (var inst in llvm_nodez.Instructions)
                     {
                         level_pre = level_after;
-                        inst.ComputeStackLevel(ref level_after);
+                        inst.ComputeStackLevel(this, ref level_after);
                         //System.Console.WriteLine("after inst " + i);
                         //System.Console.WriteLine("level = " + level_after);
                         Debug.Assert(level_after >= node.NumberOfLocals + node.NumberOfArguments

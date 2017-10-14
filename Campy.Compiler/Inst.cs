@@ -33,7 +33,7 @@ namespace Campy.Compiler
         // Required instruction sequencing so we can translate groups of instructions.
         public virtual Inst Next { get; set; }
 
-        public virtual void ComputeStackLevel(ref int level_after)
+        public virtual void ComputeStackLevel(Converter converter, ref int level_after)
         {
             throw new Exception("Must have an implementation for ComputeStackLevel! The instruction is: "
                 + this.ToString());
@@ -527,7 +527,7 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(ref int level_after)
+        public override void ComputeStackLevel(Converter converter, ref int level_after)
         {
             level_after--;
         }
@@ -983,7 +983,7 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(ref int level_after)
+        public override void ComputeStackLevel(Converter converter, ref int level_after)
         {
             level_after++;
         }
@@ -1007,7 +1007,7 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(ref int level_after)
+        public override void ComputeStackLevel(Converter converter, ref int level_after)
         {
             level_after--;
         }
@@ -1036,7 +1036,7 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(ref int level_after)
+        public override void ComputeStackLevel(Converter converter, ref int level_after)
         {
             level_after++;
         }
@@ -1057,7 +1057,7 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(ref int level_after)
+        public override void ComputeStackLevel(Converter converter, ref int level_after)
         {
             level_after++;
         }
@@ -1078,7 +1078,7 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(ref int level_after)
+        public override void ComputeStackLevel(Converter converter, ref int level_after)
         {
             level_after++;
         }
@@ -1099,7 +1099,7 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(ref int level_after)
+        public override void ComputeStackLevel(Converter converter, ref int level_after)
         {
             level_after++;
         }
@@ -1123,7 +1123,7 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(ref int level_after)
+        public override void ComputeStackLevel(Converter converter, ref int level_after)
         {
             level_after++;
         }
@@ -1208,7 +1208,7 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(ref int level_after)
+        public override void ComputeStackLevel(Converter converter, ref int level_after)
         {
             level_after--;
         }
@@ -1228,7 +1228,7 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(ref int level_after)
+        public override void ComputeStackLevel(Converter converter, ref int level_after)
         {
             level_after -= 1;
         }
@@ -1322,7 +1322,7 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(ref int level_after)
+        public override void ComputeStackLevel(Converter converter, ref int level_after)
         {
             level_after -= 2;
         }
@@ -1545,7 +1545,7 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(ref int level_after)
+        public override void ComputeStackLevel(Converter converter, ref int level_after)
         {
             // No change in stack level.
         }
@@ -1604,7 +1604,7 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(ref int level_after)
+        public override void ComputeStackLevel(Converter converter, ref int level_after)
         {
             level_after--;
         }
@@ -1680,7 +1680,7 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(ref int level_after)
+        public override void ComputeStackLevel(Converter converter, ref int level_after)
         {
             level_after = level_after - 3;
         }
@@ -1752,7 +1752,7 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(ref int level_after)
+        public override void ComputeStackLevel(Converter converter, ref int level_after)
         {
             level_after--;
         }
@@ -1797,7 +1797,7 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(ref int level_after)
+        public override void ComputeStackLevel(Converter converter, ref int level_after)
         {
             // Stack level remains unchanged through instruction.
         }
@@ -2012,7 +2012,7 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(ref int level_after)
+        public override void ComputeStackLevel(Converter converter, ref int level_after)
         {
             level_after = level_after - 2;
         }
@@ -2200,7 +2200,7 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(ref int level_after)
+        public override void ComputeStackLevel(Converter converter, ref int level_after)
         {
             // No change in depth of stack.
         }
@@ -2263,7 +2263,7 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(ref int level_after)
+        public override void ComputeStackLevel(Converter converter, ref int level_after)
         {
             level_after -= 2;
         }
@@ -2574,7 +2574,7 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(ref int level_after)
+        public override void ComputeStackLevel(Converter converter, ref int level_after)
         {
             // No change.
         }
@@ -2596,7 +2596,7 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(ref int level_after)
+        public override void ComputeStackLevel(Converter converter, ref int level_after)
         {
             // No change.
         }
@@ -2618,7 +2618,7 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(ref int level_after)
+        public override void ComputeStackLevel(Converter converter, ref int level_after)
         {
             level_after--;
         }
@@ -2671,7 +2671,7 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(ref int level_after)
+        public override void ComputeStackLevel(Converter converter, ref int level_after)
         {
             level_after--;
         }
@@ -2716,7 +2716,7 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(ref int level_after)
+        public override void ComputeStackLevel(Converter converter, ref int level_after)
         {
             level_after--;
         }
@@ -2761,7 +2761,7 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(ref int level_after)
+        public override void ComputeStackLevel(Converter converter, ref int level_after)
         {
             level_after--;
         }
@@ -2806,7 +2806,7 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(ref int level_after)
+        public override void ComputeStackLevel(Converter converter, ref int level_after)
         {
             // Successor is fallthrough.
             int args = 0;
@@ -2974,7 +2974,8 @@ namespace Campy.Compiler
             : base(i)
         {
         }
-        public override void ComputeStackLevel(ref int level_after)
+
+        public override void ComputeStackLevel(Converter converter, ref int level_after)
         {
             // Successor is fallthrough.
             int args = 0;
@@ -3016,7 +3017,7 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(ref int level_after)
+        public override void ComputeStackLevel(Converter converter, ref int level_after)
         {
             // Successor is fallthrough.
             int args = 0;
@@ -3553,7 +3554,7 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(ref int level_after)
+        public override void ComputeStackLevel(Converter converter, ref int level_after)
         {
             level_after++;
         }
@@ -3575,10 +3576,10 @@ namespace Campy.Compiler
         {
         }
 
-    public override void ComputeStackLevel(ref int level_after)
-    {
-        level_after--;
-    }
+        public override void ComputeStackLevel(Converter converter, ref int level_after)
+        {
+            level_after--;
+        }
     }
 
     public class i_endfinally : Inst
@@ -3596,10 +3597,10 @@ namespace Campy.Compiler
         {
         }
 
-    public override void ComputeStackLevel(ref int level_after)
-    {
-        level_after -= 3;
-    }
+        public override void ComputeStackLevel(Converter converter, ref int level_after)
+        {
+            level_after -= 3;
+        }
     }
 
     public class i_initobj : Inst
@@ -3609,10 +3610,10 @@ namespace Campy.Compiler
         {
         }
 
-    public override void ComputeStackLevel(ref int level_after)
-    {
-        level_after--;
-    }
+        public override void ComputeStackLevel(Converter converter, ref int level_after)
+        {
+            level_after--;
+        }
     }
 
     public class i_isinst : Inst
@@ -4140,7 +4141,7 @@ namespace Campy.Compiler
             _arg = arg;
         }
 
-        public override void ComputeStackLevel(ref int level_after)
+        public override void ComputeStackLevel(Converter converter, ref int level_after)
         {
             level_after++;
         }
@@ -4282,7 +4283,7 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(ref int level_after)
+        public override void ComputeStackLevel(Converter converter, ref int level_after)
         {
             level_after++;
         }
@@ -4393,7 +4394,7 @@ namespace Campy.Compiler
         }
 
         // For array implementation, see https://www.codeproject.com/Articles/3467/Arrays-UNDOCUMENTED
-        public override void ComputeStackLevel(ref int level_after)
+        public override void ComputeStackLevel(Converter converter, ref int level_after)
         {
             // No effect change in stack size.
         }
@@ -4517,7 +4518,7 @@ namespace Campy.Compiler
         {
         }
 
-    public override void ComputeStackLevel(ref int level_after)
+    public override void ComputeStackLevel(Converter converter, ref int level_after)
     {
         level_after++;
     }
@@ -4537,7 +4538,7 @@ namespace Campy.Compiler
             : base(i)
         {
         }
-    public override void ComputeStackLevel(ref int level_after)
+    public override void ComputeStackLevel(Converter converter, ref int level_after)
     {
         level_after++;
     }
@@ -4550,7 +4551,7 @@ namespace Campy.Compiler
         {
         }
 
-    public override void ComputeStackLevel(ref int level_after)
+    public override void ComputeStackLevel(Converter converter, ref int level_after)
     {
         level_after++;
     }
@@ -4563,7 +4564,7 @@ namespace Campy.Compiler
         {
         }
 
-    public override void ComputeStackLevel(ref int level_after)
+    public override void ComputeStackLevel(Converter converter, ref int level_after)
     {
         level_after++;
     }
@@ -4576,7 +4577,7 @@ namespace Campy.Compiler
         {
         }
 
-    public override void ComputeStackLevel(ref int level_after)
+    public override void ComputeStackLevel(Converter converter, ref int level_after)
     {
         level_after++;
     }
@@ -4653,7 +4654,7 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(ref int level_after)
+        public override void ComputeStackLevel(Converter converter, ref int level_after)
         {
             // No change in stack depth.
         }
@@ -4688,7 +4689,7 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(ref int level_after)
+        public override void ComputeStackLevel(Converter converter, ref int level_after)
         {
         // Successor is fallthrough.
             int args = 0;
@@ -4728,7 +4729,7 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(ref int level_after)
+        public override void ComputeStackLevel(Converter converter, ref int level_after)
         {
         // Successor is fallthrough.
             int args = 0;
@@ -4877,7 +4878,7 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(ref int level_after)
+        public override void ComputeStackLevel(Converter converter, ref int level_after)
         {
             // No change.
         }
@@ -4911,7 +4912,7 @@ namespace Campy.Compiler
         {
         }
 
-    public override void ComputeStackLevel(ref int level_after)
+    public override void ComputeStackLevel(Converter converter, ref int level_after)
     {
         level_after--;
     }
@@ -4964,7 +4965,7 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(ref int level_after)
+        public override void ComputeStackLevel(Converter converter, ref int level_after)
         {
             // There are really two different stacks here:
             // one for the called method, and the other for the caller of the method.
@@ -5018,7 +5019,7 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(ref int level_after)
+        public override void ComputeStackLevel(Converter converter, ref int level_after)
         {
             level_after--;
         }
@@ -5050,7 +5051,7 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(ref int level_after)
+        public override void ComputeStackLevel(Converter converter, ref int level_after)
         {
             level_after--;
         }
@@ -5082,7 +5083,7 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(ref int level_after)
+        public override void ComputeStackLevel(Converter converter, ref int level_after)
         {
             level_after--;
         }
@@ -5095,7 +5096,7 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(ref int level_after)
+        public override void ComputeStackLevel(Converter converter, ref int level_after)
         {
             level_after++;
         }
@@ -5359,10 +5360,10 @@ namespace Campy.Compiler
         {
         }
 
-    public override void ComputeStackLevel(ref int level_after)
-    {
-        level_after -= 2;
-    }
+        public override void ComputeStackLevel(Converter converter, ref int level_after)
+        {
+            level_after -= 2;
+        }
     }
 
     public class i_stsfld : Inst
@@ -5372,10 +5373,10 @@ namespace Campy.Compiler
         {
         }
 
-    public override void ComputeStackLevel(ref int level_after)
-    {
-        level_after--;
-    }
+        public override void ComputeStackLevel(Converter converter, ref int level_after)
+        {
+            level_after--;
+        }
     }
 
     public class i_sub : BinaryOpInst
@@ -5409,10 +5410,10 @@ namespace Campy.Compiler
         {
         }
 
-    public override void ComputeStackLevel(ref int level_after)
-    {
-        level_after--;
-    }
+        public override void ComputeStackLevel(Converter converter, ref int level_after)
+        {
+            level_after--;
+        }
     }
 
     public class i_tail : Inst
