@@ -1296,8 +1296,7 @@ namespace Campy.Compiler
                     {
                         level_pre = level_after;
                         inst.ComputeStackLevel(this, ref level_after);
-                        //System.Console.WriteLine("after inst " + i);
-                        //System.Console.WriteLine("level = " + level_after);
+                        System.Console.WriteLine("level = " + level_after);
                         Debug.Assert(level_after >= node.NumberOfLocals + node.NumberOfArguments
                                      + (node.HasThis ? 1 : 0));
                     }
