@@ -2914,7 +2914,12 @@ namespace Campy.Compiler
                     ValueRef value = v.V;
                     if (LLVM.TypeOf(value) != LLVM.TypeOf(par))
                     {
-                        if (LLVM.GetTypeKind(LLVM.TypeOf(par)) == TypeKind.PointerTypeKind)
+                        if (LLVM.GetTypeKind(LLVM.TypeOf(par)) == TypeKind.StructTypeKind
+                            && LLVM.GetTypeKind(LLVM.TypeOf(value)) == TypeKind.PointerTypeKind)
+                        {
+                            value = LLVM.BuildLoad(Builder, value, "");
+                        }
+                        else if (LLVM.GetTypeKind(LLVM.TypeOf(par)) == TypeKind.PointerTypeKind)
                         {
                             value = LLVM.BuildPointerCast(Builder, value, LLVM.TypeOf(par), "");
                         }
@@ -2943,7 +2948,12 @@ namespace Campy.Compiler
                     ValueRef value = v.V;
                     if (LLVM.TypeOf(value) != LLVM.TypeOf(par))
                     {
-                        if (LLVM.GetTypeKind(LLVM.TypeOf(par)) == TypeKind.PointerTypeKind)
+                        if (LLVM.GetTypeKind(LLVM.TypeOf(par)) == TypeKind.StructTypeKind
+                            && LLVM.GetTypeKind(LLVM.TypeOf(value)) == TypeKind.PointerTypeKind)
+                        {
+                            value = LLVM.BuildLoad(Builder, value, "");
+                        }
+                        else if (LLVM.GetTypeKind(LLVM.TypeOf(par)) == TypeKind.PointerTypeKind)
                         {
                             value = LLVM.BuildPointerCast(Builder, value, LLVM.TypeOf(par), "");
                         }
@@ -2971,7 +2981,12 @@ namespace Campy.Compiler
                     ValueRef value = v.V;
                     if (LLVM.TypeOf(value) != LLVM.TypeOf(par))
                     {
-                        if (LLVM.GetTypeKind(LLVM.TypeOf(par)) == TypeKind.PointerTypeKind)
+                        if (LLVM.GetTypeKind(LLVM.TypeOf(par)) == TypeKind.StructTypeKind
+                            && LLVM.GetTypeKind(LLVM.TypeOf(value)) == TypeKind.PointerTypeKind)
+                        {
+                            value = LLVM.BuildLoad(Builder, value, "");
+                        }
+                        else if (LLVM.GetTypeKind(LLVM.TypeOf(par)) == TypeKind.PointerTypeKind)
                         {
                             value = LLVM.BuildPointerCast(Builder, value, LLVM.TypeOf(par), "");
                         }

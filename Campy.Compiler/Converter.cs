@@ -1362,14 +1362,14 @@ namespace Campy.Compiler
                 // Eliminate all node names not in the work list.
                 var order = ordered_list.Where(v => work_names.Contains(v)).ToList();
 
-                // Set up the initial states associated with each node, that is, state into and state out of.
-                foreach (int ob in order)
-                {
-                    CFG.Vertex node = _mcfg.VertexSpace[_mcfg.NameSpace.BijectFromBasetype(ob)];
-                    CFG.Vertex llvm_node = node;
-                    llvm_node.StateIn = new State(node, true);
-                    llvm_node.StateOut = new State(node, false);
-                }
+                //// Set up the initial states associated with each node, that is, state into and state out of.
+                //foreach (int ob in order)
+                //{
+                //    CFG.Vertex node = _mcfg.VertexSpace[_mcfg.NameSpace.BijectFromBasetype(ob)];
+                //    CFG.Vertex llvm_node = node;
+                //    llvm_node.StateIn = new State(node, true);
+                //    llvm_node.StateOut = new State(node, false);
+                //}
 
                 Dictionary<int, bool> visited = new Dictionary<int, bool>();
 

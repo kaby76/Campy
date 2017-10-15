@@ -209,7 +209,17 @@ namespace ConsoleApp4
             });
             Campy.Parallel.For(0, num, i =>
             {
-                double v = 4 * i / 10;
+                double v = 4.0 * i / 10;
+                //Complex aa = new Complex(0.5 + v, 1 + v);
+                //Complex bb = new Complex(1 + v, 1 + v);
+                //Complex o1 = aa + bb;
+                //wonder3[4 * i + 0] = o1;
+                wonder3[4 * i + 0] = new Complex(0.5 + v, 1 + v) + new Complex(1 + v, 1 + v);
+            });
+
+            Campy.Parallel.For(0, num, i =>
+            {
+                double v = 4.0 * i / 10;
                 Complex aa = new Complex(0.5 + v, 1 + v);
                 Complex bb = new Complex(1 + v, 1 + v);
                 Complex o1 = aa + bb;

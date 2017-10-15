@@ -93,16 +93,17 @@ namespace Campy.Compiler
 		        else if (LLVM.GetTypeKind(type.IntermediateType) == TypeKind.StructTypeKind)
 		        {
 			        var entry = basic_block.Entry.BasicBlock;
-			        var beginning = LLVM.GetFirstInstruction(entry);
-			        LLVM.PositionBuilderBefore(basic_block.Builder, beginning);
+			        //var beginning = LLVM.GetFirstInstruction(entry);
+			        //LLVM.PositionBuilderBefore(basic_block.Builder, beginning);
 			        var new_obj = LLVM.BuildAlloca(basic_block.Builder, type.IntermediateType, ""); // Allocates struct on stack, but returns a pointer to struct.
-		            var stuff = LLVM.BuildLoad(basic_block.Builder, new_obj, "");
 			        LLVM.PositionBuilderAtEnd(basic_block.Builder, basic_block.BasicBlock);
-			        value = new Value(stuff);
+			        value = new Value(new_obj);
 		        }
                 else
                     throw new Exception("Unhandled type");
                 _stack.Push(value);
+                if (Campy.Utils.Options.IsOn("jit_trace"))
+                    System.Console.WriteLine(value);
             }
 
             // Set up any thing else.
@@ -110,6 +111,8 @@ namespace Campy.Compiler
             {
                 Value value = new Value(LLVM.ConstInt(LLVM.Int32Type(), (ulong)0, true));
                 _stack.Push(value);
+                if (Campy.Utils.Options.IsOn("jit_trace"))
+                    System.Console.WriteLine(value);
             }
         }
 
@@ -176,7 +179,14 @@ namespace Campy.Compiler
                     else if (LLVM.GetTypeKind(type.IntermediateType) == TypeKind.IntegerTypeKind)
                         value = new Value(LLVM.ConstInt(type.IntermediateType, (ulong)0, true));
                     else if (LLVM.GetTypeKind(type.IntermediateType) == TypeKind.StructTypeKind)
-                        value = new Value(LLVM.ConstPointerNull(type.IntermediateType));
+                    {
+                        var entry = bb.Entry.BasicBlock;
+                        //var beginning = LLVM.GetFirstInstruction(entry);
+                        //LLVM.PositionBuilderBefore(basic_block.Builder, beginning);
+                        var new_obj = LLVM.BuildAlloca(bb.Builder, type.IntermediateType, ""); // Allocates struct on stack, but returns a pointer to struct.
+                        LLVM.PositionBuilderAtEnd(bb.Builder, bb.BasicBlock);
+                        value = new Value(new_obj);
+                    }
                     else
                         throw new Exception("Unhandled type");
                     _stack.Push(value);
