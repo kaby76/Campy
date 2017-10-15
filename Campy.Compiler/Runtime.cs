@@ -105,5 +105,10 @@ namespace Campy.Compiler
         {
             return x > 0 ? x : -x;
         }
+
+        public static void ThrowArgumentOutOfRangeException()
+        {
+        }
+
     }
 }

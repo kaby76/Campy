@@ -202,11 +202,11 @@ namespace ConsoleApp4
             //    double v = (4 * i) / 10;
             //    wonder1[i] = new Complex(1, 1);
             //});
-            //Campy.Parallel.For(0, num, i =>
-            //{
-            //    double v = (4 * i) / 10;
-            //    wonder2[i] = new Complex(1 + v, 1 + v);
-            //});
+            Campy.Parallel.For(0, num, i =>
+            {
+                double v = (4 * i) / 10;
+                wonder2[i] = new Complex(1 + v, 1 + v);
+            });
             Campy.Parallel.For(0, num, i =>
             {
                 double v = 4 * i / 10;

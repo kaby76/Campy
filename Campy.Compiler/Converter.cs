@@ -1003,21 +1003,23 @@ namespace Campy.Compiler
                 }
 
                 MethodReference method = bb.ExpectedCalleeSignature;
-                bb.HasThis = method.HasThis;
                 List<ParameterDefinition> parameters = method.Parameters.ToList();
                 List<ParameterReference> instantiated_parameters = new List<ParameterReference>();
 
                 ModuleRef mod = global_llvm_module; // LLVM.ModuleCreateWithName(mn);
                 bb.Module = mod;
 
-                //uint count = (uint)mb.GetParameters().Count();
-                uint count = (uint)parameters.Count();
+                uint count = (uint) bb.NumberOfArguments;
 
-                if (bb.HasThis) count++;
                 TypeRef[] param_types = new TypeRef[count];
                 int current = 0;
                 if (count > 0)
                 {
+                    if (bb.HasStructReturnValue)
+                    {
+                        Type t = new Type(method.ReturnType);
+                        param_types[current++] = LLVM.PointerType(t.IntermediateType, 0);
+                    }
                     if (bb.HasThis)
                     {
                         Type t = new Type(method.DeclaringType);
@@ -1057,9 +1059,12 @@ namespace Campy.Compiler
                     }
                 }
 
-                var mi2 = FromGenericParameterToTypeReference(method.ReturnType, method.DeclaringType as GenericInstanceType);
                 //mi2 = FromGenericParameterToTypeReference(typeof(void).ToMonoTypeReference(), null);
-                Type t_ret = new Type(mi2);
+                Type t_ret = new Type(FromGenericParameterToTypeReference(method.ReturnType, method.DeclaringType as GenericInstanceType));
+                if (bb.HasStructReturnValue)
+                {
+                    t_ret = new Type(typeof(void).ToMonoTypeReference());
+                }
                 TypeRef ret_type = t_ret.IntermediateType;
                 TypeRef met_type = LLVM.FunctionType(ret_type, param_types, false);
                 ValueRef fun = LLVM.AddFunction(mod,
@@ -1186,46 +1191,6 @@ namespace Campy.Compiler
             return null;
         }
 
-        private void CompilePart5(IEnumerable<CFG.Vertex> basic_blocks_to_compile, List<Mono.Cecil.TypeReference> list_of_data_types_used)
-        {
-            foreach (CFG.Vertex node in basic_blocks_to_compile)
-            {
-                if (!IsFullyInstantiatedNode(node))
-                    continue;
-
-                int args = 0;
-                Mono.Cecil.MethodReference md = node.ExpectedCalleeSignature;
-                Mono.Cecil.MethodReference mr = node.RewrittenCalleeSignature;
-                args += md.Parameters.Count;
-                node.NumberOfArguments = args;
-                node.HasThis = md.HasThis;
-                int locals = mr.Resolve().Body.Variables.Count;
-                node.NumberOfLocals = locals;
-                int ret = 0;
-                if (md.MethodReturnType != null)
-                {
-                    Mono.Cecil.MethodReturnType rt = md.MethodReturnType;
-                    Mono.Cecil.TypeReference tr = rt.ReturnType;
-                    // Get type, may contain modifiers.
-                    // Note, the return type must be examined in order
-                    // to really determine if it returns a value--"void"
-                    // means that it doesn't return a value.
-                    if (tr.FullName.Contains(' '))
-                    {
-                        String[] sp = tr.FullName.Split(' ');
-                        if (!sp[0].Equals("System.Void"))
-                            ret++;
-                    }
-                    else
-                    {
-                        if (!tr.FullName.Equals("System.Void"))
-                            ret++;
-                    }
-                }
-                node.HasReturnValue = ret > 0;
-            }
-        }
-
         private void CompilePart6(IEnumerable<CFG.Vertex> basic_blocks_to_compile,
             List<Mono.Cecil.TypeReference> list_of_data_types_used, List<CFG.Vertex> entries,
             List<CFG.Vertex> unreachable, List<CFG.Vertex> change_set_minus_unreachable)
@@ -1260,9 +1225,8 @@ namespace Campy.Compiler
                     // Use predecessor information to get initial stack size.
                     if (node.IsEntry)
                     {
-                        CFG.Vertex llvm_nodex = node;
-                        llvm_nodex.StackLevelIn =
-                            node.NumberOfLocals + node.NumberOfArguments + (node.HasThis ? 1 : 0);
+                        node.StackLevelIn =
+                            node.NumberOfLocals + node.NumberOfArguments;
                     }
                     else
                     {
@@ -1298,8 +1262,8 @@ namespace Campy.Compiler
                         level_pre = level_after;
                         inst.ComputeStackLevel(this, ref level_after);
                         System.Console.WriteLine("level = " + level_after);
-                        Debug.Assert(level_after >= node.NumberOfLocals + node.NumberOfArguments
-                                     + (node.HasThis ? 1 : 0));
+                        if (!(level_after >= node.NumberOfLocals + node.NumberOfArguments))
+                            throw new Exception("Stack computation off. Internal error.");
                     }
                     llvm_nodez.StackLevelOut = level_after;
                     // Verify return node that it makes sense.
@@ -1308,8 +1272,7 @@ namespace Campy.Compiler
                         if (llvm_nodez.StackLevelOut ==
                             node.NumberOfArguments
                             + node.NumberOfLocals
-                            + (node.HasThis ? 1 : 0)
-                            + (node.HasReturnValue ? 1 : 0))
+                            + (node.HasScalarReturnValue ? 1 : 0))
                             ;
                         else
                         {
@@ -1376,8 +1339,6 @@ namespace Campy.Compiler
             CompilePart3(basic_blocks_to_compile, list_of_data_types_used);
 
             List<CFG.Vertex> entries = _mcfg.VertexNodes.Where(node => node.IsEntry).ToList();
-
-            CompilePart5(basic_blocks_to_compile, list_of_data_types_used);
 
             List<CFG.Vertex> unreachable;
             List<CFG.Vertex> change_set_minus_unreachable;

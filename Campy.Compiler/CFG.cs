@@ -143,8 +143,14 @@ namespace Campy.Compiler
                 set;
             }
             public bool AlreadyCompiled { get; set; }
-            public bool HasThis { get; set; }
-            public bool HasReturnValue { get; set; }
+
+            public bool HasThis
+            {
+                get;
+                set;
+            }
+            public bool HasScalarReturnValue { get; set; }
+            public bool HasStructReturnValue { get; set; }
             public int? StackLevelIn { get; set; }
             public int? StackLevelOut { get; set; }
             public State StateIn { get; set; }
@@ -213,9 +219,17 @@ namespace Campy.Compiler
                 }
             }
 
-            public int NumberOfLocals { get; set; }
+            public int NumberOfLocals
+            {
+                get;
+                set;
+            }
 
-            public int NumberOfArguments { get; set; }
+            public int NumberOfArguments
+            {
+                get;
+                set;
+            }
 
             public Vertex Exit
             {
@@ -239,7 +253,7 @@ namespace Campy.Compiler
             {
                 ExpectedCalleeSignature = copy.ExpectedCalleeSignature;
                 this.Instructions = copy.Instructions;
-                HasReturnValue = copy.HasReturnValue;
+                HasScalarReturnValue = copy.HasScalarReturnValue;
 
             }
 
@@ -255,7 +269,7 @@ namespace Campy.Compiler
                 Console.WriteLine(new String(' ', 4) + "HasThis   " + v.HasThis);
                 Console.WriteLine(new String(' ', 4) + "Args   " + v.NumberOfArguments);
                 Console.WriteLine(new String(' ', 4) + "Locals " + v.NumberOfLocals);
-                Console.WriteLine(new String(' ', 4) + "Return (reuse) " + v.HasReturnValue);
+                Console.WriteLine(new String(' ', 4) + "Return (reuse) " + v.HasScalarReturnValue);
                 if (this._Graph.Predecessors(v.Name).Any())
                 {
                     Console.Write(new String(' ', 4) + "Edges from:");
@@ -289,9 +303,13 @@ namespace Campy.Compiler
                 // Split this node into two nodes, with all instructions after "i" in new node.
                 var cfg = (CFG)this._Graph;
                 Vertex result = (Vertex)cfg.AddVertex(cfg.NewNodeNumber());
+                result.HasThis = this.HasThis;
+                result.NumberOfArguments = this.NumberOfArguments;
+                result.HasStructReturnValue = this.HasStructReturnValue;
+                result.HasScalarReturnValue = this.HasScalarReturnValue;
                 result.ExpectedCalleeSignature = this.ExpectedCalleeSignature;
                 result.RewrittenCalleeSignature = this.RewrittenCalleeSignature;
-                result.HasReturnValue = this.HasReturnValue;
+                result.NumberOfLocals = this.NumberOfLocals;
                 result._entry = this._entry;
 
                 int count = Instructions.Count;

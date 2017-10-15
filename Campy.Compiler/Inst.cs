@@ -1724,15 +1724,15 @@ namespace Campy.Compiler
             }
             else if (_dst == null)
             {
-                var t_v = LLVM.TypeOf(value);
-                var t_d = LLVM.TypeOf(gep);
-                var t_e = LLVM.GetElementType(t_d);
-                if (t_v != t_e)
-                {
-                    value = LLVM.BuildIntCast(Builder, value, t_e, "");
-                    if (Campy.Utils.Options.IsOn("jit_trace"))
-                        System.Console.WriteLine(new Value(value));
-                }
+                //var t_v = LLVM.TypeOf(value);
+                //var t_d = LLVM.TypeOf(gep);
+                //var t_e = LLVM.GetElementType(t_d);
+                //if (t_v != t_e)
+                //{
+                //    value = LLVM.BuildIntCast(Builder, value, t_e, "");
+                //    if (Campy.Utils.Options.IsOn("jit_trace"))
+                //        System.Console.WriteLine(new Value(value));
+                //}
             }
 
             // Store.
@@ -2809,161 +2809,184 @@ namespace Campy.Compiler
         public override void ComputeStackLevel(Converter converter, ref int level_after)
         {
             // Successor is fallthrough.
-            int args = 0;
-            int ret = 0;
             object method = this.Operand;
-            if (method as Mono.Cecil.MethodReference != null)
+
+            if (method as Mono.Cecil.MethodReference == null)
+                throw new Exception();
+
+            Mono.Cecil.MethodReference mr = method as Mono.Cecil.MethodReference;
+
+            int xlevel_after = level_after;
+
+            // Find bb entry.
+            CFG.Vertex the_entry = this.Block._Graph.VertexNodes.Where(node
+                =>
             {
-                Mono.Cecil.MethodReference mr = method as Mono.Cecil.MethodReference;
-                {
-                    if (mr.HasThis)
-                        args++;
-                    args += mr.Parameters.Count;
-                    if (mr.MethodReturnType != null)
-                    {
-                        Mono.Cecil.MethodReturnType rt = mr.MethodReturnType;
-                        Mono.Cecil.TypeReference tr = rt.ReturnType;
-                        // Get type, may contain modifiers.
-                        if (tr.FullName.Contains(' '))
-                        {
-                            String[] sp = tr.FullName.Split(' ');
-                            if (!sp[0].Equals("System.Void"))
-                                ret++;
-                        }
-                        else
-                        {
-                            if (!tr.FullName.Equals("System.Void"))
-                                ret++;
-                        }
-                    }
-                }
-            }
-            level_after = level_after + ret - args;
+                GraphLinkedList<int, CFG.Vertex, CFG.Edge> g = this.Block._Graph;
+                int k = g.NameSpace.BijectFromBasetype(node.Name);
+                CFG.Vertex v = g.VertexSpace[k];
+                Converter c = converter;
+                if (v.IsEntry && Converter.MethodName(v.ExpectedCalleeSignature) == mr.FullName && c.IsFullyInstantiatedNode(v))
+                    return true;
+                else return false;
+            }).ToList().FirstOrDefault();
+
+            if (the_entry == null)
+                throw new Exception();
+
+            // For return, we need to leave something on the damn stack regardless of how it's implmented.
+            int xret = (the_entry.HasScalarReturnValue || the_entry.HasStructReturnValue) ? 1 : 0;
+            // For struct returns, the number of args is artifically +1 because we need to pass a return value
+            // back from the call.
+            int xargs = the_entry.NumberOfArguments - (the_entry.HasStructReturnValue ? 1 : 0);
+            level_after = level_after + xret - xargs;
         }
 
         public override Inst Convert(Converter converter, State state)
         {
-            // Get function.
-            var j = this;
-
             // Successor is fallthrough.
-            int nargs = 0;
-            int ret = 0;
-            object method = j.Operand;
-            if (method as Mono.Cecil.MethodReference != null)
+            object method = this.Operand;
+
+            if (method as Mono.Cecil.MethodReference == null)
+                throw new Exception();
+
+            Mono.Cecil.MethodReference mr = method as Mono.Cecil.MethodReference;
+
+            // Find bb entry.
+            CFG.Vertex the_entry = this.Block._Graph.VertexNodes.Where(node
+                =>
             {
-                Mono.Cecil.MethodReference mr = method as Mono.Cecil.MethodReference;
-                CFG graph = (CFG)this.Block._Graph;
-                if (!graph.MethodAvoid(mr.FullName))
-                {
-                    if (mr.HasThis)
-                        nargs++;
-                    nargs += mr.Parameters.Count;
-                    if (mr.MethodReturnType != null)
-                    {
-                        Mono.Cecil.MethodReturnType rt = mr.MethodReturnType;
-                        Mono.Cecil.TypeReference tr = rt.ReturnType;
-                        // Get type, may contain modifiers.
-                        if (tr.FullName.Contains(' '))
-                        {
-                            String[] sp = tr.FullName.Split(' ');
-                            if (!sp[0].Equals("System.Void"))
-                                ret++;
-                        }
-                        else
-                        {
-                            if (!tr.FullName.Equals("System.Void"))
-                                ret++;
-                        }
-                    }
-                    var name = Converter.MethodName(mr);
-                    // Find bb entry.
-                    CFG.Vertex the_entry = this.Block._Graph.VertexNodes.Where(node
-                        =>
-                    {
-                        GraphLinkedList<int, CFG.Vertex, CFG.Edge> g = j.Block._Graph;
-                        int k = g.NameSpace.BijectFromBasetype(node.Name);
-                        CFG.Vertex v = g.VertexSpace[k];
-                        Converter c = converter;
-                        if (v.IsEntry && Converter.MethodName(v.ExpectedCalleeSignature) == name && c.IsFullyInstantiatedNode(v))
-                            return true;
-                        else return false;
-                    }).ToList().FirstOrDefault();
+                GraphLinkedList<int, CFG.Vertex, CFG.Edge> g = this.Block._Graph;
+                int k = g.NameSpace.BijectFromBasetype(node.Name);
+                CFG.Vertex v = g.VertexSpace[k];
+                Converter c = converter;
+                if (v.IsEntry && Converter.MethodName(v.ExpectedCalleeSignature) == mr.FullName && c.IsFullyInstantiatedNode(v))
+                    return true;
+                else return false;
+            }).ToList().FirstOrDefault();
 
-                    if (the_entry == null)
-                    {
-                        if (!Options.IsOn("continue_with_no_resolve"))
-                            throw new Exception("unimplemented.");
-                        else
-                            return Next;
-                    }
-                    else
-                    {
-                        BuilderRef bu = this.Builder;
-                        ValueRef fv = the_entry.MethodValueRef;
-                        var t_fun = LLVM.TypeOf(fv);
-                        var t_fun_con = LLVM.GetTypeContext(t_fun);
-                        var context = LLVM.GetModuleContext(Converter.global_llvm_module);
-                        if (t_fun_con != context) throw new Exception("not equal");
-                        //LLVM.VerifyFunction(fv, VerifierFailureAction.PrintMessageAction);
-
-                        // Set up args, type casting if required.
-
-                        ValueRef[] args = new ValueRef[nargs];
-                        for (int k = nargs - 1; k >= 0; --k)
-                        {
-                            Value v = state._stack.Pop();
-                            System.Console.WriteLine(v);
-                            ValueRef par = LLVM.GetParam(fv, (uint)k);
-                            System.Console.WriteLine(new Value(par));
-                            ValueRef value = v.V;
-                            if (LLVM.TypeOf(value) != LLVM.TypeOf(par))
-                            {
-                                if (LLVM.GetTypeKind(LLVM.TypeOf(par)) == TypeKind.PointerTypeKind)
-                                {
-                                    value = LLVM.BuildPointerCast(Builder, value, LLVM.TypeOf(par), "");
-                                }
-                                else
-                                {
-                                    value = LLVM.BuildBitCast(Builder, value, LLVM.TypeOf(par), "");
-                                }
-                            }
-                            args[k] = value;
-                        }
-
-                        if (ret > 0)
-                        {
-                            var call = LLVM.BuildCall(Builder, fv, args, name);
-                            state._stack.Push(new Value(call));
-                            if (Campy.Utils.Options.IsOn("jit_trace"))
-                                System.Console.WriteLine(call.ToString());
-
-                        }
-                        else
-                        {
-                            var call = LLVM.BuildCall(Builder, fv, args, "");
-                            if (Campy.Utils.Options.IsOn("jit_trace"))
-                                System.Console.WriteLine(call.ToString());
-                        }
-                    }
-                }
+            if (the_entry == null)
+            {
+                if (!Options.IsOn("continue_with_no_resolve"))
+                    throw new Exception("unimplemented.");
                 else
-                {
-                    for (int k = nargs - 1; k >= 0; --k)
-                        state._stack.Pop();
-
-                    // Generate code to crash.
-
-
-                    if (ret > 0)
-                    {
-                        state._stack.Push(new Value(LLVM.ConstInt(LLVM.Int32Type(), 0, false)));
-                    }
-                    else
-                    {
-                    }
-                }
+                    return Next;
             }
+
+            // For return, we need to leave something on the damn stack regardless of how it's implmented.
+            int xret = (the_entry.HasScalarReturnValue || the_entry.HasStructReturnValue) ? 1 : 0;
+            int xargs = the_entry.NumberOfArguments;
+
+            var name = Converter.MethodName(mr);
+            BuilderRef bu = this.Builder;
+            ValueRef fv = the_entry.MethodValueRef;
+            var t_fun = LLVM.TypeOf(fv);
+            var t_fun_con = LLVM.GetTypeContext(t_fun);
+            var context = LLVM.GetModuleContext(Converter.global_llvm_module);
+            if (t_fun_con != context) throw new Exception("not equal");
+            //LLVM.VerifyFunction(fv, VerifierFailureAction.PrintMessageAction);
+
+            // Set up args, type casting if required.
+            ValueRef[] args = new ValueRef[xargs];
+            if (the_entry.HasStructReturnValue)
+            {
+                // Special case for call with struct return. The return value is actually another
+                // parameter on the stack, which must be allocated.
+                // Further, the return for LLVM code is actually void.
+                ValueRef ret_par = LLVM.GetParam(fv, (uint)0);
+                var alloc_type = LLVM.GetElementType(LLVM.TypeOf(ret_par));
+
+                var entry = this.Block.Entry.BasicBlock;
+                var beginning = LLVM.GetFirstInstruction(entry);
+                LLVM.PositionBuilderBefore(Builder, beginning);
+
+                var new_obj = LLVM.BuildAlloca(Builder, alloc_type, ""); // Allocates struct on stack, but returns a pointer to struct.
+                LLVM.PositionBuilderAtEnd(Builder, this.Block.BasicBlock);
+                if (Campy.Utils.Options.IsOn("jit_trace"))
+                    System.Console.WriteLine(new Value(new_obj));
+                args[0] = new_obj;
+                for (int k = xargs - 1; k >= 1; --k)
+                {
+                    Value v = state._stack.Pop();
+                    System.Console.WriteLine(v);
+                    ValueRef par = LLVM.GetParam(fv, (uint)k);
+                    System.Console.WriteLine(new Value(par));
+                    ValueRef value = v.V;
+                    if (LLVM.TypeOf(value) != LLVM.TypeOf(par))
+                    {
+                        if (LLVM.GetTypeKind(LLVM.TypeOf(par)) == TypeKind.PointerTypeKind)
+                        {
+                            value = LLVM.BuildPointerCast(Builder, value, LLVM.TypeOf(par), "");
+                        }
+                        else
+                        {
+                            value = LLVM.BuildBitCast(Builder, value, LLVM.TypeOf(par), "");
+                        }
+                    }
+                    args[k] = value;
+                }
+                var call = LLVM.BuildCall(Builder, fv, args, "");
+                if (Campy.Utils.Options.IsOn("jit_trace"))
+                    System.Console.WriteLine(call.ToString());
+                // Push the return on the stack. Note, it's not the call, but the new obj dereferenced.
+                var dereferenced_return_value = LLVM.BuildLoad(Builder, new_obj, "");
+                state._stack.Push(new Value(dereferenced_return_value));
+            }
+            else if (the_entry.HasScalarReturnValue)
+            {
+                for (int k = xargs - 1; k >= 0; --k)
+                {
+                    Value v = state._stack.Pop();
+                    System.Console.WriteLine(v);
+                    ValueRef par = LLVM.GetParam(fv, (uint) k);
+                    System.Console.WriteLine(new Value(par));
+                    ValueRef value = v.V;
+                    if (LLVM.TypeOf(value) != LLVM.TypeOf(par))
+                    {
+                        if (LLVM.GetTypeKind(LLVM.TypeOf(par)) == TypeKind.PointerTypeKind)
+                        {
+                            value = LLVM.BuildPointerCast(Builder, value, LLVM.TypeOf(par), "");
+                        }
+                        else
+                        {
+                            value = LLVM.BuildBitCast(Builder, value, LLVM.TypeOf(par), "");
+                        }
+                    }
+                    args[k] = value;
+                }
+                var call = LLVM.BuildCall(Builder, fv, args, name);
+                state._stack.Push(new Value(call));
+                if (Campy.Utils.Options.IsOn("jit_trace"))
+                    System.Console.WriteLine(call.ToString());
+            }
+            else
+            {
+                // No return.
+                for (int k = xargs - 1; k >= 0; --k)
+                {
+                    Value v = state._stack.Pop();
+                    System.Console.WriteLine(v);
+                    ValueRef par = LLVM.GetParam(fv, (uint)k);
+                    System.Console.WriteLine(new Value(par));
+                    ValueRef value = v.V;
+                    if (LLVM.TypeOf(value) != LLVM.TypeOf(par))
+                    {
+                        if (LLVM.GetTypeKind(LLVM.TypeOf(par)) == TypeKind.PointerTypeKind)
+                        {
+                            value = LLVM.BuildPointerCast(Builder, value, LLVM.TypeOf(par), "");
+                        }
+                        else
+                        {
+                            value = LLVM.BuildBitCast(Builder, value, LLVM.TypeOf(par), "");
+                        }
+                    }
+                    args[k] = value;
+                }
+                var call = LLVM.BuildCall(Builder, fv, args, "");
+                if (Campy.Utils.Options.IsOn("jit_trace"))
+                    System.Console.WriteLine(call.ToString());
+            }
+
             return Next;
         }
     }
@@ -4731,34 +4754,47 @@ namespace Campy.Compiler
 
         public override void ComputeStackLevel(Converter converter, ref int level_after)
         {
-        // Successor is fallthrough.
-            int args = 0;
-            int ret = 0;
-            object method = this.Operand;
-            if (method as Mono.Cecil.MethodReference != null)
+            // Stack level for new obj depends on the initializer called. Get that information.
+
+            // Create a new object of a reference type or a new instance of a value type.
+            object operand = this.Operand;
+
+            // Get the type of object to create.
+            MethodReference method = operand as MethodReference;
+            TypeReference type = method.DeclaringType;
+
+            if (type == null)
+                throw new Exception("Cannot get type of object/value for newobj instruction.");
+
+            if (!type.IsValueType)
+                throw new Exception("Cannot allocate object references yet--not implemented.");
+            CFG graph = (CFG)this.Block._Graph;
+
+            var name = Converter.MethodName(method);
+            CFG.Vertex the_entry = this.Block._Graph.VertexNodes.Where(node
+                =>
             {
-                Mono.Cecil.MethodReference mr = method as Mono.Cecil.MethodReference;
-                args += mr.Parameters.Count;
-                if (mr.MethodReturnType != null)
-                {
-                    Mono.Cecil.MethodReturnType rt = mr.MethodReturnType;
-                    Mono.Cecil.TypeReference tr = rt.ReturnType;
-            // Get type, may contain modifiers.
-                    if (tr.FullName.Contains(' '))
-                    {
-                        String[] sp = tr.FullName.Split(' ');
-                        if (!sp[0].Equals("System.Void"))
-                            ret++;
-                    }
-                    else
-                    {
-                        if (!tr.FullName.Equals("System.Void"))
-                            ret++;
-                    }
-                }
-                ret++;
+                GraphLinkedList<int, CFG.Vertex, CFG.Edge> g = this.Block._Graph;
+                int k = g.NameSpace.BijectFromBasetype(node.Name);
+                CFG.Vertex v = g.VertexSpace[k];
+                Converter c = converter;
+                if (v.IsEntry && Converter.MethodName(v.ExpectedCalleeSignature) == name && c.IsFullyInstantiatedNode(v))
+                    return true;
+                else return false;
+            }).ToList().FirstOrDefault();
+
+            if (the_entry == null)
+            {
+                if (!Options.IsOn("continue_with_no_resolve"))
+                    throw new Exception("unimplemented.");
             }
-            level_after = level_after + ret - args;
+
+            int args = the_entry.NumberOfArguments;
+            // Note we push a pointer to the new allocated struct, so that's why there +1 args.
+            // Adjust args.
+            args -= 1;
+            
+            level_after = level_after + 1 /* creating new obj on stack */ - args;
         }
 
         public override Inst Convert(Converter converter, State state)
@@ -4782,12 +4818,8 @@ namespace Campy.Compiler
 
             var inst = this;
 
-            int nargs = 0;
-            int ret = 0;
-
             CFG graph = (CFG)this.Block._Graph;
 
-            nargs += method.Parameters.Count;
             var name = Converter.MethodName(method);
             CFG.Vertex the_entry = this.Block._Graph.VertexNodes.Where(node
                 =>
@@ -4809,6 +4841,9 @@ namespace Campy.Compiler
                     return Next;
             }
 
+            int nargs = the_entry.NumberOfArguments;
+            int ret = the_entry.HasScalarReturnValue ? 1 : 0;
+
             // First, create a struct.
             var entry = this.Block.Entry.BasicBlock;
             var beginning = LLVM.GetFirstInstruction(entry);
@@ -4826,8 +4861,8 @@ namespace Campy.Compiler
             if (t_fun_con != context) throw new Exception("not equal");
 
             // Set up args, type casting if required.
-            ValueRef[] args = new ValueRef[nargs+1];
-            for (int k = nargs; k >= 1; --k)
+            ValueRef[] args = new ValueRef[nargs];
+            for (int k = nargs - 1; k >= 1; --k)
             {
                 Value v = state._stack.Pop();
                 System.Console.WriteLine(v);
@@ -4974,6 +5009,21 @@ namespace Campy.Compiler
             // Back in the caller, the stack is popped of all arguments to the callee.
             // And, the return value is pushed on the top of stack.
             // This is handled by the call instruction.
+            if (!(this.Block.HasStructReturnValue || this.Block.HasScalarReturnValue))
+            {
+                // No change
+            }
+            else if (this.Block.HasScalarReturnValue)
+            {
+                // No change
+            }
+            else if (this.Block.HasStructReturnValue)
+            {
+                // With struct return, we don't actually return the value on the stack. It is returned
+                // by storing to a lvalue. But, the CIL looks like it's pushed a value for the return.
+                // So, during conversion, we'll pop the stack store the value.
+                level_after -= 1;
+            }
         }
 
         public override Inst Convert(Converter converter, State state)
@@ -4985,20 +5035,25 @@ namespace Campy.Compiler
             // Back in the caller, the stack is popped of all arguments to the callee.
             // And, the return value is pushed on the top of stack.
             // This is handled by the call instruction.
-            var ret = this.Block.ExpectedCalleeSignature.ReturnType;
-            var void_type = typeof(void).ToMonoTypeReference();
 
-            if (ret == null || ret.FullName == void_type.FullName)
+            if (!(this.Block.HasStructReturnValue || this.Block.HasScalarReturnValue))
             {
                 var i = LLVM.BuildRetVoid(Builder);
             }
-            else
+            else if (this.Block.HasScalarReturnValue)
             {
                 // See this on struct return--https://groups.google.com/forum/#!topic/llvm-dev/RSnV-Vr17nI
-                // The following fails for return structs!
+                // The following fails for structs, so do not do this for struct returns.
                 var v = state._stack.Pop();
                 var i = LLVM.BuildRet(Builder, v.V);
                 state._stack.Push(new Value(i));
+            }
+            else if (this.Block.HasStructReturnValue)
+            {
+                var v = state._stack.Pop();
+                var p = state._struct_ret[0];
+                var store = LLVM.BuildStore(Builder, v.V, p.V);
+                var i = LLVM.BuildRetVoid(Builder);
             }
             return Next;
         }

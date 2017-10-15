@@ -55,6 +55,8 @@ namespace Campy.Compiler
                 "System.Double Campy.Compiler.Runtime::Cosine(System.Double)");
             _rewritten_runtime.Add("System.Double System.Math::Abs(System.Double)",
                 "System.Double Campy.Compiler.Runtime::Abs(System.Double)");
+            _rewritten_runtime.Add("System.Void System.ThrowHelper::ThrowArgumentOutOfRangeException()",
+                "System.Void Campy.Compiler.Runtime::ThrowArgumentOutOfRangeException()");
         }
 
         public void AnalyzeMethod(MethodInfo methodInfo)
@@ -238,87 +240,6 @@ namespace Campy.Compiler
             return null;
         }
 
-        public MethodDefinition Rewrite(MethodReference method_reference)
-        {
-            MethodDefinition method_definition = method_reference.Resolve();
-            var name = method_reference.FullName;
-            var found = _rewritten_runtime.ContainsKey(name);
-            if (found)
-            {
-                string rewrite = _rewritten_runtime[name];
-                MethodDefinition def = GetDefinition(rewrite);
-                method_definition = def;
-            }
-            if (method_definition == null)
-            {
-                // Note, some situations MethodDefinition.Resolve() return null.
-                // For a good introduction on Resolve(), see https://github.com/jbevain/cecil/wiki/Resolving
-                // According to that, it should always return non-null. However, multi-dimensional arrays do not
-                // seem to resolve. Moreover, to add more confusion, a one dimensional array do resolve,
-                // As arrays are so central to GPU programming, we need to substitute for System.Array code--that
-                // we cannot find--into code from a runtime library.
-                System.Console.WriteLine("No definition for " + method_reference.FullName);
-                System.Console.WriteLine(method_reference.IsDefinition ? "" : "Is not a definition at that!");
-                throw new Exception("No code for method.");
-            }
-            else if (method_definition.Body == null)
-            {
-                System.Console.WriteLine("WARNING: METHOD BODY NULL! " + method_definition);
-                throw new Exception("No code for method.");
-            }
-            Dictionary<TypeReference, System.Type> additional = new Dictionary<TypeReference, System.Type>();
-            var mr_gp = method_reference.GenericParameters;
-            var mr_dt = method_reference.DeclaringType;
-            var mr_hgp = method_reference.HasGenericParameters;
-            var mr_dt_hgp = method_reference.DeclaringType.HasGenericParameters;
-            var mr_igi = method_reference.IsGenericInstance;
-            var mr_dt_igi = method_reference.DeclaringType.IsGenericInstance;
-            if (mr_igi)
-            {
-                GenericInstanceMethod i = method_reference as GenericInstanceMethod;
-                var mr_hga = i.HasGenericArguments;
-            }
-            if (mr_dt_igi)
-            {
-                GenericInstanceType git = mr_dt as GenericInstanceType;
-                var mr_dt_hga = git.HasGenericArguments;
-                Collection<TypeReference> ga = git.GenericArguments;
-                var e1 = git.ElementType;
-                var e2 = git.GetElementType();
-                Collection<GenericParameter> gg = e1.GenericParameters;
-                // Map parameter to instantiated type.
-                for (int i = 0; i < gg.Count; ++i)
-                {
-                    GenericParameter pp = gg[i];
-                    TypeReference qq = ga[i];
-                    TypeReference trrr = pp as TypeReference;
-                    var system_type = qq
-                        .ToSystemType();
-                    if (system_type == null) throw new Exception("Failed to convert " + qq);
-                    additional[pp] = system_type;
-                }
-            }
-            return method_definition;
-            //Mono.Collections.Generic.Collection<TypeReference> ga = null;
-            //if (git != null)
-            //{
-            //    ga = git.GenericArguments;
-            //    Mono.Collections.Generic.Collection<GenericParameter> gg = td.GenericParameters;
-            //    // Map parameter to instantiated type.
-            //    for (int i = 0; i < gg.Count; ++i)
-            //    {
-            //        var pp = gg[i];
-            //        var qq = ga[i];
-            //        TypeReference trrr = pp as TypeReference;
-            //        var system_type = qq
-            //            .ToSystemType();
-            //        if (system_type == null) throw new Exception("Failed to convert " + qq);
-            //        additional[pp] = system_type;
-            //    }
-            //}
-
-        }
-
         private void ExtractBasicBlocksOfMethod(Tuple<MethodReference, List<TypeReference>> definition)
         {
             MethodReference original_method_reference = definition.Item1;
@@ -341,27 +262,38 @@ namespace Campy.Compiler
             // In particular, replace references to runtime with instructions in Campy runtime.
             // Some NET runtime cannot be discovered (e.g., multidimensional get and set, and Math
             // methods).
-            List<Mono.Cecil.Cil.Instruction> rewritten_instructions = RewriteCilCodeBlock(method_definition.Body);
+            RewriteCilCodeBlock(method_definition.Body);
 
             int change_set = _cfg.StartChangeSet();
 
-            int instruction_count = rewritten_instructions.Count;
+            int instruction_count = method_definition.Body.Instructions.Count;
             List<Mono.Cecil.Cil.Instruction> split_point = new List<Mono.Cecil.Cil.Instruction>();
 
             // Each method is a leader of a block.
             CFG.Vertex v = (CFG.Vertex)_cfg.AddVertex(_cfg.NewNodeNumber());
 
+            Mono.Cecil.MethodReturnType rt = method_definition.MethodReturnType;
+            Mono.Cecil.TypeReference tr = rt.ReturnType;
+            var ret = tr.FullName != "System.Void";
+            v.HasScalarReturnValue = ret && ! tr.IsStruct();
+            v.HasStructReturnValue = ret && tr.IsStruct();
             v.ExpectedCalleeSignature = original_method_reference;
             v.RewrittenCalleeSignature = method_definition;
-            var has_ret = method_definition.IsReuseSlot;
-            v.HasReturnValue = has_ret;
+            v.HasThis = method_definition.HasThis;
+            v.NumberOfArguments = method_definition.Parameters.Count
+                + (v.HasThis ? 1 : 0)
+                + (v.HasStructReturnValue ? 1 : 0);
+            Mono.Cecil.MethodReference mr = v.RewrittenCalleeSignature;
+            int locals = mr.Resolve().Body.Variables.Count;
+            v.NumberOfLocals = locals;
+
             v.Entry = v;
             _cfg.Entries.Add(v);
 
             // Add instructions to the basic block.
             for (int j = 0; j < instruction_count; ++j)
             {
-                Mono.Cecil.Cil.Instruction mi = rewritten_instructions[j];
+                Mono.Cecil.Cil.Instruction mi = method_definition.Body.Instructions[j];
                 Inst i = Inst.Wrap(mi);
                 i.Block = v;
                 Mono.Cecil.Cil.OpCode op = i.OpCode;
@@ -439,7 +371,7 @@ namespace Campy.Compiler
                 // where to split blocks. However, it's ordered,
                 // so that splitting is done from last instruction in block
                 // to first instruction in block.
-                Mono.Cecil.Cil.Instruction i = rewritten_instructions[j];
+                Mono.Cecil.Cil.Instruction i = method_definition.Body.Instructions[j];
                 if (split_point.Contains(i))
                     ordered_leader_list.Add(i);
             }
@@ -523,7 +455,7 @@ namespace Campy.Compiler
                     //case Mono.Cecil.Cil.FlowControl.Return:
                     //case Mono.Cecil.Cil.FlowControl.Throw:
                         {
-                            int next = rewritten_instructions.FindIndex(
+                            int next = method_definition.Body.Instructions.ToList().FindIndex(
                                            n =>
                                            {
                                                var r = n == last_instruction.Instruction &&
@@ -535,9 +467,9 @@ namespace Campy.Compiler
                             if (next < 0)
                                 break;
                             next += 1;
-                            if (next >= rewritten_instructions.Count)
+                            if (next >= method_definition.Body.Instructions.Count)
                                 break;
-                            var next_instruction = rewritten_instructions[next];
+                            var next_instruction = method_definition.Body.Instructions[next];
                             var owner = _cfg.VertexNodes.Where(
                                 n => n.Instructions.Where(ins => ins.Instruction == next_instruction).Any()).ToList();
                             if (owner.Count != 1)
@@ -560,12 +492,107 @@ namespace Campy.Compiler
             // and are part of the CFG.
         }
 
-        private List<Instruction> RewriteCilCodeBlock(Mono.Cecil.Cil.MethodBody body)
+        public MethodDefinition Rewrite(MethodReference method_reference)
+        {
+            MethodDefinition method_definition = method_reference.Resolve();
+            var name = method_reference.FullName;
+            var found = _rewritten_runtime.ContainsKey(name);
+            if (found)
+            {
+                string rewrite = _rewritten_runtime[name];
+                MethodDefinition def = GetDefinition(rewrite);
+                method_definition = def;
+            }
+            if (method_definition == null)
+            {
+                // Note, some situations MethodDefinition.Resolve() return null.
+                // For a good introduction on Resolve(), see https://github.com/jbevain/cecil/wiki/Resolving
+                // According to that, it should always return non-null. However, multi-dimensional arrays do not
+                // seem to resolve. Moreover, to add more confusion, a one dimensional array do resolve,
+                // As arrays are so central to GPU programming, we need to substitute for System.Array code--that
+                // we cannot find--into code from a runtime library.
+                System.Console.WriteLine("No definition for " + method_reference.FullName);
+                System.Console.WriteLine(method_reference.IsDefinition ? "" : "Is not a definition at that!");
+                throw new Exception("No code for method.");
+            }
+            else if (method_definition.Body == null)
+            {
+                System.Console.WriteLine("WARNING: METHOD BODY NULL! " + method_definition);
+                throw new Exception("No code for method.");
+            }
+
+
+
+
+
+            Dictionary<TypeReference, System.Type> additional = new Dictionary<TypeReference, System.Type>();
+            var mr_gp = method_reference.GenericParameters;
+            var mr_dt = method_reference.DeclaringType;
+            var mr_hgp = method_reference.HasGenericParameters;
+            var mr_dt_hgp = method_reference.DeclaringType.HasGenericParameters;
+            var mr_igi = method_reference.IsGenericInstance;
+            var mr_dt_igi = method_reference.DeclaringType.IsGenericInstance;
+            if (mr_igi)
+            {
+                GenericInstanceMethod i = method_reference as GenericInstanceMethod;
+                var mr_hga = i.HasGenericArguments;
+            }
+            if (mr_dt_igi)
+            {
+                GenericInstanceType git = mr_dt as GenericInstanceType;
+                var mr_dt_hga = git.HasGenericArguments;
+                Collection<TypeReference> ga = git.GenericArguments;
+                var e1 = git.ElementType;
+                var e2 = git.GetElementType();
+                Collection<GenericParameter> gg = e1.GenericParameters;
+                // Map parameter to instantiated type.
+                for (int i = 0; i < gg.Count; ++i)
+                {
+                    GenericParameter pp = gg[i];
+                    TypeReference qq = ga[i];
+                    TypeReference trrr = pp as TypeReference;
+                    var system_type = qq
+                        .ToSystemType();
+                    if (system_type == null) throw new Exception("Failed to convert " + qq);
+                    additional[pp] = system_type;
+                }
+            }
+            return method_definition;
+        }
+
+        private void RewriteCilCodeBlock(Mono.Cecil.Cil.MethodBody body)
         {
             List<Instruction> result = new List<Instruction>();
-            foreach (var i in body.Instructions)
-                result.Add(i);
-            return result;
+            for (int j = 0; j < body.Instructions.Count; ++j)
+            {
+                Instruction i = body.Instructions[j];
+
+                var inst_to_insert = i;
+
+                if (i.OpCode.FlowControl == FlowControl.Call)
+                {
+                    object method = i.Operand;
+
+                    if (method as Mono.Cecil.MethodReference == null)
+                        throw new Exception();
+
+                    Mono.Cecil.MethodReference method_reference = method as Mono.Cecil.MethodReference;
+
+                    var name = method_reference.FullName;
+                    var found = _rewritten_runtime.ContainsKey(name);
+                    if (found)
+                    {
+                        string rewrite = _rewritten_runtime[name];
+                        MethodDefinition def = GetDefinition(rewrite);
+
+                        CallSite cs = new CallSite(typeof(void).ToMonoTypeReference());
+                        body.Instructions.RemoveAt(j);
+                        var worker = body.GetILProcessor();
+                        Instruction new_inst = worker.Create(i.OpCode, def);
+                        body.Instructions.Insert(j, new_inst);
+                    }
+                }
+            }
         }
     }
 }
