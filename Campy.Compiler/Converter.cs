@@ -1290,6 +1290,7 @@ namespace Campy.Compiler
                         }
                     }
                     CFG.Vertex llvm_nodez = node;
+                    System.Console.WriteLine("Working on Node " + node.Name);
                     int level_after = (int) llvm_nodez.StackLevelIn;
                     int level_pre = level_after;
                     foreach (var inst in llvm_nodez.Instructions)
