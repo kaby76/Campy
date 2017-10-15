@@ -151,40 +151,62 @@ namespace ConsoleApp4
 
         static void Main(string[] args)
         {
+            StartDebugging();
+            //{
+            //    int n = 4;
+
+            //    var t1 = new List<int>();
+            //    for (int i = 0; i < n; ++i) t1.Add(0);
+            //    Campy.Parallel.For(n, i =>
+            //    {
+            //        if (i % 2 == 0)
+            //            t1[i] = i * 20;
+            //        else
+            //            t1[i] = i * 30;
+            //    });
+            //    for (int i = 0; i < n; ++i)
+            //        if (i % 2 == 0)
+            //        {
+            //            if (t1[i] != i * 20) throw new Exception();
+            //        }
+            //        else
+            //        {
+            //            if (t1[i] != i * 30) throw new Exception();
+            //        }
+            //}
             double pi = 3.141592653589793;
             int num = 10;
             double[] dodo1 = new double[num];
             double[] dodo2 = new double[num];
             double[] dodo3 = new double[num];
 
-            StartDebugging();
 
-            for (int i = 0; i < num; ++i)
-            {
-                dodo1[i] = Campy.Compiler.Runtime.Sine(-0.1 * i);
-            }
-            Campy.Parallel.For(0, num, i =>
-            {
-                dodo2[i] = Campy.Compiler.Runtime.Sine(-0.1 * i);
-            });
-            Campy.Parallel.For(0, num, i =>
-            {
-                dodo3[i] = Math.Sin(-0.1 * i);
-            });
+            //for (int i = 0; i < num; ++i)
+            //{
+            //    dodo1[i] = Campy.Compiler.Runtime.Sine(-0.1 * i);
+            //}
+            //Campy.Parallel.For(0, num, i =>
+            //{
+            //    dodo2[i] = Campy.Compiler.Runtime.Sine(-0.1 * i);
+            //});
+            //Campy.Parallel.For(0, num, i =>
+            //{
+            //    dodo3[i] = Math.Sin(-0.1 * i);
+            //});
 
             Complex[] wonder1 = new Complex[num * 4];
             Complex[] wonder2 = new Complex[num * 4];
             Complex[] wonder3 = new Complex[num * 4];
-            Campy.Parallel.For(0, num, i =>
-            {
-                double v = (4 * i) / 10;
-                wonder1[i] = new Complex(1, 1);
-            });
-            Campy.Parallel.For(0, num, i =>
-            {
-                double v = (4 * i) / 10;
-                wonder2[i] = new Complex(1 + v, 1 + v);
-            });
+            //Campy.Parallel.For(0, num, i =>
+            //{
+            //    double v = (4 * i) / 10;
+            //    wonder1[i] = new Complex(1, 1);
+            //});
+            //Campy.Parallel.For(0, num, i =>
+            //{
+            //    double v = (4 * i) / 10;
+            //    wonder2[i] = new Complex(1 + v, 1 + v);
+            //});
             Campy.Parallel.For(0, num, i =>
             {
                 double v = 4 * i / 10;
