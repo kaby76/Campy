@@ -90,8 +90,16 @@ namespace Campy.Compiler
                     value = new Value(LLVM.ConstReal(LLVM.DoubleType(), 0));
                 else if (LLVM.GetTypeKind(type.IntermediateType) == TypeKind.IntegerTypeKind)
                     value = new Value(LLVM.ConstInt(type.IntermediateType, (ulong)0, true));
-                else if (LLVM.GetTypeKind(type.IntermediateType) == TypeKind.StructTypeKind)
-                    value = new Value(LLVM.ConstPointerNull(type.IntermediateType));
+		        else if (LLVM.GetTypeKind(type.IntermediateType) == TypeKind.StructTypeKind)
+		        {
+			        var entry = basic_block.Entry.BasicBlock;
+			        var beginning = LLVM.GetFirstInstruction(entry);
+			        LLVM.PositionBuilderBefore(basic_block.Builder, beginning);
+			        var new_obj = LLVM.BuildAlloca(basic_block.Builder, type.IntermediateType, ""); // Allocates struct on stack, but returns a pointer to struct.
+		            var stuff = LLVM.BuildLoad(basic_block.Builder, new_obj, "");
+			        LLVM.PositionBuilderAtEnd(basic_block.Builder, basic_block.BasicBlock);
+			        value = new Value(stuff);
+		        }
                 else
                     throw new Exception("Unhandled type");
                 _stack.Push(value);
