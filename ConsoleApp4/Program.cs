@@ -31,38 +31,38 @@ namespace ConsoleApp4
 
         /* Uses Cooley-Tukey iterative in-place algorithm with radix-2 DIT case
          * assumes no of points provided are a power of 2 */
-        public static void FFT(Complex[] buffer)
-        {
+        //public static void FFT(Complex[] buffer)
+        //{
 
-            int bits = (int)Math.Log(buffer.Length, 2);
-            for (int j = 1; j < buffer.Length / 2; j++)
-            {
-                int swapPos = BitReverse(j, bits);
-                var temp = buffer[j];
-                buffer[j] = buffer[swapPos];
-                buffer[swapPos] = temp;
-            }
+        //    int bits = (int)Math.Log(buffer.Length, 2);
+        //    for (int j = 1; j < buffer.Length / 2; j++)
+        //    {
+        //        int swapPos = BitReverse(j, bits);
+        //        var temp = buffer[j];
+        //        buffer[j] = buffer[swapPos];
+        //        buffer[swapPos] = temp;
+        //    }
 
-            for (int N = 2; N <= buffer.Length; N <<= 1)
-            {
-                for (int i = 0; i < buffer.Length; i += N)
-                {
-                    for (int k = 0; k < N / 2; k++)
-                    {
-                        int evenIndex = i + k;
-                        int oddIndex = i + k + (N / 2);
-                        var even = buffer[evenIndex];
-                        var odd = buffer[oddIndex];
+        //    for (int N = 2; N <= buffer.Length; N <<= 1)
+        //    {
+        //        for (int i = 0; i < buffer.Length; i += N)
+        //        {
+        //            for (int k = 0; k < N / 2; k++)
+        //            {
+        //                int evenIndex = i + k;
+        //                int oddIndex = i + k + (N / 2);
+        //                var even = buffer[evenIndex];
+        //                var odd = buffer[oddIndex];
 
-                        double term = -2 * Math.PI * k / (double)N;
-                        Complex exp = new Complex(Math.Cos(term), Math.Sin(term)) * odd;
+        //                double term = -2 * Math.PI * k / (double)N;
+        //                Complex exp = new Complex(Math.Cos(term), Math.Sin(term)) * odd;
 
-                        buffer[evenIndex] = even + exp;
-                        buffer[oddIndex] = even - exp;
-                    }
-                }
-            }
-        }
+        //                buffer[evenIndex] = even + exp;
+        //                buffer[oddIndex] = even - exp;
+        //            }
+        //        }
+        //    }
+        //}
 
 
         /* Uses Cooley-Tukey iterative in-place algorithm with radix-2 DIT case
@@ -174,11 +174,11 @@ namespace ConsoleApp4
             //            if (t1[i] != i * 30) throw new Exception();
             //        }
             //}
-            double pi = 3.141592653589793;
-            int num = 10;
-            double[] dodo1 = new double[num];
-            double[] dodo2 = new double[num];
-            double[] dodo3 = new double[num];
+            //double pi = 3.141592653589793;
+            //int num = 10;
+            //double[] dodo1 = new double[num];
+            //double[] dodo2 = new double[num];
+            //double[] dodo3 = new double[num];
 
 
             //for (int i = 0; i < num; ++i)
@@ -194,37 +194,37 @@ namespace ConsoleApp4
             //    dodo3[i] = Math.Sin(-0.1 * i);
             //});
 
-            Complex[] wonder1 = new Complex[num * 4];
-            Complex[] wonder2 = new Complex[num * 4];
-            Complex[] wonder3 = new Complex[num * 4];
+            //Complex[] wonder1 = new Complex[num * 4];
+            //Complex[] wonder2 = new Complex[num * 4];
+            //Complex[] wonder3 = new Complex[num * 4];
             //Campy.Parallel.For(0, num, i =>
             //{
             //    double v = (4 * i) / 10;
             //    wonder1[i] = new Complex(1, 1);
             //});
-            Campy.Parallel.For(0, num, i =>
-            {
-                double v = (4 * i) / 10;
-                wonder2[i] = new Complex(1 + v, 1 + v);
-            });
-            Campy.Parallel.For(0, num, i =>
-            {
-                double v = 4.0 * i / 10;
-                //Complex aa = new Complex(0.5 + v, 1 + v);
-                //Complex bb = new Complex(1 + v, 1 + v);
-                //Complex o1 = aa + bb;
-                //wonder3[4 * i + 0] = o1;
-                wonder3[4 * i + 0] = new Complex(0.5 + v, 1 + v) + new Complex(1 + v, 1 + v);
-            });
+            //Campy.Parallel.For(0, num, i =>
+            //{
+            //    double v = (4 * i) / 10;
+            //    wonder2[i] = new Complex(1 + v, 1 + v);
+            //});
+            //Campy.Parallel.For(0, num, i =>
+            //{
+            //    double v = 4.0 * i / 10;
+            //    //Complex aa = new Complex(0.5 + v, 1 + v);
+            //    //Complex bb = new Complex(1 + v, 1 + v);
+            //    //Complex o1 = aa + bb;
+            //    //wonder3[4 * i + 0] = o1;
+            //    wonder3[4 * i + 0] = new Complex(0.5 + v, 1 + v) + new Complex(1 + v, 1 + v);
+            //});
 
-            Campy.Parallel.For(0, num, i =>
-            {
-                double v = 4.0 * i / 10;
-                Complex aa = new Complex(0.5 + v, 1 + v);
-                Complex bb = new Complex(1 + v, 1 + v);
-                Complex o1 = aa + bb;
-                wonder3[4 * i + 0] = o1;
-            });
+            //Campy.Parallel.For(0, num, i =>
+            //{
+            //    double v = 4.0 * i / 10;
+            //    Complex aa = new Complex(0.5 + v, 1 + v);
+            //    Complex bb = new Complex(1 + v, 1 + v);
+            //    Complex o1 = aa + bb;
+            //    wonder3[4 * i + 0] = o1;
+            //});
 
 
             {
