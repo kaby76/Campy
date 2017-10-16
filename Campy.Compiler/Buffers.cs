@@ -681,6 +681,12 @@
             }
         }
 
+        public unsafe void OutputDeepCopy(IntPtr from, object to, System.Type target_type, bool reset = true,
+            bool sync = true)
+        {
+            
+        }
+
         public unsafe void DeepCopyFromImplementation(IntPtr from, out object to, System.Type target_type, bool reset = true, bool sync = true)
         {
             try
@@ -1004,13 +1010,6 @@
             long total_size = 1;
             for (int i = 0; i < from.Rank; ++i)
                 total_size *= from.GetLength(i);
-            System.Console.WriteLine("dim = " + from.Rank);
-            for (int j = 0; j < from.Rank; ++j)
-            {
-                int ind_size = from.GetLength(j);
-                System.Console.WriteLine(ind_size);
-            }
-            System.Console.WriteLine("total_size = " + total_size);
             for (int i = 0; i < total_size; ++i)
             {
                 int[] index = new int[from.Rank];
@@ -1024,7 +1023,6 @@
                     index[j] = remainder;
                     s = (char)((short)('0') + remainder) + s;
                 }
-                System.Console.WriteLine("index i = " + i + " equiv = " + s);
                 //sdfg
                 var from_element_value = from.GetValue(index);
                 if (orig_element_type.IsArray || orig_element_type.IsClass)
@@ -1088,7 +1086,6 @@
                     index[j] = remainder;
                     s = (char)((short)('0') + remainder) + s;
                 }
-                System.Console.WriteLine("index i = " + i + " equiv = " + s);
                 //sdfg
                 if (to_element_type.IsArray || to_element_type.IsClass)
                 {

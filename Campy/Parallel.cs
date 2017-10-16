@@ -45,11 +45,11 @@ namespace Campy
             For(view, new Extent(number_of_threads), kernel);
         }
 
-        public static void For(int inclusive_start, int exclusive_end, KernelType kernel)
-        {
-            AcceleratorView view = Accelerator.GetAutoSelectionView();
-            For(view, inclusive_start, exclusive_end, kernel);
-        }
+        //public static void For(int inclusive_start, int exclusive_end, KernelType kernel)
+        //{
+        //    AcceleratorView view = Accelerator.GetAutoSelectionView();
+        //    For(view, inclusive_start, exclusive_end, kernel);
+        //}
 
         public static void For(Extent extent, KernelType kernel)
         {
@@ -170,7 +170,8 @@ namespace Campy
                     var res = CUresult.CUDA_SUCCESS;
                     fixed (IntPtr* kernelParams = kp)
                     {
-                        MakeLinearTiling(number_of_threads, out dim3 tile_size, out dim3 tiles);
+                        //MakeLinearTiling(number_of_threads, out dim3 tile_size, out dim3 tiles);
+                        MakeLinearTiling(1, out dim3 tile_size, out dim3 tiles);
 
                         res = Cuda.cuLaunchKernel(
                             ptr_to_kernel,

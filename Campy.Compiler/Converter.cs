@@ -1254,14 +1254,12 @@ namespace Campy.Compiler
                         }
                     }
                     CFG.Vertex llvm_nodez = node;
-                    System.Console.WriteLine("Working on Node " + node.Name);
                     int level_after = (int) llvm_nodez.StackLevelIn;
                     int level_pre = level_after;
                     foreach (var inst in llvm_nodez.Instructions)
                     {
                         level_pre = level_after;
                         inst.ComputeStackLevel(this, ref level_after);
-                        System.Console.WriteLine("level = " + level_after);
                         if (!(level_after >= node.NumberOfLocals + node.NumberOfArguments))
                             throw new Exception("Stack computation off. Internal error.");
                     }

@@ -249,7 +249,7 @@ namespace Reduction
             int result_cpu = 0;
             {
                 int[] data = new int[n];
-                Campy.Parallel.For(0, n, idx => data[idx] = 1);
+                Campy.Parallel.For(n, idx => data[idx] = 1);
                 for (int level = 1; level <= Bithacks.Log2(n); level++)
                 {
                     int step = Bithacks.Power2(level);

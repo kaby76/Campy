@@ -2908,9 +2908,7 @@ namespace Campy.Compiler
                 for (int k = xargs - 1; k >= 1; --k)
                 {
                     Value v = state._stack.Pop();
-                    System.Console.WriteLine(v);
                     ValueRef par = LLVM.GetParam(fv, (uint)k);
-                    System.Console.WriteLine(new Value(par));
                     ValueRef value = v.V;
                     if (LLVM.TypeOf(value) != LLVM.TypeOf(par))
                     {
@@ -2942,9 +2940,7 @@ namespace Campy.Compiler
                 for (int k = xargs - 1; k >= 0; --k)
                 {
                     Value v = state._stack.Pop();
-                    System.Console.WriteLine(v);
                     ValueRef par = LLVM.GetParam(fv, (uint) k);
-                    System.Console.WriteLine(new Value(par));
                     ValueRef value = v.V;
                     if (LLVM.TypeOf(value) != LLVM.TypeOf(par))
                     {
@@ -2975,9 +2971,7 @@ namespace Campy.Compiler
                 for (int k = xargs - 1; k >= 0; --k)
                 {
                     Value v = state._stack.Pop();
-                    System.Console.WriteLine(v);
                     ValueRef par = LLVM.GetParam(fv, (uint)k);
-                    System.Console.WriteLine(new Value(par));
                     ValueRef value = v.V;
                     if (LLVM.TypeOf(value) != LLVM.TypeOf(par))
                     {
@@ -3149,9 +3143,7 @@ namespace Campy.Compiler
                     for (int k = nargs - 1; k >= 0; --k)
                     {
                         Value v = state._stack.Pop();
-                        System.Console.WriteLine(v);
                         ValueRef par = LLVM.GetParam(fv, (uint)k);
-                        System.Console.WriteLine(new Value(par));
                         ValueRef value = v.V;
                         if (LLVM.TypeOf(value) != LLVM.TypeOf(par))
                         {
@@ -4880,9 +4872,7 @@ namespace Campy.Compiler
             for (int k = nargs - 1; k >= 1; --k)
             {
                 Value v = state._stack.Pop();
-                System.Console.WriteLine(v);
                 ValueRef par = LLVM.GetParam(fv, (uint)k);
-                System.Console.WriteLine(new Value(par));
                 ValueRef value = v.V;
                 if (LLVM.TypeOf(value) != LLVM.TypeOf(par))
                 {

@@ -432,7 +432,6 @@ namespace Campy.Compiler
                                                 return false;
                                             return true;
                                         });
-                                    System.Console.WriteLine("Create edge a " + node.Name + " to " + target_node.Name);
                                     _cfg.AddEdge(node, target_node);
                                 }
                             }
@@ -475,13 +474,11 @@ namespace Campy.Compiler
                             if (owner.Count != 1)
                                 throw new Exception("Cannot find instruction!");
                             CFG.Vertex target_node = owner.FirstOrDefault();
-                            System.Console.WriteLine("Create edge a " + node.Name + " to " + target_node.Name);
                             _cfg.AddEdge(node, target_node);
                         }
                         break;
                 }
             }
-            System.Console.WriteLine();
             _cfg.OutputDotGraph();
             _cfg.OutputEntireGraph();
             System.Console.WriteLine();

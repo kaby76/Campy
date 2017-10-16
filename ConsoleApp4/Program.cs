@@ -6,6 +6,7 @@ using System.Numerics;
 
 namespace ConsoleApp4
 {
+
     class Program
     {
 
@@ -73,6 +74,7 @@ namespace ConsoleApp4
             int bits = (int)Math.Log(buffer.Length, 2);
 
             var copy = buffer.ToArray();
+
             for (int j = 1; j < buffer.Length / 2; j++)
             {
                 int swapPos = BitReverse(j, bits);
@@ -81,9 +83,9 @@ namespace ConsoleApp4
                 copy[swapPos] = temp;
             }
 
-
-            Campy.Parallel.For(1, buffer.Length / 2, j =>
+            Campy.Parallel.For(buffer.Length / 2 - 1, k =>
             {
+                int j = k + 1;
                 int swapPos = BitReverse(j, bits);
                 var temp = buffer[j];
                 buffer[j] = buffer[swapPos];
@@ -92,45 +94,51 @@ namespace ConsoleApp4
 
             for (int N = 2; N <= buffer.Length; N <<= 1)
             {
-                int step = N / 2;
-                int bstep = N;
                 for (int i = 0; i < buffer.Length; i += N)
                 {
                     for (int k = 0; k < N / 2; k++)
                     {
                         int evenIndex = i + k;
                         int oddIndex = i + k + (N / 2);
-
                         var even = copy[evenIndex];
                         var odd = copy[oddIndex];
 
-                        double term = -2 * Math.PI * k / (double) N;
+                        double term = -2 * Math.PI * k / (double)N;
                         Complex exp = new Complex(Math.Cos(term), Math.Sin(term)) * odd;
 
                         copy[evenIndex] = even + exp;
                         copy[oddIndex] = even - exp;
                     }
                 }
-
             }
+
             for (int N = 2; N <= buffer.Length; N <<= 1)
             {
                 int step = N / 2;
                 int bstep = N;
-                Campy.Parallel.For(0, buffer.Length / 2, d =>
+                Campy.Parallel.For(buffer.Length / 2, d =>
                 {
-                    var i = d % step + N * (d / step);
-                    int evenIndex = i;
-                    int oddIndex = i + step;
+                    var k = d % step;
+                    var i = N * (d / step);
+                    var t = d % step + N * (d / step);
+                    int evenIndex = t;
+                    int oddIndex = t + step;
+
                     var even = buffer[evenIndex];
                     var odd = buffer[oddIndex];
 
-                    double term = -2 * Math.PI * 1 / (double)N;
+                    double term = -2 * Math.PI * k / (double)N;
                     Complex exp = new Complex(Math.Cos(term), Math.Sin(term)) * odd;
 
                     buffer[evenIndex] = even + exp;
                     buffer[oddIndex] = even - exp;
                 });
+            }
+            for (int i = 0; i < buffer.Length; ++i)
+            {
+                System.Console.WriteLine(copy[i].Real + " " + copy[i].Imaginary);
+                System.Console.WriteLine(buffer[i].Real + " " + buffer[i].Imaginary);
+                System.Console.WriteLine();
             }
         }
 
@@ -151,86 +159,11 @@ namespace ConsoleApp4
 
         static void Main(string[] args)
         {
-            StartDebugging();
-            //{
-            //    int n = 4;
-
-            //    var t1 = new List<int>();
-            //    for (int i = 0; i < n; ++i) t1.Add(0);
-            //    Campy.Parallel.For(n, i =>
-            //    {
-            //        if (i % 2 == 0)
-            //            t1[i] = i * 20;
-            //        else
-            //            t1[i] = i * 30;
-            //    });
-            //    for (int i = 0; i < n; ++i)
-            //        if (i % 2 == 0)
-            //        {
-            //            if (t1[i] != i * 20) throw new Exception();
-            //        }
-            //        else
-            //        {
-            //            if (t1[i] != i * 30) throw new Exception();
-            //        }
-            //}
-            //double pi = 3.141592653589793;
-            //int num = 10;
-            //double[] dodo1 = new double[num];
-            //double[] dodo2 = new double[num];
-            //double[] dodo3 = new double[num];
-
-
-            //for (int i = 0; i < num; ++i)
-            //{
-            //    dodo1[i] = Campy.Compiler.Runtime.Sine(-0.1 * i);
-            //}
-            //Campy.Parallel.For(0, num, i =>
-            //{
-            //    dodo2[i] = Campy.Compiler.Runtime.Sine(-0.1 * i);
-            //});
-            //Campy.Parallel.For(0, num, i =>
-            //{
-            //    dodo3[i] = Math.Sin(-0.1 * i);
-            //});
-
-            //Complex[] wonder1 = new Complex[num * 4];
-            //Complex[] wonder2 = new Complex[num * 4];
-            //Complex[] wonder3 = new Complex[num * 4];
-            //Campy.Parallel.For(0, num, i =>
-            //{
-            //    double v = (4 * i) / 10;
-            //    wonder1[i] = new Complex(1, 1);
-            //});
-            //Campy.Parallel.For(0, num, i =>
-            //{
-            //    double v = (4 * i) / 10;
-            //    wonder2[i] = new Complex(1 + v, 1 + v);
-            //});
-            //Campy.Parallel.For(0, num, i =>
-            //{
-            //    double v = 4.0 * i / 10;
-            //    //Complex aa = new Complex(0.5 + v, 1 + v);
-            //    //Complex bb = new Complex(1 + v, 1 + v);
-            //    //Complex o1 = aa + bb;
-            //    //wonder3[4 * i + 0] = o1;
-            //    wonder3[4 * i + 0] = new Complex(0.5 + v, 1 + v) + new Complex(1 + v, 1 + v);
-            //});
-
-            //Campy.Parallel.For(0, num, i =>
-            //{
-            //    double v = 4.0 * i / 10;
-            //    Complex aa = new Complex(0.5 + v, 1 + v);
-            //    Complex bb = new Complex(1 + v, 1 + v);
-            //    Complex o1 = aa + bb;
-            //    wonder3[4 * i + 0] = o1;
-            //});
-
+            //StartDebugging();
 
             {
                 Complex[] input = { 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
 
-                //FFT(input);
                 FFTGPU(input);
 
                 Console.WriteLine("Results:");
