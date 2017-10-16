@@ -1724,15 +1724,15 @@ namespace Campy.Compiler
             }
             else if (_dst == null)
             {
-                //var t_v = LLVM.TypeOf(value);
-                //var t_d = LLVM.TypeOf(gep);
-                //var t_e = LLVM.GetElementType(t_d);
-                //if (t_v != t_e)
-                //{
-                //    value = LLVM.BuildIntCast(Builder, value, t_e, "");
-                //    if (Campy.Utils.Options.IsOn("jit_trace"))
-                //        System.Console.WriteLine(new Value(value));
-                //}
+                var t_v = LLVM.TypeOf(value);
+                var t_d = LLVM.TypeOf(gep);
+                var t_e = LLVM.GetElementType(t_d);
+                if (t_v != t_e && LLVM.GetTypeKind(t_e) != TypeKind.StructTypeKind)
+                {
+                    value = LLVM.BuildIntCast(Builder, value, t_e, "");
+                    if (Campy.Utils.Options.IsOn("jit_trace"))
+                        System.Console.WriteLine(new Value(value));
+                }
             }
 
             // Store.
