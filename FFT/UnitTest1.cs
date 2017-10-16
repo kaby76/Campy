@@ -1,15 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Linq;
-using Campy;
 using System.Numerics;
 
-namespace ConsoleApp4
+namespace FFT
 {
-
-    class Program
+    [TestClass]
+    public class UnitTest1
     {
-
         /* Performs a Bit Reversal Algorithm on a postive integer 
          * for given number of bits
          * e.g. 011 with 3 bits is reversed to 110
@@ -102,38 +100,27 @@ namespace ConsoleApp4
             }
         }
 
-        static void StartDebugging()
+        bool ApproxEqual(double a, double b)
         {
-            Campy.Utils.Options.Set("graph_trace");
-            Campy.Utils.Options.Set("module_trace");
-            Campy.Utils.Options.Set("name_trace");
-            Campy.Utils.Options.Set("cfg_construction_trace");
-            Campy.Utils.Options.Set("dot_graph");
-            Campy.Utils.Options.Set("jit_trace");
-            Campy.Utils.Options.Set("memory_trace");
-            Campy.Utils.Options.Set("ptx_trace");
-            Campy.Utils.Options.Set("state_computation_trace");
-            Campy.Utils.Options.Set("continue_with_no_resolve");
-
+            if (b > a)
+                return (b - a) < 0.01;
+            else
+                return (a - b) < 0.01;
         }
 
-        static void Main(string[] args)
+        [TestMethod]
+        public void TestMethod1()
         {
-            //StartDebugging();
+            Complex[] input = { 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+            var copy = input.ToArray();
 
+            FFTGPU(input);
+            FFT(copy);
+
+            for (int i = 0; i < input.Length; ++i)
             {
-                Complex[] input = { 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
-                var copy = input.ToArray();
-
-                FFTGPU(input);
-                FFT(copy);
-
-                for (int i = 0; i < input.Length; ++i)
-                {
-                    System.Console.WriteLine(copy[i].Real + " " + copy[i].Imaginary);
-                    System.Console.WriteLine(input[i].Real + " " + input[i].Imaginary);
-                    System.Console.WriteLine();
-                }
+                if (!ApproxEqual(copy[i].Real, input[i].Real)) throw new Exception();
+                if (!ApproxEqual(copy[i].Imaginary, input[i].Imaginary)) throw new Exception();
             }
         }
     }
