@@ -93,7 +93,7 @@ namespace Campy.Compiler
             return y;
         }
 
-        public double Cosine(double x)
+        public static double Cosine(double x)
         {
             const double PID2 = 1.57079632679489661923132169163975144f;
             const double hpi = PID2;
@@ -101,7 +101,7 @@ namespace Campy.Compiler
             return Sine(x);
         }
 
-        public double Abs(double x)
+        public static double Abs(double x)
         {
             return x > 0 ? x : -x;
         }
