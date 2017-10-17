@@ -46,11 +46,13 @@ namespace Campy.Compiler
         {
             int* a = (int*)(*arr).p;
             int d = (int)(*arr).d;
-            byte* bp = (byte*)arr;
-            bp = bp + 24;
+            byte* bp_d1 = (byte*)arr;
+            bp_d1 = bp_d1 + 24;
             long o = 0;
-            long* lp = (long*)bp;
-            o = (*lp) * i0 + i1;
+            long* lp_d1 = (long*)bp_d1;
+            byte* bp_d2 = bp_d1 + 8;
+            long* lp_d2 = (long*)bp_d2;
+            o = (*lp_d1) * i0 + i1;
             return  *(a + o);
         }
 
@@ -76,6 +78,14 @@ namespace Campy.Compiler
 
         public static unsafe void set_multi_array(A* arr, int i0, int i1, int i2, int value)
         {
+            int* a = (int*)(*arr).p;
+            int d = (int)(*arr).d;
+            byte* bp = (byte*)arr;
+            bp = bp + 24;
+            long o = 0;
+            long* lp = (long*)bp;
+            o = (*lp) * i0 + i1;
+            *(a + o) = value;
         }
 
         public static double Sine(double x)
