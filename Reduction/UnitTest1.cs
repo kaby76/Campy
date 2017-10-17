@@ -1,6 +1,8 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Campy;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Reduction
 {
@@ -242,7 +244,7 @@ namespace Reduction
     public class Reduction
     {
         [TestMethod]
-        public void ReductionT()
+        public void ReductionUsingArrays()
         {
             int n = Bithacks.Power2(10);
             int result_gpu = 0;
@@ -274,6 +276,41 @@ namespace Reduction
                     }
                 }
                 result_cpu = data[0];
+            }
+            if (result_gpu != result_cpu) throw new Exception();
+        }
+
+        [TestMethod]
+        public void ReductionUsingLists()
+        {
+            int n = Bithacks.Power2(10);
+            float result_gpu = 0;
+            float result_cpu = 0;
+            {
+                List<float> data = Enumerable.Range(0, n).Select(i => ((float)i) / 10).ToList();
+                for (int level = 1; level <= Bithacks.Log2(n); level++)
+                {
+                    int step = Bithacks.Power2(level);
+                    for (int idx = 0; idx < n / step; idx++)
+                    {
+                        var i = step * idx;
+                        data[i] = data[i] + data[i + step / 2];
+                    }
+                }
+                result_cpu = data[0];
+            }
+            {
+                List<float> data = Enumerable.Range(0, n).Select(i => ((float)i) / 10).ToList();
+                for (int level = 1; level <= Bithacks.Log2(n); level++)
+                {
+                    int step = Bithacks.Power2(level);
+                    Campy.Parallel.For(new Extent(n / step), idx =>
+                    {
+                        var i = step * idx;
+                        data[i] = data[i] + data[i + step / 2];
+                    });
+                }
+                result_gpu = data[0];
             }
             if (result_gpu != result_cpu) throw new Exception();
         }

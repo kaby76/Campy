@@ -50,12 +50,28 @@ namespace Campy.Compiler
 
             try
             {
-                TypeDefinition td = tr.Resolve();
-                // Check basic types using TypeDefinition's found and initialized in the above code.
-
+                // Check basic types using TypeDefinition.
                 // I don't know why, but Resolve() of System.Int32[] (an arrary) returns a simple System.Int32, not
                 // an array. If always true, then use TypeReference as much as possible.
+                // Resolve() also warps pointer types into just the element type. Really bad design in Mono!
+                // All I want is just the frigging information about the type. For example, to know if the
+                // type is a class, you have to convert it to a TypeDefinition because a TypeReference does
+                // not have IsClass property! Really really really poor design for a type system. Sure, keep
+                // a basic understanding of applied and defining occurences, but please, keep type information
+                // about! I cannot rail enough with this half-baked type system in Mono. It has caused so many
+                // problems!!!!!!!
 
+                var is_pointer = tr.IsPointer;
+                var is_array = tr.IsArray;
+                var is_value_type = tr.IsValueType;
+
+                if (is_pointer)
+                {
+                    
+                }
+
+                TypeDefinition td = tr.Resolve();
+                
                 GenericInstanceType git = tr as GenericInstanceType;
                 TypeDefinition gtd = tr as TypeDefinition;
 
@@ -137,9 +153,16 @@ namespace Campy.Compiler
                     // Create a struct type.
                     ContextRef c = LLVM.GetModuleContext(Converter.global_llvm_module);
                     string llvm_name = Converter.RenameToLegalLLVMName(tr.ToString());
-                    TypeRef s = LLVM.StructCreateNamed(c, llvm_name);
 
-                    Converter.previous_llvm_types_created_global.Add(tr, s);
+                    TypeRef s = LLVM.StructCreateNamed(c, llvm_name);
+                    
+                    // Structs are implemented as value types, but if this type is a pointer,
+                    // then return one.
+                    TypeRef p;
+                    if (is_pointer) p = LLVM.PointerType(s, 0);
+                    else p = s;
+
+                    Converter.previous_llvm_types_created_global.Add(tr, p);
 
                     // Create array of typerefs as argument to StructSetBody below.
                     // Note, tr is correct type, but tr.Resolve of a generic type turns the type
@@ -240,7 +263,7 @@ namespace Campy.Compiler
                         }
                     }
                     LLVM.StructSetBody(s, list.ToArray(), true);
-                    return s;
+                    return p;
                 }
                 else if (td != null && td.IsClass)
                 {
@@ -270,7 +293,10 @@ namespace Campy.Compiler
                     string llvm_name = Converter.RenameToLegalLLVMName(tr.ToString());
                     TypeRef s = LLVM.StructCreateNamed(c, llvm_name);
 
-                    var p = LLVM.PointerType(s, 0);
+                    // Classes are always implemented as pointers.
+                    TypeRef p;
+                    p = LLVM.PointerType(s, 0);
+
                     Converter.previous_llvm_types_created_global.Add(tr, p);
 
                     // Create array of typerefs as argument to StructSetBody below.
