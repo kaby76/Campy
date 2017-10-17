@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -210,10 +211,17 @@ namespace Campy
             {
                 unsafe
                 {
+                    Stopwatch stopwatch_discovery = new Stopwatch();
+                    stopwatch_discovery.Reset();
+                    stopwatch_discovery.Start();
+
                     // Parse kernel instructions to determine basic block representation of all the code to compile.
                     int change_set_id = Singleton()._graph.StartChangeSet();
                     Singleton()._reader.AnalyzeMethod(kernel.Method);
                     List<CFG.Vertex> cs = Singleton()._graph.PopChangeSet(change_set_id);
+
+                    stopwatch_discovery.Stop();
+                    var elapse_discovery = stopwatch_discovery.Elapsed;
 
                     MethodInfo method = kernel.Method;
                     object target = kernel.Target;
@@ -263,16 +271,34 @@ namespace Campy
                     // Associate "this" with entry.
                     Dictionary<Tuple<TypeReference, GenericParameter>, Type> ops = bb.OpsFromOriginal;
 
+                    var stopwatch_compiler = new Stopwatch();
+                    stopwatch_compiler.Reset();
+                    stopwatch_compiler.Start();
+
                     // Compile methods with added type information.
                     string ptx = Singleton()._converter.CompileToLLVM(cs, list_of_mono_data_types_used,
                         bb.Name);
 
+                    stopwatch_compiler.Stop();
+                    var elapse_compiler = stopwatch_compiler.Elapsed;
+
                     Converter.CheckCudaError(Cuda.cuInit(0));
+
+                    var stopwatch_cuda_compile = new Stopwatch();
+                    stopwatch_cuda_compile.Reset();
+                    stopwatch_cuda_compile.Start();
 
                     var ptr_to_kernel = Singleton()._converter.GetCudaFunction(bb.Name, ptx);
 
+                    stopwatch_cuda_compile.Start();
+                    var elapse_cuda_compile = stopwatch_cuda_compile.Elapsed;
+
                     Index index = new Index(extent);
                     Buffers buffer = new Buffers();
+
+                    var stopwatch_deep_copy_to = new Stopwatch();
+                    stopwatch_deep_copy_to.Reset();
+                    stopwatch_deep_copy_to.Start();
 
                     // Set up parameters.
                     int count = kernel.Method.GetParameters().Length;
@@ -300,6 +326,13 @@ namespace Campy
                         // buffer.DeepCopyToImplementation(index, ptr2);
                         parm2[0] = ptr2;
                     }
+
+                    stopwatch_deep_copy_to.Start();
+                    var elapse_deep_copy_to = stopwatch_cuda_compile.Elapsed;
+
+                    var stopwatch_call_kernel = new Stopwatch();
+                    stopwatch_call_kernel.Reset();
+                    stopwatch_call_kernel.Start();
 
                     IntPtr[] x1 = parm1;
                     handle1 = GCHandle.Alloc(x1, GCHandleType.Pinned);
@@ -333,7 +366,25 @@ namespace Campy
                     Converter.CheckCudaError(res);
                     res = Cuda.cuCtxSynchronize(); // Make sure it's copied back to host.
                     Converter.CheckCudaError(res);
+
+                    stopwatch_call_kernel.Stop();
+                    var elapse_call_kernel = stopwatch_call_kernel.Elapsed;
+
+                    var stopwatch_deep_copy_back = new Stopwatch();
+                    stopwatch_deep_copy_back.Reset();
+                    stopwatch_deep_copy_back.Start();
+
                     buffer.DeepCopyFromImplementation(ptr, out object to, kernel.Target.GetType());
+
+                    stopwatch_deep_copy_back.Stop();
+                    var elapse_deep_copy_back = stopwatch_deep_copy_back.Elapsed;
+
+                    System.Console.WriteLine("discovery     " + elapse_discovery);
+                    System.Console.WriteLine("compiler      " + elapse_compiler);
+                    System.Console.WriteLine("cuda compile  " + elapse_cuda_compile);
+                    System.Console.WriteLine("deep copy in  " + elapse_deep_copy_to);
+                    System.Console.WriteLine("cuda kernel   " + elapse_call_kernel);
+                    System.Console.WriteLine("deep copy out " + elapse_deep_copy_back);
                 }
             }
             catch (Exception e)
