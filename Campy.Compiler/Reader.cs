@@ -57,6 +57,10 @@ namespace Campy.Compiler
                 "System.Double Campy.Compiler.Runtime::Abs(System.Double)");
             _rewritten_runtime.Add("System.Void System.ThrowHelper::ThrowArgumentOutOfRangeException()",
                 "System.Void Campy.Compiler.Runtime::ThrowArgumentOutOfRangeException()");
+            _rewritten_runtime.Add("System.Void System.Int32[0...,0...,0...]::Set(System.Int32,System.Int32,System.Int32,System.Int32)",
+                "System.Void Campy.Compiler.Runtime::set_multi_array(Campy.Compiler.Runtime/A*,System.Int32,System.Int32,System.Int32,System.Int32)");
+
+
         }
 
         public void AnalyzeMethod(MethodInfo methodInfo)

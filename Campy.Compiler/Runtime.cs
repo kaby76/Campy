@@ -13,7 +13,9 @@ namespace Campy.Compiler
         {
             public void* p;
             public long d;
-            public long l;
+            public long l; // Width of dimension 0.
+            // Additional widths for dimension 1, dimension 2, ...
+            // Value data after all dimensional sizes.
         }
 
         public static unsafe int get_length_multi_array(A* arr, int i0)
@@ -32,20 +34,23 @@ namespace Campy.Compiler
 
         public static unsafe int get_multi_array(A* arr, int i0, int i1)
         {
+            // (y * xMax) + x
             int* a = (int*)(*arr).p;
             int d = (int)(*arr).d;
-            byte* bp = (byte*)arr;
-            bp = bp + 24;
+            byte* d0_ptr = (byte*)arr;
+            d0_ptr = d0_ptr + 24;
             long o = 0;
-            long* lp = (long*)bp;
-            o = (*lp) * i0 + i1;
+            long d0 = *(long*)d0_ptr;
+            o = i0 * d0 + i1;
             return *(a + o);
         }
 
         public static unsafe int get_multi_array(A* arr, int i0, int i1, int i2)
         {
+            // (z * xMax * yMax) + (y * xMax) + x;
             int* a = (int*)(*arr).p;
             int d = (int)(*arr).d;
+            byte* bp_d0 = (byte*)arr;
             byte* bp_d1 = (byte*)arr;
             bp_d1 = bp_d1 + 24;
             long o = 0;
@@ -66,25 +71,22 @@ namespace Campy.Compiler
 
         public static unsafe void set_multi_array(A* arr, int i0, int i1, int value)
         {
+            //  b[i, j] = j  + i * ex[1];
+
             int* a = (int*)(*arr).p;
-            int d = (int)(*arr).d;
-            byte* bp = (byte*)arr;
-            bp = bp + 24;
-            long o = 0;
-            long* lp = (long*)bp;
-            o = (*lp) * i0 + i1;
+            long ex1 = *(long*)(24 + (byte*)arr);
+            long o = i1 + ex1 * i0;
             *(a + o) = value;
         }
 
         public static unsafe void set_multi_array(A* arr, int i0, int i1, int i2, int value)
         {
+            //  b[i, j, k] = k + j * ex[2] + i * ex[2] * ex[1];
+
             int* a = (int*)(*arr).p;
-            int d = (int)(*arr).d;
-            byte* bp = (byte*)arr;
-            bp = bp + 24;
-            long o = 0;
-            long* lp = (long*)bp;
-            o = (*lp) * i0 + i1;
+            long ex1 = *(long*)(24 + (byte*)arr);
+            long ex2 = *(long*)(32 + (byte*)arr);
+            long o = i2 + i1 * ex2 + i0 * ex2 * ex1;
             *(a + o) = value;
         }
 
