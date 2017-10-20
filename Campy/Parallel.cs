@@ -71,6 +71,10 @@ namespace Campy
                     // Parse kernel instructions to determine basic block representation of all the code to compile.
                     int change_set_id = Singleton()._graph.StartChangeSet();
                     Singleton()._reader.AnalyzeMethod(kernel.Method);
+                    if (Singleton()._reader.Failed)
+                    {
+                        throw new Exception("Failure to find all methods in GPU code. Cannot continue.");
+                    }
                     List<CFG.Vertex> cs = Singleton()._graph.PopChangeSet(change_set_id);
 
                     MethodInfo method = kernel.Method;
@@ -218,6 +222,10 @@ namespace Campy
                     // Parse kernel instructions to determine basic block representation of all the code to compile.
                     int change_set_id = Singleton()._graph.StartChangeSet();
                     Singleton()._reader.AnalyzeMethod(kernel.Method);
+                    if (Singleton()._reader.Failed)
+                    {
+                        throw new Exception("Failure to find all methods in GPU code. Cannot continue.");
+                    }
                     List<CFG.Vertex> cs = Singleton()._graph.PopChangeSet(change_set_id);
 
                     stopwatch_discovery.Stop();

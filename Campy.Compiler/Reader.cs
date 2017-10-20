@@ -29,6 +29,12 @@ namespace Campy.Compiler
         // mapping of methods to be rewritten.
         private Dictionary<string, string> _rewritten_runtime;
 
+        public bool Failed
+        {
+            get;
+            internal set;
+        }
+
         public CFG Cfg
         {
             get { return _cfg; }
@@ -59,12 +65,11 @@ namespace Campy.Compiler
                 "System.Void Campy.Compiler.Runtime::ThrowArgumentOutOfRangeException()");
             _rewritten_runtime.Add("System.Void System.Int32[0...,0...,0...]::Set(System.Int32,System.Int32,System.Int32,System.Int32)",
                 "System.Void Campy.Compiler.Runtime::set_multi_array(Campy.Compiler.Runtime/A*,System.Int32,System.Int32,System.Int32,System.Int32)");
-
-
         }
 
         public void AnalyzeMethod(MethodInfo methodInfo)
         {
+            Failed = false; // Might be dubious to reset here.
             this.Add(methodInfo);
             this.ExtractBasicBlocks();
             _cfg.OutputEntireGraph();
@@ -512,19 +517,17 @@ namespace Campy.Compiler
                 // seem to resolve. Moreover, to add more confusion, a one dimensional array do resolve,
                 // As arrays are so central to GPU programming, we need to substitute for System.Array code--that
                 // we cannot find--into code from a runtime library.
-                System.Console.WriteLine("No definition for " + method_reference.FullName);
+                System.Console.WriteLine("ERROR: No definition for " + method_reference.FullName);
                 System.Console.WriteLine(method_reference.IsDefinition ? "" : "Is not a definition at that!");
-                throw new Exception("No code for method.");
+                this.Failed = true;
+                return null;
             }
             else if (method_definition.Body == null)
             {
-                System.Console.WriteLine("WARNING: METHOD BODY NULL! " + method_definition);
-                throw new Exception("No code for method.");
+                System.Console.WriteLine("ERROR: METHOD BODY NULL! " + method_definition);
+                this.Failed = true;
+                return null;
             }
-
-
-
-
 
             Dictionary<TypeReference, System.Type> additional = new Dictionary<TypeReference, System.Type>();
             var mr_gp = method_reference.GenericParameters;

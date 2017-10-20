@@ -3,10 +3,10 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Linq;
 using System.Numerics;
 
-namespace FFT
+namespace FFTNS
 {
     [TestClass]
-    public class UnitTest1
+    public class FFTC
     {
         /* Performs a Bit Reversal Algorithm on a postive integer 
          * for given number of bits
@@ -109,7 +109,7 @@ namespace FFT
         }
 
         [TestMethod]
-        public void TestMethod1()
+        public void FFT_Test()
         {
             Complex[] input = { 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
             var copy = input.ToArray();
