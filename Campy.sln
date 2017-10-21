@@ -1,13 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26730.16
+VisualStudioVersion = 15.0.27004.2005
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleApp4", "ConsoleApp4\ConsoleApp4.csproj", "{3854D42C-FBB7-4AA0-840D-89E2E6997DB5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Campy.Utils", "Campy.Utils\Campy.Utils.csproj", "{ED3C7742-647C-44F9-B64B-29866044A54A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Campy.Utils", "Campy.Utils\Campy.Utils.csproj", "{ED3C7742-647C-44F9-B64B-29866044A54A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Campy.Graphs", "Campy.Graphs\Campy.Graphs.csproj", "{A71CE04F-F0D2-46E0-BAE8-06CF1EA50F96}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Campy.Graphs", "Campy.Graphs\Campy.Graphs.csproj", "{A71CE04F-F0D2-46E0-BAE8-06CF1EA50F96}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Campy.Compiler", "Campy.Compiler\Campy.Compiler.csproj", "{CED2299A-4F97-4FB7-BFA8-A61B50E9986D}"
 EndProject
