@@ -89,7 +89,7 @@
             public Asm()
             {
                 var s = "DynamicAssembly" + v++;
-                assemblyName = new System.Reflection.AssemblyName();
+                assemblyName = new System.Reflection.AssemblyName(s);
                 var assembly_builder = System.Reflection.Emit.AssemblyBuilder.DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.Run);
                 mb = assembly_builder.DefineDynamicModule(s);
             }
