@@ -88,11 +88,10 @@
 
             public Asm()
             {
-                assemblyName = new System.Reflection.AssemblyName("DynamicAssembly" + v++);
-                ab = AppDomain.CurrentDomain.DefineDynamicAssembly(
-                    assemblyName,
-                    AssemblyBuilderAccess.RunAndSave);
-                mb = ab.DefineDynamicModule(assemblyName.Name, assemblyName.Name + ".dll");
+                var s = "DynamicAssembly" + v++;
+                assemblyName = new System.Reflection.AssemblyName();
+                var assembly_builder = System.Reflection.Emit.AssemblyBuilder.DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.Run);
+                mb = assembly_builder.DefineDynamicModule(s);
             }
         }
 
