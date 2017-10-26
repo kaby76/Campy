@@ -1,1 +1,0 @@
-Currently using freetype version 2.3.5

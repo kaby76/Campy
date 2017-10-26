@@ -192,8 +192,8 @@ fnInternalCall InternalCall_Map(tMD_MethodDef *pMethod) {
 			if (pCall->type != NULL) {
 				curType = pCall->type;
 			}
-			if (gpustrcmp((const char*) pMethod->pParentType->nameSpace, (const char*)curNameSpace) == 0) {
-				if (gpustrcmp((const char*) pMethod->pParentType->name, (const char*)curType) == 0) {
+			if (strcmp(pMethod->pParentType->nameSpace, curNameSpace) == 0) {
+				if (strcmp(pMethod->pParentType->name, curType) == 0) {
 					if (Type_IsMethod(pMethod, pCall->method, types[pCall->returnType], pCall->numParameters, pCall->parameterTypes)) {
 						return pCall->fn;
 					}

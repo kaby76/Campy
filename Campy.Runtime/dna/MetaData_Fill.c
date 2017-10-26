@@ -373,12 +373,12 @@ void MetaData_Fill_TypeDef_(tMD_TypeDef *pTypeDef, tMD_TypeDef **ppClassTypeArgs
 				memcpy(pMethodCopy, pMethodDef, sizeof(tMD_MethodDef));
 				pMethodDef = pMethodCopy;
 			}
-			if (METHOD_ISSTATIC(pMethodDef) && gpustrcmp(pMethodDef->name, ".cctor") == 0) {
+			if (METHOD_ISSTATIC(pMethodDef) && strcmp(pMethodDef->name, ".cctor") == 0) {
 				// This is a static constructor
 				pTypeDef->pStaticConstructor = pMethodDef;
 			}
 			if (!METHOD_ISSTATIC(pMethodDef) && pTypeDef->pParent != NULL &&
-				gpustrcmp(pMethodDef->name, "Finalize") == 0) {
+				strcmp(pMethodDef->name, "Finalize") == 0) {
 				// This is a Finalizer method, but not for Object.
 				// Delibrately miss out Object's Finalizer because it's empty and will cause every object
 				// of any type to have a Finalizer which will be terrible for performance.

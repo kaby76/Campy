@@ -43,11 +43,11 @@ struct tFilesLoaded_ {
 // Keep track of all the files currently loaded
 static tFilesLoaded *pFilesLoaded = NULL;
 
-tMetaData* CLIFile_GetMetaDataForAssembly(char *pAssemblyName) {
+tMetaData* CLIFile_GetMetaDataForAssembly(unsigned char *pAssemblyName) {
 	tFilesLoaded *pFiles;
 
 	// Convert "mscorlib" to "corlib"
-	if (gpustrcmp(pAssemblyName, "mscorlib") == 0) {
+	if (strcmp(pAssemblyName, "mscorlib") == 0) {
 		pAssemblyName = "corlib";
 	}
 
@@ -60,7 +60,7 @@ tMetaData* CLIFile_GetMetaDataForAssembly(char *pAssemblyName) {
 		pCLIFile = pFiles->pCLIFile;
 		// Get the assembly info - there is only ever one of these in the each file's metadata
 		pThisAssembly = MetaData_GetTableRow(pCLIFile->pMetaData, MAKE_TABLE_INDEX(0x20, 1));
-		if (gpustrcmp(pAssemblyName, pThisAssembly->name) == 0) {
+		if (strcmp(pAssemblyName, pThisAssembly->name) == 0) {
 			// Found the correct assembly, so return its meta-data
 			return pCLIFile->pMetaData;
 		}

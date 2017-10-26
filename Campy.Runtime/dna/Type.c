@@ -88,7 +88,7 @@ static void GetMethodDefs() {
 
 		pMethod = (tMD_MethodDef*)MetaData_GetTableRow(pMetaData, token);
 		for (i=0; i<GENERICARRAYMETHODS_NUM; i++) {
-			if (gpustrcmp(pMethod->name, pGenericArrayMethodsInit[i]) == 0) {
+			if (strcmp(pMethod->name, pGenericArrayMethodsInit[i]) == 0) {
 				ppGenericArrayMethods[i] = pMethod;
 				break;
 			}
@@ -195,11 +195,11 @@ U32 Type_IsValueType(tMD_TypeDef *pTypeDef) {
 		return 0;
 	}
 	// If this type is Object or ValueType then return an answer
-	if (gpustrcmp(pTypeDef->nameSpace, "System") == 0) {
-		if (gpustrcmp(pTypeDef->name, "ValueType") == 0) {
+	if (strcmp(pTypeDef->nameSpace, "System") == 0) {
+		if (strcmp(pTypeDef->name, "ValueType") == 0) {
 			return 1;
 		}
-		if (gpustrcmp(pTypeDef->name, "Object") == 0) {
+		if (strcmp(pTypeDef->name, "Object") == 0) {
 			return 0;
 		}
 	}
@@ -442,7 +442,7 @@ U32 Type_IsMethod(tMD_MethodDef *pMethod, STRING name, tMD_TypeDef *pReturnType,
 			return 0;
 		}
 	} else {
-		if (gpustrcmp(pMethod->name, name) != 0) {
+		if (strcmp(pMethod->name, name) != 0) {
 			return 0;
 		}
 	}

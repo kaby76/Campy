@@ -27,7 +27,7 @@
 #include "Types.h"
 
 U32 MetaData_CompareNameAndSig(STRING name, BLOB_ sigBlob, tMetaData *pSigMetaData, tMD_TypeDef **ppSigClassTypeArgs, tMD_TypeDef **ppSigMethodTypeArgs, tMD_MethodDef *pMethod, tMD_TypeDef **ppMethodClassTypeArgs, tMD_TypeDef **ppMethodMethodTypeArgs) {
-	if (gpustrcmp(name, pMethod->name) == 0) {
+	if (strcmp(name, pMethod->name) == 0) {
 		SIG sig, thisSig;
 		U32 e, thisE, paramCount, i;
 
@@ -134,7 +134,7 @@ static tMD_FieldDef* FindFieldInType(tMD_TypeDef *pTypeDef, STRING name) {
 	MetaData_Fill_TypeDef(pTypeDef, NULL, NULL);
 
 	for (i=0; i<pTypeDef->numFields; i++) {
-		if (gpustrcmp(pTypeDef->ppFields[i]->name, name) == 0) {
+		if (strcmp(pTypeDef->ppFields[i]->name, name) == 0) {
 			return pTypeDef->ppFields[i];
 		}
 	}
@@ -175,8 +175,8 @@ tMD_TypeDef* MetaData_GetTypeDefFromName(tMetaData *pMetaData, STRING nameSpace,
 
 		pTypeDef = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_TYPEDEF, i));
 		if (pInNestedClass == pTypeDef->pNestedIn &&
-			gpustrcmp(name, pTypeDef->name) == 0 &&
-			(pInNestedClass != NULL || gpustrcmp(nameSpace, pTypeDef->nameSpace) == 0)) {
+			strcmp(name, pTypeDef->name) == 0 &&
+			(pInNestedClass != NULL || strcmp(nameSpace, pTypeDef->nameSpace) == 0)) {
 			return pTypeDef;
 		}
 	}

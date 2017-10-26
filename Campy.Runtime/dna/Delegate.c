@@ -71,7 +71,7 @@ static tAsyncCall* ctor(PTR pThis_, PTR pParams, PTR pReturnValue) {
 
 fnInternalCall Map_Delegate(tMD_MethodDef *pMethod) {
 	// Note that it is not neccessary to check argument types here, as delegates are very tightly controlled
-	if (gpustrcmp(pMethod->name, ".ctor") == 0) {
+	if (strcmp(pMethod->name, ".ctor") == 0) {
 		return ctor;
 	}
 

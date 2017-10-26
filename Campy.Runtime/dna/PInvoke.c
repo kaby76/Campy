@@ -48,13 +48,13 @@ static tLoadedLib* GetLib(STRING name) {
 	void *pNativeLib;
 
 	while (pLib != NULL) {
-		if (gpustrcmp(name, pLib->name) == 0) {
+		if (strcmp(name, pLib->name) == 0) {
 			return pLib;
 		}
 	}
 	sprintf(libName, "%s%s", LIB_PREFIX, name);
 	if (strlen(libName) >= 4) {
-		if (gpustrcmp(".dll", libName + strlen(libName) - 4) == 0) {
+		if (strcmp(".dll", libName + strlen(libName) - 4) == 0) {
 			// Cut off the ".dll" suffix if it's there
 			libName[strlen(libName) - 4] = 0;
 		}

@@ -209,8 +209,7 @@ tAsyncCall* System_IO_FileInternal_GetFileSystemEntries(PTR pThis_, PTR pParams,
 	WIN32_FIND_DATA find;
 	memcpy(pathPatternNullTerm, pathPattern, pathPatternLen << 1);
 	pathPatternNullTerm[pathPatternLen] = 0;
-	//hFind = FindFirstFileW(pathPatternNullTerm, &find);
-	hFind = 0;
+	hFind = FindFirstFileW(pathPatternNullTerm, &find);
 	if (hFind != INVALID_HANDLE_VALUE) {
 		do {
 			if ((find.dwFileAttributes & mask) == attrs) {
@@ -220,7 +219,7 @@ tAsyncCall* System_IO_FileInternal_GetFileSystemEntries(PTR pThis_, PTR pParams,
 					tempStoreSize <<= 1;
 					pTempStore = realloc(pTempStore, tempStoreSize * sizeof(void*));
 				}
-	//			str = SystemString_FromCharPtrUTF16(find.cFileName);
+				str = SystemString_FromCharPtrUTF16(find.cFileName);
 				// Need to temporarily make these undeletable, in case a GC happens before they're in the array
 				Heap_MakeUndeletable(str);
 				pTempStore[tempStoreOfs++] = str;

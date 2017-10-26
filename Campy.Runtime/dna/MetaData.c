@@ -388,7 +388,7 @@ static void* LoadSingleTable(tMetaData *pThis, tRVA *pRVA, int tableID, void **p
 							int idxIntoTableID = pCoding[tag]; // The actual table index that we're looking for
 							if (idxIntoTableID < 0 || idxIntoTableID > MAX_TABLES) {
 								printf("Error: Bad table index: 0x%02x\n", idxIntoTableID);
-								gpuexit(1);
+								exit(1);
 							}
 							if (pThis->tables.codedIndex32Bit[ofs]) {
 								// Use 32-bit number
@@ -537,7 +537,7 @@ void MetaData_LoadTables(tMetaData *pThis, tRVA *pRVA, void *pStream, unsigned i
 		if (pThis->tables.numRows[i] > 0) {
 			if (i*4 >= sizeof(tableDefs) || tableDefs[i] == NULL) {
 				printf("No table definition for MetaData table 0x%02x\n", i);
-				gpuexit(1);
+				exit(1);
 			}
 			pThis->tables.data[i] = LoadSingleTable(pThis, pRVA, i, &pTable);
 		}
@@ -553,7 +553,7 @@ PTR MetaData_GetBlob(BLOB_ blob, U32 *pBlobLength) {
 }
 
 // Returns length in bytes, not characters
-__device__  STRING2 MetaData_GetUserString(tMetaData *pThis, IDX_USERSTRINGS index, unsigned int *pStringLength) {
+STRING2 MetaData_GetUserString(tMetaData *pThis, IDX_USERSTRINGS index, unsigned int *pStringLength) {
 	unsigned char *pString = pThis->userStrings.pStart + (index & 0x00ffffff);
 	unsigned int len = MetaData_DecodeHeapEntryLength(&pString);
 	if (pStringLength != NULL) {

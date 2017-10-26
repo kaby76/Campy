@@ -1640,7 +1640,7 @@ void JIT_Prepare(tMD_MethodDef *pMethodDef, U32 genCombinedOpcodes) {
 		tJITCallNative *pCallNative;
 
 		// Internal call
-		if (gpustrcmp(pMethodDef->name, ".ctor") == 0) {
+		if (strcmp(pMethodDef->name, ".ctor") == 0) {
 			// Internal constructor needs enough evaluation stack space to return itself
 			pJITted->maxStack = pMethodDef->pParentType->stackSize;
 		} else {

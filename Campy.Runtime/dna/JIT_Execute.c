@@ -3161,5 +3161,5 @@ done:
 
 void JIT_Execute_Init() {
 	// Initialise the JIT code addresses
-//	JIT_Execute(NULL, 0);
+	JIT_Execute(NULL, 0);
 }
