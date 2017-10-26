@@ -45,9 +45,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FFT", "FFT\FFT.csproj", "{0
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MultiDimensionalArrays", "MultiDimensionalArrays\MultiDimensionalArrays.csproj", "{C037A145-2BCC-4805-9A48-AD4B34C04A10}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "corlib", "Campy.Runtime\corlib\corlib.csproj", "{1C06EB45-3235-4564-8A45-F553C34B19D6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Campy.Runtime.Corlib", "Campy.Runtime\Corlib\Campy.Runtime.Corlib.csproj", "{1C06EB45-3235-4564-8A45-F553C34B19D6}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Project1", "Campy.Runtime\dna\Project1.vcxproj", "{D6F88E29-3257-4BCA-AEB2-B89E21CE331D}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Campy.Runtime.Native", "Campy.Runtime\Native\Campy.Runtime.Native.vcxproj", "{D6F88E29-3257-4BCA-AEB2-B89E21CE331D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
