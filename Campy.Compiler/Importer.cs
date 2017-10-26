@@ -12,7 +12,7 @@ namespace Campy.Compiler
     using System.Reflection;
     using Mono.Cecil.Cil;
 
-    public class Reader
+    public class Importer
     {
         private CFG _cfg;
         private List<ModuleDefinition> _loaded_modules;
@@ -41,7 +41,7 @@ namespace Campy.Compiler
             set { _cfg = value; }
         }
 
-        public Reader()
+        public Importer()
         {
             _cfg = new CFG();
             _loaded_modules = new List<ModuleDefinition>();
@@ -525,6 +525,7 @@ namespace Campy.Compiler
             else if (method_definition.Body == null)
             {
                 System.Console.WriteLine("ERROR: METHOD BODY NULL! " + method_definition);
+                var t = method_definition.IsInternalCall;
                 this.Failed = true;
                 return null;
             }

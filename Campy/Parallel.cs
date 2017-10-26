@@ -16,14 +16,14 @@ namespace Campy
     {
         private static Parallel _singleton;
         private CFG _graph;
-        private Reader _reader;
+        private Importer _importer;
         private Converter _converter;
 
         private Parallel()
         {
             Swigged.LLVM.Helper.Adjust.Path();
-            _reader = new Reader();
-            _graph = _reader.Cfg;
+            _importer = new Importer();
+            _graph = _importer.Cfg;
             _converter = new Campy.Compiler.Converter(_graph);
            // var ok = GC.TryStartNoGCRegion(200000000);
         }
@@ -70,8 +70,8 @@ namespace Campy
                 {
                     // Parse kernel instructions to determine basic block representation of all the code to compile.
                     int change_set_id = Singleton()._graph.StartChangeSet();
-                    Singleton()._reader.AnalyzeMethod(kernel.Method);
-                    if (Singleton()._reader.Failed)
+                    Singleton()._importer.AnalyzeMethod(kernel.Method);
+                    if (Singleton()._importer.Failed)
                     {
                         throw new Exception("Failure to find all methods in GPU code. Cannot continue.");
                     }
@@ -221,8 +221,8 @@ namespace Campy
 
                     // Parse kernel instructions to determine basic block representation of all the code to compile.
                     int change_set_id = Singleton()._graph.StartChangeSet();
-                    Singleton()._reader.AnalyzeMethod(kernel.Method);
-                    if (Singleton()._reader.Failed)
+                    Singleton()._importer.AnalyzeMethod(kernel.Method);
+                    if (Singleton()._importer.Failed)
                     {
                         throw new Exception("Failure to find all methods in GPU code. Cannot continue.");
                     }

@@ -158,7 +158,7 @@ namespace Campy.Compiler
             UInt32 ValidRangeEnd)
         {
             // TODO: This feature is untested.
-            // Reader doesn't implement GS Cookie guard yet.
+            // Importer doesn't implement GS Cookie guard yet.
             // Implement stack protection checks
             // https://github.com/dotnet/llilc/issues/353
             Debug.Assert(false, "UnTested");
