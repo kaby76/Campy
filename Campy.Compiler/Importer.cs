@@ -500,6 +500,24 @@ namespace Campy.Compiler
 
         public MethodDefinition Rewrite(MethodReference method_reference)
         {
+            // Look up base class.
+            TypeReference mr_dt = method_reference.DeclaringType;
+            if (mr_dt != null && mr_dt.FullName == "System.String")
+            {
+                // Find in Campy.Runtime.
+                string yopath = @"C:\Users\Kenne\Documents\DotNetAnywhere\corlib\bin\Debug\corlib.dll";
+                Mono.Cecil.ModuleDefinition md = Mono.Cecil.ModuleDefinition.ReadModule(yopath);
+                foreach (var ttt in md.Types)
+                {
+                    var yyy = ttt.Resolve();
+                    foreach (var mmm in yyy.Methods)
+                    {
+                        System.Console.WriteLine("type " + yyy.FullName + " Method " + mmm.FullName);
+                        var bbb = mmm.Body;
+                    }
+                }
+            }
+
             MethodDefinition method_definition = method_reference.Resolve();
             var name = method_reference.FullName;
             var found = _rewritten_runtime.ContainsKey(name);
@@ -532,7 +550,6 @@ namespace Campy.Compiler
 
             Dictionary<TypeReference, System.Type> additional = new Dictionary<TypeReference, System.Type>();
             var mr_gp = method_reference.GenericParameters;
-            var mr_dt = method_reference.DeclaringType;
             var mr_hgp = method_reference.HasGenericParameters;
             var mr_dt_hgp = method_reference.DeclaringType.HasGenericParameters;
             var mr_igi = method_reference.IsGenericInstance;
