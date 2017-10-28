@@ -1,9 +1,8 @@
 ﻿
-using Mono.Collections.Generic;
-
 namespace Campy.Utils
 {
     using Mono.Cecil;
+    using Mono.Collections.Generic;
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
