@@ -505,7 +505,7 @@ namespace Campy.Compiler
             if (mr_dt != null && mr_dt.FullName == "System.String")
             {
                 // Find in Campy.Runtime.
-                string yopath = @"C:\Users\Kenne\Documents\DotNetAnywhere\corlib\bin\Debug\corlib.dll";
+                string yopath = @"C:\Users\Kenne\Documents\Campy\Campy.Runtime\Corlib\bin\Debug\netstandard1.3\corlib.dll";
                 Mono.Cecil.ModuleDefinition md = Mono.Cecil.ModuleDefinition.ReadModule(yopath);
                 foreach (var ttt in md.Types)
                 {
