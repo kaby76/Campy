@@ -2,11 +2,8 @@
 
 namespace Campy.Graphs
 {
-    public interface IVertex<NAME> : IComparable<IVertex<NAME>>
+    public interface IVertex : IComparable<IVertex>
     {
-        NAME Name
-        {
-            get;
-        }
+        // Use ToString() to get ID of node.
     }
 }

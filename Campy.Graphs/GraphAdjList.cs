@@ -1,33 +1,32 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+using Campy.Utils;
 
 namespace Campy.Graphs
 {
-    public class GraphAdjList<NAME> : IGraph<NAME>
+    public class GraphAdjList<NODE, EDGE> : IGraph<NODE, EDGE>
+        where EDGE : IEdge<NODE>
     {
-        public FiniteTotalOrderSet<NAME> NameSpace = new FiniteTotalOrderSet<NAME>();
-        public GraphAdjListVertex<NAME>[] VertexSpace = new GraphAdjListVertex<NAME>[10];
-        public GraphAdjListEdge<NAME>[] EdgeSpace = new GraphAdjListEdge<NAME>[10];
-        public CompressedAdjacencyList<NAME> adj = new CompressedAdjacencyList<NAME>();
-        protected Type NODE;
-        protected Type EDGE;
+        bool allow_duplicates = false;
 
-        class VertexEnumerator : IEnumerable<NAME>
+        public Dictionary<NODE, NODE> VertexSpace = new Dictionary<NODE, NODE>();
+        public MultiMap<NODE, EDGE> ForwardEdgeSpace = new MultiMap<NODE, EDGE>();
+        public MultiMap<NODE, EDGE> ReverseEdgeSpace = new MultiMap<NODE, EDGE>();
+
+        class VertexEnumerator : IEnumerable<NODE>
         {
-            GraphAdjListVertex<NAME>[] VertexSpace;
+            Dictionary<NODE, NODE> VertexSpace;
 
-            public VertexEnumerator(GraphAdjListVertex<NAME>[] vs)
+            public VertexEnumerator(Dictionary<NODE, NODE> vs)
             {
                 VertexSpace = vs;
             }
 
-            public IEnumerator<NAME> GetEnumerator()
+            public IEnumerator<NODE> GetEnumerator()
             {
-                for (int i = 0; i < VertexSpace.Length; ++i)
+                foreach (var key in VertexSpace.Keys)
                 {
-                    if (VertexSpace[i] != null)
-                        yield return VertexSpace[i].Name;
+                    yield return key;
                 }
             }
 
@@ -37,7 +36,7 @@ namespace Campy.Graphs
             }
         }
 
-        public IEnumerable<NAME> Vertices
+        public IEnumerable<NODE> Vertices
         {
             get
             {
@@ -45,21 +44,24 @@ namespace Campy.Graphs
             }
         }
 
-        public class EdgeEnumerator : IEnumerable<GraphAdjListEdge<NAME>>
+        public class EdgeEnumerator : IEnumerable<EDGE>
         {
-            GraphAdjListEdge<NAME>[] EdgeSpace;
+            MultiMap<NODE, EDGE> EdgeSpace;
 
-            public EdgeEnumerator(GraphAdjListEdge<NAME>[] es)
+            public EdgeEnumerator(MultiMap<NODE, EDGE> es)
             {
                 EdgeSpace = es;
             }
 
-            public IEnumerator<GraphAdjListEdge<NAME>> GetEnumerator()
+            public IEnumerator<EDGE> GetEnumerator()
             {
-                for (int i = 0; i < EdgeSpace.Length; ++i)
+                foreach (var t in EdgeSpace)
                 {
-                    if (EdgeSpace[i] != null)
-                        yield return EdgeSpace[i];
+                    var l = t.Value;
+                    foreach (var e in l)
+                    {
+                        yield return e;
+                    }
                 }
             }
 
@@ -69,127 +71,61 @@ namespace Campy.Graphs
             }
         }
 
-        public IEnumerable<IEdge<NAME>> Edges
+        public IEnumerable<EDGE> Edges
         {
             get
             {
-                return new EdgeEnumerator(EdgeSpace);
+                return new EdgeEnumerator(ForwardEdgeSpace);
             }
         }
 
-        virtual protected GraphAdjListVertex<NAME> CreateVertex()
+        virtual public NODE AddVertex(NODE v)
         {
-            GraphAdjListVertex<NAME> vv = (GraphAdjListVertex<NAME>)Activator.CreateInstance(NODE, true);
-            return vv;
+            VertexSpace[v] = v;
+            return v;
         }
 
-        virtual public IVertex<NAME> AddVertex(NAME v)
-        {
-            GraphAdjListVertex<NAME> vv = null;
-
-            // NB: This code is very efficient if the name space
-            // is integer, and has been preconstructed. Otherwise,
-            // it will truly suck in speed.
-
-            // Add name.
-            NameSpace.Add(v);
-
-            // Find bijection v into int domain.
-            int iv = NameSpace.BijectFromBasetype(v);
-
-            // Find node from int domain.
-            if (iv >= VertexSpace.Length)
-            {
-                Array.Resize(ref VertexSpace, VertexSpace.Length * 2);
-            }
-            if (VertexSpace[iv] == null)
-            {
-                vv = (GraphAdjListVertex<NAME>)CreateVertex();
-                vv.Name = v;
-                vv._Graph = this;
-                VertexSpace[iv] = vv;
-            }
-            else
-                vv = VertexSpace[iv];
-            return vv;
-        }
-
-        virtual public void DeleteVertex(GraphAdjListVertex<NAME> vertex)
+        virtual public void DeleteVertex(NODE v)
         {
         }
 
-        virtual protected GraphAdjListEdge<NAME> CreateEdge()
+        virtual public EDGE AddEdge(EDGE e)
         {
-            GraphAdjListEdge<NAME> e = (GraphAdjListEdge<NAME>)Activator.CreateInstance(EDGE, true);
+            var vf = AddVertex(e.From);
+            var vt = AddVertex(e.To);
+            ForwardEdgeSpace.Add(e.From, e);
+            ReverseEdgeSpace.Add(e.To, e);
             return e;
         }
 
-        virtual public IEdge<NAME> AddEdge(NAME f, NAME t)
-        {
-            GraphAdjListVertex<NAME> vf = (GraphAdjListVertex<NAME>)AddVertex(f);
-            GraphAdjListVertex<NAME> vt = (GraphAdjListVertex<NAME>)AddVertex(t);
-            // Create adjacency table entry for (f, t).
-            int j = adj.Add(f, t);
-            // Create EDGE with from/to.
-            if (j >= EdgeSpace.Length)
-            {
-                Array.Resize(ref EdgeSpace, EdgeSpace.Length * 2);
-            }
-            if (EdgeSpace[j] == null)
-            {
-                GraphAdjListEdge<NAME> edge = CreateEdge();
-                edge.to = vt;
-                edge.from = vf;
-                EdgeSpace[j] = edge;
-                return edge;
-            }
-            else
-                return EdgeSpace[j];
-        }
-
-        virtual public void DeleteEdge(NAME f, NAME t)
+        virtual public void DeleteEdge(EDGE e)
         {
         }
 
-        public void SetNameSpace(IEnumerable<NAME> ns)
+        virtual public void Optimize()
         {
-            NameSpace.OrderedRelationship(ns);
-            adj.Construct(NameSpace);
-        }
-
-        public void Optimize()
-        {
-            adj.Shrink();
         }
 
         public GraphAdjList()
         {
-            NODE = typeof(GraphAdjListVertex<NAME>);
-            EDGE = typeof(GraphAdjListEdge<NAME>);
         }
 
-        class PredecessorEnumerator : IEnumerable<NAME>
+        class PredecessorEnumerator : IEnumerable<NODE>
         {
-            GraphAdjList<NAME> graph;
-            NAME name;
+            private GraphAdjList<NODE, EDGE> graph;
+            private NODE node;
 
-            public PredecessorEnumerator(GraphAdjList<NAME> g, NAME n)
+            public PredecessorEnumerator(GraphAdjList<NODE, EDGE> g, NODE n)
             {
                 graph = g;
-                name = n;
+                node = n;
             }
 
-            public IEnumerator<NAME> GetEnumerator()
+            public IEnumerator<NODE> GetEnumerator()
             {
-                int[] index = graph.adj.IndexPredecessors;
-                int[] data = graph.adj.DataPredecessors;
-                int n = graph.NameSpace.BijectFromBasetype(name);
-                GraphAdjListVertex<NAME> node = graph.VertexSpace[n];
-                for (int i = index[n]; i < index[n + 1]; ++i)
+                foreach (EDGE e in graph.ReverseEdgeSpace[node])
                 {
-                    int d = data[i];
-                    NAME c = graph.VertexSpace[d].Name;
-                    yield return c;
+                    yield return e.From;
                 }
             }
 
@@ -199,33 +135,27 @@ namespace Campy.Graphs
             }
         }
 
-        public IEnumerable<NAME> Predecessors(NAME n)
+        public IEnumerable<NODE> Predecessors(NODE n)
         {
             return new PredecessorEnumerator(this, n);
         }
 
-        class PredecessorEdgeEnumerator : IEnumerable<IEdge<NAME>>
+        class PredecessorEdgeEnumerator : IEnumerable<EDGE>
         {
-            GraphAdjList<NAME> graph;
-            NAME name;
+            private GraphAdjList<NODE, EDGE> graph;
+            private NODE node;
 
-            public PredecessorEdgeEnumerator(GraphAdjList<NAME> g, NAME n)
+            public PredecessorEdgeEnumerator(GraphAdjList<NODE, EDGE> g, NODE n)
             {
                 graph = g;
-                name = n;
+                node = n;
             }
 
-            public IEnumerator<IEdge<NAME>> GetEnumerator()
+            public IEnumerator<EDGE> GetEnumerator()
             {
-                int[] index = graph.adj.IndexPredecessors;
-                int[] data = graph.adj.DataPredecessors;
-                int n = graph.NameSpace.BijectFromBasetype(name);
-                GraphAdjListVertex<NAME> node = graph.VertexSpace[n];
-                for (int i = index[n]; i < index[n + 1]; ++i)
+                foreach (EDGE e in graph.ReverseEdgeSpace[node])
                 {
-                    int d = data[i];
-                    var c = graph.VertexSpace[d];
-                    yield return new GraphAdjListEdge<NAME>(c, node);
+                    yield return e;
                 }
             }
 
@@ -235,34 +165,29 @@ namespace Campy.Graphs
             }
         }
 
-
-        public IEnumerable<IEdge<NAME>> PredecessorEdges(NAME n)
+        public IEnumerable<EDGE> PredecessorEdges(NODE n)
         {
             return new PredecessorEdgeEnumerator(this, n);
         }
 
-        class ReversePredecessorEnumerator : IEnumerable<NAME>
+        class ReversePredecessorEnumerator : IEnumerable<NODE>
         {
-            GraphAdjList<NAME> graph;
-            NAME name;
+            GraphAdjList<NODE, EDGE> graph;
+            NODE node;
 
-            public ReversePredecessorEnumerator(GraphAdjList<NAME> g, NAME n)
+            public ReversePredecessorEnumerator(GraphAdjList<NODE, EDGE> g, NODE n)
             {
                 graph = g;
-                name = n;
+                node = n;
             }
 
-            public IEnumerator<NAME> GetEnumerator()
+            public IEnumerator<NODE> GetEnumerator()
             {
-                int[] index = graph.adj.IndexPredecessors;
-                int[] data = graph.adj.DataPredecessors;
-                int n = graph.NameSpace.BijectFromBasetype(name);
-                GraphAdjListVertex<NAME> node = graph.VertexSpace[n];
-                for (int i = index[n + 1] - 1; i >= index[n]; --i)
+                var x = graph.ReverseEdgeSpace[node];
+                x.Reverse();
+                foreach (var e in x)
                 {
-                    int d = data[i];
-                    NAME c = graph.VertexSpace[d].Name;
-                    yield return c;
+                    yield return e.From;
                 }
             }
 
@@ -272,33 +197,32 @@ namespace Campy.Graphs
             }
         }
 
-        public IEnumerable<NAME> ReversePredecessors(NAME n)
+        public IEnumerable<NODE> ReversePredecessors(NODE n)
         {
             return new ReversePredecessorEnumerator(this, n);
         }
 
-        class SuccessorEnumerator : IEnumerable<NAME>
+        public IEnumerable<NODE> PredecessorNodes(NODE n)
         {
-            GraphAdjList<NAME> graph;
-            NAME name;
+            return new PredecessorEnumerator(this, n);
+        }
 
-            public SuccessorEnumerator(GraphAdjList<NAME> g, NAME n)
+        class SuccessorEnumerator : IEnumerable<NODE>
+        {
+            private GraphAdjList<NODE, EDGE> graph;
+            private NODE node;
+
+            public SuccessorEnumerator(GraphAdjList<NODE, EDGE> g, NODE n)
             {
                 graph = g;
-                name = n;
+                node = n;
             }
 
-            public IEnumerator<NAME> GetEnumerator()
+            public IEnumerator<NODE> GetEnumerator()
             {
-                int[] index = graph.adj.IndexSuccessors;
-                int[] data = graph.adj.DataSuccessors;
-                int n = graph.NameSpace.BijectFromBasetype(name);
-                GraphAdjListVertex<NAME> node = graph.VertexSpace[n];
-                for (int i = index[n]; i < index[n + 1]; ++i)
+                foreach (EDGE e in graph.ForwardEdgeSpace[node])
                 {
-                    int d = data[i];
-                    NAME c = graph.VertexSpace[d].Name;
-                    yield return c;
+                    yield return e.To;
                 }
             }
 
@@ -308,33 +232,32 @@ namespace Campy.Graphs
             }
         }
 
-        public IEnumerable<NAME> Successors(NAME n)
+        public IEnumerable<NODE> Successors(NODE n)
         {
             return new SuccessorEnumerator(this, n);
         }
 
-        class SuccessorEdgeEnumerator : IEnumerable<IEdge<NAME>>
+        public IEnumerable<NODE> SuccessorNodes(NODE n)
         {
-            GraphAdjList<NAME> graph;
-            NAME name;
+            return new SuccessorEnumerator(this, n);
+        }
 
-            public SuccessorEdgeEnumerator(GraphAdjList<NAME> g, NAME n)
+        class SuccessorEdgeEnumerator : IEnumerable<EDGE>
+        {
+            private GraphAdjList<NODE, EDGE> graph;
+            private NODE node;
+
+            public SuccessorEdgeEnumerator(GraphAdjList<NODE, EDGE> g, NODE n)
             {
                 graph = g;
-                name = n;
+                node = n;
             }
 
-            public IEnumerator<IEdge<NAME>> GetEnumerator()
+            public IEnumerator<EDGE> GetEnumerator()
             {
-                int[] index = graph.adj.IndexSuccessors;
-                int[] data = graph.adj.DataSuccessors;
-                int n = graph.NameSpace.BijectFromBasetype(name);
-                GraphAdjListVertex<NAME> node = graph.VertexSpace[n];
-                for (int i = index[n]; i < index[n + 1]; ++i)
+                foreach (EDGE e in graph.ForwardEdgeSpace[node])
                 {
-                    int d = data[i];
-                    var c = graph.VertexSpace[d];
-                    yield return new GraphAdjListEdge<NAME>(node, c);
+                    yield return e;
                 }
             }
 
@@ -344,34 +267,29 @@ namespace Campy.Graphs
             }
         }
 
-
-        public IEnumerable<IEdge<NAME>> SuccessorEdges(NAME n)
+        public IEnumerable<EDGE> SuccessorEdges(NODE n)
         {
             return new SuccessorEdgeEnumerator(this, n);
         }
 
-        public class ReverseSuccessorEnumerator : IEnumerable<NAME>
+        public class ReverseSuccessorEnumerator : IEnumerable<NODE>
         {
-            GraphAdjList<NAME> graph;
-            NAME name;
+            GraphAdjList<NODE, EDGE> graph;
+            NODE node;
 
-            public ReverseSuccessorEnumerator(GraphAdjList<NAME> g, NAME n)
+            public ReverseSuccessorEnumerator(GraphAdjList<NODE, EDGE> g, NODE n)
             {
                 graph = g;
-                name = n;
+                node = n;
             }
 
-            public IEnumerator<NAME> GetEnumerator()
+            public IEnumerator<NODE> GetEnumerator()
             {
-                int[] index = graph.adj.IndexSuccessors;
-                int[] data = graph.adj.DataSuccessors;
-                int n = graph.NameSpace.BijectFromBasetype(name);
-                GraphAdjListVertex<NAME> node = graph.VertexSpace[n];
-                for (int i = index[n + 1] - 1; i >= index[n]; --i)
+                var x = graph.ForwardEdgeSpace[node];
+                x.Reverse();
+                foreach (EDGE e in x)
                 {
-                    int d = data[i];
-                    NAME c = graph.VertexSpace[d].Name;
-                    yield return c;
+                    yield return e.To;
                 }
             }
 
@@ -381,99 +299,17 @@ namespace Campy.Graphs
             }
         }
 
-        public IEnumerable<NAME> ReverseSuccessors(NAME n)
+        public IEnumerable<NODE> ReverseSuccessors(NODE n)
         {
             return new ReverseSuccessorEnumerator(this, n);
         }
 
-        public bool IsLeaf(NAME n)
+        public bool IsLeaf(NODE name)
         {
-            return !Successors(n).Any();
-        }
-    }
-
-    public class GraphAdjListVertex<NAME> : IVertex<NAME>, IComparable<GraphAdjListVertex<NAME>>
-    {
-        public NAME Name
-        {
-            get;
-            set;
-        }
-
-        public int Index
-        {
-            get
-            {
-                int i = _Graph.adj.FindName(Name);
-                return i;
-            }
-        }
-
-        public GraphAdjList<NAME> _Graph
-        {
-            get;
-            set;
-        }
-
-        public GraphAdjListVertex()
-        {
-        }
-
-        public GraphAdjListVertex(NAME t)
-        {
-            this.Name = t;
-        }
-
-        public int CompareTo(IVertex<NAME> other)
-        {
-            throw new NotImplementedException();
-        }
-
-        override public string ToString()
-        {
-            return Name.ToString();
-        }
-
-        public int CompareTo(GraphAdjListVertex<NAME> other)
-        {
-            throw new NotImplementedException();
-        }
-    }
-
-    public class GraphAdjListEdge<NAME> : IEdge<NAME>
-    {
-        public GraphAdjListVertex<NAME> from;
-
-        public GraphAdjListVertex<NAME> to;
-
-        public GraphAdjListEdge()
-        {
-        }
-
-        public GraphAdjListEdge(GraphAdjListVertex<NAME> f, GraphAdjListVertex<NAME> t)
-        {
-            from = (GraphAdjListVertex<NAME>)f;
-            to = (GraphAdjListVertex<NAME>)t;
-        }
-
-        public NAME From
-        {
-            get { return from.Name; }
-        }
-
-        public NAME To
-        {
-            get { return to.Name; }
-        }
-
-        public int CompareTo(IEdge<NAME> other)
-        {
-            throw new NotImplementedException();
-        }
-
-        override public string ToString()
-        {
-            return "(" + from.Name + ", " + to.Name + ")";
+            if (this.ForwardEdgeSpace.TryGetValue(name, out List<EDGE> list))
+                return false;
+            else
+                return true;
         }
     }
 }

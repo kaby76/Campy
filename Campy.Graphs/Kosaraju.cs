@@ -5,16 +5,17 @@ using System.Linq;
 
 namespace Campy.Graphs
 {
-    public class Kosaraju<NAME> : IEnumerable<NAME>
+    public class Kosaraju<T, E> : IEnumerable<T>
+        where E : IEdge<T>
     {
-        private IGraph<NAME> _graph;
+        private IGraph<T, E> _graph;
 
-        public Kosaraju(IGraph<NAME> graph)
+        public Kosaraju(IGraph<T, E> graph)
         {
             _graph = graph;
         }
 
-        private void fillOrder(IGraph<NAME> gr, NAME v, Dictionary<NAME, bool> visited, Stack<NAME> stack)
+        private void fillOrder(IGraph<T, E> gr, T v, Dictionary<T, bool> visited, Stack<T> stack)
         {
             // Mark the current node as visited and print it
             visited[v] = true;
@@ -32,11 +33,11 @@ namespace Campy.Graphs
 
         public class SCCEnumerator
         {
-            private IGraph<NAME> graph;
-            private NAME start;
-            private Dictionary<NAME, bool> visited;
+            private IGraph<T, E> graph;
+            private T start;
+            private Dictionary<T, bool> visited;
 
-            public SCCEnumerator(IGraph<NAME> g, NAME s, Dictionary<NAME, bool> v)
+            public SCCEnumerator(IGraph<T, E> g, T s, Dictionary<T, bool> v)
             {
                 graph = g;
                 start = s;
@@ -44,7 +45,7 @@ namespace Campy.Graphs
             }
 
             // A recursive function to print DFS starting from v
-            private List<NAME> DFSUtil(List<NAME> result, IGraph<NAME> g, NAME v, Dictionary<NAME, bool> visited)
+            private List<T> DFSUtil(List<T> result, IGraph<T, E> g, T v, Dictionary<T, bool> visited)
             {
                 // Mark the current node as visited and print it
                 visited[v] = true;
@@ -60,18 +61,18 @@ namespace Campy.Graphs
                 return result;
             }
 
-            public List<NAME> ToList()
+            public List<T> ToList()
             {
-                return DFSUtil(new List<NAME>(), graph, start, visited);
+                return DFSUtil(new List<T>(), graph, start, visited);
             }
         }
 
 
-        public IEnumerator<List<NAME>> GetEnumerator()
+        public IEnumerator<List<T>> GetEnumerator()
         {
-            Stack<NAME> stack = new Stack<NAME>();
+            Stack<T> stack = new Stack<T>();
 
-            Dictionary<NAME, bool> visited = new Dictionary<NAME, bool>();
+            Dictionary<T, bool> visited = new Dictionary<T, bool>();
             foreach (var i in _graph.Vertices)
                 visited[i] = false;
 
@@ -79,7 +80,7 @@ namespace Campy.Graphs
                 if (visited[i] == false)
                     fillOrder(_graph, i, visited, stack);
 
-            var gr = Transpose<NAME>.getTranspose(_graph);
+            var gr = Transpose<T,E>.getTranspose(_graph);
 
             foreach (var i in gr.Vertices)
                 visited[i] = false;
@@ -92,13 +93,13 @@ namespace Campy.Graphs
                 // Print Strongly connected component of the popped vertex
                 if (visited[v] == false)
                 {
-                    List<NAME> result = new List<NAME>();
+                    List<T> result = new List<T>();
                     yield return new SCCEnumerator(gr, v, visited).ToList();
                 }
             }
         }
 
-        IEnumerator<NAME> IEnumerable<NAME>.GetEnumerator()
+        IEnumerator<T> IEnumerable<T>.GetEnumerator()
         {
             throw new NotImplementedException();
         }

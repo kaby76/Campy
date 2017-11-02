@@ -11,14 +11,15 @@ namespace Campy.Graphs
     /// is not a DAG, then it will fail.
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class TopologicalSort<T> : IEnumerable<T>
+    public class TopologicalSort<T, E> : IEnumerable<T>
+        where E : IEdge<T>
     {
 
-        IGraph<T> graph;
+        IGraph<T, E> graph;
         IEnumerable<T> Source;
         Dictionary<T, bool> Visited = new Dictionary<T, bool>();
 
-        public TopologicalSort(IGraph<T> g, IEnumerable<T> s)
+        public TopologicalSort(IGraph<T, E> g, IEnumerable<T> s)
         {
             graph = g;
             Source = s;
@@ -26,7 +27,7 @@ namespace Campy.Graphs
                 Visited.Add(v, false);
         }
 
-        public TopologicalSort(IGraph<T> g, T s)
+        public TopologicalSort(IGraph<T, E> g, T s)
         {
             graph = g;
             Source = new T[] {s};

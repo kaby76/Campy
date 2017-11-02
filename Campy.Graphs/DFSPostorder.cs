@@ -8,13 +8,14 @@ namespace Campy.Graphs
     // BINARY SEARCH TREE TRAVERSAL", Akram Al-Rawi, Azzedine Lansari, Faouzi Bouslama
     // N.B.: There is no "in-order" traversal defined for a general graph,
     // it must be a binary tree.
-    public class DFSPostorder<T> : IEnumerable<T>
+    public class DFSPostorder<T, E> : IEnumerable<T>
+        where E : IEdge<T>
     {
-        IGraph<T> graph;
+        IGraph<T,E> graph;
         IEnumerable<T> Source;
         Dictionary<T, bool> Visited = new Dictionary<T, bool>();
 
-        public DFSPostorder(IGraph<T> g, IEnumerable<T> s)
+        public DFSPostorder(IGraph<T,E> g, IEnumerable<T> s)
         {
             graph = g;
             Source = s;

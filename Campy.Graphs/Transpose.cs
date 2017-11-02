@@ -1,12 +1,13 @@
 ﻿namespace Campy.Graphs
 {
-    public class Transpose<NAME>
+    public class Transpose<T,E>
+        where E : IEdge<T>
     {
-        public static IGraph<NAME> getTranspose(IGraph<NAME> graph)
+        public static IGraph<T,E> getTranspose(IGraph<T,E> graph)
         {
-            IGraph<NAME> g = new GraphLinkedList<NAME>();
+            IGraph<T,E> g = new GraphAdjList<T,E>();
             foreach (var v in graph.Vertices) g.AddVertex(v);
-            foreach (var e in graph.Edges) g.AddEdge(e.To, e.From);
+            foreach (var e in graph.Edges) g.AddEdge(e);
             return g;
         }
     }

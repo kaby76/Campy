@@ -8,13 +8,14 @@ namespace Campy.Graphs
     // BINARY SEARCH TREE TRAVERSAL", Akram Al-Rawi, Azzedine Lansari, Faouzi Bouslama
     // N.B.: There is no "in-order" traversal defined for a general graph,
     // it must be a binary tree.
-    public class DFSInorder<T> : IEnumerable<T>
+    public class DFSInorder<T, E> : IEnumerable<T>
+        where E : IEdge<T>
     {
-        BinaryTreeLinkList<T> graph;
+        BinaryTreeAdjList<T,E> graph;
         T Source = default(T);
         Dictionary<T, bool> Visited = new Dictionary<T, bool>();
 
-        public DFSInorder(BinaryTreeLinkList<T> g, T s)
+        public DFSInorder(BinaryTreeAdjList<T,E> g, T s)
         {
             graph = g;
             Source = s;
@@ -32,25 +33,23 @@ namespace Campy.Graphs
             for (T s = Source; s != null; )
             {
                 Stack.Push(s);
-                int j = graph.NameSpace.BijectFromBasetype(s);
-                BinaryTreeLinkListVertex<T> ver = graph.VertexSpace[j];
-                s = ver.Left.Name;
+                T ver = graph.Left(s);
+                s = ver;
             }
 
             while (Stack.Count != 0)
             {
                 T u = Stack.Pop();
                 yield return u;
-                int j = graph.NameSpace.BijectFromBasetype(u);
-                BinaryTreeLinkListVertex<T> ver = graph.VertexSpace[j];
-                u = ver.Right.Name;
+
+                T ver = u;
+                u = graph.Right(ver);
                 while (u != null)
                 {
                     Stack.Push(u);
-                    int k = graph.NameSpace.BijectFromBasetype(u);
-                    BinaryTreeLinkListVertex<T> z = graph.VertexSpace[k];
-                    u = ver.Right.Name;
-                    u = z.Left.Name;
+                    T z = u;
+                    u = graph.Right(ver);
+                    u = graph.Left(z);
                 }
             }
         }

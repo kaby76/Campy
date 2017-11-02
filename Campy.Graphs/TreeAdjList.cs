@@ -1,9 +1,8 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-
-namespace Campy.Graphs
+﻿namespace Campy.Graphs
 {
-    public class TreeAdjList<NAME> : GraphAdjList<NAME>
+
+    public class TreeAdjList<NODE, EDGE> : GraphAdjList<NODE, EDGE>
+        where EDGE : IEdge<NODE>
     {
         /// <summary>
         /// Constructor, and creates a predefined tree (see below).
@@ -11,61 +10,14 @@ namespace Campy.Graphs
         public TreeAdjList()
             : base()
         {
-            NODE = typeof(TreeAdjListVertex<NAME>);
-            EDGE = typeof(TreeAdjListEdge<NAME>);
         }
 
-        //public void Sanity()
-        //{
-        //    // Check sanity of a complete tree.
-        //    // 1. Check there is one and only one root.
-        //    int count_roots = 0;
-        //    foreach (Vertex v in this.Vertices)
-        //    {
-        //        Vertex tv = v as Vertex;
-        //        if (tv.Parent == null)
-        //            count_roots++;
-        //    }
-        //    if (count_roots != 1 && this.Vertices.Count() != 0)
-        //        throw new Exception("Tree malformed -- there are " + count_roots + " roots.");
+        protected NODE _Root;
 
-        //    // 2. Check each node that is has one parent, except for root, and that it's equal to predecessor list.
-        //    foreach (Vertex v in this.Vertices)
-        //    {
-        //        if (v.Parent == null && this.Root != v)
-        //            throw new Exception("Tree malformed -- node without a parent that isn't the root.");
-        //        if (v.Predecessors.Count() > 1)
-        //            throw new Exception("Tree malformed -- predecessor count greater than one.");
-        //        if (v.Predecessors.Count() == 0 && this.Root != v)
-        //            throw new Exception("Tree malformed -- node without a parent that isn't the root.");
-        //        if (v.Predecessors.Count() != 0 && v.Predecessors.First() != v.Parent)
-        //            throw new Exception("Tree malformed -- node predecessor and parent are inconsistent.");
-        //    }
-
-        //    // 3. Go through edge list and verify.
-        //    Dictionary<GraphAdjList<NAME, NODE, EDGE>.Vertex, bool> seen = new Dictionary<GraphAdjList<NAME, NODE, EDGE>.Vertex, bool>();
-        //    foreach (Edge e in this.Edges)
-        //    {
-        //        if (!seen.ContainsKey(e.To))
-        //            seen.Add(e.To, true);
-        //        else
-        //        {
-        //            throw new Exception("Tree malformed -- Visited more than once.");
-        //        }
-        //    }
-        //}
-
-        protected TreeAdjListVertex<NAME> _Root;
-
-        public NAME Root
+        public NODE Root
         {
-            get { return _Root.Name; }
-            set
-            {
-                int id = this.NameSpace.BijectFromBasetype(value);
-                GraphAdjListVertex<NAME> node = this.VertexSpace[id];
-                _Root = (TreeAdjListVertex<NAME>)node;
-            }
+            get { return _Root; }
+            set { _Root = value; }
         }
 
         //public GraphAdjList<NAME> LeftContour(Vertex<NAME> v)
@@ -119,13 +71,14 @@ namespace Campy.Graphs
         //    return rc;
         //}
 
-        int height(NAME v, int d)
+        int height(NODE v, int d)
         {
             if (v == null)
                 return d;
             int m = d;
-            foreach (NAME u in this.Successors(v))
+            foreach (EDGE e in this.SuccessorEdges(v))
             {
+                NODE u = e.To;
                 int x = this.height(u, d + 1);
                 if (x > m)
                     m = x;
@@ -135,7 +88,7 @@ namespace Campy.Graphs
 
         public int Height()
         {
-            return this.height(this._Root.Name, 1);
+            return this.height(this._Root, 1);
         }
 
         //public Vertex<NAME> CloneVertex(Vertex<NAME> other)
@@ -146,46 +99,5 @@ namespace Campy.Graphs
         //        this.Root = v;
         //    return v;
         //}
-
-        public IEnumerable<NAME> Children(NAME n)
-        {
-            return this.Successors(n);
-        }
-
-        public NAME Parent(NAME n)
-        {
-            if (this.Predecessors(n).Count() == 0)
-                return default(NAME);
-            else
-                return Predecessors(n).First();
-        }
-
     }
-
-    public class TreeAdjListVertex<NAME> : GraphAdjListVertex<NAME>
-    {
-        public TreeAdjListVertex()
-            : base()
-        {
-        }
-
-        public TreeAdjListVertex(NAME t)
-            : base(t)
-        {
-        }
-    }
-
-    public class TreeAdjListEdge<NAME> : GraphAdjListEdge<NAME>
-    {
-        public TreeAdjListEdge()
-            : base()
-        {
-        }
-
-        public TreeAdjListEdge(GraphAdjListVertex<NAME> f, GraphAdjListVertex<NAME> t)
-            : base(f, t)
-        {
-        }
-    }
-
 }

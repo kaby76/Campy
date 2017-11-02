@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Campy.Graphs
 {
-    public class CompleteTree : TreeAdjList<int>
+    public class CompleteTree : TreeAdjList<int, DirectedEdge<int>>
     {
         int Depth;
         int Expansion;
@@ -35,24 +35,23 @@ namespace Campy.Graphs
             for (int i = 0; i < Depth + 1; ++i)
                 top = top * Expansion;
 
-            this.SetNameSpace(Enumerable.Range(0, top));
             counter = 0;
-            TreeAdjListVertex<int> r = (TreeAdjListVertex<int>)this.AddVertex(counter++);
+            int r = this.AddVertex(counter++);
             this.Root = 0;
-            Stack<Tuple<TreeAdjListVertex<int>, int>> stack = new Stack<Tuple<TreeAdjListVertex<int>, int>>();
-            stack.Push(new Tuple<TreeAdjListVertex<int>, int>(r, 0));
+            Stack<Tuple<int, int>> stack = new Stack<Tuple<int, int>>();
+            stack.Push(new Tuple<int, int>(r, 0));
             while (stack.Count != 0)
             {
-                Tuple<TreeAdjListVertex<int>, int> t = stack.Pop();
-                TreeAdjListVertex<int> v = t.Item1;
+                Tuple<int, int> t = stack.Pop();
+                int v = t.Item1;
                 int level = t.Item2;
                 level += 1;
                 for (int i = Expansion; i > 0; --i)
                 {
-                    TreeAdjListVertex<int> c = (TreeAdjListVertex<int>)this.AddVertex(counter++);
-                    this.AddEdge(v.Name, c.Name);
+                    int c = this.AddVertex(counter++);
+                    this.AddEdge(new DirectedEdge<int>(v, c));
                     if (level < Depth)
-                        stack.Push(new Tuple<TreeAdjListVertex<int>, int>(c, level));
+                        stack.Push(new Tuple<int, int>(c, level));
                 }
             }
         }

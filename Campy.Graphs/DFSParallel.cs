@@ -12,14 +12,15 @@ namespace Campy.Graphs
     // Rao VN, Kumar V. Parallel depth first search. Part I.
     // Implementation. International Journal of Parallel Programming.
     // 1987; 16(6):479-99.
-    public class DFSParallel<T>
+    public class DFSParallel<T, E>
+        where E : IEdge<T>
     {
-        IGraph<T> graph;
+        IGraph<T,E> graph;
         IEnumerable<T> Source;
         Dictionary<T, bool> Visited = new Dictionary<T, bool>();
         int NumberOfWorkers;
 
-        public DFSParallel(IGraph<T> g, IEnumerable<T> s, int n)
+        public DFSParallel(IGraph<T,E> g, IEnumerable<T> s, int n)
         {
             graph = g;
             Source = s;

@@ -1,6 +1,6 @@
 ﻿namespace Campy.Graphs
 {
-    public class CompleteBinary : BinaryTreeLinkList<int>
+    public class CompleteBinary : BinaryTreeAdjList<int, DirectedEdge<int>>
     {
         int MakeSize;
         int counter;
@@ -24,22 +24,22 @@
         void SpecialCreate()
         {
             counter = 0;
-            BinaryTreeLinkList<int>.Vertex r = (BinaryTreeLinkList<int>.Vertex)this.AddVertex(counter++);
+            var r = this.AddVertex(counter++);
             this._Root = r;
             MakeIt(this.MakeSize, r);
         }
 
-        void MakeIt(int current_height, BinaryTreeLinkList<int>.Vertex current_node)
+        void MakeIt(int current_height, int current_node)
         {
             if (current_height == 0)
                 return;
             current_height--;
-            BinaryTreeLinkList<int>.Vertex l = (BinaryTreeLinkList<int>.Vertex)this.AddVertex(counter++);
-            BinaryTreeLinkList<int>.Vertex r = (BinaryTreeLinkList<int>.Vertex)this.AddVertex(counter++);
-            this.AddEdge(current_node, l);
-            MakeIt(current_height, current_node.Left);
-            this.AddEdge(current_node, r);
-            MakeIt(current_height, current_node.Right);
+            int l = this.AddVertex(counter++);
+            int r = this.AddVertex(counter++);
+            this.AddEdge(new DirectedEdge<int>(current_node, l));
+            MakeIt(current_height, this.Left(current_node));
+            this.AddEdge(new DirectedEdge<int>(current_node, r));
+            MakeIt(current_height, this.Right(current_node));
         }
     }
 }

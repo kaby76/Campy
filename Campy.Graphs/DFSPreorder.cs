@@ -8,14 +8,15 @@ namespace Campy.Graphs
     // BINARY SEARCH TREE TRAVERSAL", Akram Al-Rawi, Azzedine Lansari, Faouzi Bouslama
     // N.B.: There is no "in-order" traversal defined for a general graph,
     // it must be a binary tree.
-    public class DFSPreorder<T> : IEnumerable<T>
+    public class DFSPreorder<T, E> : IEnumerable<T>
+        where E : IEdge<T>
     {
-        IGraph<T> graph;
+        IGraph<T,E> graph;
         IEnumerable<T> Source;
         Dictionary<T, bool> Visited = new Dictionary<T, bool>();
         StackQueue<T> Stack = new StackQueue<T>();
 
-        public DFSPreorder(IGraph<T> g, IEnumerable<T> s)
+        public DFSPreorder(IGraph<T,E> g, IEnumerable<T> s)
         {
             graph = g;
             Source = s;
@@ -50,14 +51,15 @@ namespace Campy.Graphs
         }
     }
 
-    public class DepthFirstPreorderTraversalViaPredecessors<T>
+    public class DepthFirstPreorderTraversalViaPredecessors<T, E>
+        where E : IEdge<T>
     {
-        IGraph<T> graph;
+        IGraph<T,E> graph;
         IEnumerable<T> Source;
         Dictionary<T, bool> Visited = new Dictionary<T, bool>();
         StackQueue<T> Stack = new StackQueue<T>();
 
-        public DepthFirstPreorderTraversalViaPredecessors(IGraph<T> g, IEnumerable<T> s)
+        public DepthFirstPreorderTraversalViaPredecessors(IGraph<T,E> g, IEnumerable<T> s)
         {
             graph = g;
             Source = s;

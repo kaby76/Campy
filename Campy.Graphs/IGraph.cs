@@ -2,36 +2,35 @@
 
 namespace Campy.Graphs
 {
-    public interface IGraph<NAME>
+    public interface IGraph<NODE, EDGE>
+        where EDGE : IEdge<NODE>
     {
-        IEnumerable<NAME> Vertices
+        IEnumerable<NODE> Vertices
         {
             get;
-            //set;
         }
 
-        IEnumerable<IEdge<NAME>> Edges
+        IEnumerable<EDGE> Edges
         {
             get;
-            //set;
         }
 
-        IVertex<NAME> AddVertex(NAME v);
+        NODE AddVertex(NODE v);
 
-        IEdge<NAME> AddEdge(NAME f, NAME t);
+        EDGE AddEdge(EDGE e);
 
-        IEnumerable<NAME> Predecessors(NAME n);
+        IEnumerable<NODE> Predecessors(NODE n);
 
-        IEnumerable<IEdge<NAME>> PredecessorEdges(NAME n);
+        IEnumerable<EDGE> PredecessorEdges(NODE n);
 
-        IEnumerable<NAME> ReversePredecessors(NAME n);
+        IEnumerable<NODE> ReversePredecessors(NODE n);
 
-        IEnumerable<NAME> Successors(NAME n);
+        IEnumerable<NODE> Successors(NODE n);
 
-        IEnumerable<IEdge<NAME>> SuccessorEdges(NAME n);
+        IEnumerable<EDGE> SuccessorEdges(NODE n);
 
-        IEnumerable<NAME> ReverseSuccessors(NAME n);
+        IEnumerable<NODE> ReverseSuccessors(NODE n);
 
-        bool IsLeaf(NAME node);
+        bool IsLeaf(NODE node);
     }
 }

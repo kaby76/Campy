@@ -5,54 +5,55 @@ using System.Threading.Tasks;
 
 namespace Campy.Graphs
 {
-    public class BFSParallel<NAME>
+    public class BFSParallel<T,E>
+        where E : IEdge<T>
     {
-        IGraph<NAME> graph;
-        IEnumerable<NAME> Source;
-        Dictionary<NAME, bool> Visited = new Dictionary<NAME, bool>();
+        IGraph<T,E> graph;
+        IEnumerable<T> Source;
+        Dictionary<T, bool> Visited = new Dictionary<T, bool>();
 
-        public BFSParallel(IGraph<NAME> g, IEnumerable<NAME> s)
+        public BFSParallel(IGraph<T,E> g, IEnumerable<T> s)
         {
             graph = g;
             Source = s;
-            foreach (NAME v in graph.Vertices)
+            foreach (T v in graph.Vertices)
                 Visited.Add(v, false);
         }
 
-        public void VisitNodes(Func<NAME, bool> func, bool backwards = false)
+        public void VisitNodes(Func<T, bool> func, bool backwards = false)
         {
             if (Source.Count() != 0)
             {
                 // Accumulate all vertices since yield return cannot be used in
                 // a lambda function.
-                Queue<NAME> all_nodes_in_order = new Queue<NAME>();
-                Queue<NAME> current_frontier = new Queue<NAME>();
-                Queue<NAME> next_frontier = new Queue<NAME>();
+                Queue<T> all_nodes_in_order = new Queue<T>();
+                Queue<T> current_frontier = new Queue<T>();
+                Queue<T> next_frontier = new Queue<T>();
                 Object thisLock = new Object();
 
-                Parallel.ForEach(graph.Vertices, (NAME v) =>
+                Parallel.ForEach(graph.Vertices, (T v) =>
                 {
                     Visited[v] = false;
                 });
 
-                foreach (NAME v in Source)
+                foreach (T v in Source)
                     current_frontier.Enqueue(v);
 
                 while (current_frontier.Count != 0)
                 {
-                    Parallel.ForEach(current_frontier, (NAME u) =>
+                    Parallel.ForEach(current_frontier, (T u) =>
                     {
                         //yield return u; unfortunately, yield return 
                         // cannot be used in a lambda function.
                         Visited[u] = true;
-                        NAME uu = u;
+                        T uu = u;
                         bool term = func(uu);
                         if (term)
                         {
                             return;
                         }
 
-                        foreach (NAME v in graph.Successors(u))
+                        foreach (T v in graph.Successors(u))
                         {
                             if (!Visited[v])
                             {
@@ -65,7 +66,7 @@ namespace Campy.Graphs
                         };
                     });
                     current_frontier = next_frontier;
-                    next_frontier = new Queue<NAME>();
+                    next_frontier = new Queue<T>();
                 }
             }
         }

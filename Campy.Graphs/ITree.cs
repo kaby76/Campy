@@ -1,8 +1,9 @@
 ﻿namespace Campy.Graphs
 {
-    public interface ITree<T> : IGraph<T>
+    public interface ITree<T> : IGraph<T, DirectedEdge<T>>
+        where T: ITreeVertex<T>
     {
-        ITreeVertex<T> _Root
+        T _Root
         {
             get;
             set;

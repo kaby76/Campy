@@ -2,15 +2,15 @@
 
 namespace Campy.Graphs
 {
-    public interface ITreeVertex<T> : IVertex<T>
+    public interface ITreeVertex<T> : IVertex
     {
-        List<IVertex<T>> Children
+        List<T> Children
         {
             get;
             set;
         }
 
-        IVertex<T> Parent
+        T Parent
         {
             get;
         }

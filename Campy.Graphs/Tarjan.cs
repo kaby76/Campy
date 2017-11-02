@@ -5,17 +5,18 @@ using System.Linq;
 
 namespace Campy.Graphs
 {
-    public class Tarjan<T> : IEnumerable<T>
+    public class Tarjan<T, E> : IEnumerable<T>
+        where E : IEdge<T>
     {
         private Dictionary<T, bool> visited = new Dictionary<T, bool>();
         private Dictionary<T, bool> closed = new Dictionary<T, bool>();
-        private IGraph<T> _graph;
+        private IGraph<T, E> _graph;
         int index = 0; // number of nodes
         Stack<T> S = new Stack<T>();
         Dictionary<T, int> Index = new Dictionary<T, int>();
         Dictionary<T, int> LowLink = new Dictionary<T, int>();
 
-        public Tarjan(IGraph<T> graph)
+        public Tarjan(IGraph<T,E> graph)
         {
             _graph = graph;
             foreach (var v in _graph.Vertices)
@@ -49,17 +50,17 @@ namespace Campy.Graphs
             // If v is a root node, pop the stack and generate an SCC
             if (LowLink[v] == Index[v])
             {
-               // Console.Write("SCC: ");
+               Console.Write("SCC: ");
 
                 T w;
                 do
                 {
                     w = S.Pop();
-                //    Console.Write(w + " ");
+                  Console.Write(w + " ");
                     yield return w;
                 } while (!w.Equals(v));
 
-            //    Console.WriteLine();
+               Console.WriteLine();
             }
         }
 

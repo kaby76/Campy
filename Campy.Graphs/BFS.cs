@@ -4,15 +4,16 @@ using System.Linq;
 
 namespace Campy.Graphs
 {
-    public class BFS<T> : IEnumerable<T>
+    public class BFS<T, E> : IEnumerable<T>
+        where E : IEdge<T>
     {
 
-        IGraph<T> graph;
+        IGraph<T,E> graph;
         IEnumerable<T> Source;
         bool _backwards;
         Dictionary<T, bool> Visited = new Dictionary<T, bool>();
 
-        public BFS(IGraph<T> g, IEnumerable<T> s, bool backwards = false)
+        public BFS(IGraph<T,E> g, IEnumerable<T> s, bool backwards = false)
         {
             graph = g;
             Source = s;
@@ -21,7 +22,7 @@ namespace Campy.Graphs
                 Visited.Add(v, false);
         }
 
-        public BFS(IGraph<T> g, T s)
+        public BFS(IGraph<T,E> g, T s)
         {
             graph = g;
             Source = new T[] { s };

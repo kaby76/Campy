@@ -2,14 +2,14 @@
 
 namespace Campy.Graphs
 {
-    public interface IEdge<NAME> : IComparable<IEdge<NAME>>
+    public interface IEdge<NODE> : IComparable<IEdge<NODE>>
     {
-        NAME From
+        NODE From
         {
             get;
         }
 
-        NAME To
+        NODE To
         {
             get;
         }
