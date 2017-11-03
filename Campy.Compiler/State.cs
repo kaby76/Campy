@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Campy.Utils;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -116,7 +117,7 @@ namespace Campy.Compiler
             }
         }
 
-        public State(Dictionary<int, bool> visited, CFG.Vertex bb, List<Mono.Cecil.TypeReference> list_of_data_types_used)
+        public State(Dictionary<CFG.Vertex, bool> visited, CFG.Vertex bb, List<Mono.Cecil.TypeReference> list_of_data_types_used)
         {
             // Set up a blank stack.
             _stack = new StackQueue<Value>();
@@ -134,7 +135,7 @@ namespace Campy.Compiler
             // State depends on predecessors. To handle this without updating state
             // until a fix point is found while converting to LLVM IR, we introduce
             // SSA phi functions.
-            if (bb._Predecessors.Count == 0)
+            if (bb._graph.PredecessorNodes(bb).Count() == 0)
             {
                 if (!bb.IsEntry) throw new Exception("Cannot handle dead code blocks.");
                 var fun = bb.MethodValueRef;
@@ -199,14 +200,14 @@ namespace Campy.Compiler
                     _stack.Push(value);
                 }
             }
-            else if (bb._Predecessors.Count == 1)
+            else if (bb._graph.Predecessors(bb).Count() == 1)
             {
                 // We don't need phi functions--and can't with LLVM--
                 // if there is only one predecessor. If it hasn't been
                 // converted before this node, just create basic state.
 
-                var pred = bb._Predecessors[0].From;
-                var p_llvm_node = bb._Graph.VertexSpace[bb._Graph.NameSpace.BijectFromBasetype(pred)];
+                var pred = bb._graph.PredecessorEdges(bb).ToList()[0].From;
+                var p_llvm_node = pred;
                 var other = p_llvm_node.StateOut;
                 var size = p_llvm_node.StateOut._stack.Count;
                 for (int i = 0; i < size; ++i)
@@ -225,22 +226,21 @@ namespace Campy.Compiler
                 // make up something so we don't have problems.
                 // Now, for every arg, local, stack, set up for merge.
                 // Find a predecessor that has some definition.
-                int pred = -1;
-                pred = bb._Predecessors[0].From;
-                for (int pred_ind = 0; pred_ind < bb._Predecessors.Count; ++pred_ind)
+                var pred = bb._graph.PredecessorEdges(bb).ToList()[0].From;
+                for (int pred_ind = 0; pred_ind < bb._graph.Predecessors(bb).ToList().Count; ++pred_ind)
                 {
-                    int to_check = bb._Predecessors[pred_ind].From;
+                    var to_check = bb._graph.PredecessorEdges(bb).ToList()[pred_ind].From;
                     if (!visited.ContainsKey(to_check)) continue;
-                    CFG.Vertex check_llvm_node = bb._Graph.VertexSpace[bb._Graph.NameSpace.BijectFromBasetype(to_check)];
+                    CFG.Vertex check_llvm_node = to_check;
                     if (check_llvm_node.StateOut == null)
                         continue;
                     if (check_llvm_node.StateOut._stack == null)
                         continue;
-                    pred = pred_ind;
+                    pred = to_check;
                     break;
                 }
 
-                CFG.Vertex p_llvm_node = bb._Graph.VertexSpace[bb._Graph.NameSpace.BijectFromBasetype(bb._Predecessors[pred].From)];
+                CFG.Vertex p_llvm_node = pred;
                 int size = p_llvm_node.StateOut._stack.Count;
                 for (int i = 0; i < size; ++i)
                 {
@@ -248,7 +248,7 @@ namespace Campy.Compiler
                         Value f = new Value(LLVM.ConstInt(LLVM.Int32Type(), (ulong)0, true));
                         _stack.Push(f);
                     }
-                    var count = bb._Predecessors.Count;
+                    var count = bb._graph.Predecessors(bb).Count();
                     var value = p_llvm_node.StateOut._stack[i];
                     var v = value.V;
                     TypeRef tr = LLVM.TypeOf(v);

@@ -279,7 +279,7 @@ namespace Campy.Compiler
             List<Mono.Cecil.Cil.Instruction> split_point = new List<Mono.Cecil.Cil.Instruction>();
 
             // Each method is a leader of a block.
-            CFG.Vertex v = (CFG.Vertex)_cfg.AddVertex(_cfg.NewNodeNumber());
+            CFG.Vertex v = (CFG.Vertex)_cfg.AddVertex(new CFG.Vertex(){Name = _cfg.NewNodeNumber().ToString()});
 
             Mono.Cecil.MethodReturnType rt = method_definition.MethodReturnType;
             Mono.Cecil.TypeReference tr = rt.ReturnType;
@@ -388,7 +388,7 @@ namespace Campy.Compiler
             // Split block at all jump targets.
             foreach (var i in ordered_leader_list)
             {
-                var owner = _cfg.VertexNodes.Where(
+                var owner = _cfg.Vertices.Where(
                     n => n.Instructions.Where(ins => ins.Instruction == i).Any()).ToList();
                 // Check if there are multiple nodes with the same instruction or if there isn't
                 // any node found containing the instruction. Either way, it's a programming error.
@@ -420,28 +420,28 @@ namespace Campy.Compiler
                             {
                                 Mono.Cecil.Cil.Instruction target_instruction =
                                     last_instruction.Operand as Mono.Cecil.Cil.Instruction;
-                                CFG.Vertex target_node = _cfg.VertexNodes.First(
+                                CFG.Vertex target_node = _cfg.Vertices.First(
                                     (CFG.Vertex x) =>
                                     {
                                         if (!x.Instructions.First().Instruction.Equals(target_instruction))
                                             return false;
                                         return true;
                                     });
-                                _cfg.AddEdge(node, target_node);
+                                _cfg.AddEdge(new CFG.Edge(){From = node, To = target_node});
                             }
                             else if (last_instruction.Operand as Mono.Cecil.Cil.Instruction[] != null)
                             {
                                 foreach (Mono.Cecil.Cil.Instruction target_instruction in
                                     (last_instruction.Operand as Mono.Cecil.Cil.Instruction[]))
                                 {
-                                    CFG.Vertex target_node = _cfg.VertexNodes.First(
+                                    CFG.Vertex target_node = _cfg.Vertices.First(
                                         (CFG.Vertex x) =>
                                         {
                                             if (!x.Instructions.First().Instruction.Equals(target_instruction))
                                                 return false;
                                             return true;
                                         });
-                                    _cfg.AddEdge(node, target_node);
+                                    _cfg.AddEdge(new CFG.Edge(){From = node, To = target_node});
                                 }
                             }
                             else
@@ -478,12 +478,12 @@ namespace Campy.Compiler
                             if (next >= method_definition.Body.Instructions.Count)
                                 break;
                             var next_instruction = method_definition.Body.Instructions[next];
-                            var owner = _cfg.VertexNodes.Where(
+                            var owner = _cfg.Vertices.Where(
                                 n => n.Instructions.Where(ins => ins.Instruction == next_instruction).Any()).ToList();
                             if (owner.Count != 1)
                                 throw new Exception("Cannot find instruction!");
                             CFG.Vertex target_node = owner.FirstOrDefault();
-                            _cfg.AddEdge(node, target_node);
+                            _cfg.AddEdge(new CFG.Edge(){From = node, To = target_node});
                         }
                         break;
                 }
@@ -504,16 +504,17 @@ namespace Campy.Compiler
             TypeReference mr_dt = method_reference.DeclaringType;
             if (mr_dt != null && mr_dt.FullName == "System.String")
             {
+                var fn = mr_dt.Module.Assembly.FullName;
                 // Find in Campy.Runtime.
                 string yopath = @"C:\Users\Kenne\Documents\Campy\Campy.Runtime\Corlib\bin\Debug\netstandard1.3\corlib.dll";
                 Mono.Cecil.ModuleDefinition md = Mono.Cecil.ModuleDefinition.ReadModule(yopath);
-                foreach (var ttt in md.Types)
+                var sub = mr_dt.SubstituteMonoTypeReference(md);
+                foreach (var meth in sub.Methods)
                 {
-                    var yyy = ttt.Resolve();
-                    foreach (var mmm in yyy.Methods)
+                    if (meth.FullName == method_reference.FullName)
                     {
-                        System.Console.WriteLine("type " + yyy.FullName + " Method " + mmm.FullName);
-                        var bbb = mmm.Body;
+                        method_reference = meth;
+                        break;
                     }
                 }
             }
@@ -542,10 +543,18 @@ namespace Campy.Compiler
             }
             else if (method_definition.Body == null)
             {
-                System.Console.WriteLine("ERROR: METHOD BODY NULL! " + method_definition);
-                var t = method_definition.IsInternalCall;
-                this.Failed = true;
-                return null;
+                // This is expected for Campy.Runtime types, but not for others. For the Campy runtime, we're
+                // going to load in PTX for this method.
+                if (method_definition.IsInternalCall && method_definition.Module.Name == "corlib.dll")
+                {
+                    return null;
+                }
+                else
+                {
+                    System.Console.WriteLine("ERROR: METHOD BODY NULL! " + method_definition);
+                    this.Failed = true;
+                    return null;
+                }
             }
 
             Dictionary<TypeReference, System.Type> additional = new Dictionary<TypeReference, System.Type>();

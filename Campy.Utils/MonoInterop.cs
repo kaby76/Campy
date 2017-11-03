@@ -1,4 +1,6 @@
 ﻿
+using System.IO;
+
 namespace Campy.Utils
 {
     using Mono.Cecil;
@@ -20,14 +22,9 @@ namespace Campy.Utils
 
         public static System.Type ToSystemType(this TypeReference type)
         {
-            string y = type.GetReflectionName();
-            return Type.GetType(y, true);
-        }
-
-        private static string GetReflectionName(this TypeReference type)
-        {
             var to_type = ToSystemType2(type);
-            return to_type.AssemblyQualifiedName;
+            string y = to_type.AssemblyQualifiedName;
+            return Type.GetType(y, true);
         }
 
         public static System.Type ToSystemType2(this Mono.Cecil.TypeReference tr)
@@ -55,8 +52,7 @@ namespace Campy.Utils
             }
             else
             {
-                String ss = tr.Module.FullyQualifiedName;
-                String assembly_location = td.Module.FullyQualifiedName;
+                String assembly_location = Path.GetFullPath(tr.Resolve().Module.FullyQualifiedName);
                 System.Reflection.Assembly assembly = System.Reflection.Assembly.LoadFile(assembly_location);
                 List<Type> types = new List<Type>();
                 StackQueue<Type> type_definitions = new StackQueue<Type>();
@@ -76,6 +72,26 @@ namespace Campy.Utils
                 {
                     if (Campy.Utils.Utility.IsSimilarType(t, td))
                         return t;
+                }
+            }
+            return null;
+        }
+
+
+        public static Mono.Cecil.TypeReference SubstituteMonoTypeReference(this System.Type type, Mono.Cecil.ModuleDefinition md)
+        {
+            var reference = md.ImportReference(type);
+            return reference;
+        }
+
+        public static Mono.Cecil.TypeDefinition SubstituteMonoTypeReference(this Mono.Cecil.TypeReference type, Mono.Cecil.ModuleDefinition md)
+        {
+            // ImportReference does not work as expected because the scope of the type found isn't in the module.
+            foreach (var tt in md.Types)
+            {
+                if (type.FullName == tt.FullName)
+                {
+                    return tt;
                 }
             }
             return null;

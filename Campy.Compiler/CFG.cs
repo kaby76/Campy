@@ -10,10 +10,8 @@ namespace Campy.Compiler
     using System.Linq;
     using System;
 
-    public class CFG : GraphLinkedList<int, CFG.Vertex, CFG.Edge>
+    public class CFG : GraphAdjList<CFG.Vertex, CFG.Edge>
     {
-
-
         private static int _node_number = 1;
         private List<string> _methods_avoid = new List<string>();
         public bool MethodAvoid(string full_name)
@@ -79,11 +77,11 @@ namespace Campy.Compiler
             throw new Exception("Unknown change set.");
         }
 
-        public override IVertex<int> AddVertex(int v)
+        public override CFG.Vertex AddVertex(CFG.Vertex v)
         {
-            foreach (CFG.Vertex vertex in this.VertexNodes)
+            foreach (CFG.Vertex vertex in this.Vertices)
             {
-                if (vertex.Name == v)
+                if (vertex == v)
                     return vertex;
             }
             CFG.Vertex x = (Vertex)base.AddVertex(v);
@@ -109,7 +107,7 @@ namespace Campy.Compiler
         public Vertex FindEntry(Mono.Cecil.Cil.Instruction inst)
         {
             Vertex result = null;
-            foreach (CFG.Vertex node in this.VertexNodes)
+            foreach (CFG.Vertex node in this.Vertices)
                 if (node.Instructions.First().Instruction == inst)
                     return node;
             return result;
@@ -117,15 +115,15 @@ namespace Campy.Compiler
 
         public Vertex FindEntry(Mono.Cecil.MethodReference mr)
         {
-            foreach (CFG.Vertex node in this.VertexNodes)
+            foreach (CFG.Vertex node in this.Vertices)
                 if (node.ExpectedCalleeSignature == mr)
                     return node;
             return null;
         }
 
         public class Vertex
-            : GraphLinkedList<int, Vertex, Edge>.Vertex
         {
+            public string Name { get; set; }
             public CFG.Vertex OriginalVertex { get; set; }
             public Dictionary<Tuple<TypeReference, GenericParameter>, System.Type> OpsFromOriginal { get; set; } = new Dictionary<Tuple<TypeReference, GenericParameter>, System.Type>();
             public CFG.Vertex PreviousVertex { get; set; }
@@ -134,6 +132,7 @@ namespace Campy.Compiler
             public MethodReference ExpectedCalleeSignature { get; set; }
             public MethodReference RewrittenCalleeSignature { get; set; }
             public List<Inst> Instructions { get; set; } = new List<Inst>();
+            public CFG _graph;
 
             public BasicBlockRef BasicBlock { get; set; }
             public ValueRef MethodValueRef { get; set; }
@@ -264,25 +263,25 @@ namespace Campy.Compiler
 
                 CFG.Vertex v = this;
                 Console.WriteLine();
-                Console.WriteLine("Node: " + v.Name + " ");
+                Console.WriteLine("Node: " + v.ToString() + " ");
                 Console.WriteLine(new String(' ', 4) + "Method " + v.ExpectedCalleeSignature.FullName);
                 Console.WriteLine(new String(' ', 4) + "HasThis   " + v.HasThis);
                 Console.WriteLine(new String(' ', 4) + "Args   " + v.NumberOfArguments);
                 Console.WriteLine(new String(' ', 4) + "Locals " + v.NumberOfLocals);
                 Console.WriteLine(new String(' ', 4) + "Return (reuse) " + v.HasScalarReturnValue);
-                if (this._Graph.Predecessors(v.Name).Any())
+                if (this._graph.Predecessors(v).Any())
                 {
                     Console.Write(new String(' ', 4) + "Edges from:");
-                    foreach (object t in this._Graph.Predecessors(v.Name))
+                    foreach (object t in this._graph.Predecessors(v))
                     {
                         Console.Write(" " + t);
                     }
                     Console.WriteLine();
                 }
-                if (this._Graph.Successors(v.Name).Any())
+                if (this._graph.Successors(v).Any())
                 {
                     Console.Write(new String(' ', 4) + "Edges to:");
-                    foreach (object t in this._Graph.Successors(v.Name))
+                    foreach (object t in this._graph.Successors(v))
                     {
                         Console.Write(" " + t);
                     }
@@ -301,8 +300,8 @@ namespace Campy.Compiler
             {
                 Debug.Assert(Instructions.Count != 0);
                 // Split this node into two nodes, with all instructions after "i" in new node.
-                var cfg = (CFG)this._Graph;
-                Vertex result = (Vertex)cfg.AddVertex(cfg.NewNodeNumber());
+                var cfg = this._graph;
+                Vertex result = (Vertex)cfg.AddVertex(new Vertex() { Name = cfg.NewNodeNumber().ToString()});
                 result.HasThis = this.HasThis;
                 result.NumberOfArguments = this.NumberOfArguments;
                 result.HasStructReturnValue = this.HasStructReturnValue;
@@ -348,8 +347,8 @@ namespace Campy.Compiler
                 while (cfg.SuccessorNodes(this).Count() > 0)
                 {
                     CFG.Vertex succ = cfg.SuccessorNodes(this).First();
-                    cfg.DeleteEdge(this, succ);
-                    cfg.AddEdge(result, succ);
+                    cfg.DeleteEdge(new CFG.Edge(){From = this, To = succ});
+                    cfg.AddEdge(new CFG.Edge() { From = result, To = succ });
                 }
 
                 if (Campy.Utils.Options.IsOn("cfg_construction_trace"))
@@ -365,13 +364,17 @@ namespace Campy.Compiler
             }
         }
 
-        public class Edge
-            : GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge
+        public class Edge : DirectedEdge<CFG.Vertex>
         {
+            public Edge()
+                : base(null, null)
+            {
+            }
+
             public bool IsInterprocedural()
             {
-                CFG.Vertex f = (CFG.Vertex)this.from;
-                CFG.Vertex t = (CFG.Vertex)this.to;
+                CFG.Vertex f = (CFG.Vertex)this.From;
+                CFG.Vertex t = (CFG.Vertex)this.To;
                 if (f.ExpectedCalleeSignature != t.ExpectedCalleeSignature)
                     return true;
                 return false;
@@ -410,7 +413,7 @@ namespace Campy.Compiler
                 System.Console.WriteLine();
             }
 
-            foreach (Vertex n in VertexNodes)
+            foreach (Vertex n in Vertices)
             {
                   n.OutputEntireNode();
             }
@@ -421,15 +424,15 @@ namespace Campy.Compiler
             if (!Campy.Utils.Options.IsOn("dot_graph"))
                 return;
 
-            Dictionary<int,bool> visited = new Dictionary<int, bool>();
+            Dictionary<CFG.Vertex,bool> visited = new Dictionary<CFG.Vertex, bool>();
             System.Console.WriteLine("digraph {");
-            foreach (IEdge<int> n in this.Edges)
+            foreach (var n in this.Edges)
             {
                 System.Console.WriteLine(n.From + " -> " + n.To + ";");
                 visited[n.From] = true;
                 visited[n.To] = true;
             }
-            foreach (int n in this.Vertices)
+            foreach (var n in this.Vertices)
             {
                 if (visited.ContainsKey(n)) continue;
                 System.Console.WriteLine(n + ";");
@@ -451,7 +454,7 @@ namespace Campy.Compiler
             {
                 // Create a sorted list of nodes for given node.
                 List<CFG.Vertex> list = new List<Vertex>();
-                foreach (CFG.Vertex v in _node._Graph.VertexNodes)
+                foreach (CFG.Vertex v in _node._graph.Vertices)
                 {
                     if (v.Entry == _node) list.Add(v);
                 }
@@ -469,7 +472,7 @@ namespace Campy.Compiler
                 }
                 foreach (CFG.Vertex current in list)
                 {
-                    foreach (CFG.Vertex next in _node._Graph.SuccessorNodes(current))
+                    foreach (CFG.Vertex next in _node._graph.SuccessorNodes(current))
                     {
                         if (next.IsEntry && next.ExpectedCalleeSignature != _node.ExpectedCalleeSignature)
                             yield return next;

@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using Campy.Graphs;
-using Campy.Graphs;
 using Campy.Utils;
 using Mono.Cecil;
 using Swigged.LLVM;
@@ -715,7 +714,7 @@ namespace Campy.Compiler
                                     if (previous != null) continue;
                                     // Rewrite node
                                     int new_node_id = _mcfg.NewNodeNumber();
-                                    var new_node = _mcfg.AddVertex(new_node_id);
+                                    var new_node = _mcfg.AddVertex(new CFG.Vertex() { Name = new_node_id.ToString() });
                                     var new_cfg_node = (CFG.Vertex)new_node;
                                     new_cfg_node.Instructions = basic_block.Instructions;
                                     new_cfg_node.ExpectedCalleeSignature = basic_block.ExpectedCalleeSignature;
@@ -792,7 +791,7 @@ namespace Campy.Compiler
                                     if (previous != null) continue;
                                     // Rewrite node
                                     int new_node_id = _mcfg.NewNodeNumber();
-                                    var new_node = _mcfg.AddVertex(new_node_id);
+                                    var new_node = _mcfg.AddVertex(new CFG.Vertex(){Name = new_node_id.ToString()});
                                     var new_cfg_node = (CFG.Vertex)new_node;
                                     new_cfg_node.Instructions = basic_block.Instructions;
                                     new_cfg_node.ExpectedCalleeSignature = basic_block.ExpectedCalleeSignature;
@@ -878,7 +877,7 @@ namespace Campy.Compiler
                                     if (previous != null) continue;
                                     // Rewrite node
                                     int new_node_id = _mcfg.NewNodeNumber();
-                                    var new_node = _mcfg.AddVertex(new_node_id);
+                                    var new_node = _mcfg.AddVertex(new CFG.Vertex(){Name = new_node_id.ToString()});
                                     var new_cfg_node = (CFG.Vertex)new_node;
                                     new_cfg_node.Instructions = basic_block.Instructions;
                                     new_cfg_node.ExpectedCalleeSignature = basic_block.ExpectedCalleeSignature;
@@ -926,7 +925,7 @@ namespace Campy.Compiler
                 foreach (var vto in _mcfg.SuccessorNodes(original))
                 {
                     var vto_mapped = Eval(vto, ops_list);
-                    _mcfg.AddEdge(v, vto_mapped);
+                    _mcfg.AddEdge(new CFG.Edge() {From = v, To = vto_mapped});
                 }
             }
             foreach (var v in new_change_set)
@@ -953,11 +952,11 @@ namespace Campy.Compiler
             // previous entries.
 
             Dictionary<CFG.Vertex, bool> instantiated = new Dictionary<CFG.Vertex, bool>();
-            foreach (var v in _mcfg.VertexNodes)
+            foreach (var v in _mcfg.Vertices)
             {
                 instantiated[v] = true;
             }
-            foreach (var v in _mcfg.VertexNodes)
+            foreach (var v in _mcfg.Vertices)
             {
                 if (v.PreviousVertex != null) instantiated[v.PreviousVertex] = false;
             }
@@ -1161,8 +1160,9 @@ namespace Campy.Compiler
             change_set_minus_unreachable = new List<CFG.Vertex>(basic_blocks_to_compile);
             {
                 // Create DFT order of all nodes from entries.
-                IEnumerable<int> objs = entries.Select(x => x.Name);
-                var ordered_list = new Tarjan<int>(_mcfg).Reverse().ToList();
+                var objs = entries.Select(x => x.Name);
+                var ordered_list = new Tarjan<CFG.Vertex,CFG.Edge>(_mcfg).ToList();
+                ordered_list.Reverse();
 
                 //Graphs.DFSPreorder<int>
                 //    ordered_list = new Graphs.DFSPreorder<int>(
@@ -1171,9 +1171,9 @@ namespace Campy.Compiler
                 //    );
 
                 List<CFG.Vertex> visited = new List<CFG.Vertex>();
-                foreach (int ob in ordered_list)
+                foreach (var ob in ordered_list)
                 {
-                    CFG.Vertex node = _mcfg.VertexSpace[_mcfg.NameSpace.BijectFromBasetype(ob)];
+                    CFG.Vertex node = ob;
                     if (!IsFullyInstantiatedNode(node))
                         continue;
                     if (visited.Contains(node))
@@ -1225,7 +1225,8 @@ namespace Campy.Compiler
             while (work.Count != 0)
             {
                 // Create DFT order of all nodes.
-                var ordered_list = new Tarjan<int>(_mcfg).Reverse().ToList();
+                var ordered_list = new Tarjan<CFG.Vertex,CFG.Edge>(_mcfg).ToList();
+                ordered_list.Reverse();
 
                 //IEnumerable<int> objs = entries.Select(x => x.Name);
                 //Graphs.DFSPreorder<int>
@@ -1237,9 +1238,9 @@ namespace Campy.Compiler
                 List<CFG.Vertex> visited = new List<CFG.Vertex>();
                 // Compute stack size for each basic block, processing nodes on work list
                 // in DFT order.
-                foreach (int ob in ordered_list)
+                foreach (var ob in ordered_list)
                 {
-                    CFG.Vertex node = _mcfg.VertexSpace[_mcfg.NameSpace.BijectFromBasetype(ob)];
+                    CFG.Vertex node = ob;
                     var llvm_node = node;
                     visited.Add(node);
                     if (!(work.Contains(node)))
@@ -1303,7 +1304,7 @@ namespace Campy.Compiler
                             throw new Exception("Failed stack level out check");
                         }
                     }
-                    foreach (CFG.Vertex succ in node._Graph.SuccessorNodes(node))
+                    foreach (CFG.Vertex succ in node._graph.SuccessorNodes(node))
                     {
                         // If it's an interprocedural edge, nothing to pass on.
                         if (succ.ExpectedCalleeSignature != node.ExpectedCalleeSignature)
@@ -1350,7 +1351,7 @@ namespace Campy.Compiler
         }
 
         public string CompileToLLVM(List<CFG.Vertex> basic_blocks_to_compile, List<Mono.Cecil.TypeReference> list_of_data_types_used,
-            int basic_block_id, int start_index = 0)
+            string basic_block_id, int start_index = 0)
         {
             _start_index = start_index;
 
@@ -1362,7 +1363,7 @@ namespace Campy.Compiler
 
             CompilePart3(basic_blocks_to_compile, list_of_data_types_used);
 
-            List<CFG.Vertex> entries = _mcfg.VertexNodes.Where(node => node.IsEntry).ToList();
+            List<CFG.Vertex> entries = _mcfg.Vertices.Where(node => node.IsEntry).ToList();
 
             List<CFG.Vertex> unreachable;
             List<CFG.Vertex> change_set_minus_unreachable;
@@ -1376,15 +1377,16 @@ namespace Campy.Compiler
                 List<CFG.Vertex> work = new List<CFG.Vertex>(change_set_minus_unreachable);
 
                 // Get a list of the name of nodes to compile.
-                IEnumerable<int> work_names = work.Select(v => v.Name);
+                var work_names = work.Select(v => v.Name);
 
                 // Get a Tarjan DFS/SCC order of the nodes. Reverse it because we want to
                 // proceed from entry basic block.
                 //var ordered_list = new Tarjan<int>(_mcfg).GetEnumerable().Reverse();
-                var ordered_list = new Tarjan<int>(_mcfg).Reverse();
+                var ordered_list = new Tarjan<CFG.Vertex,CFG.Edge>(_mcfg).ToList();
+                ordered_list.Reverse();
 
                 // Eliminate all node names not in the work list.
-                var order = ordered_list.Where(v => work_names.Contains(v)).ToList();
+                var order = ordered_list.Where(v => work_names.Contains(v.Name)).ToList();
 
                 //// Set up the initial states associated with each node, that is, state into and state out of.
                 //foreach (int ob in order)
@@ -1395,12 +1397,12 @@ namespace Campy.Compiler
                 //    llvm_node.StateOut = new State(node, false);
                 //}
 
-                Dictionary<int, bool> visited = new Dictionary<int, bool>();
+                Dictionary<CFG.Vertex, bool> visited = new Dictionary<CFG.Vertex, bool>();
 
                 // Emit LLVM IR code, based on state and per-instruction simulation on that state.
-                foreach (int ob in order)
+                foreach (var ob in order)
                 {
-                    CFG.Vertex bb = _mcfg.VertexSpace[_mcfg.NameSpace.BijectFromBasetype(ob)];
+                    CFG.Vertex bb = ob;
 
                     if (Campy.Utils.Options.IsOn("state_computation_trace"))
                         System.Console.WriteLine("State computations for node " + bb.Name);
@@ -1437,23 +1439,22 @@ namespace Campy.Compiler
                         || last_inst.OpCode.FlowControl == FlowControl.Call))
                     {
                         // Need to insert instruction to branch to fall through.
-                        GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge = bb._Successors[0];
-                        int succ = edge.To;
-                        var s = bb._Graph.VertexSpace[bb._Graph.NameSpace.BijectFromBasetype(succ)];
+                        var edge = bb._graph.SuccessorEdges(bb).FirstOrDefault();
+                        var s = edge.To;
                         var br = LLVM.BuildBr(bb.Builder, s.BasicBlock);
                     }
                     visited[ob] = true;
                 }
 
                 // Finally, update phi functions with "incoming" information from predecessors.
-                foreach (int ob in order)
+                foreach (var ob in order)
                 {
-                    CFG.Vertex node = _mcfg.VertexSpace[_mcfg.NameSpace.BijectFromBasetype(ob)];
+                    CFG.Vertex node = ob;
                     CFG.Vertex llvm_node = node;
                     int size = llvm_node.StateIn._stack.Count;
                     for (int i = 0; i < size; ++i)
                     {
-                        var count = llvm_node._Predecessors.Count;
+                        var count = llvm_node._graph.Predecessors(llvm_node).Count();
                         if (count < 2) continue;
                         ValueRef res;
                         res = llvm_node.StateIn._stack[i].V;
@@ -1461,16 +1462,16 @@ namespace Campy.Compiler
                         ValueRef[] phi_vals = new ValueRef[count];
                         for (int c = 0; c < count; ++c)
                         {
-                            var p = llvm_node._Predecessors[c].From;
-                            var plm = llvm_node._Graph.VertexSpace[llvm_node._Graph.NameSpace.BijectFromBasetype(p)];
+                            var p = llvm_node._graph.PredecessorEdges(llvm_node).ToList()[c].From;
+                            var plm = p;
                             var vr = plm.StateOut._stack[i];
                             phi_vals[c] = vr.V;
                         }
                         BasicBlockRef[] phi_blocks = new BasicBlockRef[count];
                         for (int c = 0; c < count; ++c)
                         {
-                            var p = llvm_node._Predecessors[c].From;
-                            var plm = llvm_node._Graph.VertexSpace[llvm_node._Graph.NameSpace.BijectFromBasetype(p)];
+                            var p = llvm_node._graph.PredecessorEdges(llvm_node).ToList()[c].From;
+                            var plm = p;
                             phi_blocks[c] = plm.BasicBlock;
                         }
                         //System.Console.WriteLine();
@@ -1487,9 +1488,9 @@ namespace Campy.Compiler
 
                 if (Campy.Utils.Options.IsOn("state_computation_trace"))
                 {
-                    foreach (int ob in order)
+                    foreach (var ob in order)
                     {
-                        CFG.Vertex node = _mcfg.VertexSpace[_mcfg.NameSpace.BijectFromBasetype(ob)];
+                        CFG.Vertex node = ob;
                         CFG.Vertex llvm_node = node;
 
                         node.OutputEntireNode();
@@ -1679,12 +1680,12 @@ namespace Campy.Compiler
             return data_used;
         }
 
-        public CFG.Vertex GetBasicBlock(int block_id)
+        public CFG.Vertex GetBasicBlock(string block_id)
         {
-            return _mcfg.VertexNodes.Where(i => i.IsEntry && i.Name == block_id).FirstOrDefault();
+            return _mcfg.Vertices.Where(i => i.IsEntry && i.Name == block_id).FirstOrDefault();
         }
 
-        public CUfunction GetCudaFunction(int basic_block_id, string ptx)
+        public CUfunction GetCudaFunction(string basic_block_id, string ptx)
         {
             var basic_block = GetBasicBlock(basic_block_id);
             var method = basic_block.ExpectedCalleeSignature;

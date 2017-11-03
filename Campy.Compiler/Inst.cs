@@ -1393,16 +1393,14 @@ namespace Campy.Compiler
 
                 cmp = LLVM.BuildICmp(Builder, op, v1.V, v2.V, "");
 
-                GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge1 = Block._Successors[0];
-                GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge2 = Block._Successors[1];
-                int succ1 = edge1.To;
-                int succ2 = edge2.To;
-                var s1 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ1)];
-                var s2 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ2)];
+                var edge1 = Block._graph.SuccessorEdges(Block).ToList()[0];
+                var edge2 = Block._graph.SuccessorEdges(Block).ToList()[1];
+                var s1 = edge1.To;
+                var s2 = edge2.To;
                 // Now, in order to select the correct branch, we need to know what
                 // edge represents the "true" branch. During construction, there is
                 // no guarentee that the order is consistent.
-                var owner = Block._Graph.VertexNodes.Where(
+                var owner = Block._graph.Vertices.Where(
                     n => n.Instructions.Where(ins => ins.Instruction == this.Instruction).Any()).ToList();
                 if (owner.Count != 1)
                     throw new Exception("Cannot find instruction!");
@@ -1423,16 +1421,14 @@ namespace Campy.Compiler
 
                 cmp = LLVM.BuildFCmp(Builder, op, v1.V, v2.V, "");
 
-                GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge1 = Block._Successors[0];
-                GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge2 = Block._Successors[1];
-                int succ1 = edge1.To;
-                int succ2 = edge2.To;
-                var s1 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ1)];
-                var s2 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ2)];
+                var edge1 = Block._graph.SuccessorEdges(Block).ToList()[0];
+                var edge2 = Block._graph.SuccessorEdges(Block).ToList()[1];
+                var s1 = edge1.To;
+                var s2 = edge2.To;
                 // Now, in order to select the correct branch, we need to know what
                 // edge represents the "true" branch. During construction, there is
                 // no guarentee that the order is consistent.
-                var owner = Block._Graph.VertexNodes.Where(
+                var owner = Block._graph.Vertices.Where(
                     n => n.Instructions.Where(ins => ins.Instruction == this.Instruction).Any()).ToList();
                 if (owner.Count != 1)
                     throw new Exception("Cannot find instruction!");
@@ -2581,9 +2577,8 @@ namespace Campy.Compiler
 
         public override Inst Convert(Converter converter, State state)
         {
-            GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge = Block._Successors[0];
-            int succ = edge.To;
-            var s = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ)];
+            var edge = Block._graph.SuccessorEdges(Block).ToList()[0];
+            var s = edge.To;
             var br = LLVM.BuildBr(Builder, s.BasicBlock);
             return Next;
         }
@@ -2603,9 +2598,8 @@ namespace Campy.Compiler
 
         public override Inst Convert(Converter converter, State state)
         {
-            GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge = Block._Successors[0];
-            int succ = edge.To;
-            var s = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ)];
+            var edge = Block._graph.SuccessorEdges(Block).ToList()[0];
+            var s = edge.To;
             var br = LLVM.BuildBr(Builder, s.BasicBlock);
             return Next;
         }
@@ -2628,12 +2622,10 @@ namespace Campy.Compiler
             object operand = this.Operand;
             Instruction instruction = operand as Instruction;
             var v = state._stack.Pop();
-            GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge1 = Block._Successors[0];
-            GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge2 = Block._Successors[1];
-            int succ1 = edge1.To;
-            int succ2 = edge2.To;
-            var s1 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ1)];
-            var s2 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ2)];
+            var edge1 = Block._graph.SuccessorEdges(Block).ToList()[0];
+            var s1 = edge1.To;
+            var edge2 = Block._graph.SuccessorEdges(Block).ToList()[1];
+            var s2 = edge2.To;
             // We need to compare the value popped with 0/1.
             var v2 = LLVM.ConstInt(LLVM.Int32Type(), 1, false);
             var v3 = LLVM.BuildICmp(Builder, IntPredicate.IntEQ, v.V, v2, "");
@@ -2641,7 +2633,7 @@ namespace Campy.Compiler
             // Now, in order to select the correct branch, we need to know what
             // edge represents the "true" branch. During construction, there is
             // no guarentee that the order is consistent.
-            var owner = Block._Graph.VertexNodes.Where(
+            var owner = Block._graph.Vertices.Where(
                 n => n.Instructions.Where(ins => ins.Instruction == instruction).Any()).ToList();
             if (owner.Count != 1)
                 throw new Exception("Cannot find instruction!");
@@ -2681,12 +2673,10 @@ namespace Campy.Compiler
             object operand = this.Operand;
             Instruction instruction = operand as Instruction;
             var v = state._stack.Pop();
-            GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge1 = Block._Successors[0];
-            GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge2 = Block._Successors[1];
-            int succ1 = edge1.To;
-            int succ2 = edge2.To;
-            var s1 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ1)];
-            var s2 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ2)];
+            var edge1 = Block._graph.SuccessorEdges(Block).ToList()[0];
+            var s1 = edge1.To;
+            var edge2 = Block._graph.SuccessorEdges(Block).ToList()[1];
+            var s2 = edge2.To;
             // We need to compare the value popped with 0/1.
             var v2 = LLVM.ConstInt(LLVM.Int32Type(), 1, false);
             var v3 = LLVM.BuildICmp(Builder, IntPredicate.IntEQ, v.V, v2, "");
@@ -2694,7 +2684,7 @@ namespace Campy.Compiler
             // Now, in order to select the correct branch, we need to know what
             // edge represents the "true" branch. During construction, there is
             // no guarentee that the order is consistent.
-            var owner = Block._Graph.VertexNodes.Where(
+            var owner = Block._graph.Vertices.Where(
                 n => n.Instructions.Where(ins => ins.Instruction == instruction).Any()).ToList();
             if (owner.Count != 1)
                 throw new Exception("Cannot find instruction!");
@@ -2726,12 +2716,10 @@ namespace Campy.Compiler
             object operand = this.Operand;
             Instruction instruction = operand as Instruction;
             var v = state._stack.Pop();
-            GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge1 = Block._Successors[0];
-            GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge2 = Block._Successors[1];
-            int succ1 = edge1.To;
-            int succ2 = edge2.To;
-            var s1 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ1)];
-            var s2 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ2)];
+            var edge1 = Block._graph.SuccessorEdges(Block).ToList()[0];
+            var s1 = edge1.To;
+            var edge2 = Block._graph.SuccessorEdges(Block).ToList()[1];
+            var s2 = edge2.To;
             // We need to compare the value popped with 0/1.
             var v2 = LLVM.ConstInt(LLVM.Int32Type(), 1, false);
             var v3 = LLVM.BuildICmp(Builder, IntPredicate.IntEQ, v.V, v2, "");
@@ -2739,7 +2727,7 @@ namespace Campy.Compiler
             // Now, in order to select the correct branch, we need to know what
             // edge represents the "true" branch. During construction, there is
             // no guarentee that the order is consistent.
-            var owner = Block._Graph.VertexNodes.Where(
+            var owner = Block._graph.Vertices.Where(
                 n => n.Instructions.Where(ins => ins.Instruction == instruction).Any()).ToList();
             if (owner.Count != 1)
                 throw new Exception("Cannot find instruction!");
@@ -2771,12 +2759,10 @@ namespace Campy.Compiler
             object operand = this.Operand;
             Instruction instruction = operand as Instruction;
             var v = state._stack.Pop();
-            GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge1 = Block._Successors[0];
-            GraphLinkedList<int, CFG.Vertex, CFG.Edge>.Edge edge2 = Block._Successors[1];
-            int succ1 = edge1.To;
-            int succ2 = edge2.To;
-            var s1 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ1)];
-            var s2 = Block._Graph.VertexSpace[Block._Graph.NameSpace.BijectFromBasetype(succ2)];
+            var edge1 = Block._graph.SuccessorEdges(Block).ToList()[0];
+            var s1 = edge1.To;
+            var edge2 = Block._graph.SuccessorEdges(Block).ToList()[1];
+            var s2 = edge2.To;
             // We need to compare the value popped with 0/1.
             var v2 = LLVM.ConstInt(LLVM.Int32Type(), 1, false);
             var v3 = LLVM.BuildICmp(Builder, IntPredicate.IntEQ, v.V, v2, "");
@@ -2784,7 +2770,7 @@ namespace Campy.Compiler
             // Now, in order to select the correct branch, we need to know what
             // edge represents the "true" branch. During construction, there is
             // no guarentee that the order is consistent.
-            var owner = Block._Graph.VertexNodes.Where(
+            var owner = Block._graph.Vertices.Where(
                 n => n.Instructions.Where(ins => ins.Instruction == instruction).Any()).ToList();
             if (owner.Count != 1)
                 throw new Exception("Cannot find instruction!");
@@ -2819,12 +2805,11 @@ namespace Campy.Compiler
             int xlevel_after = level_after;
 
             // Find bb entry.
-            CFG.Vertex the_entry = this.Block._Graph.VertexNodes.Where(node
+            CFG.Vertex the_entry = this.Block._graph.Vertices.Where(node
                 =>
             {
-                GraphLinkedList<int, CFG.Vertex, CFG.Edge> g = this.Block._Graph;
-                int k = g.NameSpace.BijectFromBasetype(node.Name);
-                CFG.Vertex v = g.VertexSpace[k];
+                var g = this.Block._graph;
+                CFG.Vertex v = node;
                 Converter c = converter;
                 if (v.IsEntry && Converter.MethodName(v.ExpectedCalleeSignature) == mr.FullName && c.IsFullyInstantiatedNode(v))
                     return true;
@@ -2853,12 +2838,11 @@ namespace Campy.Compiler
             Mono.Cecil.MethodReference mr = method as Mono.Cecil.MethodReference;
 
             // Find bb entry.
-            CFG.Vertex the_entry = this.Block._Graph.VertexNodes.Where(node
+            CFG.Vertex the_entry = this.Block._graph.Vertices.Where(node
                 =>
             {
-                GraphLinkedList<int, CFG.Vertex, CFG.Edge> g = this.Block._Graph;
-                int k = g.NameSpace.BijectFromBasetype(node.Name);
-                CFG.Vertex v = g.VertexSpace[k];
+                var g = this.Block._graph;
+                CFG.Vertex v = node;
                 Converter c = converter;
                 if (v.IsEntry && Converter.MethodName(v.ExpectedCalleeSignature) == mr.FullName && c.IsFullyInstantiatedNode(v))
                     return true;
@@ -3115,12 +3099,11 @@ namespace Campy.Compiler
                 }
                 var name = Converter.MethodName(mr);
                 // Find bb entry.
-                CFG.Vertex the_entry = this.Block._Graph.VertexNodes.Where(node
+                CFG.Vertex the_entry = this.Block._graph.Vertices.Where(node
                     =>
                 {
-                    GraphLinkedList<int, CFG.Vertex, CFG.Edge> g = j.Block._Graph;
-                    int k = g.NameSpace.BijectFromBasetype(node.Name);
-                    CFG.Vertex v = g.VertexSpace[k];
+                    var g = j.Block._graph;
+                    CFG.Vertex v = node;
                     Converter c = converter;
                     if (v.IsEntry && Converter.MethodName(v.ExpectedCalleeSignature) == name && c.IsFullyInstantiatedNode(v))
                         return true;
@@ -4775,15 +4758,14 @@ namespace Campy.Compiler
 
             if (!type.IsValueType)
                 throw new Exception("Cannot allocate object references yet--not implemented.");
-            CFG graph = (CFG)this.Block._Graph;
+            CFG graph = (CFG)this.Block._graph;
 
             var name = Converter.MethodName(method);
-            CFG.Vertex the_entry = this.Block._Graph.VertexNodes.Where(node
+            CFG.Vertex the_entry = this.Block._graph.Vertices.Where(node
                 =>
             {
-                GraphLinkedList<int, CFG.Vertex, CFG.Edge> g = this.Block._Graph;
-                int k = g.NameSpace.BijectFromBasetype(node.Name);
-                CFG.Vertex v = g.VertexSpace[k];
+                var g = this.Block._graph;
+                CFG.Vertex v = node;
                 Converter c = converter;
                 if (v.IsEntry && Converter.MethodName(v.ExpectedCalleeSignature) == name && c.IsFullyInstantiatedNode(v))
                     return true;
@@ -4825,15 +4807,14 @@ namespace Campy.Compiler
 
             var inst = this;
 
-            CFG graph = (CFG)this.Block._Graph;
+            CFG graph = (CFG)this.Block._graph;
 
             var name = Converter.MethodName(method);
-            CFG.Vertex the_entry = this.Block._Graph.VertexNodes.Where(node
+            CFG.Vertex the_entry = this.Block._graph.Vertices.Where(node
                 =>
             {
-                GraphLinkedList<int, CFG.Vertex, CFG.Edge> g = inst.Block._Graph;
-                int k = g.NameSpace.BijectFromBasetype(node.Name);
-                CFG.Vertex v = g.VertexSpace[k];
+                var g = inst.Block._graph;
+                CFG.Vertex v = node;
                 Converter c = converter;
                 if (v.IsEntry && Converter.MethodName(v.ExpectedCalleeSignature) == name && c.IsFullyInstantiatedNode(v))
                     return true;

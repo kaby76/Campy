@@ -52,6 +52,7 @@ namespace Campy.Graphs
         public NODE From
         {
             get { return _from; }
+            set {_from = value; }
         }
 
 
@@ -62,6 +63,7 @@ namespace Campy.Graphs
         public NODE To
         {
             get { return _to; }
+            set { _to = value; }
         }
 
         /**

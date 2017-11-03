@@ -36,6 +36,9 @@ namespace ConsoleApp4
 
         static void Main(string[] args)
         {
+            Campy.Graphs.Gabow.test();
+
+
             StartDebugging();
 
 

@@ -100,10 +100,32 @@ namespace Campy.Graphs
 
         virtual public void DeleteEdge(EDGE e)
         {
-        }
-
-        virtual public void Optimize()
-        {
+            var vf = e.From;
+            var vt = e.To;
+            var done = ForwardEdgeSpace.TryGetValue(vf, out List<EDGE> list);
+            if (done)
+            {
+                for (int i = 0; i < list.Count; ++i)
+                {
+                    if (list[i].From.Equals(vf) && list[i].To.Equals(vt))
+                    {
+                        list.RemoveAt(i);
+                        break;
+                    }
+                }
+            }
+            done = ReverseEdgeSpace.TryGetValue(vf, out List<EDGE> listr);
+            if (done)
+            {
+                for (int i = 0; i < list.Count; ++i)
+                {
+                    if (list[i].From.Equals(vt) && list[i].To.Equals(vf))
+                    {
+                        list.RemoveAt(i);
+                        break;
+                    }
+                }
+            }
         }
 
         public GraphAdjList()
