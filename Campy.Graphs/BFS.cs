@@ -1,38 +1,23 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Campy.Utils;
 
 namespace Campy.Graphs
 {
-    public class BFS<T, E> : IEnumerable<T>
-        where E : IEdge<T>
+    public class BFS
     {
-
-        IGraph<T,E> graph;
-        IEnumerable<T> Source;
-        bool _backwards;
-        Dictionary<T, bool> Visited = new Dictionary<T, bool>();
-
-        public BFS(IGraph<T,E> g, IEnumerable<T> s, bool backwards = false)
+        public static System.Collections.Generic.IEnumerable<T> Sort<T, E>
+            (IGraph<T, E> graph, IEnumerable<T> source, bool backwards = false)
+            where E : IEdge<T>
         {
-            graph = g;
-            Source = s;
-            _backwards = backwards;
+            Dictionary<T, bool> Visited = new Dictionary<T, bool>();
+
             foreach (T v in graph.Vertices)
                 Visited.Add(v, false);
-        }
 
-        public BFS(IGraph<T,E> g, T s)
-        {
-            graph = g;
-            Source = new T[] { s };
-            foreach (T v in graph.Vertices)
-                Visited.Add(v, false);
-        }
 
-        public IEnumerator<T> GetEnumerator()
-        {
-            if (Source != null && Source.Count() != 0)
+            if (source != null && source.Count() != 0)
             {
                 foreach (T v in graph.Vertices)
                     Visited[v] = false;
@@ -50,18 +35,13 @@ namespace Campy.Graphs
                     if (Visited[u]) continue;
                     Visited[u] = true;
                     yield return u;
-                    IEnumerable<T> ordered_enumerator = _backwards ? graph.Predecessors(u) : graph.Successors(u);
+                    IEnumerable<T> ordered_enumerator = backwards ? graph.Predecessors(u) : graph.Successors(u);
                     foreach (T v in ordered_enumerator)
                     {
                         frontier.Enqueue(v);
                     }
                 }
             }
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
         }
     }
 }
