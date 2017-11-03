@@ -145,9 +145,12 @@ namespace Campy.Graphs
 
             public IEnumerator<NODE> GetEnumerator()
             {
-                foreach (EDGE e in graph.ReverseEdgeSpace[node])
+                if (graph.ReverseEdgeSpace.TryGetValue(node, out List<EDGE> list))
                 {
-                    yield return e.From;
+                    foreach (EDGE e in list)
+                    {
+                        yield return e.From;
+                    }
                 }
             }
 
@@ -175,9 +178,12 @@ namespace Campy.Graphs
 
             public IEnumerator<EDGE> GetEnumerator()
             {
-                foreach (EDGE e in graph.ReverseEdgeSpace[node])
+                if (graph.ReverseEdgeSpace.TryGetValue(node, out List<EDGE> list))
                 {
-                    yield return e;
+                    foreach (EDGE e in list)
+                    {
+                        yield return e;
+                    }
                 }
             }
 
@@ -205,11 +211,13 @@ namespace Campy.Graphs
 
             public IEnumerator<NODE> GetEnumerator()
             {
-                var x = graph.ReverseEdgeSpace[node];
-                x.Reverse();
-                foreach (var e in x)
+                if (graph.ReverseEdgeSpace.TryGetValue(node, out List<EDGE> list))
                 {
-                    yield return e.From;
+                    list.Reverse();
+                    foreach (var e in list)
+                    {
+                        yield return e.From;
+                    }
                 }
             }
 
@@ -242,9 +250,12 @@ namespace Campy.Graphs
 
             public IEnumerator<NODE> GetEnumerator()
             {
-                foreach (EDGE e in graph.ForwardEdgeSpace[node])
+                if (graph.ForwardEdgeSpace.TryGetValue(node, out List<EDGE> list))
                 {
-                    yield return e.To;
+                    foreach (EDGE e in list)
+                    {
+                        yield return e.To;
+                    }
                 }
             }
 
@@ -277,9 +288,12 @@ namespace Campy.Graphs
 
             public IEnumerator<EDGE> GetEnumerator()
             {
-                foreach (EDGE e in graph.ForwardEdgeSpace[node])
+                if (graph.ForwardEdgeSpace.TryGetValue(node, out List<EDGE> list))
                 {
-                    yield return e;
+                    foreach (EDGE e in list)
+                    {
+                        yield return e;
+                    }
                 }
             }
 
@@ -307,11 +321,13 @@ namespace Campy.Graphs
 
             public IEnumerator<NODE> GetEnumerator()
             {
-                var x = graph.ForwardEdgeSpace[node];
-                x.Reverse();
-                foreach (EDGE e in x)
+                if (graph.ForwardEdgeSpace.TryGetValue(node, out List<EDGE> list))
                 {
-                    yield return e.To;
+                    list.Reverse();
+                    foreach (EDGE e in list)
+                    {
+                        yield return e.To;
+                    }
                 }
             }
 
