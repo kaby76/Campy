@@ -85,6 +85,7 @@ namespace Campy.Compiler
                     return vertex;
             }
             CFG.Vertex x = (Vertex)base.AddVertex(v);
+            x._graph = this;
             foreach (KeyValuePair<int, List<CFG.Vertex>> pair in this._change_set)
             {
                 pair.Value.Add(x);
@@ -124,6 +125,11 @@ namespace Campy.Compiler
         public class Vertex
         {
             public string Name { get; set; }
+            public override string ToString()
+            {
+                return Name;
+            }
+
             public CFG.Vertex OriginalVertex { get; set; }
             public Dictionary<Tuple<TypeReference, GenericParameter>, System.Type> OpsFromOriginal { get; set; } = new Dictionary<Tuple<TypeReference, GenericParameter>, System.Type>();
             public CFG.Vertex PreviousVertex { get; set; }
@@ -132,7 +138,12 @@ namespace Campy.Compiler
             public MethodReference ExpectedCalleeSignature { get; set; }
             public MethodReference RewrittenCalleeSignature { get; set; }
             public List<Inst> Instructions { get; set; } = new List<Inst>();
-            public CFG _graph;
+
+            public CFG _graph
+            {
+                get;
+                set;
+            }
 
             public BasicBlockRef BasicBlock { get; set; }
             public ValueRef MethodValueRef { get; set; }

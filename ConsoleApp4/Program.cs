@@ -5,6 +5,7 @@ using System.Linq;
 using Campy;
 using System.Numerics;
 using Campy.Compiler;
+using Campy.Graphs;
 
 namespace ConsoleApp4
 {
@@ -37,7 +38,7 @@ namespace ConsoleApp4
         static void Main(string[] args)
         {
             Campy.Graphs.Digraph.test();
-
+            Campy.Graphs.DFSPostorder.test();
 
             StartDebugging();
 

@@ -8,28 +8,19 @@ namespace Campy.Graphs
     // BINARY SEARCH TREE TRAVERSAL", Akram Al-Rawi, Azzedine Lansari, Faouzi Bouslama
     // N.B.: There is no "in-order" traversal defined for a general graph,
     // it must be a binary tree.
-    public class DFSPreorder<T, E> : IEnumerable<T>
-        where E : IEdge<T>
+    public class DFSPreorder
     {
-        IGraph<T,E> graph;
-        IEnumerable<T> Source;
-        Dictionary<T, bool> Visited = new Dictionary<T, bool>();
-        StackQueue<T> Stack = new StackQueue<T>();
-
-        public DFSPreorder(IGraph<T,E> g, IEnumerable<T> s)
+        public static System.Collections.Generic.IEnumerable<T> Sort<T, E>
+            (IGraph<T, E> graph, IEnumerable<T> source)
+            where E : IEdge<T>
         {
-            graph = g;
-            Source = s;
-            foreach (T v in graph.Vertices)
-                Visited.Add(v, false);
-        }
+            Dictionary<T, bool> Visited = new Dictionary<T, bool>();
+            StackQueue<T> Stack = new StackQueue<T>();
 
-        public System.Collections.Generic.IEnumerator<T> GetEnumerator()
-        {
             foreach (T v in graph.Vertices)
                 Visited[v] = false;
 
-            foreach (T v in Source)
+            foreach (T v in source)
                 Stack.Push(v);
 
             while (Stack.Count != 0)
@@ -44,35 +35,21 @@ namespace Campy.Graphs
                 }
             }
         }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
     }
 
-    public class DepthFirstPreorderTraversalViaPredecessors<T, E>
-        where E : IEdge<T>
+    public class DFSPreorderPredecessors
     {
-        IGraph<T,E> graph;
-        IEnumerable<T> Source;
-        Dictionary<T, bool> Visited = new Dictionary<T, bool>();
-        StackQueue<T> Stack = new StackQueue<T>();
-
-        public DepthFirstPreorderTraversalViaPredecessors(IGraph<T,E> g, IEnumerable<T> s)
+        public static System.Collections.Generic.IEnumerable<T> Sort<T, E>
+            (IGraph<T, E> graph, IEnumerable<T> source)
+            where E : IEdge<T>
         {
-            graph = g;
-            Source = s;
-            foreach (T v in graph.Vertices)
-                Visited.Add(v, false);
-        }
+            Dictionary<T, bool> Visited = new Dictionary<T, bool>();
+            StackQueue<T> Stack = new StackQueue<T>();
 
-        public System.Collections.Generic.IEnumerator<T> GetEnumerator()
-        {
             foreach (T v in graph.Vertices)
                 Visited[v] = false;
 
-            foreach (T v in Source)
+            foreach (T v in source)
                 Stack.Push(v);
 
             while (Stack.Count != 0)

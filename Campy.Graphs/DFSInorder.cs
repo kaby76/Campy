@@ -8,29 +8,19 @@ namespace Campy.Graphs
     // BINARY SEARCH TREE TRAVERSAL", Akram Al-Rawi, Azzedine Lansari, Faouzi Bouslama
     // N.B.: There is no "in-order" traversal defined for a general graph,
     // it must be a binary tree.
-    public class DFSInorder<T, E> : IEnumerable<T>
-        where E : IEdge<T>
+    public class DFSInorder
     {
-        BinaryTreeAdjList<T,E> graph;
-        T Source = default(T);
-        Dictionary<T, bool> Visited = new Dictionary<T, bool>();
-
-        public DFSInorder(BinaryTreeAdjList<T,E> g, T s)
+        public static System.Collections.Generic.IEnumerable<T> Sort<T,E>
+          (BinaryTreeAdjList<T,E> graph, T source)
+            where E : IEdge<T>
         {
-            graph = g;
-            Source = s;
+            Dictionary<T, bool> Visited = new Dictionary<T, bool>();
+            StackQueue<T> Stack = new StackQueue<T>();
+
             foreach (T v in graph.Vertices)
                 Visited.Add(v, false);
-        }
 
-        StackQueue<T> Stack = new StackQueue<T>();
-
-        public System.Collections.Generic.IEnumerator<T> GetEnumerator()
-        {
-            foreach (T v in graph.Vertices)
-                Visited[v] = false;
-
-            for (T s = Source; s != null; )
+            for (T s = source; s != null; )
             {
                 Stack.Push(s);
                 T ver = graph.Left(s);
@@ -52,11 +42,6 @@ namespace Campy.Graphs
                     u = graph.Left(z);
                 }
             }
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
         }
     }
 }
