@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Campy.Graphs
 {
-    public class BackEdge
+    public class EdgeClassifier
     {
     }
 }

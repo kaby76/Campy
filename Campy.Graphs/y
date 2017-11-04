@@ -1,0 +1,2304 @@
+13 vertices, 22 edges
+0: 1 5
+1:
+2: 3 0
+3: 2 5
+4: 2 3
+5: 4
+6: 0 8 4 9
+7: 9 6
+8: 6
+9: 10 11
+10: 12
+11: 12 4
+12: 9
+
+3148 1
+3149 11809
+11809 1
+11810 20470
+20470 1
+20471 29131
+29131 1
+29132 37792
+37792 1
+37793 46453
+46453 1
+46454 -1
+
+3148 1
+3149 11809
+11809 1
+11810 20470
+20470 1
+20471 29131
+29131 1
+29132 37792
+37792 1
+37793 46453
+46453 1
+46454 -1
+looking in ../../../packages//win10/lib/x64
+looking in C:\Users\Kenne/.nuget/packages/swigged.llvm/5.0.1/win10/lib/x64
+ExtractBasicBlocks for System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+Split node 1 at instruction IL_0005: ldarg.0
+Node prior to split:
+
+Node: 1
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Instructions:
+        IL_0000: nop
+        IL_0001: ldc.i4.0
+        IL_0002: stloc.0
+        IL_0003: br.s IL_0033
+        IL_0005: ldarg.0
+        IL_0006: ldfld System.String ConsoleApp4.Program/<>c__DisplayClass2_0::text
+        IL_000b: ldarg.1
+        IL_000c: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+        IL_0011: ldloc.0
+        IL_0012: add
+        IL_0013: callvirt System.Char System.String::get_Chars(System.Int32)
+        IL_0018: ldarg.0
+        IL_0019: ldfld System.String ConsoleApp4.Program/<>c__DisplayClass2_0::pattern
+        IL_001e: ldloc.0
+        IL_001f: callvirt System.Char System.String::get_Chars(System.Int32)
+        IL_0024: ceq
+        IL_0026: ldc.i4.0
+        IL_0027: ceq
+        IL_0029: stloc.1
+        IL_002a: ldloc.1
+        IL_002b: brfalse.s IL_002f
+        IL_002d: br.s IL_0053
+        IL_002f: ldloc.0
+        IL_0030: ldc.i4.1
+        IL_0031: add
+        IL_0032: stloc.0
+        IL_0033: ldloc.0
+        IL_0034: ldarg.0
+        IL_0035: ldfld System.Int32 ConsoleApp4.Program/<>c__DisplayClass2_0::m
+        IL_003a: bge.s IL_004e
+        IL_003c: ldarg.1
+        IL_003d: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+        IL_0042: ldloc.0
+        IL_0043: add
+        IL_0044: ldarg.0
+        IL_0045: ldfld System.Int32 ConsoleApp4.Program/<>c__DisplayClass2_0::n
+        IL_004a: clt
+        IL_004c: br.s IL_004f
+        IL_004e: ldc.i4.0
+        IL_004f: stloc.2
+        IL_0050: ldloc.2
+        IL_0051: brtrue.s IL_0005
+        IL_0053: ldloc.0
+        IL_0054: ldarg.0
+        IL_0055: ldfld System.Int32 ConsoleApp4.Program/<>c__DisplayClass2_0::m
+        IL_005a: ceq
+        IL_005c: stloc.3
+        IL_005d: ldloc.3
+        IL_005e: brfalse.s IL_0070
+        IL_0060: nop
+        IL_0061: ldarg.0
+        IL_0062: ldfld System.Int32[] ConsoleApp4.Program/<>c__DisplayClass2_0::found
+        IL_0067: ldarg.1
+        IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+        IL_006d: ldc.i4.1
+        IL_006e: stelem.i4
+        IL_006f: nop
+        IL_0070: ret
+
+New node is 2
+Node after split:
+
+Node: 1
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Instructions:
+        IL_0000: nop
+        IL_0001: ldc.i4.0
+        IL_0002: stloc.0
+        IL_0003: br.s IL_0033
+
+Newly created node:
+
+Node: 2
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Instructions:
+        IL_0005: ldarg.0
+        IL_0006: ldfld System.String ConsoleApp4.Program/<>c__DisplayClass2_0::text
+        IL_000b: ldarg.1
+        IL_000c: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+        IL_0011: ldloc.0
+        IL_0012: add
+        IL_0013: callvirt System.Char System.String::get_Chars(System.Int32)
+        IL_0018: ldarg.0
+        IL_0019: ldfld System.String ConsoleApp4.Program/<>c__DisplayClass2_0::pattern
+        IL_001e: ldloc.0
+        IL_001f: callvirt System.Char System.String::get_Chars(System.Int32)
+        IL_0024: ceq
+        IL_0026: ldc.i4.0
+        IL_0027: ceq
+        IL_0029: stloc.1
+        IL_002a: ldloc.1
+        IL_002b: brfalse.s IL_002f
+        IL_002d: br.s IL_0053
+        IL_002f: ldloc.0
+        IL_0030: ldc.i4.1
+        IL_0031: add
+        IL_0032: stloc.0
+        IL_0033: ldloc.0
+        IL_0034: ldarg.0
+        IL_0035: ldfld System.Int32 ConsoleApp4.Program/<>c__DisplayClass2_0::m
+        IL_003a: bge.s IL_004e
+        IL_003c: ldarg.1
+        IL_003d: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+        IL_0042: ldloc.0
+        IL_0043: add
+        IL_0044: ldarg.0
+        IL_0045: ldfld System.Int32 ConsoleApp4.Program/<>c__DisplayClass2_0::n
+        IL_004a: clt
+        IL_004c: br.s IL_004f
+        IL_004e: ldc.i4.0
+        IL_004f: stloc.2
+        IL_0050: ldloc.2
+        IL_0051: brtrue.s IL_0005
+        IL_0053: ldloc.0
+        IL_0054: ldarg.0
+        IL_0055: ldfld System.Int32 ConsoleApp4.Program/<>c__DisplayClass2_0::m
+        IL_005a: ceq
+        IL_005c: stloc.3
+        IL_005d: ldloc.3
+        IL_005e: brfalse.s IL_0070
+        IL_0060: nop
+        IL_0061: ldarg.0
+        IL_0062: ldfld System.Int32[] ConsoleApp4.Program/<>c__DisplayClass2_0::found
+        IL_0067: ldarg.1
+        IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+        IL_006d: ldc.i4.1
+        IL_006e: stelem.i4
+        IL_006f: nop
+        IL_0070: ret
+
+
+Split node 2 at instruction IL_002d: br.s IL_0053
+Node prior to split:
+
+Node: 2
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Instructions:
+        IL_0005: ldarg.0
+        IL_0006: ldfld System.String ConsoleApp4.Program/<>c__DisplayClass2_0::text
+        IL_000b: ldarg.1
+        IL_000c: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+        IL_0011: ldloc.0
+        IL_0012: add
+        IL_0013: callvirt System.Char System.String::get_Chars(System.Int32)
+        IL_0018: ldarg.0
+        IL_0019: ldfld System.String ConsoleApp4.Program/<>c__DisplayClass2_0::pattern
+        IL_001e: ldloc.0
+        IL_001f: callvirt System.Char System.String::get_Chars(System.Int32)
+        IL_0024: ceq
+        IL_0026: ldc.i4.0
+        IL_0027: ceq
+        IL_0029: stloc.1
+        IL_002a: ldloc.1
+        IL_002b: brfalse.s IL_002f
+        IL_002d: br.s IL_0053
+        IL_002f: ldloc.0
+        IL_0030: ldc.i4.1
+        IL_0031: add
+        IL_0032: stloc.0
+        IL_0033: ldloc.0
+        IL_0034: ldarg.0
+        IL_0035: ldfld System.Int32 ConsoleApp4.Program/<>c__DisplayClass2_0::m
+        IL_003a: bge.s IL_004e
+        IL_003c: ldarg.1
+        IL_003d: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+        IL_0042: ldloc.0
+        IL_0043: add
+        IL_0044: ldarg.0
+        IL_0045: ldfld System.Int32 ConsoleApp4.Program/<>c__DisplayClass2_0::n
+        IL_004a: clt
+        IL_004c: br.s IL_004f
+        IL_004e: ldc.i4.0
+        IL_004f: stloc.2
+        IL_0050: ldloc.2
+        IL_0051: brtrue.s IL_0005
+        IL_0053: ldloc.0
+        IL_0054: ldarg.0
+        IL_0055: ldfld System.Int32 ConsoleApp4.Program/<>c__DisplayClass2_0::m
+        IL_005a: ceq
+        IL_005c: stloc.3
+        IL_005d: ldloc.3
+        IL_005e: brfalse.s IL_0070
+        IL_0060: nop
+        IL_0061: ldarg.0
+        IL_0062: ldfld System.Int32[] ConsoleApp4.Program/<>c__DisplayClass2_0::found
+        IL_0067: ldarg.1
+        IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+        IL_006d: ldc.i4.1
+        IL_006e: stelem.i4
+        IL_006f: nop
+        IL_0070: ret
+
+New node is 3
+Node after split:
+
+Node: 2
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Instructions:
+        IL_0005: ldarg.0
+        IL_0006: ldfld System.String ConsoleApp4.Program/<>c__DisplayClass2_0::text
+        IL_000b: ldarg.1
+        IL_000c: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+        IL_0011: ldloc.0
+        IL_0012: add
+        IL_0013: callvirt System.Char System.String::get_Chars(System.Int32)
+        IL_0018: ldarg.0
+        IL_0019: ldfld System.String ConsoleApp4.Program/<>c__DisplayClass2_0::pattern
+        IL_001e: ldloc.0
+        IL_001f: callvirt System.Char System.String::get_Chars(System.Int32)
+        IL_0024: ceq
+        IL_0026: ldc.i4.0
+        IL_0027: ceq
+        IL_0029: stloc.1
+        IL_002a: ldloc.1
+        IL_002b: brfalse.s IL_002f
+
+Newly created node:
+
+Node: 3
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Instructions:
+        IL_002d: br.s IL_0053
+        IL_002f: ldloc.0
+        IL_0030: ldc.i4.1
+        IL_0031: add
+        IL_0032: stloc.0
+        IL_0033: ldloc.0
+        IL_0034: ldarg.0
+        IL_0035: ldfld System.Int32 ConsoleApp4.Program/<>c__DisplayClass2_0::m
+        IL_003a: bge.s IL_004e
+        IL_003c: ldarg.1
+        IL_003d: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+        IL_0042: ldloc.0
+        IL_0043: add
+        IL_0044: ldarg.0
+        IL_0045: ldfld System.Int32 ConsoleApp4.Program/<>c__DisplayClass2_0::n
+        IL_004a: clt
+        IL_004c: br.s IL_004f
+        IL_004e: ldc.i4.0
+        IL_004f: stloc.2
+        IL_0050: ldloc.2
+        IL_0051: brtrue.s IL_0005
+        IL_0053: ldloc.0
+        IL_0054: ldarg.0
+        IL_0055: ldfld System.Int32 ConsoleApp4.Program/<>c__DisplayClass2_0::m
+        IL_005a: ceq
+        IL_005c: stloc.3
+        IL_005d: ldloc.3
+        IL_005e: brfalse.s IL_0070
+        IL_0060: nop
+        IL_0061: ldarg.0
+        IL_0062: ldfld System.Int32[] ConsoleApp4.Program/<>c__DisplayClass2_0::found
+        IL_0067: ldarg.1
+        IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+        IL_006d: ldc.i4.1
+        IL_006e: stelem.i4
+        IL_006f: nop
+        IL_0070: ret
+
+
+Split node 3 at instruction IL_002f: ldloc.0
+Node prior to split:
+
+Node: 3
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Instructions:
+        IL_002d: br.s IL_0053
+        IL_002f: ldloc.0
+        IL_0030: ldc.i4.1
+        IL_0031: add
+        IL_0032: stloc.0
+        IL_0033: ldloc.0
+        IL_0034: ldarg.0
+        IL_0035: ldfld System.Int32 ConsoleApp4.Program/<>c__DisplayClass2_0::m
+        IL_003a: bge.s IL_004e
+        IL_003c: ldarg.1
+        IL_003d: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+        IL_0042: ldloc.0
+        IL_0043: add
+        IL_0044: ldarg.0
+        IL_0045: ldfld System.Int32 ConsoleApp4.Program/<>c__DisplayClass2_0::n
+        IL_004a: clt
+        IL_004c: br.s IL_004f
+        IL_004e: ldc.i4.0
+        IL_004f: stloc.2
+        IL_0050: ldloc.2
+        IL_0051: brtrue.s IL_0005
+        IL_0053: ldloc.0
+        IL_0054: ldarg.0
+        IL_0055: ldfld System.Int32 ConsoleApp4.Program/<>c__DisplayClass2_0::m
+        IL_005a: ceq
+        IL_005c: stloc.3
+        IL_005d: ldloc.3
+        IL_005e: brfalse.s IL_0070
+        IL_0060: nop
+        IL_0061: ldarg.0
+        IL_0062: ldfld System.Int32[] ConsoleApp4.Program/<>c__DisplayClass2_0::found
+        IL_0067: ldarg.1
+        IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+        IL_006d: ldc.i4.1
+        IL_006e: stelem.i4
+        IL_006f: nop
+        IL_0070: ret
+
+New node is 4
+Node after split:
+
+Node: 3
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Instructions:
+        IL_002d: br.s IL_0053
+
+Newly created node:
+
+Node: 4
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Instructions:
+        IL_002f: ldloc.0
+        IL_0030: ldc.i4.1
+        IL_0031: add
+        IL_0032: stloc.0
+        IL_0033: ldloc.0
+        IL_0034: ldarg.0
+        IL_0035: ldfld System.Int32 ConsoleApp4.Program/<>c__DisplayClass2_0::m
+        IL_003a: bge.s IL_004e
+        IL_003c: ldarg.1
+        IL_003d: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+        IL_0042: ldloc.0
+        IL_0043: add
+        IL_0044: ldarg.0
+        IL_0045: ldfld System.Int32 ConsoleApp4.Program/<>c__DisplayClass2_0::n
+        IL_004a: clt
+        IL_004c: br.s IL_004f
+        IL_004e: ldc.i4.0
+        IL_004f: stloc.2
+        IL_0050: ldloc.2
+        IL_0051: brtrue.s IL_0005
+        IL_0053: ldloc.0
+        IL_0054: ldarg.0
+        IL_0055: ldfld System.Int32 ConsoleApp4.Program/<>c__DisplayClass2_0::m
+        IL_005a: ceq
+        IL_005c: stloc.3
+        IL_005d: ldloc.3
+        IL_005e: brfalse.s IL_0070
+        IL_0060: nop
+        IL_0061: ldarg.0
+        IL_0062: ldfld System.Int32[] ConsoleApp4.Program/<>c__DisplayClass2_0::found
+        IL_0067: ldarg.1
+        IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+        IL_006d: ldc.i4.1
+        IL_006e: stelem.i4
+        IL_006f: nop
+        IL_0070: ret
+
+
+Split node 4 at instruction IL_0033: ldloc.0
+Node prior to split:
+
+Node: 4
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Instructions:
+        IL_002f: ldloc.0
+        IL_0030: ldc.i4.1
+        IL_0031: add
+        IL_0032: stloc.0
+        IL_0033: ldloc.0
+        IL_0034: ldarg.0
+        IL_0035: ldfld System.Int32 ConsoleApp4.Program/<>c__DisplayClass2_0::m
+        IL_003a: bge.s IL_004e
+        IL_003c: ldarg.1
+        IL_003d: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+        IL_0042: ldloc.0
+        IL_0043: add
+        IL_0044: ldarg.0
+        IL_0045: ldfld System.Int32 ConsoleApp4.Program/<>c__DisplayClass2_0::n
+        IL_004a: clt
+        IL_004c: br.s IL_004f
+        IL_004e: ldc.i4.0
+        IL_004f: stloc.2
+        IL_0050: ldloc.2
+        IL_0051: brtrue.s IL_0005
+        IL_0053: ldloc.0
+        IL_0054: ldarg.0
+        IL_0055: ldfld System.Int32 ConsoleApp4.Program/<>c__DisplayClass2_0::m
+        IL_005a: ceq
+        IL_005c: stloc.3
+        IL_005d: ldloc.3
+        IL_005e: brfalse.s IL_0070
+        IL_0060: nop
+        IL_0061: ldarg.0
+        IL_0062: ldfld System.Int32[] ConsoleApp4.Program/<>c__DisplayClass2_0::found
+        IL_0067: ldarg.1
+        IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+        IL_006d: ldc.i4.1
+        IL_006e: stelem.i4
+        IL_006f: nop
+        IL_0070: ret
+
+New node is 5
+Node after split:
+
+Node: 4
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Instructions:
+        IL_002f: ldloc.0
+        IL_0030: ldc.i4.1
+        IL_0031: add
+        IL_0032: stloc.0
+
+Newly created node:
+
+Node: 5
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Instructions:
+        IL_0033: ldloc.0
+        IL_0034: ldarg.0
+        IL_0035: ldfld System.Int32 ConsoleApp4.Program/<>c__DisplayClass2_0::m
+        IL_003a: bge.s IL_004e
+        IL_003c: ldarg.1
+        IL_003d: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+        IL_0042: ldloc.0
+        IL_0043: add
+        IL_0044: ldarg.0
+        IL_0045: ldfld System.Int32 ConsoleApp4.Program/<>c__DisplayClass2_0::n
+        IL_004a: clt
+        IL_004c: br.s IL_004f
+        IL_004e: ldc.i4.0
+        IL_004f: stloc.2
+        IL_0050: ldloc.2
+        IL_0051: brtrue.s IL_0005
+        IL_0053: ldloc.0
+        IL_0054: ldarg.0
+        IL_0055: ldfld System.Int32 ConsoleApp4.Program/<>c__DisplayClass2_0::m
+        IL_005a: ceq
+        IL_005c: stloc.3
+        IL_005d: ldloc.3
+        IL_005e: brfalse.s IL_0070
+        IL_0060: nop
+        IL_0061: ldarg.0
+        IL_0062: ldfld System.Int32[] ConsoleApp4.Program/<>c__DisplayClass2_0::found
+        IL_0067: ldarg.1
+        IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+        IL_006d: ldc.i4.1
+        IL_006e: stelem.i4
+        IL_006f: nop
+        IL_0070: ret
+
+
+Split node 5 at instruction IL_003c: ldarg.1
+Node prior to split:
+
+Node: 5
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Instructions:
+        IL_0033: ldloc.0
+        IL_0034: ldarg.0
+        IL_0035: ldfld System.Int32 ConsoleApp4.Program/<>c__DisplayClass2_0::m
+        IL_003a: bge.s IL_004e
+        IL_003c: ldarg.1
+        IL_003d: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+        IL_0042: ldloc.0
+        IL_0043: add
+        IL_0044: ldarg.0
+        IL_0045: ldfld System.Int32 ConsoleApp4.Program/<>c__DisplayClass2_0::n
+        IL_004a: clt
+        IL_004c: br.s IL_004f
+        IL_004e: ldc.i4.0
+        IL_004f: stloc.2
+        IL_0050: ldloc.2
+        IL_0051: brtrue.s IL_0005
+        IL_0053: ldloc.0
+        IL_0054: ldarg.0
+        IL_0055: ldfld System.Int32 ConsoleApp4.Program/<>c__DisplayClass2_0::m
+        IL_005a: ceq
+        IL_005c: stloc.3
+        IL_005d: ldloc.3
+        IL_005e: brfalse.s IL_0070
+        IL_0060: nop
+        IL_0061: ldarg.0
+        IL_0062: ldfld System.Int32[] ConsoleApp4.Program/<>c__DisplayClass2_0::found
+        IL_0067: ldarg.1
+        IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+        IL_006d: ldc.i4.1
+        IL_006e: stelem.i4
+        IL_006f: nop
+        IL_0070: ret
+
+New node is 6
+Node after split:
+
+Node: 5
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Instructions:
+        IL_0033: ldloc.0
+        IL_0034: ldarg.0
+        IL_0035: ldfld System.Int32 ConsoleApp4.Program/<>c__DisplayClass2_0::m
+        IL_003a: bge.s IL_004e
+
+Newly created node:
+
+Node: 6
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Instructions:
+        IL_003c: ldarg.1
+        IL_003d: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+        IL_0042: ldloc.0
+        IL_0043: add
+        IL_0044: ldarg.0
+        IL_0045: ldfld System.Int32 ConsoleApp4.Program/<>c__DisplayClass2_0::n
+        IL_004a: clt
+        IL_004c: br.s IL_004f
+        IL_004e: ldc.i4.0
+        IL_004f: stloc.2
+        IL_0050: ldloc.2
+        IL_0051: brtrue.s IL_0005
+        IL_0053: ldloc.0
+        IL_0054: ldarg.0
+        IL_0055: ldfld System.Int32 ConsoleApp4.Program/<>c__DisplayClass2_0::m
+        IL_005a: ceq
+        IL_005c: stloc.3
+        IL_005d: ldloc.3
+        IL_005e: brfalse.s IL_0070
+        IL_0060: nop
+        IL_0061: ldarg.0
+        IL_0062: ldfld System.Int32[] ConsoleApp4.Program/<>c__DisplayClass2_0::found
+        IL_0067: ldarg.1
+        IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+        IL_006d: ldc.i4.1
+        IL_006e: stelem.i4
+        IL_006f: nop
+        IL_0070: ret
+
+
+Split node 6 at instruction IL_004e: ldc.i4.0
+Node prior to split:
+
+Node: 6
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Instructions:
+        IL_003c: ldarg.1
+        IL_003d: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+        IL_0042: ldloc.0
+        IL_0043: add
+        IL_0044: ldarg.0
+        IL_0045: ldfld System.Int32 ConsoleApp4.Program/<>c__DisplayClass2_0::n
+        IL_004a: clt
+        IL_004c: br.s IL_004f
+        IL_004e: ldc.i4.0
+        IL_004f: stloc.2
+        IL_0050: ldloc.2
+        IL_0051: brtrue.s IL_0005
+        IL_0053: ldloc.0
+        IL_0054: ldarg.0
+        IL_0055: ldfld System.Int32 ConsoleApp4.Program/<>c__DisplayClass2_0::m
+        IL_005a: ceq
+        IL_005c: stloc.3
+        IL_005d: ldloc.3
+        IL_005e: brfalse.s IL_0070
+        IL_0060: nop
+        IL_0061: ldarg.0
+        IL_0062: ldfld System.Int32[] ConsoleApp4.Program/<>c__DisplayClass2_0::found
+        IL_0067: ldarg.1
+        IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+        IL_006d: ldc.i4.1
+        IL_006e: stelem.i4
+        IL_006f: nop
+        IL_0070: ret
+
+New node is 7
+Node after split:
+
+Node: 6
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Instructions:
+        IL_003c: ldarg.1
+        IL_003d: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+        IL_0042: ldloc.0
+        IL_0043: add
+        IL_0044: ldarg.0
+        IL_0045: ldfld System.Int32 ConsoleApp4.Program/<>c__DisplayClass2_0::n
+        IL_004a: clt
+        IL_004c: br.s IL_004f
+
+Newly created node:
+
+Node: 7
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Instructions:
+        IL_004e: ldc.i4.0
+        IL_004f: stloc.2
+        IL_0050: ldloc.2
+        IL_0051: brtrue.s IL_0005
+        IL_0053: ldloc.0
+        IL_0054: ldarg.0
+        IL_0055: ldfld System.Int32 ConsoleApp4.Program/<>c__DisplayClass2_0::m
+        IL_005a: ceq
+        IL_005c: stloc.3
+        IL_005d: ldloc.3
+        IL_005e: brfalse.s IL_0070
+        IL_0060: nop
+        IL_0061: ldarg.0
+        IL_0062: ldfld System.Int32[] ConsoleApp4.Program/<>c__DisplayClass2_0::found
+        IL_0067: ldarg.1
+        IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+        IL_006d: ldc.i4.1
+        IL_006e: stelem.i4
+        IL_006f: nop
+        IL_0070: ret
+
+
+Split node 7 at instruction IL_004f: stloc.2
+Node prior to split:
+
+Node: 7
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Instructions:
+        IL_004e: ldc.i4.0
+        IL_004f: stloc.2
+        IL_0050: ldloc.2
+        IL_0051: brtrue.s IL_0005
+        IL_0053: ldloc.0
+        IL_0054: ldarg.0
+        IL_0055: ldfld System.Int32 ConsoleApp4.Program/<>c__DisplayClass2_0::m
+        IL_005a: ceq
+        IL_005c: stloc.3
+        IL_005d: ldloc.3
+        IL_005e: brfalse.s IL_0070
+        IL_0060: nop
+        IL_0061: ldarg.0
+        IL_0062: ldfld System.Int32[] ConsoleApp4.Program/<>c__DisplayClass2_0::found
+        IL_0067: ldarg.1
+        IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+        IL_006d: ldc.i4.1
+        IL_006e: stelem.i4
+        IL_006f: nop
+        IL_0070: ret
+
+New node is 8
+Node after split:
+
+Node: 7
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Instructions:
+        IL_004e: ldc.i4.0
+
+Newly created node:
+
+Node: 8
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Instructions:
+        IL_004f: stloc.2
+        IL_0050: ldloc.2
+        IL_0051: brtrue.s IL_0005
+        IL_0053: ldloc.0
+        IL_0054: ldarg.0
+        IL_0055: ldfld System.Int32 ConsoleApp4.Program/<>c__DisplayClass2_0::m
+        IL_005a: ceq
+        IL_005c: stloc.3
+        IL_005d: ldloc.3
+        IL_005e: brfalse.s IL_0070
+        IL_0060: nop
+        IL_0061: ldarg.0
+        IL_0062: ldfld System.Int32[] ConsoleApp4.Program/<>c__DisplayClass2_0::found
+        IL_0067: ldarg.1
+        IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+        IL_006d: ldc.i4.1
+        IL_006e: stelem.i4
+        IL_006f: nop
+        IL_0070: ret
+
+
+Split node 8 at instruction IL_0053: ldloc.0
+Node prior to split:
+
+Node: 8
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Instructions:
+        IL_004f: stloc.2
+        IL_0050: ldloc.2
+        IL_0051: brtrue.s IL_0005
+        IL_0053: ldloc.0
+        IL_0054: ldarg.0
+        IL_0055: ldfld System.Int32 ConsoleApp4.Program/<>c__DisplayClass2_0::m
+        IL_005a: ceq
+        IL_005c: stloc.3
+        IL_005d: ldloc.3
+        IL_005e: brfalse.s IL_0070
+        IL_0060: nop
+        IL_0061: ldarg.0
+        IL_0062: ldfld System.Int32[] ConsoleApp4.Program/<>c__DisplayClass2_0::found
+        IL_0067: ldarg.1
+        IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+        IL_006d: ldc.i4.1
+        IL_006e: stelem.i4
+        IL_006f: nop
+        IL_0070: ret
+
+New node is 9
+Node after split:
+
+Node: 8
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Instructions:
+        IL_004f: stloc.2
+        IL_0050: ldloc.2
+        IL_0051: brtrue.s IL_0005
+
+Newly created node:
+
+Node: 9
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Instructions:
+        IL_0053: ldloc.0
+        IL_0054: ldarg.0
+        IL_0055: ldfld System.Int32 ConsoleApp4.Program/<>c__DisplayClass2_0::m
+        IL_005a: ceq
+        IL_005c: stloc.3
+        IL_005d: ldloc.3
+        IL_005e: brfalse.s IL_0070
+        IL_0060: nop
+        IL_0061: ldarg.0
+        IL_0062: ldfld System.Int32[] ConsoleApp4.Program/<>c__DisplayClass2_0::found
+        IL_0067: ldarg.1
+        IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+        IL_006d: ldc.i4.1
+        IL_006e: stelem.i4
+        IL_006f: nop
+        IL_0070: ret
+
+
+Split node 9 at instruction IL_0060: nop
+Node prior to split:
+
+Node: 9
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Instructions:
+        IL_0053: ldloc.0
+        IL_0054: ldarg.0
+        IL_0055: ldfld System.Int32 ConsoleApp4.Program/<>c__DisplayClass2_0::m
+        IL_005a: ceq
+        IL_005c: stloc.3
+        IL_005d: ldloc.3
+        IL_005e: brfalse.s IL_0070
+        IL_0060: nop
+        IL_0061: ldarg.0
+        IL_0062: ldfld System.Int32[] ConsoleApp4.Program/<>c__DisplayClass2_0::found
+        IL_0067: ldarg.1
+        IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+        IL_006d: ldc.i4.1
+        IL_006e: stelem.i4
+        IL_006f: nop
+        IL_0070: ret
+
+New node is 10
+Node after split:
+
+Node: 9
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Instructions:
+        IL_0053: ldloc.0
+        IL_0054: ldarg.0
+        IL_0055: ldfld System.Int32 ConsoleApp4.Program/<>c__DisplayClass2_0::m
+        IL_005a: ceq
+        IL_005c: stloc.3
+        IL_005d: ldloc.3
+        IL_005e: brfalse.s IL_0070
+
+Newly created node:
+
+Node: 10
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Instructions:
+        IL_0060: nop
+        IL_0061: ldarg.0
+        IL_0062: ldfld System.Int32[] ConsoleApp4.Program/<>c__DisplayClass2_0::found
+        IL_0067: ldarg.1
+        IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+        IL_006d: ldc.i4.1
+        IL_006e: stelem.i4
+        IL_006f: nop
+        IL_0070: ret
+
+
+Split node 10 at instruction IL_0070: ret
+Node prior to split:
+
+Node: 10
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Instructions:
+        IL_0060: nop
+        IL_0061: ldarg.0
+        IL_0062: ldfld System.Int32[] ConsoleApp4.Program/<>c__DisplayClass2_0::found
+        IL_0067: ldarg.1
+        IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+        IL_006d: ldc.i4.1
+        IL_006e: stelem.i4
+        IL_006f: nop
+        IL_0070: ret
+
+New node is 11
+Node after split:
+
+Node: 10
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Instructions:
+        IL_0060: nop
+        IL_0061: ldarg.0
+        IL_0062: ldfld System.Int32[] ConsoleApp4.Program/<>c__DisplayClass2_0::found
+        IL_0067: ldarg.1
+        IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+        IL_006d: ldc.i4.1
+        IL_006e: stelem.i4
+        IL_006f: nop
+
+Newly created node:
+
+Node: 11
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Instructions:
+        IL_0070: ret
+
+
+digraph {
+1 -> 5;
+2 -> 4;
+2 -> 3;
+3 -> 9;
+4 -> 5;
+5 -> 7;
+5 -> 6;
+6 -> 8;
+7 -> 8;
+8 -> 2;
+8 -> 9;
+9 -> 11;
+9 -> 10;
+10 -> 11;
+}
+
+Graph:
+
+List of entries blocks:
+    Node    Method
+       1    System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+
+List of callers:
+    Node    Instruction
+       1    IL_000c: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       1    IL_0013: callvirt System.Char System.String::get_Chars(System.Int32)
+       1    IL_001f: callvirt System.Char System.String::get_Chars(System.Int32)
+       1    IL_003d: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       1    IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       2    IL_000c: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       2    IL_0013: callvirt System.Char System.String::get_Chars(System.Int32)
+       2    IL_001f: callvirt System.Char System.String::get_Chars(System.Int32)
+       2    IL_003d: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       2    IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       3    IL_003d: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       3    IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       4    IL_003d: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       4    IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       5    IL_003d: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       5    IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       6    IL_003d: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       6    IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       7    IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       8    IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       9    IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+      10    IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+
+List of orphan blocks:
+    Node    Method
+
+
+Node: 1
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Edges to: 5
+    Instructions:
+        IL_0000: nop
+        IL_0001: ldc.i4.0
+        IL_0002: stloc.0
+        IL_0003: br.s IL_0033
+
+
+Node: 2
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Edges from: 8
+    Edges to: 4 3
+    Instructions:
+        IL_0005: ldarg.0
+        IL_0006: ldfld System.String ConsoleApp4.Program/<>c__DisplayClass2_0::text
+        IL_000b: ldarg.1
+        IL_000c: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+        IL_0011: ldloc.0
+        IL_0012: add
+        IL_0013: callvirt System.Char System.String::get_Chars(System.Int32)
+        IL_0018: ldarg.0
+        IL_0019: ldfld System.String ConsoleApp4.Program/<>c__DisplayClass2_0::pattern
+        IL_001e: ldloc.0
+        IL_001f: callvirt System.Char System.String::get_Chars(System.Int32)
+        IL_0024: ceq
+        IL_0026: ldc.i4.0
+        IL_0027: ceq
+        IL_0029: stloc.1
+        IL_002a: ldloc.1
+        IL_002b: brfalse.s IL_002f
+
+
+Node: 3
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Edges from: 2
+    Edges to: 9
+    Instructions:
+        IL_002d: br.s IL_0053
+
+
+Node: 4
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Edges from: 2
+    Edges to: 5
+    Instructions:
+        IL_002f: ldloc.0
+        IL_0030: ldc.i4.1
+        IL_0031: add
+        IL_0032: stloc.0
+
+
+Node: 5
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Edges from: 1 4
+    Edges to: 7 6
+    Instructions:
+        IL_0033: ldloc.0
+        IL_0034: ldarg.0
+        IL_0035: ldfld System.Int32 ConsoleApp4.Program/<>c__DisplayClass2_0::m
+        IL_003a: bge.s IL_004e
+
+
+Node: 6
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Edges from: 5
+    Edges to: 8
+    Instructions:
+        IL_003c: ldarg.1
+        IL_003d: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+        IL_0042: ldloc.0
+        IL_0043: add
+        IL_0044: ldarg.0
+        IL_0045: ldfld System.Int32 ConsoleApp4.Program/<>c__DisplayClass2_0::n
+        IL_004a: clt
+        IL_004c: br.s IL_004f
+
+
+Node: 7
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Edges from: 5
+    Edges to: 8
+    Instructions:
+        IL_004e: ldc.i4.0
+
+
+Node: 8
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Edges from: 6 7
+    Edges to: 2 9
+    Instructions:
+        IL_004f: stloc.2
+        IL_0050: ldloc.2
+        IL_0051: brtrue.s IL_0005
+
+
+Node: 9
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Edges from: 3 8
+    Edges to: 11 10
+    Instructions:
+        IL_0053: ldloc.0
+        IL_0054: ldarg.0
+        IL_0055: ldfld System.Int32 ConsoleApp4.Program/<>c__DisplayClass2_0::m
+        IL_005a: ceq
+        IL_005c: stloc.3
+        IL_005d: ldloc.3
+        IL_005e: brfalse.s IL_0070
+
+
+Node: 10
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Edges from: 9
+    Edges to: 11
+    Instructions:
+        IL_0060: nop
+        IL_0061: ldarg.0
+        IL_0062: ldfld System.Int32[] ConsoleApp4.Program/<>c__DisplayClass2_0::found
+        IL_0067: ldarg.1
+        IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+        IL_006d: ldc.i4.1
+        IL_006e: stelem.i4
+        IL_006f: nop
+
+
+Node: 11
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Edges from: 9 10
+    Instructions:
+        IL_0070: ret
+
+
+ExtractBasicBlocks for System.Char System.String::get_Chars(System.Int32)
+ExtractBasicBlocks for System.Int32 Campy.Index::op_Implicit(Campy.Index)
+Split node 12 at instruction IL_0005: ldloc.0
+Node prior to split:
+
+Node: 12
+    Method System.Int32 Campy.Index::op_Implicit(Campy.Index)
+    HasThis   False
+    Args   1
+    Locals 1
+    Return (reuse) True
+    Instructions:
+        IL_0000: nop
+        IL_0001: ldc.i4.0
+        IL_0002: stloc.0
+        IL_0003: br.s IL_0005
+        IL_0005: ldloc.0
+        IL_0006: ret
+
+New node is 13
+Node after split:
+
+Node: 12
+    Method System.Int32 Campy.Index::op_Implicit(Campy.Index)
+    HasThis   False
+    Args   1
+    Locals 1
+    Return (reuse) True
+    Instructions:
+        IL_0000: nop
+        IL_0001: ldc.i4.0
+        IL_0002: stloc.0
+        IL_0003: br.s IL_0005
+
+Newly created node:
+
+Node: 13
+    Method System.Int32 Campy.Index::op_Implicit(Campy.Index)
+    HasThis   False
+    Args   1
+    Locals 1
+    Return (reuse) True
+    Instructions:
+        IL_0005: ldloc.0
+        IL_0006: ret
+
+
+digraph {
+1 -> 5;
+2 -> 4;
+2 -> 3;
+3 -> 9;
+4 -> 5;
+5 -> 7;
+5 -> 6;
+6 -> 8;
+7 -> 8;
+8 -> 2;
+8 -> 9;
+9 -> 11;
+9 -> 10;
+10 -> 11;
+12 -> 13;
+}
+
+Graph:
+
+List of entries blocks:
+    Node    Method
+       1    System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+      12    System.Int32 Campy.Index::op_Implicit(Campy.Index)
+
+List of callers:
+    Node    Instruction
+       1    IL_000c: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       1    IL_0013: callvirt System.Char System.String::get_Chars(System.Int32)
+       1    IL_001f: callvirt System.Char System.String::get_Chars(System.Int32)
+       1    IL_003d: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       1    IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       2    IL_000c: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       2    IL_0013: callvirt System.Char System.String::get_Chars(System.Int32)
+       2    IL_001f: callvirt System.Char System.String::get_Chars(System.Int32)
+       2    IL_003d: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       2    IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       3    IL_003d: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       3    IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       4    IL_003d: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       4    IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       5    IL_003d: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       5    IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       6    IL_003d: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       6    IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       7    IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       8    IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       9    IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+      10    IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+
+List of orphan blocks:
+    Node    Method
+
+
+Node: 1
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Edges to: 5
+    Instructions:
+        IL_0000: nop
+        IL_0001: ldc.i4.0
+        IL_0002: stloc.0
+        IL_0003: br.s IL_0033
+
+
+Node: 2
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Edges from: 8
+    Edges to: 4 3
+    Instructions:
+        IL_0005: ldarg.0
+        IL_0006: ldfld System.String ConsoleApp4.Program/<>c__DisplayClass2_0::text
+        IL_000b: ldarg.1
+        IL_000c: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+        IL_0011: ldloc.0
+        IL_0012: add
+        IL_0013: callvirt System.Char System.String::get_Chars(System.Int32)
+        IL_0018: ldarg.0
+        IL_0019: ldfld System.String ConsoleApp4.Program/<>c__DisplayClass2_0::pattern
+        IL_001e: ldloc.0
+        IL_001f: callvirt System.Char System.String::get_Chars(System.Int32)
+        IL_0024: ceq
+        IL_0026: ldc.i4.0
+        IL_0027: ceq
+        IL_0029: stloc.1
+        IL_002a: ldloc.1
+        IL_002b: brfalse.s IL_002f
+
+
+Node: 3
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Edges from: 2
+    Edges to: 9
+    Instructions:
+        IL_002d: br.s IL_0053
+
+
+Node: 4
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Edges from: 2
+    Edges to: 5
+    Instructions:
+        IL_002f: ldloc.0
+        IL_0030: ldc.i4.1
+        IL_0031: add
+        IL_0032: stloc.0
+
+
+Node: 5
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Edges from: 1 4
+    Edges to: 7 6
+    Instructions:
+        IL_0033: ldloc.0
+        IL_0034: ldarg.0
+        IL_0035: ldfld System.Int32 ConsoleApp4.Program/<>c__DisplayClass2_0::m
+        IL_003a: bge.s IL_004e
+
+
+Node: 6
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Edges from: 5
+    Edges to: 8
+    Instructions:
+        IL_003c: ldarg.1
+        IL_003d: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+        IL_0042: ldloc.0
+        IL_0043: add
+        IL_0044: ldarg.0
+        IL_0045: ldfld System.Int32 ConsoleApp4.Program/<>c__DisplayClass2_0::n
+        IL_004a: clt
+        IL_004c: br.s IL_004f
+
+
+Node: 7
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Edges from: 5
+    Edges to: 8
+    Instructions:
+        IL_004e: ldc.i4.0
+
+
+Node: 8
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Edges from: 6 7
+    Edges to: 2 9
+    Instructions:
+        IL_004f: stloc.2
+        IL_0050: ldloc.2
+        IL_0051: brtrue.s IL_0005
+
+
+Node: 9
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Edges from: 3 8
+    Edges to: 11 10
+    Instructions:
+        IL_0053: ldloc.0
+        IL_0054: ldarg.0
+        IL_0055: ldfld System.Int32 ConsoleApp4.Program/<>c__DisplayClass2_0::m
+        IL_005a: ceq
+        IL_005c: stloc.3
+        IL_005d: ldloc.3
+        IL_005e: brfalse.s IL_0070
+
+
+Node: 10
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Edges from: 9
+    Edges to: 11
+    Instructions:
+        IL_0060: nop
+        IL_0061: ldarg.0
+        IL_0062: ldfld System.Int32[] ConsoleApp4.Program/<>c__DisplayClass2_0::found
+        IL_0067: ldarg.1
+        IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+        IL_006d: ldc.i4.1
+        IL_006e: stelem.i4
+        IL_006f: nop
+
+
+Node: 11
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Edges from: 9 10
+    Instructions:
+        IL_0070: ret
+
+
+Node: 12
+    Method System.Int32 Campy.Index::op_Implicit(Campy.Index)
+    HasThis   False
+    Args   1
+    Locals 1
+    Return (reuse) True
+    Edges to: 13
+    Instructions:
+        IL_0000: nop
+        IL_0001: ldc.i4.0
+        IL_0002: stloc.0
+        IL_0003: br.s IL_0005
+
+
+Node: 13
+    Method System.Int32 Campy.Index::op_Implicit(Campy.Index)
+    HasThis   False
+    Args   1
+    Locals 1
+    Return (reuse) True
+    Edges from: 12
+    Instructions:
+        IL_0005: ldloc.0
+        IL_0006: ret
+
+
+Graph:
+
+List of entries blocks:
+    Node    Method
+       1    System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+      12    System.Int32 Campy.Index::op_Implicit(Campy.Index)
+
+List of callers:
+    Node    Instruction
+       1    IL_000c: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       1    IL_0013: callvirt System.Char System.String::get_Chars(System.Int32)
+       1    IL_001f: callvirt System.Char System.String::get_Chars(System.Int32)
+       1    IL_003d: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       1    IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       2    IL_000c: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       2    IL_0013: callvirt System.Char System.String::get_Chars(System.Int32)
+       2    IL_001f: callvirt System.Char System.String::get_Chars(System.Int32)
+       2    IL_003d: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       2    IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       3    IL_003d: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       3    IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       4    IL_003d: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       4    IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       5    IL_003d: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       5    IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       6    IL_003d: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       6    IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       7    IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       8    IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       9    IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+      10    IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+
+List of orphan blocks:
+    Node    Method
+
+
+Node: 1
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Edges to: 5
+    Instructions:
+        IL_0000: nop
+        IL_0001: ldc.i4.0
+        IL_0002: stloc.0
+        IL_0003: br.s IL_0033
+
+
+Node: 2
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Edges from: 8
+    Edges to: 4 3
+    Instructions:
+        IL_0005: ldarg.0
+        IL_0006: ldfld System.String ConsoleApp4.Program/<>c__DisplayClass2_0::text
+        IL_000b: ldarg.1
+        IL_000c: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+        IL_0011: ldloc.0
+        IL_0012: add
+        IL_0013: callvirt System.Char System.String::get_Chars(System.Int32)
+        IL_0018: ldarg.0
+        IL_0019: ldfld System.String ConsoleApp4.Program/<>c__DisplayClass2_0::pattern
+        IL_001e: ldloc.0
+        IL_001f: callvirt System.Char System.String::get_Chars(System.Int32)
+        IL_0024: ceq
+        IL_0026: ldc.i4.0
+        IL_0027: ceq
+        IL_0029: stloc.1
+        IL_002a: ldloc.1
+        IL_002b: brfalse.s IL_002f
+
+
+Node: 3
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Edges from: 2
+    Edges to: 9
+    Instructions:
+        IL_002d: br.s IL_0053
+
+
+Node: 4
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Edges from: 2
+    Edges to: 5
+    Instructions:
+        IL_002f: ldloc.0
+        IL_0030: ldc.i4.1
+        IL_0031: add
+        IL_0032: stloc.0
+
+
+Node: 5
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Edges from: 1 4
+    Edges to: 7 6
+    Instructions:
+        IL_0033: ldloc.0
+        IL_0034: ldarg.0
+        IL_0035: ldfld System.Int32 ConsoleApp4.Program/<>c__DisplayClass2_0::m
+        IL_003a: bge.s IL_004e
+
+
+Node: 6
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Edges from: 5
+    Edges to: 8
+    Instructions:
+        IL_003c: ldarg.1
+        IL_003d: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+        IL_0042: ldloc.0
+        IL_0043: add
+        IL_0044: ldarg.0
+        IL_0045: ldfld System.Int32 ConsoleApp4.Program/<>c__DisplayClass2_0::n
+        IL_004a: clt
+        IL_004c: br.s IL_004f
+
+
+Node: 7
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Edges from: 5
+    Edges to: 8
+    Instructions:
+        IL_004e: ldc.i4.0
+
+
+Node: 8
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Edges from: 6 7
+    Edges to: 2 9
+    Instructions:
+        IL_004f: stloc.2
+        IL_0050: ldloc.2
+        IL_0051: brtrue.s IL_0005
+
+
+Node: 9
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Edges from: 3 8
+    Edges to: 11 10
+    Instructions:
+        IL_0053: ldloc.0
+        IL_0054: ldarg.0
+        IL_0055: ldfld System.Int32 ConsoleApp4.Program/<>c__DisplayClass2_0::m
+        IL_005a: ceq
+        IL_005c: stloc.3
+        IL_005d: ldloc.3
+        IL_005e: brfalse.s IL_0070
+
+
+Node: 10
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Edges from: 9
+    Edges to: 11
+    Instructions:
+        IL_0060: nop
+        IL_0061: ldarg.0
+        IL_0062: ldfld System.Int32[] ConsoleApp4.Program/<>c__DisplayClass2_0::found
+        IL_0067: ldarg.1
+        IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+        IL_006d: ldc.i4.1
+        IL_006e: stelem.i4
+        IL_006f: nop
+
+
+Node: 11
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Edges from: 9 10
+    Instructions:
+        IL_0070: ret
+
+
+Node: 12
+    Method System.Int32 Campy.Index::op_Implicit(Campy.Index)
+    HasThis   False
+    Args   1
+    Locals 1
+    Return (reuse) True
+    Edges to: 13
+    Instructions:
+        IL_0000: nop
+        IL_0001: ldc.i4.0
+        IL_0002: stloc.0
+        IL_0003: br.s IL_0005
+
+
+Node: 13
+    Method System.Int32 Campy.Index::op_Implicit(Campy.Index)
+    HasThis   False
+    Args   1
+    Locals 1
+    Return (reuse) True
+    Edges from: 12
+    Instructions:
+        IL_0005: ldloc.0
+        IL_0006: ret
+
+digraph {
+1 -> 5;
+2 -> 4;
+2 -> 3;
+3 -> 9;
+4 -> 5;
+5 -> 7;
+5 -> 6;
+6 -> 8;
+7 -> 8;
+8 -> 2;
+8 -> 9;
+9 -> 11;
+9 -> 10;
+10 -> 11;
+12 -> 13;
+}
+
+Considering 1
+Considering 2
+Considering 3
+Considering 4
+Considering 5
+Considering 6
+Considering 7
+Considering 8
+Considering 9
+Considering 10
+Considering 11
+Considering 12
+Considering 13
+Graph:
+
+List of entries blocks:
+    Node    Method
+       1    System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+      12    System.Int32 Campy.Index::op_Implicit(Campy.Index)
+
+List of callers:
+    Node    Instruction
+       1    IL_000c: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       1    IL_0013: callvirt System.Char System.String::get_Chars(System.Int32)
+       1    IL_001f: callvirt System.Char System.String::get_Chars(System.Int32)
+       1    IL_003d: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       1    IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       2    IL_000c: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       2    IL_0013: callvirt System.Char System.String::get_Chars(System.Int32)
+       2    IL_001f: callvirt System.Char System.String::get_Chars(System.Int32)
+       2    IL_003d: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       2    IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       3    IL_003d: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       3    IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       4    IL_003d: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       4    IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       5    IL_003d: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       5    IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       6    IL_003d: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       6    IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       7    IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       8    IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       9    IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+      10    IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+
+List of orphan blocks:
+    Node    Method
+
+
+Node: 1
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Edges to: 5
+    Instructions:
+        IL_0000: nop
+        IL_0001: ldc.i4.0
+        IL_0002: stloc.0
+        IL_0003: br.s IL_0033
+
+
+Node: 2
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Edges from: 8
+    Edges to: 4 3
+    Instructions:
+        IL_0005: ldarg.0
+        IL_0006: ldfld System.String ConsoleApp4.Program/<>c__DisplayClass2_0::text
+        IL_000b: ldarg.1
+        IL_000c: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+        IL_0011: ldloc.0
+        IL_0012: add
+        IL_0013: callvirt System.Char System.String::get_Chars(System.Int32)
+        IL_0018: ldarg.0
+        IL_0019: ldfld System.String ConsoleApp4.Program/<>c__DisplayClass2_0::pattern
+        IL_001e: ldloc.0
+        IL_001f: callvirt System.Char System.String::get_Chars(System.Int32)
+        IL_0024: ceq
+        IL_0026: ldc.i4.0
+        IL_0027: ceq
+        IL_0029: stloc.1
+        IL_002a: ldloc.1
+        IL_002b: brfalse.s IL_002f
+
+
+Node: 3
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Edges from: 2
+    Edges to: 9
+    Instructions:
+        IL_002d: br.s IL_0053
+
+
+Node: 4
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Edges from: 2
+    Edges to: 5
+    Instructions:
+        IL_002f: ldloc.0
+        IL_0030: ldc.i4.1
+        IL_0031: add
+        IL_0032: stloc.0
+
+
+Node: 5
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Edges from: 1 4
+    Edges to: 7 6
+    Instructions:
+        IL_0033: ldloc.0
+        IL_0034: ldarg.0
+        IL_0035: ldfld System.Int32 ConsoleApp4.Program/<>c__DisplayClass2_0::m
+        IL_003a: bge.s IL_004e
+
+
+Node: 6
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Edges from: 5
+    Edges to: 8
+    Instructions:
+        IL_003c: ldarg.1
+        IL_003d: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+        IL_0042: ldloc.0
+        IL_0043: add
+        IL_0044: ldarg.0
+        IL_0045: ldfld System.Int32 ConsoleApp4.Program/<>c__DisplayClass2_0::n
+        IL_004a: clt
+        IL_004c: br.s IL_004f
+
+
+Node: 7
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Edges from: 5
+    Edges to: 8
+    Instructions:
+        IL_004e: ldc.i4.0
+
+
+Node: 8
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Edges from: 6 7
+    Edges to: 2 9
+    Instructions:
+        IL_004f: stloc.2
+        IL_0050: ldloc.2
+        IL_0051: brtrue.s IL_0005
+
+
+Node: 9
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Edges from: 3 8
+    Edges to: 11 10
+    Instructions:
+        IL_0053: ldloc.0
+        IL_0054: ldarg.0
+        IL_0055: ldfld System.Int32 ConsoleApp4.Program/<>c__DisplayClass2_0::m
+        IL_005a: ceq
+        IL_005c: stloc.3
+        IL_005d: ldloc.3
+        IL_005e: brfalse.s IL_0070
+
+
+Node: 10
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Edges from: 9
+    Edges to: 11
+    Instructions:
+        IL_0060: nop
+        IL_0061: ldarg.0
+        IL_0062: ldfld System.Int32[] ConsoleApp4.Program/<>c__DisplayClass2_0::found
+        IL_0067: ldarg.1
+        IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+        IL_006d: ldc.i4.1
+        IL_006e: stelem.i4
+        IL_006f: nop
+
+
+Node: 11
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Edges from: 9 10
+    Instructions:
+        IL_0070: ret
+
+
+Node: 12
+    Method System.Int32 Campy.Index::op_Implicit(Campy.Index)
+    HasThis   False
+    Args   1
+    Locals 1
+    Return (reuse) True
+    Edges to: 13
+    Instructions:
+        IL_0000: nop
+        IL_0001: ldc.i4.0
+        IL_0002: stloc.0
+        IL_0003: br.s IL_0005
+
+
+Node: 13
+    Method System.Int32 Campy.Index::op_Implicit(Campy.Index)
+    HasThis   False
+    Args   1
+    Locals 1
+    Return (reuse) True
+    Edges from: 12
+    Instructions:
+        IL_0005: ldloc.0
+        IL_0006: ret
+
+Graph:
+
+List of entries blocks:
+    Node    Method
+       1    System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+      12    System.Int32 Campy.Index::op_Implicit(Campy.Index)
+
+List of callers:
+    Node    Instruction
+       1    IL_000c: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       1    IL_0013: callvirt System.Char System.String::get_Chars(System.Int32)
+       1    IL_001f: callvirt System.Char System.String::get_Chars(System.Int32)
+       1    IL_003d: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       1    IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       2    IL_000c: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       2    IL_0013: callvirt System.Char System.String::get_Chars(System.Int32)
+       2    IL_001f: callvirt System.Char System.String::get_Chars(System.Int32)
+       2    IL_003d: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       2    IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       3    IL_003d: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       3    IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       4    IL_003d: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       4    IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       5    IL_003d: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       5    IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       6    IL_003d: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       6    IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       7    IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       8    IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+       9    IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+      10    IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+
+List of orphan blocks:
+    Node    Method
+
+
+Node: 1
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Edges to: 5
+    Instructions:
+        IL_0000: nop
+        IL_0001: ldc.i4.0
+        IL_0002: stloc.0
+        IL_0003: br.s IL_0033
+
+
+Node: 2
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Edges from: 8
+    Edges to: 4 3
+    Instructions:
+        IL_0005: ldarg.0
+        IL_0006: ldfld System.String ConsoleApp4.Program/<>c__DisplayClass2_0::text
+        IL_000b: ldarg.1
+        IL_000c: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+        IL_0011: ldloc.0
+        IL_0012: add
+        IL_0013: callvirt System.Char System.String::get_Chars(System.Int32)
+        IL_0018: ldarg.0
+        IL_0019: ldfld System.String ConsoleApp4.Program/<>c__DisplayClass2_0::pattern
+        IL_001e: ldloc.0
+        IL_001f: callvirt System.Char System.String::get_Chars(System.Int32)
+        IL_0024: ceq
+        IL_0026: ldc.i4.0
+        IL_0027: ceq
+        IL_0029: stloc.1
+        IL_002a: ldloc.1
+        IL_002b: brfalse.s IL_002f
+
+
+Node: 3
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Edges from: 2
+    Edges to: 9
+    Instructions:
+        IL_002d: br.s IL_0053
+
+
+Node: 4
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Edges from: 2
+    Edges to: 5
+    Instructions:
+        IL_002f: ldloc.0
+        IL_0030: ldc.i4.1
+        IL_0031: add
+        IL_0032: stloc.0
+
+
+Node: 5
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Edges from: 1 4
+    Edges to: 7 6
+    Instructions:
+        IL_0033: ldloc.0
+        IL_0034: ldarg.0
+        IL_0035: ldfld System.Int32 ConsoleApp4.Program/<>c__DisplayClass2_0::m
+        IL_003a: bge.s IL_004e
+
+
+Node: 6
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Edges from: 5
+    Edges to: 8
+    Instructions:
+        IL_003c: ldarg.1
+        IL_003d: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+        IL_0042: ldloc.0
+        IL_0043: add
+        IL_0044: ldarg.0
+        IL_0045: ldfld System.Int32 ConsoleApp4.Program/<>c__DisplayClass2_0::n
+        IL_004a: clt
+        IL_004c: br.s IL_004f
+
+
+Node: 7
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Edges from: 5
+    Edges to: 8
+    Instructions:
+        IL_004e: ldc.i4.0
+
+
+Node: 8
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Edges from: 6 7
+    Edges to: 2 9
+    Instructions:
+        IL_004f: stloc.2
+        IL_0050: ldloc.2
+        IL_0051: brtrue.s IL_0005
+
+
+Node: 9
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Edges from: 3 8
+    Edges to: 11 10
+    Instructions:
+        IL_0053: ldloc.0
+        IL_0054: ldarg.0
+        IL_0055: ldfld System.Int32 ConsoleApp4.Program/<>c__DisplayClass2_0::m
+        IL_005a: ceq
+        IL_005c: stloc.3
+        IL_005d: ldloc.3
+        IL_005e: brfalse.s IL_0070
+
+
+Node: 10
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Edges from: 9
+    Edges to: 11
+    Instructions:
+        IL_0060: nop
+        IL_0061: ldarg.0
+        IL_0062: ldfld System.Int32[] ConsoleApp4.Program/<>c__DisplayClass2_0::found
+        IL_0067: ldarg.1
+        IL_0068: call System.Int32 Campy.Index::op_Implicit(Campy.Index)
+        IL_006d: ldc.i4.1
+        IL_006e: stelem.i4
+        IL_006f: nop
+
+
+Node: 11
+    Method System.Void ConsoleApp4.Program/<>c__DisplayClass2_0::<Main>b__0(Campy.Index)
+    HasThis   True
+    Args   2
+    Locals 4
+    Return (reuse) False
+    Edges from: 9 10
+    Instructions:
+        IL_0070: ret
+
+
+Node: 12
+    Method System.Int32 Campy.Index::op_Implicit(Campy.Index)
+    HasThis   False
+    Args   1
+    Locals 1
+    Return (reuse) True
+    Edges to: 13
+    Instructions:
+        IL_0000: nop
+        IL_0001: ldc.i4.0
+        IL_0002: stloc.0
+        IL_0003: br.s IL_0005
+
+
+Node: 13
+    Method System.Int32 Campy.Index::op_Implicit(Campy.Index)
+    HasThis   False
+    Args   1
+    Locals 1
+    Return (reuse) True
+    Edges from: 12
+    Instructions:
+        IL_0005: ldloc.0
+        IL_0006: ret
+
+Compile part 1, node 1
+ %nn_0*
+ %nn_2*
+Compile part 1, node 2
+skipping -- not an entry.
+Compile part 1, node 3
+skipping -- not an entry.
+Compile part 1, node 4
+skipping -- not an entry.
+Compile part 1, node 5
+skipping -- not an entry.
+Compile part 1, node 6
+skipping -- not an entry.
+Compile part 1, node 7
+skipping -- not an entry.
+Compile part 1, node 8
+skipping -- not an entry.
+Compile part 1, node 9
+skipping -- not an entry.
+Compile part 1, node 10
+skipping -- not an entry.
+Compile part 1, node 11
+skipping -- not an entry.
+Compile part 1, node 12
+ %nn_2*
+Compile part 1, node 13
+skipping -- not an entry.
+SCC: 11
+SCC: 10
+SCC: 9
+SCC: 3
+SCC: 6 4 2 8 7 5
+SCC: 1
+SCC: 13
+SCC: 12
