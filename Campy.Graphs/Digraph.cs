@@ -134,9 +134,6 @@ namespace Campy.Graphs
          */
         public Digraph(Digraph G)
         {
-
-            int vertex_count = G.Vertices.Count();
-
             foreach (var n in G.Vertices)
             {
                 this.AddVertex(n);
@@ -186,7 +183,7 @@ namespace Campy.Graphs
         {
             validateVertex(e.From);
             validateVertex(e.To);
-            this.AddEdge(e);
+            base.AddEdge(e);
         }
 
         /**

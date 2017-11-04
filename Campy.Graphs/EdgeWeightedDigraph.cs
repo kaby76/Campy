@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
-#if XXX
+
 namespace Campy.Graphs
 {
     /******************************************************************************
@@ -39,28 +40,23 @@ namespace Campy.Graphs
      *  @author Robert Sedgewick
      *  @author Kevin Wayne
      */
-    public class EdgeWeightedDigraph : GraphAdjList<int, int, DirectedEdge>
+    public class EdgeWeightedDigraph : GraphAdjList<int, DirectedEdge<int>>
     {
         private static string NEWLINE = Environment.NewLine;
-
-        private int V; // number of vertices in this digraph
-        private int E; // number of edges in this digraph
-        private Bag<DirectedEdge>[] adj; // adj[v] = adjacency list for vertex v
-        private int[] indegree; // indegree[v] = indegree of vertex v
 
         /**
          * Initializes an empty edge-weighted digraph with {@code V} vertices and 0 edges.
          *
          * @param  V the number of vertices
-         * @throws IllegalArgumentException if {@code V < 0}
+         * @throws Exception if {@code V < 0}
          */
-        public EdgeWeightedDigraph(int V)
+        public EdgeWeightedDigraph(int x)
         {
-            if (V < 0) throw new Exception("Number of vertices in a Digraph must be nonnegative");
+            if (x < 0) throw new Exception("Number of vertices in a Digraph must be nonnegative");
            
             // KED note: the graph is "empty" in so far as there are no edges. But, it's not really "empty" as Sedgewick/Wayne
             // misleadingly say--it contains "V" number of nodes, numbered from zero.
-            for (int v = 0; v < V; v++)
+            for (int v = 0; v < x; v++)
             {
                 this.AddVertex(v);
             }
@@ -71,20 +67,20 @@ namespace Campy.Graphs
          *
          * @param  V the number of vertices
          * @param  E the number of edges
-         * @throws IllegalArgumentException if {@code V < 0}
-         * @throws IllegalArgumentException if {@code E < 0}
+         * @throws Exception if {@code V < 0}
+         * @throws Exception if {@code E < 0}
          */
-        public EdgeWeightedDigraph(int V, int E)
+        public EdgeWeightedDigraph(int n, int e)
         {
-            this(V);
-            if (E < 0) throw new Exception("Number of edges in a Digraph must be nonnegative");
-            for (int i = 0; i < E; i++)
+            if (e < 0) throw new Exception("Number of edges in a Digraph must be nonnegative");
+            for (int i = 0; i < e; i++)
             {
-                int v = StdRandom.uniform(V);
-                int w = StdRandom.uniform(V);
-                double weight = 0.01 * StdRandom.uniform(100);
-                DirectedEdge e = new DirectedEdge(v, w, weight);
-                addEdge(e);
+                var r = new Random(n);
+                int v = r.Next(n);
+                int w = r.Next(n);
+                double weight = 0.01 * r.Next(100);
+                DirectedEdge<int> edge = new DirectedEdge<int>(v, w, weight);
+                addEdge(edge);
             }
         }
 
@@ -99,19 +95,36 @@ namespace Campy.Graphs
          * @throws IllegalArgumentException if the endpoints of any edge are not in prescribed range
          * @throws IllegalArgumentException if the number of vertices or edges is negative
          */
-        public EdgeWeightedDigraph(In in)
+        public EdgeWeightedDigraph(string content)
         {
-            this(in.readInt());
-            int E = in.readInt();
-            if (E < 0) throw new IllegalArgumentException("Number of edges must be nonnegative");
-            for (int i = 0; i < E; i++)
+            try
             {
-                int v = in.readInt();
-                int w = in.readInt();
-                validateVertex(v);
-                validateVertex(w);
-                double weight = in.readDouble();
-                addEdge(new DirectedEdge(v, w, weight));
+                string[] input = content.Split(new char[] { ' ', '\t', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+
+                int current = 0;
+
+                int vertex_count = Int32.Parse(input[current++]);
+                if (vertex_count < 0)
+                    throw new Exception("number of vertices in a Digraph must be nonnegative");
+
+                for (int v = 0; v < vertex_count; v++)
+                {
+                    this.AddVertex(v);
+                }
+                int edge_count = Int32.Parse(input[current++]);
+                if (edge_count < 0)
+                    throw new Exception("number of edges in a Digraph must be nonnegative");
+                for (int i = 0; i < edge_count; i++)
+                {
+                    int v = Int32.Parse(input[current++]);
+                    int w = Int32.Parse(input[current++]);
+                    double weight = Double.Parse(input[current++]);
+                    addEdge(new DirectedEdge<int>(v, w, weight));
+                }
+            }
+            catch (Exception e)
+            {
+                throw new Exception("invalid input format in Digraph constructor", e);
             }
         }
 
@@ -122,24 +135,13 @@ namespace Campy.Graphs
          */
         public EdgeWeightedDigraph(EdgeWeightedDigraph G)
         {
-            this(G.V());
-            this.E = G.E();
-            for (int v = 0; v < G.V(); v++)
-                this.indegree[v] = G.indegree(v);
-            for (int v = 0; v < G.V(); v++)
+            foreach (var n in G.Vertices)
             {
-                // reverse so that adjacency list is in same order as original
-                Stack<DirectedEdge> reverse = new Stack<DirectedEdge>();
-                for (DirectedEdge e :
-                G.adj[v])
-                {
-                    reverse.push(e);
-                }
-                for (DirectedEdge e :
-                reverse)
-                {
-                    adj[v].add(e);
-                }
+                this.AddVertex(n);
+            }
+            foreach (var e in G.Edges)
+            {
+                this.AddEdge(e);
             }
         }
 
@@ -148,9 +150,9 @@ namespace Campy.Graphs
          *
          * @return the number of vertices in this edge-weighted digraph
          */
-        public int V()
+        public int V
         {
-            return V;
+            get { return this.Vertices.Count(); }
         }
 
         /**
@@ -158,34 +160,32 @@ namespace Campy.Graphs
          *
          * @return the number of edges in this edge-weighted digraph
          */
-        public int E()
+        public int E
         {
-            return E;
+            get { return this.Edges.Count(); }
         }
 
-        // throw an IllegalArgumentException unless {@code 0 <= v < V}
+        // throw an Exception unless {@code 0 <= v < V}
         private void validateVertex(int v)
         {
             if (v < 0 || v >= V)
-                throw new IllegalArgumentException("vertex " + v + " is not between 0 and " + (V - 1));
+                throw new Exception("vertex " + v + " is not between 0 and " + (V - 1));
         }
 
         /**
          * Adds the directed edge {@code e} to this edge-weighted digraph.
          *
          * @param  e the edge
-         * @throws IllegalArgumentException unless endpoints of edge are between {@code 0}
+         * @throws Exception unless endpoints of edge are between {@code 0}
          *         and {@code V-1}
          */
-        public void addEdge(DirectedEdge e)
+        public void addEdge(DirectedEdge<int> e)
         {
-            int v = e.from();
-            int w = e.to();
+            int v = e.From;
+            int w = e.To;
             validateVertex(v);
             validateVertex(w);
-            adj[v].add(e);
-            indegree[w]++;
-            E++;
+            base.AddEdge(e);
         }
 
 
@@ -196,10 +196,10 @@ namespace Campy.Graphs
          * @return the directed edges incident from vertex {@code v} as an Iterable
          * @throws IllegalArgumentException unless {@code 0 <= v < V}
          */
-        public Iterable<DirectedEdge> adj(int v)
+        public IEnumerable<DirectedEdge<int>> adj(int v)
         {
             validateVertex(v);
-            return adj[v];
+            return this.SuccessorEdges(v);
         }
 
         /**
@@ -208,12 +208,12 @@ namespace Campy.Graphs
          *
          * @param  v the vertex
          * @return the outdegree of vertex {@code v}
-         * @throws IllegalArgumentException unless {@code 0 <= v < V}
+         * @throws Exception unless {@code 0 <= v < V}
          */
         public int outdegree(int v)
         {
             validateVertex(v);
-            return adj[v].size();
+            return this.Successors(v).Count();
         }
 
         /**
@@ -222,12 +222,12 @@ namespace Campy.Graphs
          *
          * @param  v the vertex
          * @return the indegree of vertex {@code v}
-         * @throws IllegalArgumentException unless {@code 0 <= v < V}
+         * @throws Exception unless {@code 0 <= v < V}
          */
         public int indegree(int v)
         {
             validateVertex(v);
-            return indegree[v];
+            return this.Predecessors(v).Count();
         }
 
         /**
@@ -237,18 +237,9 @@ namespace Campy.Graphs
          *
          * @return all edges in this edge-weighted digraph, as an iterable
          */
-        public Iterable<DirectedEdge> edges()
+        public IEnumerable<DirectedEdge<int>> edges()
         {
-            Bag<DirectedEdge> list = new Bag<DirectedEdge>();
-            for (int v = 0; v < V; v++)
-            {
-                for (DirectedEdge e :
-                adj(v))
-                {
-                    list.add(e);
-                }
-            }
-            return list;
+            return base.Edges;
         }
 
         /**
@@ -257,21 +248,20 @@ namespace Campy.Graphs
          * @return the number of vertices <em>V</em>, followed by the number of edges <em>E</em>,
          *         followed by the <em>V</em> adjacency lists of edges
          */
-        public String toString()
+        public String ToString()
         {
             StringBuilder s = new StringBuilder();
-            s.append(V + " " + E + NEWLINE);
+            s.Append(V + " " + E + NEWLINE);
             for (int v = 0; v < V; v++)
             {
-                s.append(v + ": ");
-                for (DirectedEdge e :
-                adj[v])
+                s.Append(v + ": ");
+                foreach (DirectedEdge<int> e in adj(v))
                 {
-                    s.append(e + "  ");
+                    s.Append(e + "  ");
                 }
-                s.append(NEWLINE);
+                s.Append(NEWLINE);
             }
-            return s.toString();
+            return s.ToString();
         }
 
         /**
@@ -279,13 +269,8 @@ namespace Campy.Graphs
          *
          * @param args the command-line arguments
          */
-        public static void main(String[] args)
+        public static void test()
         {
-            In in = new In(args[0]);
-            EdgeWeightedDigraph G = new EdgeWeightedDigraph(in);
-            StdOut.println(G);
         }
-
     }
 }
-#endif

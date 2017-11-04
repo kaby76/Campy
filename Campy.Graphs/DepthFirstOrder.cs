@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-#if XXX
+
 namespace Campy.Graphs
 {
     /******************************************************************************
@@ -87,12 +87,12 @@ namespace Campy.Graphs
          */
         public DepthFirstOrder(EdgeWeightedDigraph G)
         {
-            pre = new int[G.V()];
-            post = new int[G.V()];
+            pre = new int[G.V];
+            post = new int[G.V];
             postorder = new Queue<int>();
             preorder = new Queue<int>();
-            marked = new bool[G.V()];
-            for (int v = 0; v < G.V(); v++)
+            marked = new bool[G.V];
+            for (int v = 0; v < G.V; v++)
                 if (!marked[v]) dfs(G, v);
         }
 
@@ -119,10 +119,9 @@ namespace Campy.Graphs
             marked[v] = true;
             pre[v] = preCounter++;
             preorder.Enqueue(v);
-            foreach (DirectedEdge e in 
-            G.adj(v))
+            foreach (DirectedEdge<int> e in G.adj(v))
             {
-                int w = e.to();
+                int w = e.To;
                 if (!marked[w])
                 {
                     dfs(G, w);
@@ -292,4 +291,3 @@ namespace Campy.Graphs
         }
     }
 }
-#endif
