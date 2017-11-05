@@ -8,37 +8,24 @@ namespace Campy.Graphs
 
     /// <summary>
     /// This class enumerates a topological sort of a graph. If the graph
-    /// is not a DAG, then it will fail.
+    /// is not a DAG, then it will fail. Note, check for DAGs before running this
+    /// algorithm using Kosaraju or Tarjan.
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class TopologicalSort<T, E> : IEnumerable<T>
-        where E : IEdge<T>
+    public class TopologicalSort
     {
 
-        IGraph<T, E> graph;
-        IEnumerable<T> Source;
-        Dictionary<T, bool> Visited = new Dictionary<T, bool>();
-
-        public TopologicalSort(IGraph<T, E> g, IEnumerable<T> s)
-        {
-            graph = g;
-            Source = s;
-            foreach (T v in graph.Vertices)
-                Visited.Add(v, false);
-        }
-
-        public TopologicalSort(IGraph<T, E> g, T s)
-        {
-            graph = g;
-            Source = new T[] {s};
-            foreach (T v in graph.Vertices)
-                Visited.Add(v, false);
-        }
-
         /// Topological Sorting (Kahn's algorithm) 
-        public IEnumerator<T> GetEnumerator()
+        public IEnumerator<T> Sort<T,E>(IGraph<T, E> graph, T s)
+            where E : IEdge<T>
         {
-            if (Source != null && Source.Any())
+            var source = new T[] { s };
+            Dictionary<T, bool> visited = new Dictionary<T, bool>();
+
+            foreach (T v in graph.Vertices)
+                visited.Add(v, false);
+
+            if (source != null && source.Any())
             {
                 HashSet<T> nodes = new HashSet<T>();
                 foreach (T v in graph.Vertices) nodes.Add(v);
@@ -77,11 +64,6 @@ namespace Campy.Graphs
                     }
                 }
             }
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
         }
     }
 }

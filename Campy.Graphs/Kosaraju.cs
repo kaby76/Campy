@@ -5,17 +5,10 @@ using System.Linq;
 
 namespace Campy.Graphs
 {
-    public class Kosaraju<T, E> : IEnumerable<T>
-        where E : IEdge<T>
+    public class Kosaraju
     {
-        private IGraph<T, E> _graph;
-
-        public Kosaraju(IGraph<T, E> graph)
-        {
-            _graph = graph;
-        }
-
-        private void fillOrder(IGraph<T, E> gr, T v, Dictionary<T, bool> visited, Stack<T> stack)
+        private void fillOrder<T,E>(IGraph<T, E> gr, T v, Dictionary<T, bool> visited, Stack<T> stack)
+            where E : IEdge<T>
         {
             // Mark the current node as visited and print it
             visited[v] = true;
@@ -29,58 +22,38 @@ namespace Campy.Graphs
             stack.Push(v);
         }
 
-
-
-        public class SCCEnumerator
+        // A recursive function to print DFS starting from v
+        private List<T> DFSUtil<T,E>(List<T> result, IGraph<T, E> g, T v, Dictionary<T, bool> visited)
+            where E : IEdge<T>
         {
-            private IGraph<T, E> graph;
-            private T start;
-            private Dictionary<T, bool> visited;
+            // Mark the current node as visited and print it
+            visited[v] = true;
 
-            public SCCEnumerator(IGraph<T, E> g, T s, Dictionary<T, bool> v)
+            result.Add(v);
+
+            // For all predecessors and successors to v...
+            foreach (var n in g.Successors(v))
             {
-                graph = g;
-                start = s;
-                visited = v;
+                if (!visited[n])
+                    DFSUtil(result, g, n, visited);
             }
-
-            // A recursive function to print DFS starting from v
-            private List<T> DFSUtil(List<T> result, IGraph<T, E> g, T v, Dictionary<T, bool> visited)
-            {
-                // Mark the current node as visited and print it
-                visited[v] = true;
-
-                result.Add(v);
-
-                // For all predecessors and successors to v...
-                foreach (var n in g.Successors(v))
-                {
-                    if (!visited[n])
-                        DFSUtil(result, g, n, visited);
-                }
-                return result;
-            }
-
-            public List<T> ToList()
-            {
-                return DFSUtil(new List<T>(), graph, start, visited);
-            }
+            return result;
         }
 
-
-        public IEnumerator<List<T>> GetEnumerator()
+         public IEnumerator<List<T>> GetSccs<T,E>(IGraph<T, E> graph)
+            where E : IEdge<T>
         {
             Stack<T> stack = new Stack<T>();
 
             Dictionary<T, bool> visited = new Dictionary<T, bool>();
-            foreach (var i in _graph.Vertices)
+            foreach (var i in graph.Vertices)
                 visited[i] = false;
 
-            foreach (var i in _graph.Vertices)
+            foreach (var i in graph.Vertices)
                 if (visited[i] == false)
-                    fillOrder(_graph, i, visited, stack);
+                    fillOrder(graph, i, visited, stack);
 
-            var gr = Transpose<T,E>.getTranspose(_graph);
+            var gr = Transpose<T,E>.getTranspose(graph);
 
             foreach (var i in gr.Vertices)
                 visited[i] = false;
@@ -94,19 +67,9 @@ namespace Campy.Graphs
                 if (visited[v] == false)
                 {
                     List<T> result = new List<T>();
-                    yield return new SCCEnumerator(gr, v, visited).ToList();
+                    yield return DFSUtil(result, gr, v, visited);
                 }
             }
-        }
-
-        IEnumerator<T> IEnumerable<T>.GetEnumerator()
-        {
-            throw new NotImplementedException();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            throw new NotImplementedException();
         }
     }
 }
