@@ -40,7 +40,7 @@ namespace Campy.Graphs
             return result;
         }
 
-         public IEnumerator<List<T>> GetSccs<T,E>(IGraph<T, E> graph)
+         public IEnumerable<List<T>> GetSccs<T,E>(IGraph<T, E> graph)
             where E : IEdge<T>
         {
             Stack<T> stack = new Stack<T>();

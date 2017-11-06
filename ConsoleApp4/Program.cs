@@ -69,6 +69,28 @@ namespace ConsoleApp4
             Digraph G = new Digraph(tiny);
             EdgeClassifier.Classify(G, 7, out Dictionary<DirectedEdge<int>, EdgeClassifier.Classification> result);
 
+            string input2 = @"
+14
+15
+1  5
+2  4
+2  3
+3  9
+4  5
+5  7
+5  6
+6  8
+7  8
+8  2
+8  9
+9  11
+9  10
+10 11
+12 13
+";
+            Digraph tt = new Digraph(input2);
+            var l = TSortNoBackEdges.Sort(tt, 1);
+            var ll = l.ToArray();
             StartDebugging();
 
             {
