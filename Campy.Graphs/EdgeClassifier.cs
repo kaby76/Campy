@@ -59,13 +59,12 @@ namespace Campy.Graphs
         }
 
         public static void Classify<T, E>
-            (IGraph<T, E> graph, T u, out Dictionary<E, Classification> result)
+            (IGraph<T, E> graph, T u, ref Dictionary<E, Classification> classify)
             where E : IEdge<T>
         {
             Dictionary<T, Color> color = new Dictionary<T, Color>();
             Dictionary<T, int> d = new Dictionary<T, int>();
             Dictionary<T, int> f = new Dictionary<T, int>();
-            Dictionary<E, Classification> classify = new Dictionary<E, Classification>();
 
             foreach (var v in graph.Vertices)
                 color[v] = Color.White;
@@ -75,8 +74,6 @@ namespace Campy.Graphs
             foreach (var v in graph.Vertices)
                 if (color[v] == Color.White)
                     Visit(v, graph, color, d, f, classify, ref time);
-
-            result = classify;
         }
     }
 }

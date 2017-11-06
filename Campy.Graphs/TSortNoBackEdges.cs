@@ -19,7 +19,8 @@ namespace Campy.Graphs
 
             if (source != null && source.Any())
             {
-                EdgeClassifier.Classify(graph, s, out Dictionary<E, EdgeClassifier.Classification> result);
+                Dictionary<E, EdgeClassifier.Classification> result = new Dictionary<E, EdgeClassifier.Classification>();
+                EdgeClassifier.Classify(graph, s, ref result);
                 HashSet<T> nodes = new HashSet<T>();
                 foreach (T v in graph.Vertices) nodes.Add(v);
                 HashSet<Tuple<T, T>> edges = new HashSet<Tuple<T, T>>();

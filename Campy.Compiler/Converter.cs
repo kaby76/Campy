@@ -1161,7 +1161,7 @@ namespace Campy.Compiler
             {
                 // Create DFT order of all nodes from entries.
                 var objs = entries.Select(x => x.Name);
-                var ordered_list = new Tarjan<CFG.Vertex,CFG.Edge>(_mcfg).ToList();
+                var ordered_list =  new TarjanNoBackEdges<CFG.Vertex,CFG.Edge>(_mcfg).ToList();
                 ordered_list.Reverse();
 
                 //Graphs.DFSPreorder<int>
@@ -1225,7 +1225,7 @@ namespace Campy.Compiler
             while (work.Count != 0)
             {
                 // Create DFT order of all nodes.
-                var ordered_list = new Tarjan<CFG.Vertex,CFG.Edge>(_mcfg).ToList();
+                var ordered_list = new TarjanNoBackEdges<CFG.Vertex,CFG.Edge>(_mcfg).ToList();
                 ordered_list.Reverse();
 
                 //IEnumerable<int> objs = entries.Select(x => x.Name);
@@ -1381,8 +1381,8 @@ namespace Campy.Compiler
 
                 // Get a Tarjan DFS/SCC order of the nodes. Reverse it because we want to
                 // proceed from entry basic block.
-                //var ordered_list = new Tarjan<int>(_mcfg).GetEnumerable().Reverse();
-                var ordered_list = new Tarjan<CFG.Vertex,CFG.Edge>(_mcfg).ToList();
+                //var ordered_list = new TarjanNoBackEdges<int>(_mcfg).GetEnumerable().Reverse();
+                var ordered_list = new TarjanNoBackEdges<CFG.Vertex,CFG.Edge>(_mcfg).ToList();
                 ordered_list.Reverse();
 
                 // Eliminate all node names not in the work list.

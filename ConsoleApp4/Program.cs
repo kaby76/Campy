@@ -67,7 +67,9 @@ namespace ConsoleApp4
 ";
 
             Digraph G = new Digraph(tiny);
-            EdgeClassifier.Classify(G, 7, out Dictionary<DirectedEdge<int>, EdgeClassifier.Classification> result);
+            Dictionary<DirectedEdge<int>, EdgeClassifier.Classification> result =
+                new Dictionary<DirectedEdge<int>, EdgeClassifier.Classification>();
+            EdgeClassifier.Classify(G, 7, ref result);
 
             string input2 = @"
 14
