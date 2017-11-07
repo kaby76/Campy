@@ -497,6 +497,8 @@ namespace Campy.Compiler
                 typeof(string).ToMonoTypeReference(),
                 LLVM.PointerType(LLVM.VoidType(), 0));
 
+
+
             built_in_functions.Add("llvm.nvvm.read.ptx.sreg.tid.x",
                 LLVM.AddFunction(
                     global_llvm_module,
@@ -572,6 +574,17 @@ namespace Campy.Compiler
                     "llvm.nvvm.read.ptx.sreg.nctaid.z",
                     LLVM.FunctionType(LLVM.Int32Type(),
                         new TypeRef[] { }, false)));
+
+
+
+            built_in_functions.Add("System.String.get_Chars",
+                LLVM.AddFunction(
+                    global_llvm_module,
+                    "System.String.get_Chars",
+                    LLVM.FunctionType(LLVM.Int32Type(),
+                        new TypeRef[] { LLVM.PointerType(LLVM.VoidType(), 0),
+                            LLVM.Int32Type() }, false)));
+
         }
 
         public class Comparer : IEqualityComparer<Tuple<CFG.Vertex, Mono.Cecil.TypeReference, System.Type>>

@@ -267,12 +267,6 @@ namespace Campy.Compiler
 
             _methods_done.Add(method_definition.FullName);
 
-            // Rewrite all instructions in block so as it makes sense.
-            // In particular, replace references to runtime with instructions in Campy runtime.
-            // Some NET runtime cannot be discovered (e.g., multidimensional get and set, and Math
-            // methods).
-            RewriteCilCodeBlock(method_definition.Body);
-
             int change_set = _cfg.StartChangeSet();
 
             int instruction_count = method_definition.Body.Instructions.Count;
@@ -500,6 +494,21 @@ namespace Campy.Compiler
 
         public MethodDefinition Rewrite(MethodReference method_reference)
         {
+            // Several things here. First, rewrite substitute method if this method is part
+            // of the BCL runtime for GPUs. 
+            var method_definition = SubstituteMethod(method_reference);
+
+            // Second, in the body of the method, rewrite each instruction, replace references to runtime
+            // with instructions in Campy runtime. Some NET runtime cannot be discovered (e.g., multidimensional
+            // get and set, and Math methods).
+            if (!(method_definition == null || method_definition.Body == null))
+                RewriteCilCodeBlock(method_definition.Body);
+
+            return method_definition;
+        }
+
+        private MethodDefinition SubstituteMethod(MethodReference method_reference)
+        {
             // Look up base class.
             TypeReference mr_dt = method_reference.DeclaringType;
             if (mr_dt != null && mr_dt.FullName == "System.String")
@@ -557,37 +566,6 @@ namespace Campy.Compiler
                 }
             }
 
-            Dictionary<TypeReference, System.Type> additional = new Dictionary<TypeReference, System.Type>();
-            var mr_gp = method_reference.GenericParameters;
-            var mr_hgp = method_reference.HasGenericParameters;
-            var mr_dt_hgp = method_reference.DeclaringType.HasGenericParameters;
-            var mr_igi = method_reference.IsGenericInstance;
-            var mr_dt_igi = method_reference.DeclaringType.IsGenericInstance;
-            if (mr_igi)
-            {
-                GenericInstanceMethod i = method_reference as GenericInstanceMethod;
-                var mr_hga = i.HasGenericArguments;
-            }
-            if (mr_dt_igi)
-            {
-                GenericInstanceType git = mr_dt as GenericInstanceType;
-                var mr_dt_hga = git.HasGenericArguments;
-                Collection<TypeReference> ga = git.GenericArguments;
-                var e1 = git.ElementType;
-                var e2 = git.GetElementType();
-                Collection<GenericParameter> gg = e1.GenericParameters;
-                // Map parameter to instantiated type.
-                for (int i = 0; i < gg.Count; ++i)
-                {
-                    GenericParameter pp = gg[i];
-                    TypeReference qq = ga[i];
-                    TypeReference trrr = pp as TypeReference;
-                    var system_type = qq
-                        .ToSystemType();
-                    if (system_type == null) throw new Exception("Failed to convert " + qq);
-                    additional[pp] = system_type;
-                }
-            }
             return method_definition;
         }
 
@@ -608,6 +586,10 @@ namespace Campy.Compiler
                         throw new Exception();
 
                     Mono.Cecil.MethodReference method_reference = method as Mono.Cecil.MethodReference;
+                    TypeReference mr_dt = method_reference.DeclaringType;
+
+                    // There are two ways to rewrite a method call: (1) Specific name match in rewritten_runtime
+                    // table. (2) Name match in BCL for GPU.
 
                     var name = method_reference.FullName;
                     var found = _rewritten_runtime.ContainsKey(name);
@@ -622,8 +604,63 @@ namespace Campy.Compiler
                         Instruction new_inst = worker.Create(i.OpCode, def);
                         body.Instructions.Insert(j, new_inst);
                     }
+                    else if (mr_dt != null && mr_dt.FullName == "System.String")
+                    {
+                        var fn = mr_dt.Module.Assembly.FullName;
+                        // Find in Campy.Runtime.
+                        string yopath =
+                            @"C:\Users\Kenne\Documents\Campy\Campy.Runtime\Corlib\bin\Debug\netstandard1.3\corlib.dll";
+                        Mono.Cecil.ModuleDefinition md = Mono.Cecil.ModuleDefinition.ReadModule(yopath);
+                        var sub = mr_dt.SubstituteMonoTypeReference(md);
+                        foreach (var meth in sub.Methods)
+                        {
+                            if (meth.FullName == method_reference.FullName)
+                            {
+                                method_reference = meth;
+                                name = method_reference.FullName;
+                                MethodDefinition def = method_reference.Resolve();
+                                CallSite cs = new CallSite(typeof(void).ToMonoTypeReference());
+                                body.Instructions.RemoveAt(j);
+                                var worker = body.GetILProcessor();
+                                Instruction new_inst = worker.Create(i.OpCode, def);
+                                body.Instructions.Insert(j, new_inst);
+                                break;
+                            }
+                        }
+                    }
                 }
             }
+            //Dictionary<TypeReference, System.Type> additional = new Dictionary<TypeReference, System.Type>();
+            //var mr_gp = method_reference.GenericParameters;
+            //var mr_hgp = method_reference.HasGenericParameters;
+            //var mr_dt_hgp = method_reference.DeclaringType.HasGenericParameters;
+            //var mr_igi = method_reference.IsGenericInstance;
+            //var mr_dt_igi = method_reference.DeclaringType.IsGenericInstance;
+            //if (mr_igi)
+            //{
+            //    GenericInstanceMethod i = method_reference as GenericInstanceMethod;
+            //    var mr_hga = i.HasGenericArguments;
+            //}
+            //if (mr_dt_igi)
+            //{
+            //    GenericInstanceType git = mr_dt as GenericInstanceType;
+            //    var mr_dt_hga = git.HasGenericArguments;
+            //    Collection<TypeReference> ga = git.GenericArguments;
+            //    var e1 = git.ElementType;
+            //    var e2 = git.GetElementType();
+            //    Collection<GenericParameter> gg = e1.GenericParameters;
+            //    // Map parameter to instantiated type.
+            //    for (int i = 0; i < gg.Count; ++i)
+            //    {
+            //        GenericParameter pp = gg[i];
+            //        TypeReference qq = ga[i];
+            //        TypeReference trrr = pp as TypeReference;
+            //        var system_type = qq
+            //            .ToSystemType();
+            //        if (system_type == null) throw new Exception("Failed to convert " + qq);
+            //        additional[pp] = system_type;
+            //    }
+            //}
         }
     }
 }
