@@ -1774,5 +1774,8 @@ namespace Campy.Compiler
                 System.Console.WriteLine();
             }
         }
+
+        private static string String_get_Chars = @"";
+
     }
 }
