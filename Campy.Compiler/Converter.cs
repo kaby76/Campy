@@ -1793,32 +1793,6 @@ namespace Campy.Compiler
 .target sm_30
 .address_size 64
 
-	// .globl	_Z28System_String_ctor_CharInt32PhS_S_
-.extern .func  (.param .b64 func_retval0) _Z10Heap_AllocP12tMD_TypeDef_j
-(
-	.param .b64 _Z10Heap_AllocP12tMD_TypeDef_j_param_0,
-	.param .b32 _Z10Heap_AllocP12tMD_TypeDef_j_param_1
-)
-;
-.extern .func  (.param .b32 func_retval0) _Z9gpumemcmpPKvS0_y
-(
-	.param .b64 _Z9gpumemcmpPKvS0_y_param_0,
-	.param .b64 _Z9gpumemcmpPKvS0_y_param_1,
-	.param .b64 _Z9gpumemcmpPKvS0_y_param_2
-)
-;
-.extern .func  (.param .b64 func_retval0) _Z22MetaData_GetUserStringP10tMetaData_jPj
-(
-	.param .b64 _Z22MetaData_GetUserStringP10tMetaData_jPj_param_0,
-	.param .b32 _Z22MetaData_GetUserStringP10tMetaData_jPj_param_1,
-	.param .b64 _Z22MetaData_GetUserStringP10tMetaData_jPj_param_2
-)
-;
-.extern .func  (.param .b64 func_retval0) _Z9gpustrlenPKc
-(
-	.param .b64 _Z9gpustrlenPKc_param_0
-)
-;
 .extern .global .align 8 .b64 types;
 
 .visible .func  (.param .b64 func_retval0) _Z28System_String_ctor_CharInt32PhS_S_(
