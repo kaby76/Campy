@@ -97,6 +97,7 @@
       <AdditionalCompilerOptions>
       </AdditionalCompilerOptions>
       <Keep>true</Keep>
+      <GPUDebugInfo>false</GPUDebugInfo>
     </CudaCompile>
     <CudaLink>
       <AdditionalLibraryDirectories>

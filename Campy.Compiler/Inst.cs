@@ -3114,13 +3114,13 @@ namespace Campy.Compiler
                 var name = mr.Name;
                 BuilderRef bu = this.Builder;
                 var as_name = mr.Module.Assembly.Name;
-                ValueRef fv = Converter.built_in_functions["System.String.get_Chars"];
+                ValueRef fv = Converter.built_in_functions["System_String_get_Chars"];
                 var t_fun = LLVM.TypeOf(fv);
                 var t_fun_con = LLVM.GetTypeContext(t_fun);
                 var context = LLVM.GetModuleContext(Converter.global_llvm_module);
 
 
-                ValueRef[] args = new ValueRef[xargs];
+                ValueRef[] args = new ValueRef[xargs+1];
                 if (HasStructReturnValue)
                 {
                 }
@@ -3149,6 +3149,8 @@ namespace Campy.Compiler
                         }
                         args[k] = value;
                     }
+                    args[xargs] =
+                        LLVM.BuildPointerCast(Builder, LLVM.ConstInt(LLVM.Int64Type(), 0, false), LLVM.PointerType(LLVM.VoidType(), 0), "");
                     var call = LLVM.BuildCall(Builder, fv, args, name);
                     state._stack.Push(new Value(call));
                     if (Campy.Utils.Options.IsOn("jit_trace"))
