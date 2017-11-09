@@ -3096,6 +3096,8 @@ namespace Campy.Compiler
             // method. Insert code to call the BCL method.
             if (the_entry == null)
             {
+                // HARDWIRED FOR GET_CHARS!!!!!
+
                 // Call PTX method.
                 Mono.Cecil.MethodReturnType rt = mr.MethodReturnType;
                 Mono.Cecil.TypeReference tr = rt.ReturnType;
@@ -3119,71 +3121,111 @@ namespace Campy.Compiler
                 var t_fun_con = LLVM.GetTypeContext(t_fun);
                 var context = LLVM.GetModuleContext(Converter.global_llvm_module);
 
-                ValueRef[] args = new ValueRef[xargs+1];
-                if (HasStructReturnValue)
+
                 {
-                }
-                else if (HasScalarReturnValue)
-                {
-                    for (int k = xargs - 1; k >= 0; --k)
-                    {
-                        Value v = state._stack.Pop();
-                        ValueRef par = LLVM.GetParam(fv, (uint)k);
-                        ValueRef value = v.V;
-                        if (LLVM.TypeOf(value) != LLVM.TypeOf(par))
-                        {
-                            if (LLVM.GetTypeKind(LLVM.TypeOf(par)) == TypeKind.StructTypeKind
-                                && LLVM.GetTypeKind(LLVM.TypeOf(value)) == TypeKind.PointerTypeKind)
-                            {
-                                value = LLVM.BuildLoad(Builder, value, "");
-                            }
-                            else if (LLVM.GetTypeKind(LLVM.TypeOf(par)) == TypeKind.PointerTypeKind)
-                            {
-                                value = LLVM.BuildPointerCast(Builder, value, LLVM.TypeOf(par), "");
-                            }
-                            else
-                            {
-                                value = LLVM.BuildBitCast(Builder, value, LLVM.TypeOf(par), "");
-                            }
-                        }
-                        args[k] = value;
-                    }
-                    args[xargs] = args[0];
+                    ValueRef[] args = new ValueRef[3];
+
+                    // Set up return.
+                    var alloc_type = LLVM.Int32Type();
+                    var retur = LLVM.BuildAlloca(Builder, alloc_type, ""); // Allocates struct on stack, but returns a pointer to struct.
+                    LLVM.PositionBuilderAtEnd(Builder, this.Block.BasicBlock);
+
+                    // Set up params (index).
+                    Value p = state._stack.Pop(); // index
+                    var entry = this.Block.Entry.BasicBlock;
+                    var beginning = LLVM.GetFirstInstruction(entry);
+                    LLVM.PositionBuilderBefore(Builder, beginning);
+                    var @params = LLVM.BuildAlloca(Builder, alloc_type, ""); // Allocates struct on stack, but returns a pointer to struct.
+                    LLVM.PositionBuilderAtEnd(Builder, this.Block.BasicBlock);
+                    LLVM.BuildStore(Builder, p.V, @params);
+
+                    // Set up "this".
+                    Value t = state._stack.Pop();
+
+                    // Set up call.
+                    var pt = LLVM.BuildPointerCast(Builder, t.V,
+                        LLVM.PointerType(LLVM.VoidType(), 0), "");
+                    var pp = LLVM.BuildPointerCast(Builder, @params,
+                        LLVM.PointerType(LLVM.VoidType(), 0), "");
+                    var pr = LLVM.BuildPointerCast(Builder, retur,
+                        LLVM.PointerType(LLVM.VoidType(), 0), "");
+                    args[0] = pt;
+                    args[1] = pp;
+                    args[2] = pr;
                     var call = LLVM.BuildCall(Builder, fv, args, name);
                     state._stack.Push(new Value(call));
                     if (Campy.Utils.Options.IsOn("jit_trace"))
                         System.Console.WriteLine(call.ToString());
+
                 }
-                else
-                {
-                    // No return.
-                    for (int k = xargs - 1; k >= 0; --k)
-                    {
-                        Value v = state._stack.Pop();
-                        ValueRef par = LLVM.GetParam(fv, (uint)k);
-                        ValueRef value = v.V;
-                        if (LLVM.TypeOf(value) != LLVM.TypeOf(par))
-                        {
-                            if (LLVM.GetTypeKind(LLVM.TypeOf(par)) == TypeKind.StructTypeKind
-                                && LLVM.GetTypeKind(LLVM.TypeOf(value)) == TypeKind.PointerTypeKind)
-                            {
-                                value = LLVM.BuildLoad(Builder, value, "");
-                            }
-                            else if (LLVM.GetTypeKind(LLVM.TypeOf(par)) == TypeKind.PointerTypeKind)
-                            {
-                                value = LLVM.BuildPointerCast(Builder, value, LLVM.TypeOf(par), "");
-                            }
-                            else
-                            {
-                                value = LLVM.BuildBitCast(Builder, value, LLVM.TypeOf(par), "");
-                            }
-                        }
-                        args[k] = value;
-                    }
-                    var call = LLVM.BuildCall(Builder, fv, args, "");
-                    if (Campy.Utils.Options.IsOn("jit_trace"))
-                        System.Console.WriteLine(call.ToString());
-                }
+
+
+
+
+                //if (HasStructReturnValue)
+                //{
+                //}
+                //else if (HasScalarReturnValue)
+                //{
+                //    for (int k = xargs - 1; k >= 0; --k)
+                //    {
+                //        Value v = state._stack.Pop();
+                //        ValueRef par = LLVM.GetParam(fv, (uint)k);
+                //        ValueRef value = v.V;
+                //        if (LLVM.TypeOf(value) != LLVM.TypeOf(par))
+                //        {
+                //            if (LLVM.GetTypeKind(LLVM.TypeOf(par)) == TypeKind.StructTypeKind
+                //                && LLVM.GetTypeKind(LLVM.TypeOf(value)) == TypeKind.PointerTypeKind)
+                //            {
+                //                value = LLVM.BuildLoad(Builder, value, "");
+                //            }
+                //            else if (LLVM.GetTypeKind(LLVM.TypeOf(par)) == TypeKind.PointerTypeKind)
+                //            {
+                //                value = LLVM.BuildPointerCast(Builder, value, LLVM.TypeOf(par), "");
+                //            }
+                //            else
+                //            {
+                //                value = LLVM.BuildBitCast(Builder, value, LLVM.TypeOf(par), "");
+                //            }
+                //        }
+                //        args[k] = value;
+                //    }
+                //    args[xargs] = args[0];
+                //    var call = LLVM.BuildCall(Builder, fv, args, name);
+                //    state._stack.Push(new Value(call));
+                //    if (Campy.Utils.Options.IsOn("jit_trace"))
+                //        System.Console.WriteLine(call.ToString());
+                //}
+                //else
+                //{
+                //    // No return.
+                //    for (int k = xargs - 1; k >= 0; --k)
+                //    {
+                //        Value v = state._stack.Pop();
+                //        ValueRef par = LLVM.GetParam(fv, (uint)k);
+                //        ValueRef value = v.V;
+                //        if (LLVM.TypeOf(value) != LLVM.TypeOf(par))
+                //        {
+                //            if (LLVM.GetTypeKind(LLVM.TypeOf(par)) == TypeKind.StructTypeKind
+                //                && LLVM.GetTypeKind(LLVM.TypeOf(value)) == TypeKind.PointerTypeKind)
+                //            {
+                //                value = LLVM.BuildLoad(Builder, value, "");
+                //            }
+                //            else if (LLVM.GetTypeKind(LLVM.TypeOf(par)) == TypeKind.PointerTypeKind)
+                //            {
+                //                value = LLVM.BuildPointerCast(Builder, value, LLVM.TypeOf(par), "");
+                //            }
+                //            else
+                //            {
+                //                value = LLVM.BuildBitCast(Builder, value, LLVM.TypeOf(par), "");
+                //            }
+                //        }
+                //        args[k] = value;
+                //    }
+                //    var call = LLVM.BuildCall(Builder, fv, args, "");
+                //    if (Campy.Utils.Options.IsOn("jit_trace"))
+                //        System.Console.WriteLine(call.ToString());
+                //}
             }
             else
             {

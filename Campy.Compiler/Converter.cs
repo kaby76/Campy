@@ -581,10 +581,12 @@ namespace Campy.Compiler
                 LLVM.AddFunction(
                     global_llvm_module,
                     "System_String_get_Chars",
-                    LLVM.FunctionType(LLVM.Int32Type(),
-                        new TypeRef[] { LLVM.PointerType(LLVM.VoidType(), 0),
-                            LLVM.Int32Type(),
-                            LLVM.PointerType(LLVM.VoidType(), 0)
+                    LLVM.FunctionType(LLVM.Int64Type(),
+                        new TypeRef[]
+                        {
+                            LLVM.PointerType(LLVM.VoidType(), 0), // "this"
+                            LLVM.PointerType(LLVM.VoidType(), 0), // params in a block.
+                            LLVM.PointerType(LLVM.VoidType(), 0)  // return value block.
                         }, false)));
 
         }
@@ -1563,8 +1565,8 @@ namespace Campy.Compiler
                         ptx = LLVM.GetBufferStart(buffer);
                         uint length = LLVM.GetBufferSize(buffer);
                         ptx = ptx.Replace("3.2", "5.0");
-
-                        ptx = ptx + "\n" + System_String_get_Chars;
+                        ptx = ptx.Replace("\n", "\r\n");
+                        //ptx = ptx + System_String_get_Chars;
 
                         if (Campy.Utils.Options.IsOn("ptx_trace"))
                             System.Console.WriteLine(ptx);
@@ -1716,11 +1718,27 @@ namespace Campy.Compiler
             CheckCudaError(res);
             res = Cuda.cuCtxCreate_v2(out CUcontext cuContext, 0, device);
             CheckCudaError(res);
-            IntPtr ptr = Marshal.StringToHGlobalAnsi(ptx);
-            res = Cuda.cuModuleLoadData(out CUmodule cuModule, ptr);
+            CUjit_option[] op = new CUjit_option[0];
+            res = Cuda.cuLinkCreate_v2(0, op, IntPtr.Zero, out CUlinkState linkState);
             CheckCudaError(res);
+            IntPtr ptr2 = Marshal.StringToHGlobalAnsi(System_String_get_Chars);
+            
+            res = Cuda.cuLinkAddData_v2(linkState, CUjitInputType.CU_JIT_INPUT_PTX, ptr2, (uint)System_String_get_Chars.Length, "", 0, op, IntPtr.Zero);
+            CheckCudaError(res);
+            IntPtr ptr = Marshal.StringToHGlobalAnsi(ptx);
+            res = Cuda.cuLinkAddData_v2(linkState, CUjitInputType.CU_JIT_INPUT_PTX, ptr, (uint)ptx.Length, "", 0, op, IntPtr.Zero);
+            CheckCudaError(res);
+
+            IntPtr image;
+            res = Cuda.cuLinkComplete(linkState, out image, out ulong sz);
+            CheckCudaError(res);
+            res = Cuda.cuModuleLoadDataEx(out CUmodule module, image, 0, op, IntPtr.Zero);
+            CheckCudaError(res);
+
+            //res = Cuda.cuModuleLoadData(out CUmodule cuModule, ptr);
+            //CheckCudaError(res);
             var normalized_method_name = Converter.RenameToLegalLLVMName(Converter.MethodName(basic_block.ExpectedCalleeSignature));
-            res = Cuda.cuModuleGetFunction(out CUfunction helloWorld, cuModule, normalized_method_name);
+            res = Cuda.cuModuleGetFunction(out CUfunction helloWorld, module, normalized_method_name);
             CheckCudaError(res);
             return helloWorld;
         }
@@ -1789,11 +1807,9 @@ namespace Campy.Compiler
 // Based on LLVM 3.4svn
 //
 
-.version 6.0
-.target sm_30
+.version 5.0
+.target sm_20
 .address_size 64
-
-.extern .global .align 8 .b64 types;
 
 	// .globl	_Z23System_String_get_CharsPhS_S_
 .visible .func  (.param .b64 func_retval0) System_String_get_Chars(
