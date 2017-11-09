@@ -343,6 +343,46 @@
       <FileType>Document</FileType>
     </CudaCompile>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="x64\Debug\Delegate.ptx" />
+    <None Include="x64\Debug\Finalizer.ptx" />
+    <None Include="x64\Debug\Generics.ptx" />
+    <None Include="x64\Debug\Heap.ptx" />
+    <None Include="x64\Debug\InternalCall.ptx" />
+    <None Include="x64\Debug\JIT.ptx" />
+    <None Include="x64\Debug\JIT_Execute.ptx" />
+    <None Include="x64\Debug\MetaData.ptx" />
+    <None Include="x64\Debug\MetaData_Fill.ptx" />
+    <None Include="x64\Debug\MetaData_Search.ptx" />
+    <None Include="x64\Debug\MethodState.ptx" />
+    <None Include="x64\Debug\PInvoke.ptx" />
+    <None Include="x64\Debug\RVA.ptx" />
+    <None Include="x64\Debug\Sys.ptx" />
+    <None Include="x64\Debug\System.Array.ptx" />
+    <None Include="x64\Debug\System.Char.ptx" />
+    <None Include="x64\Debug\System.Console.ptx" />
+    <None Include="x64\Debug\System.DateTime.ptx" />
+    <None Include="x64\Debug\System.Diagnostics.Debugger.ptx" />
+    <None Include="x64\Debug\System.Enum.ptx" />
+    <None Include="x64\Debug\System.Environment.ptx" />
+    <None Include="x64\Debug\System.GC.ptx" />
+    <None Include="x64\Debug\System.IO.FileInternal.ptx" />
+    <None Include="x64\Debug\System.Math.ptx" />
+    <None Include="x64\Debug\System.Net.Dns.ptx" />
+    <None Include="x64\Debug\System.Net.Sockets.Socket.ptx" />
+    <None Include="x64\Debug\System.Object.ptx" />
+    <None Include="x64\Debug\System.Runtime.CompilerServices.RuntimeHelpers.ptx" />
+    <None Include="x64\Debug\System.RuntimeType.ptx" />
+    <None Include="x64\Debug\System.String.ptx" />
+    <None Include="x64\Debug\System.Threading.Interlocked.ptx" />
+    <None Include="x64\Debug\System.Threading.Monitor.ptx" />
+    <None Include="x64\Debug\System.Threading.Thread.ptx" />
+    <None Include="x64\Debug\System.Type.ptx" />
+    <None Include="x64\Debug\System.ValueType.ptx" />
+    <None Include="x64\Debug\System.WeakReference.ptx" />
+    <None Include="x64\Debug\Thread.ptx" />
+    <None Include="x64\Debug\Type.ptx" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 9.0.targets" />

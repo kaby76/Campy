@@ -199,4 +199,120 @@
     <CudaCompile Include="JIT.cu" />
     <CudaCompile Include="basics.cu" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="x64\Debug\Delegate.ptx">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="x64\Debug\Finalizer.ptx">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="x64\Debug\Generics.ptx">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="x64\Debug\Heap.ptx">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="x64\Debug\InternalCall.ptx">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="x64\Debug\JIT.ptx">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="x64\Debug\JIT_Execute.ptx">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="x64\Debug\MetaData.ptx">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="x64\Debug\MetaData_Fill.ptx">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="x64\Debug\MetaData_Search.ptx">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="x64\Debug\MethodState.ptx">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="x64\Debug\PInvoke.ptx">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="x64\Debug\RVA.ptx">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="x64\Debug\Sys.ptx">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="x64\Debug\System.Array.ptx">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="x64\Debug\System.Char.ptx">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="x64\Debug\System.Console.ptx">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="x64\Debug\System.DateTime.ptx">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="x64\Debug\System.Diagnostics.Debugger.ptx">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="x64\Debug\System.Enum.ptx">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="x64\Debug\System.Environment.ptx">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="x64\Debug\System.GC.ptx">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="x64\Debug\System.IO.FileInternal.ptx">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="x64\Debug\System.Math.ptx">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="x64\Debug\System.Net.Dns.ptx">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="x64\Debug\System.Net.Sockets.Socket.ptx">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="x64\Debug\System.Object.ptx">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="x64\Debug\System.Runtime.CompilerServices.RuntimeHelpers.ptx">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="x64\Debug\System.RuntimeType.ptx">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="x64\Debug\System.String.ptx">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="x64\Debug\System.Threading.Interlocked.ptx">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="x64\Debug\System.Threading.Monitor.ptx">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="x64\Debug\System.Threading.Thread.ptx">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="x64\Debug\System.Type.ptx">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="x64\Debug\System.ValueType.ptx">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="x64\Debug\System.WeakReference.ptx">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="x64\Debug\Thread.ptx">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="x64\Debug\Type.ptx">
+      <Filter>Source Files</Filter>
+    </None>
+  </ItemGroup>
 </Project>

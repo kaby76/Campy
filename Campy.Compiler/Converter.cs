@@ -1718,6 +1718,8 @@ namespace Campy.Compiler
             CheckCudaError(res);
             res = Cuda.cuCtxCreate_v2(out CUcontext cuContext, 0, device);
             CheckCudaError(res);
+
+            // Add in all of the GPU BCL runtime required.
             CUjit_option[] op = new CUjit_option[0];
             res = Cuda.cuLinkCreate_v2(0, op, IntPtr.Zero, out CUlinkState linkState);
             CheckCudaError(res);
