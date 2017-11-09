@@ -1564,8 +1564,18 @@ namespace Campy.Compiler
                     {
                         ptx = LLVM.GetBufferStart(buffer);
                         uint length = LLVM.GetBufferSize(buffer);
-                        ptx = ptx.Replace("3.2", "5.0");
+
+                        // Modify the version number of the PTX source generated to be the
+                        // most up to date.
+                        ptx = ptx.Replace(".version 3.2", ".version 6.0");
+
+                        // Make sure the target machine is set to sm_30 because we assume that as
+                        // a minimum. Besides, older versions are deprecated.
+                        ptx = ptx.Replace(".target sm_20", ".target sm_30");
+
+                        // Make sure to fix the stupid end-of-line delimiters to be for Windows.
                         ptx = ptx.Replace("\n", "\r\n");
+
                         //ptx = ptx + System_String_get_Chars;
 
                         if (Campy.Utils.Options.IsOn("ptx_trace"))
@@ -1809,8 +1819,8 @@ namespace Campy.Compiler
 // Based on LLVM 3.4svn
 //
 
-.version 5.0
-.target sm_20
+.version 6.0
+.target sm_30
 .address_size 64
 
 	// .globl	_Z23System_String_get_CharsPhS_S_

@@ -200,9 +200,6 @@
     <CudaCompile Include="basics.cu" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="x64\Debug\Delegate.ptx">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="x64\Debug\Finalizer.ptx">
       <Filter>Resource Files</Filter>
     </None>
@@ -314,5 +311,10 @@
     <None Include="x64\Debug\Type.ptx">
       <Filter>Resource Files</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="x64\Debug\Delegate.ptx">
+      <Filter>Resource Files</Filter>
+    </Text>
   </ItemGroup>
 </Project>

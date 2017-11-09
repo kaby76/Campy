@@ -344,7 +344,9 @@
     </CudaCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="x64\Debug\Delegate.ptx" />
+    <Text Include="x64\Debug\Delegate.ptx">
+      <FileType>Document</FileType>
+    </Text>
     <None Include="x64\Debug\Finalizer.ptx" />
     <None Include="x64\Debug\Generics.ptx" />
     <None Include="x64\Debug\Heap.ptx" />
