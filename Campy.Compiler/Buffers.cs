@@ -519,6 +519,20 @@
                 if (types.Length == 0) throw new Exception("Unknown type.");
                 System.Type blittable_type = types[0];
 
+                if (hostType.FullName.Equals("System.String"))
+                {
+                    System.Type f = from.GetType();
+                    System.Type tr = blittable_type;
+                    byte* ip = (byte*) to_buffer;
+                    var v = ((string) from).Length;
+                    GCHandle handle = GCHandle.Alloc(from, GCHandleType.Pinned);
+                    IntPtr pointer = handle.AddrOfPinnedObject();
+                    byte* ip_from = (byte*) pointer;
+                    Cp(ip, v);
+                    Cp(ip + 4, ip_from, v);
+                    return;
+                }
+
                 if (hostType.IsArray)
                 {
                     if (_allocated_objects.ContainsKey(from))
@@ -770,6 +784,12 @@
                 {
                     object o = Marshal.PtrToStructure<System.Double>(from);
                     to = o;
+                    return;
+                }
+
+                if (t_type.FullName.Equals("System.String"))
+                {
+                    to = (System.String)null;
                     return;
                 }
 
