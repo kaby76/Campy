@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using Campy.Graphs;
@@ -580,7 +581,7 @@ namespace Campy.Compiler
             built_in_functions.Add("System_String_get_Chars",
                 LLVM.AddFunction(
                     global_llvm_module,
-                    "System_String_get_Chars",
+                    "_Z23System_String_get_CharsPhS_S_",
                     LLVM.FunctionType(LLVM.Int64Type(),
                         new TypeRef[]
                         {
@@ -1565,12 +1566,13 @@ namespace Campy.Compiler
                         ptx = LLVM.GetBufferStart(buffer);
                         uint length = LLVM.GetBufferSize(buffer);
 
-                        // Modify the version number of the PTX source generated to be the
+                        // Modify the version number of the ISA PTX source generated to be the
                         // most up to date.
                         ptx = ptx.Replace(".version 3.2", ".version 6.0");
 
                         // Make sure the target machine is set to sm_30 because we assume that as
-                        // a minimum. Besides, older versions are deprecated.
+                        // a minimum, and it's compatible with GPU BCL runtime. Besides, older versions
+                        // are deprecated.
                         ptx = ptx.Replace(".target sm_20", ".target sm_30");
 
                         // Make sure to fix the stupid end-of-line delimiters to be for Windows.
@@ -1733,10 +1735,20 @@ namespace Campy.Compiler
             CUjit_option[] op = new CUjit_option[0];
             res = Cuda.cuLinkCreate_v2(0, op, IntPtr.Zero, out CUlinkState linkState);
             CheckCudaError(res);
-            IntPtr ptr2 = Marshal.StringToHGlobalAnsi(System_String_get_Chars);
+            var assembly = Assembly.GetAssembly(this.GetType());
+            var resource_names = assembly.GetManifestResourceNames();
+            foreach (var resource_name in resource_names)
+            {
+                using (Stream stream = assembly.GetManifestResourceStream(resource_name))
+                using (StreamReader reader = new StreamReader(stream))
+                {
+                    string gpu_bcl_ptx = reader.ReadToEnd();
+                    IntPtr ptr2 = Marshal.StringToHGlobalAnsi(gpu_bcl_ptx);
+                    res = Cuda.cuLinkAddData_v2(linkState, CUjitInputType.CU_JIT_INPUT_PTX, ptr2, (uint)System_String_get_Chars.Length, "", 0, op, IntPtr.Zero);
+                    CheckCudaError(res);
+                }
+            }
             
-            res = Cuda.cuLinkAddData_v2(linkState, CUjitInputType.CU_JIT_INPUT_PTX, ptr2, (uint)System_String_get_Chars.Length, "", 0, op, IntPtr.Zero);
-            CheckCudaError(res);
             IntPtr ptr = Marshal.StringToHGlobalAnsi(ptx);
             res = Cuda.cuLinkAddData_v2(linkState, CUjitInputType.CU_JIT_INPUT_PTX, ptr, (uint)ptx.Length, "", 0, op, IntPtr.Zero);
             CheckCudaError(res);

@@ -177,7 +177,7 @@ namespace ConsoleApp4
                     if (j == m)
                     {
                         // match found
-                        found[i] = j;
+                        found[i] = i;
                     }
                 });
 
