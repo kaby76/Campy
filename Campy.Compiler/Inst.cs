@@ -3153,7 +3153,10 @@ namespace Campy.Compiler
                     args[1] = pp;
                     args[2] = pr;
                     var call = LLVM.BuildCall(Builder, fv, args, name);
-                    state._stack.Push(new Value(call));
+
+                    var load = LLVM.BuildLoad(Builder, retur, "");
+
+                    state._stack.Push(new Value(load));
                     if (Campy.Utils.Options.IsOn("jit_trace"))
                         System.Console.WriteLine(call.ToString());
 

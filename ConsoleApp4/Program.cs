@@ -169,6 +169,7 @@ namespace ConsoleApp4
 
                 Campy.Parallel.For(n, i =>
                 {
+                    /*
                     int j;
                     for (j = 0; j < m && i + j < n; j++)
                         if (text[i + j] != pattern[j])
@@ -177,8 +178,10 @@ namespace ConsoleApp4
                     if (j == m)
                     {
                         // match found
-                        found[i] = 1;
+                        found[i] = j;
                     }
+                    */
+                    found[i] = text[i];
                 });
 
                 Campy.Parallel.For(n, i =>
