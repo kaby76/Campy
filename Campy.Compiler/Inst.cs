@@ -3242,7 +3242,7 @@ namespace Campy.Compiler
 
                 var name = Converter.MethodName(mr);
                 BuilderRef bu = this.Builder;
-                ValueRef fv = Converter.built_in_functions[name];
+                ValueRef fv = the_entry.MethodValueRef;
                 var t_fun = LLVM.TypeOf(fv);
                 var t_fun_con = LLVM.GetTypeContext(t_fun);
                 var context = LLVM.GetModuleContext(Converter.global_llvm_module);
