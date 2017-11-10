@@ -1,11 +1,13 @@
 # Campy
 
 This project is an API for GP-GPU computing in .NET languages. With Campy, one writes GP-GPU code
-free of the usual boilerplate code, using a simplified model of a multiprocessor GPU/CPU computer,
-freeing the developer to focus exclusively on the algorithm.
+without the usual boilerplate code you see in CUDA/OpenCL, using a simplified model of a multiprocessor GPU/CPU computer,
+freeing the developer to focus exclusively on the algorithm. 
 The API compiles and runs CIL code into native GPU code using LLVM. Supported are value types,
 reference types, methods, generics, lambdas, delegates, and closures. Other C#/GPU projects exist,
-but do not offer a clean, boilerplate-free interface, supporting C# beyond value types.
+but do not offer a clean, boilerplate-free interface, nor support C# beyond value types. Campy provides
+a base class library (BCL) for the GPU, implementing strings, arrays, generics, exceptions, delegates,
+dynamically memory allocation, reflection, and native calls.
 
 This project is in the early stage of development. Releases are currently for demonstration purposes.
 The only available method is essentially Campy.Parallel.For(), and it will undergo wild changes in signature
