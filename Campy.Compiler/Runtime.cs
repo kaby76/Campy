@@ -1,4 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
+using Swigged.Cuda;
+using Swigged.LLVM;
+using Campy.Utils;
 
 namespace Campy.Compiler
 {
@@ -120,6 +128,45 @@ namespace Campy.Compiler
 
         public static void ThrowArgumentOutOfRangeException()
         {
+        }
+
+
+        public static void ParseBCL(Converter converter)
+        {
+            var assembly = Assembly.GetAssembly(typeof(Campy.Compiler.Runtime));
+            var resource_names = assembly.GetManifestResourceNames();
+            foreach (var resource_name in resource_names)
+            {
+                using (Stream stream = assembly.GetManifestResourceStream(resource_name))
+                using (StreamReader reader = new StreamReader(stream))
+                {
+                    string gpu_bcl_ptx = reader.ReadToEnd();
+                    // Parse the PTX for ".visible" functions, and enter each in
+                    // the runtime table.
+                    string[] lines = gpu_bcl_ptx.Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+                    foreach (var line in lines)
+                    {
+                        Regex regex = new Regex(@"\.visible.*[ ](?<name>\w+)\($");
+                        Match m = regex.Match(line);
+                        if (m.Success)
+                        {
+                            var mangled_name = m.Groups["name"].Value;
+                            var demangled_name = mangled_name;
+                            Converter.built_in_functions.Add(demangled_name,
+                                LLVM.AddFunction(
+                                    Converter.global_llvm_module,
+                                    mangled_name,
+                                    LLVM.FunctionType(LLVM.Int64Type(),
+                                        new TypeRef[]
+                                        {
+                                            LLVM.PointerType(LLVM.VoidType(), 0), // "this"
+                                            LLVM.PointerType(LLVM.VoidType(), 0), // params in a block.
+                                            LLVM.PointerType(LLVM.VoidType(), 0)  // return value block.
+                                        }, false)));
+                        }
+                    }
+                }
+            }
         }
 
     }

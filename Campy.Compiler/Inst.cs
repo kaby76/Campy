@@ -3008,7 +3008,7 @@ namespace Campy.Compiler
                 {
                     Mono.Cecil.MethodReturnType rt = mr.MethodReturnType;
                     Mono.Cecil.TypeReference tr = rt.ReturnType;
-            // Get type, may contain modifiers.
+                    // Get type, may contain modifiers.
                     if (tr.FullName.Contains(' '))
                     {
                         String[] sp = tr.FullName.Split(' ');
@@ -3116,7 +3116,11 @@ namespace Campy.Compiler
                 var name = mr.Name;
                 BuilderRef bu = this.Builder;
                 var as_name = mr.Module.Assembly.Name;
-                ValueRef fv = Converter.built_in_functions["System_String_get_Chars"];
+                var xx = Campy.Utils.DictionaryHelpers.PartialMatch(
+                    Converter.built_in_functions,
+                    "System_String_get_Chars",
+                    (string a, string b) => a.Contains(b) || b.Contains(a));
+                ValueRef fv = xx.FirstOrDefault();
                 var t_fun = LLVM.TypeOf(fv);
                 var t_fun_con = LLVM.GetTypeContext(t_fun);
                 var context = LLVM.GetModuleContext(Converter.global_llvm_module);
@@ -4922,7 +4926,7 @@ namespace Campy.Compiler
                 {
                     Mono.Cecil.MethodReturnType rt = mr.MethodReturnType;
                     Mono.Cecil.TypeReference tr = rt.ReturnType;
-            // Get type, may contain modifiers.
+                    // Get type, may contain modifiers.
                     if (tr.FullName.Contains(' '))
                     {
                         String[] sp = tr.FullName.Split(' ');

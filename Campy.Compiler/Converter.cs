@@ -576,19 +576,8 @@ namespace Campy.Compiler
                     LLVM.FunctionType(LLVM.Int32Type(),
                         new TypeRef[] { }, false)));
 
+            Campy.Compiler.Runtime.ParseBCL(this);
 
-
-            built_in_functions.Add("System_String_get_Chars",
-                LLVM.AddFunction(
-                    global_llvm_module,
-                    "_Z23System_String_get_CharsPhS_S_",
-                    LLVM.FunctionType(LLVM.Int64Type(),
-                        new TypeRef[]
-                        {
-                            LLVM.PointerType(LLVM.VoidType(), 0), // "this"
-                            LLVM.PointerType(LLVM.VoidType(), 0), // params in a block.
-                            LLVM.PointerType(LLVM.VoidType(), 0)  // return value block.
-                        }, false)));
 
         }
 
