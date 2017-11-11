@@ -524,7 +524,7 @@
                     System.Type f = from.GetType();
                     System.Type tr = blittable_type;
                     byte* ip = (byte*) to_buffer;
-                    var v = ((string) from).Length;
+                    var v = 2 /* size of char is 2 bytes */ * ((string) from).Length;
                     GCHandle handle = GCHandle.Alloc(from, GCHandleType.Pinned);
                     IntPtr pointer = handle.AddrOfPinnedObject();
                     byte* ip_from = (byte*) pointer;
