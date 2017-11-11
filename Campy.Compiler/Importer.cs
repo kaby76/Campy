@@ -55,12 +55,12 @@ namespace Campy.Compiler
                 "System.Void Campy.Compiler.Runtime::set_multi_array(Campy.Compiler.Runtime/A*,System.Int32,System.Int32,System.Int32)");
             _rewritten_runtime.Add("System.Int32 System.Array::GetLength(System.Int32)",
                 "System.Int32 Campy.Compiler.Runtime::get_length_multi_array(Campy.Compiler.Runtime/A*,System.Int32)");
-            _rewritten_runtime.Add("System.Double System.Math::Sin(System.Double)",
-                "System.Double Campy.Compiler.Runtime::Sine(System.Double)");
-            _rewritten_runtime.Add("System.Double System.Math::Cos(System.Double)",
-                "System.Double Campy.Compiler.Runtime::Cosine(System.Double)");
-            _rewritten_runtime.Add("System.Double System.Math::Abs(System.Double)",
-                "System.Double Campy.Compiler.Runtime::Abs(System.Double)");
+            //_rewritten_runtime.Add("System.Double System.Math::Sin(System.Double)",
+            //    "System.Double Campy.Compiler.Runtime::Sine(System.Double)");
+            //_rewritten_runtime.Add("System.Double System.Math::Cos(System.Double)",
+            //    "System.Double Campy.Compiler.Runtime::Cosine(System.Double)");
+            //_rewritten_runtime.Add("System.Double System.Math::Abs(System.Double)",
+            //    "System.Double Campy.Compiler.Runtime::Abs(System.Double)");
             _rewritten_runtime.Add("System.Void System.ThrowHelper::ThrowArgumentOutOfRangeException()",
                 "System.Void Campy.Compiler.Runtime::ThrowArgumentOutOfRangeException()");
             _rewritten_runtime.Add("System.Void System.Int32[0...,0...,0...]::Set(System.Int32,System.Int32,System.Int32,System.Int32)",
@@ -605,6 +605,30 @@ namespace Campy.Compiler
                         body.Instructions.Insert(j, new_inst);
                     }
                     else if (mr_dt != null && mr_dt.FullName == "System.String")
+                    {
+                        var fn = mr_dt.Module.Assembly.FullName;
+                        // Find in Campy.Runtime.
+                        string yopath =
+                            @"C:\Users\Kenne\Documents\Campy\Campy.Runtime\Corlib\bin\Debug\netstandard1.3\corlib.dll";
+                        Mono.Cecil.ModuleDefinition md = Mono.Cecil.ModuleDefinition.ReadModule(yopath);
+                        var sub = mr_dt.SubstituteMonoTypeReference(md);
+                        foreach (var meth in sub.Methods)
+                        {
+                            if (meth.FullName == method_reference.FullName)
+                            {
+                                method_reference = meth;
+                                name = method_reference.FullName;
+                                MethodDefinition def = method_reference.Resolve();
+                                CallSite cs = new CallSite(typeof(void).ToMonoTypeReference());
+                                body.Instructions.RemoveAt(j);
+                                var worker = body.GetILProcessor();
+                                Instruction new_inst = worker.Create(i.OpCode, def);
+                                body.Instructions.Insert(j, new_inst);
+                                break;
+                            }
+                        }
+                    }
+                    else if (mr_dt != null && mr_dt.FullName == "System.Math")
                     {
                         var fn = mr_dt.Module.Assembly.FullName;
                         // Find in Campy.Runtime.

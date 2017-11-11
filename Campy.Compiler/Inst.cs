@@ -2796,34 +2796,22 @@ namespace Campy.Compiler
         {
             // Successor is fallthrough.
             object method = this.Operand;
-
             if (method as Mono.Cecil.MethodReference == null)
                 throw new Exception();
-
             Mono.Cecil.MethodReference mr = method as Mono.Cecil.MethodReference;
-
-            int xlevel_after = level_after;
-
-            // Find bb entry.
-            CFG.Vertex the_entry = this.Block._graph.Vertices.Where(node
-                =>
-            {
-                var g = this.Block._graph;
-                CFG.Vertex v = node;
-                Converter c = converter;
-                if (v.IsEntry && Converter.MethodName(v.ExpectedCalleeSignature) == mr.FullName && c.IsFullyInstantiatedNode(v))
-                    return true;
-                else return false;
-            }).ToList().FirstOrDefault();
-
-            if (the_entry == null)
-                throw new Exception();
-
-            // For return, we need to leave something on the damn stack regardless of how it's implmented.
-            int xret = (the_entry.HasScalarReturnValue || the_entry.HasStructReturnValue) ? 1 : 0;
-            // For struct returns, the number of args is artifically +1 because we need to pass a return value
-            // back from the call.
-            int xargs = the_entry.NumberOfArguments - (the_entry.HasStructReturnValue ? 1 : 0);
+            Mono.Cecil.MethodReturnType rt = mr.MethodReturnType;
+            Mono.Cecil.TypeReference tr = rt.ReturnType;
+            var ret = tr.FullName != "System.Void";
+            var HasScalarReturnValue = ret && !tr.IsStruct();
+            var HasStructReturnValue = ret && tr.IsStruct();
+            var HasThis = mr.HasThis;
+            var NumberOfArguments = mr.Parameters.Count
+                                    + (HasThis ? 1 : 0)
+                                    + (HasStructReturnValue ? 1 : 0);
+            int locals = 0;
+            var NumberOfLocals = locals;
+            int xret = (HasScalarReturnValue || HasStructReturnValue) ? 1 : 0;
+            int xargs = NumberOfArguments;
             level_after = level_after + xret - xargs;
         }
 
