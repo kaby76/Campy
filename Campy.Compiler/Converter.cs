@@ -1733,7 +1733,7 @@ namespace Campy.Compiler
                 {
                     string gpu_bcl_ptx = reader.ReadToEnd();
                     IntPtr ptr2 = Marshal.StringToHGlobalAnsi(gpu_bcl_ptx);
-                    res = Cuda.cuLinkAddData_v2(linkState, CUjitInputType.CU_JIT_INPUT_PTX, ptr2, (uint)System_String_get_Chars.Length, "", 0, op, IntPtr.Zero);
+                    res = Cuda.cuLinkAddData_v2(linkState, CUjitInputType.CU_JIT_INPUT_PTX, ptr2, (uint)gpu_bcl_ptx.Length, "", 0, op, IntPtr.Zero);
                     CheckCudaError(res);
                 }
             }
