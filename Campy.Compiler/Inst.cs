@@ -2794,7 +2794,6 @@ namespace Campy.Compiler
 
         public override void ComputeStackLevel(Converter converter, ref int level_after)
         {
-            // Successor is fallthrough.
             object method = this.Operand;
             if (method as Mono.Cecil.MethodReference == null)
                 throw new Exception();
@@ -2981,36 +2980,24 @@ namespace Campy.Compiler
 
         public override void ComputeStackLevel(Converter converter, ref int level_after)
         {
-            // Successor is fallthrough.
-            int args = 0;
-            int ret = 0;
-            args++; // The function is on the stack.
             object method = this.Operand;
-            if (method as Mono.Cecil.CallSite != null)
-            {
-                Mono.Cecil.CallSite mr = method as Mono.Cecil.CallSite;
-                if (mr.HasThis)
-                    args++;
-                args += mr.Parameters.Count;
-                if (mr.MethodReturnType != null)
-                {
-                    Mono.Cecil.MethodReturnType rt = mr.MethodReturnType;
-                    Mono.Cecil.TypeReference tr = rt.ReturnType;
-                    // Get type, may contain modifiers.
-                    if (tr.FullName.Contains(' '))
-                    {
-                        String[] sp = tr.FullName.Split(' ');
-                        if (!sp[0].Equals("System.Void"))
-                            ret++;
-                    }
-                    else
-                    {
-                        if (!tr.FullName.Equals("System.Void"))
-                            ret++;
-                    }
-                }
-            }
-            level_after = level_after + ret - args;
+            if (method as Mono.Cecil.MethodReference == null)
+                throw new Exception();
+            Mono.Cecil.MethodReference mr = method as Mono.Cecil.MethodReference;
+            Mono.Cecil.MethodReturnType rt = mr.MethodReturnType;
+            Mono.Cecil.TypeReference tr = rt.ReturnType;
+            var ret = tr.FullName != "System.Void";
+            var HasScalarReturnValue = ret && !tr.IsStruct();
+            var HasStructReturnValue = ret && tr.IsStruct();
+            var HasThis = mr.HasThis;
+            var NumberOfArguments = mr.Parameters.Count
+                                    + (HasThis ? 1 : 0)
+                                    + (HasStructReturnValue ? 1 : 0);
+            int locals = 0;
+            var NumberOfLocals = locals;
+            int xret = (HasScalarReturnValue || HasStructReturnValue) ? 1 : 0;
+            int xargs = NumberOfArguments;
+            level_after = level_after + xret - xargs;
         }
     }
 
@@ -3023,35 +3010,24 @@ namespace Campy.Compiler
 
         public override void ComputeStackLevel(Converter converter, ref int level_after)
         {
-            // Successor is fallthrough.
-            int args = 0;
-            int ret = 0;
             object method = this.Operand;
-            if (method as Mono.Cecil.MethodReference != null)
-            {
-                Mono.Cecil.MethodReference mr = method as Mono.Cecil.MethodReference;
-                if (mr.HasThis)
-                    args++;
-                args += mr.Parameters.Count;
-                if (mr.MethodReturnType != null)
-                {
-                    Mono.Cecil.MethodReturnType rt = mr.MethodReturnType;
-                    Mono.Cecil.TypeReference tr = rt.ReturnType;
-                    // Get type, may contain modifiers.
-                    if (tr.FullName.Contains(' '))
-                    {
-                        String[] sp = tr.FullName.Split(' ');
-                        if (!sp[0].Equals("System.Void"))
-                            ret++;
-                    }
-                    else
-                    {
-                        if (!tr.FullName.Equals("System.Void"))
-                            ret++;
-                    }
-                }
-            }
-            level_after = level_after + ret - args;
+            if (method as Mono.Cecil.MethodReference == null)
+                throw new Exception();
+            Mono.Cecil.MethodReference mr = method as Mono.Cecil.MethodReference;
+            Mono.Cecil.MethodReturnType rt = mr.MethodReturnType;
+            Mono.Cecil.TypeReference tr = rt.ReturnType;
+            var ret = tr.FullName != "System.Void";
+            var HasScalarReturnValue = ret && !tr.IsStruct();
+            var HasStructReturnValue = ret && tr.IsStruct();
+            var HasThis = mr.HasThis;
+            var NumberOfArguments = mr.Parameters.Count
+                                    + (HasThis ? 1 : 0)
+                                    + (HasStructReturnValue ? 1 : 0);
+            int locals = 0;
+            var NumberOfLocals = locals;
+            int xret = (HasScalarReturnValue || HasStructReturnValue) ? 1 : 0;
+            int xargs = NumberOfArguments;
+            level_after = level_after + xret - xargs;
         }
 
         public override Inst Convert(Converter converter, State state)
