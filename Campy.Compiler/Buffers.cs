@@ -390,6 +390,13 @@
                 }
                 return bytes;
             }
+            else if (type.FullName == "System.String")
+            {
+                string str = (string)obj;
+                var bytes = 0;
+                bytes = 4 + str.Length * SizeOf(typeof(UInt16));
+                return bytes;
+            }
             else
                 return SizeOf(type);
         }
@@ -643,11 +650,8 @@
                                     }
                                     else
                                     {
-                                        // THIS CODE SEEMS WRONG. TO FIELD MAY BE A POINTER,
-                                        // BUT WE NEED TO ALLOCATE A CLASS/STRUCT TO PUT ALL INTO.
-                                        // THEN COPY POINTER TO STRUCT IN THIS FIELD, WHICH IS A POINTER.
-                                        var size2 = Buffers.SizeOf(tfield.FieldType);
-                                        IntPtr gp = New(size2);
+                                        var field_size = SizeOf(field_value);
+                                        IntPtr gp = New(field_size);
                                         DeepCopyToImplementation(gp, ip);
                                         DeepCopyToImplementation(field_value, gp);
                                     }
