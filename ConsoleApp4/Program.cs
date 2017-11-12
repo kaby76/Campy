@@ -135,8 +135,9 @@ namespace ConsoleApp4
 ";
 
                 text = text + text + text + text + text + text;
+                var text2 = text + text + text + text + text + text;
                 int n = text.Length;
-                string pattern = "Declaration";
+                string pattern = "He has refused";
                 int[] found = new int[n];
                 int m = pattern.Length;
                 for (int i = 0; i < n; i++)
@@ -168,7 +169,7 @@ namespace ConsoleApp4
                     if (j == m)
                     {
                         // match found
-                        found2[i] = i;
+                        found2[i] = j;
                     }
                 });
             }

@@ -643,6 +643,9 @@
                                     }
                                     else
                                     {
+                                        // THIS CODE SEEMS WRONG. TO FIELD MAY BE A POINTER,
+                                        // BUT WE NEED TO ALLOCATE A CLASS/STRUCT TO PUT ALL INTO.
+                                        // THEN COPY POINTER TO STRUCT IN THIS FIELD, WHICH IS A POINTER.
                                         var size2 = Buffers.SizeOf(tfield.FieldType);
                                         IntPtr gp = New(size2);
                                         DeepCopyToImplementation(gp, ip);
