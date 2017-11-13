@@ -72,7 +72,7 @@ __device__ tAsyncCall* System_String_ctor_CharAIntInt(PTR pThis_, PTR pParams, P
 	U32 startIndex, length;
 
 	charArray = ((HEAP_PTR*)pParams)[0];
-	startIndex = ((U32*)pParams)[1];
+	startIndex = ((U32*)pParams)[1];  // KED == I DON'T THINK THIS IS CORRECT! THIS ASSUMES HEAP_PTR IS 32-BITS!
 	length = ((U32*)pParams)[2];
 
 	charElements = SystemArray_GetElements(charArray);
