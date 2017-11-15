@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Campy.Graphs;
 using Campy.Utils;
 using Mono.Cecil;
@@ -1170,8 +1171,6 @@ namespace Campy.Compiler
             // method. Insert code to call the BCL method.
             if (the_entry == null)
             {
-                // HARDWIRED FOR GET_CHARS!!!!!
-
                 // Call PTX method.
                 Mono.Cecil.MethodReturnType rt = mr.MethodReturnType;
                 Mono.Cecil.TypeReference tr = rt.ReturnType;
@@ -1188,59 +1187,111 @@ namespace Campy.Compiler
                 int xargs = NumberOfArguments;
 
                 var name = mr.Name;
+                var full_name = mr.FullName;
+                // For now, look for qualified name not including parameters.
+                Regex regex = new Regex(@"^[^\s]+\s+(?<name>[^\(]+).+$");
+                Match m = regex.Match(full_name);
+                if (!m.Success)
+                    throw new Exception();
+                var demangled_name = m.Groups["name"].Value;
+                demangled_name = demangled_name.Replace("::", "_");
+                demangled_name = demangled_name.Replace(".", "_");
+                
                 BuilderRef bu = this.Builder;
                 var as_name = mr.Module.Assembly.Name;
+
+                // Find the specific function called.
                 var xx = Campy.Utils.DictionaryHelpers.PartialMatch(
                     Converter.built_in_functions,
-                    "System_String_get_Chars",
+                    demangled_name,
                     (string a, string b) => a.Contains(b) || b.Contains(a));
                 ValueRef fv = xx.FirstOrDefault();
                 var t_fun = LLVM.TypeOf(fv);
                 var t_fun_con = LLVM.GetTypeContext(t_fun);
                 var context = LLVM.GetModuleContext(Converter.global_llvm_module);
 
+                tInternalCall mat = null;
+                foreach (tInternalCall ci in new CallInfo())
+                {
+                    if (ci._fn == full_name)
+                    {
+                        mat = ci;
+                        break;
+                    }
+                }
 
                 {
                     ValueRef[] args = new ValueRef[3];
 
-                    // Set up return.
-                    var alloc_type = LLVM.Int32Type();
-                    var retur = LLVM.BuildAlloca(Builder, alloc_type, ""); // Allocates struct on stack, but returns a pointer to struct.
-                    LLVM.PositionBuilderAtEnd(Builder, this.Block.BasicBlock);
+                    // Set up "this".
+                    ValueRef nul = LLVM.ConstPointerNull(LLVM.PointerType(LLVM.VoidType(), 0));
+                    Value t = new Value(nul);
+                    
+                    if (HasThis)
+                    {
+                        t = state._stack.Pop();
+                    }
 
-                    // Set up params (index).
-                    Value p = state._stack.Pop(); // index
+                    // Pop all parameters and stuff into params buffer. Note, "this" and
+                    // "return" are separate parameters in GPU BCL runtime C-functions,
+                    // unfortunately, reminates of the DNA runtime I decided to use.
                     var entry = this.Block.Entry.BasicBlock;
                     var beginning = LLVM.GetFirstInstruction(entry);
                     LLVM.PositionBuilderBefore(Builder, beginning);
-                    var @params = LLVM.BuildAlloca(Builder, alloc_type, ""); // Allocates struct on stack, but returns a pointer to struct.
+                    var parameter_type = LLVM.ArrayType(
+                        LLVM.PointerType(LLVM.Int8Type(), 0),
+                        (uint)mr.Parameters.Count * 1024);
+                    var param_buffer = LLVM.BuildAlloca(Builder,
+                        parameter_type, "");
                     LLVM.PositionBuilderAtEnd(Builder, this.Block.BasicBlock);
-                    LLVM.BuildStore(Builder, p.V, @params);
+                    int offset = 0;
+                    for (int i = mr.Parameters.Count - 1; i >= 0; i--)
+                    {
+                        Value p = state._stack.Pop();
 
-                    // Set up "this".
-                    Value t = state._stack.Pop();
+                        ValueRef[] index = new ValueRef[1] { LLVM.ConstInt(LLVM.Int32Type(), (ulong)offset, true) };
+                        
+                        var gep = LLVM.BuildGEP(Builder, param_buffer, index, "");
+
+                        ValueRef v = LLVM.BuildPointerCast(Builder,
+                            gep,
+                            LLVM.PointerType(LLVM.TypeOf(p.V), 0),
+                            "");
+
+                        ValueRef store = LLVM.BuildStore(Builder,
+                            p.V,
+                            v);
+                    }
+
+                    // Set up return. For now, always allocate buffer.
+                    // Note function return is type of third parameter.
+                    var return_type = mat._returnType.ToTypeRef();
+                    var return_buffer = LLVM.BuildAlloca(Builder, return_type, "");
+                    LLVM.PositionBuilderAtEnd(Builder, this.Block.BasicBlock);
 
                     // Set up call.
                     var pt = LLVM.BuildPointerCast(Builder, t.V,
                         LLVM.PointerType(LLVM.VoidType(), 0), "");
-                    var pp = LLVM.BuildPointerCast(Builder, @params,
+                    var pp = LLVM.BuildPointerCast(Builder, param_buffer,
                         LLVM.PointerType(LLVM.VoidType(), 0), "");
-                    var pr = LLVM.BuildPointerCast(Builder, retur,
+                    var pr = LLVM.BuildPointerCast(Builder, return_buffer,
                         LLVM.PointerType(LLVM.VoidType(), 0), "");
+
                     args[0] = pt;
                     args[1] = pp;
                     args[2] = pr;
+
                     var call = LLVM.BuildCall(Builder, fv, args, name);
 
-                    var load = LLVM.BuildLoad(Builder, retur, "");
+                    if (ret)
+                    {
+                        var load = LLVM.BuildLoad(Builder, return_buffer, "");
+                        state._stack.Push(new Value(load));
+                    }
 
-                    state._stack.Push(new Value(load));
                     if (Campy.Utils.Options.IsOn("jit_trace"))
                         System.Console.WriteLine(call.ToString());
-
                 }
-
-
 
 
                 //if (HasStructReturnValue)
