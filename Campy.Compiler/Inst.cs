@@ -1227,11 +1227,6 @@ namespace Campy.Compiler
                     ValueRef nul = LLVM.ConstPointerNull(LLVM.PointerType(LLVM.VoidType(), 0));
                     Value t = new Value(nul);
                     
-                    if (HasThis)
-                    {
-                        t = state._stack.Pop();
-                    }
-
                     // Pop all parameters and stuff into params buffer. Note, "this" and
                     // "return" are separate parameters in GPU BCL runtime C-functions,
                     // unfortunately, reminates of the DNA runtime I decided to use.
@@ -1261,6 +1256,11 @@ namespace Campy.Compiler
                         ValueRef store = LLVM.BuildStore(Builder,
                             p.V,
                             v);
+                    }
+
+                    if (HasThis)
+                    {
+                        t = state._stack.Pop();
                     }
 
                     // Set up return. For now, always allocate buffer.
