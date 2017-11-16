@@ -1127,16 +1127,17 @@ namespace Campy.Compiler
             Mono.Cecil.MethodReference mr = method as Mono.Cecil.MethodReference;
             Mono.Cecil.MethodReturnType rt = mr.MethodReturnType;
             Mono.Cecil.TypeReference tr = rt.ReturnType;
-            var ret = tr.FullName != "System.Void";
-            var HasScalarReturnValue = ret && !tr.IsStruct();
-            var HasStructReturnValue = ret && tr.IsStruct();
+            var HasReturnValue = tr.FullName != "System.Void";
+            var HasScalarReturnValue = HasReturnValue && !tr.IsStruct();
+            var HasStructReturnValue = HasReturnValue && tr.IsStruct();
             var HasThis = mr.HasThis;
+            // The stack size after the call does not depend on whether there is
+            // a struct or scalar return--those are only for how the call is implemented.
+            // The effect on the stack after the call is the same.
             var NumberOfArguments = mr.Parameters.Count
                                     + (HasThis ? 1 : 0)
-                                    + (HasStructReturnValue ? 1 : 0);
-            int locals = 0;
-            var NumberOfLocals = locals;
-            int xret = (HasScalarReturnValue || HasStructReturnValue) ? 1 : 0;
+                                    ;
+            int xret = HasReturnValue ? 1 : 0;
             int xargs = NumberOfArguments;
             level_after = level_after + xret - xargs;
         }
