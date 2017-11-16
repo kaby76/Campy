@@ -55,12 +55,6 @@ namespace Campy.Compiler
                 "System.Void Campy.Compiler.Runtime::set_multi_array(Campy.Compiler.Runtime/A*,System.Int32,System.Int32,System.Int32)");
             _rewritten_runtime.Add("System.Int32 System.Array::GetLength(System.Int32)",
                 "System.Int32 Campy.Compiler.Runtime::get_length_multi_array(Campy.Compiler.Runtime/A*,System.Int32)");
-            //_rewritten_runtime.Add("System.Double System.Math::Sin(System.Double)",
-            //    "System.Double Campy.Compiler.Runtime::Sine(System.Double)");
-            //_rewritten_runtime.Add("System.Double System.Math::Cos(System.Double)",
-            //    "System.Double Campy.Compiler.Runtime::Cosine(System.Double)");
-            //_rewritten_runtime.Add("System.Double System.Math::Abs(System.Double)",
-            //    "System.Double Campy.Compiler.Runtime::Abs(System.Double)");
             _rewritten_runtime.Add("System.Void System.ThrowHelper::ThrowArgumentOutOfRangeException()",
                 "System.Void Campy.Compiler.Runtime::ThrowArgumentOutOfRangeException()");
             _rewritten_runtime.Add("System.Void System.Int32[0...,0...,0...]::Set(System.Int32,System.Int32,System.Int32,System.Int32)",
