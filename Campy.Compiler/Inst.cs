@@ -1234,10 +1234,11 @@ namespace Campy.Compiler
                     var beginning = LLVM.GetFirstInstruction(entry);
                     LLVM.PositionBuilderBefore(Builder, beginning);
                     var parameter_type = LLVM.ArrayType(
-                        LLVM.PointerType(LLVM.Int8Type(), 0),
-                        (uint)mr.Parameters.Count * 1024);
+                        LLVM.Int8Type(),
+                        (uint)mr.Parameters.Count * 8);
                     var param_buffer = LLVM.BuildAlloca(Builder,
                         parameter_type, "");
+                    LLVM.SetAlignment(param_buffer, 64);
                     LLVM.PositionBuilderAtEnd(Builder, this.Block.BasicBlock);
                     int offset = 0;
                     for (int i = mr.Parameters.Count - 1; i >= 0; i--)
@@ -1267,6 +1268,7 @@ namespace Campy.Compiler
                     // Note function return is type of third parameter.
                     var return_type = mat._returnType.ToTypeRef();
                     var return_buffer = LLVM.BuildAlloca(Builder, return_type, "");
+                    LLVM.SetAlignment(return_buffer, 64);
                     LLVM.PositionBuilderAtEnd(Builder, this.Block.BasicBlock);
 
                     // Set up call.
