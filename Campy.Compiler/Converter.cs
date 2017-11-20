@@ -839,7 +839,7 @@ namespace Campy.Compiler
                     if (has_this)
                     {
                         var type_to_consider = method.DeclaringType;
-                        var type_to_consider_system_type = type_to_consider.ToSystemType();
+                        //var type_to_consider_system_type = type_to_consider.ToSystemType();
                         if (type_to_consider.ContainsGenericParameter)
                         {
                             // "type_to_consider" is generic, so find matching
@@ -1732,12 +1732,16 @@ namespace Campy.Compiler
                 using (StreamReader reader = new StreamReader(stream))
                 {
                     string gpu_bcl_ptx = reader.ReadToEnd();
+                    gpu_bcl_ptx = gpu_bcl_ptx.Replace(".target sm_30", ".target sm_20");
+                    gpu_bcl_ptx = gpu_bcl_ptx.Replace(".version 6.0", ".version 3.2");
+
                     IntPtr ptr2 = Marshal.StringToHGlobalAnsi(gpu_bcl_ptx);
                     res = Cuda.cuLinkAddData_v2(linkState, CUjitInputType.CU_JIT_INPUT_PTX, ptr2, (uint)gpu_bcl_ptx.Length, "", 0, op, IntPtr.Zero);
                     CheckCudaError(res);
                 }
             }
-            
+
+            ptx = ptx.Replace(".target sm_30", ".target sm_20");
             IntPtr ptr = Marshal.StringToHGlobalAnsi(ptx);
             res = Cuda.cuLinkAddData_v2(linkState, CUjitInputType.CU_JIT_INPUT_PTX, ptr, (uint)ptx.Length, "", 0, op, IntPtr.Zero);
             CheckCudaError(res);

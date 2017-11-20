@@ -29,12 +29,23 @@ namespace ConsoleApp4
         static void Main(string[] args)
         {
             StartDebugging();
-            string[] data = new string[] {"hihihihi", "there"};
-            int n = data.Length;
-            Campy.Parallel.For(n, i =>
+
+            int n = 4;
+
+            string[] data = new string[] { "hihihihi", "there" };
+            int n2 = data.Length;
+            Campy.Parallel.For(n2, i =>
             {
                 data[i] = data[i].Substring(0, 3);
             });
+
+
+
+            int[] t1 = new int[n];
+            Campy.Parallel.For(n, i => t1[i] = i);
+            for (int i = 0; i < n; ++i) if (t1[i] != i) throw new Exception();
+
+
 
 
         }

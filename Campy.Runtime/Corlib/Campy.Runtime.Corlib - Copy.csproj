@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <TargetFrameworks>netstandard1.3;net20</TargetFrameworks>
+    <RootNamespace>corlib</RootNamespace>
+    <AssemblyName>corlib</AssemblyName>
+    <NoStdLib>true</NoStdLib>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
+    <!-- RuntimeMetadataVersion must be set for Mono Cecil to work.-->
+    <RuntimeMetadataVersion>v4</RuntimeMetadataVersion>
+  </PropertyGroup>
+
+</Project>

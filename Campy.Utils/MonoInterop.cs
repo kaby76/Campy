@@ -50,6 +50,10 @@ namespace Campy.Utils
                 if (result == null) return null;
                 return result.MakeArrayType();
             }
+            else if (tr.Resolve().Module.FullyQualifiedName.Contains("\\corlib.dll"))
+            {
+                throw new Exception();
+            }
             else
             {
                 String assembly_location = Path.GetFullPath(tr.Resolve().Module.FullyQualifiedName);

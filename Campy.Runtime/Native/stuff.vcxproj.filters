@@ -1,0 +1,288 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Source Files\Internal">
+      <UniqueIdentifier>{23f5bea9-8e62-4e03-81a9-663214a8689c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Header Files\Internal">
+      <UniqueIdentifier>{de402d46-aad5-4d27-943e-c7bf54a1234e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="CLIFile.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Delegate.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="dna.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Finalizer.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Generics.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Heap.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="InternalCall.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="JIT.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="JIT_Execute.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MetaData.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MetaData_Fill.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MetaData_Search.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MethodState.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PInvoke.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RVA.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Sys.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Thread.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Type.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="System.Array.c">
+      <Filter>Source Files\Internal</Filter>
+    </ClCompile>
+    <ClCompile Include="System.Char.c">
+      <Filter>Source Files\Internal</Filter>
+    </ClCompile>
+    <ClCompile Include="System.Console.c">
+      <Filter>Source Files\Internal</Filter>
+    </ClCompile>
+    <ClCompile Include="System.DateTime.c">
+      <Filter>Source Files\Internal</Filter>
+    </ClCompile>
+    <ClCompile Include="System.Diagnostics.Debugger.c">
+      <Filter>Source Files\Internal</Filter>
+    </ClCompile>
+    <ClCompile Include="System.Enum.c">
+      <Filter>Source Files\Internal</Filter>
+    </ClCompile>
+    <ClCompile Include="System.Environment.c">
+      <Filter>Source Files\Internal</Filter>
+    </ClCompile>
+    <ClCompile Include="System.GC.c">
+      <Filter>Source Files\Internal</Filter>
+    </ClCompile>
+    <ClCompile Include="System.IO.FileInternal.c">
+      <Filter>Source Files\Internal</Filter>
+    </ClCompile>
+    <ClCompile Include="System.Math.c">
+      <Filter>Source Files\Internal</Filter>
+    </ClCompile>
+    <ClCompile Include="System.Net.Dns.c">
+      <Filter>Source Files\Internal</Filter>
+    </ClCompile>
+    <ClCompile Include="System.Net.Sockets.Socket.c">
+      <Filter>Source Files\Internal</Filter>
+    </ClCompile>
+    <ClCompile Include="System.Object.c">
+      <Filter>Source Files\Internal</Filter>
+    </ClCompile>
+    <ClCompile Include="System.Runtime.CompilerServices.RuntimeHelpers.c">
+      <Filter>Source Files\Internal</Filter>
+    </ClCompile>
+    <ClCompile Include="System.RuntimeType.c">
+      <Filter>Source Files\Internal</Filter>
+    </ClCompile>
+    <ClCompile Include="System.String.c">
+      <Filter>Source Files\Internal</Filter>
+    </ClCompile>
+    <ClCompile Include="System.Threading.Interlocked.c">
+      <Filter>Source Files\Internal</Filter>
+    </ClCompile>
+    <ClCompile Include="System.Threading.Monitor.c">
+      <Filter>Source Files\Internal</Filter>
+    </ClCompile>
+    <ClCompile Include="System.Threading.Thread.c">
+      <Filter>Source Files\Internal</Filter>
+    </ClCompile>
+    <ClCompile Include="System.Type.c">
+      <Filter>Source Files\Internal</Filter>
+    </ClCompile>
+    <ClCompile Include="System.ValueType.c">
+      <Filter>Source Files\Internal</Filter>
+    </ClCompile>
+    <ClCompile Include="System.WeakReference.c">
+      <Filter>Source Files\Internal</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="CIL_OpCodes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CLIFile.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Compat.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Config.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Delegate.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EvalStack.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Finalizer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Generics.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Heap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="InternalCall.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="JIT.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="JIT_OpCodes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MetaData.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MetaDataTables.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MethodState.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PInvoke.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PInvoke_CaseCode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PInvoke_TypeDef.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RVA.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Sys.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Thread.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Type.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Types.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="System.Array.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="System.Char.CaseConversion.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="System.Char.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="System.Char.UC_IndexRuns.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="System.Console.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="System.DateTime.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="System.Diagnostics.Debugger.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="System.Enum.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="System.Environment.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="System.GC.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="System.IO.FileInternal.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="System.Math.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="System.Net.Dns.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="System.Net.Sockets.Socket.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="System.Object.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="System.Runtime.CompilerServices.RuntimeHelpers.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="System.RuntimeType.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="System.String.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="System.Threading.Interlocked.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="System.Threading.Monitor.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="System.Threading.Thread.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="System.Type.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="System.ValueType.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="System.WeakReference.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
