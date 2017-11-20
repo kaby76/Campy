@@ -116,6 +116,7 @@ __device__ void* __cdecl gpumemcpy(
 	void const* _Src,
 	size_t      _Size
 );
+
 __device__ int gpusprintf(
 	char*       const _Buffer,
 	char const* const _Format,
