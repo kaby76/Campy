@@ -135,7 +135,7 @@ Destination:
 	s: 16-bit value
 	c: 8-bit value
 */
-__device__ static char* tableDefs[] = {
+__device__ static const char* tableDefs[] = {
 	// 0x00
 	"sxS*G*GxGx",
 	// 0x01
@@ -238,7 +238,7 @@ __device__ static char* tableDefs[] = {
 // Coded indexes use this lookup table.
 // Note that the extra 'z' characters are important!
 // (Because of how the lookup works each string must be a power of 2 in length)
-__device__ static char* codedTags[] = {
+__device__ static const char* codedTags[] = {
 	// TypeDefOrRef
 	"\x02\x01\x1Bz",
 	// HasConstant
@@ -303,12 +303,12 @@ __device__ static void* LoadSingleTable(tMetaData *pThis, tRVA *pRVA, int tableI
 	int numRows = pThis->tables.numRows[tableID];
 	int rowLen = 0; // Number of bytes taken by each row in memory.
 	int i, row;
-	char *pDef = tableDefs[tableID];
+	const char *pDef = tableDefs[tableID];
 	int defLen = (int)gpustrlen(pDef);
 	void *pRet;
 	char *pSource = (char*)*ppTable;
 	char *pDest;
-	unsigned int v;
+	unsigned long v;
 
 	// Calculate the destination row size from table definition, if it hasn't already been calculated
 	if (tableRowSize[tableID] == 0) {
@@ -382,12 +382,12 @@ __device__ static void* LoadSingleTable(tMetaData *pThis, tRVA *pRVA, int tableI
 					case '<':
 						{
 							int ofs = pDef[i] - '0';
-							char* pCoding = codedTags[ofs];
+							const char* pCoding = codedTags[ofs];
 							int tagBits = codedTagBits[ofs];
 							unsigned char tag = *pSource & ((1 << tagBits) - 1);
 							int idxIntoTableID = pCoding[tag]; // The actual table index that we're looking for
 							if (idxIntoTableID < 0 || idxIntoTableID > MAX_TABLES) {
-								printf("Error: Bad table index: 0x%02x\n", idxIntoTableID);
+								//printf("Error: Bad table index: 0x%02x\n", idxIntoTableID);
 								gpuexit(1);
 							}
 							if (pThis->tables.codedIndex32Bit[ofs]) {
@@ -410,7 +410,7 @@ __device__ static void* LoadSingleTable(tMetaData *pThis, tRVA *pRVA, int tableI
 							v = GetU16(pSource);
 							pSource += 2;
 						}
-						v = (unsigned int)(pThis->strings.pStart + v);
+						v = (unsigned long)(pThis->strings.pStart + v);
 						break;
 					case 'G': // index into GUID heap
 						if (pThis->index32BitGUID) {
@@ -420,7 +420,7 @@ __device__ static void* LoadSingleTable(tMetaData *pThis, tRVA *pRVA, int tableI
 							v = GetU16(pSource);
 							pSource += 2;
 						}
-						v = (unsigned int)(pThis->GUIDs.pGUID1 + ((v-1) * 16));
+						v = (unsigned long)(pThis->GUIDs.pGUID1 + ((v-1) * 16));
 						break;
 					case 'B': // index into BLOB heap
 						if (pThis->index32BitBlob) {
@@ -430,15 +430,15 @@ __device__ static void* LoadSingleTable(tMetaData *pThis, tRVA *pRVA, int tableI
 							v = GetU16(pSource);
 							pSource += 2;
 						}
-						v = (unsigned int)(pThis->blobs.pStart + v);
+						v = (unsigned long)(pThis->blobs.pStart + v);
 						break;
 					case '^': // RVA to convert to pointer
 						v = GetU32(pSource);
 						pSource += 4;
-						v = (unsigned int)RVA_FindData(pRVA, v);
+						v = (unsigned long)RVA_FindData(pRVA, v);
 						break;
 					case 'm': // Pointer to this metadata
-						v = (unsigned int)pThis;
+						v = (unsigned long)pThis;
 						break;
 					case 'l': // Is this the last table entry?
 						v = (row == numRows - 1);
@@ -510,7 +510,7 @@ __device__ void MetaData_LoadTables(tMetaData *pThis, tRVA *pRVA, void *pStream,
 
 	// Determine if each coded index lookup type needs to use 16 or 32 bit indexes
 	for (i=0; i<13; i++) {
-		char* pCoding = codedTags[i];
+		const char* pCoding = codedTags[i];
 		int tagBits = codedTagBits[i];
 		// Discover max table size
 		unsigned int maxTableLen = 0;
@@ -536,7 +536,7 @@ __device__ void MetaData_LoadTables(tMetaData *pThis, tRVA *pRVA, void *pStream,
 	for (i=0; i<MAX_TABLES; i++) {
 		if (pThis->tables.numRows[i] > 0) {
 			if (i*4 >= sizeof(tableDefs) || tableDefs[i] == NULL) {
-				printf("No table definition for MetaData table 0x%02x\n", i);
+				//printf("No table definition for MetaData table 0x%02x\n", i);
 				gpuexit(1);
 			}
 			pThis->tables.data[i] = LoadSingleTable(pThis, pRVA, i, &pTable);

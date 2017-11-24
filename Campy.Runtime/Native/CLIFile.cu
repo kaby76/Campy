@@ -85,22 +85,22 @@ __device__ static void* LoadFileFromDisk(char *pFileName) {
 	int f;
 	void *pData = NULL;
 
-	f = open(pFileName, O_RDONLY|O_BINARY);
-	if (f >= 0) {
-		int len;
-		len = lseek(f, 0, SEEK_END);
-		lseek(f, 0, SEEK_SET);
-		// TODO: Change to use mmap() or windows equivilent
-		pData = mallocForever(len);
-		if (pData != NULL) {
-			int r = read(f, pData, len);
-			if (r != len) {
-				free(pData);
-				pData = NULL;
-			}
-		}
-		close(f);
-	}
+	//f = open(pFileName, O_RDONLY|O_BINARY);
+	//if (f >= 0) {
+	//	int len;
+	//	len = lseek(f, 0, SEEK_END);
+	//	lseek(f, 0, SEEK_SET);
+	//	// TODO: Change to use mmap() or windows equivilent
+	//	pData = mallocForever(len);
+	//	if (pData != NULL) {
+	//		int r = read(f, pData, len);
+	//		if (r != len) {
+	//			free(pData);
+	//			pData = NULL;
+	//		}
+	//	}
+	//	close(f);
+	//}
 
 	return pData;
 }

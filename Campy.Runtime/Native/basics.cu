@@ -1,4 +1,7 @@
-#include "Compat.h"
+//#include "Compat.h"
+#include "cuda.h"
+#include <cstdarg>
+#include "Gvsnprintf.h"
 
 __device__ int gpustrcmp(
 	char const* _Str1,
@@ -24,6 +27,7 @@ __device__ int gpustrncmp(
 	size_t      _MaxCount
 )
 {
+
     return 0;
 }
 
@@ -33,7 +37,17 @@ __device__ int  gpumemcmp(
 	size_t      _Size
 )
 {
-    return 0;
+	unsigned char u1, u2;
+	unsigned char * s1 = (unsigned char *)_Buf1;
+	unsigned char * s2 = (unsigned char *)_Buf2;
+	for (; _Size--; s1++, s1++) {
+		u1 = *s1;
+		u2 = *s2;
+		if (u1 != u2) {
+			return (u1 - u2);
+		}
+	}
+	return 0;
 }
 
 __device__ void* __cdecl gpumemcpy(
@@ -42,7 +56,7 @@ __device__ void* __cdecl gpumemcpy(
 	size_t      _Size
 )
 {
-    return NULL;
+	return memcpy(_Dst, _Src, _Size);
 }
 
 
@@ -51,9 +65,13 @@ __device__ int gpusprintf(
 	char const* const _Format,
 	...)
 {
-    return 0;
+	va_list arg;
+	int done;
+	va_start(arg, _Format);
+	done = Gvsprintf(_Buffer, _Format, arg);
+	va_end(arg);
+	return done;
 }
-
 
 __device__ char*  gpustrchr(char* const _String, int const _Ch)
 {
@@ -66,7 +84,10 @@ __device__ void* __cdecl gpurealloc(
 	size_t _Size
 )
 {
-    return NULL;
+	void * result = malloc(_Size);
+	memcpy(result, _Block, _Size);
+	free(_Block);
+    return result;
 }
 
 
@@ -74,7 +95,8 @@ __device__ void* gpumalloc(
 	size_t _Size
 )
 {
-    return NULL;
+	void * result = malloc(_Size);
+    return result;
 }
 
 
@@ -91,7 +113,7 @@ __device__ void* gpumemset(
 	size_t _Size
 )
 {
-    return NULL;
+	return memset(_Dst, _Val, _Size);
 }
 
 

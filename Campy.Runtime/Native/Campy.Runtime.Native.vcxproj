@@ -98,6 +98,7 @@
       </AdditionalCompilerOptions>
       <Keep>true</Keep>
       <GPUDebugInfo>false</GPUDebugInfo>
+      <CodeGeneration>compute_35,sm_35</CodeGeneration>
     </CudaCompile>
     <CudaLink>
       <AdditionalLibraryDirectories>
@@ -142,6 +143,7 @@
     <ClInclude Include="EvalStack.h" />
     <ClInclude Include="Finalizer.h" />
     <ClInclude Include="Generics.h" />
+    <ClInclude Include="Gvsnprintf.h" />
     <ClInclude Include="Heap.h" />
     <ClInclude Include="InternalCall.h" />
     <ClInclude Include="JIT.h" />
@@ -334,6 +336,7 @@
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">64</TargetMachinePlatform>
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">64</TargetMachinePlatform>
     </CudaCompile>
+    <CudaCompile Include="Gvsnprintf.cu" />
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="JIT.cu">

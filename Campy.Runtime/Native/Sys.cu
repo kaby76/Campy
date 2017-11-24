@@ -24,7 +24,7 @@
 #include "MetaData.h"
 #include "Types.h"
 
-__device__ void Crash(char *pMsg, ...) {
+__device__ void Crash(const char *pMsg, ...) {
 //	va_list va;
 //
 //	printf("\n\n*** CRASH ***\n");
@@ -49,7 +49,7 @@ __device__ void Crash(char *pMsg, ...) {
 
 __device__ U32 logLevel = 0;
 
-__device__ void log_f(U32 level, char *pMsg, ...) {
+__device__ void log_f(U32 level, const char *pMsg, ...) {
 	//va_list va;
 
 	//if (logLevel >= level) {

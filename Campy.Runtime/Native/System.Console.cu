@@ -45,7 +45,7 @@ __device__ tAsyncCall* System_Console_Write(PTR pThis_, PTR pParams, PTR pReturn
 				str8[i] = c?c:'?';
 			}
 			str8[i] = 0;
-			printf(str8);
+//			printf(str8);
 			strLen -= thisLen;
 			start += thisLen;
 		}

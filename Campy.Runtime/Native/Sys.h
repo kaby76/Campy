@@ -40,10 +40,10 @@ void* mallocTrace(int s, char *pFile, int line);
 
 #include "MetaData.h"
 
-__device__ void Crash(char *pMsg, ...);
+__device__ void Crash(const char *pMsg, ...);
 
 extern __device__ U32 logLevel;
-__device__ void log_f(U32 level, char *pMsg, ...);
+__device__ void log_f(U32 level, const char *pMsg, ...);
 
 __device__ char* Sys_GetMethodDesc(tMD_MethodDef *pMethod);
 

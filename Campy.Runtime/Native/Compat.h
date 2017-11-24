@@ -24,9 +24,9 @@
 #include <cuda.h>
 
 
-#include <stdio.h>
-#include <stdarg.h>
-#include <fcntl.h>
+//#include <stdio.h>
+//#include <stdarg.h>
+//#include <fcntl.h>
 
 #ifdef WIN32
 #include <winsock2.h> // winsock2.h must be included before windows.h

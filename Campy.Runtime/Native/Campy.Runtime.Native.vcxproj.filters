@@ -156,6 +156,9 @@
     <ClInclude Include="Types.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Gvsnprintf.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="CLIFile.cu" />
@@ -198,6 +201,7 @@
     <CudaCompile Include="JIT_Execute.cu" />
     <CudaCompile Include="JIT.cu" />
     <CudaCompile Include="basics.cu" />
+    <CudaCompile Include="Gvsnprintf.cu" />
   </ItemGroup>
   <ItemGroup>
     <None Include="x64\Debug\Finalizer.ptx">
@@ -311,10 +315,6 @@
     <None Include="x64\Debug\Type.ptx">
       <Filter>Resource Files</Filter>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="x64\Debug\Delegate.ptx">
-      <Filter>Resource Files</Filter>
-    </Text>
+    <None Include="x64\Debug\Delegate.ptx" />
   </ItemGroup>
 </Project>

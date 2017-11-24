@@ -7,10 +7,10 @@
 //
 
 .version 6.0
-.target sm_30
+.target sm_35
 .address_size 64
 
-	// .globl	_Z18MethodState_DirectP8tThread_P14tMD_MethodDef_P13tMethodState_j
+	// .weak	cudaMalloc
 .extern .func  (.param .b64 func_retval0) _Z32MetaData_GetTypeDefFromMethodDefP14tMD_MethodDef_
 (
 	.param .b64 _Z32MetaData_GetTypeDefFromMethodDefP14tMD_MethodDef__param_0
@@ -60,6 +60,95 @@
 )
 ;
 
+.weak .func  (.param .b32 func_retval0) cudaMalloc(
+	.param .b64 cudaMalloc_param_0,
+	.param .b64 cudaMalloc_param_1
+)
+{
+	.reg .b32 	%r<2>;
+
+
+	mov.u32 	%r1, 30;
+	st.param.b32	[func_retval0+0], %r1;
+	ret;
+}
+
+	// .weak	cudaFuncGetAttributes
+.weak .func  (.param .b32 func_retval0) cudaFuncGetAttributes(
+	.param .b64 cudaFuncGetAttributes_param_0,
+	.param .b64 cudaFuncGetAttributes_param_1
+)
+{
+	.reg .b32 	%r<2>;
+
+
+	mov.u32 	%r1, 30;
+	st.param.b32	[func_retval0+0], %r1;
+	ret;
+}
+
+	// .weak	cudaDeviceGetAttribute
+.weak .func  (.param .b32 func_retval0) cudaDeviceGetAttribute(
+	.param .b64 cudaDeviceGetAttribute_param_0,
+	.param .b32 cudaDeviceGetAttribute_param_1,
+	.param .b32 cudaDeviceGetAttribute_param_2
+)
+{
+	.reg .b32 	%r<2>;
+
+
+	mov.u32 	%r1, 30;
+	st.param.b32	[func_retval0+0], %r1;
+	ret;
+}
+
+	// .weak	cudaGetDevice
+.weak .func  (.param .b32 func_retval0) cudaGetDevice(
+	.param .b64 cudaGetDevice_param_0
+)
+{
+	.reg .b32 	%r<2>;
+
+
+	mov.u32 	%r1, 30;
+	st.param.b32	[func_retval0+0], %r1;
+	ret;
+}
+
+	// .weak	cudaOccupancyMaxActiveBlocksPerMultiprocessor
+.weak .func  (.param .b32 func_retval0) cudaOccupancyMaxActiveBlocksPerMultiprocessor(
+	.param .b64 cudaOccupancyMaxActiveBlocksPerMultiprocessor_param_0,
+	.param .b64 cudaOccupancyMaxActiveBlocksPerMultiprocessor_param_1,
+	.param .b32 cudaOccupancyMaxActiveBlocksPerMultiprocessor_param_2,
+	.param .b64 cudaOccupancyMaxActiveBlocksPerMultiprocessor_param_3
+)
+{
+	.reg .b32 	%r<2>;
+
+
+	mov.u32 	%r1, 30;
+	st.param.b32	[func_retval0+0], %r1;
+	ret;
+}
+
+	// .weak	cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags
+.weak .func  (.param .b32 func_retval0) cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags(
+	.param .b64 cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags_param_0,
+	.param .b64 cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags_param_1,
+	.param .b32 cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags_param_2,
+	.param .b64 cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags_param_3,
+	.param .b32 cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags_param_4
+)
+{
+	.reg .b32 	%r<2>;
+
+
+	mov.u32 	%r1, 30;
+	st.param.b32	[func_retval0+0], %r1;
+	ret;
+}
+
+	// .globl	_Z18MethodState_DirectP8tThread_P14tMD_MethodDef_P13tMethodState_j
 .visible .func  (.param .b64 func_retval0) _Z18MethodState_DirectP8tThread_P14tMD_MethodDef_P13tMethodState_j(
 	.param .b64 _Z18MethodState_DirectP8tThread_P14tMD_MethodDef_P13tMethodState_j_param_0,
 	.param .b64 _Z18MethodState_DirectP8tThread_P14tMD_MethodDef_P13tMethodState_j_param_1,
@@ -80,7 +169,7 @@
 	add.s64 	%rd1, %rd26, 64;
 	ld.u8 	%rs1, [%rd26+64];
 	setp.ne.s16	%p1, %rs1, 0;
-	@%p1 bra 	BB0_3;
+	@%p1 bra 	BB6_3;
 
 	// Callseq Start 0
 	{
@@ -100,7 +189,7 @@
 	}// Callseq End 0
 	ld.u8 	%rs2, [%rd2+52];
 	setp.ne.s16	%p2, %rs2, 0;
-	@%p2 bra 	BB0_3;
+	@%p2 bra 	BB6_3;
 
 	mov.u64 	%rd17, 0;
 	// Callseq Start 1
@@ -124,7 +213,7 @@
 	//{
 	}// Callseq End 1
 
-BB0_3:
+BB6_3:
 	mov.u32 	%r2, 104;
 	// Callseq Start 2
 	{
@@ -153,7 +242,7 @@ BB0_3:
 	st.u64 	[%rd3+8], %rd26;
 	ld.u64 	%rd27, [%rd1+-8];
 	setp.ne.s64	%p3, %rd27, 0;
-	@%p3 bra 	BB0_5;
+	@%p3 bra 	BB6_5;
 
 	mov.u32 	%r3, 0;
 	// Callseq Start 3
@@ -176,7 +265,7 @@ BB0_3:
 	ld.u64 	%rd27, [%rd1+-8];
 	ld.u64 	%rd26, [%rd3+8];
 
-BB0_5:
+BB6_5:
 	st.u64 	[%rd3+16], %rd27;
 	mov.u32 	%r4, 0;
 	st.u32 	[%rd3+24], %r4;
@@ -236,17 +325,17 @@ BB0_5:
 	add.s32 	%r11, %r9, %r10;
 	cvt.u64.u32	%rd11, %r11;
 	setp.eq.s32	%p4, %r11, 0;
-	@%p4 bra 	BB0_7;
+	@%p4 bra 	BB6_7;
 
-BB0_6:
+BB6_6:
 	add.s64 	%rd25, %rd10, %rd28;
 	mov.u16 	%rs3, 0;
 	st.u8 	[%rd25], %rs3;
 	add.s64 	%rd28, %rd28, 1;
 	setp.lt.u64	%p5, %rd28, %rd11;
-	@%p5 bra 	BB0_6;
+	@%p5 bra 	BB6_6;
 
-BB0_7:
+BB6_7:
 	st.param.b64	[func_retval0+0], %rd3;
 	ret;
 }
@@ -298,7 +387,7 @@ BB0_7:
 	add.s64 	%rd2, %rd28, 64;
 	ld.u8 	%rs1, [%rd28+64];
 	setp.ne.s16	%p1, %rs1, 0;
-	@%p1 bra 	BB1_3;
+	@%p1 bra 	BB7_3;
 
 	// Callseq Start 7
 	{
@@ -318,7 +407,7 @@ BB0_7:
 	}// Callseq End 7
 	ld.u8 	%rs2, [%rd3+52];
 	setp.ne.s16	%p2, %rs2, 0;
-	@%p2 bra 	BB1_3;
+	@%p2 bra 	BB7_3;
 
 	mov.u64 	%rd19, 0;
 	// Callseq Start 8
@@ -342,7 +431,7 @@ BB0_7:
 	//{
 	}// Callseq End 8
 
-BB1_3:
+BB7_3:
 	mov.u32 	%r2, 104;
 	// Callseq Start 9
 	{
@@ -370,7 +459,7 @@ BB1_3:
 	st.u64 	[%rd4+8], %rd28;
 	ld.u64 	%rd29, [%rd2+-8];
 	setp.ne.s64	%p3, %rd29, 0;
-	@%p3 bra 	BB1_5;
+	@%p3 bra 	BB7_5;
 
 	mov.u32 	%r3, 0;
 	// Callseq Start 10
@@ -393,7 +482,7 @@ BB1_3:
 	ld.u64 	%rd29, [%rd2+-8];
 	ld.u64 	%rd28, [%rd4+8];
 
-BB1_5:
+BB7_5:
 	st.u64 	[%rd4+16], %rd29;
 	mov.u32 	%r4, 0;
 	st.u32 	[%rd4+24], %r4;
@@ -453,17 +542,17 @@ BB1_5:
 	add.s32 	%r11, %r9, %r10;
 	cvt.u64.u32	%rd12, %r11;
 	setp.eq.s32	%p4, %r11, 0;
-	@%p4 bra 	BB1_7;
+	@%p4 bra 	BB7_7;
 
-BB1_6:
+BB7_6:
 	add.s64 	%rd27, %rd11, %rd30;
 	mov.u16 	%rs3, 0;
 	st.u8 	[%rd27], %rs3;
 	add.s64 	%rd30, %rd30, 1;
 	setp.lt.u64	%p5, %rd30, %rd12;
-	@%p5 bra 	BB1_6;
+	@%p5 bra 	BB7_6;
 
-BB1_7:
+BB7_7:
 	st.param.b64	[func_retval0+0], %rd4;
 	ret;
 }
@@ -484,7 +573,7 @@ BB1_7:
 	add.s64 	%rd2, %rd1, 64;
 	ld.u64 	%rd3, [%rd1+64];
 	setp.eq.s64	%p1, %rd3, 0;
-	@%p1 bra 	BB2_2;
+	@%p1 bra 	BB8_2;
 
 	// Callseq Start 13
 	{
@@ -501,10 +590,10 @@ BB1_7:
 	//{
 	}// Callseq End 13
 
-BB2_2:
+BB8_2:
 	ld.u64 	%rd4, [%rd2+16];
 	setp.eq.s64	%p2, %rd4, 0;
-	@%p2 bra 	BB2_4;
+	@%p2 bra 	BB8_4;
 
 	// Callseq Start 14
 	{
@@ -521,7 +610,7 @@ BB2_2:
 	//{
 	}// Callseq End 14
 
-BB2_4:
+BB8_4:
 	// Callseq Start 15
 	{
 	.reg .b32 temp_param_reg;

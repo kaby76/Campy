@@ -30,22 +30,42 @@ namespace ConsoleApp4
         {
             StartDebugging();
 
+            //int n = 4;
+
+            //string[] data = new string[] { "hihihihi", "there" };
+            //int n2 = data.Length;
+            //Campy.Parallel.For(n2, i =>
+            //{
+            //    data[i] = data[i].Substring(0, 3);
+            //});
+
+
+
+            //int[] t1 = new int[n];
+            //Campy.Parallel.For(n, i => t1[i] = i);
+            //for (int i = 0; i < n; ++i) if (t1[i] != i) throw new Exception();
+
+
             int n = 4;
 
-            string[] data = new string[] { "hihihihi", "there" };
-            int n2 = data.Length;
-            Campy.Parallel.For(n2, i =>
+            var t1 = new List<int>();
+            for (int i = 0; i < n; ++i) t1.Add(0);
+            Campy.Parallel.For(n, i =>
             {
-                data[i] = data[i].Substring(0, 3);
+                if (i % 2 == 0)
+                    t1[i] = i * 20;
+                else
+                    t1[i] = i * 30;
             });
-
-
-
-            int[] t1 = new int[n];
-            Campy.Parallel.For(n, i => t1[i] = i);
-            for (int i = 0; i < n; ++i) if (t1[i] != i) throw new Exception();
-
-
+            for (int i = 0; i < n; ++i)
+                if (i % 2 == 0)
+                {
+                    if (t1[i] != i * 20) throw new Exception();
+                }
+                else
+                {
+                    if (t1[i] != i * 30) throw new Exception();
+                }
 
 
         }

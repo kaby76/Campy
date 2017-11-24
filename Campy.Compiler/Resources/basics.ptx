@@ -7,11 +7,117 @@
 //
 
 .version 6.0
-.target sm_30
+.target sm_35
 .address_size 64
 
-	// .globl	_Z9gpustrcmpPKcS0_
+	// .weak	cudaMalloc
+.extern .func  (.param .b32 func_retval0) _Z9GvsprintfPcPKcS_
+(
+	.param .b64 _Z9GvsprintfPcPKcS__param_0,
+	.param .b64 _Z9GvsprintfPcPKcS__param_1,
+	.param .b64 _Z9GvsprintfPcPKcS__param_2
+)
+;
+.extern .func  (.param .b64 func_retval0) malloc
+(
+	.param .b64 malloc_param_0
+)
+;
+.extern .func free
+(
+	.param .b64 free_param_0
+)
+;
 
+.weak .func  (.param .b32 func_retval0) cudaMalloc(
+	.param .b64 cudaMalloc_param_0,
+	.param .b64 cudaMalloc_param_1
+)
+{
+	.reg .b32 	%r<2>;
+
+
+	mov.u32 	%r1, 30;
+	st.param.b32	[func_retval0+0], %r1;
+	ret;
+}
+
+	// .weak	cudaFuncGetAttributes
+.weak .func  (.param .b32 func_retval0) cudaFuncGetAttributes(
+	.param .b64 cudaFuncGetAttributes_param_0,
+	.param .b64 cudaFuncGetAttributes_param_1
+)
+{
+	.reg .b32 	%r<2>;
+
+
+	mov.u32 	%r1, 30;
+	st.param.b32	[func_retval0+0], %r1;
+	ret;
+}
+
+	// .weak	cudaDeviceGetAttribute
+.weak .func  (.param .b32 func_retval0) cudaDeviceGetAttribute(
+	.param .b64 cudaDeviceGetAttribute_param_0,
+	.param .b32 cudaDeviceGetAttribute_param_1,
+	.param .b32 cudaDeviceGetAttribute_param_2
+)
+{
+	.reg .b32 	%r<2>;
+
+
+	mov.u32 	%r1, 30;
+	st.param.b32	[func_retval0+0], %r1;
+	ret;
+}
+
+	// .weak	cudaGetDevice
+.weak .func  (.param .b32 func_retval0) cudaGetDevice(
+	.param .b64 cudaGetDevice_param_0
+)
+{
+	.reg .b32 	%r<2>;
+
+
+	mov.u32 	%r1, 30;
+	st.param.b32	[func_retval0+0], %r1;
+	ret;
+}
+
+	// .weak	cudaOccupancyMaxActiveBlocksPerMultiprocessor
+.weak .func  (.param .b32 func_retval0) cudaOccupancyMaxActiveBlocksPerMultiprocessor(
+	.param .b64 cudaOccupancyMaxActiveBlocksPerMultiprocessor_param_0,
+	.param .b64 cudaOccupancyMaxActiveBlocksPerMultiprocessor_param_1,
+	.param .b32 cudaOccupancyMaxActiveBlocksPerMultiprocessor_param_2,
+	.param .b64 cudaOccupancyMaxActiveBlocksPerMultiprocessor_param_3
+)
+{
+	.reg .b32 	%r<2>;
+
+
+	mov.u32 	%r1, 30;
+	st.param.b32	[func_retval0+0], %r1;
+	ret;
+}
+
+	// .weak	cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags
+.weak .func  (.param .b32 func_retval0) cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags(
+	.param .b64 cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags_param_0,
+	.param .b64 cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags_param_1,
+	.param .b32 cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags_param_2,
+	.param .b64 cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags_param_3,
+	.param .b32 cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags_param_4
+)
+{
+	.reg .b32 	%r<2>;
+
+
+	mov.u32 	%r1, 30;
+	st.param.b32	[func_retval0+0], %r1;
+	ret;
+}
+
+	// .globl	_Z9gpustrcmpPKcS0_
 .visible .func  (.param .b32 func_retval0) _Z9gpustrcmpPKcS0_(
 	.param .b64 _Z9gpustrcmpPKcS0__param_0,
 	.param .b64 _Z9gpustrcmpPKcS0__param_1
@@ -71,11 +177,42 @@
 	.param .b64 _Z9gpumemcmpPKvS0_y_param_2
 )
 {
-	.reg .b32 	%r<2>;
+	.reg .pred 	%p<4>;
+	.reg .b16 	%rs<4>;
+	.reg .b32 	%r<9>;
+	.reg .b64 	%rd<10>;
 
 
-	mov.u32 	%r1, 0;
-	st.param.b32	[func_retval0+0], %r1;
+	ld.param.u64 	%rd9, [_Z9gpumemcmpPKvS0_y_param_0];
+	ld.param.u64 	%rd6, [_Z9gpumemcmpPKvS0_y_param_1];
+	ld.param.u64 	%rd8, [_Z9gpumemcmpPKvS0_y_param_2];
+	setp.eq.s64	%p1, %rd8, 0;
+	mov.u32 	%r8, 0;
+	@%p1 bra 	BB10_5;
+
+	ld.u8 	%rs1, [%rd6];
+	cvt.u32.u16	%r5, %rs1;
+	and.b32  	%r1, %r5, 255;
+
+BB10_2:
+	add.s64 	%rd8, %rd8, -1;
+	ld.u8 	%rs2, [%rd9];
+	setp.eq.s16	%p2, %rs2, %rs1;
+	@%p2 bra 	BB10_4;
+	bra.uni 	BB10_3;
+
+BB10_4:
+	add.s64 	%rd9, %rd9, 2;
+	setp.ne.s64	%p3, %rd8, 0;
+	@%p3 bra 	BB10_2;
+	bra.uni 	BB10_5;
+
+BB10_3:
+	cvt.u32.u16	%r6, %rs2;
+	sub.s32 	%r8, %r6, %r1;
+
+BB10_5:
+	st.param.b32	[func_retval0+0], %r8;
 	ret;
 }
 
@@ -86,11 +223,29 @@
 	.param .b64 _Z9gpumemcpyPvPKvy_param_2
 )
 {
-	.reg .b64 	%rd<2>;
+	.reg .pred 	%p<3>;
+	.reg .b16 	%rs<2>;
+	.reg .b64 	%rd<10>;
 
 
-	mov.u64 	%rd1, 0;
-	st.param.b64	[func_retval0+0], %rd1;
+	ld.param.u64 	%rd3, [_Z9gpumemcpyPvPKvy_param_0];
+	ld.param.u64 	%rd4, [_Z9gpumemcpyPvPKvy_param_1];
+	ld.param.u64 	%rd5, [_Z9gpumemcpyPvPKvy_param_2];
+	mov.u64 	%rd9, 0;
+	setp.eq.s64	%p1, %rd5, 0;
+	@%p1 bra 	BB11_2;
+
+BB11_1:
+	add.s64 	%rd7, %rd4, %rd9;
+	ld.u8 	%rs1, [%rd7];
+	add.s64 	%rd8, %rd3, %rd9;
+	st.u8 	[%rd8], %rs1;
+	add.s64 	%rd9, %rd9, 1;
+	setp.lt.u64	%p2, %rd9, %rd5;
+	@%p2 bra 	BB11_1;
+
+BB11_2:
+	st.param.b64	[func_retval0+0], %rd3;
 	ret;
 }
 
@@ -102,9 +257,36 @@
 )
 {
 	.reg .b32 	%r<2>;
+	.reg .b64 	%rd<8>;
 
 
-	mov.u32 	%r1, 0;
+	ld.param.u64 	%rd1, [_Z10gpusprintfPcPKcz_param_0];
+	ld.param.u64 	%rd2, [_Z10gpusprintfPcPKcz_param_1];
+	mov.u64 	%rd5, %VAParam;
+	mov.u64 	%rd7, %rd5;
+	mov.u64 	%rd6, %rd7;
+	// Callseq Start 0
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b64 param0;
+	st.param.b64	[param0+0], %rd1;
+	.param .b64 param1;
+	st.param.b64	[param1+0], %rd2;
+	.param .b64 param2;
+	st.param.b64	[param2+0], %rd6;
+	.param .b32 retval0;
+	call.uni (retval0), 
+	_Z9GvsprintfPcPKcS_, 
+	(
+	param0, 
+	param1, 
+	param2
+	);
+	ld.param.b32	%r1, [retval0+0];
+	
+	//{
+	}// Callseq End 0
 	st.param.b32	[func_retval0+0], %r1;
 	ret;
 }
@@ -129,10 +311,57 @@
 	.param .b64 _Z10gpureallocPvy_param_1
 )
 {
-	.reg .b64 	%rd<2>;
+	.reg .pred 	%p<3>;
+	.reg .b16 	%rs<2>;
+	.reg .b64 	%rd<10>;
 
 
-	mov.u64 	%rd1, 0;
+	ld.param.u64 	%rd4, [_Z10gpureallocPvy_param_0];
+	ld.param.u64 	%rd5, [_Z10gpureallocPvy_param_1];
+	// Callseq Start 1
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b64 param0;
+	st.param.b64	[param0+0], %rd5;
+	.param .b64 retval0;
+	call.uni (retval0), 
+	malloc, 
+	(
+	param0
+	);
+	ld.param.b64	%rd1, [retval0+0];
+	
+	//{
+	}// Callseq End 1
+	mov.u64 	%rd9, 0;
+	setp.eq.s64	%p1, %rd5, 0;
+	@%p1 bra 	BB14_2;
+
+BB14_1:
+	add.s64 	%rd7, %rd4, %rd9;
+	ld.u8 	%rs1, [%rd7];
+	add.s64 	%rd8, %rd1, %rd9;
+	st.u8 	[%rd8], %rs1;
+	add.s64 	%rd9, %rd9, 1;
+	setp.lt.u64	%p2, %rd9, %rd5;
+	@%p2 bra 	BB14_1;
+
+BB14_2:
+	// Callseq Start 2
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b64 param0;
+	st.param.b64	[param0+0], %rd4;
+	call.uni 
+	free, 
+	(
+	param0
+	);
+	
+	//{
+	}// Callseq End 2
 	st.param.b64	[func_retval0+0], %rd1;
 	ret;
 }
@@ -142,11 +371,27 @@
 	.param .b64 _Z9gpumallocy_param_0
 )
 {
-	.reg .b64 	%rd<2>;
+	.reg .b64 	%rd<3>;
 
 
-	mov.u64 	%rd1, 0;
-	st.param.b64	[func_retval0+0], %rd1;
+	ld.param.u64 	%rd1, [_Z9gpumallocy_param_0];
+	// Callseq Start 3
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b64 param0;
+	st.param.b64	[param0+0], %rd1;
+	.param .b64 retval0;
+	call.uni (retval0), 
+	malloc, 
+	(
+	param0
+	);
+	ld.param.b64	%rd2, [retval0+0];
+	
+	//{
+	}// Callseq End 3
+	st.param.b64	[func_retval0+0], %rd2;
 	ret;
 }
 
@@ -171,11 +416,27 @@
 	.param .b64 _Z9gpumemsetPviy_param_2
 )
 {
-	.reg .b64 	%rd<2>;
+	.reg .pred 	%p<3>;
+	.reg .b16 	%rs<2>;
+	.reg .b64 	%rd<8>;
 
 
-	mov.u64 	%rd1, 0;
-	st.param.b64	[func_retval0+0], %rd1;
+	ld.param.u64 	%rd3, [_Z9gpumemsetPviy_param_0];
+	ld.param.u64 	%rd4, [_Z9gpumemsetPviy_param_2];
+	ld.param.u8 	%rs1, [_Z9gpumemsetPviy_param_1];
+	mov.u64 	%rd7, 0;
+	setp.eq.s64	%p1, %rd4, 0;
+	@%p1 bra 	BB17_2;
+
+BB17_1:
+	add.s64 	%rd6, %rd3, %rd7;
+	st.u8 	[%rd6], %rs1;
+	add.s64 	%rd7, %rd7, 1;
+	setp.lt.u64	%p2, %rd7, %rd4;
+	@%p2 bra 	BB17_1;
+
+BB17_2:
+	st.param.b64	[func_retval0+0], %rd3;
 	ret;
 }
 

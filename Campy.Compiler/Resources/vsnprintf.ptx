@@ -11,11 +11,6 @@
 .address_size 64
 
 	// .weak	cudaMalloc
-.extern .func  (.param .b64 func_retval0) _Z12Heap_GetTypePh
-(
-	.param .b64 _Z12Heap_GetTypePh_param_0
-)
-;
 
 .weak .func  (.param .b32 func_retval0) cudaMalloc(
 	.param .b64 cudaMalloc_param_0,
@@ -102,63 +97,6 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
-	ret;
-}
-
-	// .globl	_Z47System_Runtime_CompilerServices_InitializeArrayPhS_S_
-.visible .func  (.param .b64 func_retval0) _Z47System_Runtime_CompilerServices_InitializeArrayPhS_S_(
-	.param .b64 _Z47System_Runtime_CompilerServices_InitializeArrayPhS_S__param_0,
-	.param .b64 _Z47System_Runtime_CompilerServices_InitializeArrayPhS_S__param_1,
-	.param .b64 _Z47System_Runtime_CompilerServices_InitializeArrayPhS_S__param_2
-)
-{
-	.reg .pred 	%p<3>;
-	.reg .b16 	%rs<2>;
-	.reg .b32 	%r<4>;
-	.reg .b64 	%rd<15>;
-
-
-	ld.param.u64 	%rd7, [_Z47System_Runtime_CompilerServices_InitializeArrayPhS_S__param_1];
-	ld.u64 	%rd8, [%rd7];
-	ld.u64 	%rd1, [%rd7+8];
-	// Callseq Start 0
-	{
-	.reg .b32 temp_param_reg;
-	// <end>}
-	.param .b64 param0;
-	st.param.b64	[param0+0], %rd8;
-	.param .b64 retval0;
-	call.uni (retval0), 
-	_Z12Heap_GetTypePh, 
-	(
-	param0
-	);
-	ld.param.b64	%rd9, [retval0+0];
-	
-	//{
-	}// Callseq End 0
-	ld.u32 	%r1, [%rd8];
-	add.s64 	%rd2, %rd8, 4;
-	ld.u64 	%rd10, [%rd9+168];
-	ld.u32 	%r2, [%rd10+112];
-	mul.lo.s32 	%r3, %r2, %r1;
-	cvt.u64.u32	%rd3, %r3;
-	mov.u64 	%rd14, 0;
-	setp.eq.s32	%p1, %r3, 0;
-	@%p1 bra 	BB6_2;
-
-BB6_1:
-	add.s64 	%rd11, %rd1, %rd14;
-	ld.u8 	%rs1, [%rd11];
-	add.s64 	%rd12, %rd2, %rd14;
-	st.u8 	[%rd12], %rs1;
-	add.s64 	%rd14, %rd14, 1;
-	setp.lt.u64	%p2, %rd14, %rd3;
-	@%p2 bra 	BB6_1;
-
-BB6_2:
-	mov.u64 	%rd13, 0;
-	st.param.b64	[func_retval0+0], %rd13;
 	ret;
 }
 

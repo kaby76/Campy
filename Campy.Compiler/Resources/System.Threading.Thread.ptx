@@ -7,10 +7,10 @@
 //
 
 .version 6.0
-.target sm_30
+.target sm_35
 .address_size 64
 
-	// .globl	_Z28System_Threading_Thread_ctorPhS_S_
+	// .weak	cudaMalloc
 .extern .func  (.param .b64 func_retval0) _Z6Threadv
 (
 
@@ -43,6 +43,95 @@
 )
 ;
 
+.weak .func  (.param .b32 func_retval0) cudaMalloc(
+	.param .b64 cudaMalloc_param_0,
+	.param .b64 cudaMalloc_param_1
+)
+{
+	.reg .b32 	%r<2>;
+
+
+	mov.u32 	%r1, 30;
+	st.param.b32	[func_retval0+0], %r1;
+	ret;
+}
+
+	// .weak	cudaFuncGetAttributes
+.weak .func  (.param .b32 func_retval0) cudaFuncGetAttributes(
+	.param .b64 cudaFuncGetAttributes_param_0,
+	.param .b64 cudaFuncGetAttributes_param_1
+)
+{
+	.reg .b32 	%r<2>;
+
+
+	mov.u32 	%r1, 30;
+	st.param.b32	[func_retval0+0], %r1;
+	ret;
+}
+
+	// .weak	cudaDeviceGetAttribute
+.weak .func  (.param .b32 func_retval0) cudaDeviceGetAttribute(
+	.param .b64 cudaDeviceGetAttribute_param_0,
+	.param .b32 cudaDeviceGetAttribute_param_1,
+	.param .b32 cudaDeviceGetAttribute_param_2
+)
+{
+	.reg .b32 	%r<2>;
+
+
+	mov.u32 	%r1, 30;
+	st.param.b32	[func_retval0+0], %r1;
+	ret;
+}
+
+	// .weak	cudaGetDevice
+.weak .func  (.param .b32 func_retval0) cudaGetDevice(
+	.param .b64 cudaGetDevice_param_0
+)
+{
+	.reg .b32 	%r<2>;
+
+
+	mov.u32 	%r1, 30;
+	st.param.b32	[func_retval0+0], %r1;
+	ret;
+}
+
+	// .weak	cudaOccupancyMaxActiveBlocksPerMultiprocessor
+.weak .func  (.param .b32 func_retval0) cudaOccupancyMaxActiveBlocksPerMultiprocessor(
+	.param .b64 cudaOccupancyMaxActiveBlocksPerMultiprocessor_param_0,
+	.param .b64 cudaOccupancyMaxActiveBlocksPerMultiprocessor_param_1,
+	.param .b32 cudaOccupancyMaxActiveBlocksPerMultiprocessor_param_2,
+	.param .b64 cudaOccupancyMaxActiveBlocksPerMultiprocessor_param_3
+)
+{
+	.reg .b32 	%r<2>;
+
+
+	mov.u32 	%r1, 30;
+	st.param.b32	[func_retval0+0], %r1;
+	ret;
+}
+
+	// .weak	cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags
+.weak .func  (.param .b32 func_retval0) cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags(
+	.param .b64 cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags_param_0,
+	.param .b64 cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags_param_1,
+	.param .b32 cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags_param_2,
+	.param .b64 cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags_param_3,
+	.param .b32 cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags_param_4
+)
+{
+	.reg .b32 	%r<2>;
+
+
+	mov.u32 	%r1, 30;
+	st.param.b32	[func_retval0+0], %r1;
+	ret;
+}
+
+	// .globl	_Z28System_Threading_Thread_ctorPhS_S_
 .visible .func  (.param .b64 func_retval0) _Z28System_Threading_Thread_ctorPhS_S_(
 	.param .b64 _Z28System_Threading_Thread_ctorPhS_S__param_0,
 	.param .b64 _Z28System_Threading_Thread_ctorPhS_S__param_1,
@@ -118,7 +207,7 @@
 	.param .b64 _Z29System_Threading_Thread_StartPhS_S__param_2
 )
 {
-	.local .align 16 .b8 	__local_depot2[32];
+	.local .align 16 .b8 	__local_depot8[32];
 	.reg .b64 	%SP;
 	.reg .b64 	%SPL;
 	.reg .pred 	%p<3>;
@@ -126,7 +215,7 @@
 	.reg .b64 	%rd<18>;
 
 
-	mov.u64 	%rd17, __local_depot2;
+	mov.u64 	%rd17, __local_depot8;
 	cvta.local.u64 	%SP, %rd17;
 	ld.param.u64 	%rd5, [_Z29System_Threading_Thread_StartPhS_S__param_0];
 	add.u64 	%rd6, %SP, 0;
@@ -163,15 +252,15 @@
 	ld.local.u64 	%rd4, [%rd7];
 	setp.eq.s64	%p1, %rd4, 0;
 	mov.u32 	%r10, 0;
-	@%p1 bra 	BB2_2;
+	@%p1 bra 	BB8_2;
 
 	st.local.u64 	[%rd1], %rd4;
 	mov.u32 	%r10, 8;
 
-BB2_2:
+BB8_2:
 	ld.u32 	%r8, [%rd5+96];
 	setp.eq.s32	%p2, %r8, 0;
-	@%p2 bra 	BB2_4;
+	@%p2 bra 	BB8_4;
 
 	ld.u64 	%rd11, [%rd5+16];
 	mul.wide.u32 	%rd12, %r10, 8;
@@ -179,7 +268,7 @@ BB2_2:
 	st.local.u64 	[%rd13], %rd11;
 	add.s32 	%r10, %r10, 8;
 
-BB2_4:
+BB8_4:
 	ld.u64 	%rd14, [%rd3+8];
 	ld.u32 	%r9, [%rd3+104];
 	// Callseq Start 3

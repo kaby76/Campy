@@ -103,7 +103,7 @@ __device__ tAsyncCall* System_Array_Internal_SetValue(PTR pThis_, PTR pParams, P
 #if defined(WIN32) && defined(_DEBUG)
 	// Do a bounds-check
 	if (index >= pArray->length) {
-		printf("[Array] Internal_SetValue() Bounds-check failed\n");
+//		printf("[Array] Internal_SetValue() Bounds-check failed\n");
 		__debugbreak();
 	}
 #endif
@@ -169,7 +169,7 @@ __device__ tAsyncCall* System_Array_Internal_Copy(PTR pThis_, PTR pParams, PTR p
 #if defined(WIN32) && defined(_DEBUG)
 		// Do bounds check
 		if (srcIndex + length > pSrc->length || dstIndex + length > pDst->length) {
-			printf("[Array] Internal_Copy() Bounds check failed\n");
+			//printf("[Array] Internal_Copy() Bounds check failed\n");
 			__debugbreak();
 		}
 #endif
@@ -261,7 +261,7 @@ __device__ void SystemArray_StoreElement(HEAP_PTR pThis_, U32 index, PTR value) 
 #if defined(WIN32) && defined(_DEBUG)
 	// Do a bounds check
 	if (index >= pArray->length) {
-		printf("SystemArray_StoreElement() Bounds check failed. Array length: %d  index: %d\n", pArray->length, index);
+//		printf("SystemArray_StoreElement() Bounds check failed. Array length: %d  index: %d\n", pArray->length, index);
 		__debugbreak();
 	}
 #endif
@@ -313,7 +313,7 @@ __device__ PTR SystemArray_LoadElementAddress(HEAP_PTR pThis_, U32 index) {
 
 #if defined(WIN32) && defined(_DEBUG)
 	if (index >= pArray->length) {
-		printf("SystemArray_LoadElementAddress() Bounds check failed\n");
+//		printf("SystemArray_LoadElementAddress() Bounds check failed\n");
 		__debugbreak();
 	}
 #endif

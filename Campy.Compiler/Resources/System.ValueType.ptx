@@ -7,10 +7,10 @@
 //
 
 .version 6.0
-.target sm_30
+.target sm_35
 .address_size 64
 
-	// .globl	_Z26System_ValueType_GetFieldsPhS_S_
+	// .weak	cudaMalloc
 .extern .func  (.param .b64 func_retval0) _Z12Heap_GetTypePh
 (
 	.param .b64 _Z12Heap_GetTypePh_param_0
@@ -37,13 +37,102 @@
 ;
 .extern .global .align 8 .b64 types;
 
+.weak .func  (.param .b32 func_retval0) cudaMalloc(
+	.param .b64 cudaMalloc_param_0,
+	.param .b64 cudaMalloc_param_1
+)
+{
+	.reg .b32 	%r<2>;
+
+
+	mov.u32 	%r1, 30;
+	st.param.b32	[func_retval0+0], %r1;
+	ret;
+}
+
+	// .weak	cudaFuncGetAttributes
+.weak .func  (.param .b32 func_retval0) cudaFuncGetAttributes(
+	.param .b64 cudaFuncGetAttributes_param_0,
+	.param .b64 cudaFuncGetAttributes_param_1
+)
+{
+	.reg .b32 	%r<2>;
+
+
+	mov.u32 	%r1, 30;
+	st.param.b32	[func_retval0+0], %r1;
+	ret;
+}
+
+	// .weak	cudaDeviceGetAttribute
+.weak .func  (.param .b32 func_retval0) cudaDeviceGetAttribute(
+	.param .b64 cudaDeviceGetAttribute_param_0,
+	.param .b32 cudaDeviceGetAttribute_param_1,
+	.param .b32 cudaDeviceGetAttribute_param_2
+)
+{
+	.reg .b32 	%r<2>;
+
+
+	mov.u32 	%r1, 30;
+	st.param.b32	[func_retval0+0], %r1;
+	ret;
+}
+
+	// .weak	cudaGetDevice
+.weak .func  (.param .b32 func_retval0) cudaGetDevice(
+	.param .b64 cudaGetDevice_param_0
+)
+{
+	.reg .b32 	%r<2>;
+
+
+	mov.u32 	%r1, 30;
+	st.param.b32	[func_retval0+0], %r1;
+	ret;
+}
+
+	// .weak	cudaOccupancyMaxActiveBlocksPerMultiprocessor
+.weak .func  (.param .b32 func_retval0) cudaOccupancyMaxActiveBlocksPerMultiprocessor(
+	.param .b64 cudaOccupancyMaxActiveBlocksPerMultiprocessor_param_0,
+	.param .b64 cudaOccupancyMaxActiveBlocksPerMultiprocessor_param_1,
+	.param .b32 cudaOccupancyMaxActiveBlocksPerMultiprocessor_param_2,
+	.param .b64 cudaOccupancyMaxActiveBlocksPerMultiprocessor_param_3
+)
+{
+	.reg .b32 	%r<2>;
+
+
+	mov.u32 	%r1, 30;
+	st.param.b32	[func_retval0+0], %r1;
+	ret;
+}
+
+	// .weak	cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags
+.weak .func  (.param .b32 func_retval0) cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags(
+	.param .b64 cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags_param_0,
+	.param .b64 cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags_param_1,
+	.param .b32 cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags_param_2,
+	.param .b64 cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags_param_3,
+	.param .b32 cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags_param_4
+)
+{
+	.reg .b32 	%r<2>;
+
+
+	mov.u32 	%r1, 30;
+	st.param.b32	[func_retval0+0], %r1;
+	ret;
+}
+
+	// .globl	_Z26System_ValueType_GetFieldsPhS_S_
 .visible .func  (.param .b64 func_retval0) _Z26System_ValueType_GetFieldsPhS_S_(
 	.param .b64 _Z26System_ValueType_GetFieldsPhS_S__param_0,
 	.param .b64 _Z26System_ValueType_GetFieldsPhS_S__param_1,
 	.param .b64 _Z26System_ValueType_GetFieldsPhS_S__param_2
 )
 {
-	.local .align 8 .b8 	__local_depot0[8];
+	.local .align 8 .b8 	__local_depot6[8];
 	.reg .b64 	%SP;
 	.reg .b64 	%SPL;
 	.reg .pred 	%p<21>;
@@ -52,7 +141,7 @@
 	.reg .b64 	%rd<51>;
 
 
-	mov.u64 	%rd50, __local_depot0;
+	mov.u64 	%rd50, __local_depot6;
 	cvta.local.u64 	%SP, %rd50;
 	ld.param.u64 	%rd10, [_Z26System_ValueType_GetFieldsPhS_S__param_1];
 	ld.param.u64 	%rd9, [_Z26System_ValueType_GetFieldsPhS_S__param_2];
@@ -78,7 +167,7 @@
 	ld.u32 	%r1, [%rd11+176];
 	setp.eq.s32	%p1, %r1, 0;
 	mov.u32 	%r62, 0;
-	@%p1 bra 	BB0_9;
+	@%p1 bra 	BB6_9;
 
 	ld.u64 	%rd4, [%rd3+8];
 	mov.u32 	%r30, 1;
@@ -87,17 +176,17 @@
 	setp.eq.s32	%p2, %r3, 0;
 	mov.u32 	%r62, 0;
 	mov.u32 	%r59, %r62;
-	@%p2 bra 	BB0_7;
+	@%p2 bra 	BB6_7;
 
 	setp.eq.s32	%p3, %r3, 1;
 	mov.u32 	%r56, 0;
 	mov.u32 	%r57, %r56;
-	@%p3 bra 	BB0_6;
+	@%p3 bra 	BB6_6;
 
 	setp.eq.s32	%p4, %r3, 2;
 	mov.u32 	%r54, 0;
 	mov.u32 	%r55, %r54;
-	@%p4 bra 	BB0_5;
+	@%p4 bra 	BB6_5;
 
 	ld.u64 	%rd12, [%rd4];
 	ld.u8 	%rs1, [%rd12+16];
@@ -106,7 +195,7 @@
 	selp.u32	%r54, 1, 0, %p5;
 	mov.u32 	%r55, %r30;
 
-BB0_5:
+BB6_5:
 	mul.wide.u32 	%rd13, %r55, 8;
 	add.s64 	%rd14, %rd4, %rd13;
 	ld.u64 	%rd15, [%rd14];
@@ -117,7 +206,7 @@ BB0_5:
 	add.s32 	%r56, %r36, %r54;
 	add.s32 	%r57, %r55, 1;
 
-BB0_6:
+BB6_6:
 	mul.wide.u32 	%rd16, %r57, 8;
 	add.s64 	%rd17, %rd4, %rd16;
 	ld.u64 	%rd18, [%rd17];
@@ -128,11 +217,11 @@ BB0_6:
 	add.s32 	%r62, %r37, %r56;
 	add.s32 	%r59, %r57, 1;
 
-BB0_7:
+BB6_7:
 	setp.lt.u32	%p8, %r2, 4;
-	@%p8 bra 	BB0_9;
+	@%p8 bra 	BB6_9;
 
-BB0_8:
+BB6_8:
 	mul.wide.u32 	%rd19, %r59, 8;
 	add.s64 	%rd20, %rd4, %rd19;
 	ld.u64 	%rd21, [%rd20];
@@ -170,9 +259,9 @@ BB0_8:
 	add.s32 	%r62, %r47, %r45;
 	add.s32 	%r59, %r59, 4;
 	setp.lt.u32	%p13, %r59, %r1;
-	@%p13 bra 	BB0_8;
+	@%p13 bra 	BB6_8;
 
-BB0_9:
+BB6_9:
 	ld.global.u64 	%rd31, [types];
 	ld.u64 	%rd32, [%rd31+128];
 	setp.ne.s64	%p14, %rd2, 0;
@@ -199,12 +288,12 @@ BB0_9:
 	}// Callseq End 1
 	ld.u32 	%r50, [%rd3];
 	setp.eq.s32	%p15, %r50, 0;
-	@%p15 bra 	BB0_20;
+	@%p15 bra 	BB6_20;
 
 	mov.u32 	%r65, 0;
 	mov.u32 	%r64, %r65;
 
-BB0_11:
+BB6_11:
 	ld.u64 	%rd33, [%rd3+8];
 	mul.wide.u32 	%rd34, %r64, 8;
 	add.s64 	%rd35, %rd33, %rd34;
@@ -213,7 +302,7 @@ BB0_11:
 	ld.u8 	%rs15, [%rd36+16];
 	and.b16  	%rs16, %rs15, 16;
 	setp.ne.s16	%p16, %rs16, 0;
-	@%p16 bra 	BB0_19;
+	@%p16 bra 	BB6_19;
 
 	ld.u64 	%rd7, [%rd6+24];
 	ld.u8 	%rs17, [%rd7+54];
@@ -221,10 +310,10 @@ BB0_11:
 	add.s32 	%r22, %r65, 1;
 	ld.u32 	%rd37, [%rd6+40];
 	add.s64 	%rd8, %rd1, %rd37;
-	@%p17 bra 	BB0_16;
-	bra.uni 	BB0_13;
+	@%p17 bra 	BB6_16;
+	bra.uni 	BB6_13;
 
-BB0_16:
+BB6_16:
 	setp.eq.s64	%p19, %rd2, 0;
 	// Callseq Start 6
 	{
@@ -246,14 +335,14 @@ BB0_16:
 	
 	//{
 	}// Callseq End 6
-	@%p19 bra 	BB0_17;
-	bra.uni 	BB0_18;
+	@%p19 bra 	BB6_17;
+	bra.uni 	BB6_18;
 
-BB0_17:
+BB6_17:
 	mov.u32 	%r65, %r22;
-	bra.uni 	BB0_19;
+	bra.uni 	BB6_19;
 
-BB0_13:
+BB6_13:
 	// Callseq Start 2
 	{
 	.reg .b32 temp_param_reg;
@@ -297,14 +386,14 @@ BB0_13:
 	//{
 	}// Callseq End 3
 	setp.eq.s64	%p18, %rd2, 0;
-	@%p18 bra 	BB0_14;
-	bra.uni 	BB0_15;
+	@%p18 bra 	BB6_14;
+	bra.uni 	BB6_15;
 
-BB0_14:
+BB6_14:
 	mov.u32 	%r65, %r22;
-	bra.uni 	BB0_19;
+	bra.uni 	BB6_19;
 
-BB0_18:
+BB6_18:
 	add.s32 	%r65, %r65, 2;
 	ld.u32 	%rd47, [%rd6+40];
 	add.s64 	%rd48, %rd2, %rd47;
@@ -328,9 +417,9 @@ BB0_18:
 	
 	//{
 	}// Callseq End 7
-	bra.uni 	BB0_19;
+	bra.uni 	BB6_19;
 
-BB0_15:
+BB6_15:
 	ld.u64 	%rd41, [%rd6+24];
 	ld.u32 	%rd42, [%rd6+40];
 	add.s64 	%rd43, %rd2, %rd42;
@@ -376,13 +465,13 @@ BB0_15:
 	//{
 	}// Callseq End 5
 
-BB0_19:
+BB6_19:
 	ld.u32 	%r53, [%rd3];
 	add.s32 	%r64, %r64, 1;
 	setp.lt.u32	%p20, %r64, %r53;
-	@%p20 bra 	BB0_11;
+	@%p20 bra 	BB6_11;
 
-BB0_20:
+BB6_20:
 	st.u64 	[%rd9], %rd5;
 	mov.u64 	%rd49, 0;
 	st.param.b64	[func_retval0+0], %rd49;

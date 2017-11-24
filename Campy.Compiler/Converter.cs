@@ -363,8 +363,6 @@ namespace Campy.Compiler
 
                         int field_size;
                         int alignment;
-                        var ft =
-                            instantiated_field_type.ToSystemType();
                         var array_or_class = (instantiated_field_type.IsArray || !instantiated_field_type.IsValueType);
                         if (array_or_class)
                         {
@@ -384,6 +382,8 @@ namespace Campy.Compiler
                         }
                         else
                         {
+                            var ft =
+                                instantiated_field_type.ToSystemType();
                             field_size = Buffers.SizeOf(ft);
                             alignment = Buffers.Alignment(ft);
                             int padding = Buffers.Padding(offset, alignment);
@@ -1732,9 +1732,6 @@ namespace Campy.Compiler
                 using (StreamReader reader = new StreamReader(stream))
                 {
                     string gpu_bcl_ptx = reader.ReadToEnd();
-                    gpu_bcl_ptx = gpu_bcl_ptx.Replace(".target sm_30", ".target sm_20");
-                    gpu_bcl_ptx = gpu_bcl_ptx.Replace(".version 6.0", ".version 3.2");
-
                     IntPtr ptr2 = Marshal.StringToHGlobalAnsi(gpu_bcl_ptx);
                     res = Cuda.cuLinkAddData_v2(linkState, CUjitInputType.CU_JIT_INPUT_PTX, ptr2, (uint)gpu_bcl_ptx.Length, "", 0, op, IntPtr.Zero);
                     CheckCudaError(res);
