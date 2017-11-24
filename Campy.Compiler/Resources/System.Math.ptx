@@ -11,6 +11,11 @@
 .address_size 64
 
 	// .weak	cudaMalloc
+.extern .func _Z9Type_Initv
+(
+
+)
+;
 .func  (.param .b64 func_retval0) __internal_trig_reduction_slowpathd
 (
 	.param .b64 __internal_trig_reduction_slowpathd_param_0,
@@ -236,6 +241,17 @@ BB6_4:
 
 BB6_6:
 	st.f64 	[%rd2], %fd52;
+	// Callseq Start 1
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	call.uni 
+	_Z9Type_Initv, 
+	(
+	);
+	
+	//{
+	}// Callseq End 1
 	mov.u64 	%rd6, 0;
 	st.param.b64	[func_retval0+0], %rd6;
 	ret;
@@ -291,7 +307,7 @@ BB7_2:
 	setp.lt.u32	%p2, %r5, 1105199104;
 	@%p2 bra 	BB7_4;
 
-	// Callseq Start 1
+	// Callseq Start 2
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
@@ -309,7 +325,7 @@ BB7_2:
 	ld.param.f64	%fd52, [retval0+0];
 	
 	//{
-	}// Callseq End 1
+	}// Callseq End 2
 	ld.local.u32 	%r14, [%rd1];
 
 BB7_4:
@@ -429,7 +445,7 @@ BB8_2:
 	setp.lt.u32	%p2, %r5, 1105199104;
 	@%p2 bra 	BB8_4;
 
-	// Callseq Start 2
+	// Callseq Start 3
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
@@ -447,7 +463,7 @@ BB8_2:
 	ld.param.f64	%fd64, [retval0+0];
 	
 	//{
-	}// Callseq End 2
+	}// Callseq End 3
 	ld.local.u32 	%r7, [%rd1];
 
 BB8_4:
@@ -541,7 +557,7 @@ BB8_6:
 	shl.b64 	%rd4, %rd3, %r4;
 	setp.eq.s64	%p2, %rd4, -9223372036854775808;
 	abs.f64 	%fd3, %fd1;
-	// Callseq Start 3
+	// Callseq Start 4
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
@@ -559,7 +575,7 @@ BB8_6:
 	ld.param.f64	%fd18, [retval0+0];
 	
 	//{
-	}// Callseq End 3
+	}// Callseq End 4
 	setp.lt.s32	%p3, %r1, 0;
 	and.pred  	%p1, %p3, %p2;
 	@!%p1 bra 	BB9_2;
