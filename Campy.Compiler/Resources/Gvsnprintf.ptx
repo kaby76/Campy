@@ -16,6 +16,12 @@
 	.param .b64 malloc_param_0
 )
 ;
+.extern .func  (.param .b32 func_retval0) vprintf
+(
+	.param .b64 vprintf_param_0,
+	.param .b64 vprintf_param_1
+)
+;
 .global .align 8 .b8 $str[7] = {60, 78, 85, 76, 76, 62, 0};
 .global .align 16 .b8 $str1[17] = {48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 65, 66, 67, 68, 69, 70, 0};
 .global .align 16 .b8 $str2[17] = {48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 97, 98, 99, 100, 101, 102, 0};
@@ -19140,6 +19146,51 @@ BB10_308:
 
 	cvt.u32.u64	%r494, %rd3;
 	st.param.b32	[func_retval0+0], %r494;
+	ret;
+}
+
+	// .globl	_Z7GprintfPKcz
+.visible .func  (.param .b32 func_retval0) _Z7GprintfPKcz(
+	.param .b64 _Z7GprintfPKcz_param_0,
+	.param .align 8 .b8 %VAParam[]
+)
+{
+	.local .align 8 .b8 	__local_depot11[8];
+	.reg .b64 	%SP;
+	.reg .b64 	%SPL;
+	.reg .b32 	%r<3>;
+	.reg .b64 	%rd<10>;
+
+
+	mov.u64 	%rd9, __local_depot11;
+	cvta.local.u64 	%SP, %rd9;
+	ld.param.u64 	%rd1, [_Z7GprintfPKcz_param_0];
+	add.u64 	%rd4, %SP, 0;
+	cvta.to.local.u64 	%rd5, %rd4;
+	mov.u64 	%rd6, %VAParam;
+	mov.u64 	%rd8, %rd6;
+	mov.u64 	%rd7, %rd8;
+	st.local.u64 	[%rd5], %rd7;
+	// Callseq Start 2
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b64 param0;
+	st.param.b64	[param0+0], %rd1;
+	.param .b64 param1;
+	st.param.b64	[param1+0], %rd4;
+	.param .b32 retval0;
+	call.uni (retval0), 
+	vprintf, 
+	(
+	param0, 
+	param1
+	);
+	ld.param.b32	%r1, [retval0+0];
+	
+	//{
+	}// Callseq End 2
+	st.param.b32	[func_retval0+0], %r2;
 	ret;
 }
 

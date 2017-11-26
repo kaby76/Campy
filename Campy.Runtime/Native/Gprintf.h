@@ -14,3 +14,4 @@ __device__ sizeret_t Gvasprintf(char **ptr, P_CONST char *format, va_list ap);
 __device__ sizeret_t Gasprintf(char **ptr, P_CONST char *format, ...);
 __device__ int Gvsprintf(char *buf, const char *format, va_list ap);
 __device__ int Gsprintf(char* const _Buffer, char const* const _Format, ...);
+__device__ int Gprintf(const char *format, ...);

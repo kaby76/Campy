@@ -193,6 +193,7 @@
       <InterleaveSourceInPTX Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</InterleaveSourceInPTX>
       <NvccCompilation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">compile</NvccCompilation>
     </CudaCompile>
+    <CudaCompile Include="corlib.cu" />
     <CudaCompile Include="Delegate.cu">
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">64</TargetMachinePlatform>
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">64</TargetMachinePlatform>

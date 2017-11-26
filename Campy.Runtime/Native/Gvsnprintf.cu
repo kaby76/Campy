@@ -72,6 +72,8 @@
 **************************************************************/
 
 #include <cuda.h>
+#include <stdio.h>
+#include <crt/common_functions.h>
 #include <stdarg.h>
 #include "Gprintf.h"
 
@@ -563,3 +565,15 @@ __device__ int Gsprintf(
 	va_end(arg);
 	return done;
 }
+
+
+__device__ int Gprintf(const char * _Format, ...)
+{
+	va_list arg;
+	int done;
+	va_start(arg, _Format);
+	printf(_Format, arg);
+	va_end(arg);
+	return done;
+}
+

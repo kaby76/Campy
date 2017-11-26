@@ -11,6 +11,7 @@
   <ItemGroup>
     <None Remove="Resources\basics.ptx" />
     <None Remove="Resources\CLIFile.ptx" />
+    <None Remove="Resources\corlib.ptx" />
     <None Remove="Resources\Delegate.ptx" />
     <None Remove="Resources\Finalizer.ptx" />
     <None Remove="Resources\Generics.ptx" />
@@ -57,6 +58,7 @@
   <ItemGroup>
     <EmbeddedResource Include="Resources\basics.ptx" />
     <EmbeddedResource Include="Resources\CLIFile.ptx" />
+    <EmbeddedResource Include="Resources\corlib.ptx" />
     <EmbeddedResource Include="Resources\Delegate.ptx" />
     <EmbeddedResource Include="Resources\Finalizer.ptx" />
     <EmbeddedResource Include="Resources\Generics.ptx" />

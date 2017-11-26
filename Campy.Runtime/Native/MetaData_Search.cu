@@ -26,6 +26,7 @@
 #include "Type.h"
 #include "Types.h"
 #include "Gstring.h"
+#include "Gprintf.h"
 
 __device__ U32 MetaData_CompareNameAndSig(STRING name, BLOB_ sigBlob, tMetaData *pSigMetaData, tMD_TypeDef **ppSigClassTypeArgs, tMD_TypeDef **ppSigMethodTypeArgs, tMD_MethodDef *pMethod, tMD_TypeDef **ppMethodClassTypeArgs, tMD_TypeDef **ppMethodMethodTypeArgs) {
 	if (Gstrcmp(name, pMethod->name) == 0) {
@@ -188,6 +189,9 @@ __device__ tMD_TypeDef* MetaData_GetTypeDefFromName(tMetaData *pMetaData, STRING
 
 __device__ tMD_TypeDef* MetaData_GetTypeDefFromFullName(STRING assemblyName, STRING nameSpace, STRING name) {
 	tMetaData *pTypeMetaData;
+	Gprintf("hi6\n");
+	Gprintf(assemblyName);
+	Gprintf("hi7\n");
 
 	pTypeMetaData = CLIFile_GetMetaDataForAssembly(assemblyName);
 

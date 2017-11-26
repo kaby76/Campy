@@ -24,19 +24,20 @@
 #include "MetaData.h"
 #include "Types.h"
 #include "Gstring.h"
+#include "Gprintf.h"
 
 __device__ void Crash(const char *pMsg, ...) {
-//	va_list va;
-//
-//	printf("\n\n*** CRASH ***\n");
-//
-//	va_start(va, pMsg);
-//
-//	vprintf(pMsg, va);
-//
-//	va_end(va);
-//
-//	printf("\n\n");
+	va_list va;
+
+	Gprintf("\n\n*** CRASH ***\n");
+
+	va_start(va, pMsg);
+	char buf[10000];
+	Gvsprintf(buf, pMsg, va);
+	Gprintf("%s", buf);
+	va_end(va);
+
+	Gprintf("\n\n");
 //
 //#ifdef WIN32
 //	{

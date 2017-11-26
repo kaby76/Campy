@@ -290,6 +290,9 @@
     <CudaCompile Include="Gstring.cu">
       <Filter>Source Files</Filter>
     </CudaCompile>
+    <CudaCompile Include="corlib.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="x64\Debug\Finalizer.ptx">

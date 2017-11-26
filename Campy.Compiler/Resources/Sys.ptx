@@ -11,6 +11,19 @@
 .address_size 64
 
 	// .weak	cudaMalloc
+.extern .func  (.param .b32 func_retval0) _Z7GprintfPKcz
+(
+	.param .b64 _Z7GprintfPKcz_param_0,
+	.param .align 8 .b8 %VAParam[]
+)
+;
+.extern .func  (.param .b32 func_retval0) _Z9GvsprintfPcPKcS_
+(
+	.param .b64 _Z9GvsprintfPcPKcS__param_0,
+	.param .b64 _Z9GvsprintfPcPKcS__param_1,
+	.param .b64 _Z9GvsprintfPcPKcS__param_2
+)
+;
 .extern .func  (.param .b32 func_retval0) _Z8GsprintfPcPKcz
 (
 	.param .b64 _Z8GsprintfPcPKcz_param_0,
@@ -32,9 +45,12 @@
 .visible .global .align 4 .u32 logLevel;
 .global .align 16 .b8 __nv_static_24__11_Sys_cpp1_ii_686caf96_methodName[2048];
 .global .align 4 .u32 __nv_static_24__11_Sys_cpp1_ii_686caf96_mallocForeverSize;
-.global .align 16 .b8 $str[10] = {37, 115, 46, 37, 115, 46, 37, 115, 40, 0};
-.global .align 2 .b8 $str1[2] = {44, 0};
-.global .align 2 .b8 $str2[2] = {41, 0};
+.global .align 16 .b8 $str[17] = {10, 10, 42, 42, 42, 32, 67, 82, 65, 83, 72, 32, 42, 42, 42, 10, 0};
+.global .align 4 .b8 $str1[3] = {37, 115, 0};
+.global .align 4 .b8 $str2[3] = {10, 10, 0};
+.global .align 16 .b8 $str3[10] = {37, 115, 46, 37, 115, 46, 37, 115, 40, 0};
+.global .align 2 .b8 $str4[2] = {44, 0};
+.global .align 2 .b8 $str5[2] = {41, 0};
 
 .weak .func  (.param .b32 func_retval0) cudaMalloc(
 	.param .b64 cudaMalloc_param_0,
@@ -130,9 +146,99 @@
 	.param .align 8 .b8 %VAParam[]
 )
 {
+	.local .align 16 .b8 	__local_depot6[10000];
+	.reg .b64 	%SP;
+	.reg .b64 	%SPL;
+	.reg .b32 	%r<5>;
+	.reg .b64 	%rd<15>;
 
 
-
+	mov.u64 	%rd14, __local_depot6;
+	cvta.local.u64 	%SP, %rd14;
+	ld.param.u64 	%rd1, [_Z5CrashPKcz_param_0];
+	mov.u64 	%rd4, $str;
+	cvta.global.u64 	%rd5, %rd4;
+	// Callseq Start 0
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b64 param0;
+	st.param.b64	[param0+0], %rd5;
+	.param .b32 retval0;
+	call.uni (retval0), 
+	_Z7GprintfPKcz, 
+	(
+	param0
+	);
+	ld.param.b32	%r1, [retval0+0];
+	
+	//{
+	}// Callseq End 0
+	mov.u64 	%rd6, %VAParam;
+	mov.u64 	%rd13, %rd6;
+	mov.u64 	%rd7, %rd13;
+	add.u64 	%rd8, %SP, 0;
+	// Callseq Start 1
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b64 param0;
+	st.param.b64	[param0+0], %rd8;
+	.param .b64 param1;
+	st.param.b64	[param1+0], %rd1;
+	.param .b64 param2;
+	st.param.b64	[param2+0], %rd7;
+	.param .b32 retval0;
+	call.uni (retval0), 
+	_Z9GvsprintfPcPKcS_, 
+	(
+	param0, 
+	param1, 
+	param2
+	);
+	ld.param.b32	%r2, [retval0+0];
+	
+	//{
+	}// Callseq End 1
+	mov.u64 	%rd9, $str1;
+	cvta.global.u64 	%rd10, %rd9;
+	// Callseq Start 2
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b64 param0;
+	st.param.b64	[param0+0], %rd10;
+	.param .align 8 .b8 param1[8];
+	st.param.b64	[param1+0], %rd8;
+	.param .b32 retval0;
+	call.uni (retval0), 
+	_Z7GprintfPKcz, 
+	(
+	param0, 
+	param1
+	);
+	ld.param.b32	%r3, [retval0+0];
+	
+	//{
+	}// Callseq End 2
+	mov.u64 	%rd11, $str2;
+	cvta.global.u64 	%rd12, %rd11;
+	// Callseq Start 3
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b64 param0;
+	st.param.b64	[param0+0], %rd12;
+	.param .b32 retval0;
+	call.uni (retval0), 
+	_Z7GprintfPKcz, 
+	(
+	param0
+	);
+	ld.param.b32	%r4, [retval0+0];
+	
+	//{
+	}// Callseq End 3
 	ret;
 }
 
@@ -168,9 +274,9 @@
 	ld.u64 	%rd7, [%rd3+32];
 	mov.u64 	%rd8, __nv_static_24__11_Sys_cpp1_ii_686caf96_methodName;
 	cvta.global.u64 	%rd9, %rd8;
-	mov.u64 	%rd10, $str;
+	mov.u64 	%rd10, $str3;
 	cvta.global.u64 	%rd11, %rd10;
-	// Callseq Start 0
+	// Callseq Start 4
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
@@ -193,7 +299,7 @@
 	ld.param.b32	%r4, [retval0+0];
 	
 	//{
-	}// Callseq End 0
+	}// Callseq End 4
 	ld.u16 	%rs6, [%rd3+26];
 	and.b16  	%rs4, %rs6, 16;
 	setp.eq.s16	%p1, %rs4, 0;
@@ -216,7 +322,7 @@ BB8_2:
 	@%p4 bra 	BB8_4;
 
 	mov.u32 	%r7, 0;
-	// Callseq Start 1
+	// Callseq Start 5
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
@@ -234,10 +340,10 @@ BB8_2:
 	ld.param.b64	%rd14, [retval0+0];
 	
 	//{
-	}// Callseq End 1
-	mov.u64 	%rd15, $str1;
+	}// Callseq End 5
+	mov.u64 	%rd15, $str4;
 	cvta.global.u64 	%rd16, %rd15;
-	// Callseq Start 2
+	// Callseq Start 6
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
@@ -255,11 +361,11 @@ BB8_2:
 	ld.param.b32	%r8, [retval0+0];
 	
 	//{
-	}// Callseq End 2
+	}// Callseq End 6
 
 BB8_4:
 	mov.u32 	%r9, 0;
-	// Callseq Start 3
+	// Callseq Start 7
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
@@ -277,13 +383,13 @@ BB8_4:
 	ld.param.b64	%rd19, [retval0+0];
 	
 	//{
-	}// Callseq End 3
+	}// Callseq End 7
 	ld.u64 	%rd20, [%rd1+-24];
 	mul.wide.u32 	%rd21, %r14, 16;
 	add.s64 	%rd22, %rd20, %rd21;
 	ld.u64 	%rd23, [%rd22];
 	ld.u64 	%rd24, [%rd23+24];
-	// Callseq Start 4
+	// Callseq Start 8
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
@@ -301,7 +407,7 @@ BB8_4:
 	ld.param.b32	%r10, [retval0+0];
 	
 	//{
-	}// Callseq End 4
+	}// Callseq End 8
 	ld.u16 	%r11, [%rd1+-30];
 	add.s32 	%r14, %r14, 1;
 	setp.lt.u32	%p5, %r14, %r11;
@@ -309,7 +415,7 @@ BB8_4:
 
 BB8_5:
 	mov.u32 	%r12, 0;
-	// Callseq Start 5
+	// Callseq Start 9
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
@@ -327,10 +433,10 @@ BB8_5:
 	ld.param.b64	%rd27, [retval0+0];
 	
 	//{
-	}// Callseq End 5
-	mov.u64 	%rd28, $str2;
+	}// Callseq End 9
+	mov.u64 	%rd28, $str5;
 	cvta.global.u64 	%rd29, %rd28;
-	// Callseq Start 6
+	// Callseq Start 10
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
@@ -348,7 +454,7 @@ BB8_5:
 	ld.param.b32	%r13, [retval0+0];
 	
 	//{
-	}// Callseq End 6
+	}// Callseq End 10
 	st.param.b64	[func_retval0+0], %rd9;
 	ret;
 }
@@ -367,7 +473,7 @@ BB8_5:
 	add.s32 	%r3, %r2, %r1;
 	st.global.u32 	[__nv_static_24__11_Sys_cpp1_ii_686caf96_mallocForeverSize], %r3;
 	cvt.u64.u32	%rd1, %r1;
-	// Callseq Start 7
+	// Callseq Start 11
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
@@ -382,7 +488,7 @@ BB8_5:
 	ld.param.b64	%rd2, [retval0+0];
 	
 	//{
-	}// Callseq End 7
+	}// Callseq End 11
 	st.param.b64	[func_retval0+0], %rd2;
 	ret;
 }

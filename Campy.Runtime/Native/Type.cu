@@ -30,6 +30,8 @@
 #include "System.RuntimeType.h"
 #include "Thread.h"
 #include "Gstring.h"
+#include "Gprintf.h"
+#include <crt/host_defines.h>
 
 typedef struct tArrayTypeDefs_ tArrayTypeDefs;
 struct tArrayTypeDefs_ {
@@ -358,56 +360,61 @@ static char SystemIO[] = "System.IO";
 __device__
 static char SystemGlobalization[] = "System.Globalization";
 
+//__device__
+//static tTypeInit typeInit[] = {
+//	{ mscorlib, System, "Object", EVALSTACK_O,		4, 4, 0 },
+//	{ mscorlib, System, "Array", EVALSTACK_O,		4, 4, 0 },
+//	{ mscorlib, System, "Void", EVALSTACK_O,			4, 4, 0 },
+//	{ mscorlib, System, "Boolean", EVALSTACK_INT32,	4, 4, 4 },
+//	{ mscorlib, System, "Byte", EVALSTACK_INT32,		4, 1, 4 },
+//	{ mscorlib, System, "SByte", EVALSTACK_INT32,	4, 1, 4 },
+//	{ mscorlib, System, "Char", EVALSTACK_INT32,		4, 2, 4 },
+//	{ mscorlib, System, "Int16", EVALSTACK_INT32,	4, 2, 4 },
+//	{ mscorlib, System, "Int32", EVALSTACK_INT32,	4, 4, 4 },
+//	{ mscorlib, System, "String", EVALSTACK_O,		4, 4, 0 },
+//	{ mscorlib, System, "IntPtr", EVALSTACK_PTR,		sizeof(void*), sizeof(void*), 0 },
+//	{ mscorlib, System, "RuntimeFieldHandle", EVALSTACK_O, 4, 4, 0 },
+//	{ mscorlib, System, "InvalidCastException", EVALSTACK_O, 0, 0, 0 },
+//	{ mscorlib, System, "UInt32", EVALSTACK_INT32,	4, 4, 4 },
+//	{ mscorlib, System, "UInt16", EVALSTACK_INT32,	4, 2, 4 },
+//	{ NULL, NULL, (char*)TYPE_SYSTEM_CHAR, 0, 0, 0, 0 },
+//	{ NULL, NULL, (char*)TYPE_SYSTEM_OBJECT, 0, 0, 0, 0 },
+//	{ mscorlib, SystemCollectionsGeneric, "IEnumerable`1", EVALSTACK_O,	4, 4, 0 },
+//	{ mscorlib, SystemCollectionsGeneric, "ICollection`1", EVALSTACK_O,	4, 4, 0 },
+//	{ mscorlib, SystemCollectionsGeneric, "IList`1", EVALSTACK_O,		4, 4, 0 },
+//	{ mscorlib, System, "MulticastDelegate", EVALSTACK_O,				0, 0, 0 },
+//	{ mscorlib, System, "NullReferenceException", EVALSTACK_O,			0, 0, 0 },
+//	{ mscorlib, System, "Single", EVALSTACK_F32,		4, 4, 4 },
+//	{ mscorlib, System, "Double", EVALSTACK_F64,		8, 8, 8 },
+//	{ mscorlib, System, "Int64", EVALSTACK_INT64,	8, 8, 8 },
+//	{ mscorlib, System, "UInt64", EVALSTACK_INT64,	8, 8, 8 },
+//	{ mscorlib, System, "RuntimeType", EVALSTACK_O,	4, 4, sizeof(tRuntimeType) },
+//	{ mscorlib, System, "Type", EVALSTACK_O,			4, 4, 0 },
+//	{ mscorlib, System, "RuntimeTypeHandle", EVALSTACK_O, 4, 4, 0 },
+//	{ mscorlib, System, "RuntimeMethodHandle", EVALSTACK_O, 4, 4, 0 },
+//	{ mscorlib, System, "Enum", EVALSTACK_VALUETYPE, 0, 0, 0 },
+//	{ NULL, NULL, (char*)TYPE_SYSTEM_STRING, 0, 0, 0, 0 },
+//	{ NULL, NULL, (char*)TYPE_SYSTEM_INT32, 0, 0, 0, 0 },
+//	{ mscorlib, SystemThreading, "Thread", EVALSTACK_O, 4, 4, sizeof(tThread) },
+//	{ mscorlib, SystemThreading, "ThreadStart", EVALSTACK_O, 0, 0, 0 },
+//	{ mscorlib, SystemThreading, "ParameterizedThreadStart", EVALSTACK_O, 0, 0, 0 },
+//	{ mscorlib, System, "WeakReference", EVALSTACK_O, 4, 4, 0 },
+//	{ mscorlib, SystemIO, "FileMode", EVALSTACK_O, 0, 0, 0 },
+//	{ mscorlib, SystemIO, "FileAccess", EVALSTACK_O, 0, 0, 0 },
+//	{ mscorlib, SystemIO, "FileShare", EVALSTACK_O, 0, 0, 0 },
+//	{ NULL, NULL, (char*)TYPE_SYSTEM_BYTE, 0, 0, 0, 0 },
+//	{ mscorlib, SystemGlobalization, "UnicodeCategory", EVALSTACK_INT32,	0, 0, 0 },
+//	{ mscorlib, System, "OverflowException", EVALSTACK_O,				0, 0, 0 },
+//	{ mscorlib, System, "PlatformID", EVALSTACK_INT32,					0, 0, 0 },
+//	{ mscorlib, SystemIO, "FileAttributes", EVALSTACK_O, 0, 0, 0 },
+//	{ mscorlib, System, "UIntPtr", EVALSTACK_PTR,		sizeof(void*), sizeof(void*), 0 },
+//	{ mscorlib, System, "Nullable`1", EVALSTACK_VALUETYPE, 0, 0, 0 },
+//	{ NULL, NULL, (char*)TYPE_SYSTEM_TYPE, 0, 0, 0, 0 },
+//};
 __device__
 static tTypeInit typeInit[] = {
-	{mscorlib, System, "Object", EVALSTACK_O,		4, 4, 0},
-	{mscorlib, System, "Array", EVALSTACK_O,		4, 4, 0},
-	{mscorlib, System, "Void", EVALSTACK_O,			4, 4, 0},
-	{mscorlib, System, "Boolean", EVALSTACK_INT32,	4, 4, 4},
-	{mscorlib, System, "Byte", EVALSTACK_INT32,		4, 1, 4},
-	{mscorlib, System, "SByte", EVALSTACK_INT32,	4, 1, 4},
-	{mscorlib, System, "Char", EVALSTACK_INT32,		4, 2, 4},
-	{mscorlib, System, "Int16", EVALSTACK_INT32,	4, 2, 4},
-	{mscorlib, System, "Int32", EVALSTACK_INT32,	4, 4, 4},
-	{mscorlib, System, "String", EVALSTACK_O,		4, 4, 0},
-	{mscorlib, System, "IntPtr", EVALSTACK_PTR,		sizeof(void*), sizeof(void*), 0},
-	{mscorlib, System, "RuntimeFieldHandle", EVALSTACK_O, 4, 4, 0},
-	{mscorlib, System, "InvalidCastException", EVALSTACK_O, 0, 0, 0},
-	{mscorlib, System, "UInt32", EVALSTACK_INT32,	4, 4, 4},
-	{mscorlib, System, "UInt16", EVALSTACK_INT32,	4, 2, 4},
-	{NULL, NULL, (char*)TYPE_SYSTEM_CHAR, 0, 0, 0, 0},
-	{NULL, NULL, (char*)TYPE_SYSTEM_OBJECT, 0, 0, 0, 0},
-	{mscorlib, SystemCollectionsGeneric, "IEnumerable`1", EVALSTACK_O,	4, 4, 0},
-	{mscorlib, SystemCollectionsGeneric, "ICollection`1", EVALSTACK_O,	4, 4, 0},
-	{mscorlib, SystemCollectionsGeneric, "IList`1", EVALSTACK_O,		4, 4, 0},
-	{mscorlib, System, "MulticastDelegate", EVALSTACK_O,				0, 0, 0},
-	{mscorlib, System, "NullReferenceException", EVALSTACK_O,			0, 0, 0},
-	{mscorlib, System, "Single", EVALSTACK_F32,		4, 4, 4},
-	{mscorlib, System, "Double", EVALSTACK_F64,		8, 8, 8},
-	{mscorlib, System, "Int64", EVALSTACK_INT64,	8, 8, 8},
-	{mscorlib, System, "UInt64", EVALSTACK_INT64,	8, 8, 8},
-	{mscorlib, System, "RuntimeType", EVALSTACK_O,	4, 4, sizeof(tRuntimeType)},
-	{mscorlib, System, "Type", EVALSTACK_O,			4, 4, 0},
-	{mscorlib, System, "RuntimeTypeHandle", EVALSTACK_O, 4, 4, 0},
-	{mscorlib, System, "RuntimeMethodHandle", EVALSTACK_O, 4, 4, 0},
-	{mscorlib, System, "Enum", EVALSTACK_VALUETYPE, 0, 0, 0},
-	{NULL, NULL, (char*)TYPE_SYSTEM_STRING, 0, 0, 0, 0},
-	{NULL, NULL, (char*)TYPE_SYSTEM_INT32, 0, 0, 0, 0},
-	{mscorlib, SystemThreading, "Thread", EVALSTACK_O, 4, 4, sizeof(tThread)},
-	{mscorlib, SystemThreading, "ThreadStart", EVALSTACK_O, 0, 0, 0},
-	{mscorlib, SystemThreading, "ParameterizedThreadStart", EVALSTACK_O, 0, 0, 0},
-	{mscorlib, System, "WeakReference", EVALSTACK_O, 4, 4, 0},
-	{mscorlib, SystemIO, "FileMode", EVALSTACK_O, 0, 0, 0},
-	{mscorlib, SystemIO, "FileAccess", EVALSTACK_O, 0, 0, 0},
-	{mscorlib, SystemIO, "FileShare", EVALSTACK_O, 0, 0, 0},
-	{NULL, NULL, (char*)TYPE_SYSTEM_BYTE, 0, 0, 0, 0},
-	{mscorlib, SystemGlobalization, "UnicodeCategory", EVALSTACK_INT32,	0, 0, 0},
-	{mscorlib, System, "OverflowException", EVALSTACK_O,				0, 0, 0},
-	{mscorlib, System, "PlatformID", EVALSTACK_INT32,					0, 0, 0},
-	{mscorlib, SystemIO, "FileAttributes", EVALSTACK_O, 0, 0, 0},
-	{mscorlib, System, "UIntPtr", EVALSTACK_PTR,		sizeof(void*), sizeof(void*), 0},
-	{mscorlib, System, "Nullable`1", EVALSTACK_VALUETYPE, 0, 0, 0},
-	{NULL, NULL, (char*)TYPE_SYSTEM_TYPE, 0, 0, 0, 0},
+	{ mscorlib, System, "Object", EVALSTACK_O,		4, 4, 0 },
+	{ NULL, NULL, (char*)TYPE_SYSTEM_TYPE, 0, 0, 0, 0 },
 };
 
 __device__
@@ -416,13 +423,15 @@ int CorLibDone = 0;
 __device__
 void Type_Init() {
 	U32 i;
-
+	Gprintf("hi there\n");
 	// Build all the types needed by the interpreter.
 	numInitTypes = sizeof(typeInit) / sizeof(typeInit[0]);
+	Gprintf("hi there2\n");
 	types = (tMD_TypeDef**)mallocForever(numInitTypes * sizeof(tMD_TypeDef*));
 	for (i=0; i<numInitTypes; i++) {
 		if (typeInit[i].assemblyName != NULL) {
 			// Normal type initialisation
+			Gprintf("hi there3\n");
 			types[i] = MetaData_GetTypeDefFromFullName((STRING)typeInit[i].assemblyName, (STRING)typeInit[i].nameSpace, (STRING)typeInit[i].name);
 			// For the pre-defined system types, fill in the well-known memory sizes
 			types[i]->stackType = typeInit[i].stackType;

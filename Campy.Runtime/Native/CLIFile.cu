@@ -32,6 +32,7 @@
 #include "System.Array.h"
 #include "System.String.h"
 #include "Gstring.h"
+#include "Gprintf.h"
 
 // Is this exe/dll file for the .NET virtual machine?
 #define DOT_NET_MACHINE 0x14c
@@ -53,9 +54,12 @@ __device__ tMetaData* CLIFile_GetMetaDataForAssembly(char *pAssemblyName) {
 		pAssemblyName = "corlib";
 	}
 
+	Gprintf("looking at pfiles.\n");
+
 	// Look in already-loaded files first
 	pFiles = pFilesLoaded;
 	while (pFiles != NULL) {
+		Gprintf("pFiles not null.\n");
 		tCLIFile *pCLIFile;
 		tMD_Assembly *pThisAssembly;
 
@@ -69,12 +73,14 @@ __device__ tMetaData* CLIFile_GetMetaDataForAssembly(char *pAssemblyName) {
 		pFiles = pFiles->pNext;
 	}
 
+	Gprintf("Doing load\n");
 	// Assembly not loaded, so load it if possible
 	{
 		tCLIFile *pCLIFile;
-		char fileName[128];
+		char fileName[2000];
 		Gsprintf(fileName, "%s.dll", pAssemblyName);
-		pCLIFile = CLIFile_Load(fileName);
+		//pCLIFile = CLIFile_Load(fileName);
+		pCLIFile = CLIFile_Load(pAssemblyName);
 		if (pCLIFile == NULL) {
 			Crash("Cannot load required assembly file: %s", fileName);
 		}
@@ -82,10 +88,21 @@ __device__ tMetaData* CLIFile_GetMetaDataForAssembly(char *pAssemblyName) {
 	}
 }
 
+__device__ unsigned char Gdata[];
+
 __device__ static void* LoadFileFromDisk(char *pFileName) {
 	int f;
 	void *pData = NULL;
-
+	Gprintf("In LoadFileFromDisk\n");
+	Gprintf(pFileName);
+	Gprintf("\nyo\n");
+	char buf[1000];
+	Gsprintf(buf, "%s", pFileName);
+	// Crashes! Gprintf("File name = %s\n", pFileName);
+	Gprintf(buf);
+	Gprintf("\nyo\n");
+	if (Gstrcmp("corlib", pFileName) != 0)
+		return nullptr;
 	//f = open(pFileName, O_RDONLY|O_BINARY);
 	//if (f >= 0) {
 	//	int len;
@@ -102,7 +119,7 @@ __device__ static void* LoadFileFromDisk(char *pFileName) {
 	//	}
 	//	close(f);
 	//}
-
+	pData = Gdata;
 	return pData;
 }
 
@@ -239,7 +256,7 @@ __device__ tCLIFile* CLIFile_Load(char *pFileName) {
 	void *pRawFile;
 	tCLIFile *pRet;
 	tFilesLoaded *pNewFile;
-
+	Gprintf("In CLIFile_Load\n");
 	pRawFile = LoadFileFromDisk(pFileName);
 
 	if (pRawFile == NULL) {
