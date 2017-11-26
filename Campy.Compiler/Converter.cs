@@ -1738,7 +1738,6 @@ namespace Campy.Compiler
                 }
             }
 
-            ptx = ptx.Replace(".target sm_30", ".target sm_20");
             IntPtr ptr = Marshal.StringToHGlobalAnsi(ptx);
             res = Cuda.cuLinkAddData_v2(linkState, CUjitInputType.CU_JIT_INPUT_PTX, ptr, (uint)ptx.Length, "", 0, op, IntPtr.Zero);
             CheckCudaError(res);
