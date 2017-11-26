@@ -156,52 +156,140 @@
     <ClInclude Include="Types.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Gvsnprintf.h">
+    <ClInclude Include="Gstring.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Gprintf.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <CudaCompile Include="CLIFile.cu" />
-    <CudaCompile Include="Delegate.cu" />
-    <CudaCompile Include="Finalizer.cu" />
-    <CudaCompile Include="Generics.cu" />
-    <CudaCompile Include="Heap.cu" />
-    <CudaCompile Include="InternalCall.cu" />
-    <CudaCompile Include="MetaData.cu" />
-    <CudaCompile Include="MetaData_Fill.cu" />
-    <CudaCompile Include="MetaData_Search.cu" />
-    <CudaCompile Include="MethodState.cu" />
-    <CudaCompile Include="PInvoke.cu" />
-    <CudaCompile Include="RVA.cu" />
-    <CudaCompile Include="Sys.cu" />
-    <CudaCompile Include="System.Array.cu" />
-    <CudaCompile Include="System.Char.cu" />
-    <CudaCompile Include="System.Console.cu" />
-    <CudaCompile Include="System.DateTime.cu" />
-    <CudaCompile Include="System.Diagnostics.Debugger.cu" />
-    <CudaCompile Include="System.Enum.cu" />
-    <CudaCompile Include="System.Environment.cu" />
-    <CudaCompile Include="System.GC.cu" />
-    <CudaCompile Include="System.IO.FileInternal.cu" />
-    <CudaCompile Include="System.Math.cu" />
-    <CudaCompile Include="System.Net.Dns.cu" />
-    <CudaCompile Include="System.Net.Sockets.Socket.cu" />
-    <CudaCompile Include="System.Object.cu" />
-    <CudaCompile Include="System.Runtime.CompilerServices.RuntimeHelpers.cu" />
-    <CudaCompile Include="System.RuntimeType.cu" />
-    <CudaCompile Include="System.String.cu" />
-    <CudaCompile Include="System.Threading.Interlocked.cu" />
-    <CudaCompile Include="System.Threading.Monitor.cu" />
-    <CudaCompile Include="System.Threading.Thread.cu" />
-    <CudaCompile Include="System.Type.cu" />
-    <CudaCompile Include="System.ValueType.cu" />
-    <CudaCompile Include="System.WeakReference.cu" />
-    <CudaCompile Include="Thread.cu" />
-    <CudaCompile Include="Type.cu" />
-    <CudaCompile Include="JIT_Execute.cu" />
-    <CudaCompile Include="JIT.cu" />
-    <CudaCompile Include="basics.cu" />
-    <CudaCompile Include="Gvsnprintf.cu" />
+    <CudaCompile Include="basics.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="CLIFile.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="Delegate.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="Finalizer.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="Generics.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="Gvsnprintf.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="Heap.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="InternalCall.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="JIT.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="JIT_Execute.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="MetaData.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="MetaData_Fill.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="MetaData_Search.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="MethodState.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="PInvoke.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="RVA.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="Sys.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="System.Array.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="System.Char.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="System.Console.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="System.DateTime.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="System.Diagnostics.Debugger.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="System.Enum.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="System.Environment.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="System.GC.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="System.IO.FileInternal.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="System.Math.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="System.Net.Dns.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="System.Net.Sockets.Socket.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="System.Object.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="System.Runtime.CompilerServices.RuntimeHelpers.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="System.RuntimeType.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="System.String.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="System.Threading.Interlocked.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="System.Threading.Monitor.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="System.Threading.Thread.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="System.Type.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="System.ValueType.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="System.WeakReference.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="Thread.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="Type.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="Gstring.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="x64\Debug\Finalizer.ptx">
@@ -315,6 +403,8 @@
     <None Include="x64\Debug\Type.ptx">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="x64\Debug\Delegate.ptx" />
+    <None Include="x64\Debug\Delegate.ptx">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

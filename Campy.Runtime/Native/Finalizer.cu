@@ -35,7 +35,7 @@ __device__ void Finalizer_Init() {
 __device__ void AddFinalizer(HEAP_PTR ptr) {
 	if (toFinalizeOfs >= toFinalizeCapacity) {
 		toFinalizeCapacity <<= 1;
-		ppToFinalize = (HEAP_PTR*)gpurealloc(ppToFinalize, toFinalizeCapacity * sizeof(void*));
+		ppToFinalize = (HEAP_PTR*)Grealloc(ppToFinalize, toFinalizeCapacity * sizeof(void*));
 	}
 	ppToFinalize[toFinalizeOfs++] = ptr;
 }

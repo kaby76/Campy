@@ -304,7 +304,7 @@ __device__ static void* LoadSingleTable(tMetaData *pThis, tRVA *pRVA, int tableI
 	int rowLen = 0; // Number of bytes taken by each row in memory.
 	int i, row;
 	const char *pDef = tableDefs[tableID];
-	int defLen = (int)gpustrlen(pDef);
+	int defLen = (int)Gstrlen(pDef);
 	void *pRet;
 	char *pSource = (char*)*ppTable;
 	char *pDest;

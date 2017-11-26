@@ -73,7 +73,7 @@
 
 #include <cuda.h>
 #include <stdarg.h>
-#include "Gvsnprintf.h"
+#include "Gprintf.h"
 
 #define MAX(A,B) ((A>B)?A:B)
 
@@ -549,4 +549,17 @@ Gvsprintf(char *buf, const char *format, va_list ap)
 	int ret;
 	ret = dopr(buf, 0, format, ap);
 	return ret;
+}
+
+__device__ int Gsprintf(
+	char*       const _Buffer,
+	char const* const _Format,
+	...)
+{
+	va_list arg;
+	int done;
+	va_start(arg, _Format);
+	done = Gvsprintf(_Buffer, _Format, arg);
+	va_end(arg);
+	return done;
 }

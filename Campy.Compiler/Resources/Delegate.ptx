@@ -11,10 +11,10 @@
 .address_size 64
 
 	// .weak	cudaMalloc
-.extern .func  (.param .b32 func_retval0) _Z9gpustrcmpPKcS0_
+.extern .func  (.param .b32 func_retval0) _Z7GstrcmpPKcS0_
 (
-	.param .b64 _Z9gpustrcmpPKcS0__param_0,
-	.param .b64 _Z9gpustrcmpPKcS0__param_1
+	.param .b64 _Z7GstrcmpPKcS0__param_0,
+	.param .b64 _Z7GstrcmpPKcS0__param_1
 )
 ;
 .global .align 8 .b8 $str[6] = {46, 99, 116, 111, 114, 0};
@@ -194,7 +194,7 @@ BB7_2:
 	st.param.b64	[param1+0], %rd4;
 	.param .b32 retval0;
 	call.uni (retval0), 
-	_Z9gpustrcmpPKcS0_, 
+	_Z7GstrcmpPKcS0_, 
 	(
 	param0, 
 	param1

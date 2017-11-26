@@ -31,6 +31,7 @@
 
 #include "System.Array.h"
 #include "System.String.h"
+#include "Gstring.h"
 
 // Is this exe/dll file for the .NET virtual machine?
 #define DOT_NET_MACHINE 0x14c
@@ -48,7 +49,7 @@ __device__ tMetaData* CLIFile_GetMetaDataForAssembly(char *pAssemblyName) {
 	tFilesLoaded *pFiles;
 
 	// Convert "mscorlib" to "corlib"
-	if (gpustrcmp(pAssemblyName, "mscorlib") == 0) {
+	if (Gstrcmp(pAssemblyName, "mscorlib") == 0) {
 		pAssemblyName = "corlib";
 	}
 
@@ -61,7 +62,7 @@ __device__ tMetaData* CLIFile_GetMetaDataForAssembly(char *pAssemblyName) {
 		pCLIFile = pFiles->pCLIFile;
 		// Get the assembly info - there is only ever one of these in the each file's metadata
 		pThisAssembly = (tMD_Assembly*)MetaData_GetTableRow(pCLIFile->pMetaData, MAKE_TABLE_INDEX(0x20, 1));
-		if (gpustrcmp(pAssemblyName, pThisAssembly->name) == 0) {
+		if (Gstrcmp(pAssemblyName, pThisAssembly->name) == 0) {
 			// Found the correct assembly, so return its meta-data
 			return pCLIFile->pMetaData;
 		}
@@ -72,7 +73,7 @@ __device__ tMetaData* CLIFile_GetMetaDataForAssembly(char *pAssemblyName) {
 	{
 		tCLIFile *pCLIFile;
 		char fileName[128];
-		gpusprintf(fileName, "%s.dll", pAssemblyName);
+		Gsprintf(fileName, "%s.dll", pAssemblyName);
 		pCLIFile = CLIFile_Load(fileName);
 		if (pCLIFile == NULL) {
 			Crash("Cannot load required assembly file: %s", fileName);
@@ -106,160 +107,158 @@ __device__ static void* LoadFileFromDisk(char *pFileName) {
 }
 
 __device__ static tCLIFile* LoadPEFile(void *pData) {
-	//tCLIFile *pRet = TMALLOC(tCLIFile);
+	tCLIFile *pRet = TMALLOC(tCLIFile);
 
-	//unsigned char *pMSDOSHeader = (unsigned char*)&(((unsigned char*)pData)[0]);
-	//unsigned char *pPEHeader;
-	//unsigned char *pPEOptionalHeader;
-	//unsigned char *pPESectionHeaders;
-	//unsigned char *pCLIHeader;
-	//unsigned char *pRawMetaData;
+	unsigned char *pMSDOSHeader = (unsigned char*)&(((unsigned char*)pData)[0]);
+	unsigned char *pPEHeader;
+	unsigned char *pPEOptionalHeader;
+	unsigned char *pPESectionHeaders;
+	unsigned char *pCLIHeader;
+	unsigned char *pRawMetaData;
 
-	//int i;
-	//unsigned int lfanew;
-	//unsigned short machine;
-	//int numSections;
-	//unsigned int imageBase;
-	//int fileAlignment;
-	//unsigned int cliHeaderRVA, cliHeaderSize;
-	//unsigned int metaDataRVA, metaDataSize;
-	//tMetaData *pMetaData;
+	int i;
+	unsigned int lfanew;
+	unsigned short machine;
+	int numSections;
+	unsigned int imageBase;
+	int fileAlignment;
+	unsigned int cliHeaderRVA, cliHeaderSize;
+	unsigned int metaDataRVA, metaDataSize;
+	tMetaData *pMetaData;
 
-	//pRet->pRVA = RVA();
-	//pRet->pMetaData = pMetaData = MetaData();
+	pRet->pRVA = RVA();
+	pRet->pMetaData = pMetaData = MetaData();
 
-	//lfanew = *(unsigned int*)&(pMSDOSHeader[0x3c]);
-	//pPEHeader = pMSDOSHeader + lfanew + 4;
-	//pPEOptionalHeader = pPEHeader + 20;
-	//pPESectionHeaders = pPEOptionalHeader + 224;
+	lfanew = *(unsigned int*)&(pMSDOSHeader[0x3c]);
+	pPEHeader = pMSDOSHeader + lfanew + 4;
+	pPEOptionalHeader = pPEHeader + 20;
+	pPESectionHeaders = pPEOptionalHeader + 224;
 
-	//machine = *(unsigned short*)&(pPEHeader[0]);
-	//if (machine != DOT_NET_MACHINE) {
-	//	return NULL;
-	//}
-	//numSections = *(unsigned short*)&(pPEHeader[2]);
+	machine = *(unsigned short*)&(pPEHeader[0]);
+	if (machine != DOT_NET_MACHINE) {
+		return NULL;
+	}
+	numSections = *(unsigned short*)&(pPEHeader[2]);
 
-	//imageBase = *(unsigned int*)&(pPEOptionalHeader[28]);
-	//fileAlignment = *(int*)&(pPEOptionalHeader[36]);
+	imageBase = *(unsigned int*)&(pPEOptionalHeader[28]);
+	fileAlignment = *(int*)&(pPEOptionalHeader[36]);
 
-	//for (i=0; i<numSections; i++) {
-	//	unsigned char *pSection = pPESectionHeaders + i * 40;
-	//	RVA_Create(pRet->pRVA, pData, pSection);
-	//}
+	for (i=0; i<numSections; i++) {
+		unsigned char *pSection = pPESectionHeaders + i * 40;
+		RVA_Create(pRet->pRVA, pData, pSection);
+	}
 
-	//cliHeaderRVA = *(unsigned int*)&(pPEOptionalHeader[208]);
-	//cliHeaderSize = *(unsigned int*)&(pPEOptionalHeader[212]);
+	cliHeaderRVA = *(unsigned int*)&(pPEOptionalHeader[208]);
+	cliHeaderSize = *(unsigned int*)&(pPEOptionalHeader[212]);
 
-	//pCLIHeader = (unsigned char *)RVA_FindData(pRet->pRVA, cliHeaderRVA);
+	pCLIHeader = (unsigned char *)RVA_FindData(pRet->pRVA, cliHeaderRVA);
 
-	//metaDataRVA = *(unsigned int*)&(pCLIHeader[8]);
-	//metaDataSize = *(unsigned int*)&(pCLIHeader[12]);
-	//pRet->entryPoint = *(unsigned int*)&(pCLIHeader[20]);
-	//pRawMetaData = (unsigned char*)RVA_FindData(pRet->pRVA, metaDataRVA);
+	metaDataRVA = *(unsigned int*)&(pCLIHeader[8]);
+	metaDataSize = *(unsigned int*)&(pCLIHeader[12]);
+	pRet->entryPoint = *(unsigned int*)&(pCLIHeader[20]);
+	pRawMetaData = (unsigned char*)RVA_FindData(pRet->pRVA, metaDataRVA);
 
-	//// Load all metadata
-	//{
-	//	unsigned int versionLen = *(unsigned int*)&(pRawMetaData[12]);
-	//	unsigned int ofs, numberOfStreams;
-	//	void *pTableStream = NULL;
-	//	unsigned int tableStreamSize;
-	//	pRet->pVersion = &(pRawMetaData[16]);
-	//	log_f(1, "CLI version: %s\n", pRet->pVersion);
-	//	ofs = 16 + versionLen;
-	//	numberOfStreams = *(unsigned short*)&(pRawMetaData[ofs + 2]);
-	//	ofs += 4;
+	// Load all metadata
+	{
+		unsigned int versionLen = *(unsigned int*)&(pRawMetaData[12]);
+		unsigned int ofs, numberOfStreams;
+		void *pTableStream = NULL;
+		unsigned int tableStreamSize;
+		pRet->pVersion = &(pRawMetaData[16]);
+		log_f(1, "CLI version: %s\n", pRet->pVersion);
+		ofs = 16 + versionLen;
+		numberOfStreams = *(unsigned short*)&(pRawMetaData[ofs + 2]);
+		ofs += 4;
 
-	//	for (i=0; i<(signed)numberOfStreams; i++) {
-	//		unsigned int streamOffset = *(unsigned int*)&pRawMetaData[ofs];
-	//		unsigned int streamSize = *(unsigned int*)&pRawMetaData[ofs+4];
-	//		unsigned char *pStreamName = &pRawMetaData[ofs+8];
-	//		void *pStream = pRawMetaData + streamOffset;
-	//		ofs += (unsigned int)((strlen((const char*)pStreamName)+4) & (~0x3)) + 8;
-	//		if (strcasecmp((const char*)pStreamName, "#Strings") == 0) {
-	//			MetaData_LoadStrings(pMetaData, pStream, streamSize);
-	//		} else if (strcasecmp((const char*)pStreamName, "#US") == 0) {
-	//			MetaData_LoadUserStrings(pMetaData, pStream, streamSize);
-	//		} else if (strcasecmp((const char*)pStreamName, "#Blob") == 0) {
-	//			MetaData_LoadBlobs(pMetaData, pStream, streamSize);
-	//		} else if (strcasecmp((const char*)pStreamName, "#GUID") == 0) {
-	//			MetaData_LoadGUIDs(pMetaData, pStream, streamSize);
-	//		} else if (strcasecmp((const char*)pStreamName, "#~") == 0) {
-	//			pTableStream = pStream;
-	//			tableStreamSize = streamSize;
-	//		}
-	//	}
-	//	// Must load tables last
-	//	if (pTableStream != NULL) {
-	//		MetaData_LoadTables(pMetaData, pRet->pRVA, pTableStream, tableStreamSize);
-	//	}
-	//}
+		for (i=0; i<(signed)numberOfStreams; i++) {
+			unsigned int streamOffset = *(unsigned int*)&pRawMetaData[ofs];
+			unsigned int streamSize = *(unsigned int*)&pRawMetaData[ofs+4];
+			unsigned char *pStreamName = &pRawMetaData[ofs+8];
+			void *pStream = pRawMetaData + streamOffset;
+			ofs += (unsigned int)((Gstrlen((const char*)pStreamName)+4) & (~0x3)) + 8;
+			if (Gstrcasecmp((const char*)pStreamName, "#Strings") == 0) {
+				MetaData_LoadStrings(pMetaData, pStream, streamSize);
+			} else if (Gstrcasecmp((const char*)pStreamName, "#US") == 0) {
+				MetaData_LoadUserStrings(pMetaData, pStream, streamSize);
+			} else if (Gstrcasecmp((const char*)pStreamName, "#Blob") == 0) {
+				MetaData_LoadBlobs(pMetaData, pStream, streamSize);
+			} else if (Gstrcasecmp((const char*)pStreamName, "#GUID") == 0) {
+				MetaData_LoadGUIDs(pMetaData, pStream, streamSize);
+			} else if (Gstrcasecmp((const char*)pStreamName, "#~") == 0) {
+				pTableStream = pStream;
+				tableStreamSize = streamSize;
+			}
+		}
+		// Must load tables last
+		if (pTableStream != NULL) {
+			MetaData_LoadTables(pMetaData, pRet->pRVA, pTableStream, tableStreamSize);
+		}
+	}
 
-	//// Mark all generic definition types and methods as such
-	//for (i=pMetaData->tables.numRows[MD_TABLE_GENERICPARAM]; i>0; i--) {
-	//	tMD_GenericParam *pGenericParam;
-	//	IDX_TABLE ownerIdx;
+	// Mark all generic definition types and methods as such
+	for (i=pMetaData->tables.numRows[MD_TABLE_GENERICPARAM]; i>0; i--) {
+		tMD_GenericParam *pGenericParam;
+		IDX_TABLE ownerIdx;
 
-	//	pGenericParam = (tMD_GenericParam*)MetaData_GetTableRow
-	//		(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_GENERICPARAM, i));
-	//	ownerIdx = pGenericParam->owner;
-	//	switch (TABLE_ID(ownerIdx)) {
-	//		case MD_TABLE_TYPEDEF:
-	//			{
-	//				tMD_TypeDef *pTypeDef = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, ownerIdx);
-	//				pTypeDef->isGenericDefinition = 1;
-	//			}
-	//			break;
-	//		case MD_TABLE_METHODDEF:
-	//			{
-	//				tMD_MethodDef *pMethodDef = (tMD_MethodDef*)MetaData_GetTableRow(pMetaData, ownerIdx);
-	//				pMethodDef->isGenericDefinition = 1;
-	//			}
-	//			break;
-	//		default:
-	//			Crash("Wrong generic parameter owner: 0x%08x", ownerIdx);
-	//	}
-	//}
+		pGenericParam = (tMD_GenericParam*)MetaData_GetTableRow
+			(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_GENERICPARAM, i));
+		ownerIdx = pGenericParam->owner;
+		switch (TABLE_ID(ownerIdx)) {
+			case MD_TABLE_TYPEDEF:
+				{
+					tMD_TypeDef *pTypeDef = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, ownerIdx);
+					pTypeDef->isGenericDefinition = 1;
+				}
+				break;
+			case MD_TABLE_METHODDEF:
+				{
+					tMD_MethodDef *pMethodDef = (tMD_MethodDef*)MetaData_GetTableRow(pMetaData, ownerIdx);
+					pMethodDef->isGenericDefinition = 1;
+				}
+				break;
+			default:
+				Crash("Wrong generic parameter owner: 0x%08x", ownerIdx);
+		}
+	}
 
-	//// Mark all nested classes as such
-	//for (i=pMetaData->tables.numRows[MD_TABLE_NESTEDCLASS]; i>0; i--) {
-	//	tMD_NestedClass *pNested;
-	//	tMD_TypeDef *pParent, *pChild;
+	// Mark all nested classes as such
+	for (i=pMetaData->tables.numRows[MD_TABLE_NESTEDCLASS]; i>0; i--) {
+		tMD_NestedClass *pNested;
+		tMD_TypeDef *pParent, *pChild;
 
-	//	pNested = (tMD_NestedClass*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_NESTEDCLASS, i));
-	//	pParent = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->enclosingClass);
-	//	pChild = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->nestedClass);
-	//	pChild->pNestedIn = pParent;
-	//}
+		pNested = (tMD_NestedClass*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_NESTEDCLASS, i));
+		pParent = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->enclosingClass);
+		pChild = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->nestedClass);
+		pChild->pNestedIn = pParent;
+	}
 
-	//return pRet;
-return NULL;
+	return pRet;
 }
 
 __device__ tCLIFile* CLIFile_Load(char *pFileName) {
-	//void *pRawFile;
-	//tCLIFile *pRet;
-	//tFilesLoaded *pNewFile;
+	void *pRawFile;
+	tCLIFile *pRet;
+	tFilesLoaded *pNewFile;
 
-	//pRawFile = LoadFileFromDisk(pFileName);
+	pRawFile = LoadFileFromDisk(pFileName);
 
-	//if (pRawFile == NULL) {
-	//	Crash("Cannot load file: %s", pFileName);
-	//}
+	if (pRawFile == NULL) {
+		Crash("Cannot load file: %s", pFileName);
+	}
 
-	//log_f(1, "\nLoading file: %s\n", pFileName);
+	log_f(1, "\nLoading file: %s\n", pFileName);
 
-	//pRet = LoadPEFile(pRawFile);
-	//pRet->pFileName = (char*)mallocForever((U32)strlen(pFileName) + 1);
-	//strcpy(pRet->pFileName, pFileName);
+	pRet = LoadPEFile(pRawFile);
+	pRet->pFileName = (char*)mallocForever((U32)Gstrlen(pFileName) + 1);
+	Gstrcpy(pRet->pFileName, pFileName);
 
-	//// Record that we've loaded this file
-	//pNewFile = TMALLOCFOREVER(tFilesLoaded);
-	//pNewFile->pCLIFile = pRet;
-	//pNewFile->pNext = pFilesLoaded;
-	//pFilesLoaded = pNewFile;
+	// Record that we've loaded this file
+	pNewFile = TMALLOCFOREVER(tFilesLoaded);
+	pNewFile->pCLIFile = pRet;
+	pNewFile->pNext = pFilesLoaded;
+	pFilesLoaded = pNewFile;
 
-	//return pRet;
-	return NULL;
+	return pRet;
 }
 
 __device__ I32 CLIFile_Execute(tCLIFile *pThis, int argc, char **argp) {

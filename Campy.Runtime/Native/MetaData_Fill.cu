@@ -25,6 +25,7 @@
 #include "CLIFile.h"
 #include "Type.h"
 #include "EvalStack.h"
+#include "Gstring.h"
 
 __device__ void MetaData_Fill_FieldDef(tMD_TypeDef *pParentType, tMD_FieldDef *pFieldDef, U32 memOffset, tMD_TypeDef **ppClassTypeArgs) {
 	U32 sigLength;
@@ -373,12 +374,12 @@ __device__ void MetaData_Fill_TypeDef_(tMD_TypeDef *pTypeDef, tMD_TypeDef **ppCl
 				memcpy(pMethodCopy, pMethodDef, sizeof(tMD_MethodDef));
 				pMethodDef = pMethodCopy;
 			}
-			if (METHOD_ISSTATIC(pMethodDef) && gpustrcmp(pMethodDef->name, ".cctor") == 0) {
+			if (METHOD_ISSTATIC(pMethodDef) && Gstrcmp(pMethodDef->name, ".cctor") == 0) {
 				// This is a static constructor
 				pTypeDef->pStaticConstructor = pMethodDef;
 			}
 			if (!METHOD_ISSTATIC(pMethodDef) && pTypeDef->pParent != NULL &&
-				gpustrcmp(pMethodDef->name, "Finalize") == 0) {
+				Gstrcmp(pMethodDef->name, "Finalize") == 0) {
 				// This is a Finalizer method, but not for Object.
 				// Delibrately miss out Object's Finalizer because it's empty and will cause every object
 				// of any type to have a Finalizer which will be terrible for performance.

@@ -604,10 +604,10 @@
 	.param .b64 _Z12Map_DelegateP14tMD_MethodDef__param_0
 )
 ;
-.extern .func  (.param .b32 func_retval0) _Z9gpustrcmpPKcS0_
+.extern .func  (.param .b32 func_retval0) _Z7GstrcmpPKcS0_
 (
-	.param .b64 _Z9gpustrcmpPKcS0__param_0,
-	.param .b64 _Z9gpustrcmpPKcS0__param_1
+	.param .b64 _Z7GstrcmpPKcS0__param_0,
+	.param .b64 _Z7GstrcmpPKcS0__param_1
 )
 ;
 .extern .func  (.param .b32 func_retval0) _Z13Type_IsMethodP14tMD_MethodDef_PcP12tMD_TypeDef_jPh
@@ -874,7 +874,7 @@ BB6_2:
 	st.param.b64	[param1+0], %rd46;
 	.param .b32 retval0;
 	call.uni (retval0), 
-	_Z9gpustrcmpPKcS0_, 
+	_Z7GstrcmpPKcS0_, 
 	(
 	param0, 
 	param1
@@ -898,7 +898,7 @@ BB6_2:
 	st.param.b64	[param1+0], %rd43;
 	.param .b32 retval0;
 	call.uni (retval0), 
-	_Z9gpustrcmpPKcS0_, 
+	_Z7GstrcmpPKcS0_, 
 	(
 	param0, 
 	param1

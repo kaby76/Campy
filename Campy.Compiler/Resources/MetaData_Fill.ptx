@@ -108,10 +108,10 @@
 	.param .b64 _Z32MetaData_GetFieldDefFromDefOrRefP10tMetaData_jPP12tMD_TypeDef_S3__param_3
 )
 ;
-.extern .func  (.param .b32 func_retval0) _Z9gpustrcmpPKcS0_
+.extern .func  (.param .b32 func_retval0) _Z7GstrcmpPKcS0_
 (
-	.param .b64 _Z9gpustrcmpPKcS0__param_0,
-	.param .b64 _Z9gpustrcmpPKcS0__param_1
+	.param .b64 _Z7GstrcmpPKcS0__param_0,
+	.param .b64 _Z7GstrcmpPKcS0__param_1
 )
 ;
 .extern .func _Z5log_fjPKcz
@@ -844,7 +844,7 @@ BB7_29:
 	cvta.global.u64 	%rd120, %rd119;
 	mov.u64 	%rd121, $str1;
 	cvta.global.u64 	%rd122, %rd121;
-	mov.u32 	%r115, 244;
+	mov.u32 	%r115, 245;
 	// Callseq Start 14
 	{
 	.reg .b32 temp_param_reg;
@@ -1478,7 +1478,7 @@ BB7_93:
 	st.param.b64	[param1+0], %rd159;
 	.param .b32 retval0;
 	call.uni (retval0), 
-	_Z9gpustrcmpPKcS0_, 
+	_Z7GstrcmpPKcS0_, 
 	(
 	param0, 
 	param1
@@ -1515,7 +1515,7 @@ BB7_96:
 	st.param.b64	[param1+0], %rd163;
 	.param .b32 retval0;
 	call.uni (retval0), 
-	_Z9gpustrcmpPKcS0_, 
+	_Z7GstrcmpPKcS0_, 
 	(
 	param0, 
 	param1
@@ -2037,7 +2037,7 @@ BB7_143:
 	cvta.global.u64 	%rd213, %rd212;
 	mov.u64 	%rd214, $str1;
 	cvta.global.u64 	%rd215, %rd214;
-	mov.u32 	%r179, 463;
+	mov.u32 	%r179, 464;
 	// Callseq Start 43
 	{
 	.reg .b32 temp_param_reg;

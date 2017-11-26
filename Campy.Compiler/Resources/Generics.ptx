@@ -54,11 +54,11 @@
 	.param .b32 _Z20MetaData_GetTableRowP10tMetaData_j_param_1
 )
 ;
-.extern .func  (.param .b32 func_retval0) _Z9gpumemcmpPKvS0_y
+.extern .func  (.param .b32 func_retval0) _Z7GmemcmpPKvS0_y
 (
-	.param .b64 _Z9gpumemcmpPKvS0_y_param_0,
-	.param .b64 _Z9gpumemcmpPKvS0_y_param_1,
-	.param .b64 _Z9gpumemcmpPKvS0_y_param_2
+	.param .b64 _Z7GmemcmpPKvS0_y_param_0,
+	.param .b64 _Z7GmemcmpPKvS0_y_param_1,
+	.param .b64 _Z7GmemcmpPKvS0_y_param_2
 )
 ;
 .extern .func  (.param .b64 func_retval0) _Z13mallocForeverj
@@ -66,48 +66,48 @@
 	.param .b32 _Z13mallocForeverj_param_0
 )
 ;
-.extern .func  (.param .b64 func_retval0) _Z9gpumemcpyPvPKvy
+.extern .func  (.param .b64 func_retval0) _Z7GmemcpyPvPKvy
 (
-	.param .b64 _Z9gpumemcpyPvPKvy_param_0,
-	.param .b64 _Z9gpumemcpyPvPKvy_param_1,
-	.param .b64 _Z9gpumemcpyPvPKvy_param_2
+	.param .b64 _Z7GmemcpyPvPKvy_param_0,
+	.param .b64 _Z7GmemcpyPvPKvy_param_1,
+	.param .b64 _Z7GmemcpyPvPKvy_param_2
 )
 ;
-.extern .func  (.param .b64 func_retval0) _Z9gpumemsetPviy
+.extern .func  (.param .b64 func_retval0) _Z7GmemsetPviy
 (
-	.param .b64 _Z9gpumemsetPviy_param_0,
-	.param .b32 _Z9gpumemsetPviy_param_1,
-	.param .b64 _Z9gpumemsetPviy_param_2
+	.param .b64 _Z7GmemsetPviy_param_0,
+	.param .b32 _Z7GmemsetPviy_param_1,
+	.param .b64 _Z7GmemsetPviy_param_2
 )
 ;
-.extern .func  (.param .b64 func_retval0) _Z9gpustrcpyPcPKc
+.extern .func  (.param .b64 func_retval0) _Z7GstrcpyPcPKc
 (
-	.param .b64 _Z9gpustrcpyPcPKc_param_0,
-	.param .b64 _Z9gpustrcpyPcPKc_param_1
+	.param .b64 _Z7GstrcpyPcPKc_param_0,
+	.param .b64 _Z7GstrcpyPcPKc_param_1
 )
 ;
-.extern .func  (.param .b64 func_retval0) _Z9gpustrcatPcPKc
+.extern .func  (.param .b64 func_retval0) _Z7GstrcatPcPKc
 (
-	.param .b64 _Z9gpustrcatPcPKc_param_0,
-	.param .b64 _Z9gpustrcatPcPKc_param_1
+	.param .b64 _Z7GstrcatPcPKc_param_0,
+	.param .b64 _Z7GstrcatPcPKc_param_1
 )
 ;
-.extern .func  (.param .b32 func_retval0) _Z10gpusprintfPcPKcz
+.extern .func  (.param .b32 func_retval0) _Z8GsprintfPcPKcz
 (
-	.param .b64 _Z10gpusprintfPcPKcz_param_0,
-	.param .b64 _Z10gpusprintfPcPKcz_param_1,
+	.param .b64 _Z8GsprintfPcPKcz_param_0,
+	.param .b64 _Z8GsprintfPcPKcz_param_1,
 	.param .align 8 .b8 %VAParam[]
 )
 ;
-.extern .func  (.param .b64 func_retval0) _Z9gpustrchrPci
+.extern .func  (.param .b64 func_retval0) _Z7GstrchrPKci
 (
-	.param .b64 _Z9gpustrchrPci_param_0,
-	.param .b32 _Z9gpustrchrPci_param_1
+	.param .b64 _Z7GstrchrPKci_param_0,
+	.param .b32 _Z7GstrchrPKci_param_1
 )
 ;
-.extern .func  (.param .b64 func_retval0) _Z9gpustrlenPKc
+.extern .func  (.param .b64 func_retval0) _Z7GstrlenPKc
 (
-	.param .b64 _Z9gpustrlenPKc_param_0
+	.param .b64 _Z7GstrlenPKc_param_0
 )
 ;
 .extern .func  (.param .b64 func_retval0) _Z37MetaData_GetMethodDefFromDefRefOrSpecP10tMetaData_jPP12tMD_TypeDef_S3_
@@ -879,7 +879,7 @@ BB7_34:
 	st.param.b64	[param2+0], %rd3;
 	.param .b32 retval0;
 	call.uni (retval0), 
-	_Z9gpumemcmpPKvS0_y, 
+	_Z7GmemcmpPKvS0_y, 
 	(
 	param0, 
 	param1, 
@@ -934,7 +934,7 @@ BB7_37:
 	st.param.b64	[param2+0], %rd3;
 	.param .b64 retval0;
 	call.uni (retval0), 
-	_Z9gpumemcpyPvPKvy, 
+	_Z7GmemcpyPvPKvy, 
 	(
 	param0, 
 	param1, 
@@ -976,7 +976,7 @@ BB7_37:
 	st.param.b64	[param2+0], %rd58;
 	.param .b64 retval0;
 	call.uni (retval0), 
-	_Z9gpumemsetPviy, 
+	_Z7GmemsetPviy, 
 	(
 	param0, 
 	param1, 
@@ -998,7 +998,7 @@ BB7_37:
 	st.param.b64	[param1+0], %rd60;
 	.param .b64 retval0;
 	call.uni (retval0), 
-	_Z9gpustrcpyPcPKc, 
+	_Z7GstrcpyPcPKc, 
 	(
 	param0, 
 	param1
@@ -1019,7 +1019,7 @@ BB7_37:
 	st.param.b64	[param1+0], %rd64;
 	.param .b64 retval0;
 	call.uni (retval0), 
-	_Z9gpustrcatPcPKc, 
+	_Z7GstrcatPcPKc, 
 	(
 	param0, 
 	param1
@@ -1046,7 +1046,7 @@ BB7_38:
 	st.param.b64	[param1+0], %rd67;
 	.param .b64 retval0;
 	call.uni (retval0), 
-	_Z9gpustrcatPcPKc, 
+	_Z7GstrcatPcPKc, 
 	(
 	param0, 
 	param1
@@ -1124,7 +1124,7 @@ BB7_41:
 	st.param.b32	[param1+0], %r34;
 	.param .b64 retval0;
 	call.uni (retval0), 
-	_Z9gpustrchrPci, 
+	_Z7GstrchrPKci, 
 	(
 	param0, 
 	param1
@@ -1151,7 +1151,7 @@ BB7_41:
 	st.param.b64	[param2+8], %rd76;
 	.param .b32 retval0;
 	call.uni (retval0), 
-	_Z10gpusprintfPcPKcz, 
+	_Z8GsprintfPcPKcz, 
 	(
 	param0, 
 	param1, 
@@ -1183,7 +1183,7 @@ BB7_50:
 	st.param.b32	[param1+0], %r42;
 	.param .b64 retval0;
 	call.uni (retval0), 
-	_Z9gpustrchrPci, 
+	_Z7GstrchrPKci, 
 	(
 	param0, 
 	param1
@@ -1204,7 +1204,7 @@ BB7_50:
 	st.param.b64	[param1+0], %rd89;
 	.param .b32 retval0;
 	call.uni (retval0), 
-	_Z10gpusprintfPcPKcz, 
+	_Z8GsprintfPcPKcz, 
 	(
 	param0, 
 	param1
@@ -1227,7 +1227,7 @@ BB7_49:
 	st.param.b32	[param1+0], %r40;
 	.param .b64 retval0;
 	call.uni (retval0), 
-	_Z9gpustrchrPci, 
+	_Z7GstrchrPKci, 
 	(
 	param0, 
 	param1
@@ -1247,7 +1247,7 @@ BB7_49:
 	st.param.b64	[param1+0], %rd85;
 	.param .b32 retval0;
 	call.uni (retval0), 
-	_Z10gpusprintfPcPKcz, 
+	_Z8GsprintfPcPKcz, 
 	(
 	param0, 
 	param1
@@ -1275,7 +1275,7 @@ BB7_52:
 	st.param.b64	[param1+0], %rd91;
 	.param .b64 retval0;
 	call.uni (retval0), 
-	_Z9gpustrcatPcPKc, 
+	_Z7GstrcatPcPKc, 
 	(
 	param0, 
 	param1
@@ -1319,7 +1319,7 @@ BB7_56:
 	st.param.b64	[param0+0], %rd61;
 	.param .b64 retval0;
 	call.uni (retval0), 
-	_Z9gpustrlenPKc, 
+	_Z7GstrlenPKc, 
 	(
 	param0
 	);
@@ -1356,7 +1356,7 @@ BB7_56:
 	st.param.b64	[param1+0], %rd61;
 	.param .b64 retval0;
 	call.uni (retval0), 
-	_Z9gpustrcpyPcPKc, 
+	_Z7GstrcpyPcPKc, 
 	(
 	param0, 
 	param1
@@ -1504,7 +1504,7 @@ BB8_3:
 	st.param.b64	[param2+0], %rd5;
 	.param .b32 retval0;
 	call.uni (retval0), 
-	_Z9gpumemcmpPKvS0_y, 
+	_Z7GmemcmpPKvS0_y, 
 	(
 	param0, 
 	param1, 
@@ -1560,7 +1560,7 @@ BB8_6:
 	st.param.b64	[param2+0], %rd28;
 	.param .b64 retval0;
 	call.uni (retval0), 
-	_Z9gpumemcpyPvPKvy, 
+	_Z7GmemcpyPvPKvy, 
 	(
 	param0, 
 	param1, 
@@ -1602,7 +1602,7 @@ BB8_6:
 	st.param.b64	[param2+0], %rd30;
 	.param .b64 retval0;
 	call.uni (retval0), 
-	_Z9gpumemsetPviy, 
+	_Z7GmemsetPviy, 
 	(
 	param0, 
 	param1, 
@@ -1624,7 +1624,7 @@ BB8_6:
 	st.param.b64	[param1+0], %rd32;
 	.param .b64 retval0;
 	call.uni (retval0), 
-	_Z9gpustrcpyPcPKc, 
+	_Z7GstrcpyPcPKc, 
 	(
 	param0, 
 	param1
@@ -1645,7 +1645,7 @@ BB8_6:
 	st.param.b64	[param1+0], %rd36;
 	.param .b64 retval0;
 	call.uni (retval0), 
-	_Z9gpustrcatPcPKc, 
+	_Z7GstrcatPcPKc, 
 	(
 	param0, 
 	param1
@@ -1673,7 +1673,7 @@ BB8_7:
 	st.param.b64	[param1+0], %rd39;
 	.param .b64 retval0;
 	call.uni (retval0), 
-	_Z9gpustrcatPcPKc, 
+	_Z7GstrcatPcPKc, 
 	(
 	param0, 
 	param1
@@ -1751,7 +1751,7 @@ BB8_10:
 	st.param.b32	[param1+0], %r17;
 	.param .b64 retval0;
 	call.uni (retval0), 
-	_Z9gpustrchrPci, 
+	_Z7GstrchrPKci, 
 	(
 	param0, 
 	param1
@@ -1778,7 +1778,7 @@ BB8_10:
 	st.param.b64	[param2+8], %rd48;
 	.param .b32 retval0;
 	call.uni (retval0), 
-	_Z10gpusprintfPcPKcz, 
+	_Z8GsprintfPcPKcz, 
 	(
 	param0, 
 	param1, 
@@ -1810,7 +1810,7 @@ BB8_19:
 	st.param.b32	[param1+0], %r25;
 	.param .b64 retval0;
 	call.uni (retval0), 
-	_Z9gpustrchrPci, 
+	_Z7GstrchrPKci, 
 	(
 	param0, 
 	param1
@@ -1831,7 +1831,7 @@ BB8_19:
 	st.param.b64	[param1+0], %rd61;
 	.param .b32 retval0;
 	call.uni (retval0), 
-	_Z10gpusprintfPcPKcz, 
+	_Z8GsprintfPcPKcz, 
 	(
 	param0, 
 	param1
@@ -1854,7 +1854,7 @@ BB8_18:
 	st.param.b32	[param1+0], %r23;
 	.param .b64 retval0;
 	call.uni (retval0), 
-	_Z9gpustrchrPci, 
+	_Z7GstrchrPKci, 
 	(
 	param0, 
 	param1
@@ -1874,7 +1874,7 @@ BB8_18:
 	st.param.b64	[param1+0], %rd57;
 	.param .b32 retval0;
 	call.uni (retval0), 
-	_Z10gpusprintfPcPKcz, 
+	_Z8GsprintfPcPKcz, 
 	(
 	param0, 
 	param1
@@ -1902,7 +1902,7 @@ BB8_21:
 	st.param.b64	[param1+0], %rd63;
 	.param .b64 retval0;
 	call.uni (retval0), 
-	_Z9gpustrcatPcPKc, 
+	_Z7GstrcatPcPKc, 
 	(
 	param0, 
 	param1
@@ -1946,7 +1946,7 @@ BB8_25:
 	st.param.b64	[param0+0], %rd33;
 	.param .b64 retval0;
 	call.uni (retval0), 
-	_Z9gpustrlenPKc, 
+	_Z7GstrlenPKc, 
 	(
 	param0
 	);
@@ -1983,7 +1983,7 @@ BB8_25:
 	st.param.b64	[param1+0], %rd33;
 	.param .b64 retval0;
 	call.uni (retval0), 
-	_Z9gpustrcpyPcPKc, 
+	_Z7GstrcpyPcPKc, 
 	(
 	param0, 
 	param1
@@ -2425,7 +2425,7 @@ BB9_10:
 	st.param.b64	[param2+0], %rd3;
 	.param .b32 retval0;
 	call.uni (retval0), 
-	_Z9gpumemcmpPKvS0_y, 
+	_Z7GmemcmpPKvS0_y, 
 	(
 	param0, 
 	param1, 
@@ -2618,7 +2618,7 @@ BB10_1:
 	st.param.b64	[param2+0], %rd4;
 	.param .b32 retval0;
 	call.uni (retval0), 
-	_Z9gpumemcmpPKvS0_y, 
+	_Z7GmemcmpPKvS0_y, 
 	(
 	param0, 
 	param1, 

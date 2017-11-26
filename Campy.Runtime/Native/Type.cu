@@ -29,6 +29,7 @@
 #include "Generics.h"
 #include "System.RuntimeType.h"
 #include "Thread.h"
+#include "Gstring.h"
 
 typedef struct tArrayTypeDefs_ tArrayTypeDefs;
 struct tArrayTypeDefs_ {
@@ -88,7 +89,7 @@ __device__ static void GetMethodDefs() {
 
 		pMethod = (tMD_MethodDef*)MetaData_GetTableRow(pMetaData, token);
 		for (i=0; i<GENERICARRAYMETHODS_NUM; i++) {
-			if (gpustrcmp((const char*)pMethod->name, pGenericArrayMethodsInit[i]) == 0) {
+			if (Gstrcmp((const char*)pMethod->name, pGenericArrayMethodsInit[i]) == 0) {
 				ppGenericArrayMethods[i] = pMethod;
 				break;
 			}
@@ -195,11 +196,11 @@ __device__ U32 Type_IsValueType(tMD_TypeDef *pTypeDef) {
 		return 0;
 	}
 	// If this type is Object or ValueType then return an answer
-	if (gpustrcmp((const char*) pTypeDef->nameSpace, "System") == 0) {
-		if (gpustrcmp((const char*)pTypeDef->name, "ValueType") == 0) {
+	if (Gstrcmp((const char*) pTypeDef->nameSpace, "System") == 0) {
+		if (Gstrcmp((const char*)pTypeDef->name, "ValueType") == 0) {
 			return 1;
 		}
-		if (gpustrcmp((const char*)pTypeDef->name, "Object") == 0) {
+		if (Gstrcmp((const char*)pTypeDef->name, "Object") == 0) {
 			return 0;
 		}
 	}
@@ -430,6 +431,7 @@ void Type_Init() {
 			types[i]->instanceMemSize = typeInit[i].instanceMemSize;
 		}
 	}
+return;
 	for (i=0; i<numInitTypes; i++) {
 		if (typeInit[i].assemblyName != NULL) {
 			MetaData_Fill_TypeDef(types[i], NULL, NULL);
@@ -446,14 +448,14 @@ U32 Type_IsMethod(tMD_MethodDef *pMethod, STRING name, tMD_TypeDef *pReturnType,
 	SIG sig;
 	U32 sigLen, numSigParams, i, nameLen;
 
-	nameLen = (U32)gpustrlen(name);
+	nameLen = (U32)Gstrlen(name);
 	if (name[nameLen-1] == '>') {
 		// Generic instance method
-		if (gpustrncmp(pMethod->name, name, nameLen - 1) != 0) {
+		if (Gstrncmp(pMethod->name, name, nameLen - 1) != 0) {
 			return 0;
 		}
 	} else {
-		if (gpustrcmp(pMethod->name, name) != 0) {
+		if (Gstrcmp(pMethod->name, name) != 0) {
 			return 0;
 		}
 	}

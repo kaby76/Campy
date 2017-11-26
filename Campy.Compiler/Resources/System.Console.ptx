@@ -17,9 +17,9 @@
 	.param .b64 _Z22SystemString_GetStringPhPj_param_1
 )
 ;
-.extern .func  (.param .b64 func_retval0) _Z9gpumallocy
+.extern .func  (.param .b64 func_retval0) _Z7Gmallocy
 (
-	.param .b64 _Z9gpumallocy_param_0
+	.param .b64 _Z7Gmallocy_param_0
 )
 ;
 .global .align 4 .u32 __nv_static_35__22_System_Console_cpp1_ii_60669a07_nextKeybC = -1;
@@ -210,7 +210,7 @@ BB6_4:
 	st.param.b64	[param0+0], %rd1;
 	.param .b64 retval0;
 	call.uni (retval0), 
-	_Z9gpumallocy, 
+	_Z7Gmallocy, 
 	(
 	param0
 	);

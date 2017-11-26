@@ -11,22 +11,22 @@
 .address_size 64
 
 	// .weak	cudaMalloc
-.extern .func  (.param .b32 func_retval0) _Z10gpusprintfPcPKcz
+.extern .func  (.param .b32 func_retval0) _Z8GsprintfPcPKcz
 (
-	.param .b64 _Z10gpusprintfPcPKcz_param_0,
-	.param .b64 _Z10gpusprintfPcPKcz_param_1,
+	.param .b64 _Z8GsprintfPcPKcz_param_0,
+	.param .b64 _Z8GsprintfPcPKcz_param_1,
 	.param .align 8 .b8 %VAParam[]
 )
 ;
-.extern .func  (.param .b64 func_retval0) _Z9gpustrchrPci
+.extern .func  (.param .b64 func_retval0) _Z7GstrchrPKci
 (
-	.param .b64 _Z9gpustrchrPci_param_0,
-	.param .b32 _Z9gpustrchrPci_param_1
+	.param .b64 _Z7GstrchrPKci_param_0,
+	.param .b32 _Z7GstrchrPKci_param_1
 )
 ;
-.extern .func  (.param .b64 func_retval0) _Z9gpumallocy
+.extern .func  (.param .b64 func_retval0) _Z7Gmallocy
 (
-	.param .b64 _Z9gpumallocy_param_0
+	.param .b64 _Z7Gmallocy_param_0
 )
 ;
 .visible .global .align 4 .u32 logLevel;
@@ -184,7 +184,7 @@
 	st.param.b64	[param2+16], %rd7;
 	.param .b32 retval0;
 	call.uni (retval0), 
-	_Z10gpusprintfPcPKcz, 
+	_Z8GsprintfPcPKcz, 
 	(
 	param0, 
 	param1, 
@@ -226,7 +226,7 @@ BB8_2:
 	st.param.b32	[param1+0], %r7;
 	.param .b64 retval0;
 	call.uni (retval0), 
-	_Z9gpustrchrPci, 
+	_Z7GstrchrPKci, 
 	(
 	param0, 
 	param1
@@ -247,7 +247,7 @@ BB8_2:
 	st.param.b64	[param1+0], %rd16;
 	.param .b32 retval0;
 	call.uni (retval0), 
-	_Z10gpusprintfPcPKcz, 
+	_Z8GsprintfPcPKcz, 
 	(
 	param0, 
 	param1
@@ -269,7 +269,7 @@ BB8_4:
 	st.param.b32	[param1+0], %r9;
 	.param .b64 retval0;
 	call.uni (retval0), 
-	_Z9gpustrchrPci, 
+	_Z7GstrchrPKci, 
 	(
 	param0, 
 	param1
@@ -293,7 +293,7 @@ BB8_4:
 	st.param.b64	[param1+0], %rd24;
 	.param .b32 retval0;
 	call.uni (retval0), 
-	_Z10gpusprintfPcPKcz, 
+	_Z8GsprintfPcPKcz, 
 	(
 	param0, 
 	param1
@@ -319,7 +319,7 @@ BB8_5:
 	st.param.b32	[param1+0], %r12;
 	.param .b64 retval0;
 	call.uni (retval0), 
-	_Z9gpustrchrPci, 
+	_Z7GstrchrPKci, 
 	(
 	param0, 
 	param1
@@ -340,7 +340,7 @@ BB8_5:
 	st.param.b64	[param1+0], %rd29;
 	.param .b32 retval0;
 	call.uni (retval0), 
-	_Z10gpusprintfPcPKcz, 
+	_Z8GsprintfPcPKcz, 
 	(
 	param0, 
 	param1
@@ -375,7 +375,7 @@ BB8_5:
 	st.param.b64	[param0+0], %rd1;
 	.param .b64 retval0;
 	call.uni (retval0), 
-	_Z9gpumallocy, 
+	_Z7Gmallocy, 
 	(
 	param0
 	);

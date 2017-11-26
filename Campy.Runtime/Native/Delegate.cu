@@ -24,6 +24,7 @@
 #include "Delegate.h"
 #include "MetaData.h"
 #include "Heap.h"
+#include "Gstring.h"
 
 // Note that care is needed to ensure the target object refered to in the delegate is not accidently
 // garbage collected.
@@ -71,7 +72,7 @@ __device__ static tAsyncCall* ctor(PTR pThis_, PTR pParams, PTR pReturnValue) {
 
 __device__ fnInternalCall Map_Delegate(tMD_MethodDef *pMethod) {
 	// Note that it is not neccessary to check argument types here, as delegates are very tightly controlled
-	if (gpustrcmp(pMethod->name, ".ctor") == 0) {
+	if (Gstrcmp(pMethod->name, ".ctor") == 0) {
 		return ctor;
 	}
 

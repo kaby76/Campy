@@ -17,11 +17,11 @@
 	.param .b32 _Z10Heap_AllocP12tMD_TypeDef_j_param_1
 )
 ;
-.extern .func  (.param .b32 func_retval0) _Z9gpumemcmpPKvS0_y
+.extern .func  (.param .b32 func_retval0) _Z7GmemcmpPKvS0_y
 (
-	.param .b64 _Z9gpumemcmpPKvS0_y_param_0,
-	.param .b64 _Z9gpumemcmpPKvS0_y_param_1,
-	.param .b64 _Z9gpumemcmpPKvS0_y_param_2
+	.param .b64 _Z7GmemcmpPKvS0_y_param_0,
+	.param .b64 _Z7GmemcmpPKvS0_y_param_1,
+	.param .b64 _Z7GmemcmpPKvS0_y_param_2
 )
 ;
 .extern .func  (.param .b64 func_retval0) _Z22MetaData_GetUserStringP10tMetaData_jPj
@@ -31,9 +31,9 @@
 	.param .b64 _Z22MetaData_GetUserStringP10tMetaData_jPj_param_2
 )
 ;
-.extern .func  (.param .b64 func_retval0) _Z9gpustrlenPKc
+.extern .func  (.param .b64 func_retval0) _Z7GstrlenPKc
 (
-	.param .b64 _Z9gpustrlenPKc_param_0
+	.param .b64 _Z7GstrlenPKc_param_0
 )
 ;
 .extern .global .align 8 .b64 types;
@@ -692,7 +692,7 @@ BB11_12:
 	st.param.b64	[param2+0], %rd7;
 	.param .b32 retval0;
 	call.uni (retval0), 
-	_Z9gpumemcmpPKvS0_y, 
+	_Z7GmemcmpPKvS0_y, 
 	(
 	param0, 
 	param1, 
@@ -1230,7 +1230,7 @@ BB17_2:
 	st.param.b64	[param0+0], %rd9;
 	.param .b64 retval0;
 	call.uni (retval0), 
-	_Z9gpustrlenPKc, 
+	_Z7GstrlenPKc, 
 	(
 	param0
 	);

@@ -25,9 +25,10 @@
 #include "CLIFile.h"
 #include "Type.h"
 #include "Types.h"
+#include "Gstring.h"
 
 __device__ U32 MetaData_CompareNameAndSig(STRING name, BLOB_ sigBlob, tMetaData *pSigMetaData, tMD_TypeDef **ppSigClassTypeArgs, tMD_TypeDef **ppSigMethodTypeArgs, tMD_MethodDef *pMethod, tMD_TypeDef **ppMethodClassTypeArgs, tMD_TypeDef **ppMethodMethodTypeArgs) {
-	if (gpustrcmp(name, pMethod->name) == 0) {
+	if (Gstrcmp(name, pMethod->name) == 0) {
 		SIG sig, thisSig;
 		U32 e, thisE, paramCount, i;
 
@@ -100,7 +101,7 @@ __device__ static tMD_MethodDef* FindMethodInType(tMD_TypeDef *pTypeDef, STRING 
 		sig = MetaData_GetBlob(sigBlob, &i);
 		entry = MetaData_DecodeSigEntry(&sig);
 		if ((entry & SIG_METHODDEF_HASTHIS) == 0) {
-			gpusprintf(gpustrchr(pMsg, 0), "static ");
+			Gsprintf(Gstrchr(pMsg, 0), "static ");
 		}
 		if (entry & SIG_METHODDEF_GENERIC) {
 			// read number of generic type args - don't care what it is
@@ -109,18 +110,18 @@ __device__ static tMD_MethodDef* FindMethodInType(tMD_TypeDef *pTypeDef, STRING 
 		numParams = MetaData_DecodeSigEntry(&sig);
 		pParamTypeDef = Type_GetTypeFromSig(pSigMetaData, &sig, ppClassTypeArgs, ppMethodTypeArgs); // return type
 		if (pParamTypeDef != NULL) {
-			gpusprintf(gpustrchr(pMsg, 0), "%s ", pParamTypeDef->name);
+			Gsprintf(Gstrchr(pMsg, 0), "%s ", pParamTypeDef->name);
 		}
-		gpusprintf(gpustrchr(pMsg, 0), "%s.%s.%s(", pTypeDef->nameSpace, pTypeDef->name, name);
+		Gsprintf(Gstrchr(pMsg, 0), "%s.%s.%s(", pTypeDef->nameSpace, pTypeDef->name, name);
 		for (i=0; i<numParams; i++) {
 			pParamTypeDef = Type_GetTypeFromSig(pSigMetaData, &sig, ppClassTypeArgs, ppMethodTypeArgs);
 			if (i > 0) {
-				gpusprintf(gpustrchr(pMsg, 0), ",");
+				Gsprintf(Gstrchr(pMsg, 0), ",");
 			}
 			if (pParamTypeDef != NULL) {
-				gpusprintf(gpustrchr(pMsg, 0), pParamTypeDef->name);
+				Gsprintf(Gstrchr(pMsg, 0), pParamTypeDef->name);
 			} else {
-				gpusprintf(gpustrchr(pMsg, 0), "???");
+				Gsprintf(Gstrchr(pMsg, 0), "???");
 			}
 		}
 		Crash("FindMethodInType(): Cannot find method %s)", pMsg);
@@ -134,7 +135,7 @@ __device__ static tMD_FieldDef* FindFieldInType(tMD_TypeDef *pTypeDef, STRING na
 	MetaData_Fill_TypeDef(pTypeDef, NULL, NULL);
 
 	for (i=0; i<pTypeDef->numFields; i++) {
-		if (gpustrcmp(pTypeDef->ppFields[i]->name, name) == 0) {
+		if (Gstrcmp(pTypeDef->ppFields[i]->name, name) == 0) {
 			return pTypeDef->ppFields[i];
 		}
 	}
@@ -175,8 +176,8 @@ __device__ tMD_TypeDef* MetaData_GetTypeDefFromName(tMetaData *pMetaData, STRING
 
 		pTypeDef = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_TYPEDEF, i));
 		if (pInNestedClass == pTypeDef->pNestedIn &&
-			gpustrcmp(name, pTypeDef->name) == 0 &&
-			(pInNestedClass != NULL || gpustrcmp(nameSpace, pTypeDef->nameSpace) == 0)) {
+			Gstrcmp(name, pTypeDef->name) == 0 &&
+			(pInNestedClass != NULL || Gstrcmp(nameSpace, pTypeDef->nameSpace) == 0)) {
 			return pTypeDef;
 		}
 	}

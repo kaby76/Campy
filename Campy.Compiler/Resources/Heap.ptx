@@ -65,15 +65,15 @@
 	.param .align 8 .b8 %VAParam[]
 )
 ;
-.extern .func  (.param .b64 func_retval0) _Z10gpureallocPvy
+.extern .func  (.param .b64 func_retval0) _Z8GreallocPvy
 (
-	.param .b64 _Z10gpureallocPvy_param_0,
-	.param .b64 _Z10gpureallocPvy_param_1
+	.param .b64 _Z8GreallocPvy_param_0,
+	.param .b64 _Z8GreallocPvy_param_1
 )
 ;
-.extern .func  (.param .b64 func_retval0) _Z9gpumallocy
+.extern .func  (.param .b64 func_retval0) _Z7Gmallocy
 (
-	.param .b64 _Z9gpumallocy_param_0
+	.param .b64 _Z7Gmallocy_param_0
 )
 ;
 .extern .func  (.param .b64 func_retval0) _Z17Thread_GetCurrentv
@@ -586,7 +586,7 @@ BB8_3:
 	st.param.b64	[param1+0], %rd13;
 	.param .b64 retval0;
 	call.uni (retval0), 
-	_Z10gpureallocPvy, 
+	_Z8GreallocPvy, 
 	(
 	param0, 
 	param1
@@ -955,7 +955,7 @@ BB10_25:
 	st.param.b64	[param1+0], %rd81;
 	.param .b64 retval0;
 	call.uni (retval0), 
-	_Z10gpureallocPvy, 
+	_Z8GreallocPvy, 
 	(
 	param0, 
 	param1
@@ -1685,7 +1685,7 @@ BB13_26:
 	st.param.b64	[param1+0], %rd115;
 	.param .b64 retval0;
 	call.uni (retval0), 
-	_Z10gpureallocPvy, 
+	_Z8GreallocPvy, 
 	(
 	param0, 
 	param1
@@ -2592,7 +2592,7 @@ BB14_26:
 	st.param.b64	[param1+0], %rd116;
 	.param .b64 retval0;
 	call.uni (retval0), 
-	_Z10gpureallocPvy, 
+	_Z8GreallocPvy, 
 	(
 	param0, 
 	param1
@@ -3547,7 +3547,7 @@ BB18_26:
 	st.param.b64	[param1+0], %rd120;
 	.param .b64 retval0;
 	call.uni (retval0), 
-	_Z10gpureallocPvy, 
+	_Z8GreallocPvy, 
 	(
 	param0, 
 	param1
@@ -4525,7 +4525,7 @@ BB19_31:
 	st.param.b64	[param1+0], %rd124;
 	.param .b64 retval0;
 	call.uni (retval0), 
-	_Z10gpureallocPvy, 
+	_Z8GreallocPvy, 
 	(
 	param0, 
 	param1
@@ -5146,7 +5146,7 @@ BB19_90:
 	st.param.b64	[param0+0], %rd13;
 	.param .b64 retval0;
 	call.uni (retval0), 
-	_Z9gpumallocy, 
+	_Z7Gmallocy, 
 	(
 	param0
 	);
@@ -5270,7 +5270,7 @@ BB21_3:
 	st.param.b64	[param0+0], %rd11;
 	.param .b64 retval0;
 	call.uni (retval0), 
-	_Z9gpumallocy, 
+	_Z7Gmallocy, 
 	(
 	param0
 	);

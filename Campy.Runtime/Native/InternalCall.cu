@@ -48,6 +48,7 @@
 #include "System.DateTime.h"
 #include "System.Math.h"
 #include "Delegate.h"
+#include "Gstring.h"
 
 #define MAX_PARAMS 6
 
@@ -192,8 +193,8 @@ __device__ fnInternalCall InternalCall_Map(tMD_MethodDef *pMethod) {
 			if (pCall->type != NULL) {
 				curType = pCall->type;
 			}
-			if (gpustrcmp(pMethod->pParentType->nameSpace, curNameSpace) == 0) {
-				if (gpustrcmp(pMethod->pParentType->name, curType) == 0) {
+			if (Gstrcmp(pMethod->pParentType->nameSpace, curNameSpace) == 0) {
+				if (Gstrcmp(pMethod->pParentType->name, curType) == 0) {
 					if (Type_IsMethod(pMethod, pCall->method, types[pCall->returnType], pCall->numParameters, pCall->parameterTypes)) {
 						return pCall->fn;
 					}

@@ -11,9 +11,9 @@
 .address_size 64
 
 	// .weak	cudaMalloc
-.extern .func  (.param .b64 func_retval0) _Z9gpumallocy
+.extern .func  (.param .b64 func_retval0) _Z7Gmallocy
 (
-	.param .b64 _Z9gpumallocy_param_0
+	.param .b64 _Z7Gmallocy_param_0
 )
 ;
 .extern .func _Z5log_fjPKcz
@@ -23,9 +23,9 @@
 	.param .align 8 .b8 %VAParam[]
 )
 ;
-.extern .func  (.param .b64 func_retval0) _Z9gpustrlenPKc
+.extern .func  (.param .b64 func_retval0) _Z7GstrlenPKc
 (
-	.param .b64 _Z9gpustrlenPKc_param_0
+	.param .b64 _Z7GstrlenPKc_param_0
 )
 ;
 .extern .func _Z5CrashPKcz
@@ -367,7 +367,7 @@ BB7_6:
 	st.param.b64	[param0+0], %rd6;
 	.param .b64 retval0;
 	call.uni (retval0), 
-	_Z9gpumallocy, 
+	_Z7Gmallocy, 
 	(
 	param0
 	);
@@ -1063,7 +1063,7 @@ BB15_59:
 	st.param.b64	[param0+0], %rd203;
 	.param .b64 retval0;
 	call.uni (retval0), 
-	_Z9gpustrlenPKc, 
+	_Z7GstrlenPKc, 
 	(
 	param0
 	);

@@ -35,6 +35,7 @@
 
 #include "System.String.h"
 #include "System.Array.h"
+#include "Gstring.h"
 
 // Global array which stores the absolute addresses of the start and end of all JIT code
 // fragment machine code.
@@ -138,7 +139,7 @@ __device__ static void CreateParameters(PTR pParamsLocals, tMD_MethodDef *pCallM
 		ofs = 0;
 	}
 	*ppCurEvalStack -= pCallMethod->parameterStackSize - ofs;
-	gpumemcpy(pParamsLocals + ofs, *ppCurEvalStack, pCallMethod->parameterStackSize - ofs);
+	Gmemcpy(pParamsLocals + ofs, *ppCurEvalStack, pCallMethod->parameterStackSize - ofs);
 }
 
 __device__ static tMethodState* RunFinalizer(tThread *pThread) {

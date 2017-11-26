@@ -11,9 +11,9 @@
 .address_size 64
 
 	// .weak	cudaMalloc
-.extern .func  (.param .b64 func_retval0) _Z9gpumallocy
+.extern .func  (.param .b64 func_retval0) _Z7Gmallocy
 (
-	.param .b64 _Z9gpumallocy_param_0
+	.param .b64 _Z7Gmallocy_param_0
 )
 ;
 .extern .func  (.param .b64 func_retval0) malloc
@@ -127,7 +127,7 @@
 	st.param.b64	[param0+0], %rd1;
 	.param .b64 retval0;
 	call.uni (retval0), 
-	_Z9gpumallocy, 
+	_Z7Gmallocy, 
 	(
 	param0
 	);
@@ -164,7 +164,7 @@
 	st.param.b64	[param0+0], %rd17;
 	.param .b64 retval0;
 	call.uni (retval0), 
-	_Z9gpumallocy, 
+	_Z7Gmallocy, 
 	(
 	param0
 	);

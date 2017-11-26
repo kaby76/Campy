@@ -450,7 +450,7 @@ __device__ void Heap_SetRoots(tHeapRoots *pHeapRoots, void *pRoots, U32 sizeInBy
 	Assert((sizeInBytes & 0x3) == 0);
 	if (pHeapRoots->num >= pHeapRoots->capacity) {
 		pHeapRoots->capacity <<= 1;
-		pHeapRoots->pHeapEntries = (tHeapRootEntry*)gpurealloc(pHeapRoots->pHeapEntries, pHeapRoots->capacity * sizeof(tHeapRootEntry));
+		pHeapRoots->pHeapEntries = (tHeapRootEntry*)Grealloc(pHeapRoots->pHeapEntries, pHeapRoots->capacity * sizeof(tHeapRootEntry));
 	}
 	pRootEntry = &pHeapRoots->pHeapEntries[pHeapRoots->num++];
 	pRootEntry->numPointers = sizeInBytes >> 2;

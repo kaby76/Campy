@@ -28,6 +28,7 @@
 #include "Heap.h"
 #include "Type.h"
 #include "System.Array.h"
+#include "Gstring.h"
 
 typedef struct tSystemString_ tSystemString;
 // This structure must tie up with string.cs
@@ -194,7 +195,7 @@ __device__ tAsyncCall* System_String_Equals(PTR pThis_, PTR pParams, PTR pReturn
 	} else if (a == NULL || b == NULL || a->length != b->length) {
 		ret = 0;
 	} else {
-		ret = (gpumemcmp(a->chars, b->chars, a->length<<1) == 0)?1:0;
+		ret = (Gmemcmp(a->chars, b->chars, a->length<<1) == 0)?1:0;
 	}
 	*(U32*)pReturnValue = ret;
 
@@ -365,7 +366,7 @@ __device__ HEAP_PTR SystemString_FromCharPtrASCII(char *pStr) {
 	int stringLen, i;
 	tSystemString *pSystemString;
 
-	stringLen = (int)gpustrlen(pStr);
+	stringLen = (int)Gstrlen(pStr);
 	pSystemString = CreateStringHeapObj(stringLen);
 	for (i=0; i<stringLen; i++) {
 		pSystemString->chars[i] = pStr[i];

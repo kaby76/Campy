@@ -89,55 +89,28 @@
 
 #endif // WIN32
 
-#define TMALLOC(t) (t*)gpumalloc(sizeof(t))
+#define TMALLOC(t) (t*)Gmalloc(sizeof(t))
 #define TMALLOCFOREVER(t) (t*)mallocForever(sizeof(t))
 
 
-__device__ int gpustrcmp(
-	char const* _Str1,
-	char const* _Str2
-);
 __device__  void gpuexit(int _Code);
-__device__ size_t gpustrlen(
+
+__device__ size_t Gstrlen(
 	char const* _Str
 );
-__device__ int gpustrncmp(
-	char const* _Str1,
-	char const* _Str2,
-	size_t      _MaxCount
-);
-__device__ int  gpumemcmp(
-	void const* _Buf1,
-	void const* _Buf2,
-	size_t      _Size
-);
-__device__ void* __cdecl gpumemcpy(
-	void* _Dst,
-	void const* _Src,
-	size_t      _Size
-);
 
-__device__ int gpusprintf(
+__device__ int Gsprintf(
 	char*       const _Buffer,
 	char const* const _Format,
 	...);
 
-__device__ char*  gpustrchr(char* const _String, int const _Ch);
-__device__ void* __cdecl gpurealloc(
+__device__ void* __cdecl Grealloc(
 	void*  _Block,
 	size_t _Size
 );
-__device__ void* gpumalloc(
+__device__ void* Gmalloc(
 	size_t _Size
 );
-__device__ char * gpustrcat(char * destination, const char * source);
-
-__device__ void* gpumemset(
-	void*  _Dst,
-	int    _Val,
-	size_t _Size
-);
-__device__ char * gpustrcpy(char * destination, const char * source);
 
 #endif
 

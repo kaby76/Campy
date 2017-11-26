@@ -23,6 +23,7 @@
 
 #include "MetaData.h"
 #include "Types.h"
+#include "Gstring.h"
 
 __device__ void Crash(const char *pMsg, ...) {
 //	va_list va;
@@ -63,14 +64,14 @@ __device__ static char methodName[2048];
 __device__ char* Sys_GetMethodDesc(tMD_MethodDef *pMethod) {
 	U32 i;
 
-	gpusprintf(methodName, "%s.%s.%s(", pMethod->pParentType->nameSpace, pMethod->pParentType->name, pMethod->name);
+	Gsprintf(methodName, "%s.%s.%s(", pMethod->pParentType->nameSpace, pMethod->pParentType->name, pMethod->name);
 	for (i=METHOD_ISSTATIC(pMethod)?0:1; i<pMethod->numberOfParameters; i++) {
 		if (i > (U32)(METHOD_ISSTATIC(pMethod)?0:1)) {
-			gpusprintf(gpustrchr(methodName, 0), ",");
+			Gsprintf(Gstrchr(methodName, 0), ",");
 		}
-		gpusprintf(gpustrchr(methodName, 0), pMethod->pParams[i].pTypeDef->name);
+		Gsprintf(Gstrchr(methodName, 0), pMethod->pParams[i].pTypeDef->name);
 	}
-	gpusprintf(gpustrchr(methodName, 0), ")");
+	Gsprintf(Gstrchr(methodName, 0), ")");
 	return methodName;
 }
 
@@ -79,7 +80,7 @@ __device__ static U32 mallocForeverSize = 0;
 __device__ void* mallocForever(U32 size) {
 	mallocForeverSize += size;
 log_f(3, "--- mallocForever: TotalSize %d\n", mallocForeverSize);
-	return gpumalloc(size);
+	return Gmalloc(size);
 }
 
 /*

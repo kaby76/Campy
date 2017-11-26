@@ -1,0 +1,32 @@
+#pragma once
+__device__ int Gstrncasecmp(const char *s1, const char *s2, size_t len);
+__device__ int Gstrcasecmp(const char *s1, const char *s2);
+__device__ char * Gstrcpy(char * dest, const char *src);
+__device__ char * Gstrncpy(char * dest, const char *src, size_t count);
+__device__ size_t Gstrlcpy(char *dest, const char *src, size_t size);
+__device__ char * Gstrcat(char * dest, const char * src);
+__device__ char * Gstrncat(char *dest, const char *src, size_t count);
+__device__ int Gstrcmp(const char * cs, const char * ct);
+__device__ int Gstrncmp(const char * cs, const char * ct, size_t count);
+__device__ char * Gstrchr(const char * s, int c);
+__device__ char * Gstrrchr(const char * s, int c);
+__device__ size_t strlen(const char * s);
+__device__ size_t Gstrnlen(const char * s, size_t count);
+__device__ char * Gstrdup(const char *s);
+__device__ size_t Gstrspn(const char *s, const char *accept);
+__device__ char * Gstrpbrk(const char * cs, const char * ct);
+__device__ char * Gstrtok(char * s, const char * ct);
+__device__ char * Gstrsep(char **s, const char *ct);
+__device__ char *strswab(const char *s);
+__device__ void * Gmemset(void * s, int c, size_t count);
+__device__ void * Gmemcpy(void *dest, const void *src, size_t count);
+__device__ void * Gmemmove(void * dest, const void *src, size_t count);
+__device__ int Gmemcmp(const void * cs, const void * ct, size_t count);
+__device__ void * Gmemscan(void * addr, int c, size_t size);
+__device__ char * Gstrstr(const char * s1, const char * s2);
+__device__ void * Gmemchr(const void *s, int c, size_t n);
+__device__ void Gstoupper(char *s);
+__device__ void Gstolower(char *s);
+__device__ char Gtoupper(char c);
+__device__ char Gtolower(char c);
+

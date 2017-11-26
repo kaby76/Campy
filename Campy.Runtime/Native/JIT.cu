@@ -32,6 +32,7 @@
 #include "InternalCall.h"
 #include "Heap.h"
 #include "PInvoke.h"
+#include "Gstring.h"
 
 #define CorILMethod_TinyFormat 0x02
 #define CorILMethod_MoreSects 0x08
@@ -1642,7 +1643,7 @@ __device__ void JIT_Prepare(tMD_MethodDef *pMethodDef, U32 genCombinedOpcodes) {
 		tJITCallNative *pCallNative;
 
 		// Internal call
-		if (gpustrcmp(pMethodDef->name, ".ctor") == 0) {
+		if (Gstrcmp(pMethodDef->name, ".ctor") == 0) {
 			// Internal constructor needs enough evaluation stack space to return itself
 			pJITted->maxStack = pMethodDef->pParentType->stackSize;
 		} else {

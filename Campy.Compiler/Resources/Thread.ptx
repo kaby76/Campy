@@ -21,9 +21,9 @@
 	.param .b64 _Z20Heap_MakeUndeletablePh_param_0
 )
 ;
-.extern .func  (.param .b64 func_retval0) _Z9gpumallocy
+.extern .func  (.param .b64 func_retval0) _Z7Gmallocy
 (
-	.param .b64 _Z9gpumallocy_param_0
+	.param .b64 _Z7Gmallocy_param_0
 )
 ;
 .extern .func _Z5CrashPKcz
@@ -234,7 +234,7 @@
 	st.param.b64	[param0+0], %rd5;
 	.param .b64 retval0;
 	call.uni (retval0), 
-	_Z9gpumallocy, 
+	_Z7Gmallocy, 
 	(
 	param0
 	);

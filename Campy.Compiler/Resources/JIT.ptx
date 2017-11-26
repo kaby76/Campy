@@ -29,9 +29,9 @@
 	.param .b64 _Z17Sys_GetMethodDescP14tMD_MethodDef__param_0
 )
 ;
-.extern .func  (.param .b64 func_retval0) _Z9gpumallocy
+.extern .func  (.param .b64 func_retval0) _Z7Gmallocy
 (
-	.param .b64 _Z9gpumallocy_param_0
+	.param .b64 _Z7Gmallocy_param_0
 )
 ;
 .extern .func  (.param .b64 func_retval0) _Z13mallocForeverj
@@ -39,10 +39,10 @@
 	.param .b32 _Z13mallocForeverj_param_0
 )
 ;
-.extern .func  (.param .b32 func_retval0) _Z9gpustrcmpPKcS0_
+.extern .func  (.param .b32 func_retval0) _Z7GstrcmpPKcS0_
 (
-	.param .b64 _Z9gpustrcmpPKcS0__param_0,
-	.param .b64 _Z9gpustrcmpPKcS0__param_1
+	.param .b64 _Z7GstrcmpPKcS0__param_0,
+	.param .b64 _Z7GstrcmpPKcS0__param_1
 )
 ;
 .extern .func  (.param .b64 func_retval0) _Z16InternalCall_MapP14tMD_MethodDef_
@@ -278,7 +278,7 @@
 	st.param.b64	[param0+0], %rd79;
 	.param .b64 retval0;
 	call.uni (retval0), 
-	_Z9gpumallocy, 
+	_Z7Gmallocy, 
 	(
 	param0
 	);
@@ -334,7 +334,7 @@ BB6_83:
 	st.param.b64	[param1+0], %rd241;
 	.param .b32 retval0;
 	call.uni (retval0), 
-	_Z9gpustrcmpPKcS0_, 
+	_Z7GstrcmpPKcS0_, 
 	(
 	param0, 
 	param1

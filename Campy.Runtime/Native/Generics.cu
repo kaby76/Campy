@@ -27,6 +27,7 @@
 #include "Types.h"
 #include "Type.h"
 #include "EvalStack.h"
+#include "Gstring.h"
 
 __device__ void Generic_GetHeapRoots(tHeapRoots *pHeapRoots, tMD_TypeDef *pTypeDef) {
 	tGenericInstance *pInst = pTypeDef->pGenericInstances;
@@ -92,7 +93,7 @@ __device__ tMD_TypeDef* Generics_GetGenericTypeFromCoreType(tMD_TypeDef *pCoreTy
 	pInst = pCoreType->pGenericInstances;
 	while (pInst != NULL) {
 		if (pInst->numTypeArgs == numTypeArgs &&
-			gpumemcmp(pInst->pTypeArgs, ppTypeArgs, numTypeArgs * sizeof(tMD_TypeDef*)) == 0) {
+			Gmemcmp(pInst->pTypeArgs, ppTypeArgs, numTypeArgs * sizeof(tMD_TypeDef*)) == 0) {
 			return pInst->pInstanceTypeDef;
 		}
 		pInst = pInst->pNext;
@@ -105,30 +106,30 @@ __device__ tMD_TypeDef* Generics_GetGenericTypeFromCoreType(tMD_TypeDef *pCoreTy
 	pCoreType->pGenericInstances = pInst;
 	// Copy the type args into the instantiation.
 	pInst->numTypeArgs = numTypeArgs;
-	gpumemcpy(pInst->pTypeArgs, ppTypeArgs, numTypeArgs * sizeof(tMD_TypeDef*));
+	Gmemcpy(pInst->pTypeArgs, ppTypeArgs, numTypeArgs * sizeof(tMD_TypeDef*));
 
 	// Create the new instantiated type
 	pInst->pInstanceTypeDef = pTypeDef = TMALLOCFOREVER(tMD_TypeDef);
-	gpumemset(pTypeDef, 0, sizeof(tMD_TypeDef));
+	Gmemset(pTypeDef, 0, sizeof(tMD_TypeDef));
 	// Make the name of the instantiation.
-	gpustrcpy(name, pCoreType->name);
-	gpustrcat(name, "[");
+	Gstrcpy(name, pCoreType->name);
+	Gstrcat(name, "[");
 	for (i=0; i<numTypeArgs; i++) {
 		if (i > 0) {
-			gpustrcat(name, ",");
+			Gstrcat(name, ",");
 		}
 		if (ppTypeArgs[i] != NULL) {
-			gpusprintf(gpustrchr(name, 0), "%s.%s", ppTypeArgs[i]->nameSpace, ppTypeArgs[i]->name);
+			Gsprintf(Gstrchr(name, 0), "%s.%s", ppTypeArgs[i]->nameSpace, ppTypeArgs[i]->name);
 		} else {
 			tMD_GenericParam *pGenericParam = FindGenericParam(pCoreType, i);
 			if (pGenericParam != NULL) {
-				gpusprintf(gpustrchr(name, 0), pGenericParam->name);
+				Gsprintf(Gstrchr(name, 0), pGenericParam->name);
 			} else {
-				gpusprintf(gpustrchr(name, 0), "???");
+				Gsprintf(Gstrchr(name, 0), "???");
 			}
 		}
 	}
-	gpustrcat(name, "]");
+	Gstrcat(name, "]");
 	// Fill in the basic bits of the new type def.
 	pTypeDef->pTypeDef = pTypeDef;
 	pTypeDef->pMetaData = pMetaData;
@@ -141,8 +142,8 @@ __device__ tMD_TypeDef* Generics_GetGenericTypeFromCoreType(tMD_TypeDef *pCoreTy
 		}
 	}
 	pTypeDef->nameSpace = pCoreType->nameSpace;
-	pTypeDef->name = (STRING)mallocForever((U32)gpustrlen(name)+1);
-	gpustrcpy(pTypeDef->name, name);
+	pTypeDef->name = (STRING)mallocForever((U32)Gstrlen(name)+1);
+	Gstrcpy(pTypeDef->name, name);
 	pTypeDef->ppClassTypeArgs = pInst->pTypeArgs;
 	pTypeDef->extends = pCoreType->extends;
 	pTypeDef->tableIndex = pCoreType->tableIndex;
@@ -198,7 +199,7 @@ __device__ tMD_MethodDef* Generics_GetMethodDefFromCoreMethod
 	pInst = pCoreMethod->pGenericMethodInstances;
 	while (pInst != NULL) {
 		if (pInst->numTypeArgs == numTypeArgs &&
-			gpumemcmp(pInst->pTypeArgs, ppTypeArgs, numTypeArgs * sizeof(tMD_TypeDef*)) == 0) {
+			Gmemcmp(pInst->pTypeArgs, ppTypeArgs, numTypeArgs * sizeof(tMD_TypeDef*)) == 0) {
 			return pInst->pInstanceMethodDef;
 		}
 		pInst = pInst->pNext;
