@@ -549,7 +549,7 @@ __device__ int
 Gvsprintf(char *buf, const char *format, va_list ap)
 {
 	int ret;
-	ret = dopr(buf, 0, format, ap);
+	ret = dopr(buf, SIZE_MAX, format, ap);
 	return ret;
 }
 
@@ -575,5 +575,14 @@ __device__ int Gprintf(const char * _Format, ...)
 	printf(_Format, arg);
 	va_end(arg);
 	return done;
+}
+
+__device__ int Gvprintf(const char * format, va_list arg)
+{
+	int ret;
+	char buf[2000];
+	dopr(buf, 1000, format, arg);
+	ret = Gprintf("%s", buf);
+	return ret;
 }
 

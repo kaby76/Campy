@@ -52,13 +52,12 @@ __device__ void Crash(const char *pMsg, ...) {
 __device__ U32 logLevel = 0;
 
 __device__ void log_f(U32 level, const char *pMsg, ...) {
-	//va_list va;
-
-	//if (logLevel >= level) {
-	//	va_start(va, pMsg);
-	//	vprintf(pMsg, va);
-	//	va_end(va);
-	//}
+	va_list va;
+	if (logLevel >= level) {
+		va_start(va, pMsg);
+		//Gvprintf(pMsg, va);
+		va_end(va);
+	}
 }
 
 __device__ static char methodName[2048];

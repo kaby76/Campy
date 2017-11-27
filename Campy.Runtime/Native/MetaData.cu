@@ -26,6 +26,7 @@
 #include "Types.h"
 #include "Type.h"
 #include "RVA.h"
+#include <crt/host_defines.h>
 
 __device__ unsigned int MetaData_DecodeSigEntry(SIG *pSig) {
 	unsigned char a,b,c,d;

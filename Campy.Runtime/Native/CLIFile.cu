@@ -93,14 +93,8 @@ __device__ unsigned char Gdata[];
 __device__ static void* LoadFileFromDisk(char *pFileName) {
 	int f;
 	void *pData = NULL;
-	Gprintf("In LoadFileFromDisk\n");
-	Gprintf(pFileName);
-	Gprintf("\nyo\n");
 	char buf[1000];
-	Gsprintf(buf, "%s", pFileName);
 	// Crashes! Gprintf("File name = %s\n", pFileName);
-	Gprintf(buf);
-	Gprintf("\nyo\n");
 	if (Gstrcmp("corlib", pFileName) != 0)
 		return nullptr;
 	//f = open(pFileName, O_RDONLY|O_BINARY);
@@ -124,6 +118,9 @@ __device__ static void* LoadFileFromDisk(char *pFileName) {
 }
 
 __device__ static tCLIFile* LoadPEFile(void *pData) {
+
+	Gprintf("LoadPEFile\n");
+
 	tCLIFile *pRet = TMALLOC(tCLIFile);
 
 	unsigned char *pMSDOSHeader = (unsigned char*)&(((unsigned char*)pData)[0]);
@@ -153,6 +150,7 @@ __device__ static tCLIFile* LoadPEFile(void *pData) {
 
 	machine = *(unsigned short*)&(pPEHeader[0]);
 	if (machine != DOT_NET_MACHINE) {
+		Gprintf("Not DOT_NET_MACHINE.\n");
 		return NULL;
 	}
 	numSections = *(unsigned short*)&(pPEHeader[2]);
@@ -165,15 +163,19 @@ __device__ static tCLIFile* LoadPEFile(void *pData) {
 		RVA_Create(pRet->pRVA, pData, pSection);
 	}
 
+	Gprintf("C1.\n");
+
 	cliHeaderRVA = *(unsigned int*)&(pPEOptionalHeader[208]);
 	cliHeaderSize = *(unsigned int*)&(pPEOptionalHeader[212]);
 
 	pCLIHeader = (unsigned char *)RVA_FindData(pRet->pRVA, cliHeaderRVA);
+	Gprintf("C2.\n");
 
 	metaDataRVA = *(unsigned int*)&(pCLIHeader[8]);
 	metaDataSize = *(unsigned int*)&(pCLIHeader[12]);
 	pRet->entryPoint = *(unsigned int*)&(pCLIHeader[20]);
 	pRawMetaData = (unsigned char*)RVA_FindData(pRet->pRVA, metaDataRVA);
+	Gprintf("C3.\n");
 
 	// Load all metadata
 	{
@@ -211,6 +213,7 @@ __device__ static tCLIFile* LoadPEFile(void *pData) {
 			MetaData_LoadTables(pMetaData, pRet->pRVA, pTableStream, tableStreamSize);
 		}
 	}
+	Gprintf("C4.\n");
 
 	// Mark all generic definition types and methods as such
 	for (i=pMetaData->tables.numRows[MD_TABLE_GENERICPARAM]; i>0; i--) {
@@ -237,6 +240,7 @@ __device__ static tCLIFile* LoadPEFile(void *pData) {
 				Crash("Wrong generic parameter owner: 0x%08x", ownerIdx);
 		}
 	}
+	Gprintf("C5.\n");
 
 	// Mark all nested classes as such
 	for (i=pMetaData->tables.numRows[MD_TABLE_NESTEDCLASS]; i>0; i--) {
@@ -248,6 +252,7 @@ __device__ static tCLIFile* LoadPEFile(void *pData) {
 		pChild = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->nestedClass);
 		pChild->pNestedIn = pParent;
 	}
+	Gprintf("normal exit LoadPEFile\n");
 
 	return pRet;
 }
