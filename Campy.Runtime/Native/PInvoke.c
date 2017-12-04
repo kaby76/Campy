@@ -39,59 +39,60 @@ struct tLoadedLib_ {
 	tLoadedLib *pNext;
 };
 
-static tLoadedLib *pLoadedLibs = NULL;
+/* __device__ */ static tLoadedLib *pLoadedLibs = NULL;
 
-static tLoadedLib* GetLib(STRING name) {
-	// See if it's already loaded
-	tLoadedLib *pLib = pLoadedLibs;
-	char libName[256];
-	void *pNativeLib;
-
-	while (pLib != NULL) {
-		if (strcmp(name, pLib->name) == 0) {
-			return pLib;
-		}
-	}
-	sprintf(libName, "%s%s", LIB_PREFIX, name);
-	if (strlen(libName) >= 4) {
-		if (strcmp(".dll", libName + strlen(libName) - 4) == 0) {
-			// Cut off the ".dll" suffix if it's there
-			libName[strlen(libName) - 4] = 0;
-		}
-	}
-	// Not loaded, so load it
-	sprintf(strchr(libName, 0), ".%s", LIB_SUFFIX);
-#if WIN32
-	pNativeLib = LoadLibraryA(libName);
-#else
-	pNativeLib = dlopen(libName, DL_LAZY);
-#endif
-	if (pNativeLib == NULL) {
-		// Failed to load library
-		printf("Failed to load library: %s\n", libName);
-#ifndef WIN32
-		{
-			char *pError;
-			pError = dlerror();
-			if (pError) {
-				printf("dlopen() Error: '%s'",pError);
-			}
-		}
-#endif
-		return NULL;
-	}
-	pLib = TMALLOCFOREVER(tLoadedLib);
-	pLib->pNext = pLoadedLibs;
-	pLoadedLibs = pLib;
-	pLib->name = name;
-	pLib->pLib = pNativeLib;
-	return pLib;
+/* __device__ */ static tLoadedLib* GetLib(STRING name) {
+//	// See if it's already loaded
+//	tLoadedLib *pLib = pLoadedLibs;
+//	char libName[256];
+//	void *pNativeLib;
+//
+//	while (pLib != NULL) {
+//		if (strcmp(name, pLib->name) == 0) {
+//			return pLib;
+//		}
+//	}
+//	sprintf(libName, "%s%s", LIB_PREFIX, name);
+//	if (strlen(libName) >= 4) {
+//		if (strcmp(".dll", libName + strlen(libName) - 4) == 0) {
+//			// Cut off the ".dll" suffix if it's there
+//			libName[strlen(libName) - 4] = 0;
+//		}
+//	}
+//	// Not loaded, so load it
+//	sprintf(strchr(libName, 0), ".%s", LIB_SUFFIX);
+//#if WIN32
+//	pNativeLib = LoadLibraryA(libName);
+//#else
+//	pNativeLib = dlopen(libName, DL_LAZY);
+//#endif
+//	if (pNativeLib == NULL) {
+//		// Failed to load library
+//		printf("Failed to load library: %s\n", libName);
+//#ifndef WIN32
+//		{
+//			char *pError;
+//			pError = dlerror();
+//			if (pError) {
+//				printf("dlopen() Error: '%s'",pError);
+//			}
+//		}
+//#endif
+//		return NULL;
+//	}
+//	pLib = TMALLOCFOREVER(tLoadedLib);
+//	pLib->pNext = pLoadedLibs;
+//	pLoadedLibs = pLib;
+//	pLib->name = name;
+//	pLib->pLib = pNativeLib;
+//	return pLib;
+	return NULL;
 }
 
-fnPInvoke PInvoke_GetFunction(tMetaData *pMetaData, tMD_ImplMap *pImplMap) {
+/* __device__ */ fnPInvoke PInvoke_GetFunction(tMetaData *pMetaData, tMD_ImplMap *pImplMap) {
 	tLoadedLib *pLib;
 	STRING libName;
-	void *pProc;
+	void *pProc = NULL;
 
 	libName = MetaData_GetModuleRefName(pMetaData, pImplMap->importScope);
 	pLib = GetLib(libName);
@@ -100,15 +101,15 @@ fnPInvoke PInvoke_GetFunction(tMetaData *pMetaData, tMD_ImplMap *pImplMap) {
 		return NULL;
 	}
 
-#if WIN32
-	pProc = GetProcAddress(pLib->pLib, pImplMap->importName);
-#else
-	pProc = dlsym(pLib->pLib, pImplMap->importName);
-#endif
+//#if WIN32
+//	pProc = GetProcAddress((HMODULE)pLib->pLib, pImplMap->importName);
+//#else
+//	pProc = dlsym(pLib->pLib, pImplMap->importName);
+//#endif
 	return pProc;
 }
 
-static void* ConvertStringToANSI(HEAP_PTR pHeapEntry) {
+/* __device__ */ static void* ConvertStringToANSI(HEAP_PTR pHeapEntry) {
 	U32 strLen, i;
 	STRING2 str = SystemString_GetString(pHeapEntry, &strLen);
 	unsigned char *pAnsi = (unsigned char*)malloc(strLen+1);
@@ -120,7 +121,7 @@ static void* ConvertStringToANSI(HEAP_PTR pHeapEntry) {
 }
 
 // This function is needed to maintain string immutability, and to add a null-terminator
-static void* ConvertStringToUnicode(HEAP_PTR pHeapEntry) {
+/* __device__ */ static void* ConvertStringToUnicode(HEAP_PTR pHeapEntry) {
 	U32 strLen;
 	STRING2 str = SystemString_GetString(pHeapEntry, &strLen);
 	unsigned short *pUnicode = (unsigned short*)malloc((strLen+1) << 1);
@@ -158,7 +159,7 @@ typedef U64    (STDCALL *_uCuuuuuuuuuu)(U32 _0, U32 _1, U32 _2, U32 _3, U32 _4, 
 #define SET_ARG_TYPE(paramNum, type) funcParams |= (type << ((paramNum+1) << 1))
 
 #define MAX_ARGS 16
-U32 PInvoke_Call(tJITCallPInvoke *pCall, PTR pParams, PTR pReturnValue) {
+/* __device__ */ U32 PInvoke_Call(tJITCallPInvoke *pCall, PTR pParams, PTR pReturnValue) {
 	U32 _args[MAX_ARGS];
 	double _argsd[MAX_ARGS];
 	void* _pTempMem[MAX_ARGS];
@@ -274,7 +275,7 @@ U32 PInvoke_Call(tJITCallPInvoke *pCall, PTR pParams, PTR pReturnValue) {
 	}
 	if (pReturnType == types[TYPE_SYSTEM_STRING]) {
 		if (IMPLMAP_ISCHARSET_ANSI(pImplMap) || IMPLMAP_ISCHARSET_AUTO(pImplMap) || IMPLMAP_ISCHARSET_NOTSPEC(pImplMap)) {
-			*(HEAP_PTR*)pReturnValue = SystemString_FromCharPtrASCII((U8*)(U32)u64Ret);
+			*(HEAP_PTR*)pReturnValue = SystemString_FromCharPtrASCII((char*)u64Ret);
 		} else if (IMPLMAP_ISCHARSET_UNICODE(pImplMap)) {
 			*(HEAP_PTR*)pReturnValue = SystemString_FromCharPtrUTF16((U16*)(U32)u64Ret);
 		} else {
@@ -297,4 +298,5 @@ U32 PInvoke_Call(tJITCallPInvoke *pCall, PTR pParams, PTR pReturnValue) {
 
 	Crash("PInvoke_Call() Cannot handle return type: %s", pReturnType->name);
 	FAKE_RETURN;
+	return 0;
 }

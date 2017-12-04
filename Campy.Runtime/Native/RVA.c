@@ -26,6 +26,7 @@
 tRVA* RVA() {
 	tRVA *pRet;
 	pRet = TMALLOC(tRVA);
+	memset(pRet, 0, sizeof(tRVA));
 	return pRet;
 }
 
@@ -35,6 +36,7 @@ tRVA_Item* RVA_Create(tRVA *pThis, void *pFile, void *pSectionHeader) {
 	unsigned int rawSize;
 
 	pRet = TMALLOC(tRVA_Item);
+	memset(pRet, 0, sizeof(tRVA_Item));
 	pRet->baseAddress = *(unsigned int*)&((char*)pSectionHeader)[12];
 	pRet->size = *(unsigned int*)&((char*)pSectionHeader)[8];
 	pRet->pData = malloc(pRet->size);

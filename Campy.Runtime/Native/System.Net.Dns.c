@@ -31,32 +31,32 @@
 #include <netdb.h>
 #endif
 
-tAsyncCall* System_Net_Dns_Internal_GetHostEnt(PTR pThis_, PTR pParams, PTR pReturnValue) {
-	struct hostent *pHostEnt;
-	U32 i, len;
-	STRING2 name2;
-	HEAP_PTR retArray;
-	U8 nameU8[256];
+/* __device__ */ tAsyncCall* System_Net_Dns_Internal_GetHostEnt(PTR pThis_, PTR pParams, PTR pReturnValue) {
+	//struct hostent *pHostEnt;
+	//U32 i, len;
+	//STRING2 name2;
+	//HEAP_PTR retArray;
+	//U8 nameU8[256];
 
-	HEAP_PTR name = INTERNALCALL_PARAM(0, STRING);
-	HEAP_PTR *pHostName = INTERNALCALL_PARAM(4, STRING*);
+	//HEAP_PTR name = (HEAP_PTR)INTERNALCALL_PARAM(0, STRING);
+	//HEAP_PTR *pHostName = (HEAP_PTR*)INTERNALCALL_PARAM(4, STRING*);
 
-	name2 = SystemString_GetString(name, &len);
-	for (i=0; i<len && i<256; i++) {
-		nameU8[i] = (U8)name2[i];
-	}
-	nameU8[i] = 0;
-	pHostEnt = gethostbyname(nameU8);
-	*pHostName = SystemString_FromCharPtrASCII(pHostEnt->h_name);
+	//name2 = SystemString_GetString(name, &len);
+	//for (i=0; i<len && i<256; i++) {
+	//	nameU8[i] = (U8)name2[i];
+	//}
+	//nameU8[i] = 0;
+	//pHostEnt = (struct hostent *)gethostbyname((const char *)nameU8);
+	//*pHostName = SystemString_FromCharPtrASCII(pHostEnt->h_name);
 
-	// Count how many entries there are
-	for (i=0; pHostEnt->h_addr_list[i] != NULL; i++);
+	//// Count how many entries there are
+	//for (i=0; pHostEnt->h_addr_list[i] != NULL; i++);
 
-	retArray = SystemArray_NewVector(types[TYPE_SYSTEM_ARRAY_INT32], i);
-	*(HEAP_PTR*)pReturnValue = retArray;
-	for (i=0; pHostEnt->h_addr_list[i] != NULL; i++) {
-		SystemArray_StoreElement(retArray, i, pHostEnt->h_addr_list[i]);
-	}
+	//retArray = SystemArray_NewVector(types[TYPE_SYSTEM_ARRAY_INT32], i);
+	//*(HEAP_PTR*)pReturnValue = retArray;
+	//for (i=0; pHostEnt->h_addr_list[i] != NULL; i++) {
+	//	SystemArray_StoreElement(retArray, i, (PTR) pHostEnt->h_addr_list[i]);
+	//}
 
 	return NULL;
 

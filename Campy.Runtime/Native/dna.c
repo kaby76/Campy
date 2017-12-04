@@ -39,7 +39,7 @@ static void ShowUsage() {
 	exit(1);
 }
 
-int main(int argc, char **argp) {
+int main2(int argc, char **argp) {
 	tCLIFile *pCLIFile;
 	char *pFileName;
 	U32 i;

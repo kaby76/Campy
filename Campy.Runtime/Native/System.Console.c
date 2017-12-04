@@ -27,7 +27,7 @@
 #include "Types.h"
 #include "Type.h"
 
-tAsyncCall* System_Console_Write(PTR pThis_, PTR pParams, PTR pReturnValue) {
+/* __device__ */ tAsyncCall* System_Console_Write(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	HEAP_PTR string;
 	STRING2 str;
 	U32 i, strLen;
@@ -35,7 +35,7 @@ tAsyncCall* System_Console_Write(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	string = *(HEAP_PTR*)pParams;
 	if (string != NULL) {
 #define SUB_LEN 128
-		unsigned char str8[SUB_LEN+1];
+		char str8[SUB_LEN+1];
 		U32 start = 0;
 		str = SystemString_GetString(string, &strLen);
 		while (strLen > 0) {
@@ -45,7 +45,7 @@ tAsyncCall* System_Console_Write(PTR pThis_, PTR pParams, PTR pReturnValue) {
 				str8[i] = c?c:'?';
 			}
 			str8[i] = 0;
-			printf(str8);
+//			printf(str8);
 			strLen -= thisLen;
 			start += thisLen;
 		}
@@ -54,50 +54,52 @@ tAsyncCall* System_Console_Write(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	return NULL;
 }
 
-static U32 nextKeybC = 0xffffffff;
-static U32 Internal_ReadKey_Check(PTR pThis_, PTR pParams, PTR pReturnValue, tAsyncCall *pAsync) {
-	if (nextKeybC != 0xffffffff) {
-		*(U32*)pReturnValue = nextKeybC;
-		nextKeybC = 0xffffffff;
-		return 1;
-	} else {
-#ifdef WIN32
-		if (_kbhit()) {
-			U32 c = _getch();
-			*(U32*)pReturnValue = c;
-			return 1;
-		} else {
-			return 0;
-		}
-#else
-		struct timeval tv_timeout;
-		fd_set readfds;
-		int res;
-		U8 c;
-		
-		tv_timeout.tv_sec = 0;
-		tv_timeout.tv_usec = 0;
-		FD_ZERO(&readfds);
-		FD_SET(STDIN_FILENO, &readfds);
-		
-		res = select(FD_SETSIZE, &readfds, NULL, NULL, &tv_timeout);
-		if (res <= 0) {
-			// timeout
-			return 0;
-		}
-		res = read(STDIN_FILENO, &c, 1);
-		if (res == 1) {
-			*(U32*)pReturnValue = c;
-			return 1;
-		}
-
-		return 0;
-#endif
-	}
+/* __device__ */ static U32 nextKeybC = 0xffffffff;
+/* __device__ */ static U32 Internal_ReadKey_Check(PTR pThis_, PTR pParams, PTR pReturnValue, tAsyncCall *pAsync) {
+//	if (nextKeybC != 0xffffffff) {
+//		*(U32*)pReturnValue = nextKeybC;
+//		nextKeybC = 0xffffffff;
+//		return 1;
+//	} else {
+//#ifdef WIN32
+//		if (_kbhit()) {
+//			U32 c = _getch();
+//			*(U32*)pReturnValue = c;
+//			return 1;
+//		} else {
+//			return 0;
+//		}
+//#else
+//		struct timeval tv_timeout;
+//		fd_set readfds;
+//		int res;
+//		U8 c;
+//		
+//		tv_timeout.tv_sec = 0;
+//		tv_timeout.tv_usec = 0;
+//		FD_ZERO(&readfds);
+//		FD_SET(STDIN_FILENO, &readfds);
+//		
+//		res = select(FD_SETSIZE, &readfds, NULL, NULL, &tv_timeout);
+//		if (res <= 0) {
+//			// timeout
+//			return 0;
+//		}
+//		res = read(STDIN_FILENO, &c, 1);
+//		if (res == 1) {
+//			*(U32*)pReturnValue = c;
+//			return 1;
+//		}
+//
+//		return 0;
+//#endif
+//	}
+	return 0;
 }
 
-tAsyncCall* System_Console_Internal_ReadKey(PTR pThis_, PTR pParams, PTR pReturnValue) {
+/* __device__ */ tAsyncCall* System_Console_Internal_ReadKey(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tAsyncCall *pAsync = TMALLOC(tAsyncCall);
+	memset(pAsync, 0, sizeof(tAsyncCall));
 
 	pAsync->sleepTime = -1;
 	pAsync->checkFn = Internal_ReadKey_Check;
@@ -106,7 +108,7 @@ tAsyncCall* System_Console_Internal_ReadKey(PTR pThis_, PTR pParams, PTR pReturn
 	return pAsync;
 }
 
-tAsyncCall* System_Console_Internal_KeyAvailable(PTR pThis_, PTR pParams, PTR pReturnValue) {
+/* __device__ */ tAsyncCall* System_Console_Internal_KeyAvailable(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	U32 c, isKey;
 
 	isKey = Internal_ReadKey_Check(NULL, NULL, (PTR)&c, NULL);

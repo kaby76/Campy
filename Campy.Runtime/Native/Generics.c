@@ -27,8 +27,9 @@
 #include "Types.h"
 #include "Type.h"
 #include "EvalStack.h"
+#include "Gstring.h"
 
-void Generic_GetHeapRoots(tHeapRoots *pHeapRoots, tMD_TypeDef *pTypeDef) {
+/* __device__ */ void Generic_GetHeapRoots(tHeapRoots *pHeapRoots, tMD_TypeDef *pTypeDef) {
 	tGenericInstance *pInst = pTypeDef->pGenericInstances;
 	while (pInst != NULL) {
 		tMD_TypeDef *pTypeDef = pInst->pInstanceTypeDef;
@@ -39,7 +40,7 @@ void Generic_GetHeapRoots(tHeapRoots *pHeapRoots, tMD_TypeDef *pTypeDef) {
 	}
 }
 
-tMD_TypeDef* Generics_GetGenericTypeFromSig
+/* __device__ */ tMD_TypeDef* Generics_GetGenericTypeFromSig
 	(tMetaData *pMetaData, SIG *pSig, tMD_TypeDef **ppCallingClassTypeArgs, tMD_TypeDef **ppCallingMethodTypeArgs) {
 	tMD_TypeDef *pCoreType, *pRet;
 	U32 numTypeArgs, i;
@@ -64,7 +65,7 @@ tMD_TypeDef* Generics_GetGenericTypeFromSig
 
 // TODO: This is not the most efficient way of doing this, as it has to search through all the
 // entries in the GenericParams table for all lookups. This can be improved.
-static tMD_GenericParam* FindGenericParam(tMD_TypeDef *pCoreType, U32 typeArgIndex) {
+/* __device__ */ static tMD_GenericParam* FindGenericParam(tMD_TypeDef *pCoreType, U32 typeArgIndex) {
 	tMD_GenericParam *pGenericParam;
 	U32 i;
 
@@ -78,11 +79,11 @@ static tMD_GenericParam* FindGenericParam(tMD_TypeDef *pCoreType, U32 typeArgInd
 	return NULL;
 }
 
-tMD_TypeDef* Generics_GetGenericTypeFromCoreType(tMD_TypeDef *pCoreType, U32 numTypeArgs, tMD_TypeDef **ppTypeArgs) {
+/* __device__ */ tMD_TypeDef* Generics_GetGenericTypeFromCoreType(tMD_TypeDef *pCoreType, U32 numTypeArgs, tMD_TypeDef **ppTypeArgs) {
 	tGenericInstance *pInst;
 	tMD_TypeDef *pTypeDef;
 	U32 i;
-	unsigned char name[2048];
+	char name[2048];
 	tMetaData *pMetaData;
 
 	pMetaData = pCoreType->pMetaData;
@@ -92,7 +93,7 @@ tMD_TypeDef* Generics_GetGenericTypeFromCoreType(tMD_TypeDef *pCoreType, U32 num
 	pInst = pCoreType->pGenericInstances;
 	while (pInst != NULL) {
 		if (pInst->numTypeArgs == numTypeArgs &&
-			memcmp(pInst->pTypeArgs, ppTypeArgs, numTypeArgs * sizeof(tMD_TypeDef*)) == 0) {
+			Gmemcmp(pInst->pTypeArgs, ppTypeArgs, numTypeArgs * sizeof(tMD_TypeDef*)) == 0) {
 			return pInst->pInstanceTypeDef;
 		}
 		pInst = pInst->pNext;
@@ -105,30 +106,30 @@ tMD_TypeDef* Generics_GetGenericTypeFromCoreType(tMD_TypeDef *pCoreType, U32 num
 	pCoreType->pGenericInstances = pInst;
 	// Copy the type args into the instantiation.
 	pInst->numTypeArgs = numTypeArgs;
-	memcpy(pInst->pTypeArgs, ppTypeArgs, numTypeArgs * sizeof(tMD_TypeDef*));
+	Gmemcpy(pInst->pTypeArgs, ppTypeArgs, numTypeArgs * sizeof(tMD_TypeDef*));
 
 	// Create the new instantiated type
 	pInst->pInstanceTypeDef = pTypeDef = TMALLOCFOREVER(tMD_TypeDef);
-	memset(pTypeDef, 0, sizeof(tMD_TypeDef));
+	Gmemset(pTypeDef, 0, sizeof(tMD_TypeDef));
 	// Make the name of the instantiation.
-	strcpy(name, pCoreType->name);
-	strcat(name, "[");
+	Gstrcpy(name, pCoreType->name);
+	Gstrcat(name, "[");
 	for (i=0; i<numTypeArgs; i++) {
 		if (i > 0) {
-			strcat(name, ",");
+			Gstrcat(name, ",");
 		}
 		if (ppTypeArgs[i] != NULL) {
-			sprintf(strchr(name, 0), "%s.%s", ppTypeArgs[i]->nameSpace, ppTypeArgs[i]->name);
+			Gsprintf(Gstrchr(name, 0), "%s.%s", ppTypeArgs[i]->nameSpace, ppTypeArgs[i]->name);
 		} else {
 			tMD_GenericParam *pGenericParam = FindGenericParam(pCoreType, i);
 			if (pGenericParam != NULL) {
-				sprintf(strchr(name, 0), pGenericParam->name);
+				Gsprintf(Gstrchr(name, 0), pGenericParam->name);
 			} else {
-				sprintf(strchr(name, 0), "???");
+				Gsprintf(Gstrchr(name, 0), "???");
 			}
 		}
 	}
-	strcat(name, "]");
+	Gstrcat(name, "]");
 	// Fill in the basic bits of the new type def.
 	pTypeDef->pTypeDef = pTypeDef;
 	pTypeDef->pMetaData = pMetaData;
@@ -141,8 +142,8 @@ tMD_TypeDef* Generics_GetGenericTypeFromCoreType(tMD_TypeDef *pCoreType, U32 num
 		}
 	}
 	pTypeDef->nameSpace = pCoreType->nameSpace;
-	pTypeDef->name = (STRING)mallocForever((U32)strlen(name)+1);
-	strcpy(pTypeDef->name, name);
+	pTypeDef->name = (STRING)mallocForever((U32)Gstrlen(name)+1);
+	Gstrcpy(pTypeDef->name, name);
 	pTypeDef->ppClassTypeArgs = pInst->pTypeArgs;
 	pTypeDef->extends = pCoreType->extends;
 	pTypeDef->tableIndex = pCoreType->tableIndex;
@@ -159,7 +160,7 @@ tMD_TypeDef* Generics_GetGenericTypeFromCoreType(tMD_TypeDef *pCoreType, U32 num
 	return pTypeDef;
 }
 
-tMD_MethodDef* Generics_GetMethodDefFromSpec
+/* __device__ */ tMD_MethodDef* Generics_GetMethodDefFromSpec
 	(tMD_MethodSpec *pMethodSpec, tMD_TypeDef **ppCallingClassTypeArgs, tMD_TypeDef **ppCallingMethodTypeArgs) {
 
 	tMD_MethodDef *pCoreMethod, *pMethod;
@@ -173,7 +174,7 @@ tMD_MethodDef* Generics_GetMethodDefFromSpec
 	sig = MetaData_GetBlob(pMethodSpec->instantiation, NULL);
 	MetaData_DecodeSigEntry(&sig); // always 0x0a
 	argCount = MetaData_DecodeSigEntry(&sig);
-	ppTypeArgs = malloc(argCount * sizeof(tMD_TypeDef*));
+	ppTypeArgs = (tMD_TypeDef**)malloc(argCount * sizeof(tMD_TypeDef*));
 
 	for (i=0; i<argCount; i++) {
 		tMD_TypeDef *pArgType;
@@ -188,7 +189,7 @@ tMD_MethodDef* Generics_GetMethodDefFromSpec
 	return pMethod;
 }
 
-tMD_MethodDef* Generics_GetMethodDefFromCoreMethod
+/* __device__ */ tMD_MethodDef* Generics_GetMethodDefFromCoreMethod
 	(tMD_MethodDef *pCoreMethod, tMD_TypeDef *pParentType, U32 numTypeArgs, tMD_TypeDef **ppTypeArgs) {
 
 	tGenericMethodInstance *pInst;
@@ -198,14 +199,14 @@ tMD_MethodDef* Generics_GetMethodDefFromCoreMethod
 	pInst = pCoreMethod->pGenericMethodInstances;
 	while (pInst != NULL) {
 		if (pInst->numTypeArgs == numTypeArgs &&
-			memcmp(pInst->pTypeArgs, ppTypeArgs, numTypeArgs * sizeof(tMD_TypeDef*)) == 0) {
+			Gmemcmp(pInst->pTypeArgs, ppTypeArgs, numTypeArgs * sizeof(tMD_TypeDef*)) == 0) {
 			return pInst->pInstanceMethodDef;
 		}
 		pInst = pInst->pNext;
 	}
 
 	// We don't have an instance so create one now.
-	pInst = mallocForever(sizeof(tGenericMethodInstance) + numTypeArgs * sizeof(tMD_TypeDef*));
+	pInst = (tGenericMethodInstance *)mallocForever(sizeof(tGenericMethodInstance) + numTypeArgs * sizeof(tMD_TypeDef*));
 	pInst->pNext = pCoreMethod->pGenericMethodInstances;
 	pCoreMethod->pGenericMethodInstances = pInst;
 	pInst->numTypeArgs = numTypeArgs;

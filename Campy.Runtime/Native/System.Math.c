@@ -20,36 +20,38 @@
 
 #include "Compat.h"
 #include "Sys.h"
+#include "Type.h"
 
 #include "System.Math.h"
 
 #include <math.h>
+#include "Gprintf.h"
 
-tAsyncCall* System_Math_Sin(PTR pThis_, PTR pParams, PTR pReturnValue) {
+/* __device__ */ tAsyncCall* System_Math_Sin(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	*(double*)pReturnValue = sin(INTERNALCALL_PARAM(0, double));
-
+	Type_Init();
 	return NULL;
 }
 
-tAsyncCall* System_Math_Cos(PTR pThis_, PTR pParams, PTR pReturnValue) {
+/* __device__ */ tAsyncCall* System_Math_Cos(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	*(double*)pReturnValue = cos(INTERNALCALL_PARAM(0, double));
 
 	return NULL;
 }
 
-tAsyncCall* System_Math_Tan(PTR pThis_, PTR pParams, PTR pReturnValue) {
+/* __device__ */ tAsyncCall* System_Math_Tan(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	*(double*)pReturnValue = tan(INTERNALCALL_PARAM(0, double));
 
 	return NULL;
 }
 
-tAsyncCall* System_Math_Pow(PTR pThis_, PTR pParams, PTR pReturnValue) {
+/* __device__ */ tAsyncCall* System_Math_Pow(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	*(double*)pReturnValue = pow(INTERNALCALL_PARAM(0, double), INTERNALCALL_PARAM(8, double));
 
 	return NULL;
 }
 
-tAsyncCall* System_Math_Sqrt(PTR pThis_, PTR pParams, PTR pReturnValue) {
+/* __device__ */ tAsyncCall* System_Math_Sqrt(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	*(double*)pReturnValue = sqrt(INTERNALCALL_PARAM(0, double));
 
 	return NULL;

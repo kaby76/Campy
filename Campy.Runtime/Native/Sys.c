@@ -23,63 +23,64 @@
 
 #include "MetaData.h"
 #include "Types.h"
+#include "Gstring.h"
+#include "Gprintf.h"
 
-void Crash(char *pMsg, ...) {
+/* __device__ */ void Crash(const char *pMsg, ...) {
 	va_list va;
 
-	printf("\n\n*** CRASH ***\n");
+	Gprintf("\n\n*** CRASH ***\n");
 
 	va_start(va, pMsg);
-
-	vprintf(pMsg, va);
-
+	char buf[10000];
+	Gvsprintf(buf, pMsg, va);
+	Gprintf("%s", buf);
 	va_end(va);
 
-	printf("\n\n");
-
-#ifdef WIN32
-	{
-		// Cause a delibrate exception, to get into debugger
-		__debugbreak();
-	}
-#endif
-
-	exit(1);
+	Gprintf("\n\n");
+//
+//#ifdef WIN32
+//	{
+//		// Cause a delibrate exception, to get into debugger
+//		__debugbreak();
+//	}
+//#endif
+//
+//	gpuexit(1);
 }
 
-U32 logLevel = 0;
+/* __device__ */ U32 logLevel = 0;
 
-void log_f(U32 level, char *pMsg, ...) {
+/* __device__ */ void log_f(U32 level, const char *pMsg, ...) {
 	va_list va;
-
 	if (logLevel >= level) {
 		va_start(va, pMsg);
-		vprintf(pMsg, va);
+		//Gvprintf(pMsg, va);
 		va_end(va);
 	}
 }
 
-static char methodName[2048];
-char* Sys_GetMethodDesc(tMD_MethodDef *pMethod) {
+/* __device__ */ static char methodName[2048];
+/* __device__ */ char* Sys_GetMethodDesc(tMD_MethodDef *pMethod) {
 	U32 i;
 
-	sprintf(methodName, "%s.%s.%s(", pMethod->pParentType->nameSpace, pMethod->pParentType->name, pMethod->name);
+	Gsprintf(methodName, "%s.%s.%s(", pMethod->pParentType->nameSpace, pMethod->pParentType->name, pMethod->name);
 	for (i=METHOD_ISSTATIC(pMethod)?0:1; i<pMethod->numberOfParameters; i++) {
 		if (i > (U32)(METHOD_ISSTATIC(pMethod)?0:1)) {
-			sprintf(strchr(methodName, 0), ",");
+			Gsprintf(Gstrchr(methodName, 0), ",");
 		}
-		sprintf(strchr(methodName, 0), pMethod->pParams[i].pTypeDef->name);
+		Gsprintf(Gstrchr(methodName, 0), pMethod->pParams[i].pTypeDef->name);
 	}
-	sprintf(strchr(methodName, 0), ")");
+	Gsprintf(Gstrchr(methodName, 0), ")");
 	return methodName;
 }
 
-static U32 mallocForeverSize = 0;
+/* __device__ */ static U32 mallocForeverSize = 0;
 // malloc() some memory that will never need to be resized or freed.
-void* mallocForever(U32 size) {
+/* __device__ */ void* mallocForever(U32 size) {
 	mallocForeverSize += size;
 log_f(3, "--- mallocForever: TotalSize %d\n", mallocForeverSize);
-	return malloc(size);
+	return Gmalloc(size);
 }
 
 /*
@@ -92,53 +93,55 @@ void* mallocTrace(int s, char *pFile, int line) {
 #endif
 */
 
-U64 msTime() {
-#ifdef WIN32
-	static LARGE_INTEGER freq = {0,0};
-	LARGE_INTEGER time;
-	if (freq.QuadPart == 0) {
-		QueryPerformanceFrequency(&freq);
-	}
-	QueryPerformanceCounter(&time);
-	return (time.QuadPart * 1000) / freq.QuadPart;
-#else
-	struct timeval tp;
-	U64 ms;
-	gettimeofday(&tp,NULL);
-	ms = tp.tv_sec;
-	ms *= 1000;
-	ms += ((U64)tp.tv_usec)/((U64)1000);
-	return ms;
-#endif
+/* __device__ */ U64 msTime() {
+//#ifdef WIN32
+//	static LARGE_INTEGER freq = {0,0};
+//	LARGE_INTEGER time;
+//	if (freq.QuadPart == 0) {
+//		QueryPerformanceFrequency(&freq);
+//	}
+//	QueryPerformanceCounter(&time);
+//	return (time.QuadPart * 1000) / freq.QuadPart;
+//#else
+//	struct timeval tp;
+//	U64 ms;
+//	gettimeofday(&tp,NULL);
+//	ms = tp.tv_sec;
+//	ms *= 1000;
+//	ms += ((U64)tp.tv_usec)/((U64)1000);
+//	return ms;
+//#endif
+	return 0;
 }
 
 #if defined(DIAG_METHOD_CALLS) || defined(DIAG_OPCODE_TIMES) || defined(DIAG_GC) || defined(DIAG_TOTAL_TIME)
-U64 microTime() {
-#ifdef WIN32
-	static LARGE_INTEGER freq = {0,0};
-	LARGE_INTEGER time;
-	if (freq.QuadPart == 0) {
-		QueryPerformanceFrequency(&freq);
-	}
-	QueryPerformanceCounter(&time);
-	return (time.QuadPart * 1000000) / freq.QuadPart;
-#else
-	struct timeval tp;
-	U64 ms;
-	gettimeofday(&tp,NULL);
-	ms = tp.tv_sec;
-	ms *= 1000000;
-	ms += ((U64)tp.tv_usec);
-	return ms;
-#endif
+/* __device__ */ U64 microTime() {
+//#ifdef WIN32
+//	static LARGE_INTEGER freq = {0,0};
+//	LARGE_INTEGER time;
+//	if (freq.QuadPart == 0) {
+//		QueryPerformanceFrequency(&freq);
+//	}
+//	QueryPerformanceCounter(&time);
+//	return (time.QuadPart * 1000000) / freq.QuadPart;
+//#else
+//	struct timeval tp;
+//	U64 ms;
+//	gettimeofday(&tp,NULL);
+//	ms = tp.tv_sec;
+//	ms *= 1000000;
+//	ms += ((U64)tp.tv_usec);
+//	return ms;
+//#endif
+	return 0;
 }
 #endif
 
-void SleepMS(U32 ms) {
-#ifdef WIN32
-	Sleep(ms);
-#else
-	sleep(ms / 1000);
-	usleep((ms % 1000) * 1000);
-#endif
+/* __device__ */ void SleepMS(U32 ms) {
+//#ifdef WIN32
+//	Sleep(ms);
+//#else
+//	sleep(ms / 1000);
+//	usleep((ms % 1000) * 1000);
+//#endif
 }

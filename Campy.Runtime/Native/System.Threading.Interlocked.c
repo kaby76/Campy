@@ -23,7 +23,7 @@
 
 #include "System.Threading.Interlocked.h"
 
-tAsyncCall* System_Threading_Interlocked_CompareExchange_Int32(PTR pThis_, PTR pParams, PTR pReturnValue) {
+/* __device__ */ tAsyncCall* System_Threading_Interlocked_CompareExchange_Int32(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	U32 *pLoc = INTERNALCALL_PARAM(0, U32*);
 	U32 value = INTERNALCALL_PARAM(4, U32);
 	U32 comparand = INTERNALCALL_PARAM(8, U32);
@@ -36,7 +36,7 @@ tAsyncCall* System_Threading_Interlocked_CompareExchange_Int32(PTR pThis_, PTR p
 	return NULL;
 }
 
-tAsyncCall* System_Threading_Interlocked_Increment_Int32(PTR pThis_, PTR pParams, PTR pReturnValue) {
+/* __device__ */ tAsyncCall* System_Threading_Interlocked_Increment_Int32(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	I32 *pLoc = INTERNALCALL_PARAM(0, I32*);
 
 	(*pLoc)++;
@@ -45,7 +45,7 @@ tAsyncCall* System_Threading_Interlocked_Increment_Int32(PTR pThis_, PTR pParams
 	return NULL;
 }
 
-tAsyncCall* System_Threading_Interlocked_Decrement_Int32(PTR pThis_, PTR pParams, PTR pReturnValue) {
+/* __device__ */ tAsyncCall* System_Threading_Interlocked_Decrement_Int32(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	I32 *pLoc = INTERNALCALL_PARAM(0, I32*);
 
 	(*pLoc)--;
@@ -54,7 +54,7 @@ tAsyncCall* System_Threading_Interlocked_Decrement_Int32(PTR pThis_, PTR pParams
 	return NULL;
 }
 
-tAsyncCall* System_Threading_Interlocked_Add_Int32(PTR pThis_, PTR pParams, PTR pReturnValue) {
+/* __device__ */ tAsyncCall* System_Threading_Interlocked_Add_Int32(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	U32 *pLoc = INTERNALCALL_PARAM(0, U32*);
 	U32 value = INTERNALCALL_PARAM(4, U32);
 
@@ -64,7 +64,7 @@ tAsyncCall* System_Threading_Interlocked_Add_Int32(PTR pThis_, PTR pParams, PTR 
 	return NULL;
 }
 
-tAsyncCall* System_Threading_Interlocked_Exchange_Int32(PTR pThis_, PTR pParams, PTR pReturnValue) {
+/* __device__ */ tAsyncCall* System_Threading_Interlocked_Exchange_Int32(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	U32 *pLoc = INTERNALCALL_PARAM(0, U32*);
 	U32 value = INTERNALCALL_PARAM(4, U32);
 

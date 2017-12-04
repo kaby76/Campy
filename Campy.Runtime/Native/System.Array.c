@@ -37,7 +37,7 @@ struct tSystemArray_ {
 };
 
 // Must return a boxed version of value-types
-tAsyncCall* System_Array_Internal_GetValue(PTR pThis_, PTR pParams, PTR pReturnValue) {
+/* __device__ */ tAsyncCall* System_Array_Internal_GetValue(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tSystemArray *pArray = (tSystemArray*)pThis_;
 	tMD_TypeDef *pArrayType;
 	U32 index, elementSize;
@@ -77,7 +77,7 @@ tAsyncCall* System_Array_Internal_GetValue(PTR pThis_, PTR pParams, PTR pReturnV
 }
 
 // Value-types will be boxed
-tAsyncCall* System_Array_Internal_SetValue(PTR pThis_, PTR pParams, PTR pReturnValue) {
+/* __device__ */ tAsyncCall* System_Array_Internal_SetValue(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tSystemArray *pArray = (tSystemArray*)pThis_;
 	tMD_TypeDef *pArrayType, *pObjType;
 	U32 index, elementSize;
@@ -103,7 +103,7 @@ tAsyncCall* System_Array_Internal_SetValue(PTR pThis_, PTR pParams, PTR pReturnV
 #if defined(WIN32) && defined(_DEBUG)
 	// Do a bounds-check
 	if (index >= pArray->length) {
-		printf("[Array] Internal_SetValue() Bounds-check failed\n");
+//		printf("[Array] Internal_SetValue() Bounds-check failed\n");
 		__debugbreak();
 	}
 #endif
@@ -132,7 +132,7 @@ tAsyncCall* System_Array_Internal_SetValue(PTR pThis_, PTR pParams, PTR pReturnV
 	return NULL;
 }
 
-tAsyncCall* System_Array_Clear(PTR pThis_, PTR pParams, PTR pReturnValue) {
+/* __device__ */ tAsyncCall* System_Array_Clear(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tSystemArray *pArray;
 	U32 index, length, elementSize;
 	tMD_TypeDef *pArrayType;
@@ -147,7 +147,7 @@ tAsyncCall* System_Array_Clear(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	return NULL;
 }
 
-tAsyncCall* System_Array_Internal_Copy(PTR pThis_, PTR pParams, PTR pReturnValue) {
+/* __device__ */ tAsyncCall* System_Array_Internal_Copy(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tSystemArray *pSrc, *pDst;
 	tMD_TypeDef *pSrcType, *pDstType, *pSrcElementType;
 
@@ -169,7 +169,7 @@ tAsyncCall* System_Array_Internal_Copy(PTR pThis_, PTR pParams, PTR pReturnValue
 #if defined(WIN32) && defined(_DEBUG)
 		// Do bounds check
 		if (srcIndex + length > pSrc->length || dstIndex + length > pDst->length) {
-			printf("[Array] Internal_Copy() Bounds check failed\n");
+			//printf("[Array] Internal_Copy() Bounds check failed\n");
 			__debugbreak();
 		}
 #endif
@@ -187,7 +187,7 @@ tAsyncCall* System_Array_Internal_Copy(PTR pThis_, PTR pParams, PTR pReturnValue
 	return NULL;
 }
 
-tAsyncCall* System_Array_Resize(PTR pThis_, PTR pParams, PTR pReturnValue) {
+/* __device__ */ tAsyncCall* System_Array_Resize(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	HEAP_PTR* ppArray_, pHeap;
 	tSystemArray *pOldArray, *pNewArray;
 	U32 newSize, oldSize;
@@ -214,7 +214,7 @@ tAsyncCall* System_Array_Resize(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	return NULL;
 }
 
-tAsyncCall* System_Array_Reverse(PTR pThis_, PTR pParams, PTR pReturnValue) {
+/* __device__ */ tAsyncCall* System_Array_Reverse(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tSystemArray *pArray;
 	U32 index, length, elementSize, i, dec;
 	tMD_TypeDef *pArrayType;
@@ -243,7 +243,7 @@ tAsyncCall* System_Array_Reverse(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	return NULL;
 }
 
-HEAP_PTR SystemArray_NewVector(tMD_TypeDef *pArrayTypeDef, U32 length) {
+/* __device__ */ HEAP_PTR SystemArray_NewVector(tMD_TypeDef *pArrayTypeDef, U32 length) {
 	U32 heapSize;
 	tSystemArray *pArray;
 
@@ -253,7 +253,7 @@ HEAP_PTR SystemArray_NewVector(tMD_TypeDef *pArrayTypeDef, U32 length) {
 	return (HEAP_PTR)pArray;
 }
 
-void SystemArray_StoreElement(HEAP_PTR pThis_, U32 index, PTR value) {
+/* __device__ */ void SystemArray_StoreElement(HEAP_PTR pThis_, U32 index, PTR value) {
 	tSystemArray *pArray = (tSystemArray*)pThis_;
 	tMD_TypeDef *pArrayTypeDef;
 	U32 elemSize;
@@ -261,7 +261,7 @@ void SystemArray_StoreElement(HEAP_PTR pThis_, U32 index, PTR value) {
 #if defined(WIN32) && defined(_DEBUG)
 	// Do a bounds check
 	if (index >= pArray->length) {
-		printf("SystemArray_StoreElement() Bounds check failed. Array length: %d  index: %d\n", pArray->length, index);
+//		printf("SystemArray_StoreElement() Bounds check failed. Array length: %d  index: %d\n", pArray->length, index);
 		__debugbreak();
 	}
 #endif
@@ -284,7 +284,7 @@ void SystemArray_StoreElement(HEAP_PTR pThis_, U32 index, PTR value) {
 	}
 }
 
-void SystemArray_LoadElement(HEAP_PTR pThis_, U32 index, PTR value) {
+/* __device__ */ void SystemArray_LoadElement(HEAP_PTR pThis_, U32 index, PTR value) {
 	tSystemArray *pArray = (tSystemArray*)pThis_;
 	tMD_TypeDef *pArrayTypeDef;
 	U32 elemSize;
@@ -307,13 +307,13 @@ void SystemArray_LoadElement(HEAP_PTR pThis_, U32 index, PTR value) {
 	}
 }
 
-PTR SystemArray_LoadElementAddress(HEAP_PTR pThis_, U32 index) {
+/* __device__ */ PTR SystemArray_LoadElementAddress(HEAP_PTR pThis_, U32 index) {
 	tSystemArray *pArray = (tSystemArray*)pThis_;
 	tMD_TypeDef *pArrayTypeDef;
 
 #if defined(WIN32) && defined(_DEBUG)
 	if (index >= pArray->length) {
-		printf("SystemArray_LoadElementAddress() Bounds check failed\n");
+//		printf("SystemArray_LoadElementAddress() Bounds check failed\n");
 		__debugbreak();
 	}
 #endif
@@ -322,6 +322,6 @@ PTR SystemArray_LoadElementAddress(HEAP_PTR pThis_, U32 index) {
 	return pArray->elements + pArrayTypeDef->pArrayElementType->arrayElementSize * index;
 }
 
-U32 SystemArray_GetNumBytes(HEAP_PTR pThis_, tMD_TypeDef *pElementType) {
+/* __device__ */ U32 SystemArray_GetNumBytes(HEAP_PTR pThis_, tMD_TypeDef *pElementType) {
 	return (((tSystemArray*)pThis_)->length * pElementType->arrayElementSize) + sizeof(tSystemArray);
 }

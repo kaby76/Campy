@@ -28,14 +28,14 @@
 #include "Delegate.h"
 #include "Thread.h"
 
-tAsyncCall* System_Threading_Thread_ctor(PTR pThis_, PTR pParams, PTR pReturnValue) {
+/* __device__ */ tAsyncCall* System_Threading_Thread_ctor(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tThread *pThread = Thread();
 	pThread->startDelegate = ((PTR*)pParams)[0];
 	*(HEAP_PTR*)pReturnValue = (HEAP_PTR)pThread;
 	return NULL;
 }
 
-tAsyncCall* System_Threading_Thread_ctorParam(PTR pThis_, PTR pParams, PTR pReturnValue) {
+/* __device__ */ tAsyncCall* System_Threading_Thread_ctorParam(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tThread *pThread = Thread();
 	pThread->startDelegate = ((PTR*)pParams)[0];
 	*(HEAP_PTR*)pReturnValue = (HEAP_PTR)pThread;
@@ -43,7 +43,7 @@ tAsyncCall* System_Threading_Thread_ctorParam(PTR pThis_, PTR pParams, PTR pRetu
 	return NULL;
 }
 
-tAsyncCall* System_Threading_Thread_Start(PTR pThis_, PTR pParams, PTR pReturnValue) {
+/* __device__ */ tAsyncCall* System_Threading_Thread_Start(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tThread *pThread = (tThread*)pThis_;
 	tMD_MethodDef *pStartMethod;
 	HEAP_PTR pStartObj;
@@ -71,15 +71,16 @@ tAsyncCall* System_Threading_Thread_Start(PTR pThis_, PTR pParams, PTR pReturnVa
 	return NULL;
 }
 
-tAsyncCall* System_Threading_Thread_Sleep(PTR pThis_, PTR pParams, PTR pReturnValue) {
+/* __device__ */ tAsyncCall* System_Threading_Thread_Sleep(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tAsyncCall *pAsync = TMALLOC(tAsyncCall);
+	memset(pAsync, 0, sizeof(tAsyncCall));
 
 	pAsync->sleepTime = ((I32*)pParams)[0];
 
 	return pAsync;
 }
 
-tAsyncCall* System_Threading_Thread_get_CurrentThread(PTR pThis_, PTR pParams, PTR pReturnValue) {
+/* __device__ */ tAsyncCall* System_Threading_Thread_get_CurrentThread(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tThread *pThread = Thread_GetCurrent();
 	*(HEAP_PTR*)pReturnValue = (HEAP_PTR)pThread;
 

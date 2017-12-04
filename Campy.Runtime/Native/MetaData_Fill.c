@@ -25,8 +25,9 @@
 #include "CLIFile.h"
 #include "Type.h"
 #include "EvalStack.h"
+#include "Gstring.h"
 
-void MetaData_Fill_FieldDef(tMD_TypeDef *pParentType, tMD_FieldDef *pFieldDef, U32 memOffset, tMD_TypeDef **ppClassTypeArgs) {
+/* __device__ */ void MetaData_Fill_FieldDef(tMD_TypeDef *pParentType, tMD_FieldDef *pFieldDef, U32 memOffset, tMD_TypeDef **ppClassTypeArgs) {
 	U32 sigLength;
 	PTR sig;
 	tMetaData *pMetaData;
@@ -79,7 +80,7 @@ void MetaData_Fill_FieldDef(tMD_TypeDef *pParentType, tMD_FieldDef *pFieldDef, U
 	}
 }
 
-void MetaData_Fill_MethodDef(tMD_TypeDef *pParentType, tMD_MethodDef *pMethodDef, tMD_TypeDef **ppClassTypeArgs, tMD_TypeDef **ppMethodTypeArgs) {
+/* __device__ */ void MetaData_Fill_MethodDef(tMD_TypeDef *pParentType, tMD_MethodDef *pMethodDef, tMD_TypeDef **ppClassTypeArgs, tMD_TypeDef **ppMethodTypeArgs) {
 	SIG sig;
 	U32 i, entry, totalSize;
 
@@ -143,7 +144,7 @@ void MetaData_Fill_MethodDef(tMD_TypeDef *pParentType, tMD_MethodDef *pMethodDef
 // This is to get the correct vTable offset for the method.
 // This must search the MethodImpl table to see if the default inheritence rules are being overridden.
 // Return NULL if this method does not override anything.
-static tMD_MethodDef* FindVirtualOverriddenMethod(tMD_TypeDef *pTypeDef, tMD_MethodDef *pMethodDef) {
+/* __device__ */ static tMD_MethodDef* FindVirtualOverriddenMethod(tMD_TypeDef *pTypeDef, tMD_MethodDef *pMethodDef) {
 	U32 i;
 
 	do {
@@ -180,7 +181,7 @@ static tMD_MethodDef* FindVirtualOverriddenMethod(tMD_TypeDef *pTypeDef, tMD_Met
 	return NULL;
 }
 
-void MetaData_Fill_TypeDef_(tMD_TypeDef *pTypeDef, tMD_TypeDef **ppClassTypeArgs, tMD_TypeDef **ppMethodTypeArgs) {
+/* __device__ */ void MetaData_Fill_TypeDef_(tMD_TypeDef *pTypeDef, tMD_TypeDef **ppClassTypeArgs, tMD_TypeDef **ppMethodTypeArgs) {
 	IDX_TABLE firstIdx, lastIdx, token;
 	U32 instanceMemSize, staticMemSize, virtualOfs, i, j;
 	tMetaData *pMetaData;
@@ -268,7 +269,7 @@ void MetaData_Fill_TypeDef_(tMD_TypeDef *pTypeDef, tMD_TypeDef **ppClassTypeArgs
 		lastIdx = firstIdx + pTypeDef->numFields - 1;
 		staticMemSize = 0;
 		if (pTypeDef->numFields > 0) {
-			pTypeDef->ppFields = mallocForever(pTypeDef->numFields * sizeof(tMD_FieldDef*));
+			pTypeDef->ppFields = (tMD_FieldDef **)mallocForever(pTypeDef->numFields * sizeof(tMD_FieldDef*));
 		}
 		instanceMemSize = (pTypeDef->pParent == NULL)?0:pTypeDef->pParent->instanceMemSize;
 		for (token = firstIdx, i=0; token <= lastIdx; token++, i++) {
@@ -338,7 +339,7 @@ void MetaData_Fill_TypeDef_(tMD_TypeDef *pTypeDef, tMD_TypeDef **ppClassTypeArgs
 			}
 		}
 		if (staticMemSize > 0) {
-			pTypeDef->pStaticFields = mallocForever(staticMemSize);
+			pTypeDef->pStaticFields = (PTR)mallocForever(staticMemSize);
 			memset(pTypeDef->pStaticFields, 0, staticMemSize);
 			// Set the field addresses (->pMemory) of all static fields
 			for (i = 0; i<pTypeDef->numFields; i++) {
@@ -356,8 +357,8 @@ void MetaData_Fill_TypeDef_(tMD_TypeDef *pTypeDef, tMD_TypeDef **ppClassTypeArgs
 		// Resolve all members
 		firstIdx = pTypeDef->methodList;
 		lastIdx = firstIdx + pTypeDef->numMethods - 1;
-		pTypeDef->ppMethods = mallocForever(pTypeDef->numMethods * sizeof(tMD_MethodDef*));
-		pTypeDef->pVTable = mallocForever(pTypeDef->numVirtualMethods * sizeof(tMD_MethodDef*));
+		pTypeDef->ppMethods = (tMD_MethodDef **)mallocForever(pTypeDef->numMethods * sizeof(tMD_MethodDef*));
+		pTypeDef->pVTable = (tMD_MethodDef **)mallocForever(pTypeDef->numVirtualMethods * sizeof(tMD_MethodDef*));
 		// Copy initial vTable from parent
 		if (pTypeDef->pParent != NULL) {
 			memcpy(pTypeDef->pVTable, pTypeDef->pParent->pVTable, pTypeDef->pParent->numVirtualMethods * sizeof(tMD_MethodDef*));
@@ -373,12 +374,12 @@ void MetaData_Fill_TypeDef_(tMD_TypeDef *pTypeDef, tMD_TypeDef **ppClassTypeArgs
 				memcpy(pMethodCopy, pMethodDef, sizeof(tMD_MethodDef));
 				pMethodDef = pMethodCopy;
 			}
-			if (METHOD_ISSTATIC(pMethodDef) && strcmp(pMethodDef->name, ".cctor") == 0) {
+			if (METHOD_ISSTATIC(pMethodDef) && Gstrcmp(pMethodDef->name, ".cctor") == 0) {
 				// This is a static constructor
 				pTypeDef->pStaticConstructor = pMethodDef;
 			}
 			if (!METHOD_ISSTATIC(pMethodDef) && pTypeDef->pParent != NULL &&
-				strcmp(pMethodDef->name, "Finalize") == 0) {
+				Gstrcmp(pMethodDef->name, "Finalize") == 0) {
 				// This is a Finalizer method, but not for Object.
 				// Delibrately miss out Object's Finalizer because it's empty and will cause every object
 				// of any type to have a Finalizer which will be terrible for performance.

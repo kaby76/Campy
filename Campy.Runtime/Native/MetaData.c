@@ -26,8 +26,9 @@
 #include "Types.h"
 #include "Type.h"
 #include "RVA.h"
+#include "Gstring.h"
 
-unsigned int MetaData_DecodeSigEntry(SIG *pSig) {
+/* __device__ */ unsigned int MetaData_DecodeSigEntry(SIG *pSig) {
 	unsigned char a,b,c,d;
 	a = *((unsigned char*)*pSig)++;
 	if ((a & 0x80) == 0) {
@@ -50,44 +51,44 @@ unsigned int MetaData_DecodeSigEntry(SIG *pSig) {
 	return ((int)(a & 0x1f)) << 24 | ((int)b) << 16 | ((int)c) << 8 | d;
 }
 
-IDX_TABLE MetaData_DecodeSigEntryToken(SIG *pSig) {
+/* __device__ */ IDX_TABLE MetaData_DecodeSigEntryToken(SIG *pSig) {
 	static U8 tableID[4] = {MD_TABLE_TYPEDEF, MD_TABLE_TYPEREF, MD_TABLE_TYPESPEC, 0};
 
 	U32 entry = MetaData_DecodeSigEntry(pSig);
 	return MAKE_TABLE_INDEX(tableID[entry & 0x3], entry >> 2);
 }
 
-tMetaData* MetaData() {
+/* __device__ */ tMetaData* MetaData() {
 	tMetaData *pRet = TMALLOC(tMetaData);
 	memset(pRet, 0, sizeof(tMetaData));
 	return pRet;
 }
 
-void MetaData_LoadStrings(tMetaData *pThis, void *pStream, unsigned int streamLen) {
+/* __device__ */ void MetaData_LoadStrings(tMetaData *pThis, void *pStream, unsigned int streamLen) {
 	pThis->strings.pStart = (unsigned char*)pStream;
 
 	log_f(1, "Loaded strings\n");
 }
 
-unsigned int MetaData_DecodeHeapEntryLength(unsigned char **ppHeapEntry) {
+/* __device__ */ unsigned int MetaData_DecodeHeapEntryLength(unsigned char **ppHeapEntry) {
 	return MetaData_DecodeSigEntry((SIG*)ppHeapEntry);
 }
 
-void MetaData_LoadBlobs(tMetaData *pThis, void *pStream, unsigned int streamLen) {
+/* __device__ */ void MetaData_LoadBlobs(tMetaData *pThis, void *pStream, unsigned int streamLen) {
 	pThis->blobs.pStart = (unsigned char*)pStream;
 
 	log_f(1, "Loaded blobs\n");
 
 }
 
-void MetaData_LoadUserStrings(tMetaData *pThis, void *pStream, unsigned int streamLen) {
+/* __device__ */ void MetaData_LoadUserStrings(tMetaData *pThis, void *pStream, unsigned int streamLen) {
 	pThis->userStrings.pStart = (unsigned char*)pStream;
 
 	log_f(1, "Loaded User Strings\n");
 
 }
 
-void MetaData_LoadGUIDs(tMetaData *pThis, void *pStream, unsigned int streamLen) {
+/* __device__ */ void MetaData_LoadGUIDs(tMetaData *pThis, void *pStream, unsigned int streamLen) {
 	pThis->GUIDs.numGUIDs = streamLen / 16;
 
 	// This is stored -16 because numbering starts from 1. This means that a simple indexing calculation
@@ -96,6 +97,12 @@ void MetaData_LoadGUIDs(tMetaData *pThis, void *pStream, unsigned int streamLen)
 
 	log_f(1, "Read %d GUIDs\n", pThis->GUIDs.numGUIDs);
 }
+
+
+
+
+
+
 
 /*
 Format of definition strings:
@@ -127,18 +134,24 @@ Sources:
 	l: (lower case L) Boolean, is this the last entry in this table?
 	I: The original table index for this table item
 Destination:
-	x: nowhere, ignore
-	*: 32-bit index into relevant heap;
-		Or coded index - MSB = which table, other 3 bytes = table index
-		Or 32-bit int
-		Or pointer (also RVA)
-	s: 16-bit value
-	c: 8-bit value
+    KED ------ Original spec insufficient for 64-bit pointers. We have to note the exact size as the buffer
+				is overlayed with a struct. This is a really bad practice, and the guy who wrote this should be
+				shot because it is very sensitive to compiler and target size.
+				For example, alignment of 8 byte values on NVIDIA GPUs must be an 8 byte boundaries.
+				I can't rewrite this code at the moment, but it should as it is extremely fragile code!!!!
+				Everything will be 8-byte boundary aligned! Even fucking characters.
+		8: 64-bit value.
+		4: 32-bit value.
+		2: 16-bit value.
+		1: 8-bit value.
+		0: ignore.
 */
-static char* tableDefs[] = {
+/* __device__ */ static const char* tableDefs[] = {
 	// 0x00
+	// original "sxS*G*GxGx",
 	"sxS*G*GxGx",
 	// 0x01
+	// original "x*;*S*S*",
 	"x*;*S*S*",
 	// 0x02
 	"x*m*i*S*S*0*\x04*\x06*xclcxcxcx*x*x*x*x*x*x*x*x*x*x*I*x*x*x*x*x*x*x*x*x*x*x*x*",
@@ -208,13 +221,13 @@ static char* tableDefs[] = {
 	// 0x1F
 	NULL,
 	// 0x20
-	"i*ssssssssi*B*S*S*",
+	"i4s2s2s2s2i4B8S8S8",
 	// 0x21
 	NULL,
 	// 0x22
 	NULL,
 	// 0x23
-	"ssssssssi*B*S*S*B*",
+	"s2s2s2s2i4B8S8S8B8",
 	// 0x24
 	NULL,
 	// 0x25
@@ -226,11 +239,11 @@ static char* tableDefs[] = {
 	// 0x28
 	NULL,
 	// 0x29
-	"\x02*\x02*",
+	"\x02""4\x02""4",
 	// 0x2A
-	"ssss<*S*",
+	"s2s2<4S8",
 	// 0x2B
-	"x*m*7*B*",
+	"x8m874B8",
 	// 0x2C
 	"\x2a*0*",
 };
@@ -238,7 +251,7 @@ static char* tableDefs[] = {
 // Coded indexes use this lookup table.
 // Note that the extra 'z' characters are important!
 // (Because of how the lookup works each string must be a power of 2 in length)
-static unsigned char* codedTags[] = {
+/* __device__ */ static const char* codedTags[] = {
 	// TypeDefOrRef
 	"\x02\x01\x1Bz",
 	// HasConstant
@@ -267,29 +280,29 @@ static unsigned char* codedTags[] = {
 	"\x02\x06",
 };
 
-static unsigned char codedTagBits[] = {
+/* __device__ */ static unsigned char codedTagBits[] = {
 	2, 2, 5, 1, 2, 3, 1, 1, 1, 2, 3, 2, 1
 };
 
-static unsigned char tableRowSize[MAX_TABLES];
+/* __device__ */ static unsigned int tableRowSize[MAX_TABLES];
 
-void MetaData_Init() {
+/* __device__ */ void MetaData_Init() {
 	U32 i;
 	for (i=0; i<MAX_TABLES; i++) {
 		tableRowSize[i] = 0;
 	}
 }
 
-static unsigned int GetU16(unsigned char *pSource) {
-	unsigned int a,b;
+/* __device__ */ static unsigned int GetU16(unsigned char *pSource) {
+	unsigned char a,b;
 
 	a = pSource[0];
 	b = pSource[1];
 	return a | (b << 8);
 }
 
-static unsigned int GetU32(unsigned char *pSource) {
-	unsigned int a,b,c,d;
+/* __device__ */ static unsigned int GetU32(unsigned char *pSource) {
+	unsigned char a,b,c,d;
 
 	a = pSource[0];
 	b = pSource[1];
@@ -298,58 +311,960 @@ static unsigned int GetU32(unsigned char *pSource) {
 	return a | (b << 8) | (c << 16) | (d << 24);
 }
 
+int CodedIndex(tMetaData *pThis, unsigned char x, char **ppSource)
+{
+	int v;
+	char * pSource = (char *)*ppSource;
+	int ofs = x - '0';
+	const char* pCoding = codedTags[ofs];
+	int tagBits = codedTagBits[ofs];
+	unsigned char tag = *pSource & ((1 << tagBits) - 1);
+	int idxIntoTableID = pCoding[tag]; // The actual table index that we're looking for
+	if (idxIntoTableID < 0 || idxIntoTableID > MAX_TABLES) {
+		//printf("Error: Bad table index: 0x%02x\n", idxIntoTableID);
+		gpuexit(1);
+	}
+	if (pThis->tables.codedIndex32Bit[ofs]) {
+		// Use 32-bit number
+		v = GetU32(pSource) >> tagBits;
+		pSource += 4;
+	}
+	else {
+		// Use 16-bit number
+		v = GetU16(pSource) >> tagBits;
+		pSource += 2;
+	}
+	v |= idxIntoTableID << 24;
+	*ppSource = pSource;
+	return v;
+}
+
+int Coded2Index(tMetaData *pThis, int d, char **ppSource)
+{
+	int v;
+	char * pSource = (char *)*ppSource;
+	if (pThis->tables.numRows[d] < 0x10000) {
+		// Use 16-bit offset
+		unsigned int val = GetU16(pSource);
+		v = (unsigned long long)val;
+		pSource += 2;
+	}
+	else {
+		// Use 32-bit offset
+		unsigned int val = GetU32(pSource);
+		v = (unsigned long long)val;
+		pSource += 4;
+	}
+	v |= d << 24;
+	*ppSource = pSource;
+	return v;
+}
+
+// Reads metadata tables into structs in a platform-independent way.
+void ModuleTableReader(tMetaData *pThis, tRVA *pRVA, void **ppSource, void *pDest)
+{
+	// 0x00
+	// original "sxS*G*GxGx",
+	tMD_Module * p = (tMD_Module*)pDest;
+	memset(p, 0, sizeof(tMD_Module));
+	char * pSource = (char *)*ppSource;
+	
+	pSource += 2;
+
+	int v;
+	int string_skip = pThis->index32BitString ? 4 : 2;
+	v = pThis->index32BitString ? GetU32(pSource) : GetU16(pSource);
+	pSource += string_skip;
+	p->name = pThis->strings.pStart + v;
+	
+	int heap_skip = (pThis->index32BitGUID) ? 4 : 2;
+	v = pThis->index32BitGUID ? GetU32(pSource) : GetU16(pSource);
+	pSource += heap_skip;
+	p->mvID = (pThis->GUIDs.pGUID1 + ((v - 1) * 16));
+
+	// Skip past EnCId.
+	pSource += heap_skip;
+
+	// Skip past EnCBaseId
+	pSource += heap_skip;
+
+	*ppSource = pSource;
+}
+
+void TypeRefTableReader(tMetaData *pThis, tRVA *pRVA, void **ppSource, void *pDest)
+{
+	// 0x01
+	// original "x*;*S*S*",
+	tMD_TypeRef * p = (tMD_TypeRef*)pDest;
+	memset(p, 0, sizeof(tMD_TypeRef));
+	char * pSource = (char *)*ppSource;
+
+	int v;
+
+	v = CodedIndex(pThis, ';', &pSource);
+	p->resolutionScope = v;
+
+	int string_skip = pThis->index32BitString ? 4 : 2;
+	v = pThis->index32BitString ? GetU32(pSource) : GetU16(pSource);
+	pSource += string_skip;
+	p->name = pThis->strings.pStart + v;
+
+	v = pThis->index32BitString ? GetU32(pSource) : GetU16(pSource);
+	pSource += string_skip;
+	p->nameSpace = pThis->strings.pStart + v;
+
+	*ppSource = pSource;
+}
+
+void TypeDefTableReader(tMetaData *pThis, tRVA *pRVA, void **ppSource, void *pDest, int row, int numRows)
+{
+	// 0x02
+	// original "x*m*i*S*S*0*\x04*\x06*xclcxcxcx*x*x*x*x*x*x*x*x*x*x*I*x*x*x*x*x*x*x*x*x*x*x*x*",
+	// original
+	// x* ptypedef
+	// m* pmetadata
+	// i* flags
+	// S* name
+	// S* namespace
+	// 0* extends
+	// \x04* fieldlist
+	// \x06* methodlist
+	// xc isfilled
+	// lc islast
+	// xc isvaluetype
+	// xc stacktype
+	// x* instancememsize
+	// x* pparent
+	// x* pvtable
+	// x* numvirtualmethods
+	// x* pstaticfields
+	// x* istypeinitialize/isgenericdefintion/isprimed/padding.
+	// x* pstaticconstructor
+	// x* arrayelementsize
+	// x* stacksize
+	// x* numinterfaces
+	// x* pinterfacemaps
+	// I* tableindex
+	// x* pgenericinstances
+	// x* pgenericdefinition
+	// x* ppclasstypeargs
+	// x* parrayelementtype
+	// x* numfields
+	// x* ppfields
+	// x* staticfieldsize
+	// x* nummethods
+	// x* ppmethods
+	// x* pnestedin
+	// x* pfinalizer
+	// x*", typeobject
+	tMD_TypeDef * p = (tMD_TypeDef*)pDest;
+	memset(p, 0, sizeof(tMD_TypeDef));
+
+	char * pSource = (char *)*ppSource;
+
+	int v;
+
+	p->flags = GetU32(pSource);
+	pSource += 4;
+
+	int string_skip = pThis->index32BitString ? 4 : 2;
+	v = pThis->index32BitString ? GetU32(pSource) : GetU16(pSource);
+	pSource += string_skip;
+	p->name = pThis->strings.pStart + v;
+
+	v = pThis->index32BitString ? GetU32(pSource) : GetU16(pSource);
+	pSource += string_skip;
+	p->nameSpace = pThis->strings.pStart + v;
+
+	v = CodedIndex(pThis, '0', &pSource);
+	p->extends = v;
+
+	v = Coded2Index(pThis, 4, &pSource);
+	p->fieldList = v;
+
+	v = Coded2Index(pThis, 6, &pSource);
+	p->methodList = v;
+
+	p->isLast = (row == numRows - 1);
+	p->pMetaData = pThis;
+
+	p->tableIndex = MAKE_TABLE_INDEX(MD_TABLE_TYPEDEF, row + 1);
+
+	*ppSource = pSource;
+}
+
+void FieldPtrTableReader(tMetaData *pThis, tRVA *pRVA, void **ppSource, void *pDest, int row, int numRows)
+{
+	tMD_TypeDef * p = (tMD_TypeDef*)pDest;
+	memset(p, 0, sizeof(tMD_TypeDef));
+
+	char * pSource = (char *)*ppSource;
+
+	int v;
+	*ppSource = pSource;
+}
+
+void FieldDefTableReader(tMetaData *pThis, tRVA *pRVA, void **ppSource, void *pDest, int row, int numRows)
+{
+	// "x*m*ssxsS*B*x*x*x*x*I*x*",
+
+	tMD_FieldDef * p = (tMD_FieldDef*)pDest;
+	memset(p, 0, sizeof(tMD_FieldDef));
+
+	char * pSource = (char *)*ppSource;
+
+	int v;
+
+	p->flags = GetU16(pSource);
+	pSource += 2;
+
+	int string_skip = pThis->index32BitString ? 4 : 2;
+	v = pThis->index32BitString ? GetU32(pSource) : GetU16(pSource);
+	pSource += string_skip;
+	p->name = pThis->strings.pStart + v;
+
+	int blob_skip = pThis->index32BitBlob ? 4 : 2;
+	v = pThis->index32BitBlob ? GetU32(pSource) : GetU16(pSource);
+	pSource += blob_skip;
+	p->signature = pThis->blobs.pStart + v;
+
+	p->pMetaData = pThis;
+
+	p->tableIndex = MAKE_TABLE_INDEX(MD_TABLE_FIELDDEF, row + 1);
+
+	*ppSource = pSource;
+}
+
+void MethodDefTableReader(tMetaData *pThis, tRVA *pRVA, void **ppSource, void *pDest, int row, int numRows)
+{
+	// 	"x*m*^*ssssS*B*\x08*x*x*x*x*x*x*I*x*x*x*"
+
+	tMD_MethodDef * p = (tMD_MethodDef*)pDest;
+	memset(p, 0, sizeof(tMD_MethodDef));
+
+	char * pSource = (char *)*ppSource;
+
+	p->pMetaData = pThis;
+
+	int v;
+
+	v = GetU32(pSource);
+	pSource += 4;
+	p->pCIL = RVA_FindData(pRVA, v);
+
+	p->implFlags = GetU16(pSource);
+	pSource += 2;
+
+	p->flags = GetU16(pSource);
+	pSource += 2;
+
+	int string_skip = pThis->index32BitString ? 4 : 2;
+	v = pThis->index32BitString ? GetU32(pSource) : GetU16(pSource);
+	pSource += string_skip;
+	p->name = pThis->strings.pStart + v;
+
+	int blob_skip = pThis->index32BitBlob ? 4 : 2;
+	v = pThis->index32BitBlob ? GetU32(pSource) : GetU16(pSource);
+	pSource += blob_skip;
+	p->signature = pThis->blobs.pStart + v;
+
+	p->paramList = Coded2Index(pThis, 8, &pSource);;
+
+	p->tableIndex = MAKE_TABLE_INDEX(MD_TABLE_METHODDEF, row + 1);
+
+	*ppSource = pSource;
+}
+
+void ParamTableReader(tMetaData *pThis, tRVA *pRVA, void **ppSource, void *pDest, int row, int numRows)
+{
+	// 0x08
+	// "ssssS*",
+
+	tMD_Param * p = (tMD_Param*)pDest;
+	memset(p, 0, sizeof(tMD_Param));
+
+	char * pSource = (char *)*ppSource;
+
+	int v;
+
+	v = GetU16(pSource);
+	pSource += 2;
+	p->flags = v;
+
+	v = GetU16(pSource);
+	pSource += 2;
+	p->sequence = v;
+
+	int string_skip = pThis->index32BitString ? 4 : 2;
+	v = pThis->index32BitString ? GetU32(pSource) : GetU16(pSource);
+	pSource += string_skip;
+	p->name = pThis->strings.pStart + v;
+
+	*ppSource = pSource;
+}
+
+void InterfaceImplTableReader(tMetaData *pThis, tRVA *pRVA, void **ppSource, void *pDest, int row, int numRows)
+{
+	// Table 0x09 - InterfaceImpl
+	// "\x02*0*",
+
+	tMD_InterfaceImpl * p = (tMD_InterfaceImpl*)pDest;
+	memset(p, 0, sizeof(tMD_InterfaceImpl));
+
+	char * pSource = (char *)*ppSource;
+
+	int v;
+
+	p->class_ = Coded2Index(pThis, 4, &pSource);
+
+	p->interface_ = CodedIndex(pThis, '0', &pSource);
+
+	*ppSource = pSource;
+}
+
+void MemberRefTableReader(tMetaData *pThis, tRVA *pRVA, void **ppSource, void *pDest, int row, int numRows)
+{
+	// Table 0x0A - MemberRef
+	// "x*5*S*B*",
+
+	tMD_MemberRef * p = (tMD_MemberRef*)pDest;
+	memset(p, 0, sizeof(tMD_MemberRef));
+
+	char * pSource = (char *)*ppSource;
+
+	int v;
+
+	p->class_ = CodedIndex(pThis, '5', &pSource);
+
+	int string_skip = pThis->index32BitString ? 4 : 2;
+	v = pThis->index32BitString ? GetU32(pSource) : GetU16(pSource);
+	pSource += string_skip;
+	p->name = pThis->strings.pStart + v;
+
+	int blob_skip = pThis->index32BitBlob ? 4 : 2;
+	v = pThis->index32BitBlob ? GetU32(pSource) : GetU16(pSource);
+	pSource += blob_skip;
+	p->signature = pThis->blobs.pStart + v;
+
+	*ppSource = pSource;
+}
+
+void ConstantTableReader(tMetaData *pThis, tRVA *pRVA, void **ppSource, void *pDest, int row, int numRows)
+{
+	// Table 0x0B - Constant
+	// "ccccxs1*B*",
+
+	tMD_Constant * p = (tMD_Constant*)pDest;
+	memset(p, 0, sizeof(tMD_Constant));
+
+	char * pSource = (char *)*ppSource;
+
+	int v;
+
+	p->type = *(U8*)pSource;
+	pSource++;
+
+	pSource++; // Skip intensional.
+
+	p->parent = CodedIndex(pThis, '1', &pSource);
+
+	int blob_skip = pThis->index32BitBlob ? 4 : 2;
+	v = pThis->index32BitBlob ? GetU32(pSource) : GetU16(pSource);
+	pSource += blob_skip;
+	p->value = pThis->blobs.pStart + v;
+
+	*ppSource = pSource;
+}
+
+void CustomAttributeTableReader(tMetaData *pThis, tRVA *pRVA, void **ppSource, void *pDest, int row, int numRows)
+{
+	// Table 0x0C - CustomAttribute
+	// "2*:*B*",
+
+	tMD_CustomAttribute * p = (tMD_CustomAttribute*)pDest;
+	memset(p, 0, sizeof(tMD_CustomAttribute));
+
+	char * pSource = (char *)*ppSource;
+
+	int v;
+
+	p->parent = CodedIndex(pThis, '2', &pSource);
+
+	p->type = CodedIndex(pThis, ':', &pSource);
+
+	int blob_skip = pThis->index32BitBlob ? 4 : 2;
+	v = pThis->index32BitBlob ? GetU32(pSource) : GetU16(pSource);
+	pSource += blob_skip;
+	p->value = pThis->blobs.pStart + v;
+
+	*ppSource = pSource;
+}
+
+void DeclSecurityTableReader(tMetaData *pThis, tRVA *pRVA, void **ppSource, void *pDest, int row, int numRows)
+{
+	// Table 0x0E - DeclSecurity
+	// "ssxs4*B*",
+
+	tMD_DeclSecurity * p = (tMD_DeclSecurity*)pDest;
+	memset(p, 0, sizeof(tMD_DeclSecurity));
+
+	char * pSource = (char *)*ppSource;
+
+	int v;
+
+	p->action = GetU16(pSource);
+	pSource += 2;
+
+	p->parent = CodedIndex(pThis, '4', &pSource);
+
+	int blob_skip = pThis->index32BitBlob ? 4 : 2;
+	v = pThis->index32BitBlob ? GetU32(pSource) : GetU16(pSource);
+	pSource += blob_skip;
+	p->permissionSet = pThis->blobs.pStart + v;
+
+	*ppSource = pSource;
+}
+
+void ClassLayoutTableReader(tMetaData *pThis, tRVA *pRVA, void **ppSource, void *pDest, int row, int numRows)
+{
+	// Table 0x0F - ClassLayout
+	// "ssxsi*\x02*",
+
+	tMD_ClassLayout * p = (tMD_ClassLayout*)pDest;
+	memset(p, 0, sizeof(tMD_ClassLayout));
+
+	char * pSource = (char *)*ppSource;
+
+	int v;
+
+	p->packingSize = GetU16(pSource);
+	pSource += 2;
+
+	p->classSize = GetU32(pSource);
+	pSource += 4;
+
+	p->parent = Coded2Index(pThis, 2, &pSource);
+
+	*ppSource = pSource;
+}
+
+void StandAloneSigTableReader(tMetaData *pThis, tRVA *pRVA, void **ppSource, void *pDest, int row, int numRows)
+{
+	// Table 0x11 - StandAloneSig
+	// "B*",
+
+	tMD_StandAloneSig * p = (tMD_StandAloneSig*)pDest;
+	memset(p, 0, sizeof(tMD_StandAloneSig));
+
+	char * pSource = (char *)*ppSource;
+
+	int v;
+
+	int blob_skip = pThis->index32BitBlob ? 4 : 2;
+	v = pThis->index32BitBlob ? GetU32(pSource) : GetU16(pSource);
+	pSource += blob_skip;
+	p->signature = pThis->blobs.pStart + v;
+
+	*ppSource = pSource;
+}
+
+void EventMapTableReader(tMetaData *pThis, tRVA *pRVA, void **ppSource, void *pDest, int row, int numRows)
+{
+	// Table 0x12 - EventMap
+	// "\x02*\x14*",
+
+	tMD_EventMap * p = (tMD_EventMap*)pDest;
+	memset(p, 0, sizeof(tMD_EventMap));
+
+	char * pSource = (char *)*ppSource;
+
+	int v;
+
+	p->parent = Coded2Index(pThis, 2, &pSource);
+
+	p->eventList = Coded2Index(pThis, 0x14, &pSource);
+
+	*ppSource = pSource;
+}
+
+void EventTableReader(tMetaData *pThis, tRVA *pRVA, void **ppSource, void *pDest, int row, int numRows)
+{
+	// Table 0x14 - Event
+	// "ssxsS*0*",
+
+	tMD_Event * p = (tMD_Event*)pDest;
+	memset(p, 0, sizeof(tMD_Event));
+
+	char * pSource = (char *)*ppSource;
+
+	int v;
+
+	p->eventFlags = GetU16(pSource);
+	pSource += 2;
+
+	int string_skip = pThis->index32BitString ? 4 : 2;
+	v = pThis->index32BitString ? GetU32(pSource) : GetU16(pSource);
+	pSource += string_skip;
+	p->name = pThis->strings.pStart + v;
+
+	p->eventType = CodedIndex(pThis, '0', &pSource);
+
+	*ppSource = pSource;
+}
+
+void PropertyMapTableReader(tMetaData *pThis, tRVA *pRVA, void **ppSource, void *pDest, int row, int numRows)
+{
+	// Table 0x15 - PropertyMap
+	// "\x02*\x17*",
+
+	tMD_PropertyMap * p = (tMD_PropertyMap*)pDest;
+	memset(p, 0, sizeof(tMD_PropertyMap));
+
+	char * pSource = (char *)*ppSource;
+
+	p->parent = Coded2Index(pThis, 0x2, &pSource);
+
+	p->propertyList = Coded2Index(pThis, 0x17, &pSource);
+
+	*ppSource = pSource;
+}
+
+void PropertyTableReader(tMetaData *pThis, tRVA *pRVA, void **ppSource, void *pDest, int row, int numRows)
+{
+	// Table 0x17 - Property
+	// "ssxsS*B*",
+
+	tMD_Property * p = (tMD_Property*)pDest;
+	memset(p, 0, sizeof(tMD_Property));
+
+	char * pSource = (char *)*ppSource;
+
+	p->flags = GetU16(pSource);
+	pSource += 2;
+
+	int string_skip = pThis->index32BitString ? 4 : 2;
+	int v = pThis->index32BitString ? GetU32(pSource) : GetU16(pSource);
+	pSource += string_skip;
+	p->name = pThis->strings.pStart + v;
+
+	int blob_skip = pThis->index32BitBlob ? 4 : 2;
+	v = pThis->index32BitBlob ? GetU32(pSource) : GetU16(pSource);
+	pSource += blob_skip;
+	p->typeSig = pThis->blobs.pStart + v;
+
+	*ppSource = pSource;
+}
+
+void MethodSemanticsTableReader(tMetaData *pThis, tRVA *pRVA, void **ppSource, void *pDest, int row, int numRows)
+{
+	// Table 0x18 - MethodSemantics
+	// "ssxs\06*6*",
+
+	tMD_MethodSemantics * p = (tMD_MethodSemantics*)pDest;
+	memset(p, 0, sizeof(tMD_MethodSemantics));
+
+	char * pSource = (char *)*ppSource;
+
+	p->semantics = GetU16(pSource);
+	pSource += 2;
+
+	p->method = Coded2Index(pThis, 0x6, &pSource);
+
+	p->association = CodedIndex(pThis, '6', &pSource);
+
+	*ppSource = pSource;
+}
+
+void MethodImplTableReader(tMetaData *pThis, tRVA *pRVA, void **ppSource, void *pDest, int row, int numRows)
+{
+	// Table 0x19 - MethodImpl
+	// 	"\x02*7*7*"
+
+	tMD_MethodImpl * p = (tMD_MethodImpl*)pDest;
+	memset(p, 0, sizeof(tMD_MethodImpl));
+
+	char * pSource = (char *)*ppSource;
+
+	p->class_ = Coded2Index(pThis, 0x2, &pSource);
+
+	p->methodBody = CodedIndex(pThis, '7', &pSource);
+
+	p->methodDeclaration = CodedIndex(pThis, '7', &pSource);
+
+	*ppSource = pSource;
+}
+
+void ModuleRefTableReader(tMetaData *pThis, tRVA *pRVA, void **ppSource, void *pDest, int row, int numRows)
+{
+	// Table 0x1a - ModuleRef
+	// 	"S*"
+
+	tMD_ModuleRef * p = (tMD_ModuleRef*)pDest;
+	memset(p, 0, sizeof(tMD_ModuleRef));
+
+	char * pSource = (char *)*ppSource;
+
+	int string_skip = pThis->index32BitString ? 4 : 2;
+	unsigned int v = pThis->index32BitString ? GetU32(pSource) : GetU16(pSource);
+	pSource += string_skip;
+	p->name = pThis->strings.pStart + v;
+
+	*ppSource = pSource;
+}
+
+void TypeSpecTableReader(tMetaData *pThis, tRVA *pRVA, void **ppSource, void *pDest, int row, int numRows)
+{
+	// Table 0x1B - TypeSpec
+	// 	"x*m*B*"
+
+	tMD_TypeSpec * p = (tMD_TypeSpec*)pDest;
+	memset(p, 0, sizeof(tMD_TypeSpec));
+
+	char * pSource = (char *)*ppSource;
+
+	int blob_skip = pThis->index32BitBlob ? 4 : 2;
+	unsigned int v = pThis->index32BitBlob ? GetU32(pSource) : GetU16(pSource);
+	pSource += blob_skip;
+	p->signature = pThis->blobs.pStart + v;
+
+	p->pMetaData = pThis;
+
+	*ppSource = pSource;
+}
+
+void ImplMapTableReader(tMetaData *pThis, tRVA *pRVA, void **ppSource, void *pDest, int row, int numRows)
+{
+	// Table 0x1c - ImplMap
+	// 	"ssxs8*S*\x1a*"
+
+	tMD_ImplMap * p = (tMD_ImplMap*)pDest;
+	memset(p, 0, sizeof(tMD_ImplMap));
+
+	char * pSource = (char *)*ppSource;
+
+	p->mappingFlags = GetU16(pSource);
+	pSource += 2;
+
+	p->memberForwarded = CodedIndex(pThis, '8', &pSource);
+
+	int string_skip = pThis->index32BitString ? 4 : 2;
+	unsigned int v = pThis->index32BitString ? GetU32(pSource) : GetU16(pSource);
+	pSource += string_skip;
+	p->importName = pThis->strings.pStart + v;
+
+	p->importScope = Coded2Index(pThis, 0x1a, &pSource);
+
+	*ppSource = pSource;
+}
+
+void FieldRVATableReader(tMetaData *pThis, tRVA *pRVA, void **ppSource, void *pDest, int row, int numRows)
+{
+	// Table 0x1D - FieldRVA
+	// "^*\x04*"
+
+	tMD_FieldRVA * p = (tMD_FieldRVA*)pDest;
+	memset(p, 0, sizeof(tMD_FieldRVA));
+
+	char * pSource = (char *)*ppSource;
+
+	unsigned int v = GetU32(pSource);
+	pSource += 4;
+	p->rva = RVA_FindData(pRVA, v);
+
+	p->field = Coded2Index(pThis, 0x04, &pSource);
+
+	*ppSource = pSource;
+}
+
+void AssemblyTableReader(tMetaData *pThis, tRVA *pRVA, void **ppSource, void *pDest, int row, int numRows)
+{
+	// Table 0x20 - Assembly
+	// "i4s2s2s2s2i4B8S8S8"
+
+	tMD_Assembly * p = (tMD_Assembly*)pDest;
+	memset(p, 0, sizeof(tMD_Assembly));
+
+	char * pSource = (char *)*ppSource;
+
+	p->hashAlgID = GetU32(pSource);
+	pSource += 4;
+
+	p->majorVersion = GetU16(pSource);
+	pSource += 2;
+
+	p->minorVersion = GetU16(pSource);
+	pSource += 2;
+
+	p->buildNumber = GetU16(pSource);
+	pSource += 2;
+
+	p->revisionNumber = GetU16(pSource);
+	pSource += 2;
+
+	p->flags = GetU32(pSource);
+	pSource += 4;
+
+	int blob_skip = pThis->index32BitBlob ? 4 : 2;
+	unsigned int v = pThis->index32BitBlob ? GetU32(pSource) : GetU16(pSource);
+	pSource += blob_skip;
+	p->publicKey = pThis->blobs.pStart + v;
+
+	int string_skip = pThis->index32BitString ? 4 : 2;
+	v = pThis->index32BitString ? GetU32(pSource) : GetU16(pSource);
+	pSource += string_skip;
+	p->name = pThis->strings.pStart + v;
+
+	v = pThis->index32BitString ? GetU32(pSource) : GetU16(pSource);
+	pSource += string_skip;
+	p->culture = pThis->strings.pStart + v;
+
+	*ppSource = pSource;
+}
+
+void AssemblyRefTableReader(tMetaData *pThis, tRVA *pRVA, void **ppSource, void *pDest, int row, int numRows)
+{
+	// Table 0x23 - AssemblyRef
+	// "s2s2s2s2i4B8S8S8B8"
+
+	tMD_AssemblyRef * p = (tMD_AssemblyRef*)pDest;
+	memset(p, 0, sizeof(tMD_AssemblyRef));
+
+	char * pSource = (char *)*ppSource;
+
+	p->majorVersion = GetU16(pSource);
+	pSource += 2;
+
+	p->minorVersion = GetU16(pSource);
+	pSource += 2;
+
+	p->buildNumber = GetU16(pSource);
+	pSource += 2;
+
+	p->revisionNumber = GetU16(pSource);
+	pSource += 2;
+
+	p->flags = GetU32(pSource);
+	pSource += 4;
+
+	int blob_skip = pThis->index32BitBlob ? 4 : 2;
+	unsigned int v = pThis->index32BitBlob ? GetU32(pSource) : GetU16(pSource);
+	pSource += blob_skip;
+	p->publicKeyOrToken = pThis->blobs.pStart + v;
+
+	int string_skip = pThis->index32BitString ? 4 : 2;
+	v = pThis->index32BitString ? GetU32(pSource) : GetU16(pSource);
+	pSource += string_skip;
+	p->name = pThis->strings.pStart + v;
+
+	v = pThis->index32BitString ? GetU32(pSource) : GetU16(pSource);
+	pSource += string_skip;
+	p->culture = pThis->strings.pStart + v;
+
+	v = pThis->index32BitBlob ? GetU32(pSource) : GetU16(pSource);
+	pSource += blob_skip;
+	p->hashValue = pThis->blobs.pStart + v;
+
+	*ppSource = pSource;
+}
+
+void NestedClassTableReader(tMetaData *pThis, tRVA *pRVA, void **ppSource, void *pDest, int row, int numRows)
+{
+	// Table 0x29 - NestedClass
+	// "\x02*\x02*",
+
+	tMD_NestedClass * p = (tMD_NestedClass*)pDest;
+	memset(p, 0, sizeof(tMD_NestedClass));
+
+	char * pSource = (char *)*ppSource;
+
+	p->nestedClass = Coded2Index(pThis, 0x2, &pSource);
+
+	p->enclosingClass = Coded2Index(pThis, 0x2, &pSource);
+
+	*ppSource = pSource;
+}
+
+void GenericParamTableReader(tMetaData *pThis, tRVA *pRVA, void **ppSource, void *pDest, int row, int numRows)
+{
+	// Table 0x2A - Generic param
+	// "s2s2<4S8"
+
+	tMD_GenericParam * p = (tMD_GenericParam*)pDest;
+	memset(p, 0, sizeof(tMD_GenericParam));
+
+	char * pSource = (char *)*ppSource;
+
+	p->number = GetU16(pSource);
+	pSource += 2;
+
+	p->flags = GetU16(pSource);
+	pSource += 2;
+
+	p->owner = CodedIndex(pThis, '<', &pSource);
+
+	int string_skip = pThis->index32BitString ? 4 : 2;
+	unsigned int v = pThis->index32BitString ? GetU32(pSource) : GetU16(pSource);
+	pSource += string_skip;
+	p->name = pThis->strings.pStart + v;
+
+	*ppSource = pSource;
+}
+
+void MethodSpecTableReader(tMetaData *pThis, tRVA *pRVA, void **ppSource, void *pDest, int row, int numRows)
+{
+	// Table 0x2B - MethodSpec
+	// "x8m874B8"
+
+	tMD_MethodSpec * p = (tMD_MethodSpec*)pDest;
+	memset(p, 0, sizeof(tMD_MethodSpec));
+
+	char * pSource = (char *)*ppSource;
+
+	p->pMetaData = pThis;
+
+	p->method = CodedIndex(pThis, '7', &pSource);
+
+	int blob_skip = pThis->index32BitBlob ? 4 : 2;
+	unsigned int v = pThis->index32BitBlob ? GetU32(pSource) : GetU16(pSource);
+	pSource += blob_skip;
+	p->instantiation = pThis->blobs.pStart + v;
+
+	*ppSource = pSource;
+}
+
+void GenericParamConstraintTableReader(tMetaData *pThis, tRVA *pRVA, void **ppSource, void *pDest, int row, int numRows)
+{
+	// Table 0x2C - GenericParamConstraint
+	// "\x2a*0*"
+
+	tMD_GenericParamConstraint * p = (tMD_GenericParamConstraint*)pDest;
+	memset(p, 0, sizeof(tMD_GenericParamConstraint));
+
+	char * pSource = (char *)*ppSource;
+
+	p->pGenericParam = (void*)Coded2Index(pThis, 0x2a, &pSource);
+
+	p->constraint = CodedIndex(pThis, '0', &pSource);
+
+	*ppSource = pSource;
+}
+
+
+
 // Loads a single table, returns pointer to table in memory.
-static void* LoadSingleTable(tMetaData *pThis, tRVA *pRVA, int tableID, void **ppTable) {
+/* __device__ */ static void* LoadSingleTable(tMetaData *pThis, tRVA *pRVA, int tableID, void **ppTable) {
 	int numRows = pThis->tables.numRows[tableID];
 	int rowLen = 0; // Number of bytes taken by each row in memory.
 	int i, row;
-	char *pDef = tableDefs[tableID];
-	int defLen = (int)strlen(pDef);
+	const char *pDef = tableDefs[tableID];
+	int defLen = (int)Gstrlen(pDef);
 	void *pRet;
-	unsigned char *pSource = *ppTable;
-	unsigned char *pDest;
-	unsigned int v;
+	char *pSource = (char*)*ppTable;
+	char *pDest;
 
+
+	// Set up row information of the metadata tables. With the structs defined
+	// in MetaDataTables.h, this information is used to set up native access of
+	// the metadata tables. Note, this is metadata format version specific.
+	// Get destination size based on type.
 	// Calculate the destination row size from table definition, if it hasn't already been calculated
-	if (tableRowSize[tableID] == 0) {
-		for (i=0; i<defLen; i += 2) {
-			switch (pDef[i+1]) {
-				case '*':
-					rowLen += 4;
-					break;
-				case 's':
-					rowLen += 2;
-					break;
-				case 'c':
-					rowLen++;
-					break;
-				case 'x':
-					// Do nothing
-					break;
-				default:
-					Crash("Cannot determine length of MetaData destination definition character '%c'\n", pDef[i+1]);
-			}
-		}
-		tableRowSize[tableID] = rowLen;
-	} else {
-		rowLen = tableRowSize[tableID];
+	int newRowLen = 0;
+	int numFields = defLen / 2;
+
+	switch (tableID)
+	{
+		case MD_TABLE_MODULE: rowLen = sizeof(tMD_Module); break;
+		case MD_TABLE_TYPEREF: rowLen = sizeof(tMD_TypeRef); break;
+		case MD_TABLE_TYPEDEF: rowLen = sizeof(tMD_TypeDef); break;
+		case MD_TABLE_FIELDPTR: rowLen = sizeof(tMD_FieldPtr); break;
+		case MD_TABLE_FIELDDEF: rowLen = sizeof(tMD_FieldDef); break;
+		case MD_TABLE_METHODDEF: rowLen = sizeof(tMD_MethodDef); break;
+		case MD_TABLE_PARAM: rowLen = sizeof(tMD_Param); break;
+		case MD_TABLE_INTERFACEIMPL: rowLen = sizeof(tMD_InterfaceImpl); break;
+		case MD_TABLE_MEMBERREF: rowLen = sizeof(tMD_MemberRef); break;
+		case MD_TABLE_CONSTANT: rowLen = sizeof(tMD_Constant); break;
+		case MD_TABLE_CUSTOMATTRIBUTE: rowLen = sizeof(tMD_CustomAttribute); break;
+		case MD_TABLE_DECLSECURITY: rowLen = sizeof(tMD_DeclSecurity); break;
+		case MD_TABLE_CLASSLAYOUT: rowLen = sizeof(tMD_ClassLayout); break;
+		case MD_TABLE_STANDALONESIG: rowLen = sizeof(tMD_StandAloneSig); break;
+		case MD_TABLE_EVENTMAP: rowLen = sizeof(tMD_EventMap); break;
+		case MD_TABLE_EVENT: rowLen = sizeof(tMD_Event); break;
+		case MD_TABLE_PROPERTYMAP: rowLen = sizeof(tMD_PropertyMap); break;
+		case MD_TABLE_PROPERTY: rowLen = sizeof(tMD_Property); break;
+		case MD_TABLE_METHODSEMANTICS: rowLen = sizeof(tMD_MethodSemantics); break;
+		case MD_TABLE_METHODIMPL: rowLen = sizeof(tMD_MethodImpl); break;
+		case MD_TABLE_MODULEREF: rowLen = sizeof(tMD_ModuleRef); break;
+		case MD_TABLE_TYPESPEC: rowLen = sizeof(tMD_TypeSpec); break;
+		case MD_TABLE_IMPLMAP: rowLen = sizeof(tMD_ImplMap); break;
+		case MD_TABLE_FIELDRVA: rowLen = sizeof(tMD_FieldRVA); break;
+		case MD_TABLE_ASSEMBLY: rowLen = sizeof(tMD_Assembly); break;
+		case MD_TABLE_ASSEMBLYREF: rowLen = sizeof(tMD_AssemblyRef); break;
+		case MD_TABLE_NESTEDCLASS: rowLen = sizeof(tMD_NestedClass); break;
+		case MD_TABLE_GENERICPARAM: rowLen = sizeof(tMD_GenericParam); break;
+		case MD_TABLE_METHODSPEC: rowLen = sizeof(tMD_MethodSpec); break;
+		case MD_TABLE_GENERICPARAMCONSTRAINT: rowLen = sizeof(tMD_GenericParamConstraint); break;
 	}
+	tableRowSize[tableID] = rowLen;
+	
+	// Stuff fields described by pDef into appropriate table type. All types defined in MetaData.h
 
 	// Allocate memory for destination table
-	pDest = pRet = malloc(numRows * rowLen);
+	pRet = malloc(numRows * rowLen);
+	pThis->tables.data[tableID] = pRet;
 
-	// Load table
+	pDest = (char*) pRet;
+	// Load rows of table, of give type of table.
 	for (row=0; row<numRows; row++) {
+
+		switch (tableID)
+		{
+			case MD_TABLE_MODULE: ModuleTableReader(pThis, pRVA, &pSource, MetaData_GetTableRow(pThis, MAKE_TABLE_INDEX(tableID, 1 + row))); continue;
+			case MD_TABLE_TYPEREF: TypeRefTableReader(pThis, pRVA, &pSource, MetaData_GetTableRow(pThis, MAKE_TABLE_INDEX(tableID, 1 + row))); continue;
+			case MD_TABLE_TYPEDEF: TypeDefTableReader(pThis, pRVA, &pSource, MetaData_GetTableRow(pThis, MAKE_TABLE_INDEX(tableID, 1 + row)), row, numRows); continue;
+			case MD_TABLE_FIELDPTR: FieldPtrTableReader(pThis, pRVA, &pSource, MetaData_GetTableRow(pThis, MAKE_TABLE_INDEX(tableID, 1 + row)), row, numRows); continue;
+			case MD_TABLE_FIELDDEF: FieldDefTableReader(pThis, pRVA, &pSource, MetaData_GetTableRow(pThis, MAKE_TABLE_INDEX(tableID, 1 + row)), row, numRows); continue;
+			case MD_TABLE_METHODDEF: MethodDefTableReader(pThis, pRVA, &pSource, MetaData_GetTableRow(pThis, MAKE_TABLE_INDEX(tableID, 1 + row)), row, numRows); continue;
+			case MD_TABLE_PARAM: ParamTableReader(pThis, pRVA, &pSource, MetaData_GetTableRow(pThis, MAKE_TABLE_INDEX(tableID, 1 + row)), row, numRows); continue;
+			case MD_TABLE_INTERFACEIMPL: InterfaceImplTableReader(pThis, pRVA, &pSource, MetaData_GetTableRow(pThis, MAKE_TABLE_INDEX(tableID, 1 + row)), row, numRows); continue;
+			case MD_TABLE_MEMBERREF: MemberRefTableReader(pThis, pRVA, &pSource, MetaData_GetTableRow(pThis, MAKE_TABLE_INDEX(tableID, 1 + row)), row, numRows); continue;
+			case MD_TABLE_CONSTANT: ConstantTableReader(pThis, pRVA, &pSource, MetaData_GetTableRow(pThis, MAKE_TABLE_INDEX(tableID, 1 + row)), row, numRows); continue;
+			case MD_TABLE_CUSTOMATTRIBUTE: CustomAttributeTableReader(pThis, pRVA, &pSource, MetaData_GetTableRow(pThis, MAKE_TABLE_INDEX(tableID, 1 + row)), row, numRows); continue;
+			case MD_TABLE_DECLSECURITY: DeclSecurityTableReader(pThis, pRVA, &pSource, MetaData_GetTableRow(pThis, MAKE_TABLE_INDEX(tableID, 1 + row)), row, numRows); continue;
+			case MD_TABLE_CLASSLAYOUT: ClassLayoutTableReader(pThis, pRVA, &pSource, MetaData_GetTableRow(pThis, MAKE_TABLE_INDEX(tableID, 1 + row)), row, numRows); continue;
+			case MD_TABLE_STANDALONESIG: StandAloneSigTableReader(pThis, pRVA, &pSource, MetaData_GetTableRow(pThis, MAKE_TABLE_INDEX(tableID, 1 + row)), row, numRows); continue;
+			case MD_TABLE_EVENTMAP: EventMapTableReader(pThis, pRVA, &pSource, MetaData_GetTableRow(pThis, MAKE_TABLE_INDEX(tableID, 1 + row)), row, numRows); continue;
+			case MD_TABLE_EVENT: EventTableReader(pThis, pRVA, &pSource, MetaData_GetTableRow(pThis, MAKE_TABLE_INDEX(tableID, 1 + row)), row, numRows); continue;
+			case MD_TABLE_PROPERTYMAP: PropertyMapTableReader(pThis, pRVA, &pSource, MetaData_GetTableRow(pThis, MAKE_TABLE_INDEX(tableID, 1 + row)), row, numRows); continue;
+			case MD_TABLE_PROPERTY: PropertyTableReader(pThis, pRVA, &pSource, MetaData_GetTableRow(pThis, MAKE_TABLE_INDEX(tableID, 1 + row)), row, numRows); continue;
+			case MD_TABLE_METHODSEMANTICS: MethodSemanticsTableReader(pThis, pRVA, &pSource, MetaData_GetTableRow(pThis, MAKE_TABLE_INDEX(tableID, 1 + row)), row, numRows); continue;
+			case MD_TABLE_METHODIMPL: MethodImplTableReader(pThis, pRVA, &pSource, MetaData_GetTableRow(pThis, MAKE_TABLE_INDEX(tableID, 1 + row)), row, numRows); continue;
+			case MD_TABLE_MODULEREF: ModuleRefTableReader(pThis, pRVA, &pSource, MetaData_GetTableRow(pThis, MAKE_TABLE_INDEX(tableID, 1 + row)), row, numRows); continue;
+			case MD_TABLE_TYPESPEC: TypeSpecTableReader(pThis, pRVA, &pSource, MetaData_GetTableRow(pThis, MAKE_TABLE_INDEX(tableID, 1 + row)), row, numRows); continue;
+			case MD_TABLE_IMPLMAP: ImplMapTableReader(pThis, pRVA, &pSource, MetaData_GetTableRow(pThis, MAKE_TABLE_INDEX(tableID, 1 + row)), row, numRows); continue;
+			case MD_TABLE_FIELDRVA: FieldRVATableReader(pThis, pRVA, &pSource, MetaData_GetTableRow(pThis, MAKE_TABLE_INDEX(tableID, 1 + row)), row, numRows); continue;
+			case MD_TABLE_ASSEMBLY: AssemblyTableReader(pThis, pRVA, &pSource, MetaData_GetTableRow(pThis, MAKE_TABLE_INDEX(tableID, 1 + row)), row, numRows); continue;
+			case MD_TABLE_ASSEMBLYREF: AssemblyRefTableReader(pThis, pRVA, &pSource, MetaData_GetTableRow(pThis, MAKE_TABLE_INDEX(tableID, 1 + row)), row, numRows); continue;
+			case MD_TABLE_NESTEDCLASS: NestedClassTableReader(pThis, pRVA, &pSource, MetaData_GetTableRow(pThis, MAKE_TABLE_INDEX(tableID, 1 + row)), row, numRows); continue;
+			case MD_TABLE_GENERICPARAM: GenericParamTableReader(pThis, pRVA, &pSource, MetaData_GetTableRow(pThis, MAKE_TABLE_INDEX(tableID, 1 + row)), row, numRows); continue;
+			case MD_TABLE_METHODSPEC: MethodSpecTableReader(pThis, pRVA, &pSource, MetaData_GetTableRow(pThis, MAKE_TABLE_INDEX(tableID, 1 + row)), row, numRows); continue;
+			case MD_TABLE_GENERICPARAMCONSTRAINT: GenericParamConstraintTableReader(pThis, pRVA, &pSource, MetaData_GetTableRow(pThis, MAKE_TABLE_INDEX(tableID, 1 + row)), row, numRows); continue;
+
+			default: break;
+		}
+
 		for (i=0; i<defLen; i += 2) {
 			unsigned char d = pDef[i];
+			unsigned long long v;
 			if (d < MAX_TABLES) {
 				if (pThis->tables.numRows[d] < 0x10000) {
 					// Use 16-bit offset
-					v = GetU16(pSource);
+					unsigned int val = GetU16(pSource);
+					v = (unsigned long long)val;
 					pSource += 2;
 				} else {
 					// Use 32-bit offset
-					v = GetU32(pSource);
+					unsigned int val = GetU32(pSource);
+					v = (unsigned long long)val;
 					pSource += 4;
 				}
 				v |= d << 24;
@@ -382,13 +1297,13 @@ static void* LoadSingleTable(tMetaData *pThis, tRVA *pRVA, int tableID, void **p
 					case '<':
 						{
 							int ofs = pDef[i] - '0';
-							char* pCoding = codedTags[ofs];
+							const char* pCoding = codedTags[ofs];
 							int tagBits = codedTagBits[ofs];
 							unsigned char tag = *pSource & ((1 << tagBits) - 1);
 							int idxIntoTableID = pCoding[tag]; // The actual table index that we're looking for
 							if (idxIntoTableID < 0 || idxIntoTableID > MAX_TABLES) {
-								printf("Error: Bad table index: 0x%02x\n", idxIntoTableID);
-								exit(1);
+								//printf("Error: Bad table index: 0x%02x\n", idxIntoTableID);
+								gpuexit(1);
 							}
 							if (pThis->tables.codedIndex32Bit[ofs]) {
 								// Use 32-bit number
@@ -410,7 +1325,7 @@ static void* LoadSingleTable(tMetaData *pThis, tRVA *pRVA, int tableID, void **p
 							v = GetU16(pSource);
 							pSource += 2;
 						}
-						v = (unsigned int)(pThis->strings.pStart + v);
+						v = (unsigned long long)(pThis->strings.pStart + v);
 						break;
 					case 'G': // index into GUID heap
 						if (pThis->index32BitGUID) {
@@ -420,7 +1335,7 @@ static void* LoadSingleTable(tMetaData *pThis, tRVA *pRVA, int tableID, void **p
 							v = GetU16(pSource);
 							pSource += 2;
 						}
-						v = (unsigned int)(pThis->GUIDs.pGUID1 + ((v-1) * 16));
+						v = (unsigned long long)(pThis->GUIDs.pGUID1 + ((v-1) * 16));
 						break;
 					case 'B': // index into BLOB heap
 						if (pThis->index32BitBlob) {
@@ -430,15 +1345,15 @@ static void* LoadSingleTable(tMetaData *pThis, tRVA *pRVA, int tableID, void **p
 							v = GetU16(pSource);
 							pSource += 2;
 						}
-						v = (unsigned int)(pThis->blobs.pStart + v);
+						v = (unsigned long long)(pThis->blobs.pStart + v);
 						break;
 					case '^': // RVA to convert to pointer
 						v = GetU32(pSource);
 						pSource += 4;
-						v = (unsigned int)RVA_FindData(pRVA, v);
+						v = (unsigned long long)RVA_FindData(pRVA, v);
 						break;
 					case 'm': // Pointer to this metadata
-						v = (unsigned int)pThis;
+						v = (unsigned long long)pThis;
 						break;
 					case 'l': // Is this the last table entry?
 						v = (row == numRows - 1);
@@ -453,10 +1368,12 @@ static void* LoadSingleTable(tMetaData *pThis, tRVA *pRVA, int tableID, void **p
 						Crash("Cannot handle MetaData source definition character '%c' (0x%02X)\n", d, d);
 				}
 			}
-			switch (pDef[i+1]) {
+			// Copy from source to destination buffer. Note, we must convert pointer fields correctly.
+			printf("pdest %lx\n", pDest);
+			switch (pDef[i + 1]) {
 				case '*':
-					*(unsigned int*)pDest = v;
-					pDest += 4;
+					*(unsigned long long*)pDest = v;
+					pDest += sizeof(void*);
 					break;
 				case 's':
 					*(unsigned short*)pDest = (unsigned short)v;
@@ -472,6 +1389,119 @@ static void* LoadSingleTable(tMetaData *pThis, tRVA *pRVA, int tableID, void **p
 				default:
 					Crash("Cannot handle MetaData destination definition character '%c'\n", pDef[i+1]);
 			}
+			printf("pdest %lx\n", pDest);
+		}
+	}
+
+	
+	// Sanity check while debugging....
+	for (row = 0; row < numRows; row++)
+	{
+		void * dd = MetaData_GetTableRow(pThis, MAKE_TABLE_INDEX(tableID, row + 1));
+		switch (tableID)
+		{
+		case MD_TABLE_MODULE:
+		{
+			tMD_Module* y = (tMD_Module*)dd;
+			break;
+		}
+		case MD_TABLE_TYPEREF:
+		{
+			tMD_TypeRef* y = (tMD_TypeRef*)dd;
+			break;
+		}
+		case MD_TABLE_TYPEDEF:
+		{
+			tMD_TypeDef* y = (tMD_TypeDef*)dd;
+			break;
+		}
+		case MD_TABLE_FIELDDEF:
+		{
+			tMD_FieldDef* y = (tMD_FieldDef*)dd;
+			break;
+		}
+		case MD_TABLE_METHODDEF:
+		{
+			tMD_MethodDef* y = (tMD_MethodDef*)dd;
+			break;
+		}
+		case MD_TABLE_PARAM:
+		{
+			tMD_Param* y = (tMD_Param*)dd;
+			break;
+		}
+		case MD_TABLE_INTERFACEIMPL:
+		{
+			tMD_InterfaceImpl* y = (tMD_InterfaceImpl*)dd;
+			break;
+		}
+		case MD_TABLE_MEMBERREF:
+		{
+			tMD_MemberRef* y = (tMD_MemberRef*)dd;
+			break;
+		}
+		case MD_TABLE_CONSTANT:
+		{
+			tMD_Constant* y = (tMD_Constant*)dd;
+			break;
+		}
+		case MD_TABLE_CUSTOMATTRIBUTE:
+		{
+			tMD_CustomAttribute* y = (tMD_CustomAttribute*)dd;
+			break;
+		}
+		case MD_TABLE_DECLSECURITY:
+		{
+			tMD_DeclSecurity* y = (tMD_DeclSecurity*)dd;
+			break;
+		}
+		case MD_TABLE_CLASSLAYOUT:
+		{
+			tMD_ClassLayout* y = (tMD_ClassLayout*)dd;
+			break;
+		}
+		case MD_TABLE_STANDALONESIG:
+		{
+			tMD_StandAloneSig* y = (tMD_StandAloneSig*)dd;
+			break;
+		}
+		case MD_TABLE_EVENTMAP:
+		{
+			tMD_EventMap* y = (tMD_EventMap*)dd;
+			break;
+		}
+		case MD_TABLE_EVENT:
+		{
+			tMD_Event* y = (tMD_Event*)dd;
+			break;
+		}
+		case MD_TABLE_PROPERTYMAP:
+		{
+			tMD_PropertyMap* y = (tMD_PropertyMap*)dd;
+			break;
+		}
+		case MD_TABLE_PROPERTY:
+		{
+			tMD_Property* y = (tMD_Property*)dd;
+			break;
+		}
+		case MD_TABLE_METHODSEMANTICS:
+		{
+			tMD_MethodSemantics* y = (tMD_MethodSemantics*)dd;
+			break;
+		}
+		case MD_TABLE_METHODIMPL:
+		{
+			tMD_MethodImpl* y = (tMD_MethodImpl*)dd;
+			break;
+		}
+		case MD_TABLE_MODULEREF:
+		{
+			tMD_ModuleRef* y = (tMD_ModuleRef*)dd;
+			break;
+		}
+		default:
+			break;
 		}
 	}
 
@@ -483,7 +1513,7 @@ static void* LoadSingleTable(tMetaData *pThis, tRVA *pRVA, int tableID, void **p
 	return pRet;
 }
 
-void MetaData_LoadTables(tMetaData *pThis, tRVA *pRVA, void *pStream, unsigned int streamLen) {
+/* __device__ */ void MetaData_LoadTables(tMetaData *pThis, tRVA *pRVA, void *pStream, unsigned int streamLen) {
 	U64 valid, j;
 	unsigned char c;
 	int i, k, numTables;
@@ -499,8 +1529,10 @@ void MetaData_LoadTables(tMetaData *pThis, tRVA *pRVA, void *pStream, unsigned i
 	// Count how many tables there are, and read in all the number of rows of each table.
 	numTables = 0;
 	for (i=0, j=1; i<MAX_TABLES; i++, j <<= 1) {
+		// "valid" is a bitmap indicating if the table entry is OK. There are maximum
+		// 48 (MAX_TABLES), but only those with bit set is valid.
 		if (valid & j) {
-			pThis->tables.numRows[i] = *(unsigned int*)&((char*)pStream)[24 + numTables * 4];
+			pThis->tables.numRows[i] = *(U32*)&((char*)pStream)[24 + numTables * 4];
 			numTables++;
 		} else {
 			pThis->tables.numRows[i] = 0;
@@ -510,7 +1542,7 @@ void MetaData_LoadTables(tMetaData *pThis, tRVA *pRVA, void *pStream, unsigned i
 
 	// Determine if each coded index lookup type needs to use 16 or 32 bit indexes
 	for (i=0; i<13; i++) {
-		char* pCoding = codedTags[i];
+		const char* pCoding = codedTags[i];
 		int tagBits = codedTagBits[i];
 		// Discover max table size
 		unsigned int maxTableLen = 0;
@@ -536,15 +1568,15 @@ void MetaData_LoadTables(tMetaData *pThis, tRVA *pRVA, void *pStream, unsigned i
 	for (i=0; i<MAX_TABLES; i++) {
 		if (pThis->tables.numRows[i] > 0) {
 			if (i*4 >= sizeof(tableDefs) || tableDefs[i] == NULL) {
-				printf("No table definition for MetaData table 0x%02x\n", i);
-				exit(1);
+				//printf("No table definition for MetaData table 0x%02x\n", i);
+				gpuexit(1);
 			}
 			pThis->tables.data[i] = LoadSingleTable(pThis, pRVA, i, &pTable);
 		}
 	}
 }
 
-PTR MetaData_GetBlob(BLOB_ blob, U32 *pBlobLength) {
+/* __device__ */ PTR MetaData_GetBlob(BLOB_ blob, U32 *pBlobLength) {
 	unsigned int len = MetaData_DecodeHeapEntryLength(&blob);
 	if (pBlobLength != NULL) {
 		*pBlobLength = len;
@@ -553,7 +1585,7 @@ PTR MetaData_GetBlob(BLOB_ blob, U32 *pBlobLength) {
 }
 
 // Returns length in bytes, not characters
-STRING2 MetaData_GetUserString(tMetaData *pThis, IDX_USERSTRINGS index, unsigned int *pStringLength) {
+/* __device__ */ STRING2 MetaData_GetUserString(tMetaData *pThis, IDX_USERSTRINGS index, unsigned int *pStringLength) {
 	unsigned char *pString = pThis->userStrings.pStart + (index & 0x00ffffff);
 	unsigned int len = MetaData_DecodeHeapEntryLength(&pString);
 	if (pStringLength != NULL) {
@@ -563,19 +1595,23 @@ STRING2 MetaData_GetUserString(tMetaData *pThis, IDX_USERSTRINGS index, unsigned
 	return (STRING2)pString;
 }
 
-void* MetaData_GetTableRow(tMetaData *pThis, IDX_TABLE index) {
+/* __device__ */ void* MetaData_GetTableRow(tMetaData *pThis, IDX_TABLE index) {
 	char *pData;
 	
 	if (TABLE_OFS(index) == 0) {
 		return NULL;
 	}
+	int table_id = TABLE_ID(index);
+	void * d = pThis->tables.data[table_id];
 	pData = (char*)pThis->tables.data[TABLE_ID(index)];
 	// Table indexes start at one, hence the -1 here.
-	return pData + (TABLE_OFS(index) - 1) * tableRowSize[TABLE_ID(index)];
+	int size = tableRowSize[TABLE_ID(index)];
+	char * result = pData + (TABLE_OFS(index) - 1) * size;
+	return result;
 }
 
-void MetaData_GetConstant(tMetaData *pThis, IDX_TABLE idx, PTR pResultMem) {
-	tMD_Constant *pConst;
+/* __device__ */ void MetaData_GetConstant(tMetaData *pThis, IDX_TABLE idx, PTR pResultMem) {
+	tMD_Constant *pConst = 0;
 
 	switch (TABLE_ID(idx)) {
 	case MD_TABLE_FIELDDEF:
@@ -599,7 +1635,7 @@ void MetaData_GetConstant(tMetaData *pThis, IDX_TABLE idx, PTR pResultMem) {
 
 }
 
-void MetaData_GetHeapRoots(tHeapRoots *pHeapRoots, tMetaData *pMetaData) {
+/* __device__ */ void MetaData_GetHeapRoots(tHeapRoots *pHeapRoots, tMetaData *pMetaData) {
 	U32 i, top;
 	// Go through all types, getting their static variables.
 

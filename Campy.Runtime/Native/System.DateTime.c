@@ -34,15 +34,15 @@
 #define TicksAtUnixEpoch 621355968000000000L
 #define TicksAtFileTimeEpoch 504911232000000000L
 
-tAsyncCall* System_DateTime_InternalUtcNow(PTR pThis_, PTR pParams, PTR pReturnValue) {
+/* __device__ */ tAsyncCall* System_DateTime_InternalUtcNow(PTR pThis_, PTR pParams, PTR pReturnValue) {
 
 #ifdef WIN32
 
-	FILETIME ft;
+	//FILETIME ft;
 
-	GetSystemTimeAsFileTime(&ft);
+	//GetSystemTimeAsFileTime(&ft);
 
-	*(U64*)pReturnValue = ((U64)ft.dwHighDateTime) * 0x100000000L + ((U64)ft.dwLowDateTime) + TicksAtFileTimeEpoch;
+	//*(U64*)pReturnValue = ((U64)ft.dwHighDateTime) * 0x100000000L + ((U64)ft.dwLowDateTime) + TicksAtFileTimeEpoch;
 
 #else
 

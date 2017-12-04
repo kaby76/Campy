@@ -27,8 +27,8 @@
 #include "Types.h"
 #include "Type.h"
 
-tAsyncCall* System_Diagnostics_Debugger_Break(PTR pThis_, PTR pParams, PTR pReturnValue) {
-	printf("BREAK\n");
+/* __device__ */ tAsyncCall* System_Diagnostics_Debugger_Break(PTR pThis_, PTR pParams, PTR pReturnValue) {
+//	printf("BREAK\n");
 #if defined(WIN32) && defined(_DEBUG)
 	__debugbreak();
 #endif

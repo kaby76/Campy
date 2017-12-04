@@ -48,6 +48,7 @@
 #include "System.DateTime.h"
 #include "System.Math.h"
 #include "Delegate.h"
+#include "Gstring.h"
 
 #define MAX_PARAMS 6
 
@@ -62,7 +63,7 @@ struct tInternalCall_ {
 	U8 parameterTypes[MAX_PARAMS];
 };
 
-static tInternalCall internalCalls[] = {
+/* __device__ */ static tInternalCall internalCalls[] = {
 	{"System", "Object", "Equals", System_Object_Equals, TYPE_SYSTEM_BOOLEAN, 1, {TYPE_SYSTEM_OBJECT}},
 	{NULL,      NULL,    "Clone", System_Object_Clone, TYPE_SYSTEM_OBJECT, 1, {TYPE_SYSTEM_OBJECT}},
 	{NULL,      NULL,    "GetHashCode", System_Object_GetHashCode, TYPE_SYSTEM_INT32, 0},
@@ -172,10 +173,10 @@ static tInternalCall internalCalls[] = {
 	{NULL, NULL, NULL, NULL}
 };
 
-fnInternalCall InternalCall_Map(tMD_MethodDef *pMethod) {
+/* __device__ */ fnInternalCall InternalCall_Map(tMD_MethodDef *pMethod) {
 	tInternalCall *pCall;
-	STRING curNameSpace;
-	STRING curType;
+	STRING curNameSpace = 0;
+	STRING curType = 0;
 
 	if (pMethod->pParentType->pParent == types[TYPE_SYSTEM_MULTICASTDELEGATE]) {
 		// Special case to handle delegates
@@ -192,8 +193,8 @@ fnInternalCall InternalCall_Map(tMD_MethodDef *pMethod) {
 			if (pCall->type != NULL) {
 				curType = pCall->type;
 			}
-			if (strcmp(pMethod->pParentType->nameSpace, curNameSpace) == 0) {
-				if (strcmp(pMethod->pParentType->name, curType) == 0) {
+			if (Gstrcmp(pMethod->pParentType->nameSpace, curNameSpace) == 0) {
+				if (Gstrcmp(pMethod->pParentType->name, curType) == 0) {
 					if (Type_IsMethod(pMethod, pCall->method, types[pCall->returnType], pCall->numParameters, pCall->parameterTypes)) {
 						return pCall->fn;
 					}
@@ -204,4 +205,5 @@ fnInternalCall InternalCall_Map(tMD_MethodDef *pMethod) {
 	}
 	Crash("InternalCall_Map(): Cannot map [%s]%s.%s", pMethod->pParentType->nameSpace, pMethod->pParentType->name, pMethod->name);
 	FAKE_RETURN;
+	return 0;
 }

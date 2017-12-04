@@ -28,17 +28,17 @@
 #include "Heap.h"
 #include "Type.h"
 
-tAsyncCall* System_GC_Collect(PTR pThis_, PTR pParams, PTR pReturnValue) {
+/* __device__ */ tAsyncCall* System_GC_Collect(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	Heap_GarbageCollect();
 	return NULL;
 }
 
-tAsyncCall* System_GC_Internal_CollectionCount(PTR pThis_, PTR pParams, PTR pReturnValue) {
+/* __device__ */ tAsyncCall* System_GC_Internal_CollectionCount(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	*(U32*)pReturnValue = Heap_NumCollections();
 	return NULL;
 }
 
-tAsyncCall* System_GC_GetTotalMemory(PTR pThis_, PTR pParams, PTR pReturnValue) {
+/* __device__ */ tAsyncCall* System_GC_GetTotalMemory(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	if (*(U32*)pParams) {
 		Heap_GarbageCollect();
 	}
@@ -46,7 +46,7 @@ tAsyncCall* System_GC_GetTotalMemory(PTR pThis_, PTR pParams, PTR pReturnValue) 
 	return NULL;
 }
 
-tAsyncCall* System_GC_SuppressFinalize(PTR pThis_, PTR pParams, PTR pReturnValue) {
+/* __device__ */ tAsyncCall* System_GC_SuppressFinalize(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	HEAP_PTR obj = ((HEAP_PTR*)pParams)[0];
 	Heap_UnmarkFinalizer(obj);
 	return NULL;

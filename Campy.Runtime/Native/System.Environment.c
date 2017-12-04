@@ -29,42 +29,42 @@
 
 #include <time.h>
 
-tAsyncCall* System_Environment_get_TickCount(PTR pThis_, PTR pParams, PTR pReturnValue) {
-	I32 t;
-	
-	t = (I32)msTime();
-	*(I32*)pReturnValue = t;
+/* __device__ */ tAsyncCall* System_Environment_get_TickCount(PTR pThis_, PTR pParams, PTR pReturnValue) {
+	//I32 t;
+	//
+	//t = (I32)msTime();
+	//*(I32*)pReturnValue = t;
 
 	return NULL;
 }
 
-tAsyncCall* System_Environment_GetOSVersionString(PTR pThis_, PTR pParams, PTR pReturnValue) {
-	static HEAP_PTR versionString = NULL;
-	if (versionString == NULL) {
-		char ver[64];
-#ifdef WIN32
-		OSVERSIONINFO osVer;
-		osVer.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-		GetVersionEx(&osVer);
-		sprintf(ver, "%d.%d.%d", osVer.dwMajorVersion, osVer.dwMinorVersion, osVer.dwBuildNumber);
-#else
-		strcpy(ver, "0.0.0");
-#endif
-		versionString = SystemString_FromCharPtrASCII(ver);
-		Heap_MakeUndeletable(versionString);
-	}
-	*(HEAP_PTR*)pReturnValue = versionString;
+/* __device__ */ tAsyncCall* System_Environment_GetOSVersionString(PTR pThis_, PTR pParams, PTR pReturnValue) {
+//	static HEAP_PTR versionString = NULL;
+//	if (versionString == NULL) {
+//		char ver[64];
+//#ifdef WIN32
+//		OSVERSIONINFO osVer;
+//		osVer.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+//		GetVersionEx(&osVer);
+//		sprintf(ver, "%d.%d.%d", osVer.dwMajorVersion, osVer.dwMinorVersion, osVer.dwBuildNumber);
+//#else
+//		strcpy(ver, "0.0.0");
+//#endif
+//		versionString = SystemString_FromCharPtrASCII(ver);
+//		Heap_MakeUndeletable(versionString);
+//	}
+//	*(HEAP_PTR*)pReturnValue = versionString;
 	return NULL;
 }
 
-tAsyncCall* System_Environment_get_Platform(PTR pThis_, PTR pParams, PTR pReturnValue) {
-#ifdef WIN32
-	OSVERSIONINFO osVer;
-	osVer.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-	GetVersionEx(&osVer);
-	*(U32*)pReturnValue = (osVer.dwPlatformId == VER_PLATFORM_WIN32_NT)?2:1; // Win32NT:Win32Windows
-#else
-	*(U32*)pReturnValue = 4; // UNIX
-#endif
+/* __device__ */ tAsyncCall* System_Environment_get_Platform(PTR pThis_, PTR pParams, PTR pReturnValue) {
+//#ifdef WIN32
+//	OSVERSIONINFO osVer;
+//	osVer.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+//	GetVersionEx(&osVer);
+//	*(U32*)pReturnValue = (osVer.dwPlatformId == VER_PLATFORM_WIN32_NT)?2:1; // Win32NT:Win32Windows
+//#else
+//	*(U32*)pReturnValue = 4; // UNIX
+//#endif
 	return NULL;
 }
