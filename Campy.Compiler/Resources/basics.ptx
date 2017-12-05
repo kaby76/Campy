@@ -128,19 +128,17 @@
 {
 	.reg .pred 	%p<2>;
 	.reg .b16 	%rs<2>;
-	.reg .b64 	%rd<10>;
+	.reg .b64 	%rd<7>;
 
 
-	ld.param.u64 	%rd4, [_Z7GstrlenPKc_param_0];
-	mov.u64 	%rd8, 0;
-	mov.u64 	%rd9, %rd8;
+	ld.param.u64 	%rd3, [_Z7GstrlenPKc_param_0];
+	mov.u64 	%rd6, 0;
 
 BB7_1:
-	mov.u64 	%rd1, %rd9;
-	mov.u64 	%rd9, %rd8;
-	add.s64 	%rd7, %rd4, %rd9;
-	ld.u8 	%rs1, [%rd7];
-	add.s64 	%rd8, %rd9, 1;
+	mov.u64 	%rd1, %rd6;
+	add.s64 	%rd5, %rd3, %rd1;
+	ld.u8 	%rs1, [%rd5];
+	add.s64 	%rd6, %rd1, 1;
 	setp.ne.s16	%p1, %rs1, 0;
 	@%p1 bra 	BB7_1;
 

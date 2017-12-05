@@ -27,6 +27,8 @@
 #include "Type.h"
 #include "RVA.h"
 #include "Gstring.h"
+#include <stdio.h>
+#include <crt/host_defines.h>
 
 __device__ unsigned int MetaData_DecodeSigEntry(SIG *pSig) {
 	unsigned char a,b,c,d;
@@ -281,7 +283,7 @@ __device__ void MetaData_Init() {
 	}
 }
 
-__device__ static unsigned int GetU16(char *pSource) {
+__device__ static unsigned int GetU16(unsigned char *pSource) {
 	unsigned char a,b;
 
 	a = pSource[0];
@@ -289,8 +291,8 @@ __device__ static unsigned int GetU16(char *pSource) {
 	return a | (b << 8);
 }
 
-__device__ static unsigned int GetU32(char *pSource) {
-	unsigned char a,b,c,d;
+__device__ static unsigned int GetU32(unsigned char *pSource) {
+	unsigned char a, b, c, d;
 
 	a = pSource[0];
 	b = pSource[1];
@@ -299,10 +301,26 @@ __device__ static unsigned int GetU32(char *pSource) {
 	return a | (b << 8) | (c << 16) | (d << 24);
 }
 
-__device__ int CodedIndex(tMetaData *pThis, unsigned char x, char **ppSource)
+__device__ static unsigned long long GetU64(unsigned char *pSource) {
+	unsigned char a, b, c, d;
+	unsigned char e, f, g, h;
+
+	a = pSource[0];
+	b = pSource[1];
+	c = pSource[2];
+	d = pSource[3];
+	e = pSource[4];
+	f = pSource[5];
+	g = pSource[6];
+	h = pSource[7];
+	return a | (b << 8) | (c << 16) | (d << 24)
+	    | (e << 32) | (f << 40) | (g << 48) | (h << 56);
+}
+
+__device__ int CodedIndex(tMetaData *pThis, unsigned char x, unsigned char **ppSource)
 {
 	int v;
-	char * pSource = (char *)*ppSource;
+	unsigned char * pSource = (unsigned char *)*ppSource;
 	int ofs = x - '0';
 	const char* pCoding = codedTags[ofs];
 	int tagBits = codedTagBits[ofs];
@@ -327,10 +345,10 @@ __device__ int CodedIndex(tMetaData *pThis, unsigned char x, char **ppSource)
 	return v;
 }
 
-__device__ int Coded2Index(tMetaData *pThis, int d, char **ppSource)
+__device__ int Coded2Index(tMetaData *pThis, int d, unsigned char **ppSource)
 {
 	int v;
-	char * pSource = (char *)*ppSource;
+	unsigned char * pSource = (unsigned char *)*ppSource;
 	if (pThis->tables.numRows[d] < 0x10000) {
 		// Use 16-bit offset
 		unsigned int val = GetU16(pSource);
@@ -349,13 +367,13 @@ __device__ int Coded2Index(tMetaData *pThis, int d, char **ppSource)
 }
 
 // Reads metadata tables into structs in a platform-independent way.
-__device__ void ModuleTableReader(tMetaData *pThis, tRVA *pRVA, char **ppSource, void *pDest)
+__device__ void ModuleTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest)
 {
 	// 0x00
 	// original "sxS*G*GxGx",
 	tMD_Module * p = (tMD_Module*)pDest;
 	memset(p, 0, sizeof(tMD_Module));
-	char * pSource = (char *)*ppSource;
+	unsigned char * pSource = (unsigned char *)*ppSource;
 	
 	pSource += 2;
 
@@ -379,13 +397,13 @@ __device__ void ModuleTableReader(tMetaData *pThis, tRVA *pRVA, char **ppSource,
 	*ppSource = pSource;
 }
 
-__device__ void TypeRefTableReader(tMetaData *pThis, tRVA *pRVA, char **ppSource, void *pDest)
+__device__ void TypeRefTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest)
 {
 	// 0x01
 	// original "x*;*S*S*",
 	tMD_TypeRef * p = (tMD_TypeRef*)pDest;
 	memset(p, 0, sizeof(tMD_TypeRef));
-	char * pSource = (char *)*ppSource;
+	unsigned char * pSource = (unsigned char *)*ppSource;
 
 	int v;
 
@@ -404,7 +422,7 @@ __device__ void TypeRefTableReader(tMetaData *pThis, tRVA *pRVA, char **ppSource
 	*ppSource = pSource;
 }
 
-__device__ void TypeDefTableReader(tMetaData *pThis, tRVA *pRVA, char **ppSource, void *pDest, int row, int numRows)
+__device__ void TypeDefTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
 {
 	// 0x02
 	// original "x*m*i*S*S*0*\x04*\x06*xclcxcxcx*x*x*x*x*x*x*x*x*x*x*I*x*x*x*x*x*x*x*x*x*x*x*x*",
@@ -448,7 +466,7 @@ __device__ void TypeDefTableReader(tMetaData *pThis, tRVA *pRVA, char **ppSource
 	tMD_TypeDef * p = (tMD_TypeDef*)pDest;
 	memset(p, 0, sizeof(tMD_TypeDef));
 
-	char * pSource = (char *)*ppSource;
+	unsigned char * pSource = (unsigned char *)*ppSource;
 
 	int v;
 
@@ -481,25 +499,25 @@ __device__ void TypeDefTableReader(tMetaData *pThis, tRVA *pRVA, char **ppSource
 	*ppSource = pSource;
 }
 
-__device__ void FieldPtrTableReader(tMetaData *pThis, tRVA *pRVA, char **ppSource, void *pDest, int row, int numRows)
+__device__ void FieldPtrTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
 {
 	tMD_TypeDef * p = (tMD_TypeDef*)pDest;
 	memset(p, 0, sizeof(tMD_TypeDef));
 
-	char * pSource = (char *)*ppSource;
+	unsigned char * pSource = (unsigned char *)*ppSource;
 
 	int v;
 	*ppSource = pSource;
 }
 
-__device__ void FieldDefTableReader(tMetaData *pThis, tRVA *pRVA, char **ppSource, void *pDest, int row, int numRows)
+__device__ void FieldDefTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
 {
 	// "x*m*ssxsS*B*x*x*x*x*I*x*",
 
 	tMD_FieldDef * p = (tMD_FieldDef*)pDest;
 	memset(p, 0, sizeof(tMD_FieldDef));
 
-	char * pSource = (char *)*ppSource;
+	unsigned char * pSource = (unsigned char *)*ppSource;
 
 	int v;
 
@@ -523,14 +541,14 @@ __device__ void FieldDefTableReader(tMetaData *pThis, tRVA *pRVA, char **ppSourc
 	*ppSource = pSource;
 }
 
-__device__ void MethodDefTableReader(tMetaData *pThis, tRVA *pRVA, char **ppSource, void *pDest, int row, int numRows)
+__device__ void MethodDefTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
 {
 	// 	"x*m*^*ssssS*B*\x08*x*x*x*x*x*x*I*x*x*x*"
 
 	tMD_MethodDef * p = (tMD_MethodDef*)pDest;
 	memset(p, 0, sizeof(tMD_MethodDef));
 
-	char * pSource = (char *)*ppSource;
+	unsigned char * pSource = (unsigned char *)*ppSource;
 
 	p->pMetaData = pThis;
 
@@ -563,7 +581,7 @@ __device__ void MethodDefTableReader(tMetaData *pThis, tRVA *pRVA, char **ppSour
 	*ppSource = pSource;
 }
 
-__device__ void ParamTableReader(tMetaData *pThis, tRVA *pRVA, char **ppSource, void *pDest, int row, int numRows)
+__device__ void ParamTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
 {
 	// 0x08
 	// "ssssS*",
@@ -571,7 +589,7 @@ __device__ void ParamTableReader(tMetaData *pThis, tRVA *pRVA, char **ppSource, 
 	tMD_Param * p = (tMD_Param*)pDest;
 	memset(p, 0, sizeof(tMD_Param));
 
-	char * pSource = (char *)*ppSource;
+	unsigned char * pSource = (unsigned char *)*ppSource;
 
 	int v;
 
@@ -591,7 +609,7 @@ __device__ void ParamTableReader(tMetaData *pThis, tRVA *pRVA, char **ppSource, 
 	*ppSource = pSource;
 }
 
-__device__ void InterfaceImplTableReader(tMetaData *pThis, tRVA *pRVA, char **ppSource, void *pDest, int row, int numRows)
+__device__ void InterfaceImplTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
 {
 	// Table 0x09 - InterfaceImpl
 	// "\x02*0*",
@@ -599,7 +617,7 @@ __device__ void InterfaceImplTableReader(tMetaData *pThis, tRVA *pRVA, char **pp
 	tMD_InterfaceImpl * p = (tMD_InterfaceImpl*)pDest;
 	memset(p, 0, sizeof(tMD_InterfaceImpl));
 
-	char * pSource = (char *)*ppSource;
+	unsigned char * pSource = (unsigned char *)*ppSource;
 
 	int v;
 
@@ -610,7 +628,7 @@ __device__ void InterfaceImplTableReader(tMetaData *pThis, tRVA *pRVA, char **pp
 	*ppSource = pSource;
 }
 
-__device__ void MemberRefTableReader(tMetaData *pThis, tRVA *pRVA, char **ppSource, void *pDest, int row, int numRows)
+__device__ void MemberRefTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
 {
 	// Table 0x0A - MemberRef
 	// "x*5*S*B*",
@@ -618,7 +636,7 @@ __device__ void MemberRefTableReader(tMetaData *pThis, tRVA *pRVA, char **ppSour
 	tMD_MemberRef * p = (tMD_MemberRef*)pDest;
 	memset(p, 0, sizeof(tMD_MemberRef));
 
-	char * pSource = (char *)*ppSource;
+	unsigned char * pSource = (unsigned char *)*ppSource;
 
 	int v;
 
@@ -637,7 +655,7 @@ __device__ void MemberRefTableReader(tMetaData *pThis, tRVA *pRVA, char **ppSour
 	*ppSource = pSource;
 }
 
-__device__ void ConstantTableReader(tMetaData *pThis, tRVA *pRVA, char **ppSource, void *pDest, int row, int numRows)
+__device__ void ConstantTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
 {
 	// Table 0x0B - Constant
 	// "ccccxs1*B*",
@@ -645,7 +663,7 @@ __device__ void ConstantTableReader(tMetaData *pThis, tRVA *pRVA, char **ppSourc
 	tMD_Constant * p = (tMD_Constant*)pDest;
 	memset(p, 0, sizeof(tMD_Constant));
 
-	char * pSource = (char *)*ppSource;
+	unsigned char * pSource = (unsigned char *)*ppSource;
 
 	int v;
 
@@ -664,7 +682,7 @@ __device__ void ConstantTableReader(tMetaData *pThis, tRVA *pRVA, char **ppSourc
 	*ppSource = pSource;
 }
 
-__device__ void CustomAttributeTableReader(tMetaData *pThis, tRVA *pRVA, char **ppSource, void *pDest, int row, int numRows)
+__device__ void CustomAttributeTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
 {
 	// Table 0x0C - CustomAttribute
 	// "2*:*B*",
@@ -672,7 +690,7 @@ __device__ void CustomAttributeTableReader(tMetaData *pThis, tRVA *pRVA, char **
 	tMD_CustomAttribute * p = (tMD_CustomAttribute*)pDest;
 	memset(p, 0, sizeof(tMD_CustomAttribute));
 
-	char * pSource = (char *)*ppSource;
+	unsigned char * pSource = (unsigned char *)*ppSource;
 
 	int v;
 
@@ -688,7 +706,7 @@ __device__ void CustomAttributeTableReader(tMetaData *pThis, tRVA *pRVA, char **
 	*ppSource = pSource;
 }
 
-__device__ void DeclSecurityTableReader(tMetaData *pThis, tRVA *pRVA, char **ppSource, void *pDest, int row, int numRows)
+__device__ void DeclSecurityTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
 {
 	// Table 0x0E - DeclSecurity
 	// "ssxs4*B*",
@@ -696,7 +714,7 @@ __device__ void DeclSecurityTableReader(tMetaData *pThis, tRVA *pRVA, char **ppS
 	tMD_DeclSecurity * p = (tMD_DeclSecurity*)pDest;
 	memset(p, 0, sizeof(tMD_DeclSecurity));
 
-	char * pSource = (char *)*ppSource;
+	unsigned char * pSource = (unsigned char *)*ppSource;
 
 	int v;
 
@@ -713,7 +731,7 @@ __device__ void DeclSecurityTableReader(tMetaData *pThis, tRVA *pRVA, char **ppS
 	*ppSource = pSource;
 }
 
-__device__ void ClassLayoutTableReader(tMetaData *pThis, tRVA *pRVA, char **ppSource, void *pDest, int row, int numRows)
+__device__ void ClassLayoutTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
 {
 	// Table 0x0F - ClassLayout
 	// "ssxsi*\x02*",
@@ -721,7 +739,7 @@ __device__ void ClassLayoutTableReader(tMetaData *pThis, tRVA *pRVA, char **ppSo
 	tMD_ClassLayout * p = (tMD_ClassLayout*)pDest;
 	memset(p, 0, sizeof(tMD_ClassLayout));
 
-	char * pSource = (char *)*ppSource;
+	unsigned char * pSource = (unsigned char *)*ppSource;
 
 	int v;
 
@@ -736,7 +754,7 @@ __device__ void ClassLayoutTableReader(tMetaData *pThis, tRVA *pRVA, char **ppSo
 	*ppSource = pSource;
 }
 
-__device__ void StandAloneSigTableReader(tMetaData *pThis, tRVA *pRVA, char **ppSource, void *pDest, int row, int numRows)
+__device__ void StandAloneSigTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
 {
 	// Table 0x11 - StandAloneSig
 	// "B*",
@@ -744,7 +762,7 @@ __device__ void StandAloneSigTableReader(tMetaData *pThis, tRVA *pRVA, char **pp
 	tMD_StandAloneSig * p = (tMD_StandAloneSig*)pDest;
 	memset(p, 0, sizeof(tMD_StandAloneSig));
 
-	char * pSource = (char *)*ppSource;
+	unsigned char * pSource = (unsigned char *)*ppSource;
 
 	int v;
 
@@ -756,7 +774,7 @@ __device__ void StandAloneSigTableReader(tMetaData *pThis, tRVA *pRVA, char **pp
 	*ppSource = pSource;
 }
 
-__device__ void EventMapTableReader(tMetaData *pThis, tRVA *pRVA, char **ppSource, void *pDest, int row, int numRows)
+__device__ void EventMapTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
 {
 	// Table 0x12 - EventMap
 	// "\x02*\x14*",
@@ -764,7 +782,7 @@ __device__ void EventMapTableReader(tMetaData *pThis, tRVA *pRVA, char **ppSourc
 	tMD_EventMap * p = (tMD_EventMap*)pDest;
 	memset(p, 0, sizeof(tMD_EventMap));
 
-	char * pSource = (char *)*ppSource;
+	unsigned char * pSource = (unsigned char *)*ppSource;
 
 	int v;
 
@@ -775,7 +793,7 @@ __device__ void EventMapTableReader(tMetaData *pThis, tRVA *pRVA, char **ppSourc
 	*ppSource = pSource;
 }
 
-__device__ void EventTableReader(tMetaData *pThis, tRVA *pRVA, char **ppSource, void *pDest, int row, int numRows)
+__device__ void EventTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
 {
 	// Table 0x14 - Event
 	// "ssxsS*0*",
@@ -783,7 +801,7 @@ __device__ void EventTableReader(tMetaData *pThis, tRVA *pRVA, char **ppSource, 
 	tMD_Event * p = (tMD_Event*)pDest;
 	memset(p, 0, sizeof(tMD_Event));
 
-	char * pSource = (char *)*ppSource;
+	unsigned char * pSource = (unsigned char *)*ppSource;
 
 	int v;
 
@@ -800,7 +818,7 @@ __device__ void EventTableReader(tMetaData *pThis, tRVA *pRVA, char **ppSource, 
 	*ppSource = pSource;
 }
 
-__device__ void PropertyMapTableReader(tMetaData *pThis, tRVA *pRVA, char **ppSource, void *pDest, int row, int numRows)
+__device__ void PropertyMapTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
 {
 	// Table 0x15 - PropertyMap
 	// "\x02*\x17*",
@@ -808,7 +826,7 @@ __device__ void PropertyMapTableReader(tMetaData *pThis, tRVA *pRVA, char **ppSo
 	tMD_PropertyMap * p = (tMD_PropertyMap*)pDest;
 	memset(p, 0, sizeof(tMD_PropertyMap));
 
-	char * pSource = (char *)*ppSource;
+	unsigned char * pSource = (unsigned char *)*ppSource;
 
 	p->parent = Coded2Index(pThis, 0x2, &pSource);
 
@@ -817,7 +835,7 @@ __device__ void PropertyMapTableReader(tMetaData *pThis, tRVA *pRVA, char **ppSo
 	*ppSource = pSource;
 }
 
-__device__ void PropertyTableReader(tMetaData *pThis, tRVA *pRVA, char **ppSource, void *pDest, int row, int numRows)
+__device__ void PropertyTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
 {
 	// Table 0x17 - Property
 	// "ssxsS*B*",
@@ -825,7 +843,7 @@ __device__ void PropertyTableReader(tMetaData *pThis, tRVA *pRVA, char **ppSourc
 	tMD_Property * p = (tMD_Property*)pDest;
 	memset(p, 0, sizeof(tMD_Property));
 
-	char * pSource = (char *)*ppSource;
+	unsigned char * pSource = (unsigned char *)*ppSource;
 
 	p->flags = GetU16(pSource);
 	pSource += 2;
@@ -843,7 +861,7 @@ __device__ void PropertyTableReader(tMetaData *pThis, tRVA *pRVA, char **ppSourc
 	*ppSource = pSource;
 }
 
-__device__ void MethodSemanticsTableReader(tMetaData *pThis, tRVA *pRVA, char **ppSource, void *pDest, int row, int numRows)
+__device__ void MethodSemanticsTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
 {
 	// Table 0x18 - MethodSemantics
 	// "ssxs\06*6*",
@@ -851,19 +869,25 @@ __device__ void MethodSemanticsTableReader(tMetaData *pThis, tRVA *pRVA, char **
 	tMD_MethodSemantics * p = (tMD_MethodSemantics*)pDest;
 	memset(p, 0, sizeof(tMD_MethodSemantics));
 
-	char * pSource = (char *)*ppSource;
+	printf("MS %d %d\n", row, numRows);
 
+	unsigned char * pSource = (unsigned char *)*ppSource;
+
+	//printf("Getting 16 bit\n");
 	p->semantics = GetU16(pSource);
 	pSource += 2;
 
+	printf("Getting 2 I\n");
 	p->method = Coded2Index(pThis, 0x6, &pSource);
 
-	p->association = CodedIndex(pThis, '6', &pSource);
+	//printf("Getting I\n");
 
+	p->association = CodedIndex(pThis, '6', &pSource);
+	printf("done.\n");
 	*ppSource = pSource;
 }
 
-__device__ void MethodImplTableReader(tMetaData *pThis, tRVA *pRVA, char **ppSource, void *pDest, int row, int numRows)
+__device__ void MethodImplTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
 {
 	// Table 0x19 - MethodImpl
 	// 	"\x02*7*7*"
@@ -871,7 +895,7 @@ __device__ void MethodImplTableReader(tMetaData *pThis, tRVA *pRVA, char **ppSou
 	tMD_MethodImpl * p = (tMD_MethodImpl*)pDest;
 	memset(p, 0, sizeof(tMD_MethodImpl));
 
-	char * pSource = (char *)*ppSource;
+	unsigned char * pSource = (unsigned char *)*ppSource;
 
 	p->class_ = Coded2Index(pThis, 0x2, &pSource);
 
@@ -882,7 +906,7 @@ __device__ void MethodImplTableReader(tMetaData *pThis, tRVA *pRVA, char **ppSou
 	*ppSource = pSource;
 }
 
-__device__ void ModuleRefTableReader(tMetaData *pThis, tRVA *pRVA, char **ppSource, void *pDest, int row, int numRows)
+__device__ void ModuleRefTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
 {
 	// Table 0x1a - ModuleRef
 	// 	"S*"
@@ -890,7 +914,7 @@ __device__ void ModuleRefTableReader(tMetaData *pThis, tRVA *pRVA, char **ppSour
 	tMD_ModuleRef * p = (tMD_ModuleRef*)pDest;
 	memset(p, 0, sizeof(tMD_ModuleRef));
 
-	char * pSource = (char *)*ppSource;
+	unsigned char * pSource = (unsigned char *)*ppSource;
 
 	int string_skip = pThis->index32BitString ? 4 : 2;
 	unsigned int v = pThis->index32BitString ? GetU32(pSource) : GetU16(pSource);
@@ -900,7 +924,7 @@ __device__ void ModuleRefTableReader(tMetaData *pThis, tRVA *pRVA, char **ppSour
 	*ppSource = pSource;
 }
 
-__device__ void TypeSpecTableReader(tMetaData *pThis, tRVA *pRVA, char **ppSource, void *pDest, int row, int numRows)
+__device__ void TypeSpecTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
 {
 	// Table 0x1B - TypeSpec
 	// 	"x*m*B*"
@@ -908,7 +932,7 @@ __device__ void TypeSpecTableReader(tMetaData *pThis, tRVA *pRVA, char **ppSourc
 	tMD_TypeSpec * p = (tMD_TypeSpec*)pDest;
 	memset(p, 0, sizeof(tMD_TypeSpec));
 
-	char * pSource = (char *)*ppSource;
+	unsigned char * pSource = (unsigned char *)*ppSource;
 
 	int blob_skip = pThis->index32BitBlob ? 4 : 2;
 	unsigned int v = pThis->index32BitBlob ? GetU32(pSource) : GetU16(pSource);
@@ -920,7 +944,7 @@ __device__ void TypeSpecTableReader(tMetaData *pThis, tRVA *pRVA, char **ppSourc
 	*ppSource = pSource;
 }
 
-__device__ void ImplMapTableReader(tMetaData *pThis, tRVA *pRVA, char **ppSource, void *pDest, int row, int numRows)
+__device__ void ImplMapTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
 {
 	// Table 0x1c - ImplMap
 	// 	"ssxs8*S*\x1a*"
@@ -928,7 +952,7 @@ __device__ void ImplMapTableReader(tMetaData *pThis, tRVA *pRVA, char **ppSource
 	tMD_ImplMap * p = (tMD_ImplMap*)pDest;
 	memset(p, 0, sizeof(tMD_ImplMap));
 
-	char * pSource = (char *)*ppSource;
+	unsigned char * pSource = (unsigned char *)*ppSource;
 
 	p->mappingFlags = GetU16(pSource);
 	pSource += 2;
@@ -945,7 +969,7 @@ __device__ void ImplMapTableReader(tMetaData *pThis, tRVA *pRVA, char **ppSource
 	*ppSource = pSource;
 }
 
-__device__ void FieldRVATableReader(tMetaData *pThis, tRVA *pRVA, char **ppSource, void *pDest, int row, int numRows)
+__device__ void FieldRVATableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
 {
 	// Table 0x1D - FieldRVA
 	// "^*\x04*"
@@ -953,7 +977,7 @@ __device__ void FieldRVATableReader(tMetaData *pThis, tRVA *pRVA, char **ppSourc
 	tMD_FieldRVA * p = (tMD_FieldRVA*)pDest;
 	memset(p, 0, sizeof(tMD_FieldRVA));
 
-	char * pSource = (char *)*ppSource;
+	unsigned char * pSource = (unsigned char *)*ppSource;
 
 	unsigned int v = GetU32(pSource);
 	pSource += 4;
@@ -964,7 +988,7 @@ __device__ void FieldRVATableReader(tMetaData *pThis, tRVA *pRVA, char **ppSourc
 	*ppSource = pSource;
 }
 
-__device__ void AssemblyTableReader(tMetaData *pThis, tRVA *pRVA, char **ppSource, void *pDest, int row, int numRows)
+__device__ void AssemblyTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
 {
 	// Table 0x20 - Assembly
 	// "i4s2s2s2s2i4B8S8S8"
@@ -972,7 +996,7 @@ __device__ void AssemblyTableReader(tMetaData *pThis, tRVA *pRVA, char **ppSourc
 	tMD_Assembly * p = (tMD_Assembly*)pDest;
 	memset(p, 0, sizeof(tMD_Assembly));
 
-	char * pSource = (char *)*ppSource;
+	unsigned char * pSource = (unsigned char *)*ppSource;
 
 	p->hashAlgID = GetU32(pSource);
 	pSource += 4;
@@ -1009,7 +1033,7 @@ __device__ void AssemblyTableReader(tMetaData *pThis, tRVA *pRVA, char **ppSourc
 	*ppSource = pSource;
 }
 
-__device__ void AssemblyRefTableReader(tMetaData *pThis, tRVA *pRVA, char **ppSource, void *pDest, int row, int numRows)
+__device__ void AssemblyRefTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
 {
 	// Table 0x23 - AssemblyRef
 	// "s2s2s2s2i4B8S8S8B8"
@@ -1017,7 +1041,7 @@ __device__ void AssemblyRefTableReader(tMetaData *pThis, tRVA *pRVA, char **ppSo
 	tMD_AssemblyRef * p = (tMD_AssemblyRef*)pDest;
 	memset(p, 0, sizeof(tMD_AssemblyRef));
 
-	char * pSource = (char *)*ppSource;
+	unsigned char * pSource = (unsigned char *)*ppSource;
 
 	p->majorVersion = GetU16(pSource);
 	pSource += 2;
@@ -1055,7 +1079,7 @@ __device__ void AssemblyRefTableReader(tMetaData *pThis, tRVA *pRVA, char **ppSo
 	*ppSource = pSource;
 }
 
-__device__ void NestedClassTableReader(tMetaData *pThis, tRVA *pRVA, char **ppSource, void *pDest, int row, int numRows)
+__device__ void NestedClassTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
 {
 	// Table 0x29 - NestedClass
 	// "\x02*\x02*",
@@ -1063,7 +1087,7 @@ __device__ void NestedClassTableReader(tMetaData *pThis, tRVA *pRVA, char **ppSo
 	tMD_NestedClass * p = (tMD_NestedClass*)pDest;
 	memset(p, 0, sizeof(tMD_NestedClass));
 
-	char * pSource = (char *)*ppSource;
+	unsigned char * pSource = (unsigned char *)*ppSource;
 
 	p->nestedClass = Coded2Index(pThis, 0x2, &pSource);
 
@@ -1072,7 +1096,7 @@ __device__ void NestedClassTableReader(tMetaData *pThis, tRVA *pRVA, char **ppSo
 	*ppSource = pSource;
 }
 
-__device__ void GenericParamTableReader(tMetaData *pThis, tRVA *pRVA, char **ppSource, void *pDest, int row, int numRows)
+__device__ void GenericParamTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
 {
 	// Table 0x2A - Generic param
 	// "s2s2<4S8"
@@ -1080,7 +1104,7 @@ __device__ void GenericParamTableReader(tMetaData *pThis, tRVA *pRVA, char **ppS
 	tMD_GenericParam * p = (tMD_GenericParam*)pDest;
 	memset(p, 0, sizeof(tMD_GenericParam));
 
-	char * pSource = (char *)*ppSource;
+	unsigned char * pSource = (unsigned char *)*ppSource;
 
 	p->number = GetU16(pSource);
 	pSource += 2;
@@ -1098,7 +1122,7 @@ __device__ void GenericParamTableReader(tMetaData *pThis, tRVA *pRVA, char **ppS
 	*ppSource = pSource;
 }
 
-__device__ void MethodSpecTableReader(tMetaData *pThis, tRVA *pRVA, char **ppSource, void *pDest, int row, int numRows)
+__device__ void MethodSpecTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
 {
 	// Table 0x2B - MethodSpec
 	// "x8m874B8"
@@ -1106,7 +1130,7 @@ __device__ void MethodSpecTableReader(tMetaData *pThis, tRVA *pRVA, char **ppSou
 	tMD_MethodSpec * p = (tMD_MethodSpec*)pDest;
 	memset(p, 0, sizeof(tMD_MethodSpec));
 
-	char * pSource = (char *)*ppSource;
+	unsigned char * pSource = (unsigned char *)*ppSource;
 
 	p->pMetaData = pThis;
 
@@ -1120,7 +1144,7 @@ __device__ void MethodSpecTableReader(tMetaData *pThis, tRVA *pRVA, char **ppSou
 	*ppSource = pSource;
 }
 
-__device__ void GenericParamConstraintTableReader(tMetaData *pThis, tRVA *pRVA, char **ppSource, void *pDest, int row, int numRows)
+__device__ void GenericParamConstraintTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
 {
 	// Table 0x2C - GenericParamConstraint
 	// "\x2a*0*"
@@ -1128,7 +1152,7 @@ __device__ void GenericParamConstraintTableReader(tMetaData *pThis, tRVA *pRVA, 
 	tMD_GenericParamConstraint * p = (tMD_GenericParamConstraint*)pDest;
 	memset(p, 0, sizeof(tMD_GenericParamConstraint));
 
-	char * pSource = (char *)*ppSource;
+	unsigned char * pSource = (unsigned char *)*ppSource;
 
 	p->pGenericParam = (tMD_GenericParam *)Coded2Index(pThis, 0x2a, &pSource);
 
@@ -1147,7 +1171,7 @@ __device__ static void* LoadSingleTable(tMetaData *pThis, tRVA *pRVA, int tableI
 	const char *pDef = tableDefs[tableID];
 	int defLen = (int)Gstrlen(pDef);
 	void *pRet;
-	char *pSource = (char*)*ppTable;
+	unsigned char *pSource = (unsigned char*)*ppTable;
 	char *pDest;
 
 
@@ -1158,6 +1182,8 @@ __device__ static void* LoadSingleTable(tMetaData *pThis, tRVA *pRVA, int tableI
 	// Calculate the destination row size from table definition, if it hasn't already been calculated
 	int newRowLen = 0;
 	int numFields = defLen / 2;
+
+	printf("TableID %x\n", tableID);
 
 	switch (tableID)
 	{
@@ -1200,6 +1226,11 @@ __device__ static void* LoadSingleTable(tMetaData *pThis, tRVA *pRVA, int tableI
 	pRet = malloc(numRows * rowLen);
 	pThis->tables.data[tableID] = pRet;
 	pDest = (char*) pRet;
+
+	// Update the parameter to the position after this table
+	*ppTable = pSource;
+	// Return new table information
+	return pRet;
 
 	// Load rows of table, of give type of table.
 	for (row=0; row<numRows; row++) {
@@ -1360,32 +1391,40 @@ __device__ static void* LoadSingleTable(tMetaData *pThis, tRVA *pRVA, int tableI
 	return pRet;
 }
 
-__device__ void MetaData_LoadTables(tMetaData *pThis, tRVA *pRVA, void *pStream, unsigned int streamLen) {
+__device__ void MetaData_LoadTables(tMetaData *pThis, tRVA *pRVA, unsigned char *pStream, unsigned int streamLen) {
 	U64 valid, j;
 	unsigned char c;
 	int i, k, numTables;
 	void *pTable;
 
-	c = *(unsigned char*)&((char*)pStream)[6];
+	unsigned char * ps = pStream;
+	for (int i = 0; i < 16; ++i)
+		printf("%x\n", ps[i]);
+
+	ps += 6;
+	c = *ps;
 	pThis->index32BitString = (c & 1) > 0;
 	pThis->index32BitGUID = (c & 2) > 0;
 	pThis->index32BitBlob = (c & 4) > 0;
-
-	valid = *(U64*)&((char*)pStream)[8];
-
+	ps += 2;
+	valid = GetU64(ps);
+	printf("valid = %llx\n", valid);
 	// Count how many tables there are, and read in all the number of rows of each table.
 	numTables = 0;
 	for (i=0, j=1; i<MAX_TABLES; i++, j <<= 1) {
 		// "valid" is a bitmap indicating if the table entry is OK. There are maximum
 		// 48 (MAX_TABLES), but only those with bit set is valid.
 		if (valid & j) {
-			pThis->tables.numRows[i] = *(U32*)&((char*)pStream)[24 + numTables * 4];
+			//pThis->tables.numRows[i] = *(U32*)&((char*)pStream)[24 + numTables * 4];
 			numTables++;
+			printf("Row v = %d %d\n", i, 0);
 		} else {
 			pThis->tables.numRows[i] = 0;
 			pThis->tables.data[i] = NULL;
 		}
 	}
+
+	printf("Num tables %d\n", numTables);
 
 	// Determine if each coded index lookup type needs to use 16 or 32 bit indexes
 	for (i=0; i<13; i++) {
@@ -1414,13 +1453,16 @@ __device__ void MetaData_LoadTables(tMetaData *pThis, tRVA *pRVA, void *pStream,
 
 	for (i=0; i<MAX_TABLES; i++) {
 		if (pThis->tables.numRows[i] > 0) {
+
+printf("i = %d\n", i);
 			if (i*4 >= sizeof(tableDefs) || tableDefs[i] == NULL) {
 				//printf("No table definition for MetaData table 0x%02x\n", i);
 				gpuexit(1);
 			}
-			pThis->tables.data[i] = LoadSingleTable(pThis, pRVA, i, &pTable);
+//			pThis->tables.data[i] = LoadSingleTable(pThis, pRVA, i, &pTable);
 		}
 	}
+	printf("tables done.\n");
 }
 
 __device__ PTR MetaData_GetBlob(BLOB_ blob, U32 *pBlobLength) {

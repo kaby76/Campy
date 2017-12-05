@@ -381,7 +381,7 @@ BB6_6:
 	//{
 	}// Callseq End 4
 	ld.u32 	%r14, [%rd1+16];
-	ld.u32 	%r15, [%rd7+4];
+	ld.u32 	%r15, [%rd7+8];
 	setp.eq.s32	%p6, %r15, %r14;
 	add.s32 	%r21, %r21, 1;
 	@%p6 bra 	BB6_8;
@@ -434,7 +434,7 @@ BB6_12:
 	bra.uni 	BB6_12;
 
 BB6_8:
-	ld.u32 	%rd20, [%rd7];
+	ld.u64 	%rd20, [%rd7];
 	st.u64 	[%rd1+24], %rd20;
 	bra.uni 	BB6_15;
 

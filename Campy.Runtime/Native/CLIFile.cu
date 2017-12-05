@@ -83,6 +83,7 @@ __device__ tMetaData* CLIFile_GetMetaDataForAssembly(char *pAssemblyName) {
 		pCLIFile = CLIFile_Load(pAssemblyName);
 		if (pCLIFile == NULL) {
 			Crash("Cannot load required assembly file: %s", fileName);
+			return NULL;
 		}
 		return pCLIFile->pMetaData;
 	}
@@ -235,7 +236,7 @@ __device__ static tCLIFile* LoadPEFile(void *pData) {
 		}
 	}
 	Gprintf("C4.\n");
-
+	return NULL;
 	// Mark all generic definition types and methods as such
 	//for (i=pMetaData->tables.numRows[MD_TABLE_GENERICPARAM]; i>0; i--) {
 	//	tMD_GenericParam *pGenericParam;
@@ -292,6 +293,7 @@ __device__ tCLIFile* CLIFile_Load(char *pFileName) {
 	log_f(1, "\nLoading file: %s\n", pFileName);
 
 	pRet = LoadPEFile(pRawFile);
+	return NULL;
 	pRet->pFileName = (char*)mallocForever((U32)Gstrlen(pFileName) + 1);
 	Gstrcpy(pRet->pFileName, pFileName);
 

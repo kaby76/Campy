@@ -23,22 +23,6 @@
 	.param .align 8 .b8 %VAParam[]
 )
 ;
-.extern .func  (.param .b64 func_retval0) _Z7GstrlenPKc
-(
-	.param .b64 _Z7GstrlenPKc_param_0
-)
-;
-.extern .func _Z5CrashPKcz
-(
-	.param .b64 _Z5CrashPKcz_param_0,
-	.param .align 8 .b8 %VAParam[]
-)
-;
-.extern .func  (.param .b64 func_retval0) malloc
-(
-	.param .b64 malloc_param_0
-)
-;
 .extern .func _Z7gpuexiti
 (
 	.param .b32 _Z7gpuexiti_param_0
@@ -48,6 +32,18 @@
 (
 	.param .b64 _Z12RVA_FindDataP5tRVA_j_param_0,
 	.param .b32 _Z12RVA_FindDataP5tRVA_j_param_1
+)
+;
+.extern .func  (.param .b32 func_retval0) vprintf
+(
+	.param .b64 vprintf_param_0,
+	.param .b64 vprintf_param_1
+)
+;
+.extern .func _Z5CrashPKcz
+(
+	.param .b64 _Z5CrashPKcz_param_0,
+	.param .align 8 .b8 %VAParam[]
 )
 ;
 .extern .func _Z20Generic_GetHeapRootsP11tHeapRoots_P12tMD_TypeDef_
@@ -114,12 +110,17 @@
 .global .align 16 .b8 $str43[14] = {76, 111, 97, 100, 101, 100, 32, 98, 108, 111, 98, 115, 10, 0};
 .global .align 16 .b8 $str44[21] = {76, 111, 97, 100, 101, 100, 32, 85, 115, 101, 114, 32, 83, 116, 114, 105, 110, 103, 115, 10, 0};
 .global .align 16 .b8 $str45[15] = {82, 101, 97, 100, 32, 37, 100, 32, 71, 85, 73, 68, 115, 10, 0};
-.global .align 16 .b8 $str46[75] = {67, 97, 110, 110, 111, 116, 32, 100, 101, 116, 101, 114, 109, 105, 110, 101, 32, 108, 101, 110, 103, 116, 104, 32, 111, 102, 32, 77, 101, 116, 97, 68, 97, 116, 97, 32, 100, 101, 115, 116, 105, 110, 97, 116, 105, 111, 110, 32, 100, 101, 102, 105, 110, 105, 116, 105, 111, 110, 32, 99, 104, 97, 114, 97, 99, 116, 101, 114, 32, 39, 37, 99, 39, 10, 0};
-.global .align 16 .b8 $str47[66] = {67, 97, 110, 110, 111, 116, 32, 104, 97, 110, 100, 108, 101, 32, 77, 101, 116, 97, 68, 97, 116, 97, 32, 115, 111, 117, 114, 99, 101, 32, 100, 101, 102, 105, 110, 105, 116, 105, 111, 110, 32, 99, 104, 97, 114, 97, 99, 116, 101, 114, 32, 39, 37, 99, 39, 32, 40, 48, 120, 37, 48, 50, 88, 41, 10, 0};
-.global .align 16 .b8 $str48[62] = {67, 97, 110, 110, 111, 116, 32, 104, 97, 110, 100, 108, 101, 32, 77, 101, 116, 97, 68, 97, 116, 97, 32, 100, 101, 115, 116, 105, 110, 97, 116, 105, 111, 110, 32, 100, 101, 102, 105, 110, 105, 116, 105, 111, 110, 32, 99, 104, 97, 114, 97, 99, 116, 101, 114, 32, 39, 37, 99, 39, 10, 0};
-.global .align 16 .b8 $str49[39] = {76, 111, 97, 100, 101, 100, 32, 77, 101, 116, 97, 68, 97, 116, 97, 32, 116, 97, 98, 108, 101, 32, 48, 120, 37, 48, 50, 88, 59, 32, 37, 100, 32, 114, 111, 119, 115, 10, 0};
-.global .align 16 .b8 $str50[49] = {77, 101, 116, 97, 68, 97, 116, 97, 95, 71, 101, 116, 67, 111, 110, 115, 116, 97, 110, 116, 40, 41, 32, 67, 97, 110, 110, 111, 116, 32, 104, 97, 110, 100, 108, 101, 32, 105, 100, 120, 58, 32, 48, 120, 37, 48, 56, 120, 0};
-.global .align 16 .b8 $str51[56] = {77, 101, 116, 97, 68, 97, 116, 97, 95, 71, 101, 116, 67, 111, 110, 115, 116, 97, 110, 116, 40, 41, 32, 67, 97, 110, 110, 111, 116, 32, 104, 97, 110, 100, 108, 101, 32, 118, 97, 108, 117, 101, 32, 116, 121, 112, 101, 58, 32, 48, 120, 37, 48, 50, 120, 0};
+.global .align 16 .b8 $str46[10] = {77, 83, 32, 37, 100, 32, 37, 100, 10, 0};
+.global .align 16 .b8 $str47[13] = {71, 101, 116, 116, 105, 110, 103, 32, 50, 32, 73, 10, 0};
+.global .align 8 .b8 $str48[7] = {100, 111, 110, 101, 46, 10, 0};
+.global .align 4 .b8 $str49[4] = {37, 120, 10, 0};
+.global .align 16 .b8 $str50[14] = {118, 97, 108, 105, 100, 32, 61, 32, 37, 108, 108, 120, 10, 0};
+.global .align 16 .b8 $str51[15] = {82, 111, 119, 32, 118, 32, 61, 32, 37, 100, 32, 37, 100, 10, 0};
+.global .align 16 .b8 $str52[15] = {78, 117, 109, 32, 116, 97, 98, 108, 101, 115, 32, 37, 100, 10, 0};
+.global .align 8 .b8 $str53[8] = {105, 32, 61, 32, 37, 100, 10, 0};
+.global .align 16 .b8 $str54[14] = {116, 97, 98, 108, 101, 115, 32, 100, 111, 110, 101, 46, 10, 0};
+.global .align 16 .b8 $str55[49] = {77, 101, 116, 97, 68, 97, 116, 97, 95, 71, 101, 116, 67, 111, 110, 115, 116, 97, 110, 116, 40, 41, 32, 67, 97, 110, 110, 111, 116, 32, 104, 97, 110, 100, 108, 101, 32, 105, 100, 120, 58, 32, 48, 120, 37, 48, 56, 120, 0};
+.global .align 16 .b8 $str56[56] = {77, 101, 116, 97, 68, 97, 116, 97, 95, 71, 101, 116, 67, 111, 110, 115, 116, 97, 110, 116, 40, 41, 32, 67, 97, 110, 110, 111, 116, 32, 104, 97, 110, 100, 108, 101, 32, 118, 97, 108, 117, 101, 32, 116, 121, 112, 101, 58, 32, 48, 120, 37, 48, 50, 120, 0};
 
 .weak .func  (.param .b32 func_retval0) cudaMalloc(
 	.param .b64 cudaMalloc_param_0,
@@ -627,422 +628,50 @@ BB10_6:
 	ret;
 }
 
-	// .globl	_Z19MetaData_LoadTablesP10tMetaData_P5tRVA_Pvj
-.visible .func _Z19MetaData_LoadTablesP10tMetaData_P5tRVA_Pvj(
-	.param .b64 _Z19MetaData_LoadTablesP10tMetaData_P5tRVA_Pvj_param_0,
-	.param .b64 _Z19MetaData_LoadTablesP10tMetaData_P5tRVA_Pvj_param_1,
-	.param .b64 _Z19MetaData_LoadTablesP10tMetaData_P5tRVA_Pvj_param_2,
-	.param .b32 _Z19MetaData_LoadTablesP10tMetaData_P5tRVA_Pvj_param_3
+	// .globl	_Z10CodedIndexP10tMetaData_hPPh
+.visible .func  (.param .b32 func_retval0) _Z10CodedIndexP10tMetaData_hPPh(
+	.param .b64 _Z10CodedIndexP10tMetaData_hPPh_param_0,
+	.param .b32 _Z10CodedIndexP10tMetaData_hPPh_param_1,
+	.param .b64 _Z10CodedIndexP10tMetaData_hPPh_param_2
 )
 {
-	.reg .pred 	%p<69>;
-	.reg .b16 	%rs<31>;
-	.reg .b32 	%r<290>;
-	.reg .b64 	%rd<224>;
+	.reg .pred 	%p<3>;
+	.reg .b16 	%rs<5>;
+	.reg .b32 	%r<26>;
+	.reg .b64 	%rd<19>;
 
 
-	ld.param.u64 	%rd72, [_Z19MetaData_LoadTablesP10tMetaData_P5tRVA_Pvj_param_0];
-	ld.param.u64 	%rd74, [_Z19MetaData_LoadTablesP10tMetaData_P5tRVA_Pvj_param_2];
-	ld.u8 	%rs14, [%rd74+6];
-	add.s64 	%rd1, %rd72, 632;
-	and.b16  	%rs15, %rs14, 2;
-	shr.u16 	%rs16, %rs15, 1;
-	st.u8 	[%rd72+634], %rs16;
-	and.b16  	%rs17, %rs14, 4;
-	and.b16  	%rs18, %rs14, 1;
-	shr.u16 	%rs19, %rs17, 2;
-	st.v2.u8 	[%rd72+632], {%rs18, %rs19};
-	ld.u64 	%rd2, [%rd74+8];
-	mov.u64 	%rd200, 1;
-	mov.u32 	%r250, 0;
-	mov.u32 	%r249, -48;
-	mov.u64 	%rd198, %rd72;
-	mov.u64 	%rd199, %rd72;
+	ld.param.u64 	%rd6, [_Z10CodedIndexP10tMetaData_hPPh_param_0];
+	ld.param.u64 	%rd7, [_Z10CodedIndexP10tMetaData_hPPh_param_2];
+	ld.u64 	%rd1, [%rd7];
+	ld.param.u8 	%rs2, [_Z10CodedIndexP10tMetaData_hPPh_param_1];
+	cvt.u64.u16	%rd8, %rs2;
+	add.s64 	%rd2, %rd8, -48;
+	cvt.u32.u16	%r8, %rs2;
+	mul.wide.u32 	%rd9, %r8, 8;
+	mov.u64 	%rd10, __nv_static_29__16_MetaData_cpp1_ii_286a6e27_codedTags;
+	add.s64 	%rd11, %rd9, %rd10;
+	mov.u64 	%rd12, __nv_static_29__16_MetaData_cpp1_ii_286a6e27_codedTagBits;
+	add.s64 	%rd13, %rd12, %rd2;
+	ld.global.u8 	%r1, [%rd13];
+	ld.u8 	%r24, [%rd1];
+	mov.u32 	%r9, 1;
+	shl.b32 	%r10, %r9, %r1;
+	add.s32 	%r11, %r10, 255;
+	and.b32  	%r12, %r11, %r24;
+	cvt.u64.u32	%rd14, %r12;
+	ld.global.u64 	%rd15, [%rd11+-384];
+	add.s64 	%rd16, %rd15, %rd14;
+	ld.u8 	%rs1, [%rd16];
+	setp.lt.u16	%p1, %rs1, 49;
+	@%p1 bra 	BB15_2;
 
-BB15_1:
-	and.b64  	%rd76, %rd200, %rd2;
-	setp.eq.s64	%p1, %rd76, 0;
-	@%p1 bra 	BB15_3;
-	bra.uni 	BB15_2;
-
-BB15_3:
-	mov.u32 	%r103, 0;
-	st.u32 	[%rd198+40], %r103;
-	mov.u64 	%rd79, 0;
-	st.u64 	[%rd199+232], %rd79;
-	bra.uni 	BB15_4;
-
-BB15_2:
-	shl.b32 	%r100, %r250, 2;
-	add.s32 	%r101, %r100, 24;
-	cvt.s64.s32	%rd77, %r101;
-	add.s64 	%rd78, %rd74, %rd77;
-	ld.u32 	%r102, [%rd78];
-	st.u32 	[%rd198+40], %r102;
-	add.s32 	%r250, %r250, 1;
-
-BB15_4:
-	shl.b64 	%rd80, %rd200, 1;
-	and.b64  	%rd81, %rd80, %rd2;
-	setp.eq.s64	%p2, %rd81, 0;
-	@%p2 bra 	BB15_6;
-	bra.uni 	BB15_5;
-
-BB15_6:
-	mov.u32 	%r107, 0;
-	st.u32 	[%rd198+44], %r107;
-	mov.u64 	%rd84, 0;
-	st.u64 	[%rd199+240], %rd84;
-	bra.uni 	BB15_7;
-
-BB15_5:
-	shl.b32 	%r104, %r250, 2;
-	add.s32 	%r105, %r104, 24;
-	cvt.s64.s32	%rd82, %r105;
-	add.s64 	%rd83, %rd74, %rd82;
-	ld.u32 	%r106, [%rd83];
-	st.u32 	[%rd198+44], %r106;
-	add.s32 	%r250, %r250, 1;
-
-BB15_7:
-	shl.b64 	%rd85, %rd200, 2;
-	and.b64  	%rd86, %rd85, %rd2;
-	setp.eq.s64	%p3, %rd86, 0;
-	@%p3 bra 	BB15_9;
-	bra.uni 	BB15_8;
-
-BB15_9:
-	mov.u32 	%r111, 0;
-	st.u32 	[%rd198+48], %r111;
-	mov.u64 	%rd89, 0;
-	st.u64 	[%rd199+248], %rd89;
-	bra.uni 	BB15_10;
-
-BB15_8:
-	shl.b32 	%r108, %r250, 2;
-	add.s32 	%r109, %r108, 24;
-	cvt.s64.s32	%rd87, %r109;
-	add.s64 	%rd88, %rd74, %rd87;
-	ld.u32 	%r110, [%rd88];
-	st.u32 	[%rd198+48], %r110;
-	add.s32 	%r250, %r250, 1;
-
-BB15_10:
-	shl.b64 	%rd90, %rd200, 3;
-	and.b64  	%rd91, %rd90, %rd2;
-	setp.eq.s64	%p4, %rd91, 0;
-	@%p4 bra 	BB15_12;
-	bra.uni 	BB15_11;
-
-BB15_12:
-	mov.u32 	%r115, 0;
-	st.u32 	[%rd198+52], %r115;
-	mov.u64 	%rd94, 0;
-	st.u64 	[%rd199+256], %rd94;
-	bra.uni 	BB15_13;
-
-BB15_11:
-	shl.b32 	%r112, %r250, 2;
-	add.s32 	%r113, %r112, 24;
-	cvt.s64.s32	%rd92, %r113;
-	add.s64 	%rd93, %rd74, %rd92;
-	ld.u32 	%r114, [%rd93];
-	st.u32 	[%rd198+52], %r114;
-	add.s32 	%r250, %r250, 1;
-
-BB15_13:
-	shl.b64 	%rd95, %rd200, 4;
-	and.b64  	%rd96, %rd95, %rd2;
-	setp.eq.s64	%p5, %rd96, 0;
-	@%p5 bra 	BB15_15;
-	bra.uni 	BB15_14;
-
-BB15_15:
-	mov.u32 	%r119, 0;
-	st.u32 	[%rd198+56], %r119;
-	mov.u64 	%rd99, 0;
-	st.u64 	[%rd199+264], %rd99;
-	bra.uni 	BB15_16;
-
-BB15_14:
-	shl.b32 	%r116, %r250, 2;
-	add.s32 	%r117, %r116, 24;
-	cvt.s64.s32	%rd97, %r117;
-	add.s64 	%rd98, %rd74, %rd97;
-	ld.u32 	%r118, [%rd98];
-	st.u32 	[%rd198+56], %r118;
-	add.s32 	%r250, %r250, 1;
-
-BB15_16:
-	shl.b64 	%rd100, %rd200, 5;
-	and.b64  	%rd101, %rd100, %rd2;
-	setp.eq.s64	%p6, %rd101, 0;
-	@%p6 bra 	BB15_18;
-	bra.uni 	BB15_17;
-
-BB15_18:
-	mov.u32 	%r123, 0;
-	st.u32 	[%rd198+60], %r123;
-	mov.u64 	%rd104, 0;
-	st.u64 	[%rd199+272], %rd104;
-	bra.uni 	BB15_19;
-
-BB15_17:
-	shl.b32 	%r120, %r250, 2;
-	add.s32 	%r121, %r120, 24;
-	cvt.s64.s32	%rd102, %r121;
-	add.s64 	%rd103, %rd74, %rd102;
-	ld.u32 	%r122, [%rd103];
-	st.u32 	[%rd198+60], %r122;
-	add.s32 	%r250, %r250, 1;
-
-BB15_19:
-	shl.b64 	%rd105, %rd200, 6;
-	and.b64  	%rd106, %rd105, %rd2;
-	setp.eq.s64	%p7, %rd106, 0;
-	@%p7 bra 	BB15_21;
-	bra.uni 	BB15_20;
-
-BB15_21:
-	mov.u32 	%r127, 0;
-	st.u32 	[%rd198+64], %r127;
-	mov.u64 	%rd109, 0;
-	st.u64 	[%rd199+280], %rd109;
-	bra.uni 	BB15_22;
-
-BB15_20:
-	shl.b32 	%r124, %r250, 2;
-	add.s32 	%r125, %r124, 24;
-	cvt.s64.s32	%rd107, %r125;
-	add.s64 	%rd108, %rd74, %rd107;
-	ld.u32 	%r126, [%rd108];
-	st.u32 	[%rd198+64], %r126;
-	add.s32 	%r250, %r250, 1;
-
-BB15_22:
-	shl.b64 	%rd110, %rd200, 7;
-	and.b64  	%rd111, %rd110, %rd2;
-	setp.eq.s64	%p8, %rd111, 0;
-	@%p8 bra 	BB15_24;
-	bra.uni 	BB15_23;
-
-BB15_24:
-	mov.u32 	%r131, 0;
-	st.u32 	[%rd198+68], %r131;
-	mov.u64 	%rd114, 0;
-	st.u64 	[%rd199+288], %rd114;
-	bra.uni 	BB15_25;
-
-BB15_23:
-	shl.b32 	%r128, %r250, 2;
-	add.s32 	%r129, %r128, 24;
-	cvt.s64.s32	%rd112, %r129;
-	add.s64 	%rd113, %rd74, %rd112;
-	ld.u32 	%r130, [%rd113];
-	st.u32 	[%rd198+68], %r130;
-	add.s32 	%r250, %r250, 1;
-
-BB15_25:
-	shl.b64 	%rd200, %rd200, 8;
-	add.s64 	%rd199, %rd199, 64;
-	add.s64 	%rd198, %rd198, 32;
-	add.s32 	%r249, %r249, 8;
-	mov.u32 	%r132, 0;
-	setp.ne.s32	%p9, %r249, 0;
-	@%p9 bra 	BB15_1;
-
-	mov.u32 	%r259, %r132;
-
-BB15_27:
-	cvt.s64.s32	%rd9, %r259;
-	mul.wide.s32 	%rd115, %r259, 8;
-	mov.u64 	%rd116, __nv_static_29__16_MetaData_cpp1_ii_286a6e27_codedTags;
-	add.s64 	%rd117, %rd116, %rd115;
-	ld.global.u64 	%rd10, [%rd117];
-	mov.u64 	%rd118, __nv_static_29__16_MetaData_cpp1_ii_286a6e27_codedTagBits;
-	add.s64 	%rd119, %rd118, %rd9;
-	ld.global.u8 	%r21, [%rd119];
-	mov.u32 	%r134, 1;
-	shl.b32 	%r22, %r134, %r21;
-	setp.eq.s32	%p10, %r21, 31;
-	mov.u32 	%r268, %r132;
-	@%p10 bra 	BB15_53;
-
-	max.s32 	%r23, %r22, %r134;
-	and.b32  	%r141, %r23, 3;
-	mov.u32 	%r268, 0;
-	setp.eq.s32	%p11, %r141, 0;
-	@%p11 bra 	BB15_29;
-
-	setp.eq.s32	%p12, %r141, 1;
-	@%p12 bra 	BB15_31;
-	bra.uni 	BB15_32;
-
-BB15_31:
-	mov.u32 	%r264, %r268;
-	bra.uni 	BB15_39;
-
-BB15_29:
-	mov.u32 	%r267, %r268;
-	bra.uni 	BB15_42;
-
-BB15_32:
-	setp.eq.s32	%p13, %r141, 2;
-	@%p13 bra 	BB15_33;
-	bra.uni 	BB15_34;
-
-BB15_33:
-	mov.u32 	%r134, %r268;
-	bra.uni 	BB15_36;
-
-BB15_34:
-	ld.u8 	%rs1, [%rd10];
-	setp.eq.s16	%p14, %rs1, 122;
-	@%p14 bra 	BB15_36;
-
-	cvt.u32.u16	%r146, %rs1;
-	mul.wide.u32 	%rd120, %r146, 4;
-	add.s64 	%rd121, %rd72, %rd120;
-	ld.u32 	%r268, [%rd121+40];
-
-BB15_36:
-	cvt.u64.u32	%rd122, %r134;
-	add.s64 	%rd123, %rd10, %rd122;
-	ld.u8 	%rs2, [%rd123];
-	setp.eq.s16	%p15, %rs2, 122;
-	@%p15 bra 	BB15_38;
-
-	cvt.u32.u16	%r147, %rs2;
-	mul.wide.u32 	%rd124, %r147, 4;
-	add.s64 	%rd125, %rd72, %rd124;
-	ld.u32 	%r148, [%rd125+40];
-	max.u32 	%r268, %r148, %r268;
-
-BB15_38:
-	add.s32 	%r264, %r134, 1;
-
-BB15_39:
-	cvt.s64.s32	%rd126, %r264;
-	add.s64 	%rd127, %rd10, %rd126;
-	ld.u8 	%rs3, [%rd127];
-	setp.eq.s16	%p16, %rs3, 122;
-	@%p16 bra 	BB15_41;
-
-	cvt.u32.u16	%r149, %rs3;
-	mul.wide.u32 	%rd128, %r149, 4;
-	add.s64 	%rd129, %rd72, %rd128;
-	ld.u32 	%r150, [%rd129+40];
-	max.u32 	%r268, %r150, %r268;
-
-BB15_41:
-	add.s32 	%r267, %r264, 1;
-
-BB15_42:
-	setp.lt.u32	%p17, %r23, 4;
-	@%p17 bra 	BB15_53;
-
-	cvt.s64.s32	%rd130, %r267;
-	add.s64 	%rd201, %rd10, %rd130;
-
-BB15_44:
-	ld.u8 	%rs4, [%rd201];
-	setp.eq.s16	%p18, %rs4, 122;
-	@%p18 bra 	BB15_46;
-
-	cvt.u32.u16	%r151, %rs4;
-	mul.wide.u32 	%rd131, %r151, 4;
-	add.s64 	%rd132, %rd72, %rd131;
-	ld.u32 	%r152, [%rd132+40];
-	max.u32 	%r268, %r152, %r268;
-
-BB15_46:
-	ld.u8 	%rs5, [%rd201+1];
-	setp.eq.s16	%p19, %rs5, 122;
-	@%p19 bra 	BB15_48;
-
-	cvt.u32.u16	%r153, %rs5;
-	mul.wide.u32 	%rd133, %r153, 4;
-	add.s64 	%rd134, %rd72, %rd133;
-	ld.u32 	%r154, [%rd134+40];
-	max.u32 	%r268, %r154, %r268;
-
-BB15_48:
-	ld.u8 	%rs6, [%rd201+2];
-	setp.eq.s16	%p20, %rs6, 122;
-	@%p20 bra 	BB15_50;
-
-	cvt.u32.u16	%r155, %rs6;
-	mul.wide.u32 	%rd135, %r155, 4;
-	add.s64 	%rd136, %rd72, %rd135;
-	ld.u32 	%r156, [%rd136+40];
-	max.u32 	%r268, %r156, %r268;
-
-BB15_50:
-	ld.u8 	%rs7, [%rd201+3];
-	setp.eq.s16	%p21, %rs7, 122;
-	@%p21 bra 	BB15_52;
-
-	cvt.u32.u16	%r157, %rs7;
-	mul.wide.u32 	%rd137, %r157, 4;
-	add.s64 	%rd138, %rd72, %rd137;
-	ld.u32 	%r158, [%rd138+40];
-	max.u32 	%r268, %r158, %r268;
-
-BB15_52:
-	add.s32 	%r267, %r267, 4;
-	setp.lt.s32	%p22, %r267, %r22;
-	add.s64 	%rd201, %rd201, 4;
-	@%p22 bra 	BB15_44;
-
-BB15_53:
-	mov.u32 	%r159, 16;
-	sub.s32 	%r160, %r159, %r21;
-	mov.u32 	%r161, 1;
-	shl.b32 	%r162, %r161, %r160;
-	setp.ge.u32	%p23, %r268, %r162;
-	selp.u16	%rs20, 1, 0, %p23;
-	add.s64 	%rd139, %rd72, %rd9;
-	st.u8 	[%rd139+616], %rs20;
-	cvt.u32.u64	%r163, %rd9;
-	add.s32 	%r259, %r163, 1;
-	setp.lt.s32	%p24, %r259, 13;
-	@%p24 bra 	BB15_27;
-
-	shl.b32 	%r165, %r250, 2;
-	add.s32 	%r166, %r165, 24;
-	cvt.s64.s32	%rd140, %r166;
-	add.s64 	%rd218, %rd74, %rd140;
-	cvt.u32.u64	%r50, %rd72;
-	mov.u32 	%r275, 0;
-
-BB15_55:
-	cvt.s64.s32	%rd16, %r275;
-	mul.wide.s32 	%rd141, %r275, 4;
-	add.s64 	%rd142, %rd72, %rd141;
-	add.s64 	%rd17, %rd142, 40;
-	ld.u32 	%r276, [%rd142+40];
-	setp.eq.s32	%p25, %r276, 0;
-	@%p25 bra 	BB15_137;
-
-	shl.b32 	%r167, %r275, 2;
-	setp.gt.u32	%p26, %r167, 359;
-	shl.b64 	%rd143, %rd16, 3;
-	mov.u64 	%rd144, __nv_static_29__16_MetaData_cpp1_ii_286a6e27_tableDefs;
-	add.s64 	%rd18, %rd144, %rd143;
-	@%p26 bra 	BB15_58;
-
-	ld.global.u64 	%rd203, [%rd18];
-	setp.ne.s64	%p27, %rd203, 0;
-	@%p27 bra 	BB15_59;
-
-BB15_58:
-	mov.u32 	%r241, 1;
 	// Callseq Start 5
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
 	.param .b32 param0;
-	st.param.b32	[param0+0], %r241;
+	st.param.b32	[param0+0], %r9;
 	call.uni 
 	_Z7gpuexiti, 
 	(
@@ -1051,247 +680,973 @@ BB15_58:
 	
 	//{
 	}// Callseq End 5
-	ld.u32 	%r276, [%rd17];
-	ld.global.u64 	%rd203, [%rd18];
+	ld.u8 	%r24, [%rd1];
 
-BB15_59:
+BB15_2:
+	add.s64 	%rd17, %rd6, %rd2;
+	ld.u8 	%rs3, [%rd17+616];
+	setp.eq.s16	%p2, %rs3, 0;
+	ld.u8 	%rs4, [%rd1+1];
+	mul.wide.u16 	%r14, %rs4, 256;
+	or.b32  	%r25, %r14, %r24;
+	add.s64 	%rd18, %rd1, 2;
+	@%p2 bra 	BB15_4;
+
+	ld.u8 	%r15, [%rd1+2];
+	shl.b32 	%r16, %r15, 16;
+	or.b32  	%r17, %r16, %r25;
+	ld.u8 	%r18, [%rd1+3];
+	shl.b32 	%r19, %r18, 24;
+	or.b32  	%r25, %r17, %r19;
+	add.s64 	%rd18, %rd1, 4;
+
+BB15_4:
+	cvt.u32.u16	%r20, %rs1;
+	shl.b32 	%r21, %r20, 24;
+	shr.u32 	%r22, %r25, %r1;
+	or.b32  	%r23, %r22, %r21;
+	st.u64 	[%rd7], %rd18;
+	st.param.b32	[func_retval0+0], %r23;
+	ret;
+}
+
+	// .globl	_Z11Coded2IndexP10tMetaData_iPPh
+.visible .func  (.param .b32 func_retval0) _Z11Coded2IndexP10tMetaData_iPPh(
+	.param .b64 _Z11Coded2IndexP10tMetaData_iPPh_param_0,
+	.param .b32 _Z11Coded2IndexP10tMetaData_iPPh_param_1,
+	.param .b64 _Z11Coded2IndexP10tMetaData_iPPh_param_2
+)
+{
+	.reg .pred 	%p<2>;
+	.reg .b32 	%r<16>;
+	.reg .b64 	%rd<10>;
+
+
+	ld.param.u64 	%rd6, [_Z11Coded2IndexP10tMetaData_iPPh_param_0];
+	ld.param.u32 	%r4, [_Z11Coded2IndexP10tMetaData_iPPh_param_1];
+	ld.param.u64 	%rd5, [_Z11Coded2IndexP10tMetaData_iPPh_param_2];
+	ld.u64 	%rd1, [%rd5];
+	mul.wide.s32 	%rd7, %r4, 4;
+	add.s64 	%rd8, %rd6, %rd7;
+	ld.u32 	%r5, [%rd8+40];
+	setp.lt.u32	%p1, %r5, 65536;
+	ld.u8 	%r6, [%rd1];
+	ld.u8 	%r7, [%rd1+1];
+	prmt.b32 	%r15, %r7, %r6, 30212;
+	add.s64 	%rd9, %rd1, 2;
+	@%p1 bra 	BB16_2;
+
+	ld.u8 	%r8, [%rd1+2];
+	shl.b32 	%r9, %r8, 16;
+	or.b32  	%r10, %r9, %r15;
+	ld.u8 	%r11, [%rd1+3];
+	shl.b32 	%r12, %r11, 24;
+	or.b32  	%r15, %r10, %r12;
+	add.s64 	%rd9, %rd1, 4;
+
+BB16_2:
+	shl.b32 	%r13, %r4, 24;
+	or.b32  	%r14, %r15, %r13;
+	st.u64 	[%rd5], %rd9;
+	st.param.b32	[func_retval0+0], %r14;
+	ret;
+}
+
+	// .globl	_Z17ModuleTableReaderP10tMetaData_P5tRVA_PPhPv
+.visible .func _Z17ModuleTableReaderP10tMetaData_P5tRVA_PPhPv(
+	.param .b64 _Z17ModuleTableReaderP10tMetaData_P5tRVA_PPhPv_param_0,
+	.param .b64 _Z17ModuleTableReaderP10tMetaData_P5tRVA_PPhPv_param_1,
+	.param .b64 _Z17ModuleTableReaderP10tMetaData_P5tRVA_PPhPv_param_2,
+	.param .b64 _Z17ModuleTableReaderP10tMetaData_P5tRVA_PPhPv_param_3
+)
+{
+	.reg .pred 	%p<6>;
+	.reg .b16 	%rs<4>;
+	.reg .b32 	%r<25>;
+	.reg .b64 	%rd<24>;
+
+
+	ld.param.u64 	%rd9, [_Z17ModuleTableReaderP10tMetaData_P5tRVA_PPhPv_param_0];
+	ld.param.u64 	%rd10, [_Z17ModuleTableReaderP10tMetaData_P5tRVA_PPhPv_param_2];
+	ld.param.u64 	%rd11, [_Z17ModuleTableReaderP10tMetaData_P5tRVA_PPhPv_param_3];
+	mov.u64 	%rd23, 0;
+	mov.pred 	%p1, 0;
+	@%p1 bra 	BB17_2;
+
+BB17_1:
+	add.s64 	%rd13, %rd11, %rd23;
+	mov.u16 	%rs2, 0;
+	st.u8 	[%rd13], %rs2;
+	add.s64 	%rd23, %rd23, 1;
+	setp.lt.u64	%p2, %rd23, 16;
+	@%p2 bra 	BB17_1;
+
+BB17_2:
+	ld.u64 	%rd3, [%rd10];
+	add.s64 	%rd4, %rd3, 2;
+	add.s64 	%rd5, %rd9, 632;
+	ld.u8 	%rs3, [%rd9+632];
+	setp.eq.s16	%p3, %rs3, 0;
+	selp.b64	%rd6, 4, 6, %p3;
+	ld.u8 	%r7, [%rd3+2];
+	ld.u8 	%r8, [%rd3+3];
+	prmt.b32 	%r23, %r8, %r7, 30212;
+	@%p3 bra 	BB17_4;
+
+	ld.u8 	%r9, [%rd4+2];
+	shl.b32 	%r10, %r9, 16;
+	or.b32  	%r11, %r10, %r23;
+	ld.u8 	%r12, [%rd4+3];
+	shl.b32 	%r13, %r12, 24;
+	or.b32  	%r23, %r11, %r13;
+
+BB17_4:
+	cvt.s64.s32	%rd14, %r23;
+	ld.u64 	%rd15, [%rd5+-632];
+	add.s64 	%rd16, %rd15, %rd14;
+	st.u64 	[%rd11], %rd16;
+	ld.u8 	%rs1, [%rd5+2];
+	setp.eq.s16	%p4, %rs1, 0;
+	add.s64 	%rd8, %rd3, %rd6;
+	ld.u8 	%r14, [%rd8];
+	ld.u8 	%r15, [%rd8+1];
+	prmt.b32 	%r24, %r15, %r14, 30212;
+	@%p4 bra 	BB17_6;
+
+	ld.u8 	%r16, [%rd8+2];
+	shl.b32 	%r17, %r16, 16;
+	or.b32  	%r18, %r17, %r24;
+	ld.u8 	%r19, [%rd8+3];
+	shl.b32 	%r20, %r19, 24;
+	or.b32  	%r24, %r18, %r20;
+
+BB17_6:
+	add.s32 	%r21, %r24, -1;
+	shl.b32 	%r22, %r21, 4;
+	cvt.s64.s32	%rd17, %r22;
+	ld.u64 	%rd18, [%rd5+-600];
+	add.s64 	%rd19, %rd18, %rd17;
+	st.u64 	[%rd11+8], %rd19;
+	selp.b64	%rd20, 6, 12, %p4;
+	add.s64 	%rd21, %rd20, %rd6;
+	add.s64 	%rd22, %rd3, %rd21;
+	st.u64 	[%rd10], %rd22;
+	ret;
+}
+
+	// .globl	_Z18TypeRefTableReaderP10tMetaData_P5tRVA_PPhPv
+.visible .func _Z18TypeRefTableReaderP10tMetaData_P5tRVA_PPhPv(
+	.param .b64 _Z18TypeRefTableReaderP10tMetaData_P5tRVA_PPhPv_param_0,
+	.param .b64 _Z18TypeRefTableReaderP10tMetaData_P5tRVA_PPhPv_param_1,
+	.param .b64 _Z18TypeRefTableReaderP10tMetaData_P5tRVA_PPhPv_param_2,
+	.param .b64 _Z18TypeRefTableReaderP10tMetaData_P5tRVA_PPhPv_param_3
+)
+{
+	.reg .pred 	%p<7>;
+	.reg .b16 	%rs<7>;
+	.reg .b32 	%r<47>;
+	.reg .b64 	%rd<29>;
+
+
+	ld.param.u64 	%rd11, [_Z18TypeRefTableReaderP10tMetaData_P5tRVA_PPhPv_param_0];
+	ld.param.u64 	%rd12, [_Z18TypeRefTableReaderP10tMetaData_P5tRVA_PPhPv_param_2];
+	ld.param.u64 	%rd13, [_Z18TypeRefTableReaderP10tMetaData_P5tRVA_PPhPv_param_3];
+	mov.u64 	%rd27, 0;
+	mov.pred 	%p1, 0;
+	@%p1 bra 	BB18_2;
+
+BB18_1:
+	add.s64 	%rd15, %rd13, %rd27;
+	mov.u16 	%rs2, 0;
+	st.u8 	[%rd15], %rs2;
+	add.s64 	%rd27, %rd27, 1;
+	setp.lt.u64	%p2, %rd27, 32;
+	@%p2 bra 	BB18_1;
+
+BB18_2:
+	ld.global.u8 	%r1, [__nv_static_29__16_MetaData_cpp1_ii_286a6e27_codedTagBits+11];
+	ld.u64 	%rd3, [%rd12];
+	ld.u8 	%r43, [%rd3];
+	mov.u32 	%r14, 1;
+	shl.b32 	%r15, %r14, %r1;
+	add.s32 	%r16, %r15, 255;
+	and.b32  	%r17, %r16, %r43;
+	cvt.u64.u32	%rd16, %r17;
+	ld.global.u64 	%rd17, [__nv_static_29__16_MetaData_cpp1_ii_286a6e27_codedTags+88];
+	add.s64 	%rd18, %rd17, %rd16;
+	ld.u8 	%rs1, [%rd18];
+	setp.lt.u16	%p3, %rs1, 49;
+	@%p3 bra 	BB18_4;
+
 	// Callseq Start 6
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
-	.param .b64 param0;
-	st.param.b64	[param0+0], %rd203;
-	.param .b64 retval0;
-	call.uni (retval0), 
-	_Z7GstrlenPKc, 
+	.param .b32 param0;
+	st.param.b32	[param0+0], %r14;
+	call.uni 
+	_Z7gpuexiti, 
 	(
 	param0
 	);
-	ld.param.b64	%rd145, [retval0+0];
 	
 	//{
 	}// Callseq End 6
-	cvt.u32.u64	%r55, %rd145;
-	mov.u64 	%rd146, __nv_static_29__16_MetaData_cpp1_ii_286a6e27_tableRowSize;
-	add.s64 	%rd22, %rd146, %rd16;
-	ld.global.u8 	%rs8, [%rd22];
-	setp.eq.s16	%p28, %rs8, 0;
-	@%p28 bra 	BB15_61;
-	bra.uni 	BB15_60;
+	ld.u8 	%r43, [%rd3];
 
-BB15_61:
-	mov.u32 	%r279, 0;
-	setp.lt.s32	%p29, %r55, 1;
-	@%p29 bra 	BB15_73;
+BB18_4:
+	add.s64 	%rd4, %rd11, 627;
+	ld.u8 	%rs3, [%rd11+627];
+	setp.eq.s16	%p4, %rs3, 0;
+	ld.u8 	%rs4, [%rd3+1];
+	mul.wide.u16 	%r19, %rs4, 256;
+	or.b32  	%r44, %r19, %r43;
+	add.s64 	%rd28, %rd3, 2;
+	@%p4 bra 	BB18_6;
 
-	add.s64 	%rd204, %rd203, 1;
-	mov.u32 	%r277, 0;
-	mov.u32 	%r279, %r277;
+	ld.u8 	%r20, [%rd3+2];
+	shl.b32 	%r21, %r20, 16;
+	or.b32  	%r22, %r21, %r44;
+	ld.u8 	%r23, [%rd3+3];
+	shl.b32 	%r24, %r23, 24;
+	or.b32  	%r44, %r22, %r24;
+	add.s64 	%rd28, %rd3, 4;
 
-BB15_63:
-	ld.s8 	%r59, [%rd204];
-	setp.gt.s32	%p30, %r59, 114;
-	@%p30 bra 	BB15_67;
+BB18_6:
+	cvt.u32.u16	%r25, %rs1;
+	shl.b32 	%r26, %r25, 24;
+	shr.u32 	%r27, %r44, %r1;
+	or.b32  	%r28, %r27, %r26;
+	st.u32 	[%rd13+8], %r28;
+	ld.u8 	%rs5, [%rd4+5];
+	setp.eq.s16	%p5, %rs5, 0;
+	selp.b64	%rd9, 2, 4, %p5;
+	ld.u8 	%r29, [%rd28];
+	ld.u8 	%r30, [%rd28+1];
+	prmt.b32 	%r45, %r30, %r29, 30212;
+	@%p5 bra 	BB18_8;
 
-	setp.eq.s32	%p33, %r59, 42;
-	@%p33 bra 	BB15_70;
-	bra.uni 	BB15_65;
+	ld.u8 	%r31, [%rd28+2];
+	shl.b32 	%r32, %r31, 16;
+	or.b32  	%r33, %r32, %r45;
+	ld.u8 	%r34, [%rd28+3];
+	shl.b32 	%r35, %r34, 24;
+	or.b32  	%r45, %r33, %r35;
 
-BB15_70:
-	add.s32 	%r279, %r279, 4;
-	bra.uni 	BB15_72;
+BB18_8:
+	cvt.s64.s32	%rd19, %r45;
+	ld.u64 	%rd20, [%rd4+-627];
+	add.s64 	%rd21, %rd20, %rd19;
+	st.u64 	[%rd13+16], %rd21;
+	ld.u8 	%rs6, [%rd4+5];
+	setp.eq.s16	%p6, %rs6, 0;
+	add.s64 	%rd10, %rd28, %rd9;
+	ld.u8 	%r36, [%rd10];
+	ld.u8 	%r37, [%rd10+1];
+	prmt.b32 	%r46, %r37, %r36, 30212;
+	@%p6 bra 	BB18_10;
 
-BB15_67:
-	setp.eq.s32	%p31, %r59, 120;
-	@%p31 bra 	BB15_72;
+	ld.u8 	%r38, [%rd10+2];
+	shl.b32 	%r39, %r38, 16;
+	or.b32  	%r40, %r39, %r46;
+	ld.u8 	%r41, [%rd10+3];
+	shl.b32 	%r42, %r41, 24;
+	or.b32  	%r46, %r40, %r42;
 
-	setp.ne.s32	%p32, %r59, 115;
-	@%p32 bra 	BB15_71;
+BB18_10:
+	add.s64 	%rd22, %rd9, %rd9;
+	add.s64 	%rd23, %rd28, %rd22;
+	cvt.s64.s32	%rd24, %r46;
+	ld.u64 	%rd25, [%rd4+-627];
+	add.s64 	%rd26, %rd25, %rd24;
+	st.u64 	[%rd13+24], %rd26;
+	st.u64 	[%rd12], %rd23;
+	ret;
+}
 
-	add.s32 	%r279, %r279, 2;
-	bra.uni 	BB15_72;
+	// .globl	_Z18TypeDefTableReaderP10tMetaData_P5tRVA_PPhPvii
+.visible .func _Z18TypeDefTableReaderP10tMetaData_P5tRVA_PPhPvii(
+	.param .b64 _Z18TypeDefTableReaderP10tMetaData_P5tRVA_PPhPvii_param_0,
+	.param .b64 _Z18TypeDefTableReaderP10tMetaData_P5tRVA_PPhPvii_param_1,
+	.param .b64 _Z18TypeDefTableReaderP10tMetaData_P5tRVA_PPhPvii_param_2,
+	.param .b64 _Z18TypeDefTableReaderP10tMetaData_P5tRVA_PPhPvii_param_3,
+	.param .b32 _Z18TypeDefTableReaderP10tMetaData_P5tRVA_PPhPvii_param_4,
+	.param .b32 _Z18TypeDefTableReaderP10tMetaData_P5tRVA_PPhPvii_param_5
+)
+{
+	.reg .pred 	%p<10>;
+	.reg .b16 	%rs<8>;
+	.reg .b32 	%r<86>;
+	.reg .b64 	%rd<41>;
 
-BB15_65:
-	setp.eq.s32	%p34, %r59, 99;
-	@%p34 bra 	BB15_66;
-	bra.uni 	BB15_71;
 
-BB15_66:
-	add.s32 	%r279, %r279, 1;
-	bra.uni 	BB15_72;
+	ld.param.u64 	%rd22, [_Z18TypeDefTableReaderP10tMetaData_P5tRVA_PPhPvii_param_0];
+	ld.param.u64 	%rd23, [_Z18TypeDefTableReaderP10tMetaData_P5tRVA_PPhPvii_param_2];
+	ld.param.u64 	%rd24, [_Z18TypeDefTableReaderP10tMetaData_P5tRVA_PPhPvii_param_3];
+	ld.param.u32 	%r20, [_Z18TypeDefTableReaderP10tMetaData_P5tRVA_PPhPvii_param_4];
+	ld.param.u32 	%r21, [_Z18TypeDefTableReaderP10tMetaData_P5tRVA_PPhPvii_param_5];
+	mov.u64 	%rd37, 0;
+	mov.pred 	%p1, 0;
+	@%p1 bra 	BB19_2;
 
-BB15_71:
-	mov.u64 	%rd147, $str46;
-	cvta.global.u64 	%rd148, %rd147;
+BB19_1:
+	add.s64 	%rd26, %rd24, %rd37;
+	mov.u16 	%rs2, 0;
+	st.u8 	[%rd26], %rs2;
+	add.s64 	%rd37, %rd37, 1;
+	setp.lt.u64	%p2, %rd37, 232;
+	@%p2 bra 	BB19_1;
+
+BB19_2:
+	ld.u64 	%rd3, [%rd23];
+	ld.u8 	%r22, [%rd3];
+	ld.u8 	%r23, [%rd3+1];
+	prmt.b32 	%r24, %r23, %r22, 30212;
+	ld.u8 	%r25, [%rd3+2];
+	prmt.b32 	%r26, %r25, %r24, 28756;
+	ld.u8 	%r27, [%rd3+3];
+	prmt.b32 	%r28, %r27, %r26, 1620;
+	st.u32 	[%rd24+16], %r28;
+	add.s64 	%rd5, %rd22, 632;
+	ld.u8 	%rs3, [%rd22+632];
+	setp.eq.s16	%p3, %rs3, 0;
+	selp.b64	%rd6, 2, 4, %p3;
+	ld.u8 	%r29, [%rd3+4];
+	ld.u8 	%r30, [%rd3+5];
+	prmt.b32 	%r80, %r30, %r29, 30212;
+	@%p3 bra 	BB19_4;
+
+	ld.u8 	%r31, [%rd3+6];
+	shl.b32 	%r32, %r31, 16;
+	or.b32  	%r33, %r32, %r80;
+	ld.u8 	%r34, [%rd3+7];
+	shl.b32 	%r35, %r34, 24;
+	or.b32  	%r80, %r33, %r35;
+
+BB19_4:
+	add.s64 	%rd7, %rd6, 4;
+	add.s64 	%rd8, %rd3, %rd7;
+	cvt.s64.s32	%rd27, %r80;
+	ld.u64 	%rd28, [%rd5+-632];
+	add.s64 	%rd29, %rd28, %rd27;
+	st.u64 	[%rd24+24], %rd29;
+	ld.u8 	%rs4, [%rd5];
+	setp.eq.s16	%p4, %rs4, 0;
+	ld.u8 	%r36, [%rd8];
+	ld.u8 	%r37, [%rd8+1];
+	prmt.b32 	%r81, %r37, %r36, 30212;
+	@%p4 bra 	BB19_6;
+
+	ld.u8 	%r38, [%rd8+2];
+	shl.b32 	%r39, %r38, 16;
+	or.b32  	%r40, %r39, %r81;
+	ld.u8 	%r41, [%rd8+3];
+	shl.b32 	%r42, %r41, 24;
+	or.b32  	%r81, %r40, %r42;
+
+BB19_6:
+	add.s64 	%rd9, %rd7, %rd6;
+	add.s64 	%rd10, %rd3, %rd9;
+	cvt.s64.s32	%rd30, %r81;
+	ld.u64 	%rd31, [%rd5+-632];
+	add.s64 	%rd32, %rd31, %rd30;
+	st.u64 	[%rd24+32], %rd32;
+	ld.global.u8 	%r7, [__nv_static_29__16_MetaData_cpp1_ii_286a6e27_codedTagBits];
+	ld.u8 	%r82, [%rd10];
+	mov.u32 	%r43, 1;
+	shl.b32 	%r44, %r43, %r7;
+	add.s32 	%r45, %r44, 255;
+	and.b32  	%r46, %r45, %r82;
+	cvt.u64.u32	%rd33, %r46;
+	ld.global.u64 	%rd34, [__nv_static_29__16_MetaData_cpp1_ii_286a6e27_codedTags];
+	add.s64 	%rd35, %rd34, %rd33;
+	ld.u8 	%rs1, [%rd35];
+	setp.lt.u16	%p5, %rs1, 49;
+	@%p5 bra 	BB19_8;
+
 	// Callseq Start 7
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
-	.param .b64 param0;
-	st.param.b64	[param0+0], %rd148;
-	.param .align 8 .b8 param1[4];
-	st.param.b32	[param1+0], %r59;
+	.param .b32 param0;
+	st.param.b32	[param0+0], %r43;
 	call.uni 
-	_Z5CrashPKcz, 
+	_Z7gpuexiti, 
 	(
-	param0, 
-	param1
+	param0
 	);
 	
 	//{
 	}// Callseq End 7
+	ld.u8 	%r82, [%rd10];
 
-BB15_72:
-	add.s64 	%rd204, %rd204, 2;
-	add.s32 	%r277, %r277, 2;
-	setp.lt.s32	%p35, %r277, %r55;
-	@%p35 bra 	BB15_63;
+BB19_8:
+	ld.u8 	%rs5, [%rd5+-16];
+	setp.eq.s16	%p6, %rs5, 0;
+	ld.u8 	%rs6, [%rd10+1];
+	mul.wide.u16 	%r48, %rs6, 256;
+	or.b32  	%r83, %r48, %r82;
+	add.s64 	%rd38, %rd9, 2;
+	@%p6 bra 	BB19_10;
 
-BB15_73:
-	st.global.u8 	[%rd22], %r279;
-	bra.uni 	BB15_74;
+	ld.u8 	%r49, [%rd10+2];
+	shl.b32 	%r50, %r49, 16;
+	or.b32  	%r51, %r50, %r83;
+	ld.u8 	%r52, [%rd10+3];
+	shl.b32 	%r53, %r52, 24;
+	or.b32  	%r83, %r51, %r53;
+	add.s64 	%rd38, %rd9, 4;
 
-BB15_60:
-	cvt.u32.u16	%r279, %rs8;
+BB19_10:
+	cvt.u32.u16	%r54, %rs1;
+	shl.b32 	%r55, %r54, 24;
+	shr.u32 	%r56, %r83, %r7;
+	or.b32  	%r57, %r56, %r55;
+	st.u32 	[%rd24+40], %r57;
+	ld.u32 	%r58, [%rd5+-576];
+	setp.lt.u32	%p7, %r58, 65536;
+	add.s64 	%rd14, %rd3, %rd38;
+	ld.u8 	%r59, [%rd14];
+	ld.u8 	%r60, [%rd14+1];
+	prmt.b32 	%r84, %r60, %r59, 30212;
+	add.s64 	%rd39, %rd38, 2;
+	@%p7 bra 	BB19_12;
 
-BB15_74:
-	mul.lo.s32 	%r172, %r279, %r276;
-	cvt.s64.s32	%rd149, %r172;
+	ld.u8 	%r61, [%rd14+2];
+	shl.b32 	%r62, %r61, 16;
+	or.b32  	%r63, %r62, %r84;
+	ld.u8 	%r64, [%rd14+3];
+	shl.b32 	%r65, %r64, 24;
+	or.b32  	%r84, %r63, %r65;
+	add.s64 	%rd39, %rd38, 4;
+
+BB19_12:
+	or.b32  	%r66, %r84, 67108864;
+	st.u32 	[%rd24+44], %r66;
+	ld.u32 	%r67, [%rd5+-568];
+	setp.lt.u32	%p8, %r67, 65536;
+	add.s64 	%rd18, %rd3, %rd39;
+	ld.u8 	%r68, [%rd18];
+	ld.u8 	%r69, [%rd18+1];
+	prmt.b32 	%r85, %r69, %r68, 30212;
+	add.s64 	%rd40, %rd39, 2;
+	@%p8 bra 	BB19_14;
+
+	ld.u8 	%r70, [%rd18+2];
+	shl.b32 	%r71, %r70, 16;
+	or.b32  	%r72, %r71, %r85;
+	ld.u8 	%r73, [%rd18+3];
+	shl.b32 	%r74, %r73, 24;
+	or.b32  	%r85, %r72, %r74;
+	add.s64 	%rd40, %rd39, 4;
+
+BB19_14:
+	or.b32  	%r75, %r85, 100663296;
+	st.u32 	[%rd24+48], %r75;
+	add.s32 	%r76, %r21, -1;
+	setp.eq.s32	%p9, %r76, %r20;
+	selp.u16	%rs7, 1, 0, %p9;
+	add.s32 	%r77, %r20, 1;
+	and.b32  	%r78, %r77, 16777215;
+	or.b32  	%r79, %r78, 33554432;
+	st.u32 	[%rd24+136], %r79;
+	st.u8 	[%rd24+53], %rs7;
+	st.u64 	[%rd24+8], %rd22;
+	add.s64 	%rd36, %rd3, %rd40;
+	st.u64 	[%rd23], %rd36;
+	ret;
+}
+
+	// .globl	_Z19FieldPtrTableReaderP10tMetaData_P5tRVA_PPhPvii
+.visible .func _Z19FieldPtrTableReaderP10tMetaData_P5tRVA_PPhPvii(
+	.param .b64 _Z19FieldPtrTableReaderP10tMetaData_P5tRVA_PPhPvii_param_0,
+	.param .b64 _Z19FieldPtrTableReaderP10tMetaData_P5tRVA_PPhPvii_param_1,
+	.param .b64 _Z19FieldPtrTableReaderP10tMetaData_P5tRVA_PPhPvii_param_2,
+	.param .b64 _Z19FieldPtrTableReaderP10tMetaData_P5tRVA_PPhPvii_param_3,
+	.param .b32 _Z19FieldPtrTableReaderP10tMetaData_P5tRVA_PPhPvii_param_4,
+	.param .b32 _Z19FieldPtrTableReaderP10tMetaData_P5tRVA_PPhPvii_param_5
+)
+{
+	.reg .pred 	%p<3>;
+	.reg .b16 	%rs<2>;
+	.reg .b64 	%rd<7>;
+
+
+	ld.param.u64 	%rd3, [_Z19FieldPtrTableReaderP10tMetaData_P5tRVA_PPhPvii_param_3];
+	mov.u64 	%rd6, 0;
+	mov.pred 	%p1, 0;
+	@%p1 bra 	BB20_2;
+
+BB20_1:
+	add.s64 	%rd5, %rd3, %rd6;
+	mov.u16 	%rs1, 0;
+	st.u8 	[%rd5], %rs1;
+	add.s64 	%rd6, %rd6, 1;
+	setp.lt.u64	%p2, %rd6, 232;
+	@%p2 bra 	BB20_1;
+
+BB20_2:
+	ret;
+}
+
+	// .globl	_Z19FieldDefTableReaderP10tMetaData_P5tRVA_PPhPvii
+.visible .func _Z19FieldDefTableReaderP10tMetaData_P5tRVA_PPhPvii(
+	.param .b64 _Z19FieldDefTableReaderP10tMetaData_P5tRVA_PPhPvii_param_0,
+	.param .b64 _Z19FieldDefTableReaderP10tMetaData_P5tRVA_PPhPvii_param_1,
+	.param .b64 _Z19FieldDefTableReaderP10tMetaData_P5tRVA_PPhPvii_param_2,
+	.param .b64 _Z19FieldDefTableReaderP10tMetaData_P5tRVA_PPhPvii_param_3,
+	.param .b32 _Z19FieldDefTableReaderP10tMetaData_P5tRVA_PPhPvii_param_4,
+	.param .b32 _Z19FieldDefTableReaderP10tMetaData_P5tRVA_PPhPvii_param_5
+)
+{
+	.reg .pred 	%p<5>;
+	.reg .b16 	%rs<4>;
+	.reg .b32 	%r<30>;
+	.reg .b64 	%rd<23>;
+
+
+	ld.param.u64 	%rd8, [_Z19FieldDefTableReaderP10tMetaData_P5tRVA_PPhPvii_param_0];
+	ld.param.u64 	%rd9, [_Z19FieldDefTableReaderP10tMetaData_P5tRVA_PPhPvii_param_2];
+	ld.param.u64 	%rd10, [_Z19FieldDefTableReaderP10tMetaData_P5tRVA_PPhPvii_param_3];
+	ld.param.u32 	%r7, [_Z19FieldDefTableReaderP10tMetaData_P5tRVA_PPhPvii_param_4];
+	mov.u64 	%rd22, 0;
+	mov.pred 	%p2, 0;
+	@%p2 bra 	BB21_2;
+
+BB21_1:
+	add.s64 	%rd12, %rd10, %rd22;
+	mov.u16 	%rs1, 0;
+	st.u8 	[%rd12], %rs1;
+	add.s64 	%rd22, %rd22, 1;
+	setp.lt.u64	%p3, %rd22, 80;
+	@%p3 bra 	BB21_1;
+
+BB21_2:
+	ld.u64 	%rd3, [%rd9];
+	ld.u8 	%r8, [%rd3];
+	ld.u8 	%r9, [%rd3+1];
+	prmt.b32 	%r10, %r9, %r8, 30212;
+	st.u16 	[%rd10+16], %r10;
+	add.s64 	%rd5, %rd8, 632;
+	ld.u8 	%rs2, [%rd8+632];
+	setp.eq.s16	%p4, %rs2, 0;
+	selp.b64	%rd6, 4, 6, %p4;
+	ld.u8 	%r11, [%rd3+2];
+	ld.u8 	%r12, [%rd3+3];
+	prmt.b32 	%r28, %r12, %r11, 30212;
+	@%p4 bra 	BB21_4;
+
+	ld.u8 	%r13, [%rd3+4];
+	shl.b32 	%r14, %r13, 16;
+	or.b32  	%r15, %r14, %r28;
+	ld.u8 	%r16, [%rd3+5];
+	shl.b32 	%r17, %r16, 24;
+	or.b32  	%r28, %r15, %r17;
+
+BB21_4:
+	cvt.s64.s32	%rd13, %r28;
+	ld.u64 	%rd14, [%rd5+-632];
+	add.s64 	%rd15, %rd14, %rd13;
+	st.u64 	[%rd10+24], %rd15;
+	ld.u8 	%rs3, [%rd5+1];
+	setp.eq.s16	%p1, %rs3, 0;
+	add.s64 	%rd7, %rd3, %rd6;
+	ld.u8 	%r18, [%rd7];
+	ld.u8 	%r19, [%rd7+1];
+	prmt.b32 	%r29, %r19, %r18, 30212;
+	@%p1 bra 	BB21_6;
+
+	ld.u8 	%r20, [%rd7+2];
+	shl.b32 	%r21, %r20, 16;
+	or.b32  	%r22, %r21, %r29;
+	ld.u8 	%r23, [%rd7+3];
+	shl.b32 	%r24, %r23, 24;
+	or.b32  	%r29, %r22, %r24;
+
+BB21_6:
+	selp.b64	%rd16, 2, 4, %p1;
+	add.s64 	%rd17, %rd16, %rd6;
+	add.s64 	%rd18, %rd3, %rd17;
+	cvt.s64.s32	%rd19, %r29;
+	ld.u64 	%rd20, [%rd5+-624];
+	add.s64 	%rd21, %rd20, %rd19;
+	st.u64 	[%rd10+32], %rd21;
+	st.u64 	[%rd10+8], %rd8;
+	add.s32 	%r25, %r7, 1;
+	and.b32  	%r26, %r25, 16777215;
+	or.b32  	%r27, %r26, 67108864;
+	st.u32 	[%rd10+64], %r27;
+	st.u64 	[%rd9], %rd18;
+	ret;
+}
+
+	// .globl	_Z20MethodDefTableReaderP10tMetaData_P5tRVA_PPhPvii
+.visible .func _Z20MethodDefTableReaderP10tMetaData_P5tRVA_PPhPvii(
+	.param .b64 _Z20MethodDefTableReaderP10tMetaData_P5tRVA_PPhPvii_param_0,
+	.param .b64 _Z20MethodDefTableReaderP10tMetaData_P5tRVA_PPhPvii_param_1,
+	.param .b64 _Z20MethodDefTableReaderP10tMetaData_P5tRVA_PPhPvii_param_2,
+	.param .b64 _Z20MethodDefTableReaderP10tMetaData_P5tRVA_PPhPvii_param_3,
+	.param .b32 _Z20MethodDefTableReaderP10tMetaData_P5tRVA_PPhPvii_param_4,
+	.param .b32 _Z20MethodDefTableReaderP10tMetaData_P5tRVA_PPhPvii_param_5
+)
+{
+	.reg .pred 	%p<6>;
+	.reg .b16 	%rs<4>;
+	.reg .b32 	%r<53>;
+	.reg .b64 	%rd<30>;
+
+
+	ld.param.u64 	%rd13, [_Z20MethodDefTableReaderP10tMetaData_P5tRVA_PPhPvii_param_0];
+	ld.param.u64 	%rd14, [_Z20MethodDefTableReaderP10tMetaData_P5tRVA_PPhPvii_param_1];
+	ld.param.u64 	%rd15, [_Z20MethodDefTableReaderP10tMetaData_P5tRVA_PPhPvii_param_2];
+	ld.param.u64 	%rd16, [_Z20MethodDefTableReaderP10tMetaData_P5tRVA_PPhPvii_param_3];
+	ld.param.u32 	%r10, [_Z20MethodDefTableReaderP10tMetaData_P5tRVA_PPhPvii_param_4];
+	mov.u64 	%rd28, 0;
+	mov.pred 	%p2, 0;
+	@%p2 bra 	BB22_2;
+
+BB22_1:
+	add.s64 	%rd18, %rd16, %rd28;
+	mov.u16 	%rs1, 0;
+	st.u8 	[%rd18], %rs1;
+	add.s64 	%rd28, %rd28, 1;
+	setp.lt.u64	%p3, %rd28, 128;
+	@%p3 bra 	BB22_1;
+
+BB22_2:
+	ld.u64 	%rd3, [%rd15];
+	st.u64 	[%rd16+8], %rd13;
+	ld.u8 	%r11, [%rd3];
+	ld.u8 	%r12, [%rd3+1];
+	prmt.b32 	%r13, %r12, %r11, 30212;
+	ld.u8 	%r14, [%rd3+2];
+	prmt.b32 	%r15, %r14, %r13, 28756;
+	ld.u8 	%r16, [%rd3+3];
+	prmt.b32 	%r17, %r16, %r15, 1620;
 	// Callseq Start 8
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
 	.param .b64 param0;
-	st.param.b64	[param0+0], %rd149;
+	st.param.b64	[param0+0], %rd14;
+	.param .b32 param1;
+	st.param.b32	[param1+0], %r17;
 	.param .b64 retval0;
 	call.uni (retval0), 
-	malloc, 
+	_Z12RVA_FindDataP5tRVA_j, 
 	(
-	param0
+	param0, 
+	param1
 	);
-	ld.param.b64	%rd26, [retval0+0];
+	ld.param.b64	%rd19, [retval0+0];
 	
 	//{
 	}// Callseq End 8
-	setp.lt.s32	%p36, %r276, 1;
-	@%p36 bra 	BB15_136;
+	st.u64 	[%rd16+16], %rd19;
+	ld.u8 	%r18, [%rd3+4];
+	ld.u8 	%r19, [%rd3+5];
+	prmt.b32 	%r20, %r19, %r18, 30212;
+	st.u16 	[%rd16+24], %r20;
+	ld.u8 	%r21, [%rd3+6];
+	ld.u8 	%r22, [%rd3+7];
+	prmt.b32 	%r23, %r22, %r21, 30212;
+	st.u16 	[%rd16+26], %r23;
+	add.s64 	%rd5, %rd13, 632;
+	ld.u8 	%rs2, [%rd13+632];
+	setp.eq.s16	%p4, %rs2, 0;
+	selp.b64	%rd6, 10, 12, %p4;
+	ld.u8 	%r24, [%rd3+8];
+	ld.u8 	%r25, [%rd3+9];
+	prmt.b32 	%r50, %r25, %r24, 30212;
+	@%p4 bra 	BB22_4;
 
-	mov.u32 	%r283, 0;
-	mov.u64 	%rd219, %rd26;
+	ld.u8 	%r26, [%rd3+10];
+	shl.b32 	%r27, %r26, 16;
+	or.b32  	%r28, %r27, %r50;
+	ld.u8 	%r29, [%rd3+11];
+	shl.b32 	%r30, %r29, 24;
+	or.b32  	%r50, %r28, %r30;
 
-BB15_76:
-	setp.lt.s32	%p37, %r55, 1;
-	@%p37 bra 	BB15_135;
+BB22_4:
+	cvt.s64.s32	%rd20, %r50;
+	ld.u64 	%rd21, [%rd5+-632];
+	add.s64 	%rd22, %rd21, %rd20;
+	st.u64 	[%rd16+32], %rd22;
+	ld.u8 	%rs3, [%rd5+1];
+	setp.eq.s16	%p1, %rs3, 0;
+	add.s64 	%rd7, %rd3, %rd6;
+	ld.u8 	%r31, [%rd7];
+	ld.u8 	%r32, [%rd7+1];
+	prmt.b32 	%r51, %r32, %r31, 30212;
+	@%p1 bra 	BB22_6;
 
-	add.s32 	%r243, %r276, -1;
-	shl.b32 	%r242, %r275, 24;
-	setp.eq.s32	%p38, %r283, %r243;
-	selp.u32	%r72, 1, 0, %p38;
-	mov.u32 	%r285, 0;
-	mov.u64 	%rd207, %rd203;
-	bra.uni 	BB15_78;
+	ld.u8 	%r33, [%rd7+2];
+	shl.b32 	%r34, %r33, 16;
+	or.b32  	%r35, %r34, %r51;
+	ld.u8 	%r36, [%rd7+3];
+	shl.b32 	%r37, %r36, 24;
+	or.b32  	%r51, %r35, %r37;
 
-BB15_113:
-	ld.s8 	%r206, [%rd218+2];
-	mul.wide.s32 	%rd169, %r206, 65536;
-	or.b64  	%rd170, %rd169, %rd215;
-	ld.u8 	%r207, [%rd218+3];
-	mul.wide.u32 	%rd171, %r207, 16777216;
-	or.b64  	%rd215, %rd170, %rd171;
-	add.s64 	%rd218, %rd218, 4;
+BB22_6:
+	selp.b64	%rd23, 2, 4, %p1;
+	add.s64 	%rd8, %rd23, %rd6;
+	add.s64 	%rd9, %rd3, %rd8;
+	cvt.s64.s32	%rd24, %r51;
+	ld.u64 	%rd25, [%rd5+-624];
+	add.s64 	%rd26, %rd25, %rd24;
+	st.u64 	[%rd16+40], %rd26;
+	ld.u32 	%r38, [%rd5+-560];
+	setp.lt.u32	%p5, %r38, 65536;
+	ld.u8 	%r39, [%rd9];
+	ld.u8 	%r40, [%rd9+1];
+	prmt.b32 	%r52, %r40, %r39, 30212;
+	add.s64 	%rd29, %rd8, 2;
+	@%p5 bra 	BB22_8;
 
-BB15_114:
-	ld.u64 	%rd172, [%rd1+-624];
-	add.s64 	%rd173, %rd172, %rd215;
-	cvt.u32.u64	%r288, %rd173;
-	bra.uni 	BB15_125;
+	ld.u8 	%r41, [%rd9+2];
+	shl.b32 	%r42, %r41, 16;
+	or.b32  	%r43, %r42, %r52;
+	ld.u8 	%r44, [%rd9+3];
+	shl.b32 	%r45, %r44, 24;
+	or.b32  	%r52, %r43, %r45;
+	add.s64 	%rd29, %rd8, 4;
 
-BB15_109:
-	ld.s8 	%r203, [%rd218+2];
-	mul.wide.s32 	%rd160, %r203, 65536;
-	or.b64  	%rd161, %rd160, %rd213;
-	ld.u8 	%r204, [%rd218+3];
-	mul.wide.u32 	%rd162, %r204, 16777216;
-	or.b64  	%rd213, %rd161, %rd162;
-	add.s64 	%rd218, %rd218, 4;
+BB22_8:
+	or.b32  	%r46, %r52, 134217728;
+	st.u32 	[%rd16+48], %r46;
+	add.s32 	%r47, %r10, 1;
+	and.b32  	%r48, %r47, 16777215;
+	or.b32  	%r49, %r48, 100663296;
+	st.u32 	[%rd16+104], %r49;
+	add.s64 	%rd27, %rd3, %rd29;
+	st.u64 	[%rd15], %rd27;
+	ret;
+}
 
-BB15_110:
-	shl.b64 	%rd163, %rd213, 4;
-	ld.u64 	%rd164, [%rd1+-600];
-	add.s64 	%rd165, %rd163, %rd164;
-	add.s64 	%rd166, %rd165, 4294967280;
-	cvt.u32.u64	%r288, %rd166;
-	bra.uni 	BB15_125;
+	// .globl	_Z16ParamTableReaderP10tMetaData_P5tRVA_PPhPvii
+.visible .func _Z16ParamTableReaderP10tMetaData_P5tRVA_PPhPvii(
+	.param .b64 _Z16ParamTableReaderP10tMetaData_P5tRVA_PPhPvii_param_0,
+	.param .b64 _Z16ParamTableReaderP10tMetaData_P5tRVA_PPhPvii_param_1,
+	.param .b64 _Z16ParamTableReaderP10tMetaData_P5tRVA_PPhPvii_param_2,
+	.param .b64 _Z16ParamTableReaderP10tMetaData_P5tRVA_PPhPvii_param_3,
+	.param .b32 _Z16ParamTableReaderP10tMetaData_P5tRVA_PPhPvii_param_4,
+	.param .b32 _Z16ParamTableReaderP10tMetaData_P5tRVA_PPhPvii_param_5
+)
+{
+	.reg .pred 	%p<4>;
+	.reg .b16 	%rs<3>;
+	.reg .b32 	%r<18>;
+	.reg .b64 	%rd<17>;
 
-BB15_78:
-	ld.u8 	%rs9, [%rd207];
-	cvt.u32.u16	%r75, %rs9;
-	setp.lt.u16	%p39, %rs9, 48;
-	@%p39 bra 	BB15_121;
-	bra.uni 	BB15_79;
 
-BB15_121:
-	mul.wide.u32 	%rd187, %r75, 4;
-	add.s64 	%rd188, %rd72, %rd187;
-	ld.u32 	%r229, [%rd188+40];
-	setp.lt.u32	%p60, %r229, 65536;
-	ld.s8 	%r230, [%rd218];
-	ld.s8 	%rs29, [%rd218+1];
-	mul.wide.s16 	%r231, %rs29, 256;
-	or.b32  	%r287, %r231, %r230;
-	add.s64 	%rd58, %rd218, 2;
-	@%p60 bra 	BB15_122;
-	bra.uni 	BB15_123;
+	ld.param.u64 	%rd6, [_Z16ParamTableReaderP10tMetaData_P5tRVA_PPhPvii_param_0];
+	ld.param.u64 	%rd7, [_Z16ParamTableReaderP10tMetaData_P5tRVA_PPhPvii_param_2];
+	ld.param.u64 	%rd8, [_Z16ParamTableReaderP10tMetaData_P5tRVA_PPhPvii_param_3];
+	mov.u64 	%rd16, 0;
+	mov.pred 	%p2, 0;
+	@%p2 bra 	BB23_2;
 
-BB15_122:
-	mov.u64 	%rd218, %rd58;
-	bra.uni 	BB15_124;
+BB23_1:
+	add.s64 	%rd10, %rd8, %rd16;
+	mov.u16 	%rs1, 0;
+	st.u8 	[%rd10], %rs1;
+	add.s64 	%rd16, %rd16, 1;
+	setp.lt.u64	%p3, %rd16, 16;
+	@%p3 bra 	BB23_1;
 
-BB15_79:
-	mov.u32 	%r178, 0;
-	setp.gt.s32	%p40, %r75, 98;
-	@%p40 bra 	BB15_90;
+BB23_2:
+	ld.u64 	%rd3, [%rd7];
+	ld.u8 	%r4, [%rd3];
+	ld.u8 	%r5, [%rd3+1];
+	prmt.b32 	%r6, %r5, %r4, 30212;
+	st.u16 	[%rd8], %r6;
+	ld.u8 	%r7, [%rd3+2];
+	ld.u8 	%r8, [%rd3+3];
+	prmt.b32 	%r9, %r8, %r7, 30212;
+	st.u16 	[%rd8+2], %r9;
+	add.s64 	%rd5, %rd6, 632;
+	ld.u8 	%rs2, [%rd6+632];
+	setp.eq.s16	%p1, %rs2, 0;
+	ld.u8 	%r10, [%rd3+4];
+	ld.u8 	%r11, [%rd3+5];
+	prmt.b32 	%r17, %r11, %r10, 30212;
+	@%p1 bra 	BB23_4;
 
-	setp.gt.s32	%p48, %r75, 72;
-	@%p48 bra 	BB15_85;
+	ld.u8 	%r12, [%rd3+6];
+	shl.b32 	%r13, %r12, 16;
+	or.b32  	%r14, %r13, %r17;
+	ld.u8 	%r15, [%rd3+7];
+	shl.b32 	%r16, %r15, 24;
+	or.b32  	%r17, %r14, %r16;
 
-	add.s32 	%r179, %r75, -48;
-	setp.lt.u32	%p52, %r179, 13;
-	@%p52 bra 	BB15_115;
-	bra.uni 	BB15_82;
+BB23_4:
+	selp.b64	%rd11, 6, 8, %p1;
+	cvt.s64.s32	%rd12, %r17;
+	ld.u64 	%rd13, [%rd5+-632];
+	add.s64 	%rd14, %rd13, %rd12;
+	st.u64 	[%rd8+8], %rd14;
+	add.s64 	%rd15, %rd3, %rd11;
+	st.u64 	[%rd7], %rd15;
+	ret;
+}
 
-BB15_115:
-	mov.u64 	%rd197, __nv_static_29__16_MetaData_cpp1_ii_286a6e27_codedTagBits;
-	mov.u64 	%rd196, __nv_static_29__16_MetaData_cpp1_ii_286a6e27_codedTags;
-	mov.u32 	%r247, 1;
-	cvt.u64.u16	%rd174, %rs9;
-	cvt.s64.s8 	%rd175, %rd174;
-	add.s64 	%rd54, %rd175, -48;
-	cvt.s32.s8 	%r209, %r75;
-	mul.wide.s32 	%rd176, %r209, 8;
-	add.s64 	%rd178, %rd176, %rd196;
-	add.s64 	%rd180, %rd197, %rd54;
-	ld.global.u8 	%r83, [%rd180];
-	ld.u8 	%rs30, [%rd218];
-	cvt.u32.u16	%r210, %rs30;
-	shl.b32 	%r212, %r247, %r83;
-	add.s32 	%r213, %r212, 255;
-	and.b32  	%r214, %r210, %r213;
-	and.b32  	%r215, %r214, 255;
-	cvt.u64.u32	%rd181, %r215;
-	ld.global.u64 	%rd182, [%rd178+-384];
-	add.s64 	%rd183, %rd182, %rd181;
-	ld.u8 	%rs11, [%rd183];
-	setp.lt.u16	%p58, %rs11, 49;
-	@%p58 bra 	BB15_117;
+	// .globl	_Z24InterfaceImplTableReaderP10tMetaData_P5tRVA_PPhPvii
+.visible .func _Z24InterfaceImplTableReaderP10tMetaData_P5tRVA_PPhPvii(
+	.param .b64 _Z24InterfaceImplTableReaderP10tMetaData_P5tRVA_PPhPvii_param_0,
+	.param .b64 _Z24InterfaceImplTableReaderP10tMetaData_P5tRVA_PPhPvii_param_1,
+	.param .b64 _Z24InterfaceImplTableReaderP10tMetaData_P5tRVA_PPhPvii_param_2,
+	.param .b64 _Z24InterfaceImplTableReaderP10tMetaData_P5tRVA_PPhPvii_param_3,
+	.param .b32 _Z24InterfaceImplTableReaderP10tMetaData_P5tRVA_PPhPvii_param_4,
+	.param .b32 _Z24InterfaceImplTableReaderP10tMetaData_P5tRVA_PPhPvii_param_5
+)
+{
+	.reg .pred 	%p<4>;
+	.reg .b16 	%rs<4>;
+	.reg .b32 	%r<38>;
+	.reg .b64 	%rd<19>;
 
-	mov.u32 	%r248, 1;
+
+	ld.param.u64 	%rd12, [_Z24InterfaceImplTableReaderP10tMetaData_P5tRVA_PPhPvii_param_0];
+	ld.param.u64 	%rd10, [_Z24InterfaceImplTableReaderP10tMetaData_P5tRVA_PPhPvii_param_2];
+	ld.param.u64 	%rd11, [_Z24InterfaceImplTableReaderP10tMetaData_P5tRVA_PPhPvii_param_3];
+	mov.u64 	%rd13, 0;
+	st.u8 	[%rd11+7], %rd13;
+	st.u8 	[%rd11+6], %rd13;
+	st.u8 	[%rd11+5], %rd13;
+	st.u8 	[%rd11+4], %rd13;
+	st.u8 	[%rd11+3], %rd13;
+	st.u8 	[%rd11+2], %rd13;
+	st.u8 	[%rd11+1], %rd13;
+	st.u8 	[%rd11], %rd13;
+	add.s64 	%rd1, %rd12, 56;
+	ld.u32 	%r11, [%rd12+56];
+	setp.lt.u32	%p1, %r11, 65536;
+	ld.u64 	%rd2, [%rd10];
+	ld.u8 	%r12, [%rd2];
+	ld.u8 	%r13, [%rd2+1];
+	prmt.b32 	%r35, %r13, %r12, 30212;
+	add.s64 	%rd17, %rd2, 2;
+	@%p1 bra 	BB24_2;
+
+	ld.u8 	%r14, [%rd2+2];
+	shl.b32 	%r15, %r14, 16;
+	or.b32  	%r16, %r15, %r35;
+	ld.u8 	%r17, [%rd2+3];
+	shl.b32 	%r18, %r17, 24;
+	or.b32  	%r35, %r16, %r18;
+	add.s64 	%rd17, %rd2, 4;
+
+BB24_2:
+	or.b32  	%r19, %r35, 67108864;
+	st.u32 	[%rd11], %r19;
+	ld.global.u8 	%r4, [__nv_static_29__16_MetaData_cpp1_ii_286a6e27_codedTagBits];
+	ld.u8 	%r36, [%rd17];
+	mov.u32 	%r20, 1;
+	shl.b32 	%r21, %r20, %r4;
+	add.s32 	%r22, %r21, 255;
+	and.b32  	%r23, %r22, %r36;
+	cvt.u64.u32	%rd14, %r23;
+	ld.global.u64 	%rd15, [__nv_static_29__16_MetaData_cpp1_ii_286a6e27_codedTags];
+	add.s64 	%rd16, %rd15, %rd14;
+	ld.u8 	%rs1, [%rd16];
+	setp.lt.u16	%p2, %rs1, 49;
+	@%p2 bra 	BB24_4;
+
+	// Callseq Start 9
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b32 param0;
+	st.param.b32	[param0+0], %r20;
+	call.uni 
+	_Z7gpuexiti, 
+	(
+	param0
+	);
+	
+	//{
+	}// Callseq End 9
+	ld.u8 	%r36, [%rd17];
+
+BB24_4:
+	ld.u8 	%rs2, [%rd1+560];
+	setp.eq.s16	%p3, %rs2, 0;
+	ld.u8 	%rs3, [%rd17+1];
+	mul.wide.u16 	%r25, %rs3, 256;
+	or.b32  	%r37, %r25, %r36;
+	add.s64 	%rd18, %rd17, 2;
+	@%p3 bra 	BB24_6;
+
+	ld.u8 	%r26, [%rd17+2];
+	shl.b32 	%r27, %r26, 16;
+	or.b32  	%r28, %r27, %r37;
+	ld.u8 	%r29, [%rd17+3];
+	shl.b32 	%r30, %r29, 24;
+	or.b32  	%r37, %r28, %r30;
+	add.s64 	%rd18, %rd17, 4;
+
+BB24_6:
+	cvt.u32.u16	%r31, %rs1;
+	shl.b32 	%r32, %r31, 24;
+	shr.u32 	%r33, %r37, %r4;
+	or.b32  	%r34, %r33, %r32;
+	st.u32 	[%rd11+4], %r34;
+	st.u64 	[%rd10], %rd18;
+	ret;
+}
+
+	// .globl	_Z20MemberRefTableReaderP10tMetaData_P5tRVA_PPhPvii
+.visible .func _Z20MemberRefTableReaderP10tMetaData_P5tRVA_PPhPvii(
+	.param .b64 _Z20MemberRefTableReaderP10tMetaData_P5tRVA_PPhPvii_param_0,
+	.param .b64 _Z20MemberRefTableReaderP10tMetaData_P5tRVA_PPhPvii_param_1,
+	.param .b64 _Z20MemberRefTableReaderP10tMetaData_P5tRVA_PPhPvii_param_2,
+	.param .b64 _Z20MemberRefTableReaderP10tMetaData_P5tRVA_PPhPvii_param_3,
+	.param .b32 _Z20MemberRefTableReaderP10tMetaData_P5tRVA_PPhPvii_param_4,
+	.param .b32 _Z20MemberRefTableReaderP10tMetaData_P5tRVA_PPhPvii_param_5
+)
+{
+	.reg .pred 	%p<7>;
+	.reg .b16 	%rs<7>;
+	.reg .b32 	%r<47>;
+	.reg .b64 	%rd<30>;
+
+
+	ld.param.u64 	%rd11, [_Z20MemberRefTableReaderP10tMetaData_P5tRVA_PPhPvii_param_0];
+	ld.param.u64 	%rd12, [_Z20MemberRefTableReaderP10tMetaData_P5tRVA_PPhPvii_param_2];
+	ld.param.u64 	%rd13, [_Z20MemberRefTableReaderP10tMetaData_P5tRVA_PPhPvii_param_3];
+	mov.u64 	%rd28, 0;
+	mov.pred 	%p2, 0;
+	@%p2 bra 	BB25_2;
+
+BB25_1:
+	add.s64 	%rd15, %rd13, %rd28;
+	mov.u16 	%rs2, 0;
+	st.u8 	[%rd15], %rs2;
+	add.s64 	%rd28, %rd28, 1;
+	setp.lt.u64	%p3, %rd28, 32;
+	@%p3 bra 	BB25_1;
+
+BB25_2:
+	ld.global.u8 	%r1, [__nv_static_29__16_MetaData_cpp1_ii_286a6e27_codedTagBits+5];
+	ld.u64 	%rd3, [%rd12];
+	ld.u8 	%r43, [%rd3];
+	mov.u32 	%r14, 1;
+	shl.b32 	%r15, %r14, %r1;
+	add.s32 	%r16, %r15, 255;
+	and.b32  	%r17, %r16, %r43;
+	cvt.u64.u32	%rd16, %r17;
+	ld.global.u64 	%rd17, [__nv_static_29__16_MetaData_cpp1_ii_286a6e27_codedTags+40];
+	add.s64 	%rd18, %rd17, %rd16;
+	ld.u8 	%rs1, [%rd18];
+	setp.lt.u16	%p4, %rs1, 49;
+	@%p4 bra 	BB25_4;
+
 	// Callseq Start 10
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
 	.param .b32 param0;
-	st.param.b32	[param0+0], %r248;
+	st.param.b32	[param0+0], %r14;
 	call.uni 
 	_Z7gpuexiti, 
 	(
@@ -1300,162 +1655,1585 @@ BB15_115:
 	
 	//{
 	}// Callseq End 10
-	ld.u8 	%rs30, [%rd218];
+	ld.u8 	%r43, [%rd3];
 
-BB15_117:
-	add.s64 	%rd184, %rd72, %rd54;
-	ld.u8 	%rs27, [%rd184+616];
-	setp.eq.s16	%p59, %rs27, 0;
-	add.s64 	%rd55, %rd218, 2;
-	ld.s8 	%rs28, [%rd218+1];
-	mul.wide.s16 	%r217, %rs28, 256;
-	cvt.u32.u16	%r218, %rs30;
-	cvt.s32.s8 	%r219, %r218;
-	or.b32  	%r286, %r217, %r219;
-	@%p59 bra 	BB15_118;
-	bra.uni 	BB15_119;
+BB25_4:
+	add.s64 	%rd4, %rd11, 621;
+	ld.u8 	%rs3, [%rd11+621];
+	setp.eq.s16	%p5, %rs3, 0;
+	ld.u8 	%rs4, [%rd3+1];
+	mul.wide.u16 	%r19, %rs4, 256;
+	or.b32  	%r44, %r19, %r43;
+	add.s64 	%rd29, %rd3, 2;
+	@%p5 bra 	BB25_6;
 
-BB15_118:
-	mov.u64 	%rd218, %rd55;
-	bra.uni 	BB15_120;
+	ld.u8 	%r20, [%rd3+2];
+	shl.b32 	%r21, %r20, 16;
+	or.b32  	%r22, %r21, %r44;
+	ld.u8 	%r23, [%rd3+3];
+	shl.b32 	%r24, %r23, 24;
+	or.b32  	%r44, %r22, %r24;
+	add.s64 	%rd29, %rd3, 4;
 
-BB15_123:
-	ld.s8 	%r232, [%rd218+2];
-	ld.u8 	%r233, [%rd218+3];
-	shl.b32 	%r234, %r232, 16;
-	or.b32  	%r235, %r234, %r287;
-	shl.b32 	%r236, %r233, 24;
-	or.b32  	%r287, %r235, %r236;
-	add.s64 	%rd218, %rd218, 4;
+BB25_6:
+	cvt.u32.u16	%r25, %rs1;
+	shl.b32 	%r26, %r25, 24;
+	shr.u32 	%r27, %r44, %r1;
+	or.b32  	%r28, %r27, %r26;
+	st.u32 	[%rd13+8], %r28;
+	ld.u8 	%rs5, [%rd4+11];
+	setp.eq.s16	%p6, %rs5, 0;
+	selp.b64	%rd9, 2, 4, %p6;
+	ld.u8 	%r29, [%rd29];
+	ld.u8 	%r30, [%rd29+1];
+	prmt.b32 	%r45, %r30, %r29, 30212;
+	@%p6 bra 	BB25_8;
 
-BB15_124:
-	shl.b32 	%r237, %r75, 24;
-	or.b32  	%r288, %r287, %r237;
-	bra.uni 	BB15_125;
+	ld.u8 	%r31, [%rd29+2];
+	shl.b32 	%r32, %r31, 16;
+	or.b32  	%r33, %r32, %r45;
+	ld.u8 	%r34, [%rd29+3];
+	shl.b32 	%r35, %r34, 24;
+	or.b32  	%r45, %r33, %r35;
 
-BB15_90:
-	setp.gt.s32	%p41, %r75, 108;
-	@%p41 bra 	BB15_95;
+BB25_8:
+	cvt.s64.s32	%rd19, %r45;
+	ld.u64 	%rd20, [%rd4+-621];
+	add.s64 	%rd21, %rd20, %rd19;
+	st.u64 	[%rd13+16], %rd21;
+	ld.u8 	%rs6, [%rd4+12];
+	setp.eq.s16	%p1, %rs6, 0;
+	add.s64 	%rd10, %rd29, %rd9;
+	ld.u8 	%r36, [%rd10];
+	ld.u8 	%r37, [%rd10+1];
+	prmt.b32 	%r46, %r37, %r36, 30212;
+	@%p1 bra 	BB25_10;
 
-	setp.eq.s32	%p45, %r75, 99;
-	@%p45 bra 	BB15_102;
+	ld.u8 	%r38, [%rd10+2];
+	shl.b32 	%r39, %r38, 16;
+	or.b32  	%r40, %r39, %r46;
+	ld.u8 	%r41, [%rd10+3];
+	shl.b32 	%r42, %r41, 24;
+	or.b32  	%r46, %r40, %r42;
 
-	setp.eq.s32	%p46, %r75, 105;
-	@%p46 bra 	BB15_101;
-	bra.uni 	BB15_93;
+BB25_10:
+	selp.b64	%rd22, 2, 4, %p1;
+	add.s64 	%rd23, %rd22, %rd9;
+	add.s64 	%rd24, %rd29, %rd23;
+	cvt.s64.s32	%rd25, %r46;
+	ld.u64 	%rd26, [%rd4+-613];
+	add.s64 	%rd27, %rd26, %rd25;
+	st.u64 	[%rd13+24], %rd27;
+	st.u64 	[%rd12], %rd24;
+	ret;
+}
 
-BB15_101:
-	ld.s8 	%r182, [%rd218];
-	ld.s8 	%r183, [%rd218+2];
-	ld.u8 	%r184, [%rd218+3];
-	ld.s8 	%rs22, [%rd218+1];
-	mul.wide.s16 	%r185, %rs22, 256;
-	or.b32  	%r186, %r185, %r182;
-	shl.b32 	%r187, %r183, 16;
-	or.b32  	%r188, %r186, %r187;
-	shl.b32 	%r189, %r184, 24;
-	or.b32  	%r288, %r188, %r189;
-	add.s64 	%rd218, %rd218, 4;
-	bra.uni 	BB15_125;
+	// .globl	_Z19ConstantTableReaderP10tMetaData_P5tRVA_PPhPvii
+.visible .func _Z19ConstantTableReaderP10tMetaData_P5tRVA_PPhPvii(
+	.param .b64 _Z19ConstantTableReaderP10tMetaData_P5tRVA_PPhPvii_param_0,
+	.param .b64 _Z19ConstantTableReaderP10tMetaData_P5tRVA_PPhPvii_param_1,
+	.param .b64 _Z19ConstantTableReaderP10tMetaData_P5tRVA_PPhPvii_param_2,
+	.param .b64 _Z19ConstantTableReaderP10tMetaData_P5tRVA_PPhPvii_param_3,
+	.param .b32 _Z19ConstantTableReaderP10tMetaData_P5tRVA_PPhPvii_param_4,
+	.param .b32 _Z19ConstantTableReaderP10tMetaData_P5tRVA_PPhPvii_param_5
+)
+{
+	.reg .pred 	%p<6>;
+	.reg .b16 	%rs<7>;
+	.reg .b32 	%r<36>;
+	.reg .b64 	%rd<24>;
 
-BB15_85:
-	add.s32 	%r246, %r283, 1;
-	and.b32  	%r245, %r246, 16777215;
-	or.b32  	%r244, %r245, %r242;
-	setp.eq.s32	%p49, %r75, 73;
-	@%p49 bra 	BB15_86;
 
-	setp.eq.s32	%p50, %r75, 83;
-	@%p50 bra 	BB15_103;
-	bra.uni 	BB15_88;
+	ld.param.u64 	%rd9, [_Z19ConstantTableReaderP10tMetaData_P5tRVA_PPhPvii_param_0];
+	ld.param.u64 	%rd10, [_Z19ConstantTableReaderP10tMetaData_P5tRVA_PPhPvii_param_2];
+	ld.param.u64 	%rd11, [_Z19ConstantTableReaderP10tMetaData_P5tRVA_PPhPvii_param_3];
+	mov.u64 	%rd22, 0;
+	mov.pred 	%p2, 0;
+	@%p2 bra 	BB26_2;
 
-BB15_103:
-	ld.u8 	%rs24, [%rd1];
-	setp.eq.s16	%p55, %rs24, 0;
-	ld.s8 	%rd151, [%rd218];
-	add.s64 	%rd36, %rd218, 2;
-	ld.s8 	%r199, [%rd218+1];
-	mul.wide.s32 	%rd152, %r199, 256;
-	or.b64  	%rd211, %rd152, %rd151;
-	@%p55 bra 	BB15_104;
-	bra.uni 	BB15_105;
+BB26_1:
+	add.s64 	%rd13, %rd11, %rd22;
+	mov.u16 	%rs2, 0;
+	st.u8 	[%rd13], %rs2;
+	add.s64 	%rd22, %rd22, 1;
+	setp.lt.u64	%p3, %rd22, 16;
+	@%p3 bra 	BB26_1;
 
-BB15_104:
-	mov.u64 	%rd218, %rd36;
-	bra.uni 	BB15_106;
+BB26_2:
+	ld.u64 	%rd3, [%rd10];
+	ld.u8 	%rs3, [%rd3];
+	st.u8 	[%rd11], %rs3;
+	ld.global.u8 	%r1, [__nv_static_29__16_MetaData_cpp1_ii_286a6e27_codedTagBits+1];
+	ld.u8 	%r33, [%rd3+2];
+	mov.u32 	%r11, 1;
+	shl.b32 	%r12, %r11, %r1;
+	add.s32 	%r13, %r12, 255;
+	and.b32  	%r14, %r13, %r33;
+	cvt.u64.u32	%rd14, %r14;
+	ld.global.u64 	%rd15, [__nv_static_29__16_MetaData_cpp1_ii_286a6e27_codedTags+8];
+	add.s64 	%rd16, %rd15, %rd14;
+	ld.u8 	%rs1, [%rd16];
+	setp.lt.u16	%p4, %rs1, 49;
+	@%p4 bra 	BB26_4;
 
-BB15_95:
-	setp.eq.s32	%p42, %r75, 109;
-	@%p42 bra 	BB15_96;
+	// Callseq Start 11
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b32 param0;
+	st.param.b32	[param0+0], %r11;
+	call.uni 
+	_Z7gpuexiti, 
+	(
+	param0
+	);
+	
+	//{
+	}// Callseq End 11
+	ld.u8 	%r33, [%rd3+2];
 
-	setp.eq.s32	%p43, %r75, 120;
-	@%p43 bra 	BB15_98;
-	bra.uni 	BB15_99;
+BB26_4:
+	add.s64 	%rd4, %rd9, 617;
+	ld.u8 	%rs4, [%rd9+617];
+	setp.eq.s16	%p5, %rs4, 0;
+	ld.u8 	%rs5, [%rd3+3];
+	mul.wide.u16 	%r16, %rs5, 256;
+	or.b32  	%r34, %r16, %r33;
+	add.s64 	%rd23, %rd3, 4;
+	@%p5 bra 	BB26_6;
 
-BB15_98:
-	mov.u32 	%r288, %r178;
-	bra.uni 	BB15_125;
+	ld.u8 	%r17, [%rd3+4];
+	shl.b32 	%r18, %r17, 16;
+	or.b32  	%r19, %r18, %r34;
+	ld.u8 	%r20, [%rd3+5];
+	shl.b32 	%r21, %r20, 24;
+	or.b32  	%r34, %r19, %r21;
+	add.s64 	%rd23, %rd3, 6;
 
-BB15_119:
-	ld.s8 	%r220, [%rd218+2];
-	ld.u8 	%r221, [%rd218+3];
-	shl.b32 	%r222, %r220, 16;
-	or.b32  	%r223, %r222, %r286;
-	shl.b32 	%r224, %r221, 24;
-	or.b32  	%r286, %r223, %r224;
-	add.s64 	%rd218, %rd218, 4;
+BB26_6:
+	cvt.u32.u16	%r22, %rs1;
+	shl.b32 	%r23, %r22, 24;
+	shr.u32 	%r24, %r34, %r1;
+	or.b32  	%r25, %r24, %r23;
+	st.u32 	[%rd11+4], %r25;
+	ld.u8 	%rs6, [%rd4+16];
+	setp.eq.s16	%p1, %rs6, 0;
+	ld.u8 	%r26, [%rd23];
+	ld.u8 	%r27, [%rd23+1];
+	prmt.b32 	%r35, %r27, %r26, 30212;
+	@%p1 bra 	BB26_8;
 
-BB15_120:
-	cvt.u32.u16	%r225, %rs11;
-	shl.b32 	%r226, %r225, 24;
-	shr.u32 	%r227, %r286, %r83;
-	or.b32  	%r288, %r227, %r226;
-	bra.uni 	BB15_125;
+	ld.u8 	%r28, [%rd23+2];
+	shl.b32 	%r29, %r28, 16;
+	or.b32  	%r30, %r29, %r35;
+	ld.u8 	%r31, [%rd23+3];
+	shl.b32 	%r32, %r31, 24;
+	or.b32  	%r35, %r30, %r32;
 
-BB15_102:
-	ld.u8 	%r288, [%rd218];
-	add.s64 	%rd218, %rd218, 1;
-	bra.uni 	BB15_125;
+BB26_8:
+	selp.b64	%rd17, 2, 4, %p1;
+	cvt.s64.s32	%rd18, %r35;
+	ld.u64 	%rd19, [%rd4+-609];
+	add.s64 	%rd20, %rd19, %rd18;
+	st.u64 	[%rd11+8], %rd20;
+	add.s64 	%rd21, %rd23, %rd17;
+	st.u64 	[%rd10], %rd21;
+	ret;
+}
 
-BB15_93:
-	setp.eq.s32	%p47, %r75, 108;
-	@%p47 bra 	BB15_94;
-	bra.uni 	BB15_84;
+	// .globl	_Z26CustomAttributeTableReaderP10tMetaData_P5tRVA_PPhPvii
+.visible .func _Z26CustomAttributeTableReaderP10tMetaData_P5tRVA_PPhPvii(
+	.param .b64 _Z26CustomAttributeTableReaderP10tMetaData_P5tRVA_PPhPvii_param_0,
+	.param .b64 _Z26CustomAttributeTableReaderP10tMetaData_P5tRVA_PPhPvii_param_1,
+	.param .b64 _Z26CustomAttributeTableReaderP10tMetaData_P5tRVA_PPhPvii_param_2,
+	.param .b64 _Z26CustomAttributeTableReaderP10tMetaData_P5tRVA_PPhPvii_param_3,
+	.param .b32 _Z26CustomAttributeTableReaderP10tMetaData_P5tRVA_PPhPvii_param_4,
+	.param .b32 _Z26CustomAttributeTableReaderP10tMetaData_P5tRVA_PPhPvii_param_5
+)
+{
+	.reg .pred 	%p<8>;
+	.reg .b16 	%rs<9>;
+	.reg .b32 	%r<60>;
+	.reg .b64 	%rd<32>;
 
-BB15_94:
-	mov.u32 	%r288, %r72;
-	bra.uni 	BB15_125;
 
-BB15_86:
-	mov.u32 	%r288, %r244;
-	bra.uni 	BB15_125;
+	ld.param.u64 	%rd13, [_Z26CustomAttributeTableReaderP10tMetaData_P5tRVA_PPhPvii_param_0];
+	ld.param.u64 	%rd14, [_Z26CustomAttributeTableReaderP10tMetaData_P5tRVA_PPhPvii_param_2];
+	ld.param.u64 	%rd15, [_Z26CustomAttributeTableReaderP10tMetaData_P5tRVA_PPhPvii_param_3];
+	mov.u64 	%rd29, 0;
+	mov.pred 	%p2, 0;
+	@%p2 bra 	BB27_2;
 
-BB15_88:
-	setp.eq.s32	%p51, %r75, 94;
-	@%p51 bra 	BB15_89;
-	bra.uni 	BB15_84;
+BB27_1:
+	add.s64 	%rd17, %rd15, %rd29;
+	mov.u16 	%rs3, 0;
+	st.u8 	[%rd17], %rs3;
+	add.s64 	%rd29, %rd29, 1;
+	setp.lt.u64	%p3, %rd29, 16;
+	@%p3 bra 	BB27_1;
 
-BB15_89:
-	ld.param.u64 	%rd195, [_Z19MetaData_LoadTablesP10tMetaData_P5tRVA_Pvj_param_1];
-	ld.s8 	%r190, [%rd218];
-	ld.s8 	%r191, [%rd218+2];
-	ld.u8 	%r192, [%rd218+3];
-	ld.s8 	%rs23, [%rd218+1];
-	mul.wide.s16 	%r193, %rs23, 256;
-	or.b32  	%r194, %r193, %r190;
-	shl.b32 	%r195, %r191, 16;
-	or.b32  	%r196, %r194, %r195;
-	shl.b32 	%r197, %r192, 24;
-	or.b32  	%r198, %r196, %r197;
-	add.s64 	%rd218, %rd218, 4;
-	// Callseq Start 9
+BB27_2:
+	ld.global.u8 	%r1, [__nv_static_29__16_MetaData_cpp1_ii_286a6e27_codedTagBits+2];
+	ld.u64 	%rd3, [%rd14];
+	ld.u8 	%r55, [%rd3];
+	mov.u32 	%r18, 1;
+	shl.b32 	%r19, %r18, %r1;
+	add.s32 	%r20, %r19, 255;
+	and.b32  	%r21, %r20, %r55;
+	cvt.u64.u32	%rd18, %r21;
+	ld.global.u64 	%rd19, [__nv_static_29__16_MetaData_cpp1_ii_286a6e27_codedTags+16];
+	add.s64 	%rd20, %rd19, %rd18;
+	ld.u8 	%rs1, [%rd20];
+	setp.lt.u16	%p4, %rs1, 49;
+	@%p4 bra 	BB27_4;
+
+	// Callseq Start 12
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b32 param0;
+	st.param.b32	[param0+0], %r18;
+	call.uni 
+	_Z7gpuexiti, 
+	(
+	param0
+	);
+	
+	//{
+	}// Callseq End 12
+	ld.u8 	%r55, [%rd3];
+
+BB27_4:
+	add.s64 	%rd4, %rd13, 618;
+	ld.u8 	%rs4, [%rd13+618];
+	setp.eq.s16	%p5, %rs4, 0;
+	ld.u8 	%rs5, [%rd3+1];
+	mul.wide.u16 	%r23, %rs5, 256;
+	or.b32  	%r56, %r23, %r55;
+	add.s64 	%rd30, %rd3, 2;
+	@%p5 bra 	BB27_6;
+
+	ld.u8 	%r24, [%rd3+2];
+	shl.b32 	%r25, %r24, 16;
+	or.b32  	%r26, %r25, %r56;
+	ld.u8 	%r27, [%rd3+3];
+	shl.b32 	%r28, %r27, 24;
+	or.b32  	%r56, %r26, %r28;
+	add.s64 	%rd30, %rd3, 4;
+
+BB27_6:
+	cvt.u32.u16	%r29, %rs1;
+	shl.b32 	%r30, %r29, 24;
+	shr.u32 	%r31, %r56, %r1;
+	or.b32  	%r32, %r31, %r30;
+	st.u32 	[%rd15], %r32;
+	ld.global.u8 	%r8, [__nv_static_29__16_MetaData_cpp1_ii_286a6e27_codedTagBits+10];
+	ld.u8 	%r57, [%rd30];
+	shl.b32 	%r34, %r18, %r8;
+	add.s32 	%r35, %r34, 255;
+	and.b32  	%r36, %r35, %r57;
+	cvt.u64.u32	%rd21, %r36;
+	ld.global.u64 	%rd22, [__nv_static_29__16_MetaData_cpp1_ii_286a6e27_codedTags+80];
+	add.s64 	%rd23, %rd22, %rd21;
+	ld.u8 	%rs2, [%rd23];
+	setp.lt.u16	%p6, %rs2, 49;
+	@%p6 bra 	BB27_8;
+
+	// Callseq Start 13
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b32 param0;
+	st.param.b32	[param0+0], %r18;
+	call.uni 
+	_Z7gpuexiti, 
+	(
+	param0
+	);
+	
+	//{
+	}// Callseq End 13
+	ld.u8 	%r57, [%rd30];
+
+BB27_8:
+	ld.u8 	%rs6, [%rd4+8];
+	setp.eq.s16	%p7, %rs6, 0;
+	ld.u8 	%rs7, [%rd30+1];
+	mul.wide.u16 	%r38, %rs7, 256;
+	or.b32  	%r58, %r38, %r57;
+	add.s64 	%rd31, %rd30, 2;
+	@%p7 bra 	BB27_10;
+
+	ld.u8 	%r39, [%rd30+2];
+	shl.b32 	%r40, %r39, 16;
+	or.b32  	%r41, %r40, %r58;
+	ld.u8 	%r42, [%rd30+3];
+	shl.b32 	%r43, %r42, 24;
+	or.b32  	%r58, %r41, %r43;
+	add.s64 	%rd31, %rd30, 4;
+
+BB27_10:
+	cvt.u32.u16	%r44, %rs2;
+	shl.b32 	%r45, %r44, 24;
+	shr.u32 	%r46, %r58, %r8;
+	or.b32  	%r47, %r46, %r45;
+	st.u32 	[%rd15+4], %r47;
+	ld.u8 	%rs8, [%rd4+15];
+	setp.eq.s16	%p1, %rs8, 0;
+	ld.u8 	%r48, [%rd31];
+	ld.u8 	%r49, [%rd31+1];
+	prmt.b32 	%r59, %r49, %r48, 30212;
+	@%p1 bra 	BB27_12;
+
+	ld.u8 	%r50, [%rd31+2];
+	shl.b32 	%r51, %r50, 16;
+	or.b32  	%r52, %r51, %r59;
+	ld.u8 	%r53, [%rd31+3];
+	shl.b32 	%r54, %r53, 24;
+	or.b32  	%r59, %r52, %r54;
+
+BB27_12:
+	selp.b64	%rd24, 2, 4, %p1;
+	cvt.s64.s32	%rd25, %r59;
+	ld.u64 	%rd26, [%rd4+-610];
+	add.s64 	%rd27, %rd26, %rd25;
+	st.u64 	[%rd15+8], %rd27;
+	add.s64 	%rd28, %rd31, %rd24;
+	st.u64 	[%rd14], %rd28;
+	ret;
+}
+
+	// .globl	_Z23DeclSecurityTableReaderP10tMetaData_P5tRVA_PPhPvii
+.visible .func _Z23DeclSecurityTableReaderP10tMetaData_P5tRVA_PPhPvii(
+	.param .b64 _Z23DeclSecurityTableReaderP10tMetaData_P5tRVA_PPhPvii_param_0,
+	.param .b64 _Z23DeclSecurityTableReaderP10tMetaData_P5tRVA_PPhPvii_param_1,
+	.param .b64 _Z23DeclSecurityTableReaderP10tMetaData_P5tRVA_PPhPvii_param_2,
+	.param .b64 _Z23DeclSecurityTableReaderP10tMetaData_P5tRVA_PPhPvii_param_3,
+	.param .b32 _Z23DeclSecurityTableReaderP10tMetaData_P5tRVA_PPhPvii_param_4,
+	.param .b32 _Z23DeclSecurityTableReaderP10tMetaData_P5tRVA_PPhPvii_param_5
+)
+{
+	.reg .pred 	%p<6>;
+	.reg .b16 	%rs<6>;
+	.reg .b32 	%r<39>;
+	.reg .b64 	%rd<25>;
+
+
+	ld.param.u64 	%rd10, [_Z23DeclSecurityTableReaderP10tMetaData_P5tRVA_PPhPvii_param_0];
+	ld.param.u64 	%rd11, [_Z23DeclSecurityTableReaderP10tMetaData_P5tRVA_PPhPvii_param_2];
+	ld.param.u64 	%rd12, [_Z23DeclSecurityTableReaderP10tMetaData_P5tRVA_PPhPvii_param_3];
+	mov.u64 	%rd23, 0;
+	mov.pred 	%p2, 0;
+	@%p2 bra 	BB28_2;
+
+BB28_1:
+	add.s64 	%rd14, %rd12, %rd23;
+	mov.u16 	%rs2, 0;
+	st.u8 	[%rd14], %rs2;
+	add.s64 	%rd23, %rd23, 1;
+	setp.lt.u64	%p3, %rd23, 16;
+	@%p3 bra 	BB28_1;
+
+BB28_2:
+	ld.u64 	%rd3, [%rd11];
+	ld.u8 	%r11, [%rd3];
+	ld.u8 	%r12, [%rd3+1];
+	prmt.b32 	%r13, %r12, %r11, 30212;
+	st.u16 	[%rd12], %r13;
+	ld.global.u8 	%r1, [__nv_static_29__16_MetaData_cpp1_ii_286a6e27_codedTagBits+4];
+	ld.u8 	%r36, [%rd3+2];
+	mov.u32 	%r14, 1;
+	shl.b32 	%r15, %r14, %r1;
+	add.s32 	%r16, %r15, 255;
+	and.b32  	%r17, %r16, %r36;
+	cvt.u64.u32	%rd15, %r17;
+	ld.global.u64 	%rd16, [__nv_static_29__16_MetaData_cpp1_ii_286a6e27_codedTags+32];
+	add.s64 	%rd17, %rd16, %rd15;
+	ld.u8 	%rs1, [%rd17];
+	setp.lt.u16	%p4, %rs1, 49;
+	@%p4 bra 	BB28_4;
+
+	// Callseq Start 14
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b32 param0;
+	st.param.b32	[param0+0], %r14;
+	call.uni 
+	_Z7gpuexiti, 
+	(
+	param0
+	);
+	
+	//{
+	}// Callseq End 14
+	ld.u8 	%r36, [%rd3+2];
+
+BB28_4:
+	add.s64 	%rd5, %rd10, 620;
+	ld.u8 	%rs3, [%rd10+620];
+	setp.eq.s16	%p5, %rs3, 0;
+	ld.u8 	%rs4, [%rd3+3];
+	mul.wide.u16 	%r19, %rs4, 256;
+	or.b32  	%r37, %r19, %r36;
+	add.s64 	%rd24, %rd3, 4;
+	@%p5 bra 	BB28_6;
+
+	ld.u8 	%r20, [%rd3+4];
+	shl.b32 	%r21, %r20, 16;
+	or.b32  	%r22, %r21, %r37;
+	ld.u8 	%r23, [%rd3+5];
+	shl.b32 	%r24, %r23, 24;
+	or.b32  	%r37, %r22, %r24;
+	add.s64 	%rd24, %rd3, 6;
+
+BB28_6:
+	cvt.u32.u16	%r25, %rs1;
+	shl.b32 	%r26, %r25, 24;
+	shr.u32 	%r27, %r37, %r1;
+	or.b32  	%r28, %r27, %r26;
+	st.u32 	[%rd12+4], %r28;
+	ld.u8 	%rs5, [%rd5+13];
+	setp.eq.s16	%p1, %rs5, 0;
+	ld.u8 	%r29, [%rd24];
+	ld.u8 	%r30, [%rd24+1];
+	prmt.b32 	%r38, %r30, %r29, 30212;
+	@%p1 bra 	BB28_8;
+
+	ld.u8 	%r31, [%rd24+2];
+	shl.b32 	%r32, %r31, 16;
+	or.b32  	%r33, %r32, %r38;
+	ld.u8 	%r34, [%rd24+3];
+	shl.b32 	%r35, %r34, 24;
+	or.b32  	%r38, %r33, %r35;
+
+BB28_8:
+	selp.b64	%rd18, 2, 4, %p1;
+	cvt.s64.s32	%rd19, %r38;
+	ld.u64 	%rd20, [%rd5+-612];
+	add.s64 	%rd21, %rd20, %rd19;
+	st.u64 	[%rd12+8], %rd21;
+	add.s64 	%rd22, %rd24, %rd18;
+	st.u64 	[%rd11], %rd22;
+	ret;
+}
+
+	// .globl	_Z22ClassLayoutTableReaderP10tMetaData_P5tRVA_PPhPvii
+.visible .func _Z22ClassLayoutTableReaderP10tMetaData_P5tRVA_PPhPvii(
+	.param .b64 _Z22ClassLayoutTableReaderP10tMetaData_P5tRVA_PPhPvii_param_0,
+	.param .b64 _Z22ClassLayoutTableReaderP10tMetaData_P5tRVA_PPhPvii_param_1,
+	.param .b64 _Z22ClassLayoutTableReaderP10tMetaData_P5tRVA_PPhPvii_param_2,
+	.param .b64 _Z22ClassLayoutTableReaderP10tMetaData_P5tRVA_PPhPvii_param_3,
+	.param .b32 _Z22ClassLayoutTableReaderP10tMetaData_P5tRVA_PPhPvii_param_4,
+	.param .b32 _Z22ClassLayoutTableReaderP10tMetaData_P5tRVA_PPhPvii_param_5
+)
+{
+	.reg .pred 	%p<4>;
+	.reg .b16 	%rs<2>;
+	.reg .b32 	%r<24>;
+	.reg .b64 	%rd<15>;
+
+
+	ld.param.u64 	%rd8, [_Z22ClassLayoutTableReaderP10tMetaData_P5tRVA_PPhPvii_param_0];
+	ld.param.u64 	%rd9, [_Z22ClassLayoutTableReaderP10tMetaData_P5tRVA_PPhPvii_param_2];
+	ld.param.u64 	%rd10, [_Z22ClassLayoutTableReaderP10tMetaData_P5tRVA_PPhPvii_param_3];
+	mov.u64 	%rd13, 0;
+	mov.pred 	%p1, 0;
+	@%p1 bra 	BB29_2;
+
+BB29_1:
+	add.s64 	%rd12, %rd10, %rd13;
+	mov.u16 	%rs1, 0;
+	st.u8 	[%rd12], %rs1;
+	add.s64 	%rd13, %rd13, 1;
+	setp.lt.u64	%p2, %rd13, 12;
+	@%p2 bra 	BB29_1;
+
+BB29_2:
+	ld.u64 	%rd3, [%rd9];
+	ld.u8 	%r4, [%rd3];
+	ld.u8 	%r5, [%rd3+1];
+	prmt.b32 	%r6, %r5, %r4, 30212;
+	st.u16 	[%rd10], %r6;
+	ld.u8 	%r7, [%rd3+2];
+	ld.u8 	%r8, [%rd3+3];
+	prmt.b32 	%r9, %r8, %r7, 30212;
+	ld.u8 	%r10, [%rd3+4];
+	prmt.b32 	%r11, %r10, %r9, 28756;
+	ld.u8 	%r12, [%rd3+5];
+	prmt.b32 	%r13, %r12, %r11, 1620;
+	st.u32 	[%rd10+4], %r13;
+	ld.u32 	%r14, [%rd8+48];
+	setp.lt.u32	%p3, %r14, 65536;
+	ld.u8 	%r15, [%rd3+6];
+	ld.u8 	%r16, [%rd3+7];
+	prmt.b32 	%r23, %r16, %r15, 30212;
+	add.s64 	%rd14, %rd3, 8;
+	@%p3 bra 	BB29_4;
+
+	ld.u8 	%r17, [%rd3+8];
+	shl.b32 	%r18, %r17, 16;
+	or.b32  	%r19, %r18, %r23;
+	ld.u8 	%r20, [%rd3+9];
+	shl.b32 	%r21, %r20, 24;
+	or.b32  	%r23, %r19, %r21;
+	add.s64 	%rd14, %rd3, 10;
+
+BB29_4:
+	or.b32  	%r22, %r23, 33554432;
+	st.u32 	[%rd10+8], %r22;
+	st.u64 	[%rd9], %rd14;
+	ret;
+}
+
+	// .globl	_Z24StandAloneSigTableReaderP10tMetaData_P5tRVA_PPhPvii
+.visible .func _Z24StandAloneSigTableReaderP10tMetaData_P5tRVA_PPhPvii(
+	.param .b64 _Z24StandAloneSigTableReaderP10tMetaData_P5tRVA_PPhPvii_param_0,
+	.param .b64 _Z24StandAloneSigTableReaderP10tMetaData_P5tRVA_PPhPvii_param_1,
+	.param .b64 _Z24StandAloneSigTableReaderP10tMetaData_P5tRVA_PPhPvii_param_2,
+	.param .b64 _Z24StandAloneSigTableReaderP10tMetaData_P5tRVA_PPhPvii_param_3,
+	.param .b32 _Z24StandAloneSigTableReaderP10tMetaData_P5tRVA_PPhPvii_param_4,
+	.param .b32 _Z24StandAloneSigTableReaderP10tMetaData_P5tRVA_PPhPvii_param_5
+)
+{
+	.reg .pred 	%p<2>;
+	.reg .b16 	%rs<2>;
+	.reg .b32 	%r<12>;
+	.reg .b64 	%rd<12>;
+
+
+	ld.param.u64 	%rd5, [_Z24StandAloneSigTableReaderP10tMetaData_P5tRVA_PPhPvii_param_0];
+	ld.param.u64 	%rd3, [_Z24StandAloneSigTableReaderP10tMetaData_P5tRVA_PPhPvii_param_2];
+	ld.param.u64 	%rd4, [_Z24StandAloneSigTableReaderP10tMetaData_P5tRVA_PPhPvii_param_3];
+	mov.u64 	%rd6, 0;
+	st.u8 	[%rd4+7], %rd6;
+	st.u8 	[%rd4+6], %rd6;
+	st.u8 	[%rd4+5], %rd6;
+	st.u8 	[%rd4+4], %rd6;
+	st.u8 	[%rd4+3], %rd6;
+	st.u8 	[%rd4+2], %rd6;
+	st.u8 	[%rd4+1], %rd6;
+	st.u8 	[%rd4], %rd6;
+	add.s64 	%rd1, %rd5, 633;
+	ld.u8 	%rs1, [%rd5+633];
+	setp.eq.s16	%p1, %rs1, 0;
+	ld.u64 	%rd2, [%rd3];
+	ld.u8 	%r4, [%rd2];
+	ld.u8 	%r5, [%rd2+1];
+	prmt.b32 	%r11, %r5, %r4, 30212;
+	@%p1 bra 	BB30_2;
+
+	ld.u8 	%r6, [%rd2+2];
+	shl.b32 	%r7, %r6, 16;
+	or.b32  	%r8, %r7, %r11;
+	ld.u8 	%r9, [%rd2+3];
+	shl.b32 	%r10, %r9, 24;
+	or.b32  	%r11, %r8, %r10;
+
+BB30_2:
+	selp.b64	%rd7, 2, 4, %p1;
+	cvt.s64.s32	%rd8, %r11;
+	ld.u64 	%rd9, [%rd1+-625];
+	add.s64 	%rd10, %rd9, %rd8;
+	st.u64 	[%rd4], %rd10;
+	add.s64 	%rd11, %rd2, %rd7;
+	st.u64 	[%rd3], %rd11;
+	ret;
+}
+
+	// .globl	_Z19EventMapTableReaderP10tMetaData_P5tRVA_PPhPvii
+.visible .func _Z19EventMapTableReaderP10tMetaData_P5tRVA_PPhPvii(
+	.param .b64 _Z19EventMapTableReaderP10tMetaData_P5tRVA_PPhPvii_param_0,
+	.param .b64 _Z19EventMapTableReaderP10tMetaData_P5tRVA_PPhPvii_param_1,
+	.param .b64 _Z19EventMapTableReaderP10tMetaData_P5tRVA_PPhPvii_param_2,
+	.param .b64 _Z19EventMapTableReaderP10tMetaData_P5tRVA_PPhPvii_param_3,
+	.param .b32 _Z19EventMapTableReaderP10tMetaData_P5tRVA_PPhPvii_param_4,
+	.param .b32 _Z19EventMapTableReaderP10tMetaData_P5tRVA_PPhPvii_param_5
+)
+{
+	.reg .pred 	%p<3>;
+	.reg .b32 	%r<27>;
+	.reg .b64 	%rd<16>;
+
+
+	ld.param.u64 	%rd12, [_Z19EventMapTableReaderP10tMetaData_P5tRVA_PPhPvii_param_0];
+	ld.param.u64 	%rd10, [_Z19EventMapTableReaderP10tMetaData_P5tRVA_PPhPvii_param_2];
+	ld.param.u64 	%rd11, [_Z19EventMapTableReaderP10tMetaData_P5tRVA_PPhPvii_param_3];
+	mov.u64 	%rd13, 0;
+	st.u8 	[%rd11+7], %rd13;
+	st.u8 	[%rd11+6], %rd13;
+	st.u8 	[%rd11+5], %rd13;
+	st.u8 	[%rd11+4], %rd13;
+	st.u8 	[%rd11+3], %rd13;
+	st.u8 	[%rd11+2], %rd13;
+	st.u8 	[%rd11+1], %rd13;
+	st.u8 	[%rd11], %rd13;
+	add.s64 	%rd1, %rd12, 48;
+	ld.u32 	%r7, [%rd12+48];
+	setp.lt.u32	%p1, %r7, 65536;
+	ld.u64 	%rd2, [%rd10];
+	ld.u8 	%r8, [%rd2];
+	ld.u8 	%r9, [%rd2+1];
+	prmt.b32 	%r25, %r9, %r8, 30212;
+	add.s64 	%rd14, %rd2, 2;
+	@%p1 bra 	BB31_2;
+
+	ld.u8 	%r10, [%rd2+2];
+	shl.b32 	%r11, %r10, 16;
+	or.b32  	%r12, %r11, %r25;
+	ld.u8 	%r13, [%rd2+3];
+	shl.b32 	%r14, %r13, 24;
+	or.b32  	%r25, %r12, %r14;
+	add.s64 	%rd14, %rd2, 4;
+
+BB31_2:
+	or.b32  	%r15, %r25, 33554432;
+	st.u32 	[%rd11], %r15;
+	ld.u32 	%r16, [%rd1+72];
+	setp.lt.u32	%p2, %r16, 65536;
+	ld.u8 	%r17, [%rd14];
+	ld.u8 	%r18, [%rd14+1];
+	prmt.b32 	%r26, %r18, %r17, 30212;
+	add.s64 	%rd15, %rd14, 2;
+	@%p2 bra 	BB31_4;
+
+	ld.u8 	%r19, [%rd14+2];
+	shl.b32 	%r20, %r19, 16;
+	or.b32  	%r21, %r20, %r26;
+	ld.u8 	%r22, [%rd14+3];
+	shl.b32 	%r23, %r22, 24;
+	or.b32  	%r26, %r21, %r23;
+	add.s64 	%rd15, %rd14, 4;
+
+BB31_4:
+	or.b32  	%r24, %r26, 335544320;
+	st.u32 	[%rd11+4], %r24;
+	st.u64 	[%rd10], %rd15;
+	ret;
+}
+
+	// .globl	_Z16EventTableReaderP10tMetaData_P5tRVA_PPhPvii
+.visible .func _Z16EventTableReaderP10tMetaData_P5tRVA_PPhPvii(
+	.param .b64 _Z16EventTableReaderP10tMetaData_P5tRVA_PPhPvii_param_0,
+	.param .b64 _Z16EventTableReaderP10tMetaData_P5tRVA_PPhPvii_param_1,
+	.param .b64 _Z16EventTableReaderP10tMetaData_P5tRVA_PPhPvii_param_2,
+	.param .b64 _Z16EventTableReaderP10tMetaData_P5tRVA_PPhPvii_param_3,
+	.param .b32 _Z16EventTableReaderP10tMetaData_P5tRVA_PPhPvii_param_4,
+	.param .b32 _Z16EventTableReaderP10tMetaData_P5tRVA_PPhPvii_param_5
+)
+{
+	.reg .pred 	%p<6>;
+	.reg .b16 	%rs<6>;
+	.reg .b32 	%r<39>;
+	.reg .b64 	%rd<26>;
+
+
+	ld.param.u64 	%rd12, [_Z16EventTableReaderP10tMetaData_P5tRVA_PPhPvii_param_0];
+	ld.param.u64 	%rd13, [_Z16EventTableReaderP10tMetaData_P5tRVA_PPhPvii_param_2];
+	ld.param.u64 	%rd14, [_Z16EventTableReaderP10tMetaData_P5tRVA_PPhPvii_param_3];
+	mov.u64 	%rd24, 0;
+	mov.pred 	%p1, 0;
+	@%p1 bra 	BB32_2;
+
+BB32_1:
+	add.s64 	%rd16, %rd14, %rd24;
+	mov.u16 	%rs2, 0;
+	st.u8 	[%rd16], %rs2;
+	add.s64 	%rd24, %rd24, 1;
+	setp.lt.u64	%p2, %rd24, 24;
+	@%p2 bra 	BB32_1;
+
+BB32_2:
+	ld.u64 	%rd3, [%rd13];
+	ld.u8 	%r11, [%rd3];
+	ld.u8 	%r12, [%rd3+1];
+	prmt.b32 	%r13, %r12, %r11, 30212;
+	st.u16 	[%rd14], %r13;
+	add.s64 	%rd5, %rd12, 632;
+	ld.u8 	%rs3, [%rd12+632];
+	setp.eq.s16	%p3, %rs3, 0;
+	selp.b64	%rd6, 4, 6, %p3;
+	ld.u8 	%r14, [%rd3+2];
+	ld.u8 	%r15, [%rd3+3];
+	prmt.b32 	%r36, %r15, %r14, 30212;
+	@%p3 bra 	BB32_4;
+
+	ld.u8 	%r16, [%rd3+4];
+	shl.b32 	%r17, %r16, 16;
+	or.b32  	%r18, %r17, %r36;
+	ld.u8 	%r19, [%rd3+5];
+	shl.b32 	%r20, %r19, 24;
+	or.b32  	%r36, %r18, %r20;
+
+BB32_4:
+	cvt.s64.s32	%rd17, %r36;
+	ld.u64 	%rd18, [%rd5+-632];
+	add.s64 	%rd19, %rd18, %rd17;
+	st.u64 	[%rd14+8], %rd19;
+	ld.global.u8 	%r4, [__nv_static_29__16_MetaData_cpp1_ii_286a6e27_codedTagBits];
+	add.s64 	%rd8, %rd3, %rd6;
+	ld.u8 	%r37, [%rd8];
+	mov.u32 	%r21, 1;
+	shl.b32 	%r22, %r21, %r4;
+	add.s32 	%r23, %r22, 255;
+	and.b32  	%r24, %r23, %r37;
+	cvt.u64.u32	%rd20, %r24;
+	ld.global.u64 	%rd21, [__nv_static_29__16_MetaData_cpp1_ii_286a6e27_codedTags];
+	add.s64 	%rd22, %rd21, %rd20;
+	ld.u8 	%rs1, [%rd22];
+	setp.lt.u16	%p4, %rs1, 49;
+	@%p4 bra 	BB32_6;
+
+	// Callseq Start 15
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b32 param0;
+	st.param.b32	[param0+0], %r21;
+	call.uni 
+	_Z7gpuexiti, 
+	(
+	param0
+	);
+	
+	//{
+	}// Callseq End 15
+	ld.u8 	%r37, [%rd8];
+
+BB32_6:
+	ld.u8 	%rs4, [%rd5+-16];
+	setp.eq.s16	%p5, %rs4, 0;
+	ld.u8 	%rs5, [%rd8+1];
+	mul.wide.u16 	%r26, %rs5, 256;
+	or.b32  	%r38, %r26, %r37;
+	add.s64 	%rd25, %rd6, 2;
+	@%p5 bra 	BB32_8;
+
+	ld.u8 	%r27, [%rd8+2];
+	shl.b32 	%r28, %r27, 16;
+	or.b32  	%r29, %r28, %r38;
+	ld.u8 	%r30, [%rd8+3];
+	shl.b32 	%r31, %r30, 24;
+	or.b32  	%r38, %r29, %r31;
+	add.s64 	%rd25, %rd6, 4;
+
+BB32_8:
+	cvt.u32.u16	%r32, %rs1;
+	shl.b32 	%r33, %r32, 24;
+	shr.u32 	%r34, %r38, %r4;
+	or.b32  	%r35, %r34, %r33;
+	st.u32 	[%rd14+16], %r35;
+	add.s64 	%rd23, %rd3, %rd25;
+	st.u64 	[%rd13], %rd23;
+	ret;
+}
+
+	// .globl	_Z22PropertyMapTableReaderP10tMetaData_P5tRVA_PPhPvii
+.visible .func _Z22PropertyMapTableReaderP10tMetaData_P5tRVA_PPhPvii(
+	.param .b64 _Z22PropertyMapTableReaderP10tMetaData_P5tRVA_PPhPvii_param_0,
+	.param .b64 _Z22PropertyMapTableReaderP10tMetaData_P5tRVA_PPhPvii_param_1,
+	.param .b64 _Z22PropertyMapTableReaderP10tMetaData_P5tRVA_PPhPvii_param_2,
+	.param .b64 _Z22PropertyMapTableReaderP10tMetaData_P5tRVA_PPhPvii_param_3,
+	.param .b32 _Z22PropertyMapTableReaderP10tMetaData_P5tRVA_PPhPvii_param_4,
+	.param .b32 _Z22PropertyMapTableReaderP10tMetaData_P5tRVA_PPhPvii_param_5
+)
+{
+	.reg .pred 	%p<3>;
+	.reg .b32 	%r<27>;
+	.reg .b64 	%rd<16>;
+
+
+	ld.param.u64 	%rd12, [_Z22PropertyMapTableReaderP10tMetaData_P5tRVA_PPhPvii_param_0];
+	ld.param.u64 	%rd10, [_Z22PropertyMapTableReaderP10tMetaData_P5tRVA_PPhPvii_param_2];
+	ld.param.u64 	%rd11, [_Z22PropertyMapTableReaderP10tMetaData_P5tRVA_PPhPvii_param_3];
+	mov.u64 	%rd13, 0;
+	st.u8 	[%rd11+7], %rd13;
+	st.u8 	[%rd11+6], %rd13;
+	st.u8 	[%rd11+5], %rd13;
+	st.u8 	[%rd11+4], %rd13;
+	st.u8 	[%rd11+3], %rd13;
+	st.u8 	[%rd11+2], %rd13;
+	st.u8 	[%rd11+1], %rd13;
+	st.u8 	[%rd11], %rd13;
+	add.s64 	%rd1, %rd12, 48;
+	ld.u32 	%r7, [%rd12+48];
+	setp.lt.u32	%p1, %r7, 65536;
+	ld.u64 	%rd2, [%rd10];
+	ld.u8 	%r8, [%rd2];
+	ld.u8 	%r9, [%rd2+1];
+	prmt.b32 	%r25, %r9, %r8, 30212;
+	add.s64 	%rd14, %rd2, 2;
+	@%p1 bra 	BB33_2;
+
+	ld.u8 	%r10, [%rd2+2];
+	shl.b32 	%r11, %r10, 16;
+	or.b32  	%r12, %r11, %r25;
+	ld.u8 	%r13, [%rd2+3];
+	shl.b32 	%r14, %r13, 24;
+	or.b32  	%r25, %r12, %r14;
+	add.s64 	%rd14, %rd2, 4;
+
+BB33_2:
+	or.b32  	%r15, %r25, 33554432;
+	st.u32 	[%rd11], %r15;
+	ld.u32 	%r16, [%rd1+84];
+	setp.lt.u32	%p2, %r16, 65536;
+	ld.u8 	%r17, [%rd14];
+	ld.u8 	%r18, [%rd14+1];
+	prmt.b32 	%r26, %r18, %r17, 30212;
+	add.s64 	%rd15, %rd14, 2;
+	@%p2 bra 	BB33_4;
+
+	ld.u8 	%r19, [%rd14+2];
+	shl.b32 	%r20, %r19, 16;
+	or.b32  	%r21, %r20, %r26;
+	ld.u8 	%r22, [%rd14+3];
+	shl.b32 	%r23, %r22, 24;
+	or.b32  	%r26, %r21, %r23;
+	add.s64 	%rd15, %rd14, 4;
+
+BB33_4:
+	or.b32  	%r24, %r26, 385875968;
+	st.u32 	[%rd11+4], %r24;
+	st.u64 	[%rd10], %rd15;
+	ret;
+}
+
+	// .globl	_Z19PropertyTableReaderP10tMetaData_P5tRVA_PPhPvii
+.visible .func _Z19PropertyTableReaderP10tMetaData_P5tRVA_PPhPvii(
+	.param .b64 _Z19PropertyTableReaderP10tMetaData_P5tRVA_PPhPvii_param_0,
+	.param .b64 _Z19PropertyTableReaderP10tMetaData_P5tRVA_PPhPvii_param_1,
+	.param .b64 _Z19PropertyTableReaderP10tMetaData_P5tRVA_PPhPvii_param_2,
+	.param .b64 _Z19PropertyTableReaderP10tMetaData_P5tRVA_PPhPvii_param_3,
+	.param .b32 _Z19PropertyTableReaderP10tMetaData_P5tRVA_PPhPvii_param_4,
+	.param .b32 _Z19PropertyTableReaderP10tMetaData_P5tRVA_PPhPvii_param_5
+)
+{
+	.reg .pred 	%p<5>;
+	.reg .b16 	%rs<4>;
+	.reg .b32 	%r<26>;
+	.reg .b64 	%rd<24>;
+
+
+	ld.param.u64 	%rd9, [_Z19PropertyTableReaderP10tMetaData_P5tRVA_PPhPvii_param_0];
+	ld.param.u64 	%rd10, [_Z19PropertyTableReaderP10tMetaData_P5tRVA_PPhPvii_param_2];
+	ld.param.u64 	%rd11, [_Z19PropertyTableReaderP10tMetaData_P5tRVA_PPhPvii_param_3];
+	mov.u64 	%rd23, 0;
+	mov.pred 	%p2, 0;
+	@%p2 bra 	BB34_2;
+
+BB34_1:
+	add.s64 	%rd13, %rd11, %rd23;
+	mov.u16 	%rs1, 0;
+	st.u8 	[%rd13], %rs1;
+	add.s64 	%rd23, %rd23, 1;
+	setp.lt.u64	%p3, %rd23, 24;
+	@%p3 bra 	BB34_1;
+
+BB34_2:
+	ld.u64 	%rd3, [%rd10];
+	ld.u8 	%r7, [%rd3];
+	ld.u8 	%r8, [%rd3+1];
+	prmt.b32 	%r9, %r8, %r7, 30212;
+	st.u16 	[%rd11], %r9;
+	add.s64 	%rd5, %rd9, 632;
+	ld.u8 	%rs2, [%rd9+632];
+	setp.eq.s16	%p4, %rs2, 0;
+	selp.b64	%rd6, 4, 6, %p4;
+	ld.u8 	%r10, [%rd3+2];
+	ld.u8 	%r11, [%rd3+3];
+	prmt.b32 	%r24, %r11, %r10, 30212;
+	@%p4 bra 	BB34_4;
+
+	ld.u8 	%r12, [%rd3+4];
+	shl.b32 	%r13, %r12, 16;
+	or.b32  	%r14, %r13, %r24;
+	ld.u8 	%r15, [%rd3+5];
+	shl.b32 	%r16, %r15, 24;
+	or.b32  	%r24, %r14, %r16;
+
+BB34_4:
+	cvt.s64.s32	%rd14, %r24;
+	ld.u64 	%rd15, [%rd5+-632];
+	add.s64 	%rd16, %rd15, %rd14;
+	st.u64 	[%rd11+8], %rd16;
+	ld.u8 	%rs3, [%rd5+1];
+	setp.eq.s16	%p1, %rs3, 0;
+	add.s64 	%rd8, %rd3, %rd6;
+	ld.u8 	%r17, [%rd8];
+	ld.u8 	%r18, [%rd8+1];
+	prmt.b32 	%r25, %r18, %r17, 30212;
+	@%p1 bra 	BB34_6;
+
+	ld.u8 	%r19, [%rd8+2];
+	shl.b32 	%r20, %r19, 16;
+	or.b32  	%r21, %r20, %r25;
+	ld.u8 	%r22, [%rd8+3];
+	shl.b32 	%r23, %r22, 24;
+	or.b32  	%r25, %r21, %r23;
+
+BB34_6:
+	selp.b64	%rd17, 2, 4, %p1;
+	add.s64 	%rd18, %rd17, %rd6;
+	add.s64 	%rd19, %rd3, %rd18;
+	cvt.s64.s32	%rd20, %r25;
+	ld.u64 	%rd21, [%rd5+-624];
+	add.s64 	%rd22, %rd21, %rd20;
+	st.u64 	[%rd11+16], %rd22;
+	st.u64 	[%rd10], %rd19;
+	ret;
+}
+
+	// .globl	_Z26MethodSemanticsTableReaderP10tMetaData_P5tRVA_PPhPvii
+.visible .func _Z26MethodSemanticsTableReaderP10tMetaData_P5tRVA_PPhPvii(
+	.param .b64 _Z26MethodSemanticsTableReaderP10tMetaData_P5tRVA_PPhPvii_param_0,
+	.param .b64 _Z26MethodSemanticsTableReaderP10tMetaData_P5tRVA_PPhPvii_param_1,
+	.param .b64 _Z26MethodSemanticsTableReaderP10tMetaData_P5tRVA_PPhPvii_param_2,
+	.param .b64 _Z26MethodSemanticsTableReaderP10tMetaData_P5tRVA_PPhPvii_param_3,
+	.param .b32 _Z26MethodSemanticsTableReaderP10tMetaData_P5tRVA_PPhPvii_param_4,
+	.param .b32 _Z26MethodSemanticsTableReaderP10tMetaData_P5tRVA_PPhPvii_param_5
+)
+{
+	.local .align 8 .b8 	__local_depot35[8];
+	.reg .b64 	%SP;
+	.reg .b64 	%SPL;
+	.reg .pred 	%p<6>;
+	.reg .b16 	%rs<5>;
+	.reg .b32 	%r<46>;
+	.reg .b64 	%rd<37>;
+
+
+	mov.u64 	%rd36, __local_depot35;
+	cvta.local.u64 	%SP, %rd36;
+	ld.param.u64 	%rd15, [_Z26MethodSemanticsTableReaderP10tMetaData_P5tRVA_PPhPvii_param_0];
+	ld.param.u64 	%rd16, [_Z26MethodSemanticsTableReaderP10tMetaData_P5tRVA_PPhPvii_param_2];
+	ld.param.u64 	%rd17, [_Z26MethodSemanticsTableReaderP10tMetaData_P5tRVA_PPhPvii_param_3];
+	ld.param.u32 	%r11, [_Z26MethodSemanticsTableReaderP10tMetaData_P5tRVA_PPhPvii_param_4];
+	ld.param.u32 	%r12, [_Z26MethodSemanticsTableReaderP10tMetaData_P5tRVA_PPhPvii_param_5];
+	add.u64 	%rd2, %SP, 0;
+	cvta.to.local.u64 	%rd1, %rd2;
+	mov.u64 	%rd33, 0;
+	mov.pred 	%p1, 0;
+	@%p1 bra 	BB35_2;
+
+BB35_1:
+	add.s64 	%rd19, %rd17, %rd33;
+	mov.u16 	%rs2, 0;
+	st.u8 	[%rd19], %rs2;
+	add.s64 	%rd33, %rd33, 1;
+	setp.lt.u64	%p2, %rd33, 12;
+	@%p2 bra 	BB35_1;
+
+BB35_2:
+	st.local.u32 	[%rd1], %r11;
+	st.local.u32 	[%rd1+4], %r12;
+	mov.u64 	%rd22, $str46;
+	cvta.global.u64 	%rd23, %rd22;
+	// Callseq Start 16
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
 	.param .b64 param0;
-	st.param.b64	[param0+0], %rd195;
+	st.param.b64	[param0+0], %rd23;
+	.param .b64 param1;
+	st.param.b64	[param1+0], %rd2;
+	.param .b32 retval0;
+	call.uni (retval0), 
+	vprintf, 
+	(
+	param0, 
+	param1
+	);
+	ld.param.b32	%r13, [retval0+0];
+	
+	//{
+	}// Callseq End 16
+	ld.u64 	%rd5, [%rd16];
+	ld.u8 	%r14, [%rd5];
+	ld.u8 	%r15, [%rd5+1];
+	prmt.b32 	%r16, %r15, %r14, 30212;
+	st.u16 	[%rd17], %r16;
+	mov.u64 	%rd24, $str47;
+	cvta.global.u64 	%rd25, %rd24;
+	mov.u64 	%rd26, 0;
+	// Callseq Start 17
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b64 param0;
+	st.param.b64	[param0+0], %rd25;
+	.param .b64 param1;
+	st.param.b64	[param1+0], %rd26;
+	.param .b32 retval0;
+	call.uni (retval0), 
+	vprintf, 
+	(
+	param0, 
+	param1
+	);
+	ld.param.b32	%r17, [retval0+0];
+	
+	//{
+	}// Callseq End 17
+	add.s64 	%rd7, %rd15, 64;
+	ld.u32 	%r18, [%rd15+64];
+	setp.lt.u32	%p3, %r18, 65536;
+	ld.u8 	%r19, [%rd5+2];
+	ld.u8 	%r20, [%rd5+3];
+	prmt.b32 	%r43, %r20, %r19, 30212;
+	add.s64 	%rd34, %rd5, 4;
+	@%p3 bra 	BB35_4;
+
+	ld.u8 	%r21, [%rd5+4];
+	shl.b32 	%r22, %r21, 16;
+	or.b32  	%r23, %r22, %r43;
+	ld.u8 	%r24, [%rd5+5];
+	shl.b32 	%r25, %r24, 24;
+	or.b32  	%r43, %r23, %r25;
+	add.s64 	%rd34, %rd5, 6;
+
+BB35_4:
+	or.b32  	%r26, %r43, 100663296;
+	st.u32 	[%rd17+4], %r26;
+	ld.global.u8 	%r4, [__nv_static_29__16_MetaData_cpp1_ii_286a6e27_codedTagBits+6];
+	ld.u8 	%r44, [%rd34];
+	mov.u32 	%r27, 1;
+	shl.b32 	%r28, %r27, %r4;
+	add.s32 	%r29, %r28, 255;
+	and.b32  	%r30, %r29, %r44;
+	cvt.u64.u32	%rd27, %r30;
+	ld.global.u64 	%rd28, [__nv_static_29__16_MetaData_cpp1_ii_286a6e27_codedTags+48];
+	add.s64 	%rd29, %rd28, %rd27;
+	ld.u8 	%rs1, [%rd29];
+	setp.lt.u16	%p4, %rs1, 49;
+	@%p4 bra 	BB35_6;
+
+	// Callseq Start 18
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b32 param0;
+	st.param.b32	[param0+0], %r27;
+	call.uni 
+	_Z7gpuexiti, 
+	(
+	param0
+	);
+	
+	//{
+	}// Callseq End 18
+	ld.u8 	%r44, [%rd34];
+
+BB35_6:
+	ld.u8 	%rs3, [%rd7+558];
+	setp.eq.s16	%p5, %rs3, 0;
+	ld.u8 	%rs4, [%rd34+1];
+	mul.wide.u16 	%r32, %rs4, 256;
+	or.b32  	%r45, %r32, %r44;
+	add.s64 	%rd35, %rd34, 2;
+	@%p5 bra 	BB35_8;
+
+	ld.u8 	%r33, [%rd34+2];
+	shl.b32 	%r34, %r33, 16;
+	or.b32  	%r35, %r34, %r45;
+	ld.u8 	%r36, [%rd34+3];
+	shl.b32 	%r37, %r36, 24;
+	or.b32  	%r45, %r35, %r37;
+	add.s64 	%rd35, %rd34, 4;
+
+BB35_8:
+	cvt.u32.u16	%r38, %rs1;
+	shl.b32 	%r39, %r38, 24;
+	shr.u32 	%r40, %r45, %r4;
+	or.b32  	%r41, %r40, %r39;
+	st.u32 	[%rd17+8], %r41;
+	mov.u64 	%rd30, $str48;
+	cvta.global.u64 	%rd31, %rd30;
+	// Callseq Start 19
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b64 param0;
+	st.param.b64	[param0+0], %rd31;
+	.param .b64 param1;
+	st.param.b64	[param1+0], %rd26;
+	.param .b32 retval0;
+	call.uni (retval0), 
+	vprintf, 
+	(
+	param0, 
+	param1
+	);
+	ld.param.b32	%r42, [retval0+0];
+	
+	//{
+	}// Callseq End 19
+	st.u64 	[%rd16], %rd35;
+	ret;
+}
+
+	// .globl	_Z21MethodImplTableReaderP10tMetaData_P5tRVA_PPhPvii
+.visible .func _Z21MethodImplTableReaderP10tMetaData_P5tRVA_PPhPvii(
+	.param .b64 _Z21MethodImplTableReaderP10tMetaData_P5tRVA_PPhPvii_param_0,
+	.param .b64 _Z21MethodImplTableReaderP10tMetaData_P5tRVA_PPhPvii_param_1,
+	.param .b64 _Z21MethodImplTableReaderP10tMetaData_P5tRVA_PPhPvii_param_2,
+	.param .b64 _Z21MethodImplTableReaderP10tMetaData_P5tRVA_PPhPvii_param_3,
+	.param .b32 _Z21MethodImplTableReaderP10tMetaData_P5tRVA_PPhPvii_param_4,
+	.param .b32 _Z21MethodImplTableReaderP10tMetaData_P5tRVA_PPhPvii_param_5
+)
+{
+	.reg .pred 	%p<8>;
+	.reg .b16 	%rs<8>;
+	.reg .b32 	%r<62>;
+	.reg .b64 	%rd<31>;
+
+
+	ld.param.u64 	%rd16, [_Z21MethodImplTableReaderP10tMetaData_P5tRVA_PPhPvii_param_0];
+	ld.param.u64 	%rd17, [_Z21MethodImplTableReaderP10tMetaData_P5tRVA_PPhPvii_param_2];
+	ld.param.u64 	%rd18, [_Z21MethodImplTableReaderP10tMetaData_P5tRVA_PPhPvii_param_3];
+	mov.u64 	%rd27, 0;
+	mov.pred 	%p1, 0;
+	@%p1 bra 	BB36_2;
+
+BB36_1:
+	add.s64 	%rd20, %rd18, %rd27;
+	mov.u16 	%rs3, 0;
+	st.u8 	[%rd20], %rs3;
+	add.s64 	%rd27, %rd27, 1;
+	setp.lt.u64	%p2, %rd27, 12;
+	@%p2 bra 	BB36_1;
+
+BB36_2:
+	add.s64 	%rd3, %rd16, 48;
+	ld.u32 	%r18, [%rd16+48];
+	setp.lt.u32	%p3, %r18, 65536;
+	ld.u64 	%rd4, [%rd17];
+	ld.u8 	%r19, [%rd4];
+	ld.u8 	%r20, [%rd4+1];
+	prmt.b32 	%r57, %r20, %r19, 30212;
+	add.s64 	%rd28, %rd4, 2;
+	@%p3 bra 	BB36_4;
+
+	ld.u8 	%r21, [%rd4+2];
+	shl.b32 	%r22, %r21, 16;
+	or.b32  	%r23, %r22, %r57;
+	ld.u8 	%r24, [%rd4+3];
+	shl.b32 	%r25, %r24, 24;
+	or.b32  	%r57, %r23, %r25;
+	add.s64 	%rd28, %rd4, 4;
+
+BB36_4:
+	or.b32  	%r26, %r57, 33554432;
+	st.u32 	[%rd18], %r26;
+	ld.global.u8 	%r4, [__nv_static_29__16_MetaData_cpp1_ii_286a6e27_codedTagBits+7];
+	ld.u8 	%r58, [%rd28];
+	mov.u32 	%r27, 1;
+	shl.b32 	%r28, %r27, %r4;
+	add.s32 	%r29, %r28, 255;
+	and.b32  	%r30, %r29, %r58;
+	cvt.u64.u32	%rd21, %r30;
+	ld.global.u64 	%rd22, [__nv_static_29__16_MetaData_cpp1_ii_286a6e27_codedTags+56];
+	add.s64 	%rd23, %rd22, %rd21;
+	ld.u8 	%rs1, [%rd23];
+	setp.lt.u16	%p4, %rs1, 49;
+	@%p4 bra 	BB36_6;
+
+	// Callseq Start 20
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b32 param0;
+	st.param.b32	[param0+0], %r27;
+	call.uni 
+	_Z7gpuexiti, 
+	(
+	param0
+	);
+	
+	//{
+	}// Callseq End 20
+	ld.u8 	%r58, [%rd28];
+
+BB36_6:
+	ld.u8 	%rs4, [%rd3+575];
+	setp.eq.s16	%p5, %rs4, 0;
+	ld.u8 	%rs5, [%rd28+1];
+	mul.wide.u16 	%r32, %rs5, 256;
+	or.b32  	%r59, %r32, %r58;
+	add.s64 	%rd29, %rd28, 2;
+	@%p5 bra 	BB36_8;
+
+	ld.u8 	%r33, [%rd28+2];
+	shl.b32 	%r34, %r33, 16;
+	or.b32  	%r35, %r34, %r59;
+	ld.u8 	%r36, [%rd28+3];
+	shl.b32 	%r37, %r36, 24;
+	or.b32  	%r59, %r35, %r37;
+	add.s64 	%rd29, %rd28, 4;
+
+BB36_8:
+	cvt.u32.u16	%r38, %rs1;
+	shl.b32 	%r39, %r38, 24;
+	shr.u32 	%r40, %r59, %r4;
+	or.b32  	%r41, %r40, %r39;
+	st.u32 	[%rd18+4], %r41;
+	ld.global.u8 	%r11, [__nv_static_29__16_MetaData_cpp1_ii_286a6e27_codedTagBits+7];
+	ld.u8 	%r60, [%rd29];
+	shl.b32 	%r43, %r27, %r11;
+	add.s32 	%r44, %r43, 255;
+	and.b32  	%r45, %r44, %r60;
+	cvt.u64.u32	%rd24, %r45;
+	ld.global.u64 	%rd25, [__nv_static_29__16_MetaData_cpp1_ii_286a6e27_codedTags+56];
+	add.s64 	%rd26, %rd25, %rd24;
+	ld.u8 	%rs2, [%rd26];
+	setp.lt.u16	%p6, %rs2, 49;
+	@%p6 bra 	BB36_10;
+
+	// Callseq Start 21
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b32 param0;
+	st.param.b32	[param0+0], %r27;
+	call.uni 
+	_Z7gpuexiti, 
+	(
+	param0
+	);
+	
+	//{
+	}// Callseq End 21
+	ld.u8 	%r60, [%rd29];
+
+BB36_10:
+	ld.u8 	%rs6, [%rd3+575];
+	setp.eq.s16	%p7, %rs6, 0;
+	ld.u8 	%rs7, [%rd29+1];
+	mul.wide.u16 	%r47, %rs7, 256;
+	or.b32  	%r61, %r47, %r60;
+	add.s64 	%rd30, %rd29, 2;
+	@%p7 bra 	BB36_12;
+
+	ld.u8 	%r48, [%rd29+2];
+	shl.b32 	%r49, %r48, 16;
+	or.b32  	%r50, %r49, %r61;
+	ld.u8 	%r51, [%rd29+3];
+	shl.b32 	%r52, %r51, 24;
+	or.b32  	%r61, %r50, %r52;
+	add.s64 	%rd30, %rd29, 4;
+
+BB36_12:
+	cvt.u32.u16	%r53, %rs2;
+	shl.b32 	%r54, %r53, 24;
+	shr.u32 	%r55, %r61, %r11;
+	or.b32  	%r56, %r55, %r54;
+	st.u32 	[%rd18+8], %r56;
+	st.u64 	[%rd17], %rd30;
+	ret;
+}
+
+	// .globl	_Z20ModuleRefTableReaderP10tMetaData_P5tRVA_PPhPvii
+.visible .func _Z20ModuleRefTableReaderP10tMetaData_P5tRVA_PPhPvii(
+	.param .b64 _Z20ModuleRefTableReaderP10tMetaData_P5tRVA_PPhPvii_param_0,
+	.param .b64 _Z20ModuleRefTableReaderP10tMetaData_P5tRVA_PPhPvii_param_1,
+	.param .b64 _Z20ModuleRefTableReaderP10tMetaData_P5tRVA_PPhPvii_param_2,
+	.param .b64 _Z20ModuleRefTableReaderP10tMetaData_P5tRVA_PPhPvii_param_3,
+	.param .b32 _Z20ModuleRefTableReaderP10tMetaData_P5tRVA_PPhPvii_param_4,
+	.param .b32 _Z20ModuleRefTableReaderP10tMetaData_P5tRVA_PPhPvii_param_5
+)
+{
+	.reg .pred 	%p<2>;
+	.reg .b16 	%rs<2>;
+	.reg .b32 	%r<4>;
+	.reg .b64 	%rd<21>;
+
+
+	ld.param.u64 	%rd8, [_Z20ModuleRefTableReaderP10tMetaData_P5tRVA_PPhPvii_param_0];
+	ld.param.u64 	%rd6, [_Z20ModuleRefTableReaderP10tMetaData_P5tRVA_PPhPvii_param_2];
+	ld.param.u64 	%rd7, [_Z20ModuleRefTableReaderP10tMetaData_P5tRVA_PPhPvii_param_3];
+	mov.u64 	%rd9, 0;
+	st.u8 	[%rd7+7], %rd9;
+	st.u8 	[%rd7+6], %rd9;
+	st.u8 	[%rd7+5], %rd9;
+	st.u8 	[%rd7+4], %rd9;
+	st.u8 	[%rd7+3], %rd9;
+	st.u8 	[%rd7+2], %rd9;
+	st.u8 	[%rd7+1], %rd9;
+	st.u8 	[%rd7], %rd9;
+	add.s64 	%rd1, %rd8, 632;
+	ld.u8 	%rs1, [%rd8+632];
+	setp.eq.s16	%p1, %rs1, 0;
+	ld.u64 	%rd2, [%rd6];
+	ld.u8 	%rd10, [%rd2];
+	ld.u8 	%r1, [%rd2+1];
+	mul.wide.u32 	%rd11, %r1, 256;
+	or.b64  	%rd20, %rd11, %rd10;
+	@%p1 bra 	BB37_2;
+
+	ld.u8 	%r2, [%rd2+2];
+	mul.wide.u32 	%rd12, %r2, 65536;
+	or.b64  	%rd13, %rd12, %rd20;
+	ld.u8 	%r3, [%rd2+3];
+	mul.wide.u32 	%rd14, %r3, 16777216;
+	or.b64  	%rd20, %rd13, %rd14;
+
+BB37_2:
+	selp.b64	%rd15, 2, 4, %p1;
+	and.b64  	%rd16, %rd20, 4294967295;
+	ld.u64 	%rd17, [%rd1+-632];
+	add.s64 	%rd18, %rd17, %rd16;
+	st.u64 	[%rd7], %rd18;
+	add.s64 	%rd19, %rd2, %rd15;
+	st.u64 	[%rd6], %rd19;
+	ret;
+}
+
+	// .globl	_Z19TypeSpecTableReaderP10tMetaData_P5tRVA_PPhPvii
+.visible .func _Z19TypeSpecTableReaderP10tMetaData_P5tRVA_PPhPvii(
+	.param .b64 _Z19TypeSpecTableReaderP10tMetaData_P5tRVA_PPhPvii_param_0,
+	.param .b64 _Z19TypeSpecTableReaderP10tMetaData_P5tRVA_PPhPvii_param_1,
+	.param .b64 _Z19TypeSpecTableReaderP10tMetaData_P5tRVA_PPhPvii_param_2,
+	.param .b64 _Z19TypeSpecTableReaderP10tMetaData_P5tRVA_PPhPvii_param_3,
+	.param .b32 _Z19TypeSpecTableReaderP10tMetaData_P5tRVA_PPhPvii_param_4,
+	.param .b32 _Z19TypeSpecTableReaderP10tMetaData_P5tRVA_PPhPvii_param_5
+)
+{
+	.reg .pred 	%p<4>;
+	.reg .b16 	%rs<3>;
+	.reg .b32 	%r<4>;
+	.reg .b64 	%rd<25>;
+
+
+	ld.param.u64 	%rd8, [_Z19TypeSpecTableReaderP10tMetaData_P5tRVA_PPhPvii_param_0];
+	ld.param.u64 	%rd9, [_Z19TypeSpecTableReaderP10tMetaData_P5tRVA_PPhPvii_param_2];
+	ld.param.u64 	%rd10, [_Z19TypeSpecTableReaderP10tMetaData_P5tRVA_PPhPvii_param_3];
+	mov.u64 	%rd23, 0;
+	mov.pred 	%p2, 0;
+	@%p2 bra 	BB38_2;
+
+BB38_1:
+	add.s64 	%rd12, %rd10, %rd23;
+	mov.u16 	%rs1, 0;
+	st.u8 	[%rd12], %rs1;
+	add.s64 	%rd23, %rd23, 1;
+	setp.lt.u64	%p3, %rd23, 24;
+	@%p3 bra 	BB38_1;
+
+BB38_2:
+	add.s64 	%rd3, %rd8, 633;
+	ld.u8 	%rs2, [%rd8+633];
+	setp.eq.s16	%p1, %rs2, 0;
+	ld.u64 	%rd4, [%rd9];
+	ld.u8 	%rd13, [%rd4];
+	ld.u8 	%r1, [%rd4+1];
+	mul.wide.u32 	%rd14, %r1, 256;
+	or.b64  	%rd24, %rd14, %rd13;
+	@%p1 bra 	BB38_4;
+
+	ld.u8 	%r2, [%rd4+2];
+	mul.wide.u32 	%rd15, %r2, 65536;
+	or.b64  	%rd16, %rd15, %rd24;
+	ld.u8 	%r3, [%rd4+3];
+	mul.wide.u32 	%rd17, %r3, 16777216;
+	or.b64  	%rd24, %rd16, %rd17;
+
+BB38_4:
+	selp.b64	%rd18, 2, 4, %p1;
+	and.b64  	%rd19, %rd24, 4294967295;
+	ld.u64 	%rd20, [%rd3+-625];
+	add.s64 	%rd21, %rd20, %rd19;
+	st.u64 	[%rd10+16], %rd21;
+	st.u64 	[%rd10+8], %rd8;
+	add.s64 	%rd22, %rd4, %rd18;
+	st.u64 	[%rd9], %rd22;
+	ret;
+}
+
+	// .globl	_Z18ImplMapTableReaderP10tMetaData_P5tRVA_PPhPvii
+.visible .func _Z18ImplMapTableReaderP10tMetaData_P5tRVA_PPhPvii(
+	.param .b64 _Z18ImplMapTableReaderP10tMetaData_P5tRVA_PPhPvii_param_0,
+	.param .b64 _Z18ImplMapTableReaderP10tMetaData_P5tRVA_PPhPvii_param_1,
+	.param .b64 _Z18ImplMapTableReaderP10tMetaData_P5tRVA_PPhPvii_param_2,
+	.param .b64 _Z18ImplMapTableReaderP10tMetaData_P5tRVA_PPhPvii_param_3,
+	.param .b32 _Z18ImplMapTableReaderP10tMetaData_P5tRVA_PPhPvii_param_4,
+	.param .b32 _Z18ImplMapTableReaderP10tMetaData_P5tRVA_PPhPvii_param_5
+)
+{
+	.reg .pred 	%p<7>;
+	.reg .b16 	%rs<6>;
+	.reg .b32 	%r<44>;
+	.reg .b64 	%rd<39>;
+
+
+	ld.param.u64 	%rd18, [_Z18ImplMapTableReaderP10tMetaData_P5tRVA_PPhPvii_param_0];
+	ld.param.u64 	%rd19, [_Z18ImplMapTableReaderP10tMetaData_P5tRVA_PPhPvii_param_2];
+	ld.param.u64 	%rd20, [_Z18ImplMapTableReaderP10tMetaData_P5tRVA_PPhPvii_param_3];
+	mov.u64 	%rd35, 0;
+	mov.pred 	%p1, 0;
+	@%p1 bra 	BB39_2;
+
+BB39_1:
+	add.s64 	%rd22, %rd20, %rd35;
+	mov.u16 	%rs2, 0;
+	st.u8 	[%rd22], %rs2;
+	add.s64 	%rd35, %rd35, 1;
+	setp.lt.u64	%p2, %rd35, 24;
+	@%p2 bra 	BB39_1;
+
+BB39_2:
+	ld.u64 	%rd3, [%rd19];
+	ld.u8 	%r11, [%rd3];
+	ld.u8 	%r12, [%rd3+1];
+	prmt.b32 	%r13, %r12, %r11, 30212;
+	st.u16 	[%rd20], %r13;
+	ld.global.u8 	%r1, [__nv_static_29__16_MetaData_cpp1_ii_286a6e27_codedTagBits+8];
+	ld.u8 	%r41, [%rd3+2];
+	mov.u32 	%r14, 1;
+	shl.b32 	%r15, %r14, %r1;
+	add.s32 	%r16, %r15, 255;
+	and.b32  	%r17, %r16, %r41;
+	cvt.u64.u32	%rd23, %r17;
+	ld.global.u64 	%rd24, [__nv_static_29__16_MetaData_cpp1_ii_286a6e27_codedTags+64];
+	add.s64 	%rd25, %rd24, %rd23;
+	ld.u8 	%rs1, [%rd25];
+	setp.lt.u16	%p3, %rs1, 49;
+	@%p3 bra 	BB39_4;
+
+	// Callseq Start 22
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b32 param0;
+	st.param.b32	[param0+0], %r14;
+	call.uni 
+	_Z7gpuexiti, 
+	(
+	param0
+	);
+	
+	//{
+	}// Callseq End 22
+	ld.u8 	%r41, [%rd3+2];
+
+BB39_4:
+	add.s64 	%rd5, %rd18, 624;
+	ld.u8 	%rs3, [%rd18+624];
+	setp.eq.s16	%p4, %rs3, 0;
+	ld.u8 	%rs4, [%rd3+3];
+	mul.wide.u16 	%r19, %rs4, 256;
+	or.b32  	%r42, %r19, %r41;
+	add.s64 	%rd36, %rd3, 4;
+	@%p4 bra 	BB39_6;
+
+	ld.u8 	%r20, [%rd3+4];
+	shl.b32 	%r21, %r20, 16;
+	or.b32  	%r22, %r21, %r42;
+	ld.u8 	%r23, [%rd3+5];
+	shl.b32 	%r24, %r23, 24;
+	or.b32  	%r42, %r22, %r24;
+	add.s64 	%rd36, %rd3, 6;
+
+BB39_6:
+	cvt.u32.u16	%r25, %rs1;
+	shl.b32 	%r26, %r25, 24;
+	shr.u32 	%r27, %r42, %r1;
+	or.b32  	%r28, %r27, %r26;
+	st.u32 	[%rd20+4], %r28;
+	ld.u8 	%rs5, [%rd5+8];
+	setp.eq.s16	%p5, %rs5, 0;
+	selp.b64	%rd10, 2, 4, %p5;
+	ld.u8 	%rd26, [%rd36];
+	ld.u8 	%r29, [%rd36+1];
+	mul.wide.u32 	%rd27, %r29, 256;
+	or.b64  	%rd37, %rd27, %rd26;
+	@%p5 bra 	BB39_8;
+
+	ld.u8 	%r30, [%rd36+2];
+	mul.wide.u32 	%rd28, %r30, 65536;
+	or.b64  	%rd29, %rd28, %rd37;
+	ld.u8 	%r31, [%rd36+3];
+	mul.wide.u32 	%rd30, %r31, 16777216;
+	or.b64  	%rd37, %rd29, %rd30;
+
+BB39_8:
+	and.b64  	%rd31, %rd37, 4294967295;
+	ld.u64 	%rd32, [%rd5+-624];
+	add.s64 	%rd33, %rd32, %rd31;
+	st.u64 	[%rd20+8], %rd33;
+	ld.u32 	%r32, [%rd5+-480];
+	setp.lt.u32	%p6, %r32, 65536;
+	add.s64 	%rd14, %rd36, %rd10;
+	ld.u8 	%r33, [%rd14];
+	ld.u8 	%r34, [%rd14+1];
+	prmt.b32 	%r43, %r34, %r33, 30212;
+	add.s64 	%rd38, %rd10, 2;
+	@%p6 bra 	BB39_10;
+
+	ld.u8 	%r35, [%rd14+2];
+	shl.b32 	%r36, %r35, 16;
+	or.b32  	%r37, %r36, %r43;
+	ld.u8 	%r38, [%rd14+3];
+	shl.b32 	%r39, %r38, 24;
+	or.b32  	%r43, %r37, %r39;
+	add.s64 	%rd38, %rd10, 4;
+
+BB39_10:
+	or.b32  	%r40, %r43, 436207616;
+	st.u32 	[%rd20+16], %r40;
+	add.s64 	%rd34, %rd36, %rd38;
+	st.u64 	[%rd19], %rd34;
+	ret;
+}
+
+	// .globl	_Z19FieldRVATableReaderP10tMetaData_P5tRVA_PPhPvii
+.visible .func _Z19FieldRVATableReaderP10tMetaData_P5tRVA_PPhPvii(
+	.param .b64 _Z19FieldRVATableReaderP10tMetaData_P5tRVA_PPhPvii_param_0,
+	.param .b64 _Z19FieldRVATableReaderP10tMetaData_P5tRVA_PPhPvii_param_1,
+	.param .b64 _Z19FieldRVATableReaderP10tMetaData_P5tRVA_PPhPvii_param_2,
+	.param .b64 _Z19FieldRVATableReaderP10tMetaData_P5tRVA_PPhPvii_param_3,
+	.param .b32 _Z19FieldRVATableReaderP10tMetaData_P5tRVA_PPhPvii_param_4,
+	.param .b32 _Z19FieldRVATableReaderP10tMetaData_P5tRVA_PPhPvii_param_5
+)
+{
+	.reg .pred 	%p<4>;
+	.reg .b16 	%rs<2>;
+	.reg .b32 	%r<21>;
+	.reg .b64 	%rd<17>;
+
+
+	ld.param.u64 	%rd8, [_Z19FieldRVATableReaderP10tMetaData_P5tRVA_PPhPvii_param_0];
+	ld.param.u64 	%rd9, [_Z19FieldRVATableReaderP10tMetaData_P5tRVA_PPhPvii_param_1];
+	ld.param.u64 	%rd10, [_Z19FieldRVATableReaderP10tMetaData_P5tRVA_PPhPvii_param_2];
+	ld.param.u64 	%rd11, [_Z19FieldRVATableReaderP10tMetaData_P5tRVA_PPhPvii_param_3];
+	mov.u64 	%rd15, 0;
+	mov.pred 	%p1, 0;
+	@%p1 bra 	BB40_2;
+
+BB40_1:
+	add.s64 	%rd13, %rd11, %rd15;
+	mov.u16 	%rs1, 0;
+	st.u8 	[%rd13], %rs1;
+	add.s64 	%rd15, %rd15, 1;
+	setp.lt.u64	%p2, %rd15, 16;
+	@%p2 bra 	BB40_1;
+
+BB40_2:
+	ld.u64 	%rd3, [%rd10];
+	ld.u8 	%r4, [%rd3];
+	ld.u8 	%r5, [%rd3+1];
+	prmt.b32 	%r6, %r5, %r4, 30212;
+	ld.u8 	%r7, [%rd3+2];
+	prmt.b32 	%r8, %r7, %r6, 28756;
+	ld.u8 	%r9, [%rd3+3];
+	prmt.b32 	%r10, %r9, %r8, 1620;
+	// Callseq Start 23
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b64 param0;
+	st.param.b64	[param0+0], %rd9;
 	.param .b32 param1;
-	st.param.b32	[param1+0], %r198;
+	st.param.b32	[param1+0], %r10;
 	.param .b64 retval0;
 	call.uni (retval0), 
 	_Z12RVA_FindDataP5tRVA_j, 
@@ -1463,206 +3241,2058 @@ BB15_89:
 	param0, 
 	param1
 	);
-	ld.param.b64	%rd150, [retval0+0];
+	ld.param.b64	%rd14, [retval0+0];
 	
 	//{
-	}// Callseq End 9
-	cvt.u32.u64	%r288, %rd150;
-	bra.uni 	BB15_125;
+	}// Callseq End 23
+	st.u64 	[%rd11], %rd14;
+	ld.u32 	%r11, [%rd8+56];
+	setp.lt.u32	%p3, %r11, 65536;
+	ld.u8 	%r12, [%rd3+4];
+	ld.u8 	%r13, [%rd3+5];
+	prmt.b32 	%r20, %r13, %r12, 30212;
+	add.s64 	%rd16, %rd3, 6;
+	@%p3 bra 	BB40_4;
 
-BB15_96:
-	mov.u32 	%r288, %r50;
-	bra.uni 	BB15_125;
+	ld.u8 	%r14, [%rd3+6];
+	shl.b32 	%r15, %r14, 16;
+	or.b32  	%r16, %r15, %r20;
+	ld.u8 	%r17, [%rd3+7];
+	shl.b32 	%r18, %r17, 24;
+	or.b32  	%r20, %r16, %r18;
+	add.s64 	%rd16, %rd3, 8;
 
-BB15_99:
-	setp.ne.s32	%p44, %r75, 115;
-	@%p44 bra 	BB15_84;
+BB40_4:
+	or.b32  	%r19, %r20, 67108864;
+	st.u32 	[%rd11+8], %r19;
+	st.u64 	[%rd10], %rd16;
+	ret;
+}
 
-	ld.s8 	%r180, [%rd218];
-	ld.s8 	%rs21, [%rd218+1];
-	mul.wide.s16 	%r181, %rs21, 256;
-	or.b32  	%r288, %r181, %r180;
-	add.s64 	%rd218, %rd218, 2;
-	bra.uni 	BB15_125;
+	// .globl	_Z19AssemblyTableReaderP10tMetaData_P5tRVA_PPhPvii
+.visible .func _Z19AssemblyTableReaderP10tMetaData_P5tRVA_PPhPvii(
+	.param .b64 _Z19AssemblyTableReaderP10tMetaData_P5tRVA_PPhPvii_param_0,
+	.param .b64 _Z19AssemblyTableReaderP10tMetaData_P5tRVA_PPhPvii_param_1,
+	.param .b64 _Z19AssemblyTableReaderP10tMetaData_P5tRVA_PPhPvii_param_2,
+	.param .b64 _Z19AssemblyTableReaderP10tMetaData_P5tRVA_PPhPvii_param_3,
+	.param .b32 _Z19AssemblyTableReaderP10tMetaData_P5tRVA_PPhPvii_param_4,
+	.param .b32 _Z19AssemblyTableReaderP10tMetaData_P5tRVA_PPhPvii_param_5
+)
+{
+	.reg .pred 	%p<6>;
+	.reg .b16 	%rs<5>;
+	.reg .b32 	%r<36>;
+	.reg .b64 	%rd<56>;
 
-BB15_105:
-	ld.s8 	%r200, [%rd218+2];
-	mul.wide.s32 	%rd153, %r200, 65536;
-	or.b64  	%rd154, %rd153, %rd211;
-	ld.u8 	%r201, [%rd218+3];
-	mul.wide.u32 	%rd155, %r201, 16777216;
-	or.b64  	%rd211, %rd154, %rd155;
-	add.s64 	%rd218, %rd218, 4;
 
-BB15_106:
-	ld.u64 	%rd156, [%rd1+-632];
-	add.s64 	%rd157, %rd156, %rd211;
-	cvt.u32.u64	%r288, %rd157;
-	bra.uni 	BB15_125;
+	ld.param.u64 	%rd21, [_Z19AssemblyTableReaderP10tMetaData_P5tRVA_PPhPvii_param_0];
+	ld.param.u64 	%rd22, [_Z19AssemblyTableReaderP10tMetaData_P5tRVA_PPhPvii_param_2];
+	ld.param.u64 	%rd23, [_Z19AssemblyTableReaderP10tMetaData_P5tRVA_PPhPvii_param_3];
+	mov.u64 	%rd52, 0;
+	mov.pred 	%p1, 0;
+	@%p1 bra 	BB41_2;
 
-BB15_82:
-	setp.eq.s32	%p53, %r75, 66;
-	@%p53 bra 	BB15_111;
-	bra.uni 	BB15_83;
+BB41_1:
+	add.s64 	%rd25, %rd23, %rd52;
+	mov.u16 	%rs1, 0;
+	st.u8 	[%rd25], %rs1;
+	add.s64 	%rd52, %rd52, 1;
+	setp.lt.u64	%p2, %rd52, 40;
+	@%p2 bra 	BB41_1;
 
-BB15_111:
-	ld.u8 	%rs26, [%rd1+1];
-	setp.eq.s16	%p57, %rs26, 0;
-	ld.s8 	%rd167, [%rd218];
-	add.s64 	%rd48, %rd218, 2;
-	ld.s8 	%r205, [%rd218+1];
-	mul.wide.s32 	%rd168, %r205, 256;
-	or.b64  	%rd215, %rd168, %rd167;
-	@%p57 bra 	BB15_112;
-	bra.uni 	BB15_113;
+BB41_2:
+	ld.u64 	%rd3, [%rd22];
+	ld.u8 	%r1, [%rd3];
+	ld.u8 	%r2, [%rd3+1];
+	prmt.b32 	%r3, %r2, %r1, 30212;
+	ld.u8 	%r4, [%rd3+2];
+	prmt.b32 	%r5, %r4, %r3, 28756;
+	ld.u8 	%r6, [%rd3+3];
+	prmt.b32 	%r7, %r6, %r5, 1620;
+	st.u32 	[%rd23], %r7;
+	ld.u8 	%r8, [%rd3+4];
+	ld.u8 	%r9, [%rd3+5];
+	prmt.b32 	%r10, %r9, %r8, 30212;
+	st.u16 	[%rd23+4], %r10;
+	ld.u8 	%r11, [%rd3+6];
+	ld.u8 	%r12, [%rd3+7];
+	prmt.b32 	%r13, %r12, %r11, 30212;
+	st.u16 	[%rd23+6], %r13;
+	ld.u8 	%r14, [%rd3+8];
+	ld.u8 	%r15, [%rd3+9];
+	prmt.b32 	%r16, %r15, %r14, 30212;
+	st.u16 	[%rd23+8], %r16;
+	ld.u8 	%r17, [%rd3+10];
+	ld.u8 	%r18, [%rd3+11];
+	prmt.b32 	%r19, %r18, %r17, 30212;
+	st.u16 	[%rd23+10], %r19;
+	ld.u8 	%r20, [%rd3+12];
+	ld.u8 	%r21, [%rd3+13];
+	prmt.b32 	%r22, %r21, %r20, 30212;
+	ld.u8 	%r23, [%rd3+14];
+	prmt.b32 	%r24, %r23, %r22, 28756;
+	ld.u8 	%r25, [%rd3+15];
+	prmt.b32 	%r26, %r25, %r24, 1620;
+	st.u32 	[%rd23+12], %r26;
+	add.s64 	%rd5, %rd21, 633;
+	ld.u8 	%rs2, [%rd21+633];
+	setp.eq.s16	%p3, %rs2, 0;
+	selp.b64	%rd6, 18, 20, %p3;
+	ld.u8 	%rd26, [%rd3+16];
+	ld.u8 	%r27, [%rd3+17];
+	mul.wide.u32 	%rd27, %r27, 256;
+	or.b64  	%rd53, %rd27, %rd26;
+	@%p3 bra 	BB41_4;
 
-BB15_112:
-	mov.u64 	%rd218, %rd48;
-	bra.uni 	BB15_114;
+	ld.u8 	%r28, [%rd3+18];
+	mul.wide.u32 	%rd28, %r28, 65536;
+	or.b64  	%rd29, %rd28, %rd53;
+	ld.u8 	%r29, [%rd3+19];
+	mul.wide.u32 	%rd30, %r29, 16777216;
+	or.b64  	%rd53, %rd29, %rd30;
 
-BB15_83:
-	setp.eq.s32	%p54, %r75, 71;
-	@%p54 bra 	BB15_107;
-	bra.uni 	BB15_84;
+BB41_4:
+	and.b64  	%rd31, %rd53, 4294967295;
+	ld.u64 	%rd32, [%rd5+-625];
+	add.s64 	%rd33, %rd32, %rd31;
+	st.u64 	[%rd23+16], %rd33;
+	ld.u8 	%rs3, [%rd5+-1];
+	setp.eq.s16	%p4, %rs3, 0;
+	selp.b64	%rd11, 2, 4, %p4;
+	add.s64 	%rd12, %rd3, %rd6;
+	ld.u8 	%rd34, [%rd12];
+	ld.u8 	%r30, [%rd12+1];
+	mul.wide.u32 	%rd35, %r30, 256;
+	or.b64  	%rd54, %rd35, %rd34;
+	@%p4 bra 	BB41_6;
 
-BB15_107:
-	ld.u8 	%rs25, [%rd1+2];
-	setp.eq.s16	%p56, %rs25, 0;
-	ld.s8 	%rd158, [%rd218];
-	add.s64 	%rd42, %rd218, 2;
-	ld.s8 	%r202, [%rd218+1];
-	mul.wide.s32 	%rd159, %r202, 256;
-	or.b64  	%rd213, %rd159, %rd158;
-	@%p56 bra 	BB15_108;
-	bra.uni 	BB15_109;
+	ld.u8 	%r31, [%rd12+2];
+	mul.wide.u32 	%rd36, %r31, 65536;
+	or.b64  	%rd37, %rd36, %rd54;
+	ld.u8 	%r32, [%rd12+3];
+	mul.wide.u32 	%rd38, %r32, 16777216;
+	or.b64  	%rd54, %rd37, %rd38;
 
-BB15_108:
-	mov.u64 	%rd218, %rd42;
-	bra.uni 	BB15_110;
+BB41_6:
+	add.s64 	%rd16, %rd11, %rd6;
+	add.s64 	%rd17, %rd3, %rd16;
+	and.b64  	%rd39, %rd54, 4294967295;
+	ld.u64 	%rd40, [%rd5+-633];
+	add.s64 	%rd41, %rd40, %rd39;
+	st.u64 	[%rd23+24], %rd41;
+	ld.u8 	%rs4, [%rd5+-1];
+	setp.eq.s16	%p5, %rs4, 0;
+	ld.u8 	%rd42, [%rd17];
+	ld.u8 	%r33, [%rd17+1];
+	mul.wide.u32 	%rd43, %r33, 256;
+	or.b64  	%rd55, %rd43, %rd42;
+	@%p5 bra 	BB41_8;
 
-BB15_84:
-	mov.u64 	%rd185, $str47;
-	cvta.global.u64 	%rd186, %rd185;
-	// Callseq Start 11
-	{
-	.reg .b32 temp_param_reg;
-	// <end>}
-	.param .b64 param0;
-	st.param.b64	[param0+0], %rd186;
-	.param .align 8 .b8 param1[8];
-	st.param.b32	[param1+0], %r75;
-	st.param.b32	[param1+4], %r75;
-	call.uni 
-	_Z5CrashPKcz, 
-	(
-	param0, 
-	param1
-	);
-	
-	//{
-	}// Callseq End 11
+	ld.u8 	%r34, [%rd17+2];
+	mul.wide.u32 	%rd44, %r34, 65536;
+	or.b64  	%rd45, %rd44, %rd55;
+	ld.u8 	%r35, [%rd17+3];
+	mul.wide.u32 	%rd46, %r35, 16777216;
+	or.b64  	%rd55, %rd45, %rd46;
 
-BB15_125:
-	ld.s8 	%r93, [%rd207+1];
-	setp.gt.s32	%p61, %r93, 114;
-	@%p61 bra 	BB15_129;
+BB41_8:
+	add.s64 	%rd47, %rd16, %rd11;
+	add.s64 	%rd48, %rd3, %rd47;
+	and.b64  	%rd49, %rd55, 4294967295;
+	ld.u64 	%rd50, [%rd5+-633];
+	add.s64 	%rd51, %rd50, %rd49;
+	st.u64 	[%rd23+32], %rd51;
+	st.u64 	[%rd22], %rd48;
+	ret;
+}
 
-	setp.eq.s32	%p64, %r93, 42;
-	@%p64 bra 	BB15_132;
-	bra.uni 	BB15_127;
+	// .globl	_Z22AssemblyRefTableReaderP10tMetaData_P5tRVA_PPhPvii
+.visible .func _Z22AssemblyRefTableReaderP10tMetaData_P5tRVA_PPhPvii(
+	.param .b64 _Z22AssemblyRefTableReaderP10tMetaData_P5tRVA_PPhPvii_param_0,
+	.param .b64 _Z22AssemblyRefTableReaderP10tMetaData_P5tRVA_PPhPvii_param_1,
+	.param .b64 _Z22AssemblyRefTableReaderP10tMetaData_P5tRVA_PPhPvii_param_2,
+	.param .b64 _Z22AssemblyRefTableReaderP10tMetaData_P5tRVA_PPhPvii_param_3,
+	.param .b32 _Z22AssemblyRefTableReaderP10tMetaData_P5tRVA_PPhPvii_param_4,
+	.param .b32 _Z22AssemblyRefTableReaderP10tMetaData_P5tRVA_PPhPvii_param_5
+)
+{
+	.reg .pred 	%p<7>;
+	.reg .b16 	%rs<6>;
+	.reg .b32 	%r<32>;
+	.reg .b64 	%rd<71>;
 
-BB15_132:
-	st.u32 	[%rd219], %r288;
-	add.s64 	%rd219, %rd219, 4;
-	bra.uni 	BB15_134;
 
-BB15_129:
-	setp.eq.s32	%p62, %r93, 120;
-	@%p62 bra 	BB15_134;
+	ld.param.u64 	%rd26, [_Z22AssemblyRefTableReaderP10tMetaData_P5tRVA_PPhPvii_param_0];
+	ld.param.u64 	%rd27, [_Z22AssemblyRefTableReaderP10tMetaData_P5tRVA_PPhPvii_param_2];
+	ld.param.u64 	%rd28, [_Z22AssemblyRefTableReaderP10tMetaData_P5tRVA_PPhPvii_param_3];
+	mov.u64 	%rd66, 0;
+	mov.pred 	%p1, 0;
+	@%p1 bra 	BB42_2;
 
-	setp.ne.s32	%p63, %r93, 115;
-	@%p63 bra 	BB15_133;
+BB42_1:
+	add.s64 	%rd30, %rd28, %rd66;
+	mov.u16 	%rs1, 0;
+	st.u8 	[%rd30], %rs1;
+	add.s64 	%rd66, %rd66, 1;
+	setp.lt.u64	%p2, %rd66, 48;
+	@%p2 bra 	BB42_1;
 
-	st.u16 	[%rd219], %r288;
-	add.s64 	%rd219, %rd219, 2;
-	bra.uni 	BB15_134;
+BB42_2:
+	ld.u64 	%rd3, [%rd27];
+	ld.u8 	%r1, [%rd3];
+	ld.u8 	%r2, [%rd3+1];
+	prmt.b32 	%r3, %r2, %r1, 30212;
+	st.u16 	[%rd28], %r3;
+	ld.u8 	%r4, [%rd3+2];
+	ld.u8 	%r5, [%rd3+3];
+	prmt.b32 	%r6, %r5, %r4, 30212;
+	st.u16 	[%rd28+2], %r6;
+	ld.u8 	%r7, [%rd3+4];
+	ld.u8 	%r8, [%rd3+5];
+	prmt.b32 	%r9, %r8, %r7, 30212;
+	st.u16 	[%rd28+4], %r9;
+	ld.u8 	%r10, [%rd3+6];
+	ld.u8 	%r11, [%rd3+7];
+	prmt.b32 	%r12, %r11, %r10, 30212;
+	st.u16 	[%rd28+6], %r12;
+	ld.u8 	%r13, [%rd3+8];
+	ld.u8 	%r14, [%rd3+9];
+	prmt.b32 	%r15, %r14, %r13, 30212;
+	ld.u8 	%r16, [%rd3+10];
+	prmt.b32 	%r17, %r16, %r15, 28756;
+	ld.u8 	%r18, [%rd3+11];
+	prmt.b32 	%r19, %r18, %r17, 1620;
+	st.u32 	[%rd28+8], %r19;
+	add.s64 	%rd5, %rd26, 633;
+	ld.u8 	%rs2, [%rd26+633];
+	setp.eq.s16	%p3, %rs2, 0;
+	selp.b64	%rd6, 2, 4, %p3;
+	ld.u8 	%rd31, [%rd3+12];
+	ld.u8 	%r20, [%rd3+13];
+	mul.wide.u32 	%rd32, %r20, 256;
+	or.b64  	%rd67, %rd32, %rd31;
+	@%p3 bra 	BB42_4;
 
-BB15_127:
-	setp.eq.s32	%p65, %r93, 99;
-	@%p65 bra 	BB15_128;
-	bra.uni 	BB15_133;
+	ld.u8 	%r21, [%rd3+14];
+	mul.wide.u32 	%rd33, %r21, 65536;
+	or.b64  	%rd34, %rd33, %rd67;
+	ld.u8 	%r22, [%rd3+15];
+	mul.wide.u32 	%rd35, %r22, 16777216;
+	or.b64  	%rd67, %rd34, %rd35;
 
-BB15_128:
-	st.u8 	[%rd219], %r288;
-	add.s64 	%rd219, %rd219, 1;
-	bra.uni 	BB15_134;
+BB42_4:
+	add.s64 	%rd10, %rd6, 12;
+	add.s64 	%rd11, %rd3, %rd10;
+	and.b64  	%rd36, %rd67, 4294967295;
+	ld.u64 	%rd37, [%rd5+-625];
+	add.s64 	%rd38, %rd37, %rd36;
+	st.u64 	[%rd28+16], %rd38;
+	ld.u8 	%rs3, [%rd5+-1];
+	setp.eq.s16	%p4, %rs3, 0;
+	selp.b64	%rd13, 2, 4, %p4;
+	ld.u8 	%rd39, [%rd11];
+	ld.u8 	%r23, [%rd11+1];
+	mul.wide.u32 	%rd40, %r23, 256;
+	or.b64  	%rd68, %rd40, %rd39;
+	@%p4 bra 	BB42_6;
 
-BB15_133:
-	mov.u64 	%rd189, $str48;
-	cvta.global.u64 	%rd190, %rd189;
-	// Callseq Start 12
-	{
-	.reg .b32 temp_param_reg;
-	// <end>}
-	.param .b64 param0;
-	st.param.b64	[param0+0], %rd190;
-	.param .align 8 .b8 param1[4];
-	st.param.b32	[param1+0], %r93;
-	call.uni 
-	_Z5CrashPKcz, 
-	(
-	param0, 
-	param1
-	);
-	
-	//{
-	}// Callseq End 12
+	ld.u8 	%r24, [%rd11+2];
+	mul.wide.u32 	%rd41, %r24, 65536;
+	or.b64  	%rd42, %rd41, %rd68;
+	ld.u8 	%r25, [%rd11+3];
+	mul.wide.u32 	%rd43, %r25, 16777216;
+	or.b64  	%rd68, %rd42, %rd43;
 
-BB15_134:
-	add.s64 	%rd207, %rd207, 2;
-	add.s32 	%r285, %r285, 2;
-	setp.lt.s32	%p66, %r285, %r55;
-	@%p66 bra 	BB15_78;
+BB42_6:
+	and.b64  	%rd44, %rd68, 4294967295;
+	ld.u64 	%rd45, [%rd5+-633];
+	add.s64 	%rd46, %rd45, %rd44;
+	st.u64 	[%rd28+24], %rd46;
+	ld.u8 	%rs4, [%rd5+-1];
+	setp.eq.s16	%p5, %rs4, 0;
+	add.s64 	%rd17, %rd11, %rd13;
+	ld.u8 	%rd47, [%rd17];
+	ld.u8 	%r26, [%rd17+1];
+	mul.wide.u32 	%rd48, %r26, 256;
+	or.b64  	%rd69, %rd48, %rd47;
+	@%p5 bra 	BB42_8;
 
-BB15_135:
-	add.s32 	%r283, %r283, 1;
-	setp.lt.s32	%p67, %r283, %r276;
-	@%p67 bra 	BB15_76;
+	ld.u8 	%r27, [%rd17+2];
+	mul.wide.u32 	%rd49, %r27, 65536;
+	or.b64  	%rd50, %rd49, %rd69;
+	ld.u8 	%r28, [%rd17+3];
+	mul.wide.u32 	%rd51, %r28, 16777216;
+	or.b64  	%rd69, %rd50, %rd51;
 
-BB15_136:
-	mov.u32 	%r240, 1;
-	mov.u64 	%rd191, $str49;
-	cvta.global.u64 	%rd192, %rd191;
-	// Callseq Start 13
+BB42_8:
+	add.s64 	%rd52, %rd13, %rd10;
+	add.s64 	%rd21, %rd52, %rd13;
+	and.b64  	%rd53, %rd69, 4294967295;
+	ld.u64 	%rd54, [%rd5+-633];
+	add.s64 	%rd55, %rd54, %rd53;
+	st.u64 	[%rd28+32], %rd55;
+	ld.u8 	%rs5, [%rd5];
+	setp.eq.s16	%p6, %rs5, 0;
+	add.s64 	%rd22, %rd17, %rd13;
+	ld.u8 	%rd56, [%rd22];
+	ld.u8 	%r29, [%rd22+1];
+	mul.wide.u32 	%rd57, %r29, 256;
+	or.b64  	%rd70, %rd57, %rd56;
+	@%p6 bra 	BB42_10;
+
+	ld.u8 	%r30, [%rd22+2];
+	mul.wide.u32 	%rd58, %r30, 65536;
+	or.b64  	%rd59, %rd58, %rd70;
+	ld.u8 	%r31, [%rd22+3];
+	mul.wide.u32 	%rd60, %r31, 16777216;
+	or.b64  	%rd70, %rd59, %rd60;
+
+BB42_10:
+	add.s64 	%rd61, %rd21, %rd6;
+	add.s64 	%rd62, %rd3, %rd61;
+	and.b64  	%rd63, %rd70, 4294967295;
+	ld.u64 	%rd64, [%rd5+-625];
+	add.s64 	%rd65, %rd64, %rd63;
+	st.u64 	[%rd28+40], %rd65;
+	st.u64 	[%rd27], %rd62;
+	ret;
+}
+
+	// .globl	_Z22NestedClassTableReaderP10tMetaData_P5tRVA_PPhPvii
+.visible .func _Z22NestedClassTableReaderP10tMetaData_P5tRVA_PPhPvii(
+	.param .b64 _Z22NestedClassTableReaderP10tMetaData_P5tRVA_PPhPvii_param_0,
+	.param .b64 _Z22NestedClassTableReaderP10tMetaData_P5tRVA_PPhPvii_param_1,
+	.param .b64 _Z22NestedClassTableReaderP10tMetaData_P5tRVA_PPhPvii_param_2,
+	.param .b64 _Z22NestedClassTableReaderP10tMetaData_P5tRVA_PPhPvii_param_3,
+	.param .b32 _Z22NestedClassTableReaderP10tMetaData_P5tRVA_PPhPvii_param_4,
+	.param .b32 _Z22NestedClassTableReaderP10tMetaData_P5tRVA_PPhPvii_param_5
+)
+{
+	.reg .pred 	%p<3>;
+	.reg .b32 	%r<27>;
+	.reg .b64 	%rd<16>;
+
+
+	ld.param.u64 	%rd12, [_Z22NestedClassTableReaderP10tMetaData_P5tRVA_PPhPvii_param_0];
+	ld.param.u64 	%rd10, [_Z22NestedClassTableReaderP10tMetaData_P5tRVA_PPhPvii_param_2];
+	ld.param.u64 	%rd11, [_Z22NestedClassTableReaderP10tMetaData_P5tRVA_PPhPvii_param_3];
+	mov.u64 	%rd13, 0;
+	st.u8 	[%rd11+7], %rd13;
+	st.u8 	[%rd11+6], %rd13;
+	st.u8 	[%rd11+5], %rd13;
+	st.u8 	[%rd11+4], %rd13;
+	st.u8 	[%rd11+3], %rd13;
+	st.u8 	[%rd11+2], %rd13;
+	st.u8 	[%rd11+1], %rd13;
+	st.u8 	[%rd11], %rd13;
+	add.s64 	%rd1, %rd12, 48;
+	ld.u32 	%r7, [%rd12+48];
+	setp.lt.u32	%p1, %r7, 65536;
+	ld.u64 	%rd2, [%rd10];
+	ld.u8 	%r8, [%rd2];
+	ld.u8 	%r9, [%rd2+1];
+	prmt.b32 	%r25, %r9, %r8, 30212;
+	add.s64 	%rd14, %rd2, 2;
+	@%p1 bra 	BB43_2;
+
+	ld.u8 	%r10, [%rd2+2];
+	shl.b32 	%r11, %r10, 16;
+	or.b32  	%r12, %r11, %r25;
+	ld.u8 	%r13, [%rd2+3];
+	shl.b32 	%r14, %r13, 24;
+	or.b32  	%r25, %r12, %r14;
+	add.s64 	%rd14, %rd2, 4;
+
+BB43_2:
+	or.b32  	%r15, %r25, 33554432;
+	st.u32 	[%rd11], %r15;
+	ld.u32 	%r16, [%rd1];
+	setp.lt.u32	%p2, %r16, 65536;
+	ld.u8 	%r17, [%rd14];
+	ld.u8 	%r18, [%rd14+1];
+	prmt.b32 	%r26, %r18, %r17, 30212;
+	add.s64 	%rd15, %rd14, 2;
+	@%p2 bra 	BB43_4;
+
+	ld.u8 	%r19, [%rd14+2];
+	shl.b32 	%r20, %r19, 16;
+	or.b32  	%r21, %r20, %r26;
+	ld.u8 	%r22, [%rd14+3];
+	shl.b32 	%r23, %r22, 24;
+	or.b32  	%r26, %r21, %r23;
+	add.s64 	%rd15, %rd14, 4;
+
+BB43_4:
+	or.b32  	%r24, %r26, 33554432;
+	st.u32 	[%rd11+4], %r24;
+	st.u64 	[%rd10], %rd15;
+	ret;
+}
+
+	// .globl	_Z23GenericParamTableReaderP10tMetaData_P5tRVA_PPhPvii
+.visible .func _Z23GenericParamTableReaderP10tMetaData_P5tRVA_PPhPvii(
+	.param .b64 _Z23GenericParamTableReaderP10tMetaData_P5tRVA_PPhPvii_param_0,
+	.param .b64 _Z23GenericParamTableReaderP10tMetaData_P5tRVA_PPhPvii_param_1,
+	.param .b64 _Z23GenericParamTableReaderP10tMetaData_P5tRVA_PPhPvii_param_2,
+	.param .b64 _Z23GenericParamTableReaderP10tMetaData_P5tRVA_PPhPvii_param_3,
+	.param .b32 _Z23GenericParamTableReaderP10tMetaData_P5tRVA_PPhPvii_param_4,
+	.param .b32 _Z23GenericParamTableReaderP10tMetaData_P5tRVA_PPhPvii_param_5
+)
+{
+	.reg .pred 	%p<6>;
+	.reg .b16 	%rs<6>;
+	.reg .b32 	%r<34>;
+	.reg .b64 	%rd<34>;
+
+
+	ld.param.u64 	%rd13, [_Z23GenericParamTableReaderP10tMetaData_P5tRVA_PPhPvii_param_0];
+	ld.param.u64 	%rd14, [_Z23GenericParamTableReaderP10tMetaData_P5tRVA_PPhPvii_param_2];
+	ld.param.u64 	%rd15, [_Z23GenericParamTableReaderP10tMetaData_P5tRVA_PPhPvii_param_3];
+	mov.u64 	%rd31, 0;
+	mov.pred 	%p2, 0;
+	@%p2 bra 	BB44_2;
+
+BB44_1:
+	add.s64 	%rd17, %rd15, %rd31;
+	mov.u16 	%rs2, 0;
+	st.u8 	[%rd17], %rs2;
+	add.s64 	%rd31, %rd31, 1;
+	setp.lt.u64	%p3, %rd31, 16;
+	@%p3 bra 	BB44_1;
+
+BB44_2:
+	ld.u64 	%rd3, [%rd14];
+	ld.u8 	%r8, [%rd3];
+	ld.u8 	%r9, [%rd3+1];
+	prmt.b32 	%r10, %r9, %r8, 30212;
+	st.u16 	[%rd15], %r10;
+	ld.u8 	%r11, [%rd3+2];
+	ld.u8 	%r12, [%rd3+3];
+	prmt.b32 	%r13, %r12, %r11, 30212;
+	st.u16 	[%rd15+2], %r13;
+	ld.global.u8 	%r1, [__nv_static_29__16_MetaData_cpp1_ii_286a6e27_codedTagBits+12];
+	ld.u8 	%r32, [%rd3+4];
+	mov.u32 	%r14, 1;
+	shl.b32 	%r15, %r14, %r1;
+	add.s32 	%r16, %r15, 255;
+	and.b32  	%r17, %r16, %r32;
+	cvt.u64.u32	%rd18, %r17;
+	ld.global.u64 	%rd19, [__nv_static_29__16_MetaData_cpp1_ii_286a6e27_codedTags+96];
+	add.s64 	%rd20, %rd19, %rd18;
+	ld.u8 	%rs1, [%rd20];
+	setp.lt.u16	%p4, %rs1, 49;
+	@%p4 bra 	BB44_4;
+
+	// Callseq Start 24
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
 	.param .b32 param0;
-	st.param.b32	[param0+0], %r240;
-	.param .b64 param1;
-	st.param.b64	[param1+0], %rd192;
-	.param .align 8 .b8 param2[8];
-	st.param.b32	[param2+0], %r275;
-	st.param.b32	[param2+4], %r276;
+	st.param.b32	[param0+0], %r14;
 	call.uni 
-	_Z5log_fjPKcz, 
+	_Z7gpuexiti, 
 	(
-	param0, 
-	param1, 
-	param2
+	param0
 	);
 	
 	//{
-	}// Callseq End 13
-	add.s64 	%rd194, %rd72, %rd143;
-	st.u64 	[%rd194+232], %rd26;
+	}// Callseq End 24
+	ld.u8 	%r32, [%rd3+4];
 
-BB15_137:
-	cvt.u32.u64	%r239, %rd16;
-	add.s32 	%r275, %r239, 1;
-	setp.lt.s32	%p68, %r275, 48;
-	@%p68 bra 	BB15_55;
+BB44_4:
+	add.s64 	%rd5, %rd13, 628;
+	ld.u8 	%rs3, [%rd13+628];
+	setp.eq.s16	%p5, %rs3, 0;
+	ld.u8 	%rs4, [%rd3+5];
+	mul.wide.u16 	%r19, %rs4, 256;
+	or.b32  	%r33, %r19, %r32;
+	add.s64 	%rd32, %rd3, 6;
+	@%p5 bra 	BB44_6;
 
+	ld.u8 	%r20, [%rd3+6];
+	shl.b32 	%r21, %r20, 16;
+	or.b32  	%r22, %r21, %r33;
+	ld.u8 	%r23, [%rd3+7];
+	shl.b32 	%r24, %r23, 24;
+	or.b32  	%r33, %r22, %r24;
+	add.s64 	%rd32, %rd3, 8;
+
+BB44_6:
+	cvt.u32.u16	%r25, %rs1;
+	shl.b32 	%r26, %r25, 24;
+	shr.u32 	%r27, %r33, %r1;
+	or.b32  	%r28, %r27, %r26;
+	st.u32 	[%rd15+4], %r28;
+	ld.u8 	%rs5, [%rd5+4];
+	setp.eq.s16	%p1, %rs5, 0;
+	ld.u8 	%rd21, [%rd32];
+	ld.u8 	%r29, [%rd32+1];
+	mul.wide.u32 	%rd22, %r29, 256;
+	or.b64  	%rd33, %rd22, %rd21;
+	@%p1 bra 	BB44_8;
+
+	ld.u8 	%r30, [%rd32+2];
+	mul.wide.u32 	%rd23, %r30, 65536;
+	or.b64  	%rd24, %rd23, %rd33;
+	ld.u8 	%r31, [%rd32+3];
+	mul.wide.u32 	%rd25, %r31, 16777216;
+	or.b64  	%rd33, %rd24, %rd25;
+
+BB44_8:
+	selp.b64	%rd26, 2, 4, %p1;
+	and.b64  	%rd27, %rd33, 4294967295;
+	ld.u64 	%rd28, [%rd5+-628];
+	add.s64 	%rd29, %rd28, %rd27;
+	st.u64 	[%rd15+8], %rd29;
+	add.s64 	%rd30, %rd32, %rd26;
+	st.u64 	[%rd14], %rd30;
+	ret;
+}
+
+	// .globl	_Z21MethodSpecTableReaderP10tMetaData_P5tRVA_PPhPvii
+.visible .func _Z21MethodSpecTableReaderP10tMetaData_P5tRVA_PPhPvii(
+	.param .b64 _Z21MethodSpecTableReaderP10tMetaData_P5tRVA_PPhPvii_param_0,
+	.param .b64 _Z21MethodSpecTableReaderP10tMetaData_P5tRVA_PPhPvii_param_1,
+	.param .b64 _Z21MethodSpecTableReaderP10tMetaData_P5tRVA_PPhPvii_param_2,
+	.param .b64 _Z21MethodSpecTableReaderP10tMetaData_P5tRVA_PPhPvii_param_3,
+	.param .b32 _Z21MethodSpecTableReaderP10tMetaData_P5tRVA_PPhPvii_param_4,
+	.param .b32 _Z21MethodSpecTableReaderP10tMetaData_P5tRVA_PPhPvii_param_5
+)
+{
+	.reg .pred 	%p<6>;
+	.reg .b16 	%rs<6>;
+	.reg .b32 	%r<28>;
+	.reg .b64 	%rd<33>;
+
+
+	ld.param.u64 	%rd12, [_Z21MethodSpecTableReaderP10tMetaData_P5tRVA_PPhPvii_param_0];
+	ld.param.u64 	%rd13, [_Z21MethodSpecTableReaderP10tMetaData_P5tRVA_PPhPvii_param_2];
+	ld.param.u64 	%rd14, [_Z21MethodSpecTableReaderP10tMetaData_P5tRVA_PPhPvii_param_3];
+	mov.u64 	%rd30, 0;
+	mov.pred 	%p2, 0;
+	@%p2 bra 	BB45_2;
+
+BB45_1:
+	add.s64 	%rd16, %rd14, %rd30;
+	mov.u16 	%rs2, 0;
+	st.u8 	[%rd16], %rs2;
+	add.s64 	%rd30, %rd30, 1;
+	setp.lt.u64	%p3, %rd30, 32;
+	@%p3 bra 	BB45_1;
+
+BB45_2:
+	ld.u64 	%rd3, [%rd13];
+	st.u64 	[%rd14+8], %rd12;
+	ld.global.u8 	%r1, [__nv_static_29__16_MetaData_cpp1_ii_286a6e27_codedTagBits+7];
+	ld.u8 	%r26, [%rd3];
+	mov.u32 	%r8, 1;
+	shl.b32 	%r9, %r8, %r1;
+	add.s32 	%r10, %r9, 255;
+	and.b32  	%r11, %r10, %r26;
+	cvt.u64.u32	%rd17, %r11;
+	ld.global.u64 	%rd18, [__nv_static_29__16_MetaData_cpp1_ii_286a6e27_codedTags+56];
+	add.s64 	%rd19, %rd18, %rd17;
+	ld.u8 	%rs1, [%rd19];
+	setp.lt.u16	%p4, %rs1, 49;
+	@%p4 bra 	BB45_4;
+
+	// Callseq Start 25
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b32 param0;
+	st.param.b32	[param0+0], %r8;
+	call.uni 
+	_Z7gpuexiti, 
+	(
+	param0
+	);
+	
+	//{
+	}// Callseq End 25
+	ld.u8 	%r26, [%rd3];
+
+BB45_4:
+	add.s64 	%rd5, %rd12, 623;
+	ld.u8 	%rs3, [%rd12+623];
+	setp.eq.s16	%p5, %rs3, 0;
+	ld.u8 	%rs4, [%rd3+1];
+	mul.wide.u16 	%r13, %rs4, 256;
+	or.b32  	%r27, %r13, %r26;
+	add.s64 	%rd31, %rd3, 2;
+	@%p5 bra 	BB45_6;
+
+	ld.u8 	%r14, [%rd3+2];
+	shl.b32 	%r15, %r14, 16;
+	or.b32  	%r16, %r15, %r27;
+	ld.u8 	%r17, [%rd3+3];
+	shl.b32 	%r18, %r17, 24;
+	or.b32  	%r27, %r16, %r18;
+	add.s64 	%rd31, %rd3, 4;
+
+BB45_6:
+	cvt.u32.u16	%r19, %rs1;
+	shl.b32 	%r20, %r19, 24;
+	shr.u32 	%r21, %r27, %r1;
+	or.b32  	%r22, %r21, %r20;
+	st.u32 	[%rd14+16], %r22;
+	ld.u8 	%rs5, [%rd5+10];
+	setp.eq.s16	%p1, %rs5, 0;
+	ld.u8 	%rd20, [%rd31];
+	ld.u8 	%r23, [%rd31+1];
+	mul.wide.u32 	%rd21, %r23, 256;
+	or.b64  	%rd32, %rd21, %rd20;
+	@%p1 bra 	BB45_8;
+
+	ld.u8 	%r24, [%rd31+2];
+	mul.wide.u32 	%rd22, %r24, 65536;
+	or.b64  	%rd23, %rd22, %rd32;
+	ld.u8 	%r25, [%rd31+3];
+	mul.wide.u32 	%rd24, %r25, 16777216;
+	or.b64  	%rd32, %rd23, %rd24;
+
+BB45_8:
+	selp.b64	%rd25, 2, 4, %p1;
+	and.b64  	%rd26, %rd32, 4294967295;
+	ld.u64 	%rd27, [%rd5+-615];
+	add.s64 	%rd28, %rd27, %rd26;
+	st.u64 	[%rd14+24], %rd28;
+	add.s64 	%rd29, %rd31, %rd25;
+	st.u64 	[%rd13], %rd29;
+	ret;
+}
+
+	// .globl	_Z33GenericParamConstraintTableReaderP10tMetaData_P5tRVA_PPhPvii
+.visible .func _Z33GenericParamConstraintTableReaderP10tMetaData_P5tRVA_PPhPvii(
+	.param .b64 _Z33GenericParamConstraintTableReaderP10tMetaData_P5tRVA_PPhPvii_param_0,
+	.param .b64 _Z33GenericParamConstraintTableReaderP10tMetaData_P5tRVA_PPhPvii_param_1,
+	.param .b64 _Z33GenericParamConstraintTableReaderP10tMetaData_P5tRVA_PPhPvii_param_2,
+	.param .b64 _Z33GenericParamConstraintTableReaderP10tMetaData_P5tRVA_PPhPvii_param_3,
+	.param .b32 _Z33GenericParamConstraintTableReaderP10tMetaData_P5tRVA_PPhPvii_param_4,
+	.param .b32 _Z33GenericParamConstraintTableReaderP10tMetaData_P5tRVA_PPhPvii_param_5
+)
+{
+	.reg .pred 	%p<6>;
+	.reg .b16 	%rs<5>;
+	.reg .b32 	%r<38>;
+	.reg .b64 	%rd<24>;
+
+
+	ld.param.u64 	%rd12, [_Z33GenericParamConstraintTableReaderP10tMetaData_P5tRVA_PPhPvii_param_0];
+	ld.param.u64 	%rd13, [_Z33GenericParamConstraintTableReaderP10tMetaData_P5tRVA_PPhPvii_param_2];
+	ld.param.u64 	%rd14, [_Z33GenericParamConstraintTableReaderP10tMetaData_P5tRVA_PPhPvii_param_3];
+	mov.u64 	%rd21, 0;
+	mov.pred 	%p1, 0;
+	@%p1 bra 	BB46_2;
+
+BB46_1:
+	add.s64 	%rd16, %rd14, %rd21;
+	mov.u16 	%rs2, 0;
+	st.u8 	[%rd16], %rs2;
+	add.s64 	%rd21, %rd21, 1;
+	setp.lt.u64	%p2, %rd21, 16;
+	@%p2 bra 	BB46_1;
+
+BB46_2:
+	add.s64 	%rd3, %rd12, 208;
+	ld.u32 	%r11, [%rd12+208];
+	setp.lt.u32	%p3, %r11, 65536;
+	ld.u64 	%rd4, [%rd13];
+	ld.u8 	%r12, [%rd4];
+	ld.u8 	%r13, [%rd4+1];
+	prmt.b32 	%r35, %r13, %r12, 30212;
+	add.s64 	%rd22, %rd4, 2;
+	@%p3 bra 	BB46_4;
+
+	ld.u8 	%r14, [%rd4+2];
+	shl.b32 	%r15, %r14, 16;
+	or.b32  	%r16, %r15, %r35;
+	ld.u8 	%r17, [%rd4+3];
+	shl.b32 	%r18, %r17, 24;
+	or.b32  	%r35, %r16, %r18;
+	add.s64 	%rd22, %rd4, 4;
+
+BB46_4:
+	or.b32  	%r19, %r35, 704643072;
+	cvt.s64.s32	%rd17, %r19;
+	st.u64 	[%rd14], %rd17;
+	ld.global.u8 	%r4, [__nv_static_29__16_MetaData_cpp1_ii_286a6e27_codedTagBits];
+	ld.u8 	%r36, [%rd22];
+	mov.u32 	%r20, 1;
+	shl.b32 	%r21, %r20, %r4;
+	add.s32 	%r22, %r21, 255;
+	and.b32  	%r23, %r22, %r36;
+	cvt.u64.u32	%rd18, %r23;
+	ld.global.u64 	%rd19, [__nv_static_29__16_MetaData_cpp1_ii_286a6e27_codedTags];
+	add.s64 	%rd20, %rd19, %rd18;
+	ld.u8 	%rs1, [%rd20];
+	setp.lt.u16	%p4, %rs1, 49;
+	@%p4 bra 	BB46_6;
+
+	// Callseq Start 26
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b32 param0;
+	st.param.b32	[param0+0], %r20;
+	call.uni 
+	_Z7gpuexiti, 
+	(
+	param0
+	);
+	
+	//{
+	}// Callseq End 26
+	ld.u8 	%r36, [%rd22];
+
+BB46_6:
+	ld.u8 	%rs3, [%rd3+408];
+	setp.eq.s16	%p5, %rs3, 0;
+	ld.u8 	%rs4, [%rd22+1];
+	mul.wide.u16 	%r25, %rs4, 256;
+	or.b32  	%r37, %r25, %r36;
+	add.s64 	%rd23, %rd22, 2;
+	@%p5 bra 	BB46_8;
+
+	ld.u8 	%r26, [%rd22+2];
+	shl.b32 	%r27, %r26, 16;
+	or.b32  	%r28, %r27, %r37;
+	ld.u8 	%r29, [%rd22+3];
+	shl.b32 	%r30, %r29, 24;
+	or.b32  	%r37, %r28, %r30;
+	add.s64 	%rd23, %rd22, 4;
+
+BB46_8:
+	cvt.u32.u16	%r31, %rs1;
+	shl.b32 	%r32, %r31, 24;
+	shr.u32 	%r33, %r37, %r4;
+	or.b32  	%r34, %r33, %r32;
+	st.u32 	[%rd14+8], %r34;
+	st.u64 	[%rd13], %rd23;
+	ret;
+}
+
+	// .globl	_Z19MetaData_LoadTablesP10tMetaData_P5tRVA_Phj
+.visible .func _Z19MetaData_LoadTablesP10tMetaData_P5tRVA_Phj(
+	.param .b64 _Z19MetaData_LoadTablesP10tMetaData_P5tRVA_Phj_param_0,
+	.param .b64 _Z19MetaData_LoadTablesP10tMetaData_P5tRVA_Phj_param_1,
+	.param .b64 _Z19MetaData_LoadTablesP10tMetaData_P5tRVA_Phj_param_2,
+	.param .b32 _Z19MetaData_LoadTablesP10tMetaData_P5tRVA_Phj_param_3
+)
+{
+	.local .align 8 .b8 	__local_depot47[8];
+	.reg .b64 	%SP;
+	.reg .b64 	%SPL;
+	.reg .pred 	%p<42>;
+	.reg .b16 	%rs<15>;
+	.reg .b32 	%r<211>;
+	.reg .b64 	%rd<140>;
+
+
+	mov.u64 	%rd139, __local_depot47;
+	cvta.local.u64 	%SP, %rd139;
+	ld.param.u64 	%rd137, [_Z19MetaData_LoadTablesP10tMetaData_P5tRVA_Phj_param_0];
+	ld.param.u64 	%rd23, [_Z19MetaData_LoadTablesP10tMetaData_P5tRVA_Phj_param_2];
+	add.u64 	%rd24, %SP, 0;
+	cvta.to.local.u64 	%rd1, %rd24;
+	ld.u8 	%r54, [%rd23];
+	st.local.u32 	[%rd1], %r54;
+	mov.u64 	%rd25, $str49;
+	cvta.global.u64 	%rd26, %rd25;
+	// Callseq Start 27
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b64 param0;
+	st.param.b64	[param0+0], %rd26;
+	.param .b64 param1;
+	st.param.b64	[param1+0], %rd24;
+	.param .b32 retval0;
+	call.uni (retval0), 
+	vprintf, 
+	(
+	param0, 
+	param1
+	);
+	ld.param.b32	%r55, [retval0+0];
+	
+	//{
+	}// Callseq End 27
+	ld.u8 	%r56, [%rd23+1];
+	st.local.u32 	[%rd1], %r56;
+	// Callseq Start 28
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b64 param0;
+	st.param.b64	[param0+0], %rd26;
+	.param .b64 param1;
+	st.param.b64	[param1+0], %rd24;
+	.param .b32 retval0;
+	call.uni (retval0), 
+	vprintf, 
+	(
+	param0, 
+	param1
+	);
+	ld.param.b32	%r57, [retval0+0];
+	
+	//{
+	}// Callseq End 28
+	ld.u8 	%r58, [%rd23+2];
+	st.local.u32 	[%rd1], %r58;
+	// Callseq Start 29
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b64 param0;
+	st.param.b64	[param0+0], %rd26;
+	.param .b64 param1;
+	st.param.b64	[param1+0], %rd24;
+	.param .b32 retval0;
+	call.uni (retval0), 
+	vprintf, 
+	(
+	param0, 
+	param1
+	);
+	ld.param.b32	%r59, [retval0+0];
+	
+	//{
+	}// Callseq End 29
+	ld.u8 	%r60, [%rd23+3];
+	st.local.u32 	[%rd1], %r60;
+	// Callseq Start 30
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b64 param0;
+	st.param.b64	[param0+0], %rd26;
+	.param .b64 param1;
+	st.param.b64	[param1+0], %rd24;
+	.param .b32 retval0;
+	call.uni (retval0), 
+	vprintf, 
+	(
+	param0, 
+	param1
+	);
+	ld.param.b32	%r61, [retval0+0];
+	
+	//{
+	}// Callseq End 30
+	ld.u8 	%r62, [%rd23+4];
+	st.local.u32 	[%rd1], %r62;
+	// Callseq Start 31
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b64 param0;
+	st.param.b64	[param0+0], %rd26;
+	.param .b64 param1;
+	st.param.b64	[param1+0], %rd24;
+	.param .b32 retval0;
+	call.uni (retval0), 
+	vprintf, 
+	(
+	param0, 
+	param1
+	);
+	ld.param.b32	%r63, [retval0+0];
+	
+	//{
+	}// Callseq End 31
+	ld.u8 	%r64, [%rd23+5];
+	st.local.u32 	[%rd1], %r64;
+	// Callseq Start 32
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b64 param0;
+	st.param.b64	[param0+0], %rd26;
+	.param .b64 param1;
+	st.param.b64	[param1+0], %rd24;
+	.param .b32 retval0;
+	call.uni (retval0), 
+	vprintf, 
+	(
+	param0, 
+	param1
+	);
+	ld.param.b32	%r65, [retval0+0];
+	
+	//{
+	}// Callseq End 32
+	ld.u8 	%r66, [%rd23+6];
+	st.local.u32 	[%rd1], %r66;
+	// Callseq Start 33
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b64 param0;
+	st.param.b64	[param0+0], %rd26;
+	.param .b64 param1;
+	st.param.b64	[param1+0], %rd24;
+	.param .b32 retval0;
+	call.uni (retval0), 
+	vprintf, 
+	(
+	param0, 
+	param1
+	);
+	ld.param.b32	%r67, [retval0+0];
+	
+	//{
+	}// Callseq End 33
+	ld.u8 	%r68, [%rd23+7];
+	st.local.u32 	[%rd1], %r68;
+	// Callseq Start 34
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b64 param0;
+	st.param.b64	[param0+0], %rd26;
+	.param .b64 param1;
+	st.param.b64	[param1+0], %rd24;
+	.param .b32 retval0;
+	call.uni (retval0), 
+	vprintf, 
+	(
+	param0, 
+	param1
+	);
+	ld.param.b32	%r69, [retval0+0];
+	
+	//{
+	}// Callseq End 34
+	ld.u8 	%r70, [%rd23+8];
+	st.local.u32 	[%rd1], %r70;
+	// Callseq Start 35
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b64 param0;
+	st.param.b64	[param0+0], %rd26;
+	.param .b64 param1;
+	st.param.b64	[param1+0], %rd24;
+	.param .b32 retval0;
+	call.uni (retval0), 
+	vprintf, 
+	(
+	param0, 
+	param1
+	);
+	ld.param.b32	%r71, [retval0+0];
+	
+	//{
+	}// Callseq End 35
+	ld.u8 	%r72, [%rd23+9];
+	st.local.u32 	[%rd1], %r72;
+	// Callseq Start 36
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b64 param0;
+	st.param.b64	[param0+0], %rd26;
+	.param .b64 param1;
+	st.param.b64	[param1+0], %rd24;
+	.param .b32 retval0;
+	call.uni (retval0), 
+	vprintf, 
+	(
+	param0, 
+	param1
+	);
+	ld.param.b32	%r73, [retval0+0];
+	
+	//{
+	}// Callseq End 36
+	ld.u8 	%r74, [%rd23+10];
+	st.local.u32 	[%rd1], %r74;
+	// Callseq Start 37
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b64 param0;
+	st.param.b64	[param0+0], %rd26;
+	.param .b64 param1;
+	st.param.b64	[param1+0], %rd24;
+	.param .b32 retval0;
+	call.uni (retval0), 
+	vprintf, 
+	(
+	param0, 
+	param1
+	);
+	ld.param.b32	%r75, [retval0+0];
+	
+	//{
+	}// Callseq End 37
+	ld.u8 	%r76, [%rd23+11];
+	st.local.u32 	[%rd1], %r76;
+	// Callseq Start 38
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b64 param0;
+	st.param.b64	[param0+0], %rd26;
+	.param .b64 param1;
+	st.param.b64	[param1+0], %rd24;
+	.param .b32 retval0;
+	call.uni (retval0), 
+	vprintf, 
+	(
+	param0, 
+	param1
+	);
+	ld.param.b32	%r77, [retval0+0];
+	
+	//{
+	}// Callseq End 38
+	ld.u8 	%r78, [%rd23+12];
+	st.local.u32 	[%rd1], %r78;
+	// Callseq Start 39
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b64 param0;
+	st.param.b64	[param0+0], %rd26;
+	.param .b64 param1;
+	st.param.b64	[param1+0], %rd24;
+	.param .b32 retval0;
+	call.uni (retval0), 
+	vprintf, 
+	(
+	param0, 
+	param1
+	);
+	ld.param.b32	%r79, [retval0+0];
+	
+	//{
+	}// Callseq End 39
+	ld.u8 	%r80, [%rd23+13];
+	st.local.u32 	[%rd1], %r80;
+	// Callseq Start 40
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b64 param0;
+	st.param.b64	[param0+0], %rd26;
+	.param .b64 param1;
+	st.param.b64	[param1+0], %rd24;
+	.param .b32 retval0;
+	call.uni (retval0), 
+	vprintf, 
+	(
+	param0, 
+	param1
+	);
+	ld.param.b32	%r81, [retval0+0];
+	
+	//{
+	}// Callseq End 40
+	ld.u8 	%r82, [%rd23+14];
+	st.local.u32 	[%rd1], %r82;
+	// Callseq Start 41
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b64 param0;
+	st.param.b64	[param0+0], %rd26;
+	.param .b64 param1;
+	st.param.b64	[param1+0], %rd24;
+	.param .b32 retval0;
+	call.uni (retval0), 
+	vprintf, 
+	(
+	param0, 
+	param1
+	);
+	ld.param.b32	%r83, [retval0+0];
+	
+	//{
+	}// Callseq End 41
+	ld.u8 	%r84, [%rd23+15];
+	st.local.u32 	[%rd1], %r84;
+	// Callseq Start 42
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b64 param0;
+	st.param.b64	[param0+0], %rd26;
+	.param .b64 param1;
+	st.param.b64	[param1+0], %rd24;
+	.param .b32 retval0;
+	call.uni (retval0), 
+	vprintf, 
+	(
+	param0, 
+	param1
+	);
+	ld.param.b32	%r85, [retval0+0];
+	
+	//{
+	}// Callseq End 42
+	ld.u8 	%rs8, [%rd23+6];
+	and.b16  	%rs9, %rs8, 2;
+	shr.u16 	%rs10, %rs9, 1;
+	st.u8 	[%rd137+634], %rs10;
+	and.b16  	%rs11, %rs8, 4;
+	and.b16  	%rs12, %rs8, 1;
+	shr.u16 	%rs13, %rs11, 2;
+	st.v2.u8 	[%rd137+632], {%rs12, %rs13};
+	mov.u64 	%rd27, -1;
+	st.local.u64 	[%rd1], %rd27;
+	mov.u64 	%rd28, $str50;
+	cvta.global.u64 	%rd29, %rd28;
+	// Callseq Start 43
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b64 param0;
+	st.param.b64	[param0+0], %rd29;
+	.param .b64 param1;
+	st.param.b64	[param1+0], %rd24;
+	.param .b32 retval0;
+	call.uni (retval0), 
+	vprintf, 
+	(
+	param0, 
+	param1
+	);
+	ld.param.b32	%r86, [retval0+0];
+	
+	//{
+	}// Callseq End 43
+	add.s64 	%rd2, %rd1, 4;
+	mov.u32 	%r184, 0;
+	mov.u64 	%rd135, 1;
+	mov.u64 	%rd133, %rd137;
+	mov.u64 	%rd134, %rd137;
+	mov.u32 	%r185, %r184;
+
+BB47_1:
+	setp.eq.s64	%p1, %rd135, 0;
+	@%p1 bra 	BB47_3;
+	bra.uni 	BB47_2;
+
+BB47_3:
+	mov.u32 	%r89, 0;
+	st.u32 	[%rd133+40], %r89;
+	mov.u64 	%rd33, 0;
+	st.u64 	[%rd134+232], %rd33;
+	bra.uni 	BB47_4;
+
+BB47_2:
+	add.s32 	%r184, %r184, 1;
+	st.local.u32 	[%rd1], %r185;
+	mov.u32 	%r87, 0;
+	st.local.u32 	[%rd2], %r87;
+	mov.u64 	%rd30, $str51;
+	cvta.global.u64 	%rd31, %rd30;
+	// Callseq Start 44
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b64 param0;
+	st.param.b64	[param0+0], %rd31;
+	.param .b64 param1;
+	st.param.b64	[param1+0], %rd24;
+	.param .b32 retval0;
+	call.uni (retval0), 
+	vprintf, 
+	(
+	param0, 
+	param1
+	);
+	ld.param.b32	%r88, [retval0+0];
+	
+	//{
+	}// Callseq End 44
+
+BB47_4:
+	and.b64  	%rd34, %rd135, 9223372036854775553;
+	setp.eq.s64	%p2, %rd34, 0;
+	@%p2 bra 	BB47_6;
+	bra.uni 	BB47_5;
+
+BB47_6:
+	mov.u32 	%r93, 0;
+	st.u32 	[%rd133+44], %r93;
+	mov.u64 	%rd38, 0;
+	st.u64 	[%rd134+240], %rd38;
+	bra.uni 	BB47_7;
+
+BB47_5:
+	add.s32 	%r90, %r185, 1;
+	add.s32 	%r184, %r184, 1;
+	st.local.u32 	[%rd1], %r90;
+	mov.u32 	%r91, 0;
+	st.local.u32 	[%rd2], %r91;
+	mov.u64 	%rd35, $str51;
+	cvta.global.u64 	%rd36, %rd35;
+	// Callseq Start 45
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b64 param0;
+	st.param.b64	[param0+0], %rd36;
+	.param .b64 param1;
+	st.param.b64	[param1+0], %rd24;
+	.param .b32 retval0;
+	call.uni (retval0), 
+	vprintf, 
+	(
+	param0, 
+	param1
+	);
+	ld.param.b32	%r92, [retval0+0];
+	
+	//{
+	}// Callseq End 45
+
+BB47_7:
+	and.b64  	%rd39, %rd135, 4611686018427387649;
+	setp.eq.s64	%p3, %rd39, 0;
+	@%p3 bra 	BB47_9;
+	bra.uni 	BB47_8;
+
+BB47_9:
+	mov.u32 	%r97, 0;
+	st.u32 	[%rd133+48], %r97;
+	mov.u64 	%rd43, 0;
+	st.u64 	[%rd134+248], %rd43;
+	bra.uni 	BB47_10;
+
+BB47_8:
+	add.s32 	%r94, %r185, 2;
+	add.s32 	%r184, %r184, 1;
+	st.local.u32 	[%rd1], %r94;
+	mov.u32 	%r95, 0;
+	st.local.u32 	[%rd2], %r95;
+	mov.u64 	%rd40, $str51;
+	cvta.global.u64 	%rd41, %rd40;
+	// Callseq Start 46
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b64 param0;
+	st.param.b64	[param0+0], %rd41;
+	.param .b64 param1;
+	st.param.b64	[param1+0], %rd24;
+	.param .b32 retval0;
+	call.uni (retval0), 
+	vprintf, 
+	(
+	param0, 
+	param1
+	);
+	ld.param.b32	%r96, [retval0+0];
+	
+	//{
+	}// Callseq End 46
+
+BB47_10:
+	and.b64  	%rd44, %rd135, 2305843009213693697;
+	setp.eq.s64	%p4, %rd44, 0;
+	@%p4 bra 	BB47_12;
+	bra.uni 	BB47_11;
+
+BB47_12:
+	mov.u32 	%r101, 0;
+	st.u32 	[%rd133+52], %r101;
+	mov.u64 	%rd48, 0;
+	st.u64 	[%rd134+256], %rd48;
+	bra.uni 	BB47_13;
+
+BB47_11:
+	add.s32 	%r98, %r185, 3;
+	add.s32 	%r184, %r184, 1;
+	st.local.u32 	[%rd1], %r98;
+	mov.u32 	%r99, 0;
+	st.local.u32 	[%rd2], %r99;
+	mov.u64 	%rd45, $str51;
+	cvta.global.u64 	%rd46, %rd45;
+	// Callseq Start 47
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b64 param0;
+	st.param.b64	[param0+0], %rd46;
+	.param .b64 param1;
+	st.param.b64	[param1+0], %rd24;
+	.param .b32 retval0;
+	call.uni (retval0), 
+	vprintf, 
+	(
+	param0, 
+	param1
+	);
+	ld.param.b32	%r100, [retval0+0];
+	
+	//{
+	}// Callseq End 47
+
+BB47_13:
+	and.b64  	%rd49, %rd135, 1152921504606846721;
+	setp.eq.s64	%p5, %rd49, 0;
+	@%p5 bra 	BB47_15;
+	bra.uni 	BB47_14;
+
+BB47_15:
+	mov.u32 	%r105, 0;
+	st.u32 	[%rd133+56], %r105;
+	mov.u64 	%rd53, 0;
+	st.u64 	[%rd134+264], %rd53;
+	bra.uni 	BB47_16;
+
+BB47_14:
+	add.s32 	%r102, %r185, 4;
+	add.s32 	%r184, %r184, 1;
+	st.local.u32 	[%rd1], %r102;
+	mov.u32 	%r103, 0;
+	st.local.u32 	[%rd2], %r103;
+	mov.u64 	%rd50, $str51;
+	cvta.global.u64 	%rd51, %rd50;
+	// Callseq Start 48
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b64 param0;
+	st.param.b64	[param0+0], %rd51;
+	.param .b64 param1;
+	st.param.b64	[param1+0], %rd24;
+	.param .b32 retval0;
+	call.uni (retval0), 
+	vprintf, 
+	(
+	param0, 
+	param1
+	);
+	ld.param.b32	%r104, [retval0+0];
+	
+	//{
+	}// Callseq End 48
+
+BB47_16:
+	and.b64  	%rd54, %rd135, 576460752303423233;
+	setp.eq.s64	%p6, %rd54, 0;
+	@%p6 bra 	BB47_18;
+	bra.uni 	BB47_17;
+
+BB47_18:
+	mov.u32 	%r109, 0;
+	st.u32 	[%rd133+60], %r109;
+	mov.u64 	%rd58, 0;
+	st.u64 	[%rd134+272], %rd58;
+	bra.uni 	BB47_19;
+
+BB47_17:
+	add.s32 	%r106, %r185, 5;
+	add.s32 	%r184, %r184, 1;
+	st.local.u32 	[%rd1], %r106;
+	mov.u32 	%r107, 0;
+	st.local.u32 	[%rd2], %r107;
+	mov.u64 	%rd55, $str51;
+	cvta.global.u64 	%rd56, %rd55;
+	// Callseq Start 49
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b64 param0;
+	st.param.b64	[param0+0], %rd56;
+	.param .b64 param1;
+	st.param.b64	[param1+0], %rd24;
+	.param .b32 retval0;
+	call.uni (retval0), 
+	vprintf, 
+	(
+	param0, 
+	param1
+	);
+	ld.param.b32	%r108, [retval0+0];
+	
+	//{
+	}// Callseq End 49
+
+BB47_19:
+	and.b64  	%rd59, %rd135, 288230376151711489;
+	setp.eq.s64	%p7, %rd59, 0;
+	@%p7 bra 	BB47_21;
+	bra.uni 	BB47_20;
+
+BB47_21:
+	mov.u32 	%r113, 0;
+	st.u32 	[%rd133+64], %r113;
+	mov.u64 	%rd63, 0;
+	st.u64 	[%rd134+280], %rd63;
+	bra.uni 	BB47_22;
+
+BB47_20:
+	add.s32 	%r110, %r185, 6;
+	add.s32 	%r184, %r184, 1;
+	st.local.u32 	[%rd1], %r110;
+	mov.u32 	%r111, 0;
+	st.local.u32 	[%rd2], %r111;
+	mov.u64 	%rd60, $str51;
+	cvta.global.u64 	%rd61, %rd60;
+	// Callseq Start 50
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b64 param0;
+	st.param.b64	[param0+0], %rd61;
+	.param .b64 param1;
+	st.param.b64	[param1+0], %rd24;
+	.param .b32 retval0;
+	call.uni (retval0), 
+	vprintf, 
+	(
+	param0, 
+	param1
+	);
+	ld.param.b32	%r112, [retval0+0];
+	
+	//{
+	}// Callseq End 50
+
+BB47_22:
+	and.b64  	%rd64, %rd135, 144115188075855617;
+	setp.eq.s64	%p8, %rd64, 0;
+	@%p8 bra 	BB47_24;
+	bra.uni 	BB47_23;
+
+BB47_24:
+	mov.u32 	%r117, 0;
+	st.u32 	[%rd133+68], %r117;
+	mov.u64 	%rd68, 0;
+	st.u64 	[%rd134+288], %rd68;
+	bra.uni 	BB47_25;
+
+BB47_23:
+	add.s32 	%r114, %r185, 7;
+	add.s32 	%r184, %r184, 1;
+	st.local.u32 	[%rd1], %r114;
+	mov.u32 	%r115, 0;
+	st.local.u32 	[%rd2], %r115;
+	mov.u64 	%rd65, $str51;
+	cvta.global.u64 	%rd66, %rd65;
+	// Callseq Start 51
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b64 param0;
+	st.param.b64	[param0+0], %rd66;
+	.param .b64 param1;
+	st.param.b64	[param1+0], %rd24;
+	.param .b32 retval0;
+	call.uni (retval0), 
+	vprintf, 
+	(
+	param0, 
+	param1
+	);
+	ld.param.b32	%r116, [retval0+0];
+	
+	//{
+	}// Callseq End 51
+
+BB47_25:
+	shl.b64 	%rd135, %rd135, 8;
+	add.s32 	%r19, %r185, 8;
+	add.s64 	%rd134, %rd134, 64;
+	add.s64 	%rd133, %rd133, 32;
+	setp.ne.s32	%p9, %r185, 40;
+	mov.u32 	%r185, %r19;
+	@%p9 bra 	BB47_1;
+
+	st.local.u32 	[%rd1], %r184;
+	mov.u64 	%rd69, $str52;
+	cvta.global.u64 	%rd70, %rd69;
+	// Callseq Start 52
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b64 param0;
+	st.param.b64	[param0+0], %rd70;
+	.param .b64 param1;
+	st.param.b64	[param1+0], %rd24;
+	.param .b32 retval0;
+	call.uni (retval0), 
+	vprintf, 
+	(
+	param0, 
+	param1
+	);
+	ld.param.b32	%r119, [retval0+0];
+	
+	//{
+	}// Callseq End 52
+	mov.u32 	%r210, 0;
+	mov.u32 	%r194, %r210;
+
+BB47_27:
+	cvt.s64.s32	%rd10, %r194;
+	mul.wide.s32 	%rd72, %r194, 8;
+	mov.u64 	%rd73, __nv_static_29__16_MetaData_cpp1_ii_286a6e27_codedTags;
+	add.s64 	%rd74, %rd73, %rd72;
+	ld.global.u64 	%rd11, [%rd74];
+	mov.u64 	%rd75, __nv_static_29__16_MetaData_cpp1_ii_286a6e27_codedTagBits;
+	add.s64 	%rd76, %rd75, %rd10;
+	ld.global.u8 	%r21, [%rd76];
+	mov.u32 	%r121, 1;
+	shl.b32 	%r22, %r121, %r21;
+	setp.eq.s32	%p10, %r21, 31;
+	mov.u32 	%r203, %r210;
+	@%p10 bra 	BB47_53;
+
+	max.s32 	%r23, %r22, %r121;
+	and.b32  	%r128, %r23, 3;
+	mov.u32 	%r203, 0;
+	setp.eq.s32	%p11, %r128, 0;
+	@%p11 bra 	BB47_29;
+
+	setp.eq.s32	%p12, %r128, 1;
+	@%p12 bra 	BB47_31;
+	bra.uni 	BB47_32;
+
+BB47_31:
+	mov.u32 	%r199, %r203;
+	bra.uni 	BB47_39;
+
+BB47_29:
+	mov.u32 	%r202, %r203;
+	bra.uni 	BB47_42;
+
+BB47_32:
+	setp.eq.s32	%p13, %r128, 2;
+	@%p13 bra 	BB47_33;
+	bra.uni 	BB47_34;
+
+BB47_33:
+	mov.u32 	%r121, %r203;
+	bra.uni 	BB47_36;
+
+BB47_34:
+	ld.u8 	%rs1, [%rd11];
+	setp.eq.s16	%p14, %rs1, 122;
+	@%p14 bra 	BB47_36;
+
+	cvt.u32.u16	%r133, %rs1;
+	mul.wide.u32 	%rd77, %r133, 4;
+	add.s64 	%rd78, %rd137, %rd77;
+	ld.u32 	%r203, [%rd78+40];
+
+BB47_36:
+	cvt.u64.u32	%rd79, %r121;
+	add.s64 	%rd80, %rd11, %rd79;
+	ld.u8 	%rs2, [%rd80];
+	setp.eq.s16	%p15, %rs2, 122;
+	@%p15 bra 	BB47_38;
+
+	cvt.u32.u16	%r134, %rs2;
+	mul.wide.u32 	%rd81, %r134, 4;
+	add.s64 	%rd82, %rd137, %rd81;
+	ld.u32 	%r135, [%rd82+40];
+	max.u32 	%r203, %r135, %r203;
+
+BB47_38:
+	add.s32 	%r199, %r121, 1;
+
+BB47_39:
+	cvt.s64.s32	%rd83, %r199;
+	add.s64 	%rd84, %rd11, %rd83;
+	ld.u8 	%rs3, [%rd84];
+	setp.eq.s16	%p16, %rs3, 122;
+	@%p16 bra 	BB47_41;
+
+	cvt.u32.u16	%r136, %rs3;
+	mul.wide.u32 	%rd85, %r136, 4;
+	add.s64 	%rd86, %rd137, %rd85;
+	ld.u32 	%r137, [%rd86+40];
+	max.u32 	%r203, %r137, %r203;
+
+BB47_41:
+	add.s32 	%r202, %r199, 1;
+
+BB47_42:
+	setp.lt.u32	%p17, %r23, 4;
+	@%p17 bra 	BB47_53;
+
+	cvt.s64.s32	%rd87, %r202;
+	add.s64 	%rd136, %rd11, %rd87;
+
+BB47_44:
+	ld.u8 	%rs4, [%rd136];
+	setp.eq.s16	%p18, %rs4, 122;
+	@%p18 bra 	BB47_46;
+
+	cvt.u32.u16	%r138, %rs4;
+	mul.wide.u32 	%rd88, %r138, 4;
+	add.s64 	%rd89, %rd137, %rd88;
+	ld.u32 	%r139, [%rd89+40];
+	max.u32 	%r203, %r139, %r203;
+
+BB47_46:
+	ld.u8 	%rs5, [%rd136+1];
+	setp.eq.s16	%p19, %rs5, 122;
+	@%p19 bra 	BB47_48;
+
+	cvt.u32.u16	%r140, %rs5;
+	mul.wide.u32 	%rd90, %r140, 4;
+	add.s64 	%rd91, %rd137, %rd90;
+	ld.u32 	%r141, [%rd91+40];
+	max.u32 	%r203, %r141, %r203;
+
+BB47_48:
+	ld.u8 	%rs6, [%rd136+2];
+	setp.eq.s16	%p20, %rs6, 122;
+	@%p20 bra 	BB47_50;
+
+	cvt.u32.u16	%r142, %rs6;
+	mul.wide.u32 	%rd92, %r142, 4;
+	add.s64 	%rd93, %rd137, %rd92;
+	ld.u32 	%r143, [%rd93+40];
+	max.u32 	%r203, %r143, %r203;
+
+BB47_50:
+	ld.u8 	%rs7, [%rd136+3];
+	setp.eq.s16	%p21, %rs7, 122;
+	@%p21 bra 	BB47_52;
+
+	cvt.u32.u16	%r144, %rs7;
+	mul.wide.u32 	%rd94, %r144, 4;
+	add.s64 	%rd95, %rd137, %rd94;
+	ld.u32 	%r145, [%rd95+40];
+	max.u32 	%r203, %r145, %r203;
+
+BB47_52:
+	add.s32 	%r202, %r202, 4;
+	setp.lt.s32	%p22, %r202, %r22;
+	add.s64 	%rd136, %rd136, 4;
+	@%p22 bra 	BB47_44;
+
+BB47_53:
+	mov.u32 	%r147, 16;
+	sub.s32 	%r148, %r147, %r21;
+	mov.u32 	%r149, 1;
+	shl.b32 	%r150, %r149, %r148;
+	setp.ge.u32	%p23, %r203, %r150;
+	selp.u16	%rs14, 1, 0, %p23;
+	add.s64 	%rd97, %rd137, %rd10;
+	st.u8 	[%rd97+616], %rs14;
+	cvt.u32.u64	%r151, %rd10;
+	add.s32 	%r194, %r151, 1;
+	setp.lt.s32	%p24, %r194, 13;
+	mov.u64 	%rd138, __nv_static_29__16_MetaData_cpp1_ii_286a6e27_tableDefs;
+	@%p24 bra 	BB47_27;
+
+BB47_54:
+	mov.u32 	%r50, %r210;
+	add.s64 	%rd17, %rd137, 40;
+	ld.u32 	%r152, [%rd137+40];
+	setp.eq.s32	%p25, %r152, 0;
+	@%p25 bra 	BB47_57;
+
+	st.local.u32 	[%rd1], %r50;
+	mov.u64 	%rd98, $str53;
+	cvta.global.u64 	%rd99, %rd98;
+	// Callseq Start 53
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b64 param0;
+	st.param.b64	[param0+0], %rd99;
+	.param .b64 param1;
+	st.param.b64	[param1+0], %rd24;
+	.param .b32 retval0;
+	call.uni (retval0), 
+	vprintf, 
+	(
+	param0, 
+	param1
+	);
+	ld.param.b32	%r153, [retval0+0];
+	
+	//{
+	}// Callseq End 53
+	ld.global.u64 	%rd101, [%rd138];
+	setp.ne.s64	%p26, %rd101, 0;
+	@%p26 bra 	BB47_57;
+
+	// Callseq Start 54
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b32 param0;
+	st.param.b32	[param0+0], %r149;
+	call.uni 
+	_Z7gpuexiti, 
+	(
+	param0
+	);
+	
+	//{
+	}// Callseq End 54
+
+BB47_57:
+	ld.u32 	%r155, [%rd17+4];
+	setp.eq.s32	%p27, %r155, 0;
+	@%p27 bra 	BB47_60;
+
+	add.s32 	%r156, %r50, 1;
+	st.local.u32 	[%rd1], %r156;
+	mov.u64 	%rd102, $str53;
+	cvta.global.u64 	%rd103, %rd102;
+	// Callseq Start 55
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b64 param0;
+	st.param.b64	[param0+0], %rd103;
+	.param .b64 param1;
+	st.param.b64	[param1+0], %rd24;
+	.param .b32 retval0;
+	call.uni (retval0), 
+	vprintf, 
+	(
+	param0, 
+	param1
+	);
+	ld.param.b32	%r157, [retval0+0];
+	
+	//{
+	}// Callseq End 55
+	ld.global.u64 	%rd105, [%rd138+8];
+	setp.ne.s64	%p28, %rd105, 0;
+	@%p28 bra 	BB47_60;
+
+	// Callseq Start 56
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b32 param0;
+	st.param.b32	[param0+0], %r149;
+	call.uni 
+	_Z7gpuexiti, 
+	(
+	param0
+	);
+	
+	//{
+	}// Callseq End 56
+
+BB47_60:
+	ld.u32 	%r159, [%rd17+8];
+	setp.eq.s32	%p29, %r159, 0;
+	@%p29 bra 	BB47_63;
+
+	add.s32 	%r160, %r50, 2;
+	st.local.u32 	[%rd1], %r160;
+	mov.u64 	%rd106, $str53;
+	cvta.global.u64 	%rd107, %rd106;
+	// Callseq Start 57
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b64 param0;
+	st.param.b64	[param0+0], %rd107;
+	.param .b64 param1;
+	st.param.b64	[param1+0], %rd24;
+	.param .b32 retval0;
+	call.uni (retval0), 
+	vprintf, 
+	(
+	param0, 
+	param1
+	);
+	ld.param.b32	%r161, [retval0+0];
+	
+	//{
+	}// Callseq End 57
+	ld.global.u64 	%rd109, [%rd138+16];
+	setp.ne.s64	%p30, %rd109, 0;
+	@%p30 bra 	BB47_63;
+
+	// Callseq Start 58
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b32 param0;
+	st.param.b32	[param0+0], %r149;
+	call.uni 
+	_Z7gpuexiti, 
+	(
+	param0
+	);
+	
+	//{
+	}// Callseq End 58
+
+BB47_63:
+	ld.u32 	%r163, [%rd17+12];
+	setp.eq.s32	%p31, %r163, 0;
+	@%p31 bra 	BB47_66;
+
+	add.s32 	%r164, %r50, 3;
+	st.local.u32 	[%rd1], %r164;
+	mov.u64 	%rd110, $str53;
+	cvta.global.u64 	%rd111, %rd110;
+	// Callseq Start 59
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b64 param0;
+	st.param.b64	[param0+0], %rd111;
+	.param .b64 param1;
+	st.param.b64	[param1+0], %rd24;
+	.param .b32 retval0;
+	call.uni (retval0), 
+	vprintf, 
+	(
+	param0, 
+	param1
+	);
+	ld.param.b32	%r165, [retval0+0];
+	
+	//{
+	}// Callseq End 59
+	ld.global.u64 	%rd113, [%rd138+24];
+	setp.ne.s64	%p32, %rd113, 0;
+	@%p32 bra 	BB47_66;
+
+	// Callseq Start 60
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b32 param0;
+	st.param.b32	[param0+0], %r149;
+	call.uni 
+	_Z7gpuexiti, 
+	(
+	param0
+	);
+	
+	//{
+	}// Callseq End 60
+
+BB47_66:
+	ld.u32 	%r167, [%rd17+16];
+	setp.eq.s32	%p33, %r167, 0;
+	@%p33 bra 	BB47_69;
+
+	add.s32 	%r168, %r50, 4;
+	st.local.u32 	[%rd1], %r168;
+	mov.u64 	%rd114, $str53;
+	cvta.global.u64 	%rd115, %rd114;
+	// Callseq Start 61
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b64 param0;
+	st.param.b64	[param0+0], %rd115;
+	.param .b64 param1;
+	st.param.b64	[param1+0], %rd24;
+	.param .b32 retval0;
+	call.uni (retval0), 
+	vprintf, 
+	(
+	param0, 
+	param1
+	);
+	ld.param.b32	%r169, [retval0+0];
+	
+	//{
+	}// Callseq End 61
+	ld.global.u64 	%rd117, [%rd138+32];
+	setp.ne.s64	%p34, %rd117, 0;
+	@%p34 bra 	BB47_69;
+
+	// Callseq Start 62
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b32 param0;
+	st.param.b32	[param0+0], %r149;
+	call.uni 
+	_Z7gpuexiti, 
+	(
+	param0
+	);
+	
+	//{
+	}// Callseq End 62
+
+BB47_69:
+	ld.u32 	%r171, [%rd17+20];
+	setp.eq.s32	%p35, %r171, 0;
+	@%p35 bra 	BB47_72;
+
+	add.s32 	%r172, %r50, 5;
+	st.local.u32 	[%rd1], %r172;
+	mov.u64 	%rd118, $str53;
+	cvta.global.u64 	%rd119, %rd118;
+	// Callseq Start 63
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b64 param0;
+	st.param.b64	[param0+0], %rd119;
+	.param .b64 param1;
+	st.param.b64	[param1+0], %rd24;
+	.param .b32 retval0;
+	call.uni (retval0), 
+	vprintf, 
+	(
+	param0, 
+	param1
+	);
+	ld.param.b32	%r173, [retval0+0];
+	
+	//{
+	}// Callseq End 63
+	ld.global.u64 	%rd121, [%rd138+40];
+	setp.ne.s64	%p36, %rd121, 0;
+	@%p36 bra 	BB47_72;
+
+	// Callseq Start 64
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b32 param0;
+	st.param.b32	[param0+0], %r149;
+	call.uni 
+	_Z7gpuexiti, 
+	(
+	param0
+	);
+	
+	//{
+	}// Callseq End 64
+
+BB47_72:
+	ld.u32 	%r175, [%rd17+24];
+	setp.eq.s32	%p37, %r175, 0;
+	@%p37 bra 	BB47_75;
+
+	add.s32 	%r176, %r50, 6;
+	st.local.u32 	[%rd1], %r176;
+	mov.u64 	%rd122, $str53;
+	cvta.global.u64 	%rd123, %rd122;
+	// Callseq Start 65
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b64 param0;
+	st.param.b64	[param0+0], %rd123;
+	.param .b64 param1;
+	st.param.b64	[param1+0], %rd24;
+	.param .b32 retval0;
+	call.uni (retval0), 
+	vprintf, 
+	(
+	param0, 
+	param1
+	);
+	ld.param.b32	%r177, [retval0+0];
+	
+	//{
+	}// Callseq End 65
+	ld.global.u64 	%rd125, [%rd138+48];
+	setp.ne.s64	%p38, %rd125, 0;
+	@%p38 bra 	BB47_75;
+
+	// Callseq Start 66
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b32 param0;
+	st.param.b32	[param0+0], %r149;
+	call.uni 
+	_Z7gpuexiti, 
+	(
+	param0
+	);
+	
+	//{
+	}// Callseq End 66
+
+BB47_75:
+	ld.u32 	%r179, [%rd17+28];
+	setp.eq.s32	%p39, %r179, 0;
+	@%p39 bra 	BB47_78;
+
+	add.s32 	%r180, %r50, 7;
+	st.local.u32 	[%rd1], %r180;
+	mov.u64 	%rd126, $str53;
+	cvta.global.u64 	%rd127, %rd126;
+	// Callseq Start 67
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b64 param0;
+	st.param.b64	[param0+0], %rd127;
+	.param .b64 param1;
+	st.param.b64	[param1+0], %rd24;
+	.param .b32 retval0;
+	call.uni (retval0), 
+	vprintf, 
+	(
+	param0, 
+	param1
+	);
+	ld.param.b32	%r181, [retval0+0];
+	
+	//{
+	}// Callseq End 67
+	ld.global.u64 	%rd129, [%rd138+56];
+	setp.ne.s64	%p40, %rd129, 0;
+	@%p40 bra 	BB47_78;
+
+	// Callseq Start 68
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b32 param0;
+	st.param.b32	[param0+0], %r149;
+	call.uni 
+	_Z7gpuexiti, 
+	(
+	param0
+	);
+	
+	//{
+	}// Callseq End 68
+
+BB47_78:
+	add.s32 	%r210, %r50, 8;
+	add.s64 	%rd138, %rd138, 64;
+	add.s64 	%rd137, %rd137, 32;
+	setp.ne.s32	%p41, %r50, 40;
+	@%p41 bra 	BB47_54;
+
+	mov.u64 	%rd130, $str54;
+	cvta.global.u64 	%rd131, %rd130;
+	mov.u64 	%rd132, 0;
+	// Callseq Start 69
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b64 param0;
+	st.param.b64	[param0+0], %rd131;
+	.param .b64 param1;
+	st.param.b64	[param1+0], %rd132;
+	.param .b32 retval0;
+	call.uni (retval0), 
+	vprintf, 
+	(
+	param0, 
+	param1
+	);
+	ld.param.b32	%r183, [retval0+0];
+	
+	//{
+	}// Callseq End 69
 	ret;
 }
 
@@ -1685,33 +5315,33 @@ BB15_137:
 	cvt.u32.u16	%r7, %rs1;
 	and.b32  	%r1, %r7, 255;
 	setp.gt.s16	%p1, %rs1, -1;
-	@%p1 bra 	BB16_5;
-	bra.uni 	BB16_1;
+	@%p1 bra 	BB48_5;
+	bra.uni 	BB48_1;
 
-BB16_5:
+BB48_5:
 	mov.u32 	%r19, %r1;
-	bra.uni 	BB16_6;
+	bra.uni 	BB48_6;
 
-BB16_1:
+BB48_1:
 	and.b16  	%rs2, %rs1, 255;
 	setp.eq.s16	%p2, %rs2, 255;
 	mov.u32 	%r19, 0;
-	@%p2 bra 	BB16_6;
+	@%p2 bra 	BB48_6;
 
 	add.s64 	%rd7, %rd5, 2;
 	and.b16  	%rs3, %rs1, 192;
 	setp.eq.s16	%p3, %rs3, 128;
 	ld.u8 	%r2, [%rd5+1];
-	@%p3 bra 	BB16_4;
-	bra.uni 	BB16_3;
+	@%p3 bra 	BB48_4;
+	bra.uni 	BB48_3;
 
-BB16_4:
+BB48_4:
 	and.b32  	%r16, %r1, 63;
 	shl.b32 	%r17, %r16, 8;
 	or.b32  	%r19, %r2, %r17;
-	bra.uni 	BB16_6;
+	bra.uni 	BB48_6;
 
-BB16_3:
+BB48_3:
 	add.s64 	%rd7, %rd5, 4;
 	and.b32  	%r9, %r1, 31;
 	shl.b32 	%r10, %r9, 24;
@@ -1723,13 +5353,13 @@ BB16_3:
 	ld.u8 	%r15, [%rd5+3];
 	or.b32  	%r19, %r14, %r15;
 
-BB16_6:
+BB48_6:
 	setp.eq.s64	%p4, %rd6, 0;
-	@%p4 bra 	BB16_8;
+	@%p4 bra 	BB48_8;
 
 	st.u32 	[%rd6], %r19;
 
-BB16_8:
+BB48_8:
 	st.param.b64	[func_retval0+0], %rd7;
 	ret;
 }
@@ -1758,34 +5388,34 @@ BB16_8:
 	cvt.u32.u16	%r7, %rs1;
 	and.b32  	%r1, %r7, 255;
 	setp.gt.s16	%p1, %rs1, -1;
-	@%p1 bra 	BB17_5;
-	bra.uni 	BB17_1;
+	@%p1 bra 	BB49_5;
+	bra.uni 	BB49_1;
 
-BB17_5:
+BB49_5:
 	mov.u32 	%r20, %r1;
-	bra.uni 	BB17_6;
+	bra.uni 	BB49_6;
 
-BB17_1:
+BB49_1:
 	and.b16  	%rs2, %rs1, 255;
 	setp.eq.s16	%p2, %rs2, 255;
 	mov.u32 	%r20, 0;
-	@%p2 bra 	BB17_6;
+	@%p2 bra 	BB49_6;
 
 	add.s64 	%rd11, %rd1, %rd2;
 	add.s64 	%rd13, %rd11, 2;
 	and.b16  	%rs3, %rs1, 192;
 	setp.eq.s16	%p3, %rs3, 128;
 	ld.u8 	%r2, [%rd3+1];
-	@%p3 bra 	BB17_4;
-	bra.uni 	BB17_3;
+	@%p3 bra 	BB49_4;
+	bra.uni 	BB49_3;
 
-BB17_4:
+BB49_4:
 	and.b32  	%r16, %r1, 63;
 	shl.b32 	%r17, %r16, 8;
 	or.b32  	%r20, %r2, %r17;
-	bra.uni 	BB17_6;
+	bra.uni 	BB49_6;
 
-BB17_3:
+BB49_3:
 	add.s64 	%rd13, %rd11, 4;
 	and.b32  	%r9, %r1, 31;
 	shl.b32 	%r10, %r9, 24;
@@ -1797,14 +5427,14 @@ BB17_3:
 	ld.u8 	%r15, [%rd3+3];
 	or.b32  	%r20, %r14, %r15;
 
-BB17_6:
+BB49_6:
 	setp.eq.s64	%p4, %rd8, 0;
-	@%p4 bra 	BB17_8;
+	@%p4 bra 	BB49_8;
 
 	add.s32 	%r19, %r20, -1;
 	st.u32 	[%rd8], %r19;
 
-BB17_8:
+BB49_8:
 	st.param.b64	[func_retval0+0], %rd13;
 	ret;
 }
@@ -1825,7 +5455,7 @@ BB17_8:
 	and.b32  	%r1, %r2, 16777215;
 	setp.eq.s32	%p1, %r1, 0;
 	mov.u64 	%rd12, 0;
-	@%p1 bra 	BB18_2;
+	@%p1 bra 	BB50_2;
 
 	shr.u32 	%r3, %r2, 24;
 	cvt.u64.u32	%rd5, %r3;
@@ -1840,7 +5470,7 @@ BB17_8:
 	ld.u64 	%rd11, [%rd7+232];
 	add.s64 	%rd12, %rd11, %rd10;
 
-BB18_2:
+BB50_2:
 	st.param.b64	[func_retval0+0], %rd12;
 	ret;
 }
@@ -1863,30 +5493,30 @@ BB18_2:
 	ld.param.u64 	%rd5, [_Z20MetaData_GetConstantP10tMetaData_jPh_param_2];
 	and.b32  	%r2, %r1, -16777216;
 	setp.eq.s32	%p1, %r2, 67108864;
-	@%p1 bra 	BB19_2;
-	bra.uni 	BB19_1;
+	@%p1 bra 	BB51_2;
+	bra.uni 	BB51_1;
 
-BB19_2:
+BB51_2:
 	shr.u32 	%r3, %r1, 24;
 	cvt.u64.u32	%rd9, %r3;
 	mul.wide.u32 	%rd10, %r3, 8;
 	add.s64 	%rd11, %rd4, %rd10;
-	and.b32  	%r4, %r1, 16777215;
-	add.s32 	%r5, %r4, -1;
 	mov.u64 	%rd12, __nv_static_29__16_MetaData_cpp1_ii_286a6e27_tableRowSize;
 	add.s64 	%rd13, %rd12, %rd9;
-	ld.global.u8 	%r6, [%rd13];
-	mul.lo.s32 	%r7, %r6, %r5;
+	ld.global.u8 	%r4, [%rd13];
+	and.b32  	%r5, %r1, 16777215;
+	add.s32 	%r6, %r5, -1;
+	mul.lo.s32 	%r7, %r4, %r6;
 	cvt.u64.u32	%rd14, %r7;
 	ld.u64 	%rd15, [%rd11+232];
 	add.s64 	%rd16, %rd14, %rd15;
 	ld.u64 	%rd20, [%rd16+72];
-	bra.uni 	BB19_3;
+	bra.uni 	BB51_3;
 
-BB19_1:
-	mov.u64 	%rd7, $str50;
+BB51_1:
+	mov.u64 	%rd7, $str55;
 	cvta.global.u64 	%rd8, %rd7;
-	// Callseq Start 14
+	// Callseq Start 70
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
@@ -1902,15 +5532,16 @@ BB19_1:
 	);
 	
 	//{
-	}// Callseq End 14
+	}// Callseq End 70
+	mov.u64 	%rd20, 0;
 
-BB19_3:
+BB51_3:
 	ld.u8 	%rs1, [%rd20];
 	setp.eq.s16	%p2, %rs1, 8;
-	@%p2 bra 	BB19_5;
-	bra.uni 	BB19_4;
+	@%p2 bra 	BB51_5;
+	bra.uni 	BB51_4;
 
-BB19_5:
+BB51_5:
 	ld.u64 	%rd19, [%rd20+8];
 	ld.u8 	%rs2, [%rd19+1];
 	st.u8 	[%rd5], %rs2;
@@ -1920,13 +5551,13 @@ BB19_5:
 	st.u8 	[%rd5+2], %rs4;
 	ld.u8 	%rs5, [%rd19+4];
 	st.u8 	[%rd5+3], %rs5;
-	bra.uni 	BB19_6;
+	bra.uni 	BB51_6;
 
-BB19_4:
+BB51_4:
 	cvt.u32.u16	%r8, %rs1;
-	mov.u64 	%rd17, $str51;
+	mov.u64 	%rd17, $str56;
 	cvta.global.u64 	%rd18, %rd17;
-	// Callseq Start 15
+	// Callseq Start 71
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
@@ -1942,9 +5573,9 @@ BB19_4:
 	);
 	
 	//{
-	}// Callseq End 15
+	}// Callseq End 71
 
-BB19_6:
+BB51_6:
 	ret;
 }
 
@@ -1965,15 +5596,15 @@ BB19_6:
 	add.s64 	%rd1, %rd6, 48;
 	ld.u32 	%r1, [%rd6+48];
 	setp.eq.s32	%p1, %r1, 0;
-	@%p1 bra 	BB20_9;
+	@%p1 bra 	BB52_9;
 
 	mov.u32 	%r10, 1;
 
-BB20_2:
+BB52_2:
 	and.b32  	%r3, %r10, 16777215;
 	setp.eq.s32	%p2, %r3, 0;
 	mov.u64 	%rd11, 0;
-	@%p2 bra 	BB20_4;
+	@%p2 bra 	BB52_4;
 
 	ld.global.u8 	%r7, [__nv_static_29__16_MetaData_cpp1_ii_286a6e27_tableRowSize+2];
 	add.s32 	%r8, %r3, -1;
@@ -1982,19 +5613,19 @@ BB20_2:
 	ld.u64 	%rd9, [%rd1+200];
 	add.s64 	%rd11, %rd9, %rd8;
 
-BB20_4:
+BB52_4:
 	ld.u8 	%rs1, [%rd11+97];
 	setp.eq.s16	%p3, %rs1, 0;
-	@%p3 bra 	BB20_6;
-	bra.uni 	BB20_5;
+	@%p3 bra 	BB52_6;
+	bra.uni 	BB52_5;
 
-BB20_6:
+BB52_6:
 	ld.u32 	%r4, [%rd11+192];
 	setp.eq.s32	%p4, %r4, 0;
-	@%p4 bra 	BB20_8;
+	@%p4 bra 	BB52_8;
 
 	ld.u64 	%rd10, [%rd11+88];
-	// Callseq Start 17
+	// Callseq Start 73
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
@@ -2013,11 +5644,11 @@ BB20_6:
 	);
 	
 	//{
-	}// Callseq End 17
-	bra.uni 	BB20_8;
+	}// Callseq End 73
+	bra.uni 	BB52_8;
 
-BB20_5:
-	// Callseq Start 16
+BB52_5:
+	// Callseq Start 72
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
@@ -2033,14 +5664,14 @@ BB20_5:
 	);
 	
 	//{
-	}// Callseq End 16
+	}// Callseq End 72
 
-BB20_8:
+BB52_8:
 	add.s32 	%r10, %r10, 1;
 	setp.le.u32	%p5, %r10, %r1;
-	@%p5 bra 	BB20_2;
+	@%p5 bra 	BB52_2;
 
-BB20_9:
+BB52_9:
 	ret;
 }
 
