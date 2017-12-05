@@ -111,12 +111,12 @@
 	.param .b32 _Z18MetaData_LoadGUIDsP10tMetaData_Pvj_param_2
 )
 ;
-.extern .func _Z19MetaData_LoadTablesP10tMetaData_P5tRVA_Pvj
+.extern .func _Z19MetaData_LoadTablesP10tMetaData_P5tRVA_Phj
 (
-	.param .b64 _Z19MetaData_LoadTablesP10tMetaData_P5tRVA_Pvj_param_0,
-	.param .b64 _Z19MetaData_LoadTablesP10tMetaData_P5tRVA_Pvj_param_1,
-	.param .b64 _Z19MetaData_LoadTablesP10tMetaData_P5tRVA_Pvj_param_2,
-	.param .b32 _Z19MetaData_LoadTablesP10tMetaData_P5tRVA_Pvj_param_3
+	.param .b64 _Z19MetaData_LoadTablesP10tMetaData_P5tRVA_Phj_param_0,
+	.param .b64 _Z19MetaData_LoadTablesP10tMetaData_P5tRVA_Phj_param_1,
+	.param .b64 _Z19MetaData_LoadTablesP10tMetaData_P5tRVA_Phj_param_2,
+	.param .b32 _Z19MetaData_LoadTablesP10tMetaData_P5tRVA_Phj_param_3
 )
 ;
 .global .align 8 .u64 __nv_static_28__15_CLIFile_cpp1_ii_0293f222_pFilesLoaded;
@@ -1259,7 +1259,7 @@ BB6_40:
 	.param .b32 param3;
 	st.param.b32	[param3+0], %r78;
 	call.uni 
-	_Z19MetaData_LoadTablesP10tMetaData_P5tRVA_Pvj, 
+	_Z19MetaData_LoadTablesP10tMetaData_P5tRVA_Phj, 
 	(
 	param0, 
 	param1, 
@@ -2205,7 +2205,7 @@ BB7_37:
 	.param .b32 param3;
 	st.param.b32	[param3+0], %r71;
 	call.uni 
-	_Z19MetaData_LoadTablesP10tMetaData_P5tRVA_Pvj, 
+	_Z19MetaData_LoadTablesP10tMetaData_P5tRVA_Phj, 
 	(
 	param0, 
 	param1, 

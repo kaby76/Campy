@@ -183,7 +183,7 @@ __device__ static tCLIFile* LoadPEFile(void *pData) {
 	{
 		unsigned int versionLen = *(unsigned int*)&(pRawMetaData[12]);
 		unsigned int ofs, numberOfStreams;
-		void *pTableStream = NULL;
+		unsigned char *pTableStream = NULL;
 		unsigned int tableStreamSize;
 		pRet->pVersion = &(pRawMetaData[16]);
 		log_f(1, "CLI version: %s\n", pRet->pVersion);
@@ -214,7 +214,7 @@ __device__ static tCLIFile* LoadPEFile(void *pData) {
 			unsigned int streamOffset = *(unsigned int*)&pRawMetaData[ofs];
 			unsigned int streamSize = *(unsigned int*)&pRawMetaData[ofs+4];
 			unsigned char *pStreamName = &pRawMetaData[ofs+8];
-			void *pStream = pRawMetaData + streamOffset;
+			unsigned char *pStream = pRawMetaData + streamOffset;
 			q = q + 1;
 			//ofs += (unsigned int)((Gstrlen((const char*)pStreamName)+4) & (~0x3)) + 8;
 			if (Gstrcasecmp((const char*)pStreamName, "#Strings") == 0) {

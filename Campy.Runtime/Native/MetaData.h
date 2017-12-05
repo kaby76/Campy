@@ -185,7 +185,7 @@ __device__ void MetaData_LoadStrings(tMetaData *pThis, void *pStream, unsigned i
 __device__ void MetaData_LoadBlobs(tMetaData *pThis, void *pStream, unsigned int streamLen);
 __device__ void MetaData_LoadUserStrings(tMetaData *pThis, void *pStream, unsigned int streamLen);
 __device__ void MetaData_LoadGUIDs(tMetaData *pThis, void *pStream, unsigned int streamLen);
-__device__ void MetaData_LoadTables(tMetaData *pThis, tRVA *pRVA, void *pStream, unsigned int streamLen);
+__device__ void MetaData_LoadTables(tMetaData *pThis, tRVA *pRVA, unsigned char *pStream, unsigned int streamLen);
 
 __device__ PTR MetaData_GetBlob(BLOB_ blob, U32 *pBlobLength);
 __device__ STRING2 MetaData_GetUserString(tMetaData *pThis, IDX_USERSTRINGS index, unsigned int *pStringLength);
