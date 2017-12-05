@@ -1,7 +1,10 @@
 //#include "Compat.h"
 #include "cuda.h"
-#include <cstdarg>
+#include <stdio.h>
+#include <stdarg.h>
 #include "Gprintf.h"
+#include <stdlib.h>
+#include <string.h>
 
 
 __device__  void gpuexit(int _Code) {}
@@ -10,9 +13,9 @@ __device__ size_t Gstrlen(
 	char const* _Str
 )
 {
-	size_t r = 0;
-	for (size_t l = 0; _Str[l] != 0; ++l)
-		r = l;
+    size_t r = 0;
+    for (size_t l = 0; _Str[l] != 0; r = ++l)
+        ;
     return r;
 }
 

@@ -96,7 +96,7 @@ __device__ static void* LoadFileFromDisk(char *pFileName) {
 	char buf[1000];
 	// Crashes! Gprintf("File name = %s\n", pFileName);
 	if (Gstrcmp("corlib", pFileName) != 0)
-		return nullptr;
+		return NULL;
 	//f = open(pFileName, O_RDONLY|O_BINARY);
 	//if (f >= 0) {
 	//	int len;
@@ -122,6 +122,7 @@ __device__ static tCLIFile* LoadPEFile(void *pData) {
 	Gprintf("LoadPEFile\n");
 
 	tCLIFile *pRet = TMALLOC(tCLIFile);
+	memset(pRet, 0, sizeof(tCLIFile));
 
 	unsigned char *pMSDOSHeader = (unsigned char*)&(((unsigned char*)pData)[0]);
 	unsigned char *pPEHeader;
@@ -188,13 +189,33 @@ __device__ static tCLIFile* LoadPEFile(void *pData) {
 		ofs = 16 + versionLen;
 		numberOfStreams = *(unsigned short*)&(pRawMetaData[ofs + 2]);
 		ofs += 4;
+		int q = ofs;
 
 		for (i=0; i<(signed)numberOfStreams; i++) {
+			// Start at ofs and look for '#Strings', '#US', etc. Backup to get offset and size.
+			for (; ; ++q)
+			{
+				if (pRawMetaData[q] == '#')
+				{
+					if (pRawMetaData[q + 1] == 'S' && pRawMetaData[q + 2] == 't')
+						break;
+					if (pRawMetaData[q + 1] == 'U' && pRawMetaData[q + 2] == 'S')
+						break;
+					if (pRawMetaData[q + 1] == 'B' && pRawMetaData[q + 2] == 'l')
+						break;
+					if (pRawMetaData[q + 1] == 'G' && pRawMetaData[q + 2] == 'U')
+						break;
+					if (pRawMetaData[q + 1] == '~')
+						break;
+				}
+			}
+			ofs = q - 8;
 			unsigned int streamOffset = *(unsigned int*)&pRawMetaData[ofs];
 			unsigned int streamSize = *(unsigned int*)&pRawMetaData[ofs+4];
 			unsigned char *pStreamName = &pRawMetaData[ofs+8];
 			void *pStream = pRawMetaData + streamOffset;
-			ofs += (unsigned int)((Gstrlen((const char*)pStreamName)+4) & (~0x3)) + 8;
+			q = q + 1;
+			//ofs += (unsigned int)((Gstrlen((const char*)pStreamName)+4) & (~0x3)) + 8;
 			if (Gstrcasecmp((const char*)pStreamName, "#Strings") == 0) {
 				MetaData_LoadStrings(pMetaData, pStream, streamSize);
 			} else if (Gstrcasecmp((const char*)pStreamName, "#US") == 0) {
@@ -216,30 +237,30 @@ __device__ static tCLIFile* LoadPEFile(void *pData) {
 	Gprintf("C4.\n");
 
 	// Mark all generic definition types and methods as such
-	for (i=pMetaData->tables.numRows[MD_TABLE_GENERICPARAM]; i>0; i--) {
-		tMD_GenericParam *pGenericParam;
-		IDX_TABLE ownerIdx;
+	//for (i=pMetaData->tables.numRows[MD_TABLE_GENERICPARAM]; i>0; i--) {
+	//	tMD_GenericParam *pGenericParam;
+	//	IDX_TABLE ownerIdx;
 
-		pGenericParam = (tMD_GenericParam*)MetaData_GetTableRow
-			(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_GENERICPARAM, i));
-		ownerIdx = pGenericParam->owner;
-		switch (TABLE_ID(ownerIdx)) {
-			case MD_TABLE_TYPEDEF:
-				{
-					tMD_TypeDef *pTypeDef = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, ownerIdx);
-					pTypeDef->isGenericDefinition = 1;
-				}
-				break;
-			case MD_TABLE_METHODDEF:
-				{
-					tMD_MethodDef *pMethodDef = (tMD_MethodDef*)MetaData_GetTableRow(pMetaData, ownerIdx);
-					pMethodDef->isGenericDefinition = 1;
-				}
-				break;
-			default:
-				Crash("Wrong generic parameter owner: 0x%08x", ownerIdx);
-		}
-	}
+	//	pGenericParam = (tMD_GenericParam*)MetaData_GetTableRow
+	//		(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_GENERICPARAM, i));
+	//	ownerIdx = pGenericParam->owner;
+	//	switch (TABLE_ID(ownerIdx)) {
+	//		case MD_TABLE_TYPEDEF:
+	//			{
+	//				tMD_TypeDef *pTypeDef = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, ownerIdx);
+	//				pTypeDef->isGenericDefinition = 1;
+	//			}
+	//			break;
+	//		case MD_TABLE_METHODDEF:
+	//			{
+	//				tMD_MethodDef *pMethodDef = (tMD_MethodDef*)MetaData_GetTableRow(pMetaData, ownerIdx);
+	//				pMethodDef->isGenericDefinition = 1;
+	//			}
+	//			break;
+	//		default:
+	//			Crash("Wrong generic parameter owner: 0x%08x", ownerIdx);
+	//	}
+	//}
 	Gprintf("C5.\n");
 
 	// Mark all nested classes as such
@@ -304,7 +325,7 @@ __device__ I32 CLIFile_Execute(tCLIFile *pThis, int argc, char **argp) {
 	//Thread_SetEntryPoint(pThread, pThis->pMetaData, pThis->entryPoint, (PTR)&args, sizeof(void*));
 
 	//return Thread_Execute();
-	return NULL;
+	return 0;
 }
 
 __device__ void CLIFile_GetHeapRoots(tHeapRoots *pHeapRoots) {

@@ -187,6 +187,7 @@ __device__ tMD_TypeDef* Type_GetArrayTypeDef(tMD_TypeDef *pElementType, tMD_Type
 	pIterArrays->pNext = pArrays;
 	pArrays = pIterArrays;
 	pIterArrays->pArrayType = TMALLOC(tMD_TypeDef);
+	Gmemset(pIterArrays->pArrayType, 0, sizeof(tMD_TypeDef));
 
 	CreateNewArrayType(pIterArrays->pArrayType, pElementType, ppClassTypeArgs, ppMethodTypeArgs);
 	return pIterArrays->pArrayType;
@@ -330,6 +331,7 @@ __device__ tMD_TypeDef* Type_GetTypeFromSig(tMetaData *pMetaData, SIG *pSig, tMD
 			Crash("Type_GetTypeFromSig(): Cannot handle signature element type: 0x%02x", entry);
 			FAKE_RETURN;
 	}
+	return 0;
 }
 
 __device__ tMD_TypeDef **types;

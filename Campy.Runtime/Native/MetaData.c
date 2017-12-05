@@ -98,12 +98,6 @@
 	log_f(1, "Read %d GUIDs\n", pThis->GUIDs.numGUIDs);
 }
 
-
-
-
-
-
-
 /*
 Format of definition strings:
 Always 2 characters to togther. 1st character defines source, 2nd defines destination.
