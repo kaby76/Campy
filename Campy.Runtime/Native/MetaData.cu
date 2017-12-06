@@ -284,11 +284,12 @@ __device__ void MetaData_Init() {
 }
 
 __device__ static unsigned int GetU16(unsigned char *pSource) {
-	unsigned char a,b;
+	unsigned char a, b;
 
 	a = pSource[0];
 	b = pSource[1];
-	return a | (b << 8);
+	return ((unsigned int)a)
+	| (((unsigned int)b) << 8);
 }
 
 __device__ static unsigned int GetU32(unsigned char *pSource) {
@@ -298,12 +299,14 @@ __device__ static unsigned int GetU32(unsigned char *pSource) {
 	b = pSource[1];
 	c = pSource[2];
 	d = pSource[3];
-	return a | (b << 8) | (c << 16) | (d << 24);
+	return ((unsigned int)a)
+	| (((unsigned int)b) << 8)
+	| (((unsigned int)c) << 16)
+	| (((unsigned int)d) << 24);
 }
 
 __device__ static unsigned long long GetU64(unsigned char *pSource) {
-	unsigned char a, b, c, d;
-	unsigned char e, f, g, h;
+	unsigned char a, b, c, d, e, f, g, h;
 
 	a = pSource[0];
 	b = pSource[1];
@@ -313,8 +316,14 @@ __device__ static unsigned long long GetU64(unsigned char *pSource) {
 	f = pSource[5];
 	g = pSource[6];
 	h = pSource[7];
-	return a | (b << 8) | (c << 16) | (d << 24)
-	    | (e << 32) | (f << 40) | (g << 48) | (h << 56);
+	return ((unsigned long long)a)
+		| (((unsigned long long)b) << 8)
+		| (((unsigned long long)c) << 16)
+		| (((unsigned long long)d) << 24)
+		| (((unsigned long long)e) << 32)
+		| (((unsigned long long)f) << 40)
+		| (((unsigned long long)g) << 48)
+		| (((unsigned long long)h) << 56);
 }
 
 __device__ int CodedIndex(tMetaData *pThis, unsigned char x, unsigned char **ppSource)
