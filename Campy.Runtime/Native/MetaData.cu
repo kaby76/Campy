@@ -326,9 +326,9 @@ __device__ static unsigned long long GetU64(unsigned char *pSource) {
 		| (((unsigned long long)h) << 56);
 }
 
-__device__ int CodedIndex(tMetaData *pThis, unsigned char x, unsigned char **ppSource)
+__device__ unsigned int CodedIndex(tMetaData *pThis, unsigned char x, unsigned char **ppSource)
 {
-	int v;
+	unsigned int v;
 	unsigned char * pSource = (unsigned char *)*ppSource;
 	int ofs = x - '0';
 	const char* pCoding = codedTags[ofs];
@@ -336,7 +336,7 @@ __device__ int CodedIndex(tMetaData *pThis, unsigned char x, unsigned char **ppS
 	unsigned char tag = *pSource & ((1 << tagBits) - 1);
 	int idxIntoTableID = pCoding[tag]; // The actual table index that we're looking for
 	if (idxIntoTableID < 0 || idxIntoTableID > MAX_TABLES) {
-		//printf("Error: Bad table index: 0x%02x\n", idxIntoTableID);
+		printf("Error: Bad table index: 0x%02x\n", idxIntoTableID);
 		gpuexit(1);
 	}
 	if (pThis->tables.codedIndex32Bit[ofs]) {
@@ -354,20 +354,20 @@ __device__ int CodedIndex(tMetaData *pThis, unsigned char x, unsigned char **ppS
 	return v;
 }
 
-__device__ int Coded2Index(tMetaData *pThis, int d, unsigned char **ppSource)
+__device__ unsigned int Coded2Index(tMetaData *pThis, int d, unsigned char **ppSource)
 {
-	int v;
+	unsigned int v;
 	unsigned char * pSource = (unsigned char *)*ppSource;
 	if (pThis->tables.numRows[d] < 0x10000) {
 		// Use 16-bit offset
 		unsigned int val = GetU16(pSource);
-		v = (unsigned long long)val;
+		v = val;
 		pSource += 2;
 	}
 	else {
 		// Use 32-bit offset
 		unsigned int val = GetU32(pSource);
-		v = (unsigned long long)val;
+		v = val;
 		pSource += 4;
 	}
 	v |= d << 24;
