@@ -1236,11 +1236,6 @@ __device__ static void* LoadSingleTable(tMetaData *pThis, tRVA *pRVA, int tableI
 	pThis->tables.data[tableID] = pRet;
 	pDest = (char*) pRet;
 
-	// Update the parameter to the position after this table
-	*ppTable = pSource;
-	// Return new table information
-	return pRet;
-
 	// Load rows of table, of give type of table.
 	for (row=0; row<numRows; row++) {
 
