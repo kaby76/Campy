@@ -1,4 +1,6 @@
 ﻿
+using System.IO;
+
 namespace Campy.Compiler
 {
     using Campy.Utils;
@@ -73,7 +75,10 @@ namespace Campy.Compiler
         public void Add(MethodInfo method_info)
         {
             String kernel_assembly_file_name = method_info.DeclaringType.Assembly.Location;
-            Mono.Cecil.ModuleDefinition md = Mono.Cecil.ModuleDefinition.ReadModule(kernel_assembly_file_name);
+            string p = Path.GetDirectoryName(kernel_assembly_file_name);
+            var resolver = new DefaultAssemblyResolver();
+            resolver.AddSearchDirectory(p);
+            Mono.Cecil.ModuleDefinition md = Mono.Cecil.ModuleDefinition.ReadModule(kernel_assembly_file_name, new ReaderParameters { AssemblyResolver = resolver });
             MethodReference method_reference = md.Import(method_info);
             Add(method_reference);
         }
@@ -137,7 +142,10 @@ namespace Campy.Compiler
             foreach (ModuleDefinition md in this._loaded_modules)
                 if (md.FullyQualifiedName.Equals(full_name))
                     return md;
-            ModuleDefinition module = ModuleDefinition.ReadModule(assembly_file_name);
+            string p = Path.GetDirectoryName(full_name);
+            var resolver = new DefaultAssemblyResolver();
+            resolver.AddSearchDirectory(p);
+            ModuleDefinition module = ModuleDefinition.ReadModule(assembly_file_name, new ReaderParameters { AssemblyResolver = resolver });
             _loaded_modules.Add(module);
             return module;
         }

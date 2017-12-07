@@ -4,5 +4,6 @@
     <EnableUnmanagedDebugging>true</EnableUnmanagedDebugging>
     <RemoteDebugEnabled>false</RemoteDebugEnabled>
     <RemoteDebugMachine>llano:4022</RemoteDebugMachine>
+    <StartWorkingDirectory>C:\</StartWorkingDirectory>
   </PropertyGroup>
 </Project>
