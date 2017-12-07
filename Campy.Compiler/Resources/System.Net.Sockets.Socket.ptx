@@ -22,6 +22,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:77   return cudaErrorUnknown;
+	.loc 2 77 3
 	ret;
 }
 
@@ -36,6 +39,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:82   return cudaErrorUnknown;
+	.loc 2 82 3
 	ret;
 }
 
@@ -51,6 +57,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:87   return cudaErrorUnknown;
+	.loc 2 87 3
 	ret;
 }
 
@@ -64,6 +73,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:92   return cudaErrorUnknown;
+	.loc 2 92 3
 	ret;
 }
 
@@ -80,6 +92,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:97   return cudaErrorUnknown;
+	.loc 2 97 3
 	ret;
 }
 
@@ -97,6 +112,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:102   return cudaErrorUnknown;
+	.loc 2 102 3
 	ret;
 }
 
@@ -108,6 +126,9 @@
 
 
 
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Net.Sockets.Socket.cu:45 }
+	.loc 1 45 1
 	ret;
 }
 
@@ -123,6 +144,9 @@
 
 	mov.u64 	%rd1, 0;
 	st.param.b64	[func_retval0+0], %rd1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Net.Sockets.Socket.cu:80 	return NULL;
+	.loc 1 80 2
 	ret;
 }
 
@@ -138,6 +162,9 @@
 
 	mov.u64 	%rd1, 0;
 	st.param.b64	[func_retval0+0], %rd1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Net.Sockets.Socket.cu:104 	return NULL;
+	.loc 1 104 2
 	ret;
 }
 
@@ -153,6 +180,9 @@
 
 	mov.u64 	%rd1, 0;
 	st.param.b64	[func_retval0+0], %rd1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Net.Sockets.Socket.cu:117 	return NULL;
+	.loc 1 117 2
 	ret;
 }
 
@@ -168,6 +198,9 @@
 
 	mov.u64 	%rd1, 0;
 	st.param.b64	[func_retval0+0], %rd1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Net.Sockets.Socket.cu:129 	return NULL;
+	.loc 1 129 2
 	ret;
 }
 
@@ -183,6 +216,9 @@
 
 	mov.u64 	%rd1, 0;
 	st.param.b64	[func_retval0+0], %rd1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Net.Sockets.Socket.cu:167 	return NULL;
+	.loc 1 167 2
 	ret;
 }
 
@@ -198,6 +234,9 @@
 
 	mov.u64 	%rd1, 0;
 	st.param.b64	[func_retval0+0], %rd1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Net.Sockets.Socket.cu:230 	return NULL;
+	.loc 1 230 2
 	ret;
 }
 
@@ -213,6 +252,9 @@
 
 	mov.u64 	%rd1, 0;
 	st.param.b64	[func_retval0+0], %rd1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Net.Sockets.Socket.cu:306 	return NULL;
+	.loc 1 306 2
 	ret;
 }
 
@@ -228,7 +270,12 @@
 
 	mov.u64 	%rd1, 0;
 	st.param.b64	[func_retval0+0], %rd1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Net.Sockets.Socket.cu:371 	return NULL;
+	.loc 1 371 2
 	ret;
 }
 
+	.file	1 "C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Net.Sockets.Socket.cu", 1509046920, 9841
+	.file	2 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v9.0\\include\\cuda_device_runtime_api.h", 1504359958, 14836
 

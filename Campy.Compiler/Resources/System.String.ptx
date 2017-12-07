@@ -48,6 +48,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:77   return cudaErrorUnknown;
+	.loc 2 77 3
 	ret;
 }
 
@@ -62,6 +65,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:82   return cudaErrorUnknown;
+	.loc 2 82 3
 	ret;
 }
 
@@ -77,6 +83,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:87   return cudaErrorUnknown;
+	.loc 2 87 3
 	ret;
 }
 
@@ -90,6 +99,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:92   return cudaErrorUnknown;
+	.loc 2 92 3
 	ret;
 }
 
@@ -106,6 +118,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:97   return cudaErrorUnknown;
+	.loc 2 97 3
 	ret;
 }
 
@@ -123,6 +138,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:102   return cudaErrorUnknown;
+	.loc 2 102 3
 	ret;
 }
 
@@ -141,12 +159,27 @@
 
 	ld.param.u64 	%rd4, [_Z28System_String_ctor_CharInt32PhS_S__param_1];
 	ld.param.u64 	%rd3, [_Z28System_String_ctor_CharInt32PhS_S__param_2];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:58 	c = (CHAR2)(((U32*)pParams)[0]);
+	.loc 1 58 2
 	ld.u16 	%rs1, [%rd4];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:59 	len = ((U32*)pParams)[1];
+	.loc 1 59 2
 	ld.u32 	%r1, [%rd4+4];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:47 	totalSize = sizeof(tSystemString) + (len << 1);
+	.loc 1 47 2
 	shl.b32 	%r10, %r1, 1;
 	add.s32 	%r11, %r10, 4;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:48 	pSystemString = (tSystemString*)Heap_Alloc(types[TYPE_SYSTEM_STRING], totalSize);
+	.loc 1 48 2
 	ld.global.u64 	%rd5, [types];
 	ld.u64 	%rd6, [%rd5+72];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:48 	pSystemString = (tSystemString*)Heap_Alloc(types[TYPE_SYSTEM_STRING], totalSize);
+	.loc 1 48 34
 	// Callseq Start 0
 	{
 	.reg .b32 temp_param_reg;
@@ -166,7 +199,13 @@
 	
 	//{
 	}// Callseq End 0
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:49 	pSystemString->length = len;
+	.loc 1 49 2
 	st.u32 	[%rd1], %r1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:61 	for (i=0; i<len; i++) {
+	.loc 1 61 2
 	setp.eq.s32	%p1, %r1, 0;
 	@%p1 bra 	BB6_9;
 
@@ -183,19 +222,34 @@
 	mov.u32 	%r19, 0;
 	@%p4 bra 	BB6_5;
 
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:62 		pSystemString->chars[i] = c;
+	.loc 1 62 3
 	st.u16 	[%rd1+4], %rs1;
 	mov.u32 	%r19, 1;
 
 BB6_5:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:62 		pSystemString->chars[i] = c;
+	.loc 1 62 3
 	mul.wide.u32 	%rd7, %r19, 2;
 	add.s64 	%rd8, %rd1, %rd7;
 	st.u16 	[%rd8+4], %rs1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:61 	for (i=0; i<len; i++) {
+	.loc 1 61 19
 	add.s32 	%r20, %r19, 1;
 
 BB6_6:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:62 		pSystemString->chars[i] = c;
+	.loc 1 62 3
 	mul.wide.u32 	%rd9, %r20, 2;
 	add.s64 	%rd10, %rd1, %rd9;
 	st.u16 	[%rd10+4], %rs1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:61 	for (i=0; i<len; i++) {
+	.loc 1 61 19
 	add.s32 	%r22, %r20, 1;
 
 BB6_7:
@@ -203,30 +257,63 @@ BB6_7:
 	@%p5 bra 	BB6_9;
 
 BB6_8:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:62 		pSystemString->chars[i] = c;
+	.loc 1 62 3
 	mul.wide.u32 	%rd11, %r22, 2;
 	add.s64 	%rd12, %rd1, 4;
 	add.s64 	%rd13, %rd12, %rd11;
 	st.u16 	[%rd13], %rs1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:61 	for (i=0; i<len; i++) {
+	.loc 1 61 19
 	add.s32 	%r16, %r22, 1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:62 		pSystemString->chars[i] = c;
+	.loc 1 62 3
 	mul.wide.u32 	%rd14, %r16, 2;
 	add.s64 	%rd15, %rd12, %rd14;
 	st.u16 	[%rd15], %rs1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:61 	for (i=0; i<len; i++) {
+	.loc 1 61 19
 	add.s32 	%r17, %r22, 2;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:62 		pSystemString->chars[i] = c;
+	.loc 1 62 3
 	mul.wide.u32 	%rd16, %r17, 2;
 	add.s64 	%rd17, %rd12, %rd16;
 	st.u16 	[%rd17], %rs1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:61 	for (i=0; i<len; i++) {
+	.loc 1 61 19
 	add.s32 	%r18, %r22, 3;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:62 		pSystemString->chars[i] = c;
+	.loc 1 62 3
 	mul.wide.u32 	%rd18, %r18, 2;
 	add.s64 	%rd19, %rd12, %rd18;
 	st.u16 	[%rd19], %rs1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:61 	for (i=0; i<len; i++) {
+	.loc 1 61 19
 	add.s32 	%r22, %r22, 4;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:61 	for (i=0; i<len; i++) {
+	.loc 1 61 2
 	setp.lt.u32	%p6, %r22, %r1;
 	@%p6 bra 	BB6_8;
 
 BB6_9:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:64 	*(HEAP_PTR*)pReturnValue = (HEAP_PTR)pSystemString;
+	.loc 1 64 2
 	st.u64 	[%rd3], %rd1;
 	mov.u64 	%rd20, 0;
 	st.param.b64	[func_retval0+0], %rd20;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:66 	return NULL;
+	.loc 1 66 2
 	ret;
 }
 
@@ -245,13 +332,31 @@ BB6_9:
 
 	ld.param.u64 	%rd9, [_Z30System_String_ctor_CharAIntIntPhS_S__param_1];
 	ld.param.u64 	%rd7, [_Z30System_String_ctor_CharAIntIntPhS_S__param_2];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:75 	charArray = ((HEAP_PTR*)pParams)[0];
+	.loc 1 75 2
 	ld.u64 	%rd10, [%rd9];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:76 	startIndex = ((U32*)pParams)[1];  // KED == I DON'T THINK THIS IS CORRECT! THIS ASSUMES HEAP_PTR IS 32-BITS!
+	.loc 1 76 2
 	ld.u32 	%r1, [%rd9+4];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:77 	length = ((U32*)pParams)[2];
+	.loc 1 77 2
 	ld.u32 	%r2, [%rd9+8];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:47 	totalSize = sizeof(tSystemString) + (len << 1);
+	.loc 1 47 2
 	shl.b32 	%r3, %r2, 1;
 	add.s32 	%r4, %r3, 4;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:48 	pSystemString = (tSystemString*)Heap_Alloc(types[TYPE_SYSTEM_STRING], totalSize);
+	.loc 1 48 2
 	ld.global.u64 	%rd11, [types];
 	ld.u64 	%rd12, [%rd11+72];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:48 	pSystemString = (tSystemString*)Heap_Alloc(types[TYPE_SYSTEM_STRING], totalSize);
+	.loc 1 48 34
 	// Callseq Start 1
 	{
 	.reg .b32 temp_param_reg;
@@ -271,7 +376,13 @@ BB6_9:
 	
 	//{
 	}// Callseq End 1
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:49 	pSystemString->length = len;
+	.loc 1 49 2
 	st.u32 	[%rd1], %r2;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:81 	memcpy(pSystemString->chars, charElements + (startIndex << 1), length << 1);
+	.loc 1 81 2
 	add.s64 	%rd2, %rd1, 4;
 	shl.b32 	%r5, %r1, 1;
 	cvt.u64.u32	%rd13, %r5;
@@ -292,9 +403,15 @@ BB7_1:
 	@%p2 bra 	BB7_1;
 
 BB7_2:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:82 	*(HEAP_PTR*)pReturnValue = (HEAP_PTR)pSystemString;
+	.loc 1 82 2
 	st.u64 	[%rd7], %rd1;
 	mov.u64 	%rd17, 0;
 	st.param.b64	[func_retval0+0], %rd17;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:84 	return NULL;
+	.loc 1 84 2
 	ret;
 }
 
@@ -313,13 +430,31 @@ BB7_2:
 
 	ld.param.u64 	%rd9, [_Z31System_String_ctor_StringIntIntPhS_S__param_1];
 	ld.param.u64 	%rd7, [_Z31System_String_ctor_StringIntIntPhS_S__param_2];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:91 	pStr = ((tSystemString**)pParams)[0];
+	.loc 1 91 2
 	ld.u64 	%rd10, [%rd9];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:92 	startIndex = ((U32*)pParams)[1];
+	.loc 1 92 2
 	ld.u32 	%r1, [%rd9+4];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:93 	length = ((U32*)pParams)[2];
+	.loc 1 93 2
 	ld.u32 	%r2, [%rd9+8];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:47 	totalSize = sizeof(tSystemString) + (len << 1);
+	.loc 1 47 2
 	shl.b32 	%r3, %r2, 1;
 	add.s32 	%r4, %r3, 4;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:48 	pSystemString = (tSystemString*)Heap_Alloc(types[TYPE_SYSTEM_STRING], totalSize);
+	.loc 1 48 2
 	ld.global.u64 	%rd11, [types];
 	ld.u64 	%rd12, [%rd11+72];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:48 	pSystemString = (tSystemString*)Heap_Alloc(types[TYPE_SYSTEM_STRING], totalSize);
+	.loc 1 48 34
 	// Callseq Start 2
 	{
 	.reg .b32 temp_param_reg;
@@ -339,7 +474,13 @@ BB7_2:
 	
 	//{
 	}// Callseq End 2
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:49 	pSystemString->length = len;
+	.loc 1 49 2
 	st.u32 	[%rd1], %r2;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:96 	memcpy(pThis->chars, &pStr->chars[startIndex], length << 1);
+	.loc 1 96 2
 	add.s64 	%rd2, %rd1, 4;
 	mul.wide.u32 	%rd13, %r1, 2;
 	add.s64 	%rd14, %rd10, %rd13;
@@ -359,9 +500,15 @@ BB8_1:
 	@%p2 bra 	BB8_1;
 
 BB8_2:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:97 	*(HEAP_PTR*)pReturnValue = (HEAP_PTR)pThis;
+	.loc 1 97 2
 	st.u64 	[%rd7], %rd1;
 	mov.u64 	%rd17, 0;
 	st.param.b64	[func_retval0+0], %rd17;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:99 	return NULL;
+	.loc 1 99 2
 	ret;
 }
 
@@ -379,13 +526,22 @@ BB8_2:
 	ld.param.u64 	%rd1, [_Z23System_String_get_CharsPhS_S__param_0];
 	ld.param.u64 	%rd2, [_Z23System_String_get_CharsPhS_S__param_1];
 	ld.param.u64 	%rd3, [_Z23System_String_get_CharsPhS_S__param_2];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:106 	index = *(U32*)pParams;
+	.loc 1 106 2
 	ld.u32 	%r1, [%rd2];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:107 	*(U32*)pReturnValue = pThis->chars[index];
+	.loc 1 107 2
 	mul.wide.u32 	%rd4, %r1, 2;
 	add.s64 	%rd5, %rd1, %rd4;
 	ld.u16 	%r2, [%rd5+4];
 	st.u32 	[%rd3], %r2;
 	mov.u64 	%rd6, 0;
 	st.param.b64	[func_retval0+0], %rd6;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:109 	return NULL;
+	.loc 1 109 2
 	ret;
 }
 
@@ -404,15 +560,33 @@ BB8_2:
 
 	ld.param.u64 	%rd18, [_Z28System_String_InternalConcatPhS_S__param_1];
 	ld.param.u64 	%rd16, [_Z28System_String_InternalConcatPhS_S__param_2];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:115 	s0 = (tSystemString*)(((HEAP_PTR*)pParams)[0]);
+	.loc 1 115 2
 	ld.u64 	%rd2, [%rd18];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:116 	s1 = (tSystemString*)(((HEAP_PTR*)pParams)[1]);
+	.loc 1 116 2
 	ld.u64 	%rd1, [%rd18+8];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:117 	ret = CreateStringHeapObj(s0->length + s1->length);
+	.loc 1 117 2
 	ld.u32 	%r1, [%rd2];
 	ld.u32 	%r2, [%rd1];
 	add.s32 	%r3, %r2, %r1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:47 	totalSize = sizeof(tSystemString) + (len << 1);
+	.loc 1 47 2
 	shl.b32 	%r4, %r3, 1;
 	add.s32 	%r5, %r4, 4;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:48 	pSystemString = (tSystemString*)Heap_Alloc(types[TYPE_SYSTEM_STRING], totalSize);
+	.loc 1 48 2
 	ld.global.u64 	%rd19, [types];
 	ld.u64 	%rd20, [%rd19+72];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:48 	pSystemString = (tSystemString*)Heap_Alloc(types[TYPE_SYSTEM_STRING], totalSize);
+	.loc 1 48 34
 	// Callseq Start 3
 	{
 	.reg .b32 temp_param_reg;
@@ -432,7 +606,13 @@ BB8_2:
 	
 	//{
 	}// Callseq End 3
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:49 	pSystemString->length = len;
+	.loc 1 49 2
 	st.u32 	[%rd4], %r3;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:118 	memcpy(ret->chars, s0->chars, s0->length << 1);
+	.loc 1 118 2
 	add.s64 	%rd6, %rd4, 4;
 	add.s64 	%rd7, %rd2, 4;
 	ld.u32 	%r6, [%rd2];
@@ -452,6 +632,9 @@ BB10_1:
 	@%p2 bra 	BB10_1;
 
 BB10_2:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:119 	memcpy(&ret->chars[s0->length], s1->chars, s1->length << 1);
+	.loc 1 119 2
 	ld.u32 	%r8, [%rd2];
 	mul.wide.u32 	%rd24, %r8, 2;
 	add.s64 	%rd25, %rd4, %rd24;
@@ -474,9 +657,15 @@ BB10_3:
 	@%p4 bra 	BB10_3;
 
 BB10_4:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:120 	*(HEAP_PTR*)pReturnValue = (HEAP_PTR)ret;
+	.loc 1 120 2
 	st.u64 	[%rd16], %rd4;
 	mov.u64 	%rd28, 0;
 	st.param.b64	[func_retval0+0], %rd28;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:122 	return NULL;
+	.loc 1 122 2
 	ret;
 }
 
@@ -496,45 +685,99 @@ BB10_4:
 	ld.param.u64 	%rd10, [_Z26System_String_InternalTrimPhS_S__param_0];
 	ld.param.u64 	%rd12, [_Z26System_String_InternalTrimPhS_S__param_1];
 	ld.param.u64 	%rd11, [_Z26System_String_InternalTrimPhS_S__param_2];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:135 	pWhiteChars = ((HEAP_PTR*)pParams)[0];
+	.loc 1 135 2
 	ld.u64 	%rd13, [%rd12];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:137 	pCheckChars = (U16*)SystemArray_GetElements(pWhiteChars);
+	.loc 1 137 2
 	add.s64 	%rd1, %rd13, 4;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:138 	checkCharsLen = SystemArray_GetLength(pWhiteChars);
+	.loc 1 138 2
 	ld.u32 	%r1, [%rd13];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:136 	trimType = ((U32*)pParams)[1];
+	.loc 1 136 2
 	ld.u32 	%r2, [%rd12+4];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:142 	if (trimType & 1) {
+	.loc 1 142 2
 	and.b32  	%r17, %r2, 1;
 	setp.eq.b32	%p1, %r17, 1;
 	not.pred 	%p2, %p1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:141 	ofsEnd = pThis->length;
+	.loc 1 141 2
 	ld.u32 	%r32, [%rd10];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:144 		for (i=ofsStart; i<ofsEnd; i++) {
+	.loc 1 144 3
 	setp.eq.s32	%p3, %r32, 0;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:142 	if (trimType & 1) {
+	.loc 1 142 2
 	or.pred  	%p4, %p2, %p3;
 	mov.u32 	%r28, 0;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:142 	if (trimType & 1) {
+	.loc 1 142 2
 	@%p4 bra 	BB11_8;
 
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:147 			c = pThis->chars[i];
+	.loc 1 147 4
 	add.s64 	%rd2, %rd10, 4;
 	mov.u32 	%r18, 0;
 	mov.u32 	%r4, %r18;
 
 BB11_2:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:147 			c = pThis->chars[i];
+	.loc 1 147 4
 	mul.wide.u32 	%rd14, %r4, 2;
 	add.s64 	%rd15, %rd2, %rd14;
 	ld.u16 	%rs1, [%rd15];
 	setp.eq.s32	%p5, %r1, 0;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:148 			for (j=0; j<checkCharsLen; j++) {
+	.loc 1 148 4
 	mov.u32 	%r27, %r18;
 	@%p5 bra 	BB11_3;
 
 BB11_4:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:149 				if (c == pCheckChars[j]) {
+	.loc 1 149 5
 	mul.wide.u32 	%rd16, %r27, 2;
 	add.s64 	%rd17, %rd1, %rd16;
 	ld.u16 	%rs3, [%rd17];
 	setp.eq.s16	%p6, %rs1, %rs3;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:148 			for (j=0; j<checkCharsLen; j++) {
+	.loc 1 148 31
 	add.s32 	%r27, %r27, 1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:149 				if (c == pCheckChars[j]) {
+	.loc 1 149 5
 	@%p6 bra 	BB11_7;
 
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:148 			for (j=0; j<checkCharsLen; j++) {
+	.loc 1 148 4
 	setp.lt.u32	%p7, %r27, %r1;
 	@%p7 bra 	BB11_4;
 	bra.uni 	BB11_6;
 
 BB11_7:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:144 		for (i=ofsStart; i<ofsEnd; i++) {
+	.loc 1 144 30
 	add.s32 	%r4, %r4, 1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:144 		for (i=ofsStart; i<ofsEnd; i++) {
+	.loc 1 144 3
 	setp.lt.u32	%p8, %r4, %r32;
 	mov.u32 	%r28, 0;
 	@%p8 bra 	BB11_2;
@@ -544,19 +787,31 @@ BB11_6:
 	mov.u32 	%r28, %r4;
 
 BB11_8:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:160 	if (trimType & 2) {
+	.loc 1 160 2
 	and.b32  	%r21, %r2, 2;
 	setp.eq.s32	%p9, %r21, 0;
 	@%p9 bra 	BB11_17;
 
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:162 		for (i=ofsEnd-1; i>=ofsStart; i--) {
+	.loc 1 162 3
 	add.s32 	%r29, %r32, -1;
 	setp.lt.u32	%p10, %r29, %r28;
 	@%p10 bra 	BB11_17;
 
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:165 			c = pThis->chars[i];
+	.loc 1 165 4
 	add.s64 	%rd3, %rd10, 4;
 	mov.u32 	%r30, %r32;
 
 BB11_11:
 	mov.u32 	%r10, %r29;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:165 			c = pThis->chars[i];
+	.loc 1 165 4
 	mul.wide.u32 	%rd18, %r10, 2;
 	add.s64 	%rd19, %rd3, %rd18;
 	ld.u16 	%rs2, [%rd19];
@@ -565,18 +820,33 @@ BB11_11:
 	@%p11 bra 	BB11_12;
 
 BB11_13:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:167 				if (c == pCheckChars[j]) {
+	.loc 1 167 5
 	mul.wide.u32 	%rd20, %r31, 2;
 	add.s64 	%rd21, %rd1, %rd20;
 	ld.u16 	%rs4, [%rd21];
 	setp.eq.s16	%p12, %rs2, %rs4;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:166 			for (j=0; j<checkCharsLen; j++) {
+	.loc 1 166 31
 	add.s32 	%r31, %r31, 1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:167 				if (c == pCheckChars[j]) {
+	.loc 1 167 5
 	@%p12 bra 	BB11_16;
 
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:166 			for (j=0; j<checkCharsLen; j++) {
+	.loc 1 166 4
 	setp.lt.u32	%p13, %r31, %r1;
 	@%p13 bra 	BB11_13;
 	bra.uni 	BB11_15;
 
 BB11_16:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:162 		for (i=ofsEnd-1; i>=ofsStart; i--) {
+	.loc 1 162 3
 	add.s32 	%r29, %r10, -1;
 	setp.ge.u32	%p14, %r29, %r28;
 	mov.u32 	%r30, %r10;
@@ -587,11 +857,23 @@ BB11_15:
 	mov.u32 	%r32, %r30;
 
 BB11_17:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:179 	pRet = CreateStringHeapObj(ofsEnd - ofsStart);
+	.loc 1 179 2
 	sub.s32 	%r23, %r32, %r28;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:47 	totalSize = sizeof(tSystemString) + (len << 1);
+	.loc 1 47 2
 	shl.b32 	%r24, %r23, 1;
 	add.s32 	%r25, %r24, 4;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:48 	pSystemString = (tSystemString*)Heap_Alloc(types[TYPE_SYSTEM_STRING], totalSize);
+	.loc 1 48 2
 	ld.global.u64 	%rd23, [types];
 	ld.u64 	%rd24, [%rd23+72];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:48 	pSystemString = (tSystemString*)Heap_Alloc(types[TYPE_SYSTEM_STRING], totalSize);
+	.loc 1 48 34
 	// Callseq Start 4
 	{
 	.reg .b32 temp_param_reg;
@@ -611,7 +893,13 @@ BB11_17:
 	
 	//{
 	}// Callseq End 4
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:49 	pSystemString->length = len;
+	.loc 1 49 2
 	st.u32 	[%rd4], %r23;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:180 	memcpy(pRet->chars, &pThis->chars[ofsStart], (ofsEnd - ofsStart) << 1);
+	.loc 1 180 2
 	add.s64 	%rd5, %rd4, 4;
 	mul.wide.u32 	%rd25, %r28, 2;
 	add.s64 	%rd26, %rd10, %rd25;
@@ -631,9 +919,15 @@ BB11_18:
 	@%p16 bra 	BB11_18;
 
 BB11_19:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:181 	*(HEAP_PTR*)pReturnValue = (HEAP_PTR)pRet;
+	.loc 1 181 2
 	st.u64 	[%rd11], %rd4;
 	mov.u64 	%rd29, 0;
 	st.param.b64	[func_retval0+0], %rd29;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:183 	return NULL;
+	.loc 1 183 2
 	ret;
 
 BB11_3:
@@ -659,16 +953,34 @@ BB11_12:
 
 	ld.param.u64 	%rd4, [_Z20System_String_EqualsPhS_S__param_1];
 	ld.param.u64 	%rd3, [_Z20System_String_EqualsPhS_S__param_2];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:191 	b = ((tSystemString**)pParams)[1];
+	.loc 1 191 2
 	ld.u64 	%rd1, [%rd4+8];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:190 	a = ((tSystemString**)pParams)[0];
+	.loc 1 190 2
 	ld.u64 	%rd2, [%rd4];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:193 	if (a == b) {
+	.loc 1 193 2
 	setp.eq.s64	%p1, %rd2, %rd1;
 	mov.u32 	%r10, 1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:193 	if (a == b) {
+	.loc 1 193 2
 	@%p1 bra 	BB12_4;
 
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:195 	} else if (a == NULL || b == NULL || a->length != b->length) {
+	.loc 1 195 9
 	setp.eq.s64	%p2, %rd2, 0;
 	setp.eq.s64	%p3, %rd1, 0;
 	or.pred  	%p4, %p2, %p3;
 	mov.u32 	%r10, 0;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:195 	} else if (a == NULL || b == NULL || a->length != b->length) {
+	.loc 1 195 9
 	@%p4 bra 	BB12_4;
 
 	ld.u32 	%r7, [%rd1];
@@ -676,10 +988,16 @@ BB11_12:
 	setp.ne.s32	%p5, %r1, %r7;
 	@%p5 bra 	BB12_4;
 
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:198 		ret = (Gmemcmp(a->chars, b->chars, a->length<<1) == 0)?1:0;
+	.loc 1 198 3
 	add.s64 	%rd5, %rd2, 4;
 	add.s64 	%rd6, %rd1, 4;
 	shl.b32 	%r8, %r1, 1;
 	cvt.u64.u32	%rd7, %r8;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:198 		ret = (Gmemcmp(a->chars, b->chars, a->length<<1) == 0)?1:0;
+	.loc 1 198 10
 	// Callseq Start 5
 	{
 	.reg .b32 temp_param_reg;
@@ -706,9 +1024,15 @@ BB11_12:
 	selp.u32	%r10, 1, 0, %p6;
 
 BB12_4:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:200 	*(U32*)pReturnValue = ret;
+	.loc 1 200 2
 	st.u32 	[%rd3], %r10;
 	mov.u64 	%rd8, 0;
 	st.param.b64	[func_retval0+0], %rd8;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:202 	return NULL;
+	.loc 1 202 2
 	ret;
 }
 
@@ -726,13 +1050,22 @@ BB12_4:
 
 	ld.param.u64 	%rd22, [_Z25System_String_GetHashCodePhS_S__param_0];
 	ld.param.u64 	%rd23, [_Z25System_String_GetHashCodePhS_S__param_2];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:211 	pChar = pThis->chars;
+	.loc 1 211 2
 	add.s64 	%rd36, %rd22, 4;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:212 	pEnd = pChar + pThis->length - 1;
+	.loc 1 212 2
 	ld.u32 	%r13, [%rd22];
 	cvt.u64.u32	%rd4, %r13;
 	mul.wide.u32 	%rd24, %r13, 2;
 	add.s64 	%rd25, %rd24, %rd36;
 	add.s64 	%rd5, %rd25, -2;
 	mov.u32 	%r47, 0;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:213 	for (; pChar < pEnd; pChar += 2) {
+	.loc 1 213 2
 	setp.ge.u64	%p1, %rd36, %rd5;
 	@%p1 bra 	BB13_10;
 
@@ -754,25 +1087,52 @@ BB12_4:
 	mov.u32 	%r43, 0;
 	@%p4 bra 	BB13_5;
 
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:214 		hash = (hash << 5) - hash + pChar[0];
+	.loc 1 214 3
 	ld.u16 	%r17, [%rd22+4];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:215 		hash = (hash << 5) - hash + pChar[1];
+	.loc 1 215 3
 	ld.u16 	%r18, [%rd22+6];
 	mad.lo.s32 	%r19, %r17, 31, %r18;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:213 	for (; pChar < pEnd; pChar += 2) {
+	.loc 1 213 23
 	add.s64 	%rd36, %rd22, 8;
 	mul.lo.s32 	%r43, %r19, 31;
 
 BB13_5:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:214 		hash = (hash << 5) - hash + pChar[0];
+	.loc 1 214 3
 	ld.u16 	%r20, [%rd36];
 	add.s32 	%r21, %r20, %r43;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:215 		hash = (hash << 5) - hash + pChar[1];
+	.loc 1 215 3
 	ld.u16 	%r22, [%rd36+2];
 	mad.lo.s32 	%r23, %r21, 31, %r22;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:213 	for (; pChar < pEnd; pChar += 2) {
+	.loc 1 213 23
 	add.s64 	%rd36, %rd36, 4;
 	mul.lo.s32 	%r44, %r23, 31;
 
 BB13_6:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:214 		hash = (hash << 5) - hash + pChar[0];
+	.loc 1 214 3
 	ld.u16 	%r24, [%rd36];
 	add.s32 	%r25, %r24, %r44;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:215 		hash = (hash << 5) - hash + pChar[1];
+	.loc 1 215 3
 	ld.u16 	%r26, [%rd36+2];
 	mad.lo.s32 	%r47, %r25, 31, %r26;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:213 	for (; pChar < pEnd; pChar += 2) {
+	.loc 1 213 23
 	add.s64 	%rd36, %rd36, 4;
 	mov.u64 	%rd34, %rd36;
 
@@ -786,37 +1146,79 @@ BB13_8:
 	bra.uni 	BB13_10;
 
 BB13_9:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:214 		hash = (hash << 5) - hash + pChar[0];
+	.loc 1 214 3
 	ld.u16 	%r27, [%rd36];
 	mad.lo.s32 	%r28, %r47, 31, %r27;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:215 		hash = (hash << 5) - hash + pChar[1];
+	.loc 1 215 3
 	ld.u16 	%r29, [%rd36+2];
 	mad.lo.s32 	%r30, %r28, 31, %r29;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:214 		hash = (hash << 5) - hash + pChar[0];
+	.loc 1 214 3
 	ld.u16 	%r31, [%rd36+4];
 	mad.lo.s32 	%r32, %r30, 31, %r31;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:215 		hash = (hash << 5) - hash + pChar[1];
+	.loc 1 215 3
 	ld.u16 	%r33, [%rd36+6];
 	mad.lo.s32 	%r34, %r32, 31, %r33;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:214 		hash = (hash << 5) - hash + pChar[0];
+	.loc 1 214 3
 	ld.u16 	%r35, [%rd36+8];
 	mad.lo.s32 	%r36, %r34, 31, %r35;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:215 		hash = (hash << 5) - hash + pChar[1];
+	.loc 1 215 3
 	ld.u16 	%r37, [%rd36+10];
 	mad.lo.s32 	%r38, %r36, 31, %r37;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:214 		hash = (hash << 5) - hash + pChar[0];
+	.loc 1 214 3
 	ld.u16 	%r39, [%rd36+12];
 	mad.lo.s32 	%r40, %r38, 31, %r39;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:215 		hash = (hash << 5) - hash + pChar[1];
+	.loc 1 215 3
 	ld.u16 	%r41, [%rd36+14];
 	mad.lo.s32 	%r47, %r40, 31, %r41;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:213 	for (; pChar < pEnd; pChar += 2) {
+	.loc 1 213 23
 	add.s64 	%rd36, %rd36, 16;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:213 	for (; pChar < pEnd; pChar += 2) {
+	.loc 1 213 2
 	setp.lt.u64	%p6, %rd36, %rd5;
 	@%p6 bra 	BB13_9;
 
 BB13_10:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:217 	if (pChar <= pEnd) {
+	.loc 1 217 2
 	setp.gt.u64	%p7, %rd36, %rd5;
 	@%p7 bra 	BB13_12;
 
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:218 		hash = (hash << 5) - hash + pChar[0];
+	.loc 1 218 3
 	ld.u16 	%r42, [%rd36];
 	mad.lo.s32 	%r47, %r47, 31, %r42;
 
 BB13_12:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:220 	*(I32*)pReturnValue = hash;
+	.loc 1 220 2
 	st.u32 	[%rd23], %r47;
 	mov.u64 	%rd30, 0;
 	st.param.b64	[func_retval0+0], %rd30;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:222 	return NULL;
+	.loc 1 222 2
 	ret;
 }
 
@@ -836,14 +1238,35 @@ BB13_12:
 	ld.param.u64 	%rd10, [_Z29System_String_InternalReplacePhS_S__param_0];
 	ld.param.u64 	%rd12, [_Z29System_String_InternalReplacePhS_S__param_1];
 	ld.param.u64 	%rd11, [_Z29System_String_InternalReplacePhS_S__param_2];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:227 	tSystemString *pOld = ((tSystemString**)pParams)[0];
+	.loc 1 227 22
 	ld.u64 	%rd1, [%rd12];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:228 	tSystemString *pNew = ((tSystemString**)pParams)[1];
+	.loc 1 228 22
 	ld.u64 	%rd2, [%rd12+8];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:238 	newLen = pNew->length;
+	.loc 1 238 2
 	ld.u32 	%r1, [%rd2];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:237 	oldLen = pOld->length;
+	.loc 1 237 2
 	ld.u32 	%r2, [%rd1];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:236 	thisLen = pThis->length;
+	.loc 1 236 2
 	ld.u32 	%r3, [%rd10];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:244 	for (i=0; i<thisLen-oldLen+1; i++) {
+	.loc 1 244 2
 	sub.s32 	%r27, %r3, %r2;
 	setp.eq.s32	%p1, %r27, -1;
 	mov.u32 	%r52, 0;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:244 	for (i=0; i<thisLen-oldLen+1; i++) {
+	.loc 1 244 2
 	@%p1 bra 	BB14_7;
 
 	mov.u32 	%r29, 0;
@@ -852,43 +1275,91 @@ BB13_12:
 
 BB14_2:
 	setp.eq.s32	%p2, %r2, 0;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:246 		for (j=0; j<oldLen; j++) {
+	.loc 1 246 3
 	mov.u32 	%r54, %r29;
 	@%p2 bra 	BB14_5;
 
 BB14_3:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:247 			if (pThisChar0[i+j] != pOldChar0[j]) {
+	.loc 1 247 4
 	add.s32 	%r31, %r54, %r53;
 	mul.wide.u32 	%rd13, %r31, 2;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:239 	pThisChar0 = pThis->chars;
+	.loc 1 239 2
 	add.s64 	%rd14, %rd10, %rd13;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:247 			if (pThisChar0[i+j] != pOldChar0[j]) {
+	.loc 1 247 4
 	mul.wide.u32 	%rd15, %r54, 2;
 	add.s64 	%rd16, %rd1, %rd15;
 	ld.u16 	%rs1, [%rd16+4];
 	ld.u16 	%rs2, [%rd14+4];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:246 		for (j=0; j<oldLen; j++) {
+	.loc 1 246 23
 	add.s32 	%r54, %r54, 1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:247 			if (pThisChar0[i+j] != pOldChar0[j]) {
+	.loc 1 247 4
 	setp.ne.s16	%p3, %rs2, %rs1;
 	@%p3 bra 	BB14_6;
 
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:246 		for (j=0; j<oldLen; j++) {
+	.loc 1 246 3
 	setp.lt.u32	%p4, %r54, %r2;
 	@%p4 bra 	BB14_3;
 
 BB14_5:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:253 			i += oldLen - 1;
+	.loc 1 253 4
 	add.s32 	%r32, %r2, %r53;
 	add.s32 	%r53, %r32, -1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:254 			replacements++;
+	.loc 1 254 4
 	add.s32 	%r52, %r52, 1;
 
 BB14_6:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:244 	for (i=0; i<thisLen-oldLen+1; i++) {
+	.loc 1 244 2
 	add.s32 	%r34, %r27, 1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:244 	for (i=0; i<thisLen-oldLen+1; i++) {
+	.loc 1 244 32
 	add.s32 	%r53, %r53, 1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:244 	for (i=0; i<thisLen-oldLen+1; i++) {
+	.loc 1 244 2
 	setp.lt.u32	%p5, %r53, %r34;
 	@%p5 bra 	BB14_2;
 
 BB14_7:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:257 	resultLen = thisLen - (oldLen - newLen) * replacements;
+	.loc 1 257 2
 	sub.s32 	%r35, %r2, %r1;
 	mul.lo.s32 	%r36, %r52, %r35;
 	sub.s32 	%r37, %r3, %r36;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:47 	totalSize = sizeof(tSystemString) + (len << 1);
+	.loc 1 47 2
 	shl.b32 	%r38, %r37, 1;
 	add.s32 	%r39, %r38, 4;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:48 	pSystemString = (tSystemString*)Heap_Alloc(types[TYPE_SYSTEM_STRING], totalSize);
+	.loc 1 48 2
 	ld.global.u64 	%rd17, [types];
 	ld.u64 	%rd18, [%rd17+72];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:48 	pSystemString = (tSystemString*)Heap_Alloc(types[TYPE_SYSTEM_STRING], totalSize);
+	.loc 1 48 34
 	// Callseq Start 6
 	{
 	.reg .b32 temp_param_reg;
@@ -908,36 +1379,72 @@ BB14_7:
 	
 	//{
 	}// Callseq End 6
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:49 	pSystemString->length = len;
+	.loc 1 49 2
 	st.u32 	[%rd3], %r37;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:261 	for (i=0; i<thisLen; i++) {
+	.loc 1 261 2
 	setp.eq.s32	%p6, %r3, 0;
 	@%p6 bra 	BB14_19;
 
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:241 	pNewChar0 = pNew->chars;
+	.loc 1 241 2
 	add.s64 	%rd4, %rd2, 4;
 	mov.u32 	%r42, 0;
 	mov.u32 	%r59, %r42;
 	mov.u32 	%r60, %r42;
 
 BB14_9:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:244 	for (i=0; i<thisLen-oldLen+1; i++) {
+	.loc 1 244 2
 	add.s32 	%r45, %r27, 1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:263 		if (i<thisLen-oldLen+1) {
+	.loc 1 263 3
 	setp.ge.u32	%p7, %r60, %r45;
 	setp.eq.s32	%p8, %r2, 0;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:263 		if (i<thisLen-oldLen+1) {
+	.loc 1 263 3
 	or.pred  	%p9, %p7, %p8;
 	selp.b32	%r62, 0, %r62, %p7;
 	mov.u32 	%r61, %r42;
 	@%p9 bra 	BB14_13;
 
 BB14_10:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:266 				if (pThisChar0[i+j] != pOldChar0[j]) {
+	.loc 1 266 5
 	add.s32 	%r47, %r61, %r60;
 	mul.wide.u32 	%rd19, %r47, 2;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:239 	pThisChar0 = pThis->chars;
+	.loc 1 239 2
 	add.s64 	%rd20, %rd10, %rd19;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:266 				if (pThisChar0[i+j] != pOldChar0[j]) {
+	.loc 1 266 5
 	mul.wide.u32 	%rd21, %r61, 2;
 	add.s64 	%rd22, %rd1, %rd21;
 	ld.u16 	%rs3, [%rd22+4];
 	ld.u16 	%rs4, [%rd20+4];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:264 			for (j=0; j<oldLen; j++) {
+	.loc 1 264 24
 	add.s32 	%r61, %r61, 1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:266 				if (pThisChar0[i+j] != pOldChar0[j]) {
+	.loc 1 266 5
 	setp.ne.s16	%p10, %rs4, %rs3;
 	@%p10 bra 	BB14_11;
 
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:264 			for (j=0; j<oldLen; j++) {
+	.loc 1 264 4
 	setp.lt.u32	%p11, %r61, %r2;
 	mov.u32 	%r62, 1;
 	@%p11 bra 	BB14_10;
@@ -947,13 +1454,25 @@ BB14_11:
 	mov.u32 	%r62, %r42;
 
 BB14_13:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:274 		if (match) {
+	.loc 1 274 3
 	setp.eq.s32	%p12, %r62, 0;
 	@%p12 bra 	BB14_17;
 	bra.uni 	BB14_14;
 
 BB14_17:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:279 			pResultChar0[dstIndex++] = pThisChar0[i];
+	.loc 1 279 4
 	mul.wide.u32 	%rd28, %r60, 2;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:239 	pThisChar0 = pThis->chars;
+	.loc 1 239 2
 	add.s64 	%rd29, %rd10, %rd28;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:279 			pResultChar0[dstIndex++] = pThisChar0[i];
+	.loc 1 279 4
 	ld.u16 	%rs6, [%rd29+4];
 	mul.wide.u32 	%rd30, %r59, 2;
 	add.s64 	%rd31, %rd3, %rd30;
@@ -962,9 +1481,15 @@ BB14_17:
 	bra.uni 	BB14_18;
 
 BB14_14:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:279 			pResultChar0[dstIndex++] = pThisChar0[i];
+	.loc 1 279 4
 	mul.wide.u32 	%rd24, %r59, 2;
 	add.s64 	%rd25, %rd3, %rd24;
 	add.s64 	%rd6, %rd25, 4;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:275 			memcpy(&pResultChar0[dstIndex], pNewChar0, newLen << 1);
+	.loc 1 275 4
 	shl.b32 	%r49, %r1, 1;
 	cvt.u64.u32	%rd7, %r49;
 	mov.u64 	%rd33, 0;
@@ -981,20 +1506,35 @@ BB14_15:
 	@%p14 bra 	BB14_15;
 
 BB14_16:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:277 			i += oldLen - 1;
+	.loc 1 277 4
 	add.s32 	%r50, %r2, %r60;
 	add.s32 	%r60, %r50, -1;
 	mov.u32 	%r64, %r1;
 
 BB14_18:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:261 	for (i=0; i<thisLen; i++) {
+	.loc 1 261 23
 	add.s32 	%r59, %r64, %r59;
 	add.s32 	%r60, %r60, 1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:261 	for (i=0; i<thisLen; i++) {
+	.loc 1 261 2
 	setp.lt.u32	%p15, %r60, %r3;
 	@%p15 bra 	BB14_9;
 
 BB14_19:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:282 	*(HEAP_PTR*)pReturnValue = (HEAP_PTR)pResult;
+	.loc 1 282 2
 	st.u64 	[%rd11], %rd3;
 	mov.u64 	%rd32, 0;
 	st.param.b64	[func_retval0+0], %rd32;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:284 	return NULL;
+	.loc 1 284 2
 	ret;
 }
 
@@ -1014,29 +1554,62 @@ BB14_19:
 	ld.param.u64 	%rd1, [_Z29System_String_InternalIndexOfPhS_S__param_0];
 	ld.param.u64 	%rd3, [_Z29System_String_InternalIndexOfPhS_S__param_1];
 	ld.param.u64 	%rd2, [_Z29System_String_InternalIndexOfPhS_S__param_2];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:289 	U16 value = ((U16*)pParams)[0];
+	.loc 1 289 12
 	ld.u16 	%rs1, [%rd3];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:292 	U32 forwards = ((U32*)pParams)[3];
+	.loc 1 292 15
 	ld.u32 	%r8, [%rd3+12];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:298 	if (forwards) {
+	.loc 1 298 2
 	setp.eq.s32	%p1, %r8, 0;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:290 	I32 startIndex = ((I32*)pParams)[1];
+	.loc 1 290 17
 	ld.u32 	%r9, [%rd3+4];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:291 	I32 count = ((I32*)pParams)[2];
+	.loc 1 291 12
 	ld.u32 	%r10, [%rd3+8];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:305 		i = startIndex + count - 1;
+	.loc 1 305 3
 	add.s32 	%r11, %r9, %r10;
 	add.s32 	%r12, %r11, -1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:298 	if (forwards) {
+	.loc 1 298 2
 	selp.b32	%r13, -1, %r10, %p1;
 	selp.b32	%r1, -1, 1, %p1;
 	selp.b32	%r15, %r12, %r9, %p1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:307 	for (; i != lastIndex; i += inc) {
+	.loc 1 307 2
 	add.s32 	%r3, %r13, %r9;
 	setp.eq.s32	%p2, %r15, %r3;
 	mov.u32 	%r16, -1;
 	@%p2 bra 	BB15_4;
 
 BB15_1:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:308 		if (pThis->chars[i] == value) {
+	.loc 1 308 3
 	mul.wide.s32 	%rd4, %r15, 2;
 	add.s64 	%rd5, %rd1, %rd4;
 	ld.u16 	%rs2, [%rd5+4];
 	setp.eq.s16	%p3, %rs2, %rs1;
 	@%p3 bra 	BB15_2;
 
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:307 	for (; i != lastIndex; i += inc) {
+	.loc 1 307 25
 	add.s32 	%r15, %r15, %r1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:307 	for (; i != lastIndex; i += inc) {
+	.loc 1 307 2
 	setp.ne.s32	%p4, %r15, %r3;
 	@%p4 bra 	BB15_1;
 	bra.uni 	BB15_4;
@@ -1045,9 +1618,15 @@ BB15_2:
 	mov.u32 	%r16, %r15;
 
 BB15_4:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:313 	*(I32*)pReturnValue = -1;
+	.loc 1 313 2
 	st.u32 	[%rd2], %r16;
 	mov.u64 	%rd6, 0;
 	st.param.b64	[func_retval0+0], %rd6;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:314 	return NULL;
+	.loc 1 314 2
 	ret;
 }
 
@@ -1067,37 +1646,82 @@ BB15_4:
 	ld.param.u64 	%rd3, [_Z32System_String_InternalIndexOfAnyPhS_S__param_0];
 	ld.param.u64 	%rd1, [_Z32System_String_InternalIndexOfAnyPhS_S__param_1];
 	ld.param.u64 	%rd4, [_Z32System_String_InternalIndexOfAnyPhS_S__param_2];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:322 	U32 forwards = ((U32*)pParams)[3];
+	.loc 1 322 15
 	ld.u32 	%r11, [%rd1+12];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:331 	if (forwards) {
+	.loc 1 331 2
 	setp.eq.s32	%p1, %r11, 0;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:320 	I32 startIndex = ((I32*)pParams)[1];
+	.loc 1 320 17
 	ld.u32 	%r12, [%rd1+4];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:321 	I32 count = ((I32*)pParams)[2];
+	.loc 1 321 12
 	ld.u32 	%r13, [%rd1+8];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:338 		i = startIndex + count - 1;
+	.loc 1 338 3
 	add.s32 	%r14, %r12, %r13;
 	add.s32 	%r15, %r14, -1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:331 	if (forwards) {
+	.loc 1 331 2
 	selp.b32	%r16, -1, %r13, %p1;
 	selp.b32	%r18, %r15, %r12, %p1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:340 	for (; i != lastIndex; i += inc) {
+	.loc 1 340 2
 	add.s32 	%r2, %r16, %r12;
 	setp.eq.s32	%p2, %r18, %r2;
 	mov.u32 	%r20, -1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:340 	for (; i != lastIndex; i += inc) {
+	.loc 1 340 2
 	@%p2 bra 	BB16_7;
 
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:319 	HEAP_PTR valueArray = ((HEAP_PTR*)pParams)[0];
+	.loc 1 319 22
 	ld.u64 	%rd5, [%rd1];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:325 	U32 numValueChars = SystemArray_GetLength(valueArray);
+	.loc 1 325 20
 	ld.u32 	%r3, [%rd5];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:331 	if (forwards) {
+	.loc 1 331 2
 	selp.b32	%r4, -1, 1, %p1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:324 	PTR valueChars = SystemArray_GetElements(valueArray);
+	.loc 1 324 17
 	add.s64 	%rd2, %rd5, 4;
 
 BB16_2:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:341 		U16 thisChar = pThis->chars[i];
+	.loc 1 341 16
 	mul.wide.s32 	%rd6, %r18, 2;
 	add.s64 	%rd7, %rd3, %rd6;
 	ld.u16 	%rs1, [%rd7+4];
 	mov.u32 	%r19, %r3;
 
 BB16_3:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:342 		for (j=numValueChars - 1; j>=0; j--) {
+	.loc 1 342 3
 	add.s32 	%r19, %r19, -1;
 	setp.gt.s32	%p3, %r19, -1;
 	@%p3 bra 	BB16_5;
 	bra.uni 	BB16_4;
 
 BB16_5:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:343 			if (thisChar == ((U16*)valueChars)[j]) {
+	.loc 1 343 4
 	mul.wide.s32 	%rd8, %r19, 2;
 	add.s64 	%rd9, %rd2, %rd8;
 	ld.u16 	%rs2, [%rd9];
@@ -1106,7 +1730,13 @@ BB16_5:
 	bra.uni 	BB16_6;
 
 BB16_4:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:340 	for (; i != lastIndex; i += inc) {
+	.loc 1 340 25
 	add.s32 	%r18, %r18, %r4;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:340 	for (; i != lastIndex; i += inc) {
+	.loc 1 340 2
 	setp.eq.s32	%p4, %r18, %r2;
 	@%p4 bra 	BB16_7;
 	bra.uni 	BB16_2;
@@ -1115,9 +1745,15 @@ BB16_6:
 	mov.u32 	%r20, %r18;
 
 BB16_7:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:349 	*(I32*)pReturnValue = -1;
+	.loc 1 349 2
 	st.u32 	[%rd4], %r20;
 	mov.u64 	%rd10, 0;
 	st.param.b64	[func_retval0+0], %rd10;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:350 	return NULL;
+	.loc 1 350 2
 	ret;
 }
 
@@ -1141,6 +1777,9 @@ BB16_7:
 	ld.param.u64 	%rd8, [_Z28SystemString_FromUserStringsP10tMetaData_j_param_0];
 	ld.param.u32 	%r1, [_Z28SystemString_FromUserStringsP10tMetaData_j_param_1];
 	add.u64 	%rd9, %SP, 0;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:358 	string = MetaData_GetUserString(pMetaData, index, &stringLen);
+	.loc 1 358 11
 	cvta.to.local.u64 	%rd10, %rd9;
 	// Callseq Start 7
 	{
@@ -1164,12 +1803,24 @@ BB16_7:
 	
 	//{
 	}// Callseq End 7
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:360 	pSystemString = (tSystemString*)CreateStringHeapObj(stringLen >> 1);
+	.loc 1 360 2
 	ld.local.u32 	%r2, [%rd10];
 	shr.u32 	%r3, %r2, 1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:47 	totalSize = sizeof(tSystemString) + (len << 1);
+	.loc 1 47 2
 	shl.b32 	%r4, %r3, 1;
 	add.s32 	%r5, %r4, 4;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:48 	pSystemString = (tSystemString*)Heap_Alloc(types[TYPE_SYSTEM_STRING], totalSize);
+	.loc 1 48 2
 	ld.global.u64 	%rd11, [types];
 	ld.u64 	%rd12, [%rd11+72];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:48 	pSystemString = (tSystemString*)Heap_Alloc(types[TYPE_SYSTEM_STRING], totalSize);
+	.loc 1 48 34
 	// Callseq Start 8
 	{
 	.reg .b32 temp_param_reg;
@@ -1189,7 +1840,13 @@ BB16_7:
 	
 	//{
 	}// Callseq End 8
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:49 	pSystemString->length = len;
+	.loc 1 49 2
 	st.u32 	[%rd1], %r3;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:361 	memcpy(pSystemString->chars, string, stringLen);
+	.loc 1 361 2
 	add.s64 	%rd2, %rd1, 4;
 	ld.local.u32 	%rd4, [%rd10];
 	mov.u64 	%rd15, 0;
@@ -1207,6 +1864,9 @@ BB17_1:
 
 BB17_2:
 	st.param.b64	[func_retval0+0], %rd1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:362 	return (HEAP_PTR)pSystemString;
+	.loc 1 362 2
 	ret;
 }
 
@@ -1222,6 +1882,9 @@ BB17_2:
 
 
 	ld.param.u64 	%rd9, [_Z29SystemString_FromCharPtrASCIIPc_param_0];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:369 	stringLen = (int)Gstrlen(pStr);
+	.loc 1 369 19
 	// Callseq Start 9
 	{
 	.reg .b32 temp_param_reg;
@@ -1239,10 +1902,19 @@ BB17_2:
 	//{
 	}// Callseq End 9
 	cvt.u32.u64	%r1, %rd10;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:47 	totalSize = sizeof(tSystemString) + (len << 1);
+	.loc 1 47 2
 	shl.b32 	%r10, %r1, 1;
 	add.s32 	%r11, %r10, 4;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:48 	pSystemString = (tSystemString*)Heap_Alloc(types[TYPE_SYSTEM_STRING], totalSize);
+	.loc 1 48 2
 	ld.global.u64 	%rd11, [types];
 	ld.u64 	%rd12, [%rd11+72];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:48 	pSystemString = (tSystemString*)Heap_Alloc(types[TYPE_SYSTEM_STRING], totalSize);
+	.loc 1 48 34
 	// Callseq Start 10
 	{
 	.reg .b32 temp_param_reg;
@@ -1262,7 +1934,13 @@ BB17_2:
 	
 	//{
 	}// Callseq End 10
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:49 	pSystemString->length = len;
+	.loc 1 49 2
 	st.u32 	[%rd1], %r1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:371 	for (i=0; i<stringLen; i++) {
+	.loc 1 371 2
 	setp.lt.s32	%p1, %r1, 1;
 	@%p1 bra 	BB18_10;
 
@@ -1279,26 +1957,41 @@ BB17_2:
 	mov.u32 	%r16, 0;
 	@%p4 bra 	BB18_5;
 
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:372 		pSystemString->chars[i] = pStr[i];
+	.loc 1 372 3
 	ld.s8 	%rs1, [%rd9];
 	st.u16 	[%rd1+4], %rs1;
 	mov.u32 	%r16, 1;
 
 BB18_5:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:372 		pSystemString->chars[i] = pStr[i];
+	.loc 1 372 3
 	cvt.u64.u32	%rd13, %r16;
 	add.s64 	%rd14, %rd9, %rd13;
 	ld.s8 	%rs2, [%rd14];
 	mul.wide.u32 	%rd15, %r16, 2;
 	add.s64 	%rd16, %rd1, %rd15;
 	st.u16 	[%rd16+4], %rs2;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:371 	for (i=0; i<stringLen; i++) {
+	.loc 1 371 25
 	add.s32 	%r17, %r16, 1;
 
 BB18_6:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:372 		pSystemString->chars[i] = pStr[i];
+	.loc 1 372 3
 	cvt.s64.s32	%rd17, %r17;
 	add.s64 	%rd18, %rd9, %rd17;
 	ld.s8 	%rs3, [%rd18];
 	mul.wide.s32 	%rd19, %r17, 2;
 	add.s64 	%rd20, %rd1, %rd19;
 	st.u16 	[%rd20+4], %rs3;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:371 	for (i=0; i<stringLen; i++) {
+	.loc 1 371 25
 	add.s32 	%r19, %r17, 1;
 
 BB18_7:
@@ -1306,28 +1999,52 @@ BB18_7:
 	@%p5 bra 	BB18_10;
 
 	cvt.s64.s32	%rd21, %r19;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:372 		pSystemString->chars[i] = pStr[i];
+	.loc 1 372 3
 	mul.wide.s32 	%rd22, %r19, 2;
 	add.s64 	%rd24, %rd1, %rd22;
 	add.s64 	%rd23, %rd9, %rd21;
 
 BB18_9:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:372 		pSystemString->chars[i] = pStr[i];
+	.loc 1 372 3
 	ld.s8 	%rs4, [%rd23];
 	st.u16 	[%rd24+4], %rs4;
 	ld.s8 	%rs5, [%rd23+1];
 	st.u16 	[%rd24+6], %rs5;
 	ld.s8 	%rs6, [%rd23+2];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:371 	for (i=0; i<stringLen; i++) {
+	.loc 1 371 2
 	add.s64 	%rd7, %rd24, 8;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:372 		pSystemString->chars[i] = pStr[i];
+	.loc 1 372 3
 	st.u16 	[%rd24+8], %rs6;
 	ld.s8 	%rs7, [%rd23+3];
 	st.u16 	[%rd24+10], %rs7;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:371 	for (i=0; i<stringLen; i++) {
+	.loc 1 371 2
 	add.s64 	%rd23, %rd23, 4;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:371 	for (i=0; i<stringLen; i++) {
+	.loc 1 371 25
 	add.s32 	%r19, %r19, 4;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:371 	for (i=0; i<stringLen; i++) {
+	.loc 1 371 2
 	setp.lt.s32	%p6, %r19, %r1;
 	mov.u64 	%rd24, %rd7;
 	@%p6 bra 	BB18_9;
 
 BB18_10:
 	st.param.b64	[func_retval0+0], %rd1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:374 	return (HEAP_PTR)pSystemString;
+	.loc 1 374 2
 	ret;
 }
 
@@ -1346,18 +2063,36 @@ BB18_10:
 	mov.u32 	%r6, 0;
 
 BB19_1:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:381 	while (pStr[strLen] != 0) {
+	.loc 1 381 2
 	mov.u32 	%r1, %r6;
 	mul.wide.s32 	%rd8, %r1, 2;
 	add.s64 	%rd9, %rd7, %rd8;
 	ld.u16 	%rs1, [%rd9];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:382 		strLen++;
+	.loc 1 382 3
 	add.s32 	%r6, %r1, 1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:381 	while (pStr[strLen] != 0) {
+	.loc 1 381 2
 	setp.ne.s16	%p1, %rs1, 0;
 	@%p1 bra 	BB19_1;
 
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:47 	totalSize = sizeof(tSystemString) + (len << 1);
+	.loc 1 47 2
 	shl.b32 	%r4, %r1, 1;
 	add.s32 	%r5, %r4, 4;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:48 	pSystemString = (tSystemString*)Heap_Alloc(types[TYPE_SYSTEM_STRING], totalSize);
+	.loc 1 48 2
 	ld.global.u64 	%rd11, [types];
 	ld.u64 	%rd12, [%rd11+72];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:48 	pSystemString = (tSystemString*)Heap_Alloc(types[TYPE_SYSTEM_STRING], totalSize);
+	.loc 1 48 34
 	// Callseq Start 11
 	{
 	.reg .b32 temp_param_reg;
@@ -1377,7 +2112,13 @@ BB19_1:
 	
 	//{
 	}// Callseq End 11
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:49 	pSystemString->length = len;
+	.loc 1 49 2
 	st.u32 	[%rd1], %r1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:385 	memcpy(pSystemString->chars, pStr, strLen << 1);
+	.loc 1 385 2
 	add.s64 	%rd2, %rd1, 4;
 	cvt.s64.s32	%rd3, %r4;
 	mov.u64 	%rd15, 0;
@@ -1395,6 +2136,9 @@ BB19_3:
 
 BB19_4:
 	st.param.b64	[func_retval0+0], %rd1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:386 	return (HEAP_PTR)pSystemString;
+	.loc 1 386 2
 	ret;
 }
 
@@ -1411,13 +2155,22 @@ BB19_4:
 
 	ld.param.u64 	%rd1, [_Z22SystemString_GetStringPhPj_param_0];
 	ld.param.u64 	%rd2, [_Z22SystemString_GetStringPhPj_param_1];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:392 	if (pLength != NULL) {
+	.loc 1 392 2
 	setp.eq.s64	%p1, %rd2, 0;
 	@%p1 bra 	BB20_2;
 
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:393 		*pLength = pThis->length;
+	.loc 1 393 3
 	ld.u32 	%r1, [%rd1];
 	st.u32 	[%rd2], %r1;
 
 BB20_2:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:395 	return pThis->chars;
+	.loc 1 395 2
 	add.s64 	%rd3, %rd1, 4;
 	st.param.b64	[func_retval0+0], %rd3;
 	ret;
@@ -1433,6 +2186,9 @@ BB20_2:
 
 
 	ld.param.u64 	%rd1, [_Z24SystemString_GetNumBytesPh_param_0];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu:399 	return (((tSystemString*)pThis_)->length << 1) + sizeof(tSystemString);
+	.loc 1 399 2
 	ld.u32 	%r1, [%rd1];
 	shl.b32 	%r2, %r1, 1;
 	add.s32 	%r3, %r2, 4;
@@ -1440,4 +2196,6 @@ BB20_2:
 	ret;
 }
 
+	.file	1 "C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.String.cu", 1511710520, 11032
+	.file	2 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v9.0\\include\\cuda_device_runtime_api.h", 1504359958, 14836
 

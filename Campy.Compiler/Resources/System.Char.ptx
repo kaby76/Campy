@@ -26,6 +26,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:77   return cudaErrorUnknown;
+	.loc 2 77 3
 	ret;
 }
 
@@ -40,6 +43,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:82   return cudaErrorUnknown;
+	.loc 2 82 3
 	ret;
 }
 
@@ -55,6 +61,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:87   return cudaErrorUnknown;
+	.loc 2 87 3
 	ret;
 }
 
@@ -68,6 +77,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:92   return cudaErrorUnknown;
+	.loc 2 92 3
 	ret;
 }
 
@@ -84,6 +96,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:97   return cudaErrorUnknown;
+	.loc 2 97 3
 	ret;
 }
 
@@ -101,6 +116,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:102   return cudaErrorUnknown;
+	.loc 2 102 3
 	ret;
 }
 
@@ -118,7 +136,13 @@
 
 	ld.param.u64 	%rd2, [_Z30System_Char_GetUnicodeCategoryPhS_S__param_1];
 	ld.param.u64 	%rd1, [_Z30System_Char_GetUnicodeCategoryPhS_S__param_2];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Char.cu:35 	U32 paramCodePoint = ((U32*)pParams)[0];
+	.loc 1 35 21
 	ld.u32 	%r1, [%rd2];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Char.cu:41 	if (paramCodePoint == 0xffff) {
+	.loc 1 41 2
 	setp.eq.s32	%p1, %r1, 65535;
 	mov.u32 	%r29, 0;
 	mov.u32 	%r28, 597;
@@ -128,22 +152,37 @@
 
 BB6_7:
 	mov.u32 	%r26, 29;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Char.cu:43 		*(U32*)pReturnValue = 29;
+	.loc 1 43 3
 	st.u32 	[%rd1], %r26;
 	bra.uni 	BB6_8;
 
 BB6_6:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Char.cu:61 			upper = curOfs;
+	.loc 1 61 4
 	selp.b32	%r28, %r27, %r28, %p2;
 	selp.b32	%r29, %r29, %r27, %p2;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Char.cu:65 		curOfs = lower + ((upper - lower) >> 1);
+	.loc 1 65 3
 	sub.s32 	%r24, %r28, %r29;
 	shr.u32 	%r25, %r24, 1;
 	add.s32 	%r27, %r25, %r29;
 
 BB6_1:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Char.cu:47 		indexCodePoint = UC_Index[curOfs << 1];
+	.loc 1 47 3
 	shl.b32 	%r5, %r27, 1;
 	mul.wide.u32 	%rd3, %r5, 2;
 	mov.u64 	%rd4, __nv_static_32__19_System_Char_cpp1_ii_b10d0942_UC_Index;
 	add.s64 	%rd5, %rd4, %rd3;
 	ld.global.u16 	%r6, [%rd5];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Char.cu:48 		if (paramCodePoint >= indexCodePoint && paramCodePoint < UC_Index[(curOfs+1) << 1]) {
+	.loc 1 48 3
 	setp.lt.u32	%p2, %r1, %r6;
 	@%p2 bra 	BB6_6;
 
@@ -155,28 +194,49 @@ BB6_1:
 	setp.ge.u32	%p3, %r1, %r18;
 	@%p3 bra 	BB6_6;
 
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Char.cu:50 			U32 value = UC_Index[(curOfs << 1) + 1];
+	.loc 1 50 14
 	add.s32 	%r19, %r5, 1;
 	mul.wide.u32 	%rd9, %r19, 2;
 	add.s64 	%rd11, %rd4, %rd9;
 	ld.global.u16 	%r30, [%rd11];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Char.cu:51 			if (value & 0x8000) {
+	.loc 1 51 4
 	and.b32  	%r20, %r30, 32768;
 	setp.eq.s32	%p4, %r20, 0;
 	@%p4 bra 	BB6_5;
 
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Char.cu:53 				value &= 0x7fff;
+	.loc 1 53 5
 	and.b32  	%r21, %r30, 32767;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Char.cu:54 				value += paramCodePoint - indexCodePoint;
+	.loc 1 54 5
 	sub.s32 	%r22, %r1, %r6;
 	add.s32 	%r23, %r22, %r21;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Char.cu:55 				value = UC_Runs[value];
+	.loc 1 55 5
 	cvt.u64.u32	%rd12, %r23;
 	mov.u64 	%rd13, __nv_static_32__19_System_Char_cpp1_ii_b10d0942_UC_Runs;
 	add.s64 	%rd14, %rd13, %rd12;
 	ld.global.u8 	%r30, [%rd14];
 
 BB6_5:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Char.cu:57 			*(U32*)pReturnValue = value;
+	.loc 1 57 4
 	st.u32 	[%rd1], %r30;
 
 BB6_8:
 	mov.u64 	%rd15, 0;
 	st.param.b64	[func_retval0+0], %rd15;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Char.cu:65 		curOfs = lower + ((upper - lower) >> 1);
+	.loc 1 65 3
 	ret;
 }
 
@@ -195,8 +255,17 @@ BB6_8:
 
 	ld.param.u64 	%rd2, [_Z28System_Char_ToLowerInvariantPhS_S__param_1];
 	ld.param.u64 	%rd1, [_Z28System_Char_ToLowerInvariantPhS_S__param_2];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Char.cu:103 	U32 paramCodePoint = ((U32*)pParams)[0];
+	.loc 1 103 21
 	ld.u32 	%r24, [%rd2];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Char.cu:106 	pos = SearchCaseArray(UC_CaseUpper, (unsigned short)paramCodePoint);
+	.loc 1 106 2
 	cvt.u16.u32	%rs1, %r24;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Char.cu:76 	if (find == 0xffff) {
+	.loc 1 76 2
 	setp.eq.s16	%p1, %rs1, -1;
 	mov.u32 	%r22, 337;
 	mov.u32 	%r21, 674;
@@ -206,15 +275,24 @@ BB6_8:
 	bra.uni 	BB7_1;
 
 BB7_8:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Char.cu:98 		curOfs = lower + ((upper - lower) >> 1);
+	.loc 1 98 3
 	sub.s32 	%r18, %r21, %r20;
 	shr.u32 	%r19, %r18, 1;
 	add.s32 	%r22, %r19, %r20;
 
 BB7_1:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Char.cu:82 		val = pCaseArray[curOfs];
+	.loc 1 82 3
 	mul.wide.u32 	%rd3, %r22, 2;
 	mov.u64 	%rd4, __nv_static_32__19_System_Char_cpp1_ii_b10d0942_UC_CaseUpper;
 	add.s64 	%rd5, %rd4, %rd3;
 	ld.global.u16 	%rs2, [%rd5];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Char.cu:83 		if (find >= val && find < pCaseArray[curOfs + 1]) {
+	.loc 1 83 3
 	setp.gt.u16	%p2, %rs2, %rs1;
 	@%p2 bra 	BB7_7;
 
@@ -227,17 +305,32 @@ BB7_1:
 	bra.uni 	BB7_3;
 
 BB7_7:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Char.cu:91 			upper = curOfs;
+	.loc 1 91 4
 	selp.b32	%r20, %r20, %r22, %p2;
 	selp.b32	%r21, %r22, %r21, %p2;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Char.cu:95 		if (upper == 0) {
+	.loc 1 95 3
 	setp.eq.s32	%p6, %r21, 0;
 	@%p6 bra 	BB7_4;
 	bra.uni 	BB7_8;
 
 BB7_3:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Char.cu:85 			if (find == val) {
+	.loc 1 85 4
 	setp.eq.s16	%p4, %rs2, %rs1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Char.cu:86 				return (I32)curOfs;
+	.loc 1 86 5
 	selp.b32	%r23, %r22, -1, %p4;
 
 BB7_4:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Char.cu:107 	*(U32*)pReturnValue = (pos < 0)?paramCodePoint:UC_CaseLower[pos];
+	.loc 1 107 2
 	setp.lt.s32	%p7, %r23, 0;
 	@%p7 bra 	BB7_6;
 
@@ -250,6 +343,9 @@ BB7_6:
 	st.u32 	[%rd1], %r24;
 	mov.u64 	%rd12, 0;
 	st.param.b64	[func_retval0+0], %rd12;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Char.cu:109 	return NULL;
+	.loc 1 109 2
 	ret;
 }
 
@@ -268,8 +364,17 @@ BB7_6:
 
 	ld.param.u64 	%rd2, [_Z28System_Char_ToUpperInvariantPhS_S__param_1];
 	ld.param.u64 	%rd1, [_Z28System_Char_ToUpperInvariantPhS_S__param_2];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Char.cu:113 	U32 paramCodePoint = ((U32*)pParams)[0];
+	.loc 1 113 21
 	ld.u32 	%r24, [%rd2];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Char.cu:116 	pos = SearchCaseArray(UC_CaseLower, (unsigned short)paramCodePoint);
+	.loc 1 116 2
 	cvt.u16.u32	%rs1, %r24;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Char.cu:76 	if (find == 0xffff) {
+	.loc 1 76 2
 	setp.eq.s16	%p1, %rs1, -1;
 	mov.u32 	%r22, 337;
 	mov.u32 	%r21, 674;
@@ -279,15 +384,24 @@ BB7_6:
 	bra.uni 	BB8_1;
 
 BB8_8:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Char.cu:98 		curOfs = lower + ((upper - lower) >> 1);
+	.loc 1 98 3
 	sub.s32 	%r18, %r21, %r20;
 	shr.u32 	%r19, %r18, 1;
 	add.s32 	%r22, %r19, %r20;
 
 BB8_1:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Char.cu:82 		val = pCaseArray[curOfs];
+	.loc 1 82 3
 	mul.wide.u32 	%rd3, %r22, 2;
 	mov.u64 	%rd4, __nv_static_32__19_System_Char_cpp1_ii_b10d0942_UC_CaseLower;
 	add.s64 	%rd5, %rd4, %rd3;
 	ld.global.u16 	%rs2, [%rd5];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Char.cu:83 		if (find >= val && find < pCaseArray[curOfs + 1]) {
+	.loc 1 83 3
 	setp.gt.u16	%p2, %rs2, %rs1;
 	@%p2 bra 	BB8_7;
 
@@ -300,17 +414,32 @@ BB8_1:
 	bra.uni 	BB8_3;
 
 BB8_7:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Char.cu:91 			upper = curOfs;
+	.loc 1 91 4
 	selp.b32	%r20, %r20, %r22, %p2;
 	selp.b32	%r21, %r22, %r21, %p2;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Char.cu:95 		if (upper == 0) {
+	.loc 1 95 3
 	setp.eq.s32	%p6, %r21, 0;
 	@%p6 bra 	BB8_4;
 	bra.uni 	BB8_8;
 
 BB8_3:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Char.cu:85 			if (find == val) {
+	.loc 1 85 4
 	setp.eq.s16	%p4, %rs2, %rs1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Char.cu:86 				return (I32)curOfs;
+	.loc 1 86 5
 	selp.b32	%r23, %r22, -1, %p4;
 
 BB8_4:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Char.cu:117 	*(U32*)pReturnValue = (pos < 0)?paramCodePoint:UC_CaseUpper[pos];
+	.loc 1 117 2
 	setp.lt.s32	%p7, %r23, 0;
 	@%p7 bra 	BB8_6;
 
@@ -323,7 +452,12 @@ BB8_6:
 	st.u32 	[%rd1], %r24;
 	mov.u64 	%rd12, 0;
 	st.param.b64	[func_retval0+0], %rd12;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Char.cu:119 	return NULL;
+	.loc 1 119 2
 	ret;
 }
 
+	.file	1 "C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Char.cu", 1509046919, 3808
+	.file	2 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v9.0\\include\\cuda_device_runtime_api.h", 1504359958, 14836
 

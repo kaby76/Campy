@@ -53,6 +53,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:77   return cudaErrorUnknown;
+	.loc 2 77 3
 	ret;
 }
 
@@ -67,6 +70,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:82   return cudaErrorUnknown;
+	.loc 2 82 3
 	ret;
 }
 
@@ -82,6 +88,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:87   return cudaErrorUnknown;
+	.loc 2 87 3
 	ret;
 }
 
@@ -95,6 +104,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:92   return cudaErrorUnknown;
+	.loc 2 92 3
 	ret;
 }
 
@@ -111,6 +123,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:97   return cudaErrorUnknown;
+	.loc 2 97 3
 	ret;
 }
 
@@ -128,6 +143,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:102   return cudaErrorUnknown;
+	.loc 2 102 3
 	ret;
 }
 
@@ -144,10 +162,16 @@
 
 	ld.param.u64 	%rd1, [_Z29System_Enum_Internal_GetValuePhS_S__param_0];
 	ld.param.u64 	%rd2, [_Z29System_Enum_Internal_GetValuePhS_S__param_2];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Enum.cu:34 	*(U32*)pReturnValue = *(U32*)pThis_;
+	.loc 1 34 2
 	ld.u32 	%r1, [%rd1];
 	st.u32 	[%rd2], %r1;
 	mov.u64 	%rd3, 0;
 	st.param.b64	[func_retval0+0], %rd3;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Enum.cu:36 	return NULL;
+	.loc 1 36 2
 	ret;
 }
 
@@ -170,7 +194,13 @@
 	mov.u64 	%rd25, __local_depot7;
 	cvta.local.u64 	%SP, %rd25;
 	ld.param.u64 	%rd5, [_Z28System_Enum_Internal_GetInfoPhS_S__param_1];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Enum.cu:40 	tMD_TypeDef *pEnumType = RuntimeType_DeRef((PTR)((tMD_TypeDef**)pParams)[0]);
+	.loc 1 40 25
 	ld.u64 	%rd6, [%rd5];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Enum.cu:40 	tMD_TypeDef *pEnumType = RuntimeType_DeRef((PTR)((tMD_TypeDef**)pParams)[0]);
+	.loc 1 40 27
 	// Callseq Start 0
 	{
 	.reg .b32 temp_param_reg;
@@ -187,11 +217,17 @@
 	
 	//{
 	}// Callseq End 0
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Enum.cu:45 	names = SystemArray_NewVector(types[TYPE_SYSTEM_ARRAY_STRING], pEnumType->numFields - 1);
+	.loc 1 45 2
 	ld.global.u64 	%rd8, [types];
 	ld.u64 	%rd9, [%rd8+248];
 	add.s64 	%rd1, %rd7, 176;
 	ld.u32 	%r10, [%rd7+176];
 	add.s32 	%r11, %r10, -1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Enum.cu:45 	names = SystemArray_NewVector(types[TYPE_SYSTEM_ARRAY_STRING], pEnumType->numFields - 1);
+	.loc 1 45 10
 	// Callseq Start 1
 	{
 	.reg .b32 temp_param_reg;
@@ -211,10 +247,16 @@
 	
 	//{
 	}// Callseq End 1
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Enum.cu:46 	values = SystemArray_NewVector(types[TYPE_SYSTEM_ARRAY_INT32], pEnumType->numFields - 1);
+	.loc 1 46 2
 	ld.global.u64 	%rd10, [types];
 	ld.u64 	%rd11, [%rd10+256];
 	ld.u32 	%r12, [%rd7+176];
 	add.s32 	%r13, %r12, -1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Enum.cu:46 	values = SystemArray_NewVector(types[TYPE_SYSTEM_ARRAY_INT32], pEnumType->numFields - 1);
+	.loc 1 46 11
 	// Callseq Start 2
 	{
 	.reg .b32 temp_param_reg;
@@ -234,6 +276,9 @@
 	
 	//{
 	}// Callseq End 2
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Enum.cu:48 	for (i=0, retIndex=0; i<pEnumType->numFields; i++) {
+	.loc 1 48 2
 	ld.u32 	%r17, [%rd7+176];
 	setp.eq.s32	%p1, %r17, 0;
 	@%p1 bra 	BB7_5;
@@ -242,17 +287,29 @@
 	mov.u32 	%r19, %r18;
 
 BB7_2:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Enum.cu:49 		tMD_FieldDef *pField = pEnumType->ppFields[i];
+	.loc 1 49 24
 	ld.u64 	%rd12, [%rd1+8];
 	mul.wide.u32 	%rd13, %r19, 8;
 	add.s64 	%rd14, %rd12, %rd13;
 	ld.u64 	%rd15, [%rd14];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Enum.cu:53 		if (!FIELD_ISLITERAL(pField)) {
+	.loc 1 53 3
 	add.s64 	%rd4, %rd15, 16;
 	ld.u8 	%rs1, [%rd15+16];
 	and.b16  	%rs2, %rs1, 64;
 	setp.eq.s16	%p2, %rs2, 0;
 	@%p2 bra 	BB7_4;
 
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Enum.cu:57 		name = SystemString_FromCharPtrASCII(pField->name);
+	.loc 1 57 3
 	ld.u64 	%rd16, [%rd4+8];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Enum.cu:57 		name = SystemString_FromCharPtrASCII(pField->name);
+	.loc 1 57 10
 	// Callseq Start 3
 	{
 	.reg .b32 temp_param_reg;
@@ -271,7 +328,13 @@ BB7_2:
 	}// Callseq End 3
 	add.u64 	%rd18, %SP, 8;
 	cvta.to.local.u64 	%rd19, %rd18;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Enum.cu:57 		name = SystemString_FromCharPtrASCII(pField->name);
+	.loc 1 57 10
 	st.local.u64 	[%rd19], %rd17;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Enum.cu:58 		SystemArray_StoreElement(names, retIndex, (PTR)&name);
+	.loc 1 58 3
 	// Callseq Start 4
 	{
 	.reg .b32 temp_param_reg;
@@ -292,9 +355,15 @@ BB7_2:
 	
 	//{
 	}// Callseq End 4
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Enum.cu:59 		MetaData_GetConstant(pField->pMetaData, pField->tableIndex, (PTR)&value);
+	.loc 1 59 3
 	ld.u64 	%rd20, [%rd4+-8];
 	ld.u32 	%r16, [%rd4+48];
 	add.u64 	%rd21, %SP, 0;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Enum.cu:59 		MetaData_GetConstant(pField->pMetaData, pField->tableIndex, (PTR)&value);
+	.loc 1 59 3
 	// Callseq Start 5
 	{
 	.reg .b32 temp_param_reg;
@@ -315,6 +384,9 @@ BB7_2:
 	
 	//{
 	}// Callseq End 5
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Enum.cu:60 		SystemArray_StoreElement(values, retIndex, (PTR)&value);
+	.loc 1 60 3
 	// Callseq Start 6
 	{
 	.reg .b32 temp_param_reg;
@@ -335,22 +407,45 @@ BB7_2:
 	
 	//{
 	}// Callseq End 6
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Enum.cu:61 		retIndex++;
+	.loc 1 61 3
 	add.s32 	%r18, %r18, 1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Enum.cu:48 	for (i=0, retIndex=0; i<pEnumType->numFields; i++) {
+	.loc 1 48 2
 	ld.u32 	%r17, [%rd1];
 
 BB7_4:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Enum.cu:48 	for (i=0, retIndex=0; i<pEnumType->numFields; i++) {
+	.loc 1 48 48
 	add.s32 	%r19, %r19, 1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Enum.cu:48 	for (i=0, retIndex=0; i<pEnumType->numFields; i++) {
+	.loc 1 48 2
 	setp.lt.u32	%p3, %r19, %r17;
 	@%p3 bra 	BB7_2;
 
 BB7_5:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Enum.cu:64 	*(((HEAP_PTR**)pParams)[1]) = names;
+	.loc 1 64 2
 	ld.u64 	%rd22, [%rd5+8];
 	st.u64 	[%rd22], %rd2;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Enum.cu:65 	*(((HEAP_PTR**)pParams)[2]) = values;
+	.loc 1 65 2
 	ld.u64 	%rd23, [%rd5+16];
 	st.u64 	[%rd23], %rd3;
 	mov.u64 	%rd24, 0;
 	st.param.b64	[func_retval0+0], %rd24;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Enum.cu:67 	return NULL;
+	.loc 1 67 2
 	ret;
 }
 
+	.file	1 "C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Enum.cu", 1509046919, 2588
+	.file	2 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v9.0\\include\\cuda_device_runtime_api.h", 1504359958, 14836
 

@@ -29,6 +29,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:77   return cudaErrorUnknown;
+	.loc 2 77 3
 	ret;
 }
 
@@ -43,6 +46,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:82   return cudaErrorUnknown;
+	.loc 2 82 3
 	ret;
 }
 
@@ -58,6 +64,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:87   return cudaErrorUnknown;
+	.loc 2 87 3
 	ret;
 }
 
@@ -71,6 +80,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:92   return cudaErrorUnknown;
+	.loc 2 92 3
 	ret;
 }
 
@@ -87,6 +99,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:97   return cudaErrorUnknown;
+	.loc 2 97 3
 	ret;
 }
 
@@ -104,6 +119,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:102   return cudaErrorUnknown;
+	.loc 2 102 3
 	ret;
 }
 
@@ -116,6 +134,9 @@
 
 
 	ld.param.u64 	%rd1, [_Z18Delegate_GetMethodPv_param_0];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Delegate.cu:48 	return pThis->pTargetMethod;
+	.loc 1 48 2
 	ld.u64 	%rd2, [%rd1+8];
 	st.param.b64	[func_retval0+0], %rd2;
 	ret;
@@ -135,15 +156,27 @@
 	ld.param.u64 	%rd1, [_Z26Delegate_GetMethodAndStorePvPPhPS__param_0];
 	ld.param.u64 	%rd3, [_Z26Delegate_GetMethodAndStorePvPPhPS__param_1];
 	ld.param.u64 	%rd2, [_Z26Delegate_GetMethodAndStorePvPPhPS__param_2];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Delegate.cu:54 	*pTargetObj = pThis->targetObj;
+	.loc 1 54 2
 	ld.u64 	%rd4, [%rd1];
 	st.u64 	[%rd3], %rd4;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Delegate.cu:55 	if (ppNextDelegate != NULL) {
+	.loc 1 55 2
 	setp.eq.s64	%p1, %rd2, 0;
 	@%p1 bra 	BB7_2;
 
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Delegate.cu:56 		*ppNextDelegate = pThis->pNext;
+	.loc 1 56 3
 	ld.u64 	%rd5, [%rd1+16];
 	st.u64 	[%rd2], %rd5;
 
 BB7_2:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Delegate.cu:58 	return pThis->pTargetMethod;
+	.loc 1 58 2
 	ld.u64 	%rd6, [%rd1+8];
 	st.param.b64	[func_retval0+0], %rd6;
 	ret;
@@ -160,13 +193,25 @@ BB7_2:
 
 	ld.param.u64 	%rd1, [_ZN38_INTERNAL_16_Delegate_cpp1_ii_e4de7f044ctorEPhS0_S0__param_0];
 	ld.param.u64 	%rd2, [_ZN38_INTERNAL_16_Delegate_cpp1_ii_e4de7f044ctorEPhS0_S0__param_1];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Delegate.cu:66 	pThis->targetObj = ((HEAP_PTR*)pParams)[0];
+	.loc 1 66 2
 	ld.u64 	%rd3, [%rd2];
 	st.u64 	[%rd1], %rd3;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Delegate.cu:67 	pThis->pTargetMethod = ((tMD_MethodDef**)pParams)[1];
+	.loc 1 67 2
 	ld.u64 	%rd4, [%rd2+8];
 	st.u64 	[%rd1+8], %rd4;
 	mov.u64 	%rd5, 0;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Delegate.cu:68 	pThis->pNext = NULL;
+	.loc 1 68 2
 	st.u64 	[%rd1+16], %rd5;
 	st.param.b64	[func_retval0+0], %rd5;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Delegate.cu:70 	return NULL;
+	.loc 1 70 2
 	ret;
 }
 
@@ -181,7 +226,13 @@ BB7_2:
 
 
 	ld.param.u64 	%rd1, [_Z12Map_DelegateP14tMD_MethodDef__param_0];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Delegate.cu:75 	if (Gstrcmp(pMethod->name, ".ctor") == 0) {
+	.loc 1 75 2
 	ld.u64 	%rd2, [%rd1+32];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Delegate.cu:75 	if (Gstrcmp(pMethod->name, ".ctor") == 0) {
+	.loc 1 75 6
 	mov.u64 	%rd3, $str;
 	cvta.global.u64 	%rd4, %rd3;
 	// Callseq Start 0
@@ -204,10 +255,18 @@ BB7_2:
 	//{
 	}// Callseq End 0
 	setp.eq.s32	%p1, %r1, 0;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Delegate.cu:76 		return ctor;
+	.loc 1 76 3
 	mov.u64 	%rd5, _ZN38_INTERNAL_16_Delegate_cpp1_ii_e4de7f044ctorEPhS0_S0_;
 	selp.b64	%rd6, %rd5, 0, %p1;
 	st.param.b64	[func_retval0+0], %rd6;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Delegate.cu:79 	return NULL;
+	.loc 1 79 2
 	ret;
 }
 
+	.file	1 "C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Delegate.cu", 1511710520, 2955
+	.file	2 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v9.0\\include\\cuda_device_runtime_api.h", 1504359958, 14836
 

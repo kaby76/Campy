@@ -23,6 +23,7 @@
 
 #include "Types.h"
 #include "RVA.h"
+#include <crt/host_defines.h>
 
 #define MAX_TABLES 48
 
@@ -193,5 +194,10 @@ __device__ STRING2 MetaData_GetUserString(tMetaData *pThis, IDX_USERSTRINGS inde
 __device__ void* MetaData_GetTableRow(tMetaData *pThis, IDX_TABLE index);
 
 __device__ void MetaData_GetConstant(tMetaData *pThis, IDX_TABLE idx, PTR pResultMem);
+
+// Probably shouldn't be here but oh well...
+__device__ unsigned int GetU32(unsigned char *pSource);
+__device__ unsigned int GetU16(unsigned char *pSource);
+__device__ unsigned long long GetU64(unsigned char *pSource);
 
 #endif

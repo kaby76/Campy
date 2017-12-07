@@ -37,6 +37,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:77   return cudaErrorUnknown;
+	.loc 2 77 3
 	ret;
 }
 
@@ -51,6 +54,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:82   return cudaErrorUnknown;
+	.loc 2 82 3
 	ret;
 }
 
@@ -66,6 +72,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:87   return cudaErrorUnknown;
+	.loc 2 87 3
 	ret;
 }
 
@@ -79,6 +88,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:92   return cudaErrorUnknown;
+	.loc 2 92 3
 	ret;
 }
 
@@ -95,6 +107,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:97   return cudaErrorUnknown;
+	.loc 2 97 3
 	ret;
 }
 
@@ -112,6 +127,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:102   return cudaErrorUnknown;
+	.loc 2 102 3
 	ret;
 }
 
@@ -130,12 +148,18 @@
 	ld.param.u64 	%rd1, [_Z20System_Object_EqualsPhS_S__param_0];
 	ld.param.u64 	%rd2, [_Z20System_Object_EqualsPhS_S__param_1];
 	ld.param.u64 	%rd3, [_Z20System_Object_EqualsPhS_S__param_2];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Object.cu:30 	*(U32*)pReturnValue = (pThis_ == *(PTR*)pParams);
+	.loc 1 30 2
 	ld.u64 	%rd4, [%rd2];
 	setp.eq.s64	%p1, %rd4, %rd1;
 	selp.u32	%r1, 1, 0, %p1;
 	st.u32 	[%rd3], %r1;
 	mov.u64 	%rd5, 0;
 	st.param.b64	[func_retval0+0], %rd5;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Object.cu:32 	return NULL;
+	.loc 1 32 2
 	ret;
 }
 
@@ -151,7 +175,13 @@
 
 	ld.param.u64 	%rd1, [_Z19System_Object_ClonePhS_S__param_1];
 	ld.param.u64 	%rd2, [_Z19System_Object_ClonePhS_S__param_2];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Object.cu:38 	obj = ((HEAP_PTR*)pParams)[0];
+	.loc 1 38 2
 	ld.u64 	%rd3, [%rd1];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Object.cu:39 	clone = Heap_Clone(obj);
+	.loc 1 39 10
 	// Callseq Start 0
 	{
 	.reg .b32 temp_param_reg;
@@ -168,9 +198,15 @@
 	
 	//{
 	}// Callseq End 0
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Object.cu:40 	*(HEAP_PTR*)pReturnValue = clone;
+	.loc 1 40 2
 	st.u64 	[%rd2], %rd4;
 	mov.u64 	%rd5, 0;
 	st.param.b64	[func_retval0+0], %rd5;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Object.cu:42 	return NULL;
+	.loc 1 42 2
 	ret;
 }
 
@@ -187,11 +223,17 @@
 
 	ld.param.u64 	%rd1, [_Z25System_Object_GetHashCodePhS_S__param_2];
 	ld.param.u32 	%r1, [_Z25System_Object_GetHashCodePhS_S__param_0];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Object.cu:46 	*(U32*)pReturnValue = ((((U32)pThis_) >> 2) * 2654435761UL);
+	.loc 1 46 2
 	shr.u32 	%r2, %r1, 2;
 	mul.lo.s32 	%r3, %r2, -1640531535;
 	st.u32 	[%rd1], %r3;
 	mov.u64 	%rd2, 0;
 	st.param.b64	[func_retval0+0], %rd2;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Object.cu:48 	return NULL;
+	.loc 1 48 2
 	ret;
 }
 
@@ -207,6 +249,9 @@
 
 	ld.param.u64 	%rd1, [_Z21System_Object_GetTypePhS_S__param_0];
 	ld.param.u64 	%rd2, [_Z21System_Object_GetTypePhS_S__param_2];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Object.cu:55 	pTypeDef = Heap_GetType((HEAP_PTR)pThis_);
+	.loc 1 55 13
 	// Callseq Start 1
 	{
 	.reg .b32 temp_param_reg;
@@ -223,6 +268,9 @@
 	
 	//{
 	}// Callseq End 1
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Object.cu:56 	typeObject = Type_GetTypeObject(pTypeDef);
+	.loc 1 56 15
 	// Callseq Start 2
 	{
 	.reg .b32 temp_param_reg;
@@ -239,10 +287,18 @@
 	
 	//{
 	}// Callseq End 2
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Object.cu:57 	*(HEAP_PTR*)pReturnValue = typeObject;
+	.loc 1 57 2
 	st.u64 	[%rd2], %rd4;
 	mov.u64 	%rd5, 0;
 	st.param.b64	[func_retval0+0], %rd5;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Object.cu:59 	return NULL;
+	.loc 1 59 2
 	ret;
 }
 
+	.file	1 "C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Object.cu", 1509046920, 2113
+	.file	2 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v9.0\\include\\cuda_device_runtime_api.h", 1504359958, 14836
 

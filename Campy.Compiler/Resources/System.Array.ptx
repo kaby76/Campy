@@ -45,6 +45,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:77   return cudaErrorUnknown;
+	.loc 2 77 3
 	ret;
 }
 
@@ -59,6 +62,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:82   return cudaErrorUnknown;
+	.loc 2 82 3
 	ret;
 }
 
@@ -74,6 +80,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:87   return cudaErrorUnknown;
+	.loc 2 87 3
 	ret;
 }
 
@@ -87,6 +96,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:92   return cudaErrorUnknown;
+	.loc 2 92 3
 	ret;
 }
 
@@ -103,6 +115,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:97   return cudaErrorUnknown;
+	.loc 2 97 3
 	ret;
 }
 
@@ -120,6 +135,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:102   return cudaErrorUnknown;
+	.loc 2 102 3
 	ret;
 }
 
@@ -139,7 +157,13 @@
 	ld.param.u64 	%rd17, [_Z30System_Array_Internal_GetValuePhS_S__param_0];
 	ld.param.u64 	%rd18, [_Z30System_Array_Internal_GetValuePhS_S__param_1];
 	ld.param.u64 	%rd7, [_Z30System_Array_Internal_GetValuePhS_S__param_2];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:47 	index = *(U32*)pParams;
+	.loc 1 47 2
 	ld.u32 	%r1, [%rd18];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:48 	pArrayType = Heap_GetType(pThis_);
+	.loc 1 48 15
 	// Callseq Start 0
 	{
 	.reg .b32 temp_param_reg;
@@ -156,24 +180,45 @@
 	
 	//{
 	}// Callseq End 0
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:49 	pElementType = pArrayType->pArrayElementType;
+	.loc 1 49 2
 	ld.u64 	%rd1, [%rd19+168];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:50 	elementSize = pElementType->arrayElementSize;
+	.loc 1 50 2
 	add.s64 	%rd2, %rd1, 112;
 	ld.u32 	%r2, [%rd1+112];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:68 			memcpy(boxedValue, pElement, elementSize);
+	.loc 1 68 4
 	cvt.u64.u32	%rd3, %r2;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:51 	pElement = pArray->elements + elementSize * index;
+	.loc 1 51 2
 	mul.lo.s32 	%r3, %r2, %r1;
 	cvt.u64.u32	%rd4, %r3;
 	add.s64 	%rd20, %rd4, %rd17;
 	add.s64 	%rd5, %rd20, 4;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:52 	if (pElementType->isValueType) {
+	.loc 1 52 2
 	ld.u8 	%rs1, [%rd1+54];
 	setp.eq.s16	%p1, %rs1, 0;
 	@%p1 bra 	BB6_8;
 
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:55 		if (pElementType->pGenericDefinition == types[TYPE_SYSTEM_NULLABLE]) {
+	.loc 1 55 3
 	ld.global.u64 	%rd21, [types];
 	ld.u64 	%rd22, [%rd21+368];
 	ld.u64 	%rd23, [%rd2+40];
 	setp.eq.s64	%p2, %rd23, %rd22;
 	@%p2 bra 	BB6_4;
 
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:67 			boxedValue = Heap_AllocType(pElementType);
+	.loc 1 67 17
 	// Callseq Start 1
 	{
 	.reg .b32 temp_param_reg;
@@ -205,19 +250,34 @@ BB6_3:
 	bra.uni 	BB6_7;
 
 BB6_8:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:73 		*(U32*)pReturnValue = *(U32*)pElement;
+	.loc 1 73 3
 	ld.u32 	%r7, [%rd5];
 	st.u32 	[%rd7], %r7;
 	bra.uni 	BB6_9;
 
 BB6_4:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:57 			if (*(U32*)pElement) {
+	.loc 1 57 4
 	ld.u32 	%r4, [%rd5];
 	setp.eq.s32	%p5, %r4, 0;
 	mov.u64 	%rd37, 0;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:57 			if (*(U32*)pElement) {
+	.loc 1 57 4
 	@%p5 bra 	BB6_7;
 
 	cvt.u32.u64	%r5, %rd3;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:59 				boxedValue = Heap_AllocType(pElementType->ppClassTypeArgs[0]);
+	.loc 1 59 5
 	ld.u64 	%rd29, [%rd2+48];
 	ld.u64 	%rd30, [%rd29];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:59 				boxedValue = Heap_AllocType(pElementType->ppClassTypeArgs[0]);
+	.loc 1 59 18
 	// Callseq Start 2
 	{
 	.reg .b32 temp_param_reg;
@@ -234,6 +294,9 @@ BB6_4:
 	
 	//{
 	}// Callseq End 2
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:61 				memcpy(boxedValue, pElement + 4, elementSize - 4);
+	.loc 1 61 5
 	add.s64 	%rd12, %rd20, 8;
 	add.s32 	%r6, %r5, -4;
 	cvt.u64.u32	%rd13, %r6;
@@ -251,11 +314,17 @@ BB6_6:
 	@%p7 bra 	BB6_6;
 
 BB6_7:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:70 		*(HEAP_PTR*)pReturnValue = boxedValue;
+	.loc 1 70 3
 	st.u64 	[%rd7], %rd37;
 
 BB6_9:
 	mov.u64 	%rd34, 0;
 	st.param.b64	[func_retval0+0], %rd34;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:76 	return NULL;
+	.loc 1 76 2
 	ret;
 }
 
@@ -275,6 +344,9 @@ BB6_9:
 	ld.param.u64 	%rd18, [_Z30System_Array_Internal_SetValuePhS_S__param_0];
 	ld.param.u64 	%rd19, [_Z30System_Array_Internal_SetValuePhS_S__param_1];
 	ld.param.u64 	%rd4, [_Z30System_Array_Internal_SetValuePhS_S__param_2];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:88 	pArrayType = Heap_GetType(pThis_);
+	.loc 1 88 15
 	// Callseq Start 3
 	{
 	.reg .b32 temp_param_reg;
@@ -291,7 +363,13 @@ BB6_9:
 	
 	//{
 	}// Callseq End 3
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:89 	obj = ((HEAP_PTR*)pParams)[0];
+	.loc 1 89 2
 	ld.u64 	%rd1, [%rd19];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:90 	pObjType = Heap_GetType(obj);
+	.loc 1 90 13
 	// Callseq Start 4
 	{
 	.reg .b32 temp_param_reg;
@@ -308,7 +386,13 @@ BB6_9:
 	
 	//{
 	}// Callseq End 4
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:91 	pElementType = pArrayType->pArrayElementType;
+	.loc 1 91 2
 	ld.u64 	%rd21, [%rd20+168];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:93 	if (!(Type_IsAssignableFrom(pElementType, pObjType) ||
+	.loc 1 93 8
 	// Callseq Start 5
 	{
 	.reg .b32 temp_param_reg;
@@ -328,7 +412,13 @@ BB6_9:
 	
 	//{
 	}// Callseq End 5
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:113 	if (pElementType->isValueType) {
+	.loc 1 113 2
 	add.s64 	%rd3, %rd21, 54;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:93 	if (!(Type_IsAssignableFrom(pElementType, pObjType) ||
+	.loc 1 93 8
 	setp.ne.s32	%p1, %r3, 0;
 	@%p1 bra 	BB7_4;
 
@@ -345,27 +435,54 @@ BB6_9:
 
 BB7_3:
 	mov.u32 	%r4, 0;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:97 		*(U32*)pReturnValue = 0;
+	.loc 1 97 3
 	st.u32 	[%rd4], %r4;
 	bra.uni 	BB7_17;
 
 BB7_4:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:105 	if (index >= pArray->length) {
+	.loc 1 105 2
 	ld.u32 	%r5, [%rd18];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:101 	index = ((U32*)pParams)[1];
+	.loc 1 101 2
 	ld.u32 	%r1, [%rd19+4];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:105 	if (index >= pArray->length) {
+	.loc 1 105 2
 	setp.lt.u32	%p4, %r1, %r5;
 	@%p4 bra 	BB7_6;
 	bra.uni 	BB7_5;
 
 BB7_6:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:111 	elementSize = pElementType->arrayElementSize;
+	.loc 1 111 2
 	ld.u32 	%r2, [%rd3+58];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:117 				memset(pElement, 0, elementSize);
+	.loc 1 117 5
 	cvt.u64.u32	%rd5, %r2;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:112 	pElement = pArray->elements + elementSize * index;
+	.loc 1 112 2
 	mul.lo.s32 	%r6, %r2, %r1;
 	cvt.u64.u32	%rd6, %r6;
 	add.s64 	%rd27, %rd6, %rd18;
 	add.s64 	%rd7, %rd27, 4;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:113 	if (pElementType->isValueType) {
+	.loc 1 113 2
 	ld.u8 	%rs1, [%rd3];
 	setp.eq.s16	%p5, %rs1, 0;
 	@%p5 bra 	BB7_15;
 
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:114 		if (pElementType->pGenericDefinition == types[TYPE_SYSTEM_NULLABLE]) {
+	.loc 1 114 3
 	ld.global.u64 	%rd28, [types];
 	ld.u64 	%rd29, [%rd28+368];
 	ld.u64 	%rd30, [%rd3+98];
@@ -387,24 +504,42 @@ BB7_9:
 	bra.uni 	BB7_16;
 
 BB7_15:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:128 		*(HEAP_PTR*)pElement = obj;
+	.loc 1 128 3
 	st.u64 	[%rd7], %rd1;
 
 BB7_16:
 	mov.u32 	%r10, 1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:130 	*(U32*)pReturnValue = 1;
+	.loc 1 130 2
 	st.u32 	[%rd4], %r10;
 
 BB7_17:
 	mov.u64 	%rd40, 0;
 	st.param.b64	[func_retval0+0], %rd40;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:132 	return NULL;
+	.loc 1 132 2
 	ret;
 
 BB7_10:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:116 			if (obj == NULL) {
+	.loc 1 116 4
 	setp.eq.s64	%p9, %rd1, 0;
 	@%p9 bra 	BB7_13;
 
 	cvt.u32.u64	%r7, %rd5;
 	mov.u32 	%r8, 1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:119 				*(U32*)pElement = 1;
+	.loc 1 119 5
 	st.u32 	[%rd7], %r8;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:120 				memcpy(pElement + 4, obj, elementSize - 4);
+	.loc 1 120 5
 	add.s64 	%rd12, %rd27, 8;
 	add.s32 	%r9, %r7, -4;
 	cvt.u64.u32	%rd13, %r9;
@@ -454,9 +589,21 @@ BB7_5:
 
 
 	ld.param.u64 	%rd6, [_Z18System_Array_ClearPhS_S__param_1];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:140 	pArray = ((tSystemArray**)pParams)[0];
+	.loc 1 140 2
 	ld.u64 	%rd7, [%rd6];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:141 	index = ((U32*)pParams)[1];
+	.loc 1 141 2
 	ld.u32 	%r1, [%rd6+4];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:142 	length = ((U32*)pParams)[2];
+	.loc 1 142 2
 	ld.u32 	%r2, [%rd6+8];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:143 	pArrayType = Heap_GetType((HEAP_PTR)pArray);
+	.loc 1 143 15
 	// Callseq Start 6
 	{
 	.reg .b32 temp_param_reg;
@@ -473,8 +620,14 @@ BB7_5:
 	
 	//{
 	}// Callseq End 6
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:144 	elementSize = pArrayType->pArrayElementType->arrayElementSize;
+	.loc 1 144 2
 	ld.u64 	%rd9, [%rd8+168];
 	ld.u32 	%r3, [%rd9+112];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:145 	memset(pArray->elements + index * elementSize, 0, length * elementSize);
+	.loc 1 145 2
 	mul.lo.s32 	%r4, %r3, %r1;
 	cvt.u64.u32	%rd10, %r4;
 	add.s64 	%rd11, %rd7, %rd10;
@@ -496,6 +649,9 @@ BB8_1:
 BB8_2:
 	mov.u64 	%rd13, 0;
 	st.param.b64	[func_retval0+0], %rd13;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:147 	return NULL;
+	.loc 1 147 2
 	ret;
 }
 
@@ -514,8 +670,17 @@ BB8_2:
 
 	ld.param.u64 	%rd10, [_Z26System_Array_Internal_CopyPhS_S__param_1];
 	ld.param.u64 	%rd4, [_Z26System_Array_Internal_CopyPhS_S__param_2];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:155 	pDst = ((tSystemArray**)pParams)[2];
+	.loc 1 155 2
 	ld.u64 	%rd1, [%rd10+16];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:154 	pSrc = ((tSystemArray**)pParams)[0];
+	.loc 1 154 2
 	ld.u64 	%rd2, [%rd10];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:158 	pSrcType = Heap_GetType((HEAP_PTR)pSrc);
+	.loc 1 158 13
 	// Callseq Start 7
 	{
 	.reg .b32 temp_param_reg;
@@ -532,6 +697,9 @@ BB8_2:
 	
 	//{
 	}// Callseq End 7
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:159 	pDstType = Heap_GetType((HEAP_PTR)pDst);
+	.loc 1 159 13
 	// Callseq Start 8
 	{
 	.reg .b32 temp_param_reg;
@@ -548,8 +716,17 @@ BB8_2:
 	
 	//{
 	}// Callseq End 8
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:160 	pSrcElementType = pSrcType->pArrayElementType;
+	.loc 1 160 2
 	ld.u64 	%rd3, [%rd11+168];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:161 	if (Type_IsAssignableFrom(pDstType->pArrayElementType, pSrcElementType)) {
+	.loc 1 161 2
 	ld.u64 	%rd13, [%rd12+168];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:161 	if (Type_IsAssignableFrom(pDstType->pArrayElementType, pSrcElementType)) {
+	.loc 1 161 6
 	// Callseq Start 9
 	{
 	.reg .b32 temp_param_reg;
@@ -572,9 +749,21 @@ BB8_2:
 	setp.eq.s32	%p1, %r4, 0;
 	@%p1 bra 	BB9_7;
 
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:166 		dstIndex = ((U32*)pParams)[3];
+	.loc 1 166 3
 	ld.u32 	%r1, [%rd10+12];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:167 		length = ((U32*)pParams)[4];
+	.loc 1 167 3
 	ld.u32 	%r2, [%rd10+16];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:165 		srcIndex = ((U32*)pParams)[1];
+	.loc 1 165 3
 	ld.u32 	%r3, [%rd10+4];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:171 		if (srcIndex + length > pSrc->length || dstIndex + length > pDst->length) {
+	.loc 1 171 3
 	add.s32 	%r5, %r2, %r3;
 	ld.u32 	%r6, [%rd2];
 	setp.gt.u32	%p2, %r5, %r6;
@@ -585,7 +774,13 @@ BB8_2:
 	setp.gt.u32	%p3, %r7, %r8;
 	@%p3 bra 	BB9_6;
 
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:177 		elementSize = pSrcElementType->arrayElementSize;
+	.loc 1 177 3
 	ld.u32 	%r9, [%rd3+112];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:179 		memcpy(pDst->elements + dstIndex * elementSize, pSrc->elements + srcIndex * elementSize, length * elementSize);
+	.loc 1 179 3
 	mul.lo.s32 	%r10, %r9, %r1;
 	cvt.u64.u32	%rd15, %r10;
 	add.s64 	%rd16, %rd1, %rd15;
@@ -611,16 +806,25 @@ BB9_4:
 
 BB9_5:
 	mov.u32 	%r13, 1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:181 		*(U32*)pReturnValue = 1;
+	.loc 1 181 3
 	st.u32 	[%rd4], %r13;
 	bra.uni 	BB9_8;
 
 BB9_7:
 	mov.u32 	%r14, 0;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:184 		*(U32*)pReturnValue = 0;
+	.loc 1 184 3
 	st.u32 	[%rd4], %r14;
 
 BB9_8:
 	mov.u64 	%rd21, 0;
 	st.param.b64	[func_retval0+0], %rd21;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:187 	return NULL;
+	.loc 1 187 2
 	ret;
 
 BB9_6:
@@ -641,13 +845,31 @@ BB9_6:
 
 
 	ld.param.u64 	%rd8, [_Z19System_Array_ResizePhS_S__param_1];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:196 	ppArray_ = ((HEAP_PTR**)pParams)[0];
+	.loc 1 196 2
 	ld.u64 	%rd1, [%rd8];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:199 	pOldArray = (tSystemArray*)*ppArray_;
+	.loc 1 199 2
 	ld.u64 	%rd2, [%rd1];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:200 	oldSize = pOldArray->length;
+	.loc 1 200 2
 	ld.u32 	%r1, [%rd2];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:197 	newSize = ((U32*)pParams)[1];
+	.loc 1 197 2
 	ld.u32 	%r2, [%rd8+4];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:202 	if (oldSize == newSize) {
+	.loc 1 202 2
 	setp.eq.s32	%p1, %r1, %r2;
 	@%p1 bra 	BB10_3;
 
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:207 	pArrayTypeDef = Heap_GetType(*ppArray_);
+	.loc 1 207 18
 	// Callseq Start 10
 	{
 	.reg .b32 temp_param_reg;
@@ -664,9 +886,15 @@ BB9_6:
 	
 	//{
 	}// Callseq End 10
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:250 	heapSize = sizeof(tSystemArray) + length * pArrayTypeDef->pArrayElementType->arrayElementSize;
+	.loc 1 250 2
 	ld.u64 	%rd11, [%rd10+168];
 	ld.u32 	%r3, [%rd11+112];
 	mad.lo.s32 	%r4, %r3, %r2, 4;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:251 	pArray = (tSystemArray*)Heap_Alloc(pArrayTypeDef, heapSize);
+	.loc 1 251 26
 	// Callseq Start 11
 	{
 	.reg .b32 temp_param_reg;
@@ -686,11 +914,23 @@ BB9_6:
 	
 	//{
 	}// Callseq End 11
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:252 	pArray->length = length;
+	.loc 1 252 2
 	st.u32 	[%rd12], %r2;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:210 	*ppArray_ = pHeap;
+	.loc 1 210 2
 	st.u64 	[%rd1], %rd12;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:211 	memcpy(pNewArray->elements, pOldArray->elements,
+	.loc 1 211 2
 	add.s64 	%rd3, %rd12, 4;
 	ld.u64 	%rd13, [%rd10+168];
 	min.u32 	%r5, %r2, %r1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:211 	memcpy(pNewArray->elements, pOldArray->elements,
+	.loc 1 211 2
 	ld.u32 	%r6, [%rd13+112];
 	mul.lo.s32 	%r7, %r6, %r5;
 	cvt.u64.u32	%rd4, %r7;
@@ -711,6 +951,9 @@ BB10_2:
 BB10_3:
 	mov.u64 	%rd16, 0;
 	st.param.b64	[func_retval0+0], %rd16;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:214 	return NULL;
+	.loc 1 214 2
 	ret;
 }
 
@@ -726,9 +969,15 @@ BB10_3:
 
 	ld.param.u64 	%rd1, [_Z21SystemArray_NewVectorP12tMD_TypeDef_j_param_0];
 	ld.param.u32 	%r1, [_Z21SystemArray_NewVectorP12tMD_TypeDef_j_param_1];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:250 	heapSize = sizeof(tSystemArray) + length * pArrayTypeDef->pArrayElementType->arrayElementSize;
+	.loc 1 250 2
 	ld.u64 	%rd2, [%rd1+168];
 	ld.u32 	%r2, [%rd2+112];
 	mad.lo.s32 	%r3, %r2, %r1, 4;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:251 	pArray = (tSystemArray*)Heap_Alloc(pArrayTypeDef, heapSize);
+	.loc 1 251 26
 	// Callseq Start 12
 	{
 	.reg .b32 temp_param_reg;
@@ -748,8 +997,14 @@ BB10_3:
 	
 	//{
 	}// Callseq End 12
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:252 	pArray->length = length;
+	.loc 1 252 2
 	st.u32 	[%rd3], %r1;
 	st.param.b64	[func_retval0+0], %rd3;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:253 	return (HEAP_PTR)pArray;
+	.loc 1 253 2
 	ret;
 }
 
@@ -767,9 +1022,21 @@ BB10_3:
 
 
 	ld.param.u64 	%rd28, [_Z20System_Array_ReversePhS_S__param_1];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:224 	index = INTERNALCALL_PARAM(4, U32);
+	.loc 1 224 2
 	ld.u32 	%r10, [%rd28+4];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:225 	length = INTERNALCALL_PARAM(8, U32);
+	.loc 1 225 2
 	ld.u32 	%r11, [%rd28+8];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:223 	pArray = INTERNALCALL_PARAM(0, tSystemArray*);
+	.loc 1 223 2
 	ld.u64 	%rd29, [%rd28];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:227 	pArrayType = Heap_GetType((HEAP_PTR)pArray);
+	.loc 1 227 15
 	// Callseq Start 13
 	{
 	.reg .b32 temp_param_reg;
@@ -786,22 +1053,37 @@ BB10_3:
 	
 	//{
 	}// Callseq End 13
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:228 	elementSize = pArrayType->pArrayElementType->arrayElementSize;
+	.loc 1 228 2
 	ld.u64 	%rd31, [%rd30+168];
 	ld.u32 	%r1, [%rd31+112];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:230 	pE1 = pArray->elements + index * elementSize;
+	.loc 1 230 2
 	mul.lo.s32 	%r12, %r1, %r10;
 	cvt.u64.u32	%rd32, %r12;
 	add.s64 	%rd33, %rd29, 4;
 	add.s64 	%rd52, %rd33, %rd32;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:231 	pE2 = pArray->elements + (index + length - 1) * elementSize;
+	.loc 1 231 2
 	add.s32 	%r13, %r10, %r11;
 	add.s32 	%r14, %r13, -1;
 	mul.lo.s32 	%r15, %r1, %r14;
 	cvt.u64.u32	%rd34, %r15;
 	add.s64 	%rd3, %rd33, %rd34;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:234 	while (pE2 > pE1) {
+	.loc 1 234 2
 	setp.le.u32	%p1, %r15, %r12;
 	@%p1 bra 	BB12_15;
 
 BB12_1:
 	setp.eq.s32	%p2, %r1, 0;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:235 		for (i=elementSize; i>0; i--) {
+	.loc 1 235 3
 	@%p2 bra 	BB12_2;
 	bra.uni 	BB12_3;
 
@@ -841,30 +1123,75 @@ BB12_8:
 	bra.uni 	BB12_10;
 
 BB12_9:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:236 			U8 c = *pE1;
+	.loc 1 236 9
 	ld.u8 	%rs1, [%rd52];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:237 			*pE1++ = *pE2;
+	.loc 1 237 4
 	ld.u8 	%rs2, [%rd3];
 	st.u8 	[%rd52], %rs2;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:238 			*pE2++ = c;
+	.loc 1 238 4
 	st.u8 	[%rd3], %rs1;
 	add.s64 	%rd3, %rd3, 1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:237 			*pE1++ = *pE2;
+	.loc 1 237 4
 	add.s64 	%rd52, %rd52, 1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:235 		for (i=elementSize; i>0; i--) {
+	.loc 1 235 28
 	add.s32 	%r20, %r1, -1;
 
 BB12_10:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:236 			U8 c = *pE1;
+	.loc 1 236 9
 	ld.u8 	%rs3, [%rd52];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:237 			*pE1++ = *pE2;
+	.loc 1 237 4
 	ld.u8 	%rs4, [%rd3];
 	st.u8 	[%rd52], %rs4;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:238 			*pE2++ = c;
+	.loc 1 238 4
 	st.u8 	[%rd3], %rs3;
 	add.s64 	%rd3, %rd3, 1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:237 			*pE1++ = *pE2;
+	.loc 1 237 4
 	add.s64 	%rd52, %rd52, 1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:235 		for (i=elementSize; i>0; i--) {
+	.loc 1 235 28
 	add.s32 	%r21, %r20, -1;
 
 BB12_11:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:236 			U8 c = *pE1;
+	.loc 1 236 9
 	ld.u8 	%rs5, [%rd52];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:237 			*pE1++ = *pE2;
+	.loc 1 237 4
 	ld.u8 	%rs6, [%rd3];
 	st.u8 	[%rd52], %rs6;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:238 			*pE2++ = c;
+	.loc 1 238 4
 	st.u8 	[%rd3], %rs5;
 	add.s64 	%rd51, %rd3, 1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:237 			*pE1++ = *pE2;
+	.loc 1 237 4
 	add.s64 	%rd45, %rd52, 1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:235 		for (i=elementSize; i>0; i--) {
+	.loc 1 235 28
 	add.s32 	%r23, %r21, -1;
 	mov.u64 	%rd3, %rd51;
 	mov.u64 	%rd50, %rd45;
@@ -875,40 +1202,97 @@ BB12_12:
 	@%p6 bra 	BB12_14;
 
 BB12_13:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:236 			U8 c = *pE1;
+	.loc 1 236 9
 	ld.u8 	%rs7, [%rd50];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:237 			*pE1++ = *pE2;
+	.loc 1 237 4
 	ld.u8 	%rs8, [%rd3];
 	st.u8 	[%rd50], %rs8;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:238 			*pE2++ = c;
+	.loc 1 238 4
 	st.u8 	[%rd3], %rs7;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:236 			U8 c = *pE1;
+	.loc 1 236 9
 	ld.u8 	%rs9, [%rd50+1];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:237 			*pE1++ = *pE2;
+	.loc 1 237 4
 	ld.u8 	%rs10, [%rd3+1];
 	st.u8 	[%rd50+1], %rs10;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:238 			*pE2++ = c;
+	.loc 1 238 4
 	st.u8 	[%rd3+1], %rs9;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:236 			U8 c = *pE1;
+	.loc 1 236 9
 	ld.u8 	%rs11, [%rd50+2];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:237 			*pE1++ = *pE2;
+	.loc 1 237 4
 	ld.u8 	%rs12, [%rd3+2];
 	st.u8 	[%rd50+2], %rs12;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:238 			*pE2++ = c;
+	.loc 1 238 4
 	st.u8 	[%rd3+2], %rs11;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:236 			U8 c = *pE1;
+	.loc 1 236 9
 	ld.u8 	%rs13, [%rd50+3];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:237 			*pE1++ = *pE2;
+	.loc 1 237 4
 	ld.u8 	%rs14, [%rd3+3];
 	st.u8 	[%rd50+3], %rs14;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:238 			*pE2++ = c;
+	.loc 1 238 4
 	st.u8 	[%rd3+3], %rs13;
 	add.s64 	%rd3, %rd3, 4;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:237 			*pE1++ = *pE2;
+	.loc 1 237 4
 	add.s64 	%rd50, %rd50, 4;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:235 		for (i=elementSize; i>0; i--) {
+	.loc 1 235 28
 	add.s32 	%r23, %r23, -4;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:235 		for (i=elementSize; i>0; i--) {
+	.loc 1 235 3
 	setp.ne.s32	%p7, %r23, 0;
 	mov.u64 	%rd51, %rd3;
 	mov.u64 	%rd52, %rd50;
 	@%p7 bra 	BB12_13;
 
 BB12_14:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:232 	dec = elementSize << 1;
+	.loc 1 232 2
 	shl.b32 	%r19, %r1, 1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:240 		pE2 -= dec;
+	.loc 1 240 3
 	cvt.u64.u32	%rd37, %r19;
 	sub.s64 	%rd3, %rd51, %rd37;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:234 	while (pE2 > pE1) {
+	.loc 1 234 2
 	setp.gt.u64	%p8, %rd3, %rd52;
 	@%p8 bra 	BB12_1;
 
 BB12_15:
 	mov.u64 	%rd38, 0;
 	st.param.b64	[func_retval0+0], %rd38;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:243 	return NULL;
+	.loc 1 243 2
 	ret;
 }
 
@@ -928,12 +1312,18 @@ BB12_15:
 	ld.param.u64 	%rd6, [_Z24SystemArray_StoreElementPhjS__param_0];
 	ld.param.u32 	%r2, [_Z24SystemArray_StoreElementPhjS__param_1];
 	ld.param.u64 	%rd7, [_Z24SystemArray_StoreElementPhjS__param_2];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:263 	if (index >= pArray->length) {
+	.loc 1 263 2
 	ld.u32 	%r3, [%rd6];
 	setp.gt.u32	%p1, %r3, %r2;
 	@%p1 bra 	BB13_2;
 	bra.uni 	BB13_1;
 
 BB13_2:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:269 	pArrayTypeDef = Heap_GetType(pThis_);
+	.loc 1 269 18
 	// Callseq Start 14
 	{
 	.reg .b32 temp_param_reg;
@@ -950,9 +1340,18 @@ BB13_2:
 	
 	//{
 	}// Callseq End 14
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:270 	elemSize = pArrayTypeDef->pArrayElementType->arrayElementSize;
+	.loc 1 270 2
 	ld.u64 	%rd9, [%rd8+168];
 	ld.u32 	%r1, [%rd9+112];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:273 		((U8*)(pArray->elements))[index] = *(U8*)value;
+	.loc 1 273 3
 	cvt.u64.u32	%rd1, %r2;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:271 	switch (elemSize) {
+	.loc 1 271 2
 	setp.eq.s32	%p2, %r1, 1;
 	@%p2 bra 	BB13_7;
 
@@ -961,15 +1360,27 @@ BB13_2:
 	bra.uni 	BB13_4;
 
 BB13_6:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:276 		((U16*)(pArray->elements))[index] = *(U16*)value;
+	.loc 1 276 3
 	ld.u16 	%rs1, [%rd7];
 	shl.b64 	%rd12, %rd1, 1;
 	add.s64 	%rd13, %rd6, %rd12;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:276 		((U16*)(pArray->elements))[index] = *(U16*)value;
+	.loc 1 276 3
 	st.u16 	[%rd13+4], %rs1;
 	bra.uni 	BB13_10;
 
 BB13_7:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:273 		((U8*)(pArray->elements))[index] = *(U8*)value;
+	.loc 1 273 3
 	ld.u8 	%rs2, [%rd7];
 	add.s64 	%rd14, %rd6, %rd1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:273 		((U8*)(pArray->elements))[index] = *(U8*)value;
+	.loc 1 273 3
 	st.u8 	[%rd14+4], %rs2;
 	bra.uni 	BB13_10;
 
@@ -977,13 +1388,22 @@ BB13_4:
 	setp.ne.s32	%p4, %r1, 4;
 	@%p4 bra 	BB13_8;
 
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:279 		((U32*)(pArray->elements))[index] = *(U32*)value;
+	.loc 1 279 3
 	ld.u32 	%r4, [%rd7];
 	shl.b64 	%rd10, %rd1, 2;
 	add.s64 	%rd11, %rd6, %rd10;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:279 		((U32*)(pArray->elements))[index] = *(U32*)value;
+	.loc 1 279 3
 	st.u32 	[%rd11+4], %r4;
 	bra.uni 	BB13_10;
 
 BB13_8:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:282 		memcpy(&pArray->elements[index * elemSize], value, elemSize);
+	.loc 1 282 3
 	cvt.u64.u32	%rd2, %r1;
 	mul.lo.s32 	%r5, %r1, %r2;
 	cvt.u64.u32	%rd16, %r5;
@@ -1003,6 +1423,9 @@ BB13_9:
 	@%p6 bra 	BB13_9;
 
 BB13_10:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:285 }
+	.loc 1 285 1
 	ret;
 
 BB13_1:
@@ -1025,6 +1448,9 @@ BB13_1:
 	ld.param.u64 	%rd6, [_Z23SystemArray_LoadElementPhjS__param_0];
 	ld.param.u32 	%r2, [_Z23SystemArray_LoadElementPhjS__param_1];
 	ld.param.u64 	%rd7, [_Z23SystemArray_LoadElementPhjS__param_2];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:292 	pArrayTypeDef = Heap_GetType(pThis_);
+	.loc 1 292 18
 	// Callseq Start 15
 	{
 	.reg .b32 temp_param_reg;
@@ -1041,9 +1467,18 @@ BB13_1:
 	
 	//{
 	}// Callseq End 15
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:293 	elemSize = pArrayTypeDef->pArrayElementType->arrayElementSize;
+	.loc 1 293 2
 	ld.u64 	%rd9, [%rd8+168];
 	ld.u32 	%r1, [%rd9+112];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:296 		*(U8*)value =((U8*)(pArray->elements))[index];
+	.loc 1 296 3
 	cvt.u64.u32	%rd1, %r2;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:294 	switch (elemSize) {
+	.loc 1 294 2
 	setp.eq.s32	%p1, %r1, 1;
 	@%p1 bra 	BB14_5;
 
@@ -1054,12 +1489,18 @@ BB13_1:
 BB14_4:
 	shl.b64 	%rd12, %rd1, 1;
 	add.s64 	%rd13, %rd6, %rd12;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:299 		*(U16*)value = ((U16*)(pArray->elements))[index];
+	.loc 1 299 3
 	ld.u16 	%rs1, [%rd13+4];
 	st.u16 	[%rd7], %rs1;
 	bra.uni 	BB14_8;
 
 BB14_5:
 	add.s64 	%rd14, %rd6, %rd1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:296 		*(U8*)value =((U8*)(pArray->elements))[index];
+	.loc 1 296 3
 	ld.u8 	%rs2, [%rd14+4];
 	st.u8 	[%rd7], %rs2;
 	bra.uni 	BB14_8;
@@ -1070,11 +1511,17 @@ BB14_2:
 
 	shl.b64 	%rd10, %rd1, 2;
 	add.s64 	%rd11, %rd6, %rd10;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:302 		*(U32*)value = ((U32*)(pArray->elements))[index];
+	.loc 1 302 3
 	ld.u32 	%r3, [%rd11+4];
 	st.u32 	[%rd7], %r3;
 	bra.uni 	BB14_8;
 
 BB14_6:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:305 		memcpy(value, &pArray->elements[index * elemSize], elemSize);
+	.loc 1 305 3
 	cvt.u64.u32	%rd2, %r1;
 	mul.lo.s32 	%r4, %r1, %r2;
 	cvt.u64.u32	%rd16, %r4;
@@ -1094,6 +1541,9 @@ BB14_7:
 	@%p5 bra 	BB14_7;
 
 BB14_8:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:308 }
+	.loc 1 308 1
 	ret;
 }
 
@@ -1110,12 +1560,18 @@ BB14_8:
 
 	ld.param.u64 	%rd1, [_Z30SystemArray_LoadElementAddressPhj_param_0];
 	ld.param.u32 	%r1, [_Z30SystemArray_LoadElementAddressPhj_param_1];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:315 	if (index >= pArray->length) {
+	.loc 1 315 2
 	ld.u32 	%r2, [%rd1];
 	setp.gt.u32	%p1, %r2, %r1;
 	@%p1 bra 	BB15_2;
 	bra.uni 	BB15_1;
 
 BB15_2:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:321 	pArrayTypeDef = Heap_GetType(pThis_);
+	.loc 1 321 18
 	// Callseq Start 16
 	{
 	.reg .b32 temp_param_reg;
@@ -1132,6 +1588,9 @@ BB15_2:
 	
 	//{
 	}// Callseq End 16
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:322 	return pArray->elements + pArrayTypeDef->pArrayElementType->arrayElementSize * index;
+	.loc 1 322 2
 	ld.u64 	%rd3, [%rd2+168];
 	ld.u32 	%r3, [%rd3+112];
 	mul.lo.s32 	%r4, %r3, %r1;
@@ -1157,6 +1616,9 @@ BB15_1:
 
 	ld.param.u64 	%rd1, [_Z23SystemArray_GetNumBytesPhP12tMD_TypeDef__param_0];
 	ld.param.u64 	%rd2, [_Z23SystemArray_GetNumBytesPhP12tMD_TypeDef__param_1];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu:326 	return (((tSystemArray*)pThis_)->length * pElementType->arrayElementSize) + sizeof(tSystemArray);
+	.loc 1 326 2
 	ld.u32 	%r1, [%rd1];
 	ld.u32 	%r2, [%rd2+112];
 	mad.lo.s32 	%r3, %r2, %r1, 4;
@@ -1164,4 +1626,6 @@ BB15_1:
 	ret;
 }
 
+	.file	1 "C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Array.cu", 1511362255, 10129
+	.file	2 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v9.0\\include\\cuda_device_runtime_api.h", 1504359958, 14836
 

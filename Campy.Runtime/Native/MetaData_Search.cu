@@ -27,6 +27,7 @@
 #include "Types.h"
 #include "Gstring.h"
 #include "Gprintf.h"
+#include <stdio.h>
 
 __device__ U32 MetaData_CompareNameAndSig(STRING name, BLOB_ sigBlob, tMetaData *pSigMetaData, tMD_TypeDef **ppSigClassTypeArgs, tMD_TypeDef **ppSigMethodTypeArgs, tMD_MethodDef *pMethod, tMD_TypeDef **ppMethodClassTypeArgs, tMD_TypeDef **ppMethodMethodTypeArgs) {
 	if (Gstrcmp(name, pMethod->name) == 0) {
@@ -171,11 +172,14 @@ __device__ tMetaData* MetaData_GetResolutionScopeMetaData(tMetaData *pMetaData, 
 
 __device__ tMD_TypeDef* MetaData_GetTypeDefFromName(tMetaData *pMetaData, STRING nameSpace, STRING name, tMD_TypeDef *pInNestedClass) {
 	U32 i;
-
+	printf("In MetaData_GetTypeDefFromName\n");
 	for (i=1; i<=pMetaData->tables.numRows[MD_TABLE_TYPEDEF]; i++) {
 		tMD_TypeDef *pTypeDef;
 
 		pTypeDef = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_TYPEDEF, i));
+		
+		printf("In MetaData_GetTypeDefFromName2\n");
+
 		if (pInNestedClass == pTypeDef->pNestedIn &&
 			Gstrcmp(name, pTypeDef->name) == 0 &&
 			(pInNestedClass != NULL || Gstrcmp(nameSpace, pTypeDef->nameSpace) == 0)) {
@@ -201,7 +205,7 @@ __device__ tMD_TypeDef* MetaData_GetTypeDefFromFullName(STRING assemblyName, STR
 
 __device__ tMD_TypeDef* MetaData_GetTypeDefFromDefRefOrSpec(tMetaData *pMetaData, IDX_TABLE token, tMD_TypeDef **ppClassTypeArgs, tMD_TypeDef **ppMethodTypeArgs) {
 	void *pTableEntry;
-
+	printf("In MetaData_GetTypeDefFromDefRefOrSpec\n");
 	pTableEntry = MetaData_GetTableRow(pMetaData, token);
 	if (pTableEntry == NULL) {
 		return NULL;

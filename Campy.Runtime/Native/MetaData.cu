@@ -283,7 +283,7 @@ __device__ void MetaData_Init() {
 	}
 }
 
-__device__ static unsigned int GetU16(unsigned char *pSource) {
+__device__ unsigned int GetU16(unsigned char *pSource) {
 	unsigned char a, b;
 
 	a = pSource[0];
@@ -292,7 +292,7 @@ __device__ static unsigned int GetU16(unsigned char *pSource) {
 	| (((unsigned int)b) << 8);
 }
 
-__device__ static unsigned int GetU32(unsigned char *pSource) {
+__device__ unsigned int GetU32(unsigned char *pSource) {
 	unsigned char a, b, c, d;
 
 	a = pSource[0];
@@ -305,7 +305,7 @@ __device__ static unsigned int GetU32(unsigned char *pSource) {
 	| (((unsigned int)d) << 24);
 }
 
-__device__ static unsigned long long GetU64(unsigned char *pSource) {
+__device__ unsigned long long GetU64(unsigned char *pSource) {
 	unsigned char a, b, c, d, e, f, g, h;
 
 	a = pSource[0];

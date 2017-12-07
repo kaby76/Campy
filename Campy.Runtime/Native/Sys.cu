@@ -25,11 +25,13 @@
 #include "Types.h"
 #include "Gstring.h"
 #include "Gprintf.h"
+#include <stdio.h>
 
 __device__ void Crash(const char *pMsg, ...) {
 	va_list va;
 
 	Gprintf("\n\n*** CRASH ***\n");
+	printf("%s\n", pMsg);
 
 	va_start(va, pMsg);
 	char buf[10000];

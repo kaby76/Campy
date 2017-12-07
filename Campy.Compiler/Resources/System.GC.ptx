@@ -42,6 +42,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:77   return cudaErrorUnknown;
+	.loc 2 77 3
 	ret;
 }
 
@@ -56,6 +59,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:82   return cudaErrorUnknown;
+	.loc 2 82 3
 	ret;
 }
 
@@ -71,6 +77,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:87   return cudaErrorUnknown;
+	.loc 2 87 3
 	ret;
 }
 
@@ -84,6 +93,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:92   return cudaErrorUnknown;
+	.loc 2 92 3
 	ret;
 }
 
@@ -100,6 +112,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:97   return cudaErrorUnknown;
+	.loc 2 97 3
 	ret;
 }
 
@@ -117,6 +132,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:102   return cudaErrorUnknown;
+	.loc 2 102 3
 	ret;
 }
 
@@ -130,6 +148,9 @@
 	.reg .b64 	%rd<2>;
 
 
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.GC.cu:32 	Heap_GarbageCollect();
+	.loc 1 32 2
 	// Callseq Start 0
 	{
 	.reg .b32 temp_param_reg;
@@ -143,6 +164,9 @@
 	}// Callseq End 0
 	mov.u64 	%rd1, 0;
 	st.param.b64	[func_retval0+0], %rd1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.GC.cu:33 	return NULL;
+	.loc 1 33 2
 	ret;
 }
 
@@ -158,6 +182,9 @@
 
 
 	ld.param.u64 	%rd1, [_Z34System_GC_Internal_CollectionCountPhS_S__param_2];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.GC.cu:37 	*(U32*)pReturnValue = Heap_NumCollections();
+	.loc 1 37 24
 	// Callseq Start 1
 	{
 	.reg .b32 temp_param_reg;
@@ -174,6 +201,9 @@
 	st.u32 	[%rd1], %r1;
 	mov.u64 	%rd2, 0;
 	st.param.b64	[func_retval0+0], %rd2;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.GC.cu:38 	return NULL;
+	.loc 1 38 2
 	ret;
 }
 
@@ -191,10 +221,16 @@
 
 	ld.param.u64 	%rd2, [_Z24System_GC_GetTotalMemoryPhS_S__param_1];
 	ld.param.u64 	%rd1, [_Z24System_GC_GetTotalMemoryPhS_S__param_2];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.GC.cu:42 	if (*(U32*)pParams) {
+	.loc 1 42 2
 	ld.u32 	%r1, [%rd2];
 	setp.eq.s32	%p1, %r1, 0;
 	@%p1 bra 	BB8_2;
 
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.GC.cu:43 		Heap_GarbageCollect();
+	.loc 1 43 3
 	// Callseq Start 2
 	{
 	.reg .b32 temp_param_reg;
@@ -208,6 +244,9 @@
 	}// Callseq End 2
 
 BB8_2:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.GC.cu:45 	*(U64*)pReturnValue = Heap_GetTotalMemory();
+	.loc 1 45 24
 	// Callseq Start 3
 	{
 	.reg .b32 temp_param_reg;
@@ -225,6 +264,9 @@ BB8_2:
 	st.u64 	[%rd1], %rd3;
 	mov.u64 	%rd4, 0;
 	st.param.b64	[func_retval0+0], %rd4;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.GC.cu:46 	return NULL;
+	.loc 1 46 2
 	ret;
 }
 
@@ -239,7 +281,13 @@ BB8_2:
 
 
 	ld.param.u64 	%rd1, [_Z26System_GC_SuppressFinalizePhS_S__param_1];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.GC.cu:50 	HEAP_PTR obj = ((HEAP_PTR*)pParams)[0];
+	.loc 1 50 15
 	ld.u64 	%rd2, [%rd1];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.GC.cu:51 	Heap_UnmarkFinalizer(obj);
+	.loc 1 51 2
 	// Callseq Start 4
 	{
 	.reg .b32 temp_param_reg;
@@ -256,7 +304,12 @@ BB8_2:
 	}// Callseq End 4
 	mov.u64 	%rd3, 0;
 	st.param.b64	[func_retval0+0], %rd3;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.GC.cu:52 	return NULL;
+	.loc 1 52 2
 	ret;
 }
 
+	.file	1 "C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.GC.cu", 1509046919, 1989
+	.file	2 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v9.0\\include\\cuda_device_runtime_api.h", 1504359958, 14836
 

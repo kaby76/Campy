@@ -750,6 +750,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:77   return cudaErrorUnknown;
+	.loc 2 77 3
 	ret;
 }
 
@@ -764,6 +767,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:82   return cudaErrorUnknown;
+	.loc 2 82 3
 	ret;
 }
 
@@ -779,6 +785,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:87   return cudaErrorUnknown;
+	.loc 2 87 3
 	ret;
 }
 
@@ -792,6 +801,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:92   return cudaErrorUnknown;
+	.loc 2 92 3
 	ret;
 }
 
@@ -808,6 +820,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:97   return cudaErrorUnknown;
+	.loc 2 97 3
 	ret;
 }
 
@@ -825,6 +840,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:102   return cudaErrorUnknown;
+	.loc 2 102 3
 	ret;
 }
 
@@ -840,6 +858,9 @@
 
 
 	ld.param.u64 	%rd14, [_Z16InternalCall_MapP14tMD_MethodDef__param_0];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/InternalCall.cu:181 	if (pMethod->pParentType->pParent == types[TYPE_SYSTEM_MULTICASTDELEGATE]) {
+	.loc 1 181 2
 	add.s64 	%rd1, %rd14, 96;
 	ld.u64 	%rd15, [%rd14+96];
 	ld.global.u64 	%rd16, [types];
@@ -848,22 +869,40 @@
 	setp.eq.s64	%p1, %rd18, %rd17;
 	@%p1 bra 	BB6_7;
 
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/InternalCall.cu:189 		for (pCall = internalCalls; pCall->method != NULL; pCall++) {
+	.loc 1 189 3
 	ld.global.u64 	%rd22, [__nv_static_33__20_InternalCall_cpp1_ii_6e6d69b0_internalCalls+16];
 	mov.u64 	%rd45, __nv_static_33__20_InternalCall_cpp1_ii_6e6d69b0_internalCalls;
 	cvta.global.u64 	%rd44, %rd45;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/InternalCall.cu:189 		for (pCall = internalCalls; pCall->method != NULL; pCall++) {
+	.loc 1 189 3
 	setp.eq.s64	%p2, %rd22, 0;
 	@%p2 bra 	BB6_8;
 
 BB6_2:
 	mov.u64 	%rd4, %rd45;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/InternalCall.cu:190 			if (pCall->nameSpace != NULL) {
+	.loc 1 190 4
 	ld.global.u64 	%rd23, [%rd4];
 	setp.eq.s64	%p3, %rd23, 0;
 	selp.b64	%rd46, %rd46, %rd23, %p3;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/InternalCall.cu:193 			if (pCall->type != NULL) {
+	.loc 1 193 4
 	ld.global.u64 	%rd24, [%rd4+8];
 	setp.eq.s64	%p4, %rd24, 0;
 	selp.b64	%rd43, %rd43, %rd24, %p4;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/InternalCall.cu:196 			if (Gstrcmp(pMethod->pParentType->nameSpace, curNameSpace) == 0) {
+	.loc 1 196 4
 	ld.u64 	%rd25, [%rd1];
 	ld.u64 	%rd26, [%rd25+32];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/InternalCall.cu:196 			if (Gstrcmp(pMethod->pParentType->nameSpace, curNameSpace) == 0) {
+	.loc 1 196 8
 	// Callseq Start 0
 	{
 	.reg .b32 temp_param_reg;
@@ -886,8 +925,14 @@ BB6_2:
 	setp.ne.s32	%p5, %r1, 0;
 	@%p5 bra 	BB6_6;
 
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/InternalCall.cu:197 				if (Gstrcmp(pMethod->pParentType->name, curType) == 0) {
+	.loc 1 197 5
 	ld.u64 	%rd27, [%rd1];
 	ld.u64 	%rd28, [%rd27+24];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/InternalCall.cu:197 				if (Gstrcmp(pMethod->pParentType->name, curType) == 0) {
+	.loc 1 197 9
 	// Callseq Start 1
 	{
 	.reg .b32 temp_param_reg;
@@ -910,6 +955,9 @@ BB6_2:
 	setp.ne.s32	%p6, %r2, 0;
 	@%p6 bra 	BB6_6;
 
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/InternalCall.cu:198 					if (Type_IsMethod(pMethod, pCall->method, types[pCall->returnType], pCall->numParameters, pCall->parameterTypes)) {
+	.loc 1 198 6
 	ld.global.u64 	%rd29, [%rd4+16];
 	ld.global.v2.u8 	{%rs1, %rs2}, [%rd4+32];
 	cvt.u32.u16	%r3, %rs2;
@@ -919,6 +967,9 @@ BB6_2:
 	add.s64 	%rd32, %rd30, %rd31;
 	ld.u64 	%rd33, [%rd32];
 	add.s64 	%rd34, %rd44, 34;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/InternalCall.cu:198 					if (Type_IsMethod(pMethod, pCall->method, types[pCall->returnType], pCall->numParameters, pCall->parameterTypes)) {
+	.loc 1 198 10
 	// Callseq Start 2
 	{
 	.reg .b32 temp_param_reg;
@@ -952,14 +1003,23 @@ BB6_2:
 	bra.uni 	BB6_5;
 
 BB6_6:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/InternalCall.cu:189 		for (pCall = internalCalls; pCall->method != NULL; pCall++) {
+	.loc 1 189 51
 	add.s64 	%rd45, %rd4, 40;
 	add.s64 	%rd44, %rd44, 40;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/InternalCall.cu:189 		for (pCall = internalCalls; pCall->method != NULL; pCall++) {
+	.loc 1 189 3
 	ld.global.u64 	%rd35, [%rd4+56];
 	setp.eq.s64	%p8, %rd35, 0;
 	@%p8 bra 	BB6_8;
 	bra.uni 	BB6_2;
 
 BB6_7:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/InternalCall.cu:183 		fnInternalCall fn = Map_Delegate(pMethod);
+	.loc 1 183 23
 	// Callseq Start 3
 	{
 	.reg .b32 temp_param_reg;
@@ -976,10 +1036,16 @@ BB6_7:
 	
 	//{
 	}// Callseq End 3
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/InternalCall.cu:184 		if (fn != NULL) {
+	.loc 1 184 3
 	setp.ne.s64	%p9, %rd47, 0;
 	@%p9 bra 	BB6_9;
 
 BB6_8:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/InternalCall.cu:206 	Crash("InternalCall_Map(): Cannot map [%s]%s.%s", pMethod->pParentType->nameSpace, pMethod->pParentType->name, pMethod->name);
+	.loc 1 206 2
 	ld.u64 	%rd37, [%rd1];
 	ld.u64 	%rd38, [%rd37+32];
 	ld.u64 	%rd39, [%rd37+24];
@@ -1006,6 +1072,9 @@ BB6_8:
 	//{
 	}// Callseq End 4
 	mov.u32 	%r6, 101;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/InternalCall.cu:207 	FAKE_RETURN;
+	.loc 1 207 2
 	// Callseq Start 5
 	{
 	.reg .b32 temp_param_reg;
@@ -1023,11 +1092,19 @@ BB6_8:
 
 BB6_9:
 	st.param.b64	[func_retval0+0], %rd47;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/InternalCall.cu:208 }
+	.loc 1 208 1
 	ret;
 
 BB6_5:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/InternalCall.cu:199 						return pCall->fn;
+	.loc 1 199 7
 	ld.global.u64 	%rd47, [%rd4+24];
 	bra.uni 	BB6_9;
 }
 
+	.file	1 "C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/InternalCall.cu", 1511710520, 14384
+	.file	2 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v9.0\\include\\cuda_device_runtime_api.h", 1504359958, 14836
 

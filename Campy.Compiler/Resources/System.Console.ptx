@@ -34,6 +34,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:77   return cudaErrorUnknown;
+	.loc 2 77 3
 	ret;
 }
 
@@ -48,6 +51,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:82   return cudaErrorUnknown;
+	.loc 2 82 3
 	ret;
 }
 
@@ -63,6 +69,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:87   return cudaErrorUnknown;
+	.loc 2 87 3
 	ret;
 }
 
@@ -76,6 +85,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:92   return cudaErrorUnknown;
+	.loc 2 92 3
 	ret;
 }
 
@@ -92,6 +104,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:97   return cudaErrorUnknown;
+	.loc 2 97 3
 	ret;
 }
 
@@ -109,6 +124,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:102   return cudaErrorUnknown;
+	.loc 2 102 3
 	ret;
 }
 
@@ -131,11 +149,20 @@
 	cvta.local.u64 	%SP, %rd8;
 	ld.param.u64 	%rd3, [_Z20System_Console_WritePhS_S__param_1];
 	add.u64 	%rd4, %SP, 0;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Console.cu:35 	string = *(HEAP_PTR*)pParams;
+	.loc 1 35 2
 	cvta.to.local.u64 	%rd1, %rd4;
 	ld.u64 	%rd2, [%rd3];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Console.cu:36 	if (string != NULL) {
+	.loc 1 36 2
 	setp.eq.s64	%p1, %rd2, 0;
 	@%p1 bra 	BB6_4;
 
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Console.cu:40 		str = SystemString_GetString(string, &strLen);
+	.loc 1 40 9
 	// Callseq Start 0
 	{
 	.reg .b32 temp_param_reg;
@@ -155,6 +182,9 @@
 	
 	//{
 	}// Callseq End 0
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Console.cu:41 		while (strLen > 0) {
+	.loc 1 41 3
 	ld.local.u32 	%r6, [%rd1];
 	setp.eq.s32	%p2, %r6, 0;
 	@%p2 bra 	BB6_4;
@@ -162,16 +192,28 @@
 BB6_2:
 	mov.u32 	%r4, 128;
 	min.u32 	%r5, %r4, %r6;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Console.cu:49 			strLen -= thisLen;
+	.loc 1 49 4
 	sub.s32 	%r3, %r6, %r5;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Console.cu:41 		while (strLen > 0) {
+	.loc 1 41 3
 	setp.ne.s32	%p3, %r6, %r5;
 	mov.u32 	%r6, %r3;
 	@%p3 bra 	BB6_2;
 
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Console.cu:49 			strLen -= thisLen;
+	.loc 1 49 4
 	st.local.u32 	[%rd1], %r3;
 
 BB6_4:
 	mov.u64 	%rd7, 0;
 	st.param.b64	[func_retval0+0], %rd7;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Console.cu:54 	return NULL;
+	.loc 1 54 2
 	ret;
 }
 
@@ -187,6 +229,9 @@ BB6_4:
 
 	mov.u32 	%r1, 0;
 	st.param.b32	[func_retval0+0], %r1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Console.cu:97 	return 0;
+	.loc 1 97 2
 	ret;
 }
 
@@ -202,6 +247,9 @@ BB6_4:
 
 
 	mov.u64 	%rd1, 32;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Console.cu:101 	tAsyncCall *pAsync = TMALLOC(tAsyncCall);
+	.loc 1 101 36
 	// Callseq Start 1
 	{
 	.reg .b32 temp_param_reg;
@@ -219,12 +267,24 @@ BB6_4:
 	//{
 	}// Callseq End 1
 	mov.u32 	%r1, -1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Console.cu:103 	pAsync->sleepTime = -1;
+	.loc 1 103 2
 	st.u32 	[%rd2], %r1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Console.cu:104 	pAsync->checkFn = Internal_ReadKey_Check;
+	.loc 1 104 2
 	mov.u64 	%rd3, _ZN44_INTERNAL_22_System_Console_cpp1_ii_60669a0722Internal_ReadKey_CheckEPhS0_S0_P11tAsyncCall_;
 	st.u64 	[%rd2+8], %rd3;
 	mov.u64 	%rd4, 0;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Console.cu:105 	pAsync->state = NULL;
+	.loc 1 105 2
 	st.u64 	[%rd2+16], %rd4;
 	st.param.b64	[func_retval0+0], %rd2;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Console.cu:107 	return pAsync;
+	.loc 1 107 2
 	ret;
 }
 
@@ -241,10 +301,18 @@ BB6_4:
 
 	ld.param.u64 	%rd1, [_Z36System_Console_Internal_KeyAvailablePhS_S__param_2];
 	mov.u32 	%r1, 0;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Console.cu:118 		*(U32*)pReturnValue = 0;
+	.loc 1 118 3
 	st.u32 	[%rd1], %r1;
 	mov.u64 	%rd2, 0;
 	st.param.b64	[func_retval0+0], %rd2;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Console.cu:121 	return NULL;
+	.loc 1 121 2
 	ret;
 }
 
+	.file	1 "C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Console.cu", 1511362292, 3393
+	.file	2 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v9.0\\include\\cuda_device_runtime_api.h", 1504359958, 14836
 

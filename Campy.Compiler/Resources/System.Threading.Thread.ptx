@@ -53,6 +53,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:77   return cudaErrorUnknown;
+	.loc 2 77 3
 	ret;
 }
 
@@ -67,6 +70,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:82   return cudaErrorUnknown;
+	.loc 2 82 3
 	ret;
 }
 
@@ -82,6 +88,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:87   return cudaErrorUnknown;
+	.loc 2 87 3
 	ret;
 }
 
@@ -95,6 +104,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:92   return cudaErrorUnknown;
+	.loc 2 92 3
 	ret;
 }
 
@@ -111,6 +123,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:97   return cudaErrorUnknown;
+	.loc 2 97 3
 	ret;
 }
 
@@ -128,6 +143,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:102   return cudaErrorUnknown;
+	.loc 2 102 3
 	ret;
 }
 
@@ -143,6 +161,9 @@
 
 	ld.param.u64 	%rd1, [_Z28System_Threading_Thread_ctorPhS_S__param_1];
 	ld.param.u64 	%rd2, [_Z28System_Threading_Thread_ctorPhS_S__param_2];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Thread.cu:32 	tThread *pThread = Thread();
+	.loc 1 32 21
 	// Callseq Start 0
 	{
 	.reg .b32 temp_param_reg;
@@ -156,11 +177,20 @@
 	
 	//{
 	}// Callseq End 0
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Thread.cu:33 	pThread->startDelegate = ((PTR*)pParams)[0];
+	.loc 1 33 2
 	ld.u64 	%rd4, [%rd1];
 	st.u64 	[%rd3+8], %rd4;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Thread.cu:34 	*(HEAP_PTR*)pReturnValue = (HEAP_PTR)pThread;
+	.loc 1 34 2
 	st.u64 	[%rd2], %rd3;
 	mov.u64 	%rd5, 0;
 	st.param.b64	[func_retval0+0], %rd5;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Thread.cu:35 	return NULL;
+	.loc 1 35 2
 	ret;
 }
 
@@ -177,6 +207,9 @@
 
 	ld.param.u64 	%rd1, [_Z33System_Threading_Thread_ctorParamPhS_S__param_1];
 	ld.param.u64 	%rd2, [_Z33System_Threading_Thread_ctorParamPhS_S__param_2];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Thread.cu:39 	tThread *pThread = Thread();
+	.loc 1 39 21
 	// Callseq Start 1
 	{
 	.reg .b32 temp_param_reg;
@@ -190,13 +223,25 @@
 	
 	//{
 	}// Callseq End 1
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Thread.cu:40 	pThread->startDelegate = ((PTR*)pParams)[0];
+	.loc 1 40 2
 	ld.u64 	%rd4, [%rd1];
 	st.u64 	[%rd3+8], %rd4;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Thread.cu:41 	*(HEAP_PTR*)pReturnValue = (HEAP_PTR)pThread;
+	.loc 1 41 2
 	st.u64 	[%rd2], %rd3;
 	mov.u32 	%r1, 1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Thread.cu:42 	pThread->hasParam = 1;
+	.loc 1 42 2
 	st.u32 	[%rd3+96], %r1;
 	mov.u64 	%rd5, 0;
 	st.param.b64	[func_retval0+0], %rd5;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Thread.cu:43 	return NULL;
+	.loc 1 43 2
 	ret;
 }
 
@@ -221,12 +266,24 @@
 	add.u64 	%rd6, %SP, 0;
 	cvta.to.local.u64 	%rd7, %rd6;
 	add.u64 	%rd8, %SP, 16;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Thread.cu:47 	tThread *pThread = (tThread*)pThis_;
+	.loc 1 47 19
 	cvta.to.local.u64 	%rd1, %rd8;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Thread.cu:54 	pThread->state &= THREADSTATE_BACKGROUND;
+	.loc 1 54 2
 	ld.u32 	%r5, [%rd5+24];
 	and.b32  	%r6, %r5, 4;
 	st.u32 	[%rd5+24], %r6;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Thread.cu:56 	pStartMethod = Delegate_GetMethodAndStore(pThread->startDelegate, &pStartObj, NULL);
+	.loc 1 56 2
 	ld.u64 	%rd9, [%rd5+8];
 	mov.u64 	%rd10, 0;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Thread.cu:56 	pStartMethod = Delegate_GetMethodAndStore(pThread->startDelegate, &pStartObj, NULL);
+	.loc 1 56 17
 	// Callseq Start 2
 	{
 	.reg .b32 temp_param_reg;
@@ -249,26 +306,47 @@
 	
 	//{
 	}// Callseq End 2
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Thread.cu:58 	if (pStartObj != NULL) {
+	.loc 1 58 2
 	ld.local.u64 	%rd4, [%rd7];
 	setp.eq.s64	%p1, %rd4, 0;
 	mov.u32 	%r10, 0;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Thread.cu:58 	if (pStartObj != NULL) {
+	.loc 1 58 2
 	@%p1 bra 	BB8_2;
 
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Thread.cu:60 		params[0] = (PTR)pStartObj;
+	.loc 1 60 3
 	st.local.u64 	[%rd1], %rd4;
 	mov.u32 	%r10, 8;
 
 BB8_2:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Thread.cu:63 	if (pThread->hasParam) {
+	.loc 1 63 2
 	ld.u32 	%r8, [%rd5+96];
 	setp.eq.s32	%p2, %r8, 0;
 	@%p2 bra 	BB8_4;
 
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Thread.cu:65 		params[paramBytes] = (PTR)pThread->param;
+	.loc 1 65 3
 	ld.u64 	%rd11, [%rd5+16];
 	mul.wide.u32 	%rd12, %r10, 8;
 	add.s64 	%rd13, %rd1, %rd12;
 	st.local.u64 	[%rd13], %rd11;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Thread.cu:66 		paramBytes += sizeof(void*);
+	.loc 1 66 3
 	add.s32 	%r10, %r10, 8;
 
 BB8_4:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Thread.cu:69 	Thread_SetEntryPoint(pThread, pStartMethod->pMetaData, pStartMethod->tableIndex, (PTR)&params, paramBytes);
+	.loc 1 69 2
 	ld.u64 	%rd14, [%rd3+8];
 	ld.u32 	%r9, [%rd3+104];
 	// Callseq Start 3
@@ -298,6 +376,9 @@ BB8_4:
 	//{
 	}// Callseq End 3
 	st.param.b64	[func_retval0+0], %rd10;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Thread.cu:71 	return NULL;
+	.loc 1 71 2
 	ret;
 }
 
@@ -314,6 +395,9 @@ BB8_4:
 
 	ld.param.u64 	%rd1, [_Z29System_Threading_Thread_SleepPhS_S__param_1];
 	mov.u64 	%rd2, 32;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Thread.cu:75 	tAsyncCall *pAsync = TMALLOC(tAsyncCall);
+	.loc 1 75 36
 	// Callseq Start 4
 	{
 	.reg .b32 temp_param_reg;
@@ -330,9 +414,15 @@ BB8_4:
 	
 	//{
 	}// Callseq End 4
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Thread.cu:77 	pAsync->sleepTime = ((I32*)pParams)[0];
+	.loc 1 77 2
 	ld.u32 	%r1, [%rd1];
 	st.u32 	[%rd3], %r1;
 	st.param.b64	[func_retval0+0], %rd3;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Thread.cu:79 	return pAsync;
+	.loc 1 79 2
 	ret;
 }
 
@@ -347,6 +437,9 @@ BB8_4:
 
 
 	ld.param.u64 	%rd1, [_Z41System_Threading_Thread_get_CurrentThreadPhS_S__param_2];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Thread.cu:83 	tThread *pThread = Thread_GetCurrent();
+	.loc 1 83 21
 	// Callseq Start 5
 	{
 	.reg .b32 temp_param_reg;
@@ -360,10 +453,18 @@ BB8_4:
 	
 	//{
 	}// Callseq End 5
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Thread.cu:84 	*(HEAP_PTR*)pReturnValue = (HEAP_PTR)pThread;
+	.loc 1 84 2
 	st.u64 	[%rd1], %rd2;
 	mov.u64 	%rd3, 0;
 	st.param.b64	[func_retval0+0], %rd3;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Thread.cu:86 	return NULL;
+	.loc 1 86 2
 	ret;
 }
 
+	.file	1 "C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Thread.cu", 1509046920, 3198
+	.file	2 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v9.0\\include\\cuda_device_runtime_api.h", 1504359958, 14836
 

@@ -32,6 +32,7 @@
 #include "Gstring.h"
 #include "Gprintf.h"
 #include <crt/host_defines.h>
+#include <stdio.h>
 
 typedef struct tArrayTypeDefs_ tArrayTypeDefs;
 struct tArrayTypeDefs_ {
@@ -435,6 +436,9 @@ void Type_Init() {
 			// Normal type initialisation
 			Gprintf("hi there3\n");
 			types[i] = MetaData_GetTypeDefFromFullName((STRING)typeInit[i].assemblyName, (STRING)typeInit[i].nameSpace, (STRING)typeInit[i].name);
+			
+			printf("Here asdf %s\n", (STRING)typeInit[i].name);
+			
 			// For the pre-defined system types, fill in the well-known memory sizes
 			types[i]->stackType = typeInit[i].stackType;
 			types[i]->stackSize = typeInit[i].stackSize;
@@ -442,7 +446,7 @@ void Type_Init() {
 			types[i]->instanceMemSize = typeInit[i].instanceMemSize;
 		}
 	}
-return;
+
 	for (i=0; i<numInitTypes; i++) {
 		if (typeInit[i].assemblyName != NULL) {
 			MetaData_Fill_TypeDef(types[i], NULL, NULL);

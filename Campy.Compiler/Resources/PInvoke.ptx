@@ -72,6 +72,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:77   return cudaErrorUnknown;
+	.loc 2 77 3
 	ret;
 }
 
@@ -86,6 +89,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:82   return cudaErrorUnknown;
+	.loc 2 82 3
 	ret;
 }
 
@@ -101,6 +107,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:87   return cudaErrorUnknown;
+	.loc 2 87 3
 	ret;
 }
 
@@ -114,6 +123,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:92   return cudaErrorUnknown;
+	.loc 2 92 3
 	ret;
 }
 
@@ -130,6 +142,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:97   return cudaErrorUnknown;
+	.loc 2 97 3
 	ret;
 }
 
@@ -147,6 +162,9 @@
 
 	mov.u32 	%r1, 30;
 	st.param.b32	[func_retval0+0], %r1;
+
+//c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:102   return cudaErrorUnknown;
+	.loc 2 102 3
 	ret;
 }
 
@@ -162,7 +180,13 @@
 
 	ld.param.u64 	%rd1, [_Z19PInvoke_GetFunctionP10tMetaData_P12tMD_ImplMap__param_0];
 	ld.param.u64 	%rd2, [_Z19PInvoke_GetFunctionP10tMetaData_P12tMD_ImplMap__param_1];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:97 	libName = MetaData_GetModuleRefName(pMetaData, pImplMap->importScope);
+	.loc 1 97 2
 	ld.u32 	%r1, [%rd2+16];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:97 	libName = MetaData_GetModuleRefName(pMetaData, pImplMap->importScope);
+	.loc 1 97 12
 	// Callseq Start 0
 	{
 	.reg .b32 temp_param_reg;
@@ -184,6 +208,9 @@
 	}// Callseq End 0
 	mov.u64 	%rd4, 0;
 	st.param.b64	[func_retval0+0], %rd4;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:109 	return pProc;
+	.loc 1 109 2
 	ret;
 }
 
@@ -217,33 +244,75 @@
 	add.u64 	%rd172, %SP, 80;
 	cvta.to.local.u64 	%rd3, %rd172;
 	add.u64 	%rd173, %SP, 208;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:167 	tMD_MethodDef *pMethod = pCall->pMethod;
+	.loc 1 167 25
 	cvta.to.local.u64 	%rd4, %rd173;
 	ld.u64 	%rd174, [%rd169+16];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:168 	tMD_TypeDef *pReturnType = pMethod->pReturnType;
+	.loc 1 168 27
 	add.s64 	%rd5, %rd174, 88;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:169 	tMD_ImplMap *pImplMap = pCall->pImplMap;
+	.loc 1 169 24
 	ld.u64 	%rd6, [%rd169+24];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:170 	void *pFn = pCall->fn;
+	.loc 1 170 12
 	ld.u64 	%rd7, [%rd169+8];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:168 	tMD_TypeDef *pReturnType = pMethod->pReturnType;
+	.loc 1 168 27
 	ld.u64 	%rd8, [%rd174+88];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:179 	if (pReturnType != NULL) {
+	.loc 1 179 2
 	setp.eq.s64	%p1, %rd8, 0;
 	mov.u32 	%r923, 3;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:179 	if (pReturnType != NULL) {
+	.loc 1 179 2
 	@%p1 bra 	BB7_3;
 
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:180 		if (pReturnType == types[TYPE_SYSTEM_SINGLE]) {
+	.loc 1 180 3
 	ld.global.u64 	%rd175, [types];
 	add.s64 	%rd9, %rd175, 176;
 	ld.u64 	%rd176, [%rd175+176];
 	setp.eq.s64	%p2, %rd8, %rd176;
 	mov.u32 	%r923, 1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:180 		if (pReturnType == types[TYPE_SYSTEM_SINGLE]) {
+	.loc 1 180 3
 	@%p2 bra 	BB7_3;
 
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:182 		} else if (pReturnType == types[TYPE_SYSTEM_DOUBLE]) {
+	.loc 1 182 10
 	ld.u64 	%rd177, [%rd9+8];
 	setp.eq.s64	%p3, %rd8, %rd177;
 	selp.b32	%r923, 2, 3, %p3;
 
 BB7_3:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:187 	numParams = pMethod->numberOfParameters;
+	.loc 1 187 2
 	ld.u16 	%rs1, [%rd5+-22];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:188 	for (param = 0, paramTypeNum = 0; param<numParams; param++, paramTypeNum++) {
+	.loc 1 188 2
 	setp.eq.s16	%p4, %rs1, 0;
 	mov.u32 	%r921, 0;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:188 	for (param = 0, paramTypeNum = 0; param<numParams; param++, paramTypeNum++) {
+	.loc 1 188 2
 	@%p4 bra 	BB7_29;
 
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:187 	numParams = pMethod->numberOfParameters;
+	.loc 1 187 2
 	cvt.u32.u16	%r3, %rs1;
 	mov.u32 	%r911, 0;
 	mov.u32 	%r921, %r911;
@@ -253,20 +322,35 @@ BB7_3:
 	bra.uni 	BB7_5;
 
 BB7_9:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:222 		} else if (pParamType == types[TYPE_SYSTEM_DOUBLE]) {
+	.loc 1 222 10
 	ld.u64 	%rd190, [%rd16+112];
 	setp.eq.s64	%p9, %rd13, %rd190;
 	@%p9 bra 	BB7_11;
 	bra.uni 	BB7_10;
 
 BB7_11:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:223 			_argsd[_argdOfs] = *(double*)(pParams + paramOfs);
+	.loc 1 223 4
 	ld.f64 	%fd123, [%rd14];
 	st.local.f64 	[%rd17], %fd123;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:224 			_argdOfs++;
+	.loc 1 224 4
 	add.s32 	%r919, %r919, 1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:225 			paramOfs += 8;
+	.loc 1 225 4
 	add.s32 	%r918, %r918, 8;
 	mov.u32 	%r922, 2;
 	bra.uni 	BB7_28;
 
 BB7_10:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:228 			Crash("PInvoke_Call() Cannot handle parameter of type: %s", pParamType->name);
+	.loc 1 228 4
 	ld.u64 	%rd191, [%rd13+24];
 	mov.u64 	%rd192, $str1;
 	cvta.global.u64 	%rd193, %rd192;
@@ -290,25 +374,46 @@ BB7_10:
 	bra.uni 	BB7_27;
 
 BB7_5:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:189 		tParameter *pParam = &(pMethod->pParams[param]);
+	.loc 1 189 22
 	ld.u64 	%rd180, [%rd5+-16];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:190 		tMD_TypeDef *pParamType = pParam->pTypeDef;
+	.loc 1 190 27
 	mul.wide.u32 	%rd181, %r911, 16;
 	add.s64 	%rd182, %rd180, %rd181;
 	ld.u64 	%rd13, [%rd182];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:193 		if (pParamType->stackType == EVALSTACK_INT32) {
+	.loc 1 193 3
 	ld.u8 	%rs4, [%rd13+55];
 	setp.eq.s16	%p5, %rs4, 1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:194 			_args[_argOfs] = *(U32*)(pParams + paramOfs);
+	.loc 1 194 4
 	cvt.u64.u32	%rd183, %r918;
 	add.s64 	%rd14, %rd167, %rd183;
 	mul.wide.u32 	%rd184, %r920, 4;
 	add.s64 	%rd15, %rd2, %rd184;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:193 		if (pParamType->stackType == EVALSTACK_INT32) {
+	.loc 1 193 3
 	@%p5 bra 	BB7_25;
 	bra.uni 	BB7_6;
 
 BB7_25:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:194 			_args[_argOfs] = *(U32*)(pParams + paramOfs);
+	.loc 1 194 4
 	ld.u32 	%r68, [%rd14];
 	st.local.u32 	[%rd15], %r68;
 	bra.uni 	BB7_26;
 
 BB7_6:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:197 		} else if (pParamType == types[TYPE_SYSTEM_STRING]) {
+	.loc 1 197 10
 	ld.global.u64 	%rd185, [types];
 	add.s64 	%rd16, %rd185, 72;
 	ld.u64 	%rd186, [%rd185+72];
@@ -317,6 +422,9 @@ BB7_6:
 	bra.uni 	BB7_7;
 
 BB7_14:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:200 			if (IMPLMAP_ISCHARSET_ANSI(pImplMap) || IMPLMAP_ISCHARSET_AUTO(pImplMap) || IMPLMAP_ISCHARSET_NOTSPEC(pImplMap)) {
+	.loc 1 200 4
 	ld.u16 	%rs6, [%rd6];
 	and.b16  	%rs5, %rs6, 6;
 	setp.gt.u16	%p10, %rs5, 6;
@@ -331,7 +439,13 @@ BB7_14:
 	bra.uni 	BB7_19;
 
 BB7_16:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:201 				pString = ConvertStringToANSI(*(HEAP_PTR*)(pParams + paramOfs));
+	.loc 1 201 5
 	ld.u64 	%rd195, [%rd14];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:114 	STRING2 str = SystemString_GetString(pHeapEntry, &strLen);
+	.loc 1 114 16
 	// Callseq Start 2
 	{
 	.reg .b32 temp_param_reg;
@@ -351,9 +465,15 @@ BB7_16:
 	
 	//{
 	}// Callseq End 2
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:115 	unsigned char *pAnsi = (unsigned char*)malloc(strLen+1);
+	.loc 1 115 23
 	ld.local.u32 	%r56, [%rd1];
 	add.s32 	%r57, %r56, 1;
 	cvt.u64.u32	%rd197, %r57;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:115 	unsigned char *pAnsi = (unsigned char*)malloc(strLen+1);
+	.loc 1 115 41
 	// Callseq Start 3
 	{
 	.reg .b32 temp_param_reg;
@@ -370,48 +490,90 @@ BB7_16:
 	
 	//{
 	}// Callseq End 3
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:116 	for (i=0; i<strLen; i++) {
+	.loc 1 116 2
 	ld.local.u32 	%r58, [%rd1];
 	setp.eq.s32	%p12, %r58, 0;
 	mov.u32 	%r917, 0;
 	mov.u64 	%rd491, 0;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:116 	for (i=0; i<strLen; i++) {
+	.loc 1 116 2
 	mov.u64 	%rd490, %rd494;
 	@%p12 bra 	BB7_18;
 
 BB7_17:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:117 		pAnsi[i] = (unsigned char)str[i];
+	.loc 1 117 3
 	shl.b64 	%rd198, %rd491, 1;
 	add.s64 	%rd199, %rd18, %rd198;
 	ld.u16 	%rs10, [%rd199];
 	st.u8 	[%rd490], %rs10;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:116 	for (i=0; i<strLen; i++) {
+	.loc 1 116 2
 	ld.local.u32 	%r59, [%rd1];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:116 	for (i=0; i<strLen; i++) {
+	.loc 1 116 22
 	add.s32 	%r917, %r917, 1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:116 	for (i=0; i<strLen; i++) {
+	.loc 1 116 2
 	setp.lt.u32	%p13, %r917, %r59;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:117 		pAnsi[i] = (unsigned char)str[i];
+	.loc 1 117 3
 	cvt.u64.u32	%rd491, %r917;
 	add.s64 	%rd490, %rd494, %rd491;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:116 	for (i=0; i<strLen; i++) {
+	.loc 1 116 2
 	@%p13 bra 	BB7_17;
 
 BB7_18:
 	mov.u16 	%rs11, 0;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:119 	pAnsi[i] = 0;
+	.loc 1 119 2
 	st.u8 	[%rd490], %rs11;
 	bra.uni 	BB7_24;
 
 BB7_7:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:212 		} else if (pParamType == types[TYPE_SYSTEM_INTPTR]) {
+	.loc 1 212 10
 	ld.u64 	%rd187, [%rd16+8];
 	setp.eq.s64	%p7, %rd13, %rd187;
 	@%p7 bra 	BB7_13;
 	bra.uni 	BB7_8;
 
 BB7_13:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:214 			_args[_argOfs] = *(U32*)(pParams + paramOfs);
+	.loc 1 214 4
 	ld.u32 	%r53, [%rd14];
 	st.local.u32 	[%rd15], %r53;
 	bra.uni 	BB7_26;
 
 BB7_19:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:202 			} else if (IMPLMAP_ISCHARSET_UNICODE(pImplMap)) {
+	.loc 1 202 11
 	setp.eq.s16	%p14, %rs5, 4;
 	@%p14 bra 	BB7_21;
 	bra.uni 	BB7_20;
 
 BB7_21:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:203 				pString = ConvertStringToUnicode(*(HEAP_PTR*)(pParams + paramOfs));
+	.loc 1 203 5
 	ld.u64 	%rd203, [%rd14];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:126 	STRING2 str = SystemString_GetString(pHeapEntry, &strLen);
+	.loc 1 126 16
 	// Callseq Start 5
 	{
 	.reg .b32 temp_param_reg;
@@ -431,10 +593,16 @@ BB7_21:
 	
 	//{
 	}// Callseq End 5
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:127 	unsigned short *pUnicode = (unsigned short*)malloc((strLen+1) << 1);
+	.loc 1 127 27
 	ld.local.u32 	%r60, [%rd1];
 	add.s32 	%r61, %r60, 1;
 	shl.b32 	%r62, %r61, 1;
 	cvt.u64.u32	%rd204, %r62;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:127 	unsigned short *pUnicode = (unsigned short*)malloc((strLen+1) << 1);
+	.loc 1 127 46
 	// Callseq Start 6
 	{
 	.reg .b32 temp_param_reg;
@@ -451,6 +619,9 @@ BB7_21:
 	
 	//{
 	}// Callseq End 6
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:128 	memcpy(pUnicode, str, strLen << 1);
+	.loc 1 128 2
 	ld.local.u32 	%r63, [%rd1];
 	shl.b32 	%r64, %r63, 1;
 	cvt.u64.u32	%rd29, %r64;
@@ -468,31 +639,58 @@ BB7_22:
 	@%p16 bra 	BB7_22;
 
 BB7_23:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:129 	pUnicode[strLen] = 0;
+	.loc 1 129 2
 	ld.local.u32 	%r65, [%rd1];
 	mul.wide.u32 	%rd207, %r65, 2;
 	add.s64 	%rd208, %rd494, %rd207;
 	mov.u16 	%rs13, 0;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:129 	pUnicode[strLen] = 0;
+	.loc 1 129 2
 	st.u16 	[%rd208], %rs13;
 	bra.uni 	BB7_24;
 
 BB7_8:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:217 		} else if (pParamType == types[TYPE_SYSTEM_SINGLE]) {
+	.loc 1 217 10
 	ld.u64 	%rd188, [%rd16+104];
 	setp.eq.s64	%p8, %rd13, %rd188;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:218 			_argsd[_argdOfs] = *(float*)(pParams + paramOfs);
+	.loc 1 218 4
 	mul.wide.u32 	%rd189, %r919, 8;
 	add.s64 	%rd17, %rd3, %rd189;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:217 		} else if (pParamType == types[TYPE_SYSTEM_SINGLE]) {
+	.loc 1 217 10
 	@%p8 bra 	BB7_12;
 	bra.uni 	BB7_9;
 
 BB7_12:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:218 			_argsd[_argdOfs] = *(float*)(pParams + paramOfs);
+	.loc 1 218 4
 	ld.f32 	%f123, [%rd14];
 	cvt.f64.f32	%fd124, %f123;
 	st.local.f64 	[%rd17], %fd124;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:219 			_argdOfs++;
+	.loc 1 219 4
 	add.s32 	%r919, %r919, 1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:220 			paramOfs += 4;
+	.loc 1 220 4
 	add.s32 	%r918, %r918, 4;
 	mov.u32 	%r922, 1;
 	bra.uni 	BB7_28;
 
 BB7_20:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:205 				Crash("PInvoke_Call() Cannot handle string marshalling of given type");
+	.loc 1 205 5
 	mov.u64 	%rd200, $str;
 	cvta.global.u64 	%rd201, %rd200;
 	// Callseq Start 4
@@ -511,28 +709,52 @@ BB7_20:
 	}// Callseq End 4
 
 BB7_24:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:207 			_pTempMem[_tempMemOfs] = pString;
+	.loc 1 207 4
 	mul.wide.u32 	%rd209, %r921, 8;
 	add.s64 	%rd210, %rd4, %rd209;
 	st.local.u64 	[%rd210], %rd494;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:208 			_tempMemOfs++;
+	.loc 1 208 4
 	add.s32 	%r921, %r921, 1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:209 			_args[_argOfs] = (U32)pString;
+	.loc 1 209 4
 	st.local.u32 	[%rd15], %rd494;
 
 BB7_26:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:195 			_argOfs++;
+	.loc 1 195 4
 	add.s32 	%r920, %r920, 1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:196 			paramOfs += 4;
+	.loc 1 196 4
 	add.s32 	%r918, %r918, 4;
 
 BB7_27:
 	mov.u32 	%r922, 3;
 
 BB7_28:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:230 		SET_ARG_TYPE(paramTypeNum, paramType);
+	.loc 1 230 3
 	add.s32 	%r911, %r911, 1;
 	shl.b32 	%r69, %r911, 1;
 	shl.b32 	%r70, %r922, %r69;
 	or.b32  	%r923, %r70, %r923;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:188 	for (param = 0, paramTypeNum = 0; param<numParams; param++, paramTypeNum++) {
+	.loc 1 188 2
 	setp.lt.u32	%p17, %r911, %r3;
 	@%p17 bra 	BB7_5;
 
 BB7_29:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:233 	switch (funcParams) {
+	.loc 1 233 2
 	setp.gt.s32	%p18, %r923, 485;
 	@%p18 bra 	BB7_341;
 
@@ -3388,8 +3610,14 @@ BB7_644:
 	bra.uni 	BB7_647;
 
 BB7_655:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:242 		u64Ret = ((_uCuuuuuu)(pFn))(_args[0], _args[1], _args[2], _args[3], _args[4], _args[5]);
+	.loc 1 242 3
 	ld.local.v4.u32 	{%r139, %r140, %r141, %r142}, [%rd2];
 	ld.local.v2.u32 	{%r147, %r148}, [%rd2+16];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:242 		u64Ret = ((_uCuuuuuu)(pFn))(_args[0], _args[1], _args[2], _args[3], _args[4], _args[5]);
+	.loc 1 242 12
 	// Callseq Start 11
 	{
 	.reg .b32 temp_param_reg;
@@ -3423,6 +3651,9 @@ BB7_655:
 	
 	//{
 	}// Callseq End 11
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:243 		break;
+	.loc 1 243 3
 	bra.uni 	BB7_897;
 
 BB7_39:
@@ -5946,9 +6177,15 @@ BB7_649:
 	bra.uni 	BB7_651;
 
 BB7_653:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:254 		u64Ret = ((_uCuuuuuuuuu)(pFn))(_args[0], _args[1], _args[2], _args[3], _args[4], _args[5], _args[6], _args[7], _args[8]);
+	.loc 1 254 3
 	ld.local.v4.u32 	{%r91, %r92, %r93, %r94}, [%rd2];
 	ld.local.v4.u32 	{%r99, %r100, %r101, %r102}, [%rd2+16];
 	ld.local.u32 	%r107, [%rd2+32];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:254 		u64Ret = ((_uCuuuuuuuuu)(pFn))(_args[0], _args[1], _args[2], _args[3], _args[4], _args[5], _args[6], _args[7], _args[8]);
+	.loc 1 254 12
 	// Callseq Start 8
 	{
 	.reg .b32 temp_param_reg;
@@ -5991,6 +6228,9 @@ BB7_653:
 	
 	//{
 	}// Callseq End 8
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:255 		break;
+	.loc 1 255 3
 	bra.uni 	BB7_897;
 
 BB7_37:
@@ -9856,8 +10096,14 @@ BB7_336:
 	bra.uni 	BB7_660;
 
 BB7_656:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:238 		u64Ret = ((_uCuuuuu)(pFn))(_args[0], _args[1], _args[2], _args[3], _args[4]);
+	.loc 1 238 3
 	ld.local.v4.u32 	{%r151, %r152, %r153, %r154}, [%rd2];
 	ld.local.u32 	%r159, [%rd2+16];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:238 		u64Ret = ((_uCuuuuu)(pFn))(_args[0], _args[1], _args[2], _args[3], _args[4]);
+	.loc 1 238 12
 	// Callseq Start 12
 	{
 	.reg .b32 temp_param_reg;
@@ -9896,8 +10142,14 @@ BB7_647:
 	bra.uni 	BB7_896;
 
 BB7_648:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:246 		u64Ret = ((_uCuuuuuuu)(pFn))(_args[0], _args[1], _args[2], _args[3], _args[4], _args[5], _args[6]);
+	.loc 1 246 3
 	ld.local.v4.u32 	{%r124, %r125, %r126, %r127}, [%rd2];
 	ld.local.v4.u32 	{%r132, %r133, %r134, %r135}, [%rd2+16];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:246 		u64Ret = ((_uCuuuuuuu)(pFn))(_args[0], _args[1], _args[2], _args[3], _args[4], _args[5], _args[6]);
+	.loc 1 246 12
 	// Callseq Start 10
 	{
 	.reg .b32 temp_param_reg;
@@ -9934,6 +10186,9 @@ BB7_648:
 	
 	//{
 	}// Callseq End 10
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:247 		break;
+	.loc 1 247 3
 	bra.uni 	BB7_897;
 
 BB7_894:
@@ -14274,8 +14529,14 @@ BB7_660:
 	bra.uni 	BB7_898;
 
 BB7_654:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:250 		u64Ret = ((_uCuuuuuuuu)(pFn))(_args[0], _args[1], _args[2], _args[3], _args[4], _args[5], _args[6], _args[7]);
+	.loc 1 250 3
 	ld.local.v4.u32 	{%r108, %r109, %r110, %r111}, [%rd2];
 	ld.local.v4.u32 	{%r116, %r117, %r118, %r119}, [%rd2+16];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:250 		u64Ret = ((_uCuuuuuuuu)(pFn))(_args[0], _args[1], _args[2], _args[3], _args[4], _args[5], _args[6], _args[7]);
+	.loc 1 250 12
 	// Callseq Start 9
 	{
 	.reg .b32 temp_param_reg;
@@ -14315,15 +14576,24 @@ BB7_654:
 	
 	//{
 	}// Callseq End 9
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:251 		break;
+	.loc 1 251 3
 	bra.uni 	BB7_897;
 
 BB7_651:
 	setp.ne.s32	%p27, %r923, 4194303;
 	@%p27 bra 	BB7_896;
 
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:258 		u64Ret = ((_uCuuuuuuuuuu)(pFn))(_args[0], _args[1], _args[2], _args[3], _args[4], _args[5], _args[6], _args[7], _args[8], _args[9]);
+	.loc 1 258 3
 	ld.local.v4.u32 	{%r71, %r72, %r73, %r74}, [%rd2];
 	ld.local.v4.u32 	{%r79, %r80, %r81, %r82}, [%rd2+16];
 	ld.local.v2.u32 	{%r87, %r88}, [%rd2+32];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:258 		u64Ret = ((_uCuuuuuuuuuu)(pFn))(_args[0], _args[1], _args[2], _args[3], _args[4], _args[5], _args[6], _args[7], _args[8], _args[9]);
+	.loc 1 258 12
 	// Callseq Start 7
 	{
 	.reg .b32 temp_param_reg;
@@ -14369,9 +14639,15 @@ BB7_651:
 	
 	//{
 	}// Callseq End 7
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:259 		break;
+	.loc 1 259 3
 	bra.uni 	BB7_897;
 
 BB7_896:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:262 		Crash("PInvoke_Call() Cannot handle the function parameters: 0x%08x", funcParams);
+	.loc 1 262 3
 	mov.u64 	%rd454, $str2;
 	cvta.global.u64 	%rd455, %rd454;
 	// Callseq Start 376
@@ -14397,6 +14673,9 @@ BB7_897:
 BB7_898:
 
 BB7_899:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:265 	for (i=0; i<_tempMemOfs; i++) {
+	.loc 1 265 2
 	setp.eq.s32	%p514, %r921, 0;
 	@%p514 bra 	BB7_908;
 
@@ -14413,6 +14692,9 @@ BB7_899:
 	mov.u32 	%r925, 0;
 	@%p517 bra 	BB7_904;
 
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:266 		free(_pTempMem[i]);
+	.loc 1 266 3
 	ld.local.u64 	%rd456, [%rd4];
 	// Callseq Start 377
 	{
@@ -14431,6 +14713,9 @@ BB7_899:
 	mov.u32 	%r925, 1;
 
 BB7_904:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:266 		free(_pTempMem[i]);
+	.loc 1 266 3
 	mul.wide.u32 	%rd457, %r925, 8;
 	add.s64 	%rd458, %rd4, %rd457;
 	ld.local.u64 	%rd459, [%rd458];
@@ -14448,9 +14733,15 @@ BB7_904:
 	
 	//{
 	}// Callseq End 378
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:265 	for (i=0; i<_tempMemOfs; i++) {
+	.loc 1 265 27
 	add.s32 	%r926, %r925, 1;
 
 BB7_905:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:266 		free(_pTempMem[i]);
+	.loc 1 266 3
 	mul.wide.u32 	%rd460, %r926, 8;
 	add.s64 	%rd461, %rd4, %rd460;
 	ld.local.u64 	%rd462, [%rd461];
@@ -14468,6 +14759,9 @@ BB7_905:
 	
 	//{
 	}// Callseq End 379
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:265 	for (i=0; i<_tempMemOfs; i++) {
+	.loc 1 265 27
 	add.s32 	%r928, %r926, 1;
 
 BB7_906:
@@ -14475,6 +14769,9 @@ BB7_906:
 	@%p518 bra 	BB7_908;
 
 BB7_907:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:266 		free(_pTempMem[i]);
+	.loc 1 266 3
 	mul.wide.u32 	%rd463, %r928, 8;
 	add.s64 	%rd464, %rd4, %rd463;
 	ld.local.u64 	%rd465, [%rd464];
@@ -14492,7 +14789,13 @@ BB7_907:
 	
 	//{
 	}// Callseq End 380
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:265 	for (i=0; i<_tempMemOfs; i++) {
+	.loc 1 265 27
 	add.s32 	%r896, %r928, 1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:266 		free(_pTempMem[i]);
+	.loc 1 266 3
 	mul.wide.u32 	%rd466, %r896, 8;
 	add.s64 	%rd467, %rd4, %rd466;
 	ld.local.u64 	%rd468, [%rd467];
@@ -14510,7 +14813,13 @@ BB7_907:
 	
 	//{
 	}// Callseq End 381
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:265 	for (i=0; i<_tempMemOfs; i++) {
+	.loc 1 265 27
 	add.s32 	%r897, %r928, 2;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:266 		free(_pTempMem[i]);
+	.loc 1 266 3
 	mul.wide.u32 	%rd469, %r897, 8;
 	add.s64 	%rd470, %rd4, %rd469;
 	ld.local.u64 	%rd471, [%rd470];
@@ -14528,7 +14837,13 @@ BB7_907:
 	
 	//{
 	}// Callseq End 382
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:265 	for (i=0; i<_tempMemOfs; i++) {
+	.loc 1 265 27
 	add.s32 	%r898, %r928, 3;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:266 		free(_pTempMem[i]);
+	.loc 1 266 3
 	mul.wide.u32 	%rd472, %r898, 8;
 	add.s64 	%rd473, %rd4, %rd472;
 	ld.local.u64 	%rd474, [%rd473];
@@ -14546,14 +14861,26 @@ BB7_907:
 	
 	//{
 	}// Callseq End 383
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:265 	for (i=0; i<_tempMemOfs; i++) {
+	.loc 1 265 27
 	add.s32 	%r928, %r928, 4;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:265 	for (i=0; i<_tempMemOfs; i++) {
+	.loc 1 265 2
 	setp.lt.u32	%p519, %r928, %r921;
 	@%p519 bra 	BB7_907;
 
 BB7_908:
 	mov.u32 	%r929, 0;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:269 	if (pReturnType == NULL) {
+	.loc 1 269 2
 	@%p1 bra 	BB7_925;
 
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:272 	if (pReturnType->stackType == EVALSTACK_INT32) {
+	.loc 1 272 2
 	add.s64 	%rd164, %rd8, 55;
 	ld.u8 	%rs14, [%rd8+55];
 	setp.eq.s16	%p521, %rs14, 1;
@@ -14561,29 +14888,47 @@ BB7_908:
 	bra.uni 	BB7_910;
 
 BB7_924:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:273 		*(U32*)pReturnValue = (U32)u64Ret;
+	.loc 1 273 3
 	st.u32 	[%rd168], %rd495;
 	mov.u32 	%r929, 4;
 	bra.uni 	BB7_925;
 
 BB7_910:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:276 	if (pReturnType == types[TYPE_SYSTEM_STRING]) {
+	.loc 1 276 2
 	ld.global.u64 	%rd475, [types];
 	add.s64 	%rd166, %rd475, 72;
 	ld.u64 	%rd476, [%rd475+72];
 	setp.eq.s64	%p522, %rd8, %rd476;
 	@%p522 bra 	BB7_918;
 
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:286 	if (pReturnType == types[TYPE_SYSTEM_INTPTR]) {
+	.loc 1 286 2
 	ld.u64 	%rd477, [%rd166+8];
 	setp.eq.s64	%p523, %rd8, %rd477;
 	@%p523 bra 	BB7_917;
 
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:290 	if (pReturnType == types[TYPE_SYSTEM_SINGLE]) {
+	.loc 1 290 2
 	ld.u64 	%rd478, [%rd166+104];
 	setp.eq.s64	%p524, %rd8, %rd478;
 	@%p524 bra 	BB7_916;
 
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:294 	if (pReturnType == types[TYPE_SYSTEM_DOUBLE]) {
+	.loc 1 294 2
 	ld.u64 	%rd479, [%rd166+112];
 	setp.eq.s64	%p525, %rd8, %rd479;
 	@%p525 bra 	BB7_915;
 
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:299 	Crash("PInvoke_Call() Cannot handle return type: %s", pReturnType->name);
+	.loc 1 299 2
 	ld.u64 	%rd480, [%rd164+-31];
 	mov.u64 	%rd481, $str4;
 	cvta.global.u64 	%rd482, %rd481;
@@ -14605,6 +14950,9 @@ BB7_910:
 	//{
 	}// Callseq End 384
 	mov.u32 	%r901, 101;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:300 	FAKE_RETURN;
+	.loc 1 300 2
 	// Callseq Start 385
 	{
 	.reg .b32 temp_param_reg;
@@ -14622,6 +14970,9 @@ BB7_910:
 	bra.uni 	BB7_925;
 
 BB7_918:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:277 		if (IMPLMAP_ISCHARSET_ANSI(pImplMap) || IMPLMAP_ISCHARSET_AUTO(pImplMap) || IMPLMAP_ISCHARSET_NOTSPEC(pImplMap)) {
+	.loc 1 277 3
 	ld.u16 	%rs16, [%rd6];
 	and.b16  	%rs15, %rs16, 6;
 	setp.gt.u16	%p526, %rs15, 6;
@@ -14636,6 +14987,9 @@ BB7_918:
 	bra.uni 	BB7_921;
 
 BB7_920:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:278 			*(HEAP_PTR*)pReturnValue = SystemString_FromCharPtrASCII((char*)u64Ret);
+	.loc 1 278 31
 	// Callseq Start 386
 	{
 	.reg .b32 temp_param_reg;
@@ -14657,18 +15011,30 @@ BB7_920:
 	bra.uni 	BB7_925;
 
 BB7_917:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:287 		*(void**)pReturnValue = (void*)(U32)u64Ret;
+	.loc 1 287 3
 	and.b64  	%rd483, %rd495, 4294967295;
 	st.u64 	[%rd168], %rd483;
 	mov.u32 	%r929, 8;
 	bra.uni 	BB7_925;
 
 BB7_921:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:279 		} else if (IMPLMAP_ISCHARSET_UNICODE(pImplMap)) {
+	.loc 1 279 10
 	setp.eq.s16	%p528, %rs15, 4;
 	@%p528 bra 	BB7_923;
 	bra.uni 	BB7_922;
 
 BB7_923:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:280 			*(HEAP_PTR*)pReturnValue = SystemString_FromCharPtrUTF16((U16*)(U32)u64Ret);
+	.loc 1 280 4
 	and.b64  	%rd487, %rd495, 4294967295;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:280 			*(HEAP_PTR*)pReturnValue = SystemString_FromCharPtrUTF16((U16*)(U32)u64Ret);
+	.loc 1 280 31
 	// Callseq Start 388
 	{
 	.reg .b32 temp_param_reg;
@@ -14690,12 +15056,18 @@ BB7_923:
 	bra.uni 	BB7_925;
 
 BB7_916:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:291 		*(double*)pReturnValue = (double)fRet;
+	.loc 1 291 3
 	cvt.f64.f32	%fd1898, %f799;
 	st.f64 	[%rd168], %fd1898;
 	mov.u32 	%r929, 8;
 	bra.uni 	BB7_925;
 
 BB7_922:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:282 			Crash("PInvoke_Call() Cannot handle return string in specified format");
+	.loc 1 282 4
 	mov.u64 	%rd485, $str3;
 	cvta.global.u64 	%rd486, %rd485;
 	// Callseq Start 387
@@ -14716,12 +15088,20 @@ BB7_922:
 	bra.uni 	BB7_925;
 
 BB7_915:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:295 		*(double*)pReturnValue = dRet;
+	.loc 1 295 3
 	st.f64 	[%rd168], %fd1899;
 	mov.u32 	%r929, 8;
 
 BB7_925:
 	st.param.b32	[func_retval0+0], %r929;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu:301 }
+	.loc 1 301 1
 	ret;
 }
 
+	.file	1 "C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/PInvoke.cu", 1509046919, 11240
+	.file	2 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v9.0\\include\\cuda_device_runtime_api.h", 1504359958, 14836
 
