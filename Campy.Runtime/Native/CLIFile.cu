@@ -78,7 +78,7 @@ __device__ tMetaData* CLIFile_GetMetaDataForAssembly(char *pAssemblyName) {
 	// Assembly not loaded, so load it if possible
 	{
 		tCLIFile *pCLIFile;
-		char fileName[2000];
+		char fileName[30];
 
 		printf("In CLIFile_GetMetaDataForAssembly0\n");
 		//Gsprintf(fileName, "%s.dll", pAssemblyName);

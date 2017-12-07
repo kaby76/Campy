@@ -300,7 +300,7 @@
 	.param .b64 _Z30CLIFile_GetMetaDataForAssemblyPc_param_0
 )
 {
-	.local .align 16 .b8 	__local_depot6[2016];
+	.local .align 8 .b8 	__local_depot6[40];
 	.reg .b64 	%SP;
 	.reg .b64 	%SPL;
 	.reg .pred 	%p<85>;
@@ -5738,7 +5738,7 @@ BB6_103:
 	.loc 1 90 4
 	mov.u64 	%rd414, $str8;
 	cvta.global.u64 	%rd415, %rd414;
-	add.u64 	%rd416, %SP, 16;
+	add.u64 	%rd416, %SP, 8;
 
 //C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:90 			Crash("Cannot load required assembly file: %s", fileName);
 	.loc 1 90 4
@@ -8415,6 +8415,6 @@ BB7_49:
 	ret;
 }
 
-	.file	1 "C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu", 1512577487, 11347
+	.file	1 "C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu", 1512660562, 11345
 	.file	2 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v9.0\\include\\cuda_device_runtime_api.h", 1504359958, 14836
 
