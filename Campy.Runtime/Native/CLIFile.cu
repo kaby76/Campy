@@ -84,8 +84,8 @@ __device__ tMetaData* CLIFile_GetMetaDataForAssembly(char *pAssemblyName) {
 		//Gsprintf(fileName, "%s.dll", pAssemblyName);
 		pCLIFile = CLIFile_Load("corlib");
 		printf("In CLIFile_GetMetaDataForAssembly1\n");
-		pCLIFile = CLIFile_Load(pAssemblyName);
-		printf("In CLIFile_GetMetaDataForAssembly2\n");
+		//pCLIFile = CLIFile_Load(pAssemblyName);
+		//printf("In CLIFile_GetMetaDataForAssembly2\n");
 		if (pCLIFile == NULL) {
 			Crash("Cannot load required assembly file: %s", fileName);
 			return NULL;

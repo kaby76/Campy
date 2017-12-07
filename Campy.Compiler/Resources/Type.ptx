@@ -174,7 +174,7 @@
 .global .align 16 .b8 __nv_static_25__12_Type_cpp1_ii_b0106068_SystemIO[10] = {83, 121, 115, 116, 101, 109, 46, 73, 79, 0};
 .global .align 16 .b8 __nv_static_25__12_Type_cpp1_ii_b0106068_SystemGlobalization[21] = {83, 121, 115, 116, 101, 109, 46, 71, 108, 111, 98, 97, 108, 105, 122, 97, 116, 105, 111, 110, 0};
 .global .align 8 .b8 $str13[7] = {79, 98, 106, 101, 99, 116, 0};
-.global .align 16 .u64 __nv_static_25__12_Type_cpp1_ii_b0106068_typeInit[8] = {generic(__nv_static_25__12_Type_cpp1_ii_b0106068_mscorlib), generic(__nv_static_25__12_Type_cpp1_ii_b0106068_System), generic($str13), 263173, 0, 0, 27, 0};
+.global .align 16 .u64 __nv_static_25__12_Type_cpp1_ii_b0106068_typeInit[4] = {generic(__nv_static_25__12_Type_cpp1_ii_b0106068_mscorlib), generic(__nv_static_25__12_Type_cpp1_ii_b0106068_System), generic($str13), 263173};
 .visible .global .align 4 .u32 CorLibDone;
 .global .align 16 .b8 $str14[21] = {65, 114, 114, 97, 121, 58, 32, 65, 114, 114, 97, 121, 91, 37, 115, 46, 37, 115, 93, 10, 0};
 .global .align 8 .b8 $str15[7] = {83, 121, 115, 116, 101, 109, 0};
@@ -3866,8 +3866,8 @@ BB8_71:
 	add.u64 	%rd45, %SP, 8;
 	cvta.to.local.u64 	%rd1, %rd45;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:429 	Gprintf("hi there\n");
-	.loc 1 429 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:428 	Gprintf("hi there\n");
+	.loc 1 428 2
 	mov.u64 	%rd46, $str18;
 	cvta.global.u64 	%rd47, %rd46;
 	// Callseq Start 85
@@ -3886,14 +3886,14 @@ BB8_71:
 	
 	//{
 	}// Callseq End 85
-	mov.u32 	%r20, 2;
+	mov.u32 	%r20, 1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:431 	numInitTypes = sizeof(typeInit) / sizeof(typeInit[0]);
-	.loc 1 431 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:430 	numInitTypes = sizeof(typeInit) / sizeof(typeInit[0]);
+	.loc 1 430 2
 	st.global.u32 	[__nv_static_25__12_Type_cpp1_ii_b0106068_numInitTypes], %r20;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:432 	Gprintf("hi there2\n");
-	.loc 1 432 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:431 	Gprintf("hi there2\n");
+	.loc 1 431 2
 	mov.u64 	%rd48, $str19;
 	cvta.global.u64 	%rd49, %rd48;
 	// Callseq Start 86
@@ -3913,13 +3913,13 @@ BB8_71:
 	//{
 	}// Callseq End 86
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:433 	types = (tMD_TypeDef**)mallocForever(numInitTypes * sizeof(tMD_TypeDef*));
-	.loc 1 433 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:432 	types = (tMD_TypeDef**)mallocForever(numInitTypes * sizeof(tMD_TypeDef*));
+	.loc 1 432 2
 	ld.global.u32 	%r22, [__nv_static_25__12_Type_cpp1_ii_b0106068_numInitTypes];
 	shl.b32 	%r23, %r22, 3;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:433 	types = (tMD_TypeDef**)mallocForever(numInitTypes * sizeof(tMD_TypeDef*));
-	.loc 1 433 25
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:432 	types = (tMD_TypeDef**)mallocForever(numInitTypes * sizeof(tMD_TypeDef*));
+	.loc 1 432 25
 	// Callseq Start 87
 	{
 	.reg .b32 temp_param_reg;
@@ -3938,8 +3938,8 @@ BB8_71:
 	}// Callseq End 87
 	st.global.u64 	[types], %rd50;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:434 	for (i=0; i<numInitTypes; i++) {
-	.loc 1 434 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:433 	for (i=0; i<numInitTypes; i++) {
+	.loc 1 433 2
 	ld.global.u32 	%r66, [__nv_static_25__12_Type_cpp1_ii_b0106068_numInitTypes];
 	setp.eq.s32	%p1, %r66, 0;
 	mov.u32 	%r65, 0;
@@ -3947,8 +3947,8 @@ BB8_71:
 
 BB9_2:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:435 		if (typeInit[i].assemblyName != NULL) {
-	.loc 1 435 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:434 		if (typeInit[i].assemblyName != NULL) {
+	.loc 1 434 3
 	cvt.u64.u32	%rd2, %r65;
 	mul.wide.u32 	%rd51, %r65, 32;
 	mov.u64 	%rd52, __nv_static_25__12_Type_cpp1_ii_b0106068_typeInit;
@@ -3958,8 +3958,8 @@ BB9_2:
 	@%p2 bra 	BB9_4;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:437 			Gprintf("hi there3\n");
-	.loc 1 437 4
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:436 			Gprintf("hi there3\n");
+	.loc 1 436 4
 	mov.u64 	%rd54, $str20;
 	cvta.global.u64 	%rd55, %rd54;
 	// Callseq Start 88
@@ -3979,13 +3979,13 @@ BB9_2:
 	//{
 	}// Callseq End 88
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:438 			types[i] = MetaData_GetTypeDefFromFullName((STRING)typeInit[i].assemblyName, (STRING)typeInit[i].nameSpace, (STRING)typeInit[i].name);
-	.loc 1 438 4
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:437 			types[i] = MetaData_GetTypeDefFromFullName((STRING)typeInit[i].assemblyName, (STRING)typeInit[i].nameSpace, (STRING)typeInit[i].name);
+	.loc 1 437 4
 	ld.global.v2.u64 	{%rd56, %rd57}, [%rd3];
 	ld.global.u64 	%rd60, [%rd3+16];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:438 			types[i] = MetaData_GetTypeDefFromFullName((STRING)typeInit[i].assemblyName, (STRING)typeInit[i].nameSpace, (STRING)typeInit[i].name);
-	.loc 1 438 15
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:437 			types[i] = MetaData_GetTypeDefFromFullName((STRING)typeInit[i].assemblyName, (STRING)typeInit[i].nameSpace, (STRING)typeInit[i].name);
+	.loc 1 437 15
 	// Callseq Start 89
 	{
 	.reg .b32 temp_param_reg;
@@ -4013,8 +4013,8 @@ BB9_2:
 	add.s64 	%rd64, %rd62, %rd63;
 	st.u64 	[%rd64], %rd61;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:440 			printf("Here asdf %s\n", (STRING)typeInit[i].name);
-	.loc 1 440 4
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:439 			printf("Here asdf %s\n", (STRING)typeInit[i].name);
+	.loc 1 439 4
 	ld.global.u64 	%rd65, [%rd3+16];
 	st.local.u64 	[%rd1], %rd65;
 	mov.u64 	%rd66, $str21;
@@ -4039,24 +4039,24 @@ BB9_2:
 	//{
 	}// Callseq End 90
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:443 			types[i]->stackType = typeInit[i].stackType;
-	.loc 1 443 4
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:442 			types[i]->stackType = typeInit[i].stackType;
+	.loc 1 442 4
 	ld.global.u8 	%rs1, [%rd3+24];
 	ld.global.u64 	%rd69, [types];
 	add.s64 	%rd70, %rd69, %rd63;
 	ld.u64 	%rd71, [%rd70];
 	st.u8 	[%rd71+55], %rs1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:444 			types[i]->stackSize = typeInit[i].stackSize;
-	.loc 1 444 4
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:443 			types[i]->stackSize = typeInit[i].stackSize;
+	.loc 1 443 4
 	ld.global.u8 	%r26, [%rd3+25];
 	ld.global.u64 	%rd72, [types];
 	add.s64 	%rd73, %rd72, %rd63;
 	ld.u64 	%rd74, [%rd73];
 	st.u32 	[%rd74+116], %r26;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:445 			types[i]->arrayElementSize = typeInit[i].arrayElementSize;
-	.loc 1 445 4
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:444 			types[i]->arrayElementSize = typeInit[i].arrayElementSize;
+	.loc 1 444 4
 	ld.global.v2.u8 	{%rs2, %rs3}, [%rd3+26];
 	cvt.u32.u16	%r27, %rs3;
 	cvt.u32.u16	%r28, %rs2;
@@ -4065,26 +4065,26 @@ BB9_2:
 	ld.u64 	%rd77, [%rd76];
 	st.u32 	[%rd77+112], %r28;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:446 			types[i]->instanceMemSize = typeInit[i].instanceMemSize;
-	.loc 1 446 4
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:445 			types[i]->instanceMemSize = typeInit[i].instanceMemSize;
+	.loc 1 445 4
 	ld.global.u64 	%rd78, [types];
 	add.s64 	%rd79, %rd78, %rd63;
 	ld.u64 	%rd80, [%rd79];
 	st.u32 	[%rd80+56], %r27;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:434 	for (i=0; i<numInitTypes; i++) {
-	.loc 1 434 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:433 	for (i=0; i<numInitTypes; i++) {
+	.loc 1 433 2
 	ld.global.u32 	%r66, [__nv_static_25__12_Type_cpp1_ii_b0106068_numInitTypes];
 
 BB9_4:
 	cvt.u32.u64	%r29, %rd2;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:434 	for (i=0; i<numInitTypes; i++) {
-	.loc 1 434 28
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:433 	for (i=0; i<numInitTypes; i++) {
+	.loc 1 433 28
 	add.s32 	%r65, %r29, 1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:434 	for (i=0; i<numInitTypes; i++) {
-	.loc 1 434 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:433 	for (i=0; i<numInitTypes; i++) {
+	.loc 1 433 2
 	setp.lt.u32	%p3, %r65, %r66;
 	@%p3 bra 	BB9_2;
 	bra.uni 	BB9_5;
@@ -4094,8 +4094,8 @@ BB9_1:
 
 BB9_5:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:450 	for (i=0; i<numInitTypes; i++) {
-	.loc 1 450 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:449 	for (i=0; i<numInitTypes; i++) {
+	.loc 1 449 2
 	setp.eq.s32	%p4, %r66, 0;
 	@%p4 bra 	BB9_45;
 
@@ -4103,8 +4103,8 @@ BB9_5:
 
 BB9_7:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:451 		if (typeInit[i].assemblyName != NULL) {
-	.loc 1 451 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:450 		if (typeInit[i].assemblyName != NULL) {
+	.loc 1 450 3
 	cvt.u64.u32	%rd4, %r68;
 	mul.wide.u32 	%rd81, %r68, 32;
 	mov.u64 	%rd82, __nv_static_25__12_Type_cpp1_ii_b0106068_typeInit;
@@ -4112,19 +4112,19 @@ BB9_7:
 	ld.global.u64 	%rd83, [%rd5];
 	setp.eq.s64	%p5, %rd83, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:455 			types[i] = Type_GetArrayTypeDef(types[(U32)(typeInit[i].name)], NULL, NULL);
-	.loc 1 455 4
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:454 			types[i] = Type_GetArrayTypeDef(types[(U32)(typeInit[i].name)], NULL, NULL);
+	.loc 1 454 4
 	ld.global.u64 	%rd220, [types];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:451 		if (typeInit[i].assemblyName != NULL) {
-	.loc 1 451 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:450 		if (typeInit[i].assemblyName != NULL) {
+	.loc 1 450 3
 	@%p5 bra 	BB9_10;
 	bra.uni 	BB9_8;
 
 BB9_10:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:455 			types[i] = Type_GetArrayTypeDef(types[(U32)(typeInit[i].name)], NULL, NULL);
-	.loc 1 455 4
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:454 			types[i] = Type_GetArrayTypeDef(types[(U32)(typeInit[i].name)], NULL, NULL);
+	.loc 1 454 4
 	ld.global.u32 	%rd87, [%rd5+16];
 	shl.b64 	%rd88, %rd87, 3;
 	add.s64 	%rd89, %rd220, %rd88;
@@ -4145,8 +4145,8 @@ BB9_42:
 
 BB9_8:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:452 			MetaData_Fill_TypeDef(types[i], NULL, NULL);
-	.loc 1 452 4
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:451 			MetaData_Fill_TypeDef(types[i], NULL, NULL);
+	.loc 1 451 4
 	shl.b64 	%rd84, %rd4, 3;
 	add.s64 	%rd85, %rd220, %rd84;
 	ld.u64 	%rd7, [%rd85];
@@ -4156,8 +4156,8 @@ BB9_8:
 
 	mov.u64 	%rd86, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:452 			MetaData_Fill_TypeDef(types[i], NULL, NULL);
-	.loc 1 452 35
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:451 			MetaData_Fill_TypeDef(types[i], NULL, NULL);
+	.loc 1 451 35
 	// Callseq Start 91
 	{
 	.reg .b32 temp_param_reg;
@@ -4298,8 +4298,8 @@ BB9_14:
 	ld.u64 	%rd15, [%rd14];
 	add.u64 	%rd95, %SP, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:440 			printf("Here asdf %s\n", (STRING)typeInit[i].name);
-	.loc 1 440 4
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:439 			printf("Here asdf %s\n", (STRING)typeInit[i].name);
+	.loc 1 439 4
 	cvta.to.local.u64 	%rd96, %rd95;
 
 //C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:193 	CreateNewArrayType(pIterArrays->pArrayType, pElementType, ppClassTypeArgs, ppMethodTypeArgs);
@@ -4984,7 +4984,6 @@ BB9_41:
 	.loc 1 131 3
 	ld.global.u64 	%rd152, [types];
 	ld.u64 	%rd153, [%rd152+136];
-	mov.u32 	%r51, 1;
 
 //C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:131 		pInterfaceT = Generics_GetGenericTypeFromCoreType(types[TYPE_SYSTEM_COLLECTIONS_GENERIC_IENUMERABLE_T], 1, &pElementType);
 	.loc 1 131 17
@@ -4995,7 +4994,7 @@ BB9_41:
 	.param .b64 param0;
 	st.param.b64	[param0+0], %rd153;
 	.param .b32 param1;
-	st.param.b32	[param1+0], %r51;
+	st.param.b32	[param1+0], %r20;
 	.param .b64 param2;
 	st.param.b64	[param2+0], %rd95;
 	.param .b64 retval0;
@@ -5062,7 +5061,7 @@ BB9_41:
 	.param .b64 param1;
 	st.param.b64	[param1+0], %rd15;
 	.param .b32 param2;
-	st.param.b32	[param2+0], %r51;
+	st.param.b32	[param2+0], %r20;
 	.param .b64 param3;
 	st.param.b64	[param3+0], %rd95;
 	.param .b64 retval0;
@@ -5102,7 +5101,7 @@ BB9_41:
 	.param .b64 param0;
 	st.param.b64	[param0+0], %rd164;
 	.param .b32 param1;
-	st.param.b32	[param1+0], %r51;
+	st.param.b32	[param1+0], %r20;
 	.param .b64 param2;
 	st.param.b64	[param2+0], %rd95;
 	.param .b64 retval0;
@@ -5179,7 +5178,7 @@ BB9_41:
 	.param .b64 param1;
 	st.param.b64	[param1+0], %rd15;
 	.param .b32 param2;
-	st.param.b32	[param2+0], %r51;
+	st.param.b32	[param2+0], %r20;
 	.param .b64 param3;
 	st.param.b64	[param3+0], %rd95;
 	.param .b64 retval0;
@@ -5219,7 +5218,7 @@ BB9_41:
 	.param .b64 param1;
 	st.param.b64	[param1+0], %rd15;
 	.param .b32 param2;
-	st.param.b32	[param2+0], %r51;
+	st.param.b32	[param2+0], %r20;
 	.param .b64 param3;
 	st.param.b64	[param3+0], %rd95;
 	.param .b64 retval0;
@@ -5253,7 +5252,7 @@ BB9_41:
 	.param .b64 param1;
 	st.param.b64	[param1+0], %rd15;
 	.param .b32 param2;
-	st.param.b32	[param2+0], %r51;
+	st.param.b32	[param2+0], %r20;
 	.param .b64 param3;
 	st.param.b64	[param3+0], %rd95;
 	.param .b64 retval0;
@@ -5287,7 +5286,7 @@ BB9_41:
 	.param .b64 param1;
 	st.param.b64	[param1+0], %rd15;
 	.param .b32 param2;
-	st.param.b32	[param2+0], %r51;
+	st.param.b32	[param2+0], %r20;
 	.param .b64 param3;
 	st.param.b64	[param3+0], %rd95;
 	.param .b64 retval0;
@@ -5324,7 +5323,7 @@ BB9_41:
 	.param .b64 param0;
 	st.param.b64	[param0+0], %rd187;
 	.param .b32 param1;
-	st.param.b32	[param1+0], %r51;
+	st.param.b32	[param1+0], %r20;
 	.param .b64 param2;
 	st.param.b64	[param2+0], %rd95;
 	.param .b64 retval0;
@@ -5390,7 +5389,7 @@ BB9_41:
 	.param .b64 param1;
 	st.param.b64	[param1+0], %rd15;
 	.param .b32 param2;
-	st.param.b32	[param2+0], %r51;
+	st.param.b32	[param2+0], %r20;
 	.param .b64 param3;
 	st.param.b64	[param3+0], %rd95;
 	.param .b64 retval0;
@@ -5424,7 +5423,7 @@ BB9_41:
 	.param .b64 param1;
 	st.param.b64	[param1+0], %rd15;
 	.param .b32 param2;
-	st.param.b32	[param2+0], %r51;
+	st.param.b32	[param2+0], %r20;
 	.param .b64 param3;
 	st.param.b64	[param3+0], %rd95;
 	.param .b64 retval0;
@@ -5464,7 +5463,7 @@ BB9_41:
 	.param .b64 param1;
 	st.param.b64	[param1+0], %rd15;
 	.param .b32 param2;
-	st.param.b32	[param2+0], %r51;
+	st.param.b32	[param2+0], %r20;
 	.param .b64 param3;
 	st.param.b64	[param3+0], %rd95;
 	.param .b64 retval0;
@@ -5498,7 +5497,7 @@ BB9_41:
 	.param .b64 param1;
 	st.param.b64	[param1+0], %rd15;
 	.param .b32 param2;
-	st.param.b32	[param2+0], %r51;
+	st.param.b32	[param2+0], %r20;
 	.param .b64 param3;
 	st.param.b64	[param3+0], %rd95;
 	.param .b64 retval0;
@@ -5524,12 +5523,16 @@ BB9_41:
 	ld.u64 	%rd209, [%rd207+24];
 	mov.u64 	%rd210, $str14;
 	cvta.global.u64 	%rd211, %rd210;
+	mov.u32 	%r60, 2;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:165 	log_f(2, "Array: Array[%s.%s]\n", pElementType->nameSpace, pElementType->name);
+	.loc 1 165 2
 	// Callseq Start 126
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
 	.param .b32 param0;
-	st.param.b32	[param0+0], %r20;
+	st.param.b32	[param0+0], %r60;
 	.param .b64 param1;
 	st.param.b64	[param1+0], %rd211;
 	.param .align 8 .b8 param2[16];
@@ -5550,8 +5553,8 @@ BB9_41:
 	.loc 1 194 2
 	ld.u64 	%rd221, [%rd14];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:455 			types[i] = Type_GetArrayTypeDef(types[(U32)(typeInit[i].name)], NULL, NULL);
-	.loc 1 455 15
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:454 			types[i] = Type_GetArrayTypeDef(types[(U32)(typeInit[i].name)], NULL, NULL);
+	.loc 1 454 15
 	ld.global.u64 	%rd220, [types];
 
 BB9_43:
@@ -5562,25 +5565,24 @@ BB9_43:
 BB9_44:
 	cvt.u32.u64	%r61, %rd4;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:450 	for (i=0; i<numInitTypes; i++) {
-	.loc 1 450 28
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:449 	for (i=0; i<numInitTypes; i++) {
+	.loc 1 449 28
 	add.s32 	%r68, %r61, 1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:450 	for (i=0; i<numInitTypes; i++) {
-	.loc 1 450 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:449 	for (i=0; i<numInitTypes; i++) {
+	.loc 1 449 2
 	ld.global.u32 	%r62, [__nv_static_25__12_Type_cpp1_ii_b0106068_numInitTypes];
 	setp.lt.u32	%p33, %r68, %r62;
 	@%p33 bra 	BB9_7;
 
 BB9_45:
-	mov.u32 	%r63, 1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:458 	CorLibDone = 1;
-	.loc 1 458 2
-	st.global.u32 	[CorLibDone], %r63;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:457 	CorLibDone = 1;
+	.loc 1 457 2
+	st.global.u32 	[CorLibDone], %r20;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:459 }
-	.loc 1 459 1
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:458 }
+	.loc 1 458 1
 	ret;
 }
 
@@ -5610,8 +5612,8 @@ BB9_45:
 	ld.param.u32 	%r28, [_Z13Type_IsMethodP14tMD_MethodDef_PcP12tMD_TypeDef_jPh_param_3];
 	ld.param.u64 	%rd148, [_Z13Type_IsMethodP14tMD_MethodDef_PcP12tMD_TypeDef_jPh_param_4];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:466 	nameLen = (U32)Gstrlen(name);
-	.loc 1 466 17
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:465 	nameLen = (U32)Gstrlen(name);
+	.loc 1 465 17
 	// Callseq Start 127
 	{
 	.reg .b32 temp_param_reg;
@@ -5629,28 +5631,28 @@ BB9_45:
 	//{
 	}// Callseq End 127
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:467 	if (name[nameLen-1] == '>') {
-	.loc 1 467 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:466 	if (name[nameLen-1] == '>') {
+	.loc 1 466 2
 	add.s64 	%rd150, %rd149, 4294967295;
 	and.b64  	%rd1, %rd150, 4294967295;
 	add.s64 	%rd151, %rd146, %rd1;
 	ld.u8 	%rs1, [%rd151];
 	setp.eq.s16	%p1, %rs1, 62;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:469 		if (Gstrncmp(pMethod->name, name, nameLen - 1) != 0) {
-	.loc 1 469 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:468 		if (Gstrncmp(pMethod->name, name, nameLen - 1) != 0) {
+	.loc 1 468 3
 	add.s64 	%rd2, %rd145, 32;
 	ld.u64 	%rd3, [%rd145+32];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:467 	if (name[nameLen-1] == '>') {
-	.loc 1 467 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:466 	if (name[nameLen-1] == '>') {
+	.loc 1 466 2
 	@%p1 bra 	BB10_2;
 	bra.uni 	BB10_1;
 
 BB10_2:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:469 		if (Gstrncmp(pMethod->name, name, nameLen - 1) != 0) {
-	.loc 1 469 7
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:468 		if (Gstrncmp(pMethod->name, name, nameLen - 1) != 0) {
+	.loc 1 468 7
 	// Callseq Start 129
 	{
 	.reg .b32 temp_param_reg;
@@ -5675,16 +5677,16 @@ BB10_2:
 	}// Callseq End 129
 	mov.u32 	%r160, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:469 		if (Gstrncmp(pMethod->name, name, nameLen - 1) != 0) {
-	.loc 1 469 7
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:468 		if (Gstrncmp(pMethod->name, name, nameLen - 1) != 0) {
+	.loc 1 468 7
 	setp.ne.s32	%p3, %r32, 0;
 	@%p3 bra 	BB10_239;
 	bra.uni 	BB10_3;
 
 BB10_1:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:473 		if (Gstrcmp(pMethod->name, name) != 0) {
-	.loc 1 473 7
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:472 		if (Gstrcmp(pMethod->name, name) != 0) {
+	.loc 1 472 7
 	// Callseq Start 128
 	{
 	.reg .b32 temp_param_reg;
@@ -5707,8 +5709,8 @@ BB10_1:
 	setp.eq.s32	%p2, %r30, 0;
 	mov.u32 	%r160, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:473 		if (Gstrcmp(pMethod->name, name) != 0) {
-	.loc 1 473 7
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:472 		if (Gstrcmp(pMethod->name, name) != 0) {
+	.loc 1 472 7
 	@%p2 bra 	BB10_3;
 	bra.uni 	BB10_239;
 
@@ -5716,13 +5718,13 @@ BB10_3:
 	add.u64 	%rd152, %SP, 8;
 	cvta.to.local.u64 	%rd153, %rd152;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:478 	sig = MetaData_GetBlob(pMethod->signature, &sigLen);
-	.loc 1 478 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:477 	sig = MetaData_GetBlob(pMethod->signature, &sigLen);
+	.loc 1 477 2
 	ld.u64 	%rd154, [%rd2+8];
 	add.u64 	%rd155, %SP, 16;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:478 	sig = MetaData_GetBlob(pMethod->signature, &sigLen);
-	.loc 1 478 8
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:477 	sig = MetaData_GetBlob(pMethod->signature, &sigLen);
+	.loc 1 477 8
 	// Callseq Start 130
 	{
 	.reg .b32 temp_param_reg;
@@ -5744,8 +5746,8 @@ BB10_3:
 	}// Callseq End 130
 	st.local.u64 	[%rd153], %rd156;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:479 	i = MetaData_DecodeSigEntry(&sig); // Don't care about this
-	.loc 1 479 6
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:478 	i = MetaData_DecodeSigEntry(&sig); // Don't care about this
+	.loc 1 478 6
 	// Callseq Start 131
 	{
 	.reg .b32 temp_param_reg;
@@ -5763,15 +5765,15 @@ BB10_3:
 	//{
 	}// Callseq End 131
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:480 	if (i & SIG_METHODDEF_GENERIC) {
-	.loc 1 480 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:479 	if (i & SIG_METHODDEF_GENERIC) {
+	.loc 1 479 2
 	and.b32  	%r34, %r33, 16;
 	setp.eq.s32	%p4, %r34, 0;
 	@%p4 bra 	BB10_5;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:481 		MetaData_DecodeSigEntry(&sig);
-	.loc 1 481 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:480 		MetaData_DecodeSigEntry(&sig);
+	.loc 1 480 3
 	// Callseq Start 132
 	{
 	.reg .b32 temp_param_reg;
@@ -5791,8 +5793,8 @@ BB10_3:
 
 BB10_5:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:483 	numSigParams = MetaData_DecodeSigEntry(&sig);
-	.loc 1 483 17
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:482 	numSigParams = MetaData_DecodeSigEntry(&sig);
+	.loc 1 482 17
 	// Callseq Start 133
 	{
 	.reg .b32 temp_param_reg;
@@ -5811,24 +5813,24 @@ BB10_5:
 	}// Callseq End 133
 	mov.u32 	%r160, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:485 	if (numParams != numSigParams) {
-	.loc 1 485 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:484 	if (numParams != numSigParams) {
+	.loc 1 484 2
 	setp.ne.s32	%p5, %r37, %r28;
 	@%p5 bra 	BB10_239;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:493 	for (i=0; i<numParams + 1; i++) {
-	.loc 1 493 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:492 	for (i=0; i<numParams + 1; i++) {
+	.loc 1 492 2
 	setp.eq.s32	%p6, %r28, -1;
 	mov.u32 	%r38, 1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:493 	for (i=0; i<numParams + 1; i++) {
-	.loc 1 493 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:492 	for (i=0; i<numParams + 1; i++) {
+	.loc 1 492 2
 	@%p6 bra 	BB10_238;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:489 	if (pReturnType == types[TYPE_SYSTEM_VOID]) {
-	.loc 1 489 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:488 	if (pReturnType == types[TYPE_SYSTEM_VOID]) {
+	.loc 1 488 2
 	ld.global.u64 	%rd159, [types];
 	ld.u64 	%rd160, [%rd159+16];
 	setp.eq.s64	%p7, %rd160, %rd147;
@@ -6990,8 +6992,8 @@ BB10_117:
 
 BB10_8:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:496 		pSigType = Type_GetTypeFromSig(pMethod->pMetaData, &sig, NULL, NULL);
-	.loc 1 496 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:495 		pSigType = Type_GetTypeFromSig(pMethod->pMetaData, &sig, NULL, NULL);
+	.loc 1 495 3
 	ld.u64 	%rd5, [%rd145+8];
 
 //C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:224 	entry = MetaData_DecodeSigEntry(pSig);
@@ -11253,8 +11255,8 @@ BB10_220:
 
 BB10_231:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:497 		pParamType = (i == 0)?pReturnType:types[pParamTypeIndexs[i-1]];
-	.loc 1 497 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:496 		pParamType = (i == 0)?pReturnType:types[pParamTypeIndexs[i-1]];
+	.loc 1 496 3
 	setp.eq.s32	%p160, %r153, 0;
 	mov.u64 	%rd639, %rd4;
 	@%p160 bra 	BB10_233;
@@ -11270,8 +11272,8 @@ BB10_231:
 
 BB10_233:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:499 		if (pSigType != NULL && TYPE_ISARRAY(pSigType) && pParamType == types[TYPE_SYSTEM_ARRAY_NO_TYPE]) {
-	.loc 1 499 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:498 		if (pSigType != NULL && TYPE_ISARRAY(pSigType) && pParamType == types[TYPE_SYSTEM_ARRAY_NO_TYPE]) {
+	.loc 1 498 3
 	setp.eq.s64	%p161, %rd638, 0;
 	@%p161 bra 	BB10_236;
 
@@ -11283,42 +11285,42 @@ BB10_233:
 BB10_236:
 	mov.u32 	%r160, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:502 			if (pSigType != pParamType) {
-	.loc 1 502 4
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:501 			if (pSigType != pParamType) {
+	.loc 1 501 4
 	setp.ne.s64	%p166, %rd638, %rd639;
 	@%p166 bra 	BB10_239;
 	bra.uni 	BB10_237;
 
 BB10_235:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:499 		if (pSigType != NULL && TYPE_ISARRAY(pSigType) && pParamType == types[TYPE_SYSTEM_ARRAY_NO_TYPE]) {
-	.loc 1 499 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:498 		if (pSigType != NULL && TYPE_ISARRAY(pSigType) && pParamType == types[TYPE_SYSTEM_ARRAY_NO_TYPE]) {
+	.loc 1 498 3
 	ld.global.u64 	%rd617, [types];
 	ld.u64 	%rd618, [%rd617+8];
 	setp.eq.s64	%p163, %rd639, %rd618;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:502 			if (pSigType != pParamType) {
-	.loc 1 502 4
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:501 			if (pSigType != pParamType) {
+	.loc 1 501 4
 	setp.eq.s64	%p164, %rd638, %rd639;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:499 		if (pSigType != NULL && TYPE_ISARRAY(pSigType) && pParamType == types[TYPE_SYSTEM_ARRAY_NO_TYPE]) {
-	.loc 1 499 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:498 		if (pSigType != NULL && TYPE_ISARRAY(pSigType) && pParamType == types[TYPE_SYSTEM_ARRAY_NO_TYPE]) {
+	.loc 1 498 3
 	or.pred  	%p165, %p163, %p164;
 	mov.u32 	%r160, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:499 		if (pSigType != NULL && TYPE_ISARRAY(pSigType) && pParamType == types[TYPE_SYSTEM_ARRAY_NO_TYPE]) {
-	.loc 1 499 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:498 		if (pSigType != NULL && TYPE_ISARRAY(pSigType) && pParamType == types[TYPE_SYSTEM_ARRAY_NO_TYPE]) {
+	.loc 1 498 3
 	@%p165 bra 	BB10_237;
 	bra.uni 	BB10_239;
 
 BB10_237:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:493 	for (i=0; i<numParams + 1; i++) {
-	.loc 1 493 29
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:492 	for (i=0; i<numParams + 1; i++) {
+	.loc 1 492 29
 	add.s32 	%r153, %r153, 1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:493 	for (i=0; i<numParams + 1; i++) {
-	.loc 1 493 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:492 	for (i=0; i<numParams + 1; i++) {
+	.loc 1 492 2
 	add.s32 	%r152, %r28, 1;
 	setp.lt.u32	%p167, %r153, %r152;
 	@%p167 bra 	BB10_8;
@@ -11329,8 +11331,8 @@ BB10_238:
 BB10_239:
 	st.param.b32	[func_retval0+0], %r160;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:510 	return 0;
-	.loc 1 510 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:509 	return 0;
+	.loc 1 509 2
 	ret;
 }
 
@@ -11349,26 +11351,26 @@ BB10_239:
 	ld.param.u64 	%rd4, [_Z24Type_IsDerivedFromOrSameP12tMD_TypeDef_S0__param_0];
 	ld.param.u64 	%rd7, [_Z24Type_IsDerivedFromOrSameP12tMD_TypeDef_S0__param_1];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:515 	while (pTestType != NULL) {
-	.loc 1 515 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:514 	while (pTestType != NULL) {
+	.loc 1 514 2
 	setp.eq.s64	%p1, %rd7, 0;
 	mov.u32 	%r2, 0;
 	@%p1 bra 	BB11_5;
 
 BB11_1:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:516 		if (pTestType == pBaseType) {
-	.loc 1 516 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:515 		if (pTestType == pBaseType) {
+	.loc 1 515 3
 	setp.eq.s64	%p2, %rd7, %rd4;
 	mov.u32 	%r5, 1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:516 		if (pTestType == pBaseType) {
-	.loc 1 516 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:515 		if (pTestType == pBaseType) {
+	.loc 1 515 3
 	@%p2 bra 	BB11_6;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:519 		MetaData_Fill_TypeDef(pTestType, NULL, NULL);
-	.loc 1 519 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:518 		MetaData_Fill_TypeDef(pTestType, NULL, NULL);
+	.loc 1 518 3
 	add.s64 	%rd2, %rd7, 52;
 	ld.u8 	%rs1, [%rd7+52];
 	setp.ne.s16	%p3, %rs1, 0;
@@ -11376,8 +11378,8 @@ BB11_1:
 
 	mov.u64 	%rd6, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:519 		MetaData_Fill_TypeDef(pTestType, NULL, NULL);
-	.loc 1 519 35
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:518 		MetaData_Fill_TypeDef(pTestType, NULL, NULL);
+	.loc 1 518 35
 	// Callseq Start 267
 	{
 	.reg .b32 temp_param_reg;
@@ -11401,12 +11403,12 @@ BB11_1:
 
 BB11_4:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:520 		pTestType = pTestType->pParent;
-	.loc 1 520 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:519 		pTestType = pTestType->pParent;
+	.loc 1 519 3
 	ld.u64 	%rd7, [%rd2+12];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:515 	while (pTestType != NULL) {
-	.loc 1 515 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:514 	while (pTestType != NULL) {
+	.loc 1 514 2
 	setp.ne.s64	%p4, %rd7, 0;
 	@%p4 bra 	BB11_1;
 
@@ -11416,8 +11418,8 @@ BB11_5:
 BB11_6:
 	st.param.b32	[func_retval0+0], %r5;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:522 	return 0;
-	.loc 1 522 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:521 	return 0;
+	.loc 1 521 2
 	ret;
 }
 
@@ -11435,56 +11437,56 @@ BB11_6:
 	ld.param.u64 	%rd3, [_Z18Type_IsImplementedP12tMD_TypeDef_S0__param_0];
 	ld.param.u64 	%rd4, [_Z18Type_IsImplementedP12tMD_TypeDef_S0__param_1];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:529 	for (i=0; i<pTestType->numInterfaces; i++) {
-	.loc 1 529 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:528 	for (i=0; i<pTestType->numInterfaces; i++) {
+	.loc 1 528 2
 	add.s64 	%rd1, %rd4, 120;
 	ld.u32 	%r1, [%rd4+120];
 	setp.eq.s32	%p1, %r1, 0;
 	mov.u32 	%r10, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:529 	for (i=0; i<pTestType->numInterfaces; i++) {
-	.loc 1 529 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:528 	for (i=0; i<pTestType->numInterfaces; i++) {
+	.loc 1 528 2
 	@%p1 bra 	BB12_4;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:530 		if (pTestType->pInterfaceMaps[i].pInterface == pInterface) {
-	.loc 1 530 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:529 		if (pTestType->pInterfaceMaps[i].pInterface == pInterface) {
+	.loc 1 529 3
 	ld.u64 	%rd2, [%rd1+8];
 	mov.u32 	%r9, 0;
 
 BB12_2:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:530 		if (pTestType->pInterfaceMaps[i].pInterface == pInterface) {
-	.loc 1 530 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:529 		if (pTestType->pInterfaceMaps[i].pInterface == pInterface) {
+	.loc 1 529 3
 	mul.wide.u32 	%rd5, %r9, 24;
 	add.s64 	%rd6, %rd2, %rd5;
 	ld.u64 	%rd7, [%rd6];
 	setp.eq.s64	%p2, %rd7, %rd3;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:529 	for (i=0; i<pTestType->numInterfaces; i++) {
-	.loc 1 529 40
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:528 	for (i=0; i<pTestType->numInterfaces; i++) {
+	.loc 1 528 40
 	add.s32 	%r9, %r9, 1;
 	mov.u32 	%r10, 1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:530 		if (pTestType->pInterfaceMaps[i].pInterface == pInterface) {
-	.loc 1 530 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:529 		if (pTestType->pInterfaceMaps[i].pInterface == pInterface) {
+	.loc 1 529 3
 	@%p2 bra 	BB12_4;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:529 	for (i=0; i<pTestType->numInterfaces; i++) {
-	.loc 1 529 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:528 	for (i=0; i<pTestType->numInterfaces; i++) {
+	.loc 1 528 2
 	setp.lt.u32	%p3, %r9, %r1;
 	mov.u32 	%r10, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:529 	for (i=0; i<pTestType->numInterfaces; i++) {
-	.loc 1 529 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:528 	for (i=0; i<pTestType->numInterfaces; i++) {
+	.loc 1 528 2
 	@%p3 bra 	BB12_2;
 
 BB12_4:
 	st.param.b32	[func_retval0+0], %r10;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:534 	return 0;
-	.loc 1 534 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:533 	return 0;
+	.loc 1 533 2
 	ret;
 }
 
@@ -11503,8 +11505,8 @@ BB12_4:
 	ld.param.u64 	%rd6, [_Z21Type_IsAssignableFromP12tMD_TypeDef_S0__param_0];
 	ld.param.u64 	%rd7, [_Z21Type_IsAssignableFromP12tMD_TypeDef_S0__param_1];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:515 	while (pTestType != NULL) {
-	.loc 1 515 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:514 	while (pTestType != NULL) {
+	.loc 1 514 2
 	setp.eq.s64	%p1, %rd7, 0;
 	@%p1 bra 	BB13_6;
 
@@ -11512,18 +11514,18 @@ BB12_4:
 
 BB13_2:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:516 		if (pTestType == pBaseType) {
-	.loc 1 516 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:515 		if (pTestType == pBaseType) {
+	.loc 1 515 3
 	setp.eq.s64	%p2, %rd12, %rd6;
 	mov.u32 	%r12, 1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:516 		if (pTestType == pBaseType) {
-	.loc 1 516 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:515 		if (pTestType == pBaseType) {
+	.loc 1 515 3
 	@%p2 bra 	BB13_11;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:519 		MetaData_Fill_TypeDef(pTestType, NULL, NULL);
-	.loc 1 519 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:518 		MetaData_Fill_TypeDef(pTestType, NULL, NULL);
+	.loc 1 518 3
 	add.s64 	%rd2, %rd12, 52;
 	ld.u8 	%rs1, [%rd12+52];
 	setp.ne.s16	%p3, %rs1, 0;
@@ -11531,8 +11533,8 @@ BB13_2:
 
 	mov.u64 	%rd8, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:519 		MetaData_Fill_TypeDef(pTestType, NULL, NULL);
-	.loc 1 519 35
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:518 		MetaData_Fill_TypeDef(pTestType, NULL, NULL);
+	.loc 1 518 35
 	// Callseq Start 268
 	{
 	.reg .b32 temp_param_reg;
@@ -11556,75 +11558,75 @@ BB13_2:
 
 BB13_5:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:520 		pTestType = pTestType->pParent;
-	.loc 1 520 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:519 		pTestType = pTestType->pParent;
+	.loc 1 519 3
 	ld.u64 	%rd12, [%rd2+12];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:515 	while (pTestType != NULL) {
-	.loc 1 515 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:514 	while (pTestType != NULL) {
+	.loc 1 514 2
 	setp.ne.s64	%p4, %rd12, 0;
 	@%p4 bra 	BB13_2;
 
 BB13_6:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:540 		Type_IsDerivedFromOrSame(pToType, pFromType) ||
-	.loc 1 540 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:539 		Type_IsDerivedFromOrSame(pToType, pFromType) ||
+	.loc 1 539 3
 	ld.u8 	%rs2, [%rd6+16];
 	and.b16  	%rs3, %rs2, 32;
 	setp.eq.s16	%p5, %rs3, 0;
 	mov.u32 	%r12, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:540 		Type_IsDerivedFromOrSame(pToType, pFromType) ||
-	.loc 1 540 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:539 		Type_IsDerivedFromOrSame(pToType, pFromType) ||
+	.loc 1 539 3
 	@%p5 bra 	BB13_11;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:529 	for (i=0; i<pTestType->numInterfaces; i++) {
-	.loc 1 529 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:528 	for (i=0; i<pTestType->numInterfaces; i++) {
+	.loc 1 528 2
 	add.s64 	%rd4, %rd7, 120;
 	ld.u32 	%r1, [%rd7+120];
 	setp.eq.s32	%p6, %r1, 0;
 	@%p6 bra 	BB13_11;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:530 		if (pTestType->pInterfaceMaps[i].pInterface == pInterface) {
-	.loc 1 530 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:529 		if (pTestType->pInterfaceMaps[i].pInterface == pInterface) {
+	.loc 1 529 3
 	ld.u64 	%rd5, [%rd4+8];
 	mov.u32 	%r11, 0;
 
 BB13_9:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:530 		if (pTestType->pInterfaceMaps[i].pInterface == pInterface) {
-	.loc 1 530 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:529 		if (pTestType->pInterfaceMaps[i].pInterface == pInterface) {
+	.loc 1 529 3
 	mul.wide.u32 	%rd9, %r11, 24;
 	add.s64 	%rd10, %rd5, %rd9;
 	ld.u64 	%rd11, [%rd10];
 	setp.eq.s64	%p7, %rd11, %rd6;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:529 	for (i=0; i<pTestType->numInterfaces; i++) {
-	.loc 1 529 40
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:528 	for (i=0; i<pTestType->numInterfaces; i++) {
+	.loc 1 528 40
 	add.s32 	%r11, %r11, 1;
 	mov.u32 	%r12, 1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:530 		if (pTestType->pInterfaceMaps[i].pInterface == pInterface) {
-	.loc 1 530 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:529 		if (pTestType->pInterfaceMaps[i].pInterface == pInterface) {
+	.loc 1 529 3
 	@%p7 bra 	BB13_11;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:529 	for (i=0; i<pTestType->numInterfaces; i++) {
-	.loc 1 529 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:528 	for (i=0; i<pTestType->numInterfaces; i++) {
+	.loc 1 528 2
 	setp.lt.u32	%p8, %r11, %r1;
 	mov.u32 	%r12, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:529 	for (i=0; i<pTestType->numInterfaces; i++) {
-	.loc 1 529 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:528 	for (i=0; i<pTestType->numInterfaces; i++) {
+	.loc 1 528 2
 	@%p8 bra 	BB13_9;
 
 BB13_11:
 	st.param.b32	[func_retval0+0], %r12;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:541 		(TYPE_ISINTERFACE(pToType) && Type_IsImplemented(pToType, pFromType));
-	.loc 1 541 33
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:540 		(TYPE_ISINTERFACE(pToType) && Type_IsImplemented(pToType, pFromType));
+	.loc 1 540 33
 	ret;
 }
 
@@ -11639,16 +11641,16 @@ BB13_11:
 
 	ld.param.u64 	%rd5, [_Z18Type_GetTypeObjectP12tMD_TypeDef__param_0];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:546 	if (pTypeDef->typeObject == NULL) {
-	.loc 1 546 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:545 	if (pTypeDef->typeObject == NULL) {
+	.loc 1 545 2
 	add.s64 	%rd1, %rd5, 224;
 	ld.u64 	%rd6, [%rd5+224];
 	setp.ne.s64	%p1, %rd6, 0;
 	@%p1 bra 	BB14_2;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:547 		pTypeDef->typeObject = RuntimeType_New(pTypeDef);
-	.loc 1 547 26
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:546 		pTypeDef->typeObject = RuntimeType_New(pTypeDef);
+	.loc 1 546 26
 	// Callseq Start 269
 	{
 	.reg .b32 temp_param_reg;
@@ -11670,11 +11672,11 @@ BB13_11:
 BB14_2:
 	st.param.b64	[func_retval0+0], %rd6;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:549 	return pTypeDef->typeObject;
-	.loc 1 549 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:548 	return pTypeDef->typeObject;
+	.loc 1 548 2
 	ret;
 }
 
-	.file	1 "C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu", 1512571871, 20855
+	.file	1 "C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu", 1512687434, 20800
 	.file	2 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v9.0\\include\\cuda_device_runtime_api.h", 1504359958, 14836
 

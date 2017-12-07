@@ -417,7 +417,6 @@ static char SystemGlobalization[] = "System.Globalization";
 __device__
 static tTypeInit typeInit[] = {
 	{ mscorlib, System, "Object", EVALSTACK_O,		4, 4, 0 },
-	{ NULL, NULL, (char*)TYPE_SYSTEM_TYPE, 0, 0, 0, 0 },
 };
 
 __device__

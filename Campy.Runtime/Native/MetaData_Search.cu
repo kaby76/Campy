@@ -178,7 +178,9 @@ __device__ tMD_TypeDef* MetaData_GetTypeDefFromName(tMetaData *pMetaData, STRING
 
 		pTypeDef = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_TYPEDEF, i));
 		
-		printf("In MetaData_GetTypeDefFromName2\n");
+		printf("In MetaData_GetTypeDefFromName2 %s\n", name);
+		printf("In MetaData_GetTypeDefFromName3 %s\n", pTypeDef->name);
+		printf("In MetaData_GetTypeDefFromName4 %s\n", pTypeDef->nameSpace);
 
 		if (pInNestedClass == pTypeDef->pNestedIn &&
 			Gstrcmp(name, pTypeDef->name) == 0 &&
@@ -207,6 +209,7 @@ __device__ tMD_TypeDef* MetaData_GetTypeDefFromDefRefOrSpec(tMetaData *pMetaData
 	void *pTableEntry;
 	printf("In MetaData_GetTypeDefFromDefRefOrSpec\n");
 	pTableEntry = MetaData_GetTableRow(pMetaData, token);
+	printf("MetaData_GetTypeDefFromDefRefOrSpec %lld\n", (unsigned long long)pTableEntry);
 	if (pTableEntry == NULL) {
 		return NULL;
 	}

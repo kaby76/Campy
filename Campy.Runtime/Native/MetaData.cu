@@ -1285,16 +1285,19 @@ __device__ static void* LoadSingleTable(tMetaData *pThis, tRVA *pRVA, int tableI
 		case MD_TABLE_MODULE:
 		{
 			tMD_Module* y = (tMD_Module*)dd;
+			printf("x1 %s\n", y->name);
 			break;
 		}
 		case MD_TABLE_TYPEREF:
 		{
 			tMD_TypeRef* y = (tMD_TypeRef*)dd;
+			printf("x2 %s\n", y->name);
 			break;
 		}
 		case MD_TABLE_TYPEDEF:
 		{
 			tMD_TypeDef* y = (tMD_TypeDef*)dd;
+			printf("x3 %s\n", y->name);
 			break;
 		}
 		case MD_TABLE_FIELDDEF:
@@ -1419,9 +1422,10 @@ __device__ void MetaData_LoadTables(tMetaData *pThis, tRVA *pRVA, unsigned char 
 		// "valid" is a bitmap indicating if the table entry is OK. There are maximum
 		// 48 (MAX_TABLES), but only those with bit set is valid.
 		if (valid & j) {
-			//pThis->tables.numRows[i] = *(U32*)&((char*)pStream)[24 + numTables * 4];
+			U32 vvv = GetU32(&((unsigned char*)pStream)[24 + numTables * 4]);
+			pThis->tables.numRows[i] = vvv;
 			numTables++;
-			printf("Row v = %d %d\n", i, 0);
+			printf("Row v = %d %d\n", i, vvv);
 		} else {
 			pThis->tables.numRows[i] = 0;
 			pThis->tables.data[i] = NULL;
@@ -1460,10 +1464,10 @@ __device__ void MetaData_LoadTables(tMetaData *pThis, tRVA *pRVA, unsigned char 
 
 printf("i = %d\n", i);
 			if (i*4 >= sizeof(tableDefs) || tableDefs[i] == NULL) {
-				//printf("No table definition for MetaData table 0x%02x\n", i);
+				printf("No table definition for MetaData table 0x%02x\n", i);
 				gpuexit(1);
 			}
-//			pThis->tables.data[i] = LoadSingleTable(pThis, pRVA, i, &pTable);
+			pThis->tables.data[i] = LoadSingleTable(pThis, pRVA, i, &pTable);
 		}
 	}
 	printf("tables done.\n");
