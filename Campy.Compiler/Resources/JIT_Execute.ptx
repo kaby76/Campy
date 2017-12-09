@@ -132,7 +132,7 @@
 	mov.u32 	%r1, 2;
 	st.param.b32	[func_retval0+0], %r1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/JIT_Execute.cu:3160 	return THREAD_STATUS_RUNNING;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/JIT_Execute.c:3160 	return THREAD_STATUS_RUNNING;
 	.loc 1 3160 2
 	ret;
 }
@@ -146,11 +146,11 @@
 
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/JIT_Execute.cu:3166 }
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/JIT_Execute.c:3166 }
 	.loc 1 3166 1
 	ret;
 }
 
-	.file	1 "C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/JIT_Execute.cu", 1511710520, 88829
+	.file	1 "C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/JIT_Execute.c", 1511710520, 88829
 	.file	2 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v9.0\\include\\cuda_device_runtime_api.h", 1504359958, 14836
 

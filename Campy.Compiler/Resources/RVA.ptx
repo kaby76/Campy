@@ -133,12 +133,12 @@
 
 )
 {
-	.reg .b64 	%rd<3>;
+	.reg .b64 	%rd<4>;
 
 
 	mov.u64 	%rd1, 8;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.cu:28 	pRet = TMALLOC(tRVA);
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.c:28 	pRet = TMALLOC(tRVA);
 	.loc 1 28 16
 	// Callseq Start 0
 	{
@@ -156,10 +156,22 @@
 	
 	//{
 	}// Callseq End 0
+	mov.u64 	%rd3, 0;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.c:29 	memset(pRet, 0, sizeof(tRVA));
+	.loc 1 29 2
+	st.u8 	[%rd2+7], %rd3;
+	st.u8 	[%rd2+6], %rd3;
+	st.u8 	[%rd2+5], %rd3;
+	st.u8 	[%rd2+4], %rd3;
+	st.u8 	[%rd2+3], %rd3;
+	st.u8 	[%rd2+2], %rd3;
+	st.u8 	[%rd2+1], %rd3;
+	st.u8 	[%rd2], %rd3;
 	st.param.b64	[func_retval0+0], %rd2;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.cu:29 	return pRet;
-	.loc 1 29 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.c:30 	return pRet;
+	.loc 1 30 2
 	ret;
 }
 
@@ -170,25 +182,25 @@
 	.param .b64 _Z10RVA_CreateP5tRVA_PvS1__param_2
 )
 {
-	.reg .pred 	%p<6>;
-	.reg .b16 	%rs<3>;
+	.reg .pred 	%p<8>;
+	.reg .b16 	%rs<4>;
 	.reg .b32 	%r<7>;
-	.reg .b64 	%rd<27>;
+	.reg .b64 	%rd<33>;
 
 
-	ld.param.u64 	%rd14, [_Z10RVA_CreateP5tRVA_PvS1__param_0];
-	ld.param.u64 	%rd15, [_Z10RVA_CreateP5tRVA_PvS1__param_1];
-	ld.param.u64 	%rd3, [_Z10RVA_CreateP5tRVA_PvS1__param_2];
-	mov.u64 	%rd17, 24;
+	ld.param.u64 	%rd16, [_Z10RVA_CreateP5tRVA_PvS1__param_0];
+	ld.param.u64 	%rd17, [_Z10RVA_CreateP5tRVA_PvS1__param_1];
+	ld.param.u64 	%rd18, [_Z10RVA_CreateP5tRVA_PvS1__param_2];
+	mov.u64 	%rd20, 24;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.cu:37 	pRet = TMALLOC(tRVA_Item);
-	.loc 1 37 21
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.c:38 	pRet = TMALLOC(tRVA_Item);
+	.loc 1 38 21
 	// Callseq Start 1
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
 	.param .b64 param0;
-	st.param.b64	[param0+0], %rd17;
+	st.param.b64	[param0+0], %rd20;
 	.param .b64 retval0;
 	call.uni (retval0), 
 	_Z7Gmallocy, 
@@ -199,113 +211,126 @@
 	
 	//{
 	}// Callseq End 1
+	mov.u64 	%rd30, 0;
+	mov.pred 	%p1, 0;
+	@%p1 bra 	BB7_2;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.cu:38 	pRet->baseAddress = *(unsigned int*)&((char*)pSectionHeader)[12];
-	.loc 1 38 2
-	ld.u32 	%r2, [%rd3+12];
+BB7_1:
+	add.s64 	%rd21, %rd1, %rd30;
+	mov.u16 	%rs1, 0;
+	st.u8 	[%rd21], %rs1;
+	add.s64 	%rd30, %rd30, 1;
+	setp.lt.u64	%p2, %rd30, 24;
+	@%p2 bra 	BB7_1;
+
+BB7_2:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.c:40 	pRet->baseAddress = *(unsigned int*)&((char*)pSectionHeader)[12];
+	.loc 1 40 2
+	ld.u32 	%r2, [%rd18+12];
 	st.u32 	[%rd1], %r2;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.cu:39 	pRet->size = *(unsigned int*)&((char*)pSectionHeader)[8];
-	.loc 1 39 2
-	ld.u32 	%r3, [%rd3+8];
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.c:41 	pRet->size = *(unsigned int*)&((char*)pSectionHeader)[8];
+	.loc 1 41 2
+	ld.u32 	%r3, [%rd18+8];
 	st.u32 	[%rd1+4], %r3;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.cu:40 	pRet->pData = malloc(pRet->size);
-	.loc 1 40 2
-	cvt.u64.u32	%rd18, %r3;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.c:42 	pRet->pData = malloc(pRet->size);
+	.loc 1 42 2
+	cvt.u64.u32	%rd23, %r3;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.cu:40 	pRet->pData = malloc(pRet->size);
-	.loc 1 40 16
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.c:42 	pRet->pData = malloc(pRet->size);
+	.loc 1 42 16
 	// Callseq Start 2
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
 	.param .b64 param0;
-	st.param.b64	[param0+0], %rd18;
+	st.param.b64	[param0+0], %rd23;
 	.param .b64 retval0;
 	call.uni (retval0), 
 	malloc, 
 	(
 	param0
 	);
-	ld.param.b64	%rd5, [retval0+0];
+	ld.param.b64	%rd7, [retval0+0];
 	
 	//{
 	}// Callseq End 2
-	st.u64 	[%rd1+8], %rd5;
+	st.u64 	[%rd1+8], %rd7;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.cu:41 	memset(pRet->pData, 0, pRet->size);
-	.loc 1 41 2
-	ld.u32 	%rd6, [%rd1+4];
-	mov.u64 	%rd25, 0;
-	setp.eq.s64	%p1, %rd6, 0;
-	@%p1 bra 	BB7_2;
-
-BB7_1:
-	add.s64 	%rd19, %rd5, %rd25;
-	mov.u16 	%rs1, 0;
-	st.u8 	[%rd19], %rs1;
-	add.s64 	%rd25, %rd25, 1;
-	setp.lt.u64	%p2, %rd25, %rd6;
-	@%p2 bra 	BB7_1;
-
-BB7_2:
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.cu:42 	pRet->pNext = pThis->pFirstRVA;
-	.loc 1 42 2
-	ld.u64 	%rd20, [%rd14];
-	st.u64 	[%rd1+16], %rd20;
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.cu:43 	pThis->pFirstRVA = pRet;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.c:43 	memset(pRet->pData, 0, pRet->size);
 	.loc 1 43 2
-	st.u64 	[%rd14], %rd1;
+	ld.u32 	%rd8, [%rd1+4];
+	mov.u64 	%rd31, 0;
+	setp.eq.s64	%p3, %rd8, 0;
+	@%p3 bra 	BB7_4;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.cu:45 	rawOfs = *(unsigned int*)&((char*)pSectionHeader)[20];
-	.loc 1 45 2
-	ld.u32 	%r1, [%rd3+20];
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.cu:47 	if (rawOfs > 0) {
-	.loc 1 47 2
-	setp.eq.s32	%p3, %r1, 0;
-	@%p3 bra 	BB7_5;
-
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.cu:51 		memcpy(pRet->pData, ((char*)pFile)+rawOfs, rawSize);
-	.loc 1 51 3
-	cvt.u64.u32	%rd22, %r1;
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.cu:48 		if (rawSize > pRet->size) {
-	.loc 1 48 3
-	ld.u32 	%r4, [%rd1+4];
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.cu:46 	rawSize = *(unsigned int*)&((char*)pSectionHeader)[16];
-	.loc 1 46 2
-	ld.u32 	%r5, [%rd3+16];
-	min.u32 	%r6, %r4, %r5;
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.cu:51 		memcpy(pRet->pData, ((char*)pFile)+rawOfs, rawSize);
-	.loc 1 51 3
-	ld.u64 	%rd9, [%rd1+8];
-	cvt.u64.u32	%rd10, %r6;
-	add.s64 	%rd11, %rd15, %rd22;
-	mov.u64 	%rd26, 0;
-	setp.eq.s32	%p4, %r6, 0;
-	@%p4 bra 	BB7_5;
+BB7_3:
+	add.s64 	%rd24, %rd7, %rd31;
+	mov.u16 	%rs2, 0;
+	st.u8 	[%rd24], %rs2;
+	add.s64 	%rd31, %rd31, 1;
+	setp.lt.u64	%p4, %rd31, %rd8;
+	@%p4 bra 	BB7_3;
 
 BB7_4:
-	add.s64 	%rd23, %rd11, %rd26;
-	ld.u8 	%rs2, [%rd23];
-	add.s64 	%rd24, %rd9, %rd26;
-	st.u8 	[%rd24], %rs2;
-	add.s64 	%rd26, %rd26, 1;
-	setp.lt.u64	%p5, %rd26, %rd10;
-	@%p5 bra 	BB7_4;
 
-BB7_5:
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.c:44 	pRet->pNext = pThis->pFirstRVA;
+	.loc 1 44 2
+	ld.u64 	%rd25, [%rd16];
+	st.u64 	[%rd1+16], %rd25;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.c:45 	pThis->pFirstRVA = pRet;
+	.loc 1 45 2
+	st.u64 	[%rd16], %rd1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.c:47 	rawOfs = *(unsigned int*)&((char*)pSectionHeader)[20];
+	.loc 1 47 2
+	ld.u32 	%r1, [%rd18+20];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.c:49 	if (rawOfs > 0) {
+	.loc 1 49 2
+	setp.eq.s32	%p5, %r1, 0;
+	@%p5 bra 	BB7_7;
+
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.c:53 		memcpy(pRet->pData, ((char*)pFile)+rawOfs, rawSize);
+	.loc 1 53 3
+	cvt.u64.u32	%rd27, %r1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.c:50 		if (rawSize > pRet->size) {
+	.loc 1 50 3
+	ld.u32 	%r4, [%rd1+4];
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.c:48 	rawSize = *(unsigned int*)&((char*)pSectionHeader)[16];
+	.loc 1 48 2
+	ld.u32 	%r5, [%rd18+16];
+	min.u32 	%r6, %r4, %r5;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.c:53 		memcpy(pRet->pData, ((char*)pFile)+rawOfs, rawSize);
+	.loc 1 53 3
+	ld.u64 	%rd11, [%rd1+8];
+	cvt.u64.u32	%rd12, %r6;
+	add.s64 	%rd13, %rd17, %rd27;
+	mov.u64 	%rd32, 0;
+	setp.eq.s32	%p6, %r6, 0;
+	@%p6 bra 	BB7_7;
+
+BB7_6:
+	add.s64 	%rd28, %rd13, %rd32;
+	ld.u8 	%rs3, [%rd28];
+	add.s64 	%rd29, %rd11, %rd32;
+	st.u8 	[%rd29], %rs3;
+	add.s64 	%rd32, %rd32, 1;
+	setp.lt.u64	%p7, %rd32, %rd12;
+	@%p7 bra 	BB7_6;
+
+BB7_7:
 	st.param.b64	[func_retval0+0], %rd1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.cu:54 	return pRet;
-	.loc 1 54 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.c:56 	return pRet;
+	.loc 1 56 2
 	ret;
 }
 
@@ -323,29 +348,29 @@ BB7_5:
 	ld.param.u64 	%rd8, [_Z12RVA_FindDataP5tRVA_j_param_0];
 	ld.param.u32 	%r2, [_Z12RVA_FindDataP5tRVA_j_param_1];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.cu:60 	if (rva == 0) {
-	.loc 1 60 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.c:62 	if (rva == 0) {
+	.loc 1 62 2
 	setp.eq.s32	%p1, %r2, 0;
 	mov.u64 	%rd16, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.cu:60 	if (rva == 0) {
-	.loc 1 60 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.c:62 	if (rva == 0) {
+	.loc 1 62 2
 	@%p1 bra 	BB8_6;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.cu:64 	pRVA = pThis->pFirstRVA;
-	.loc 1 64 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.c:66 	pRVA = pThis->pFirstRVA;
+	.loc 1 66 2
 	ld.u64 	%rd15, [%rd8];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.cu:65 	while (pRVA != NULL) {
-	.loc 1 65 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.c:67 	while (pRVA != NULL) {
+	.loc 1 67 2
 	setp.eq.s64	%p2, %rd15, 0;
 	@%p2 bra 	BB8_6;
 
 BB8_2:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.cu:66 		if (rva >= pRVA->baseAddress && rva < pRVA->baseAddress+pRVA->size) {
-	.loc 1 66 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.c:68 		if (rva >= pRVA->baseAddress && rva < pRVA->baseAddress+pRVA->size) {
+	.loc 1 68 3
 	ld.u64 	%rd4, [%rd15];
 	cvt.u32.u64	%r1, %rd4;
 	setp.gt.u32	%p3, %r1, %r2;
@@ -354,8 +379,8 @@ BB8_2:
 	shr.u64 	%rd11, %rd4, 32;
 	cvt.u32.u64	%r3, %rd11;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.cu:66 		if (rva >= pRVA->baseAddress && rva < pRVA->baseAddress+pRVA->size) {
-	.loc 1 66 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.c:68 		if (rva >= pRVA->baseAddress && rva < pRVA->baseAddress+pRVA->size) {
+	.loc 1 68 3
 	add.s32 	%r4, %r3, %r1;
 	setp.le.u32	%p4, %r4, %r2;
 	@%p4 bra 	BB8_5;
@@ -363,24 +388,24 @@ BB8_2:
 
 BB8_5:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.cu:69 		pRVA = pRVA->pNext;
-	.loc 1 69 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.c:71 		pRVA = pRVA->pNext;
+	.loc 1 71 3
 	ld.u64 	%rd15, [%rd15+16];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.cu:65 	while (pRVA != NULL) {
-	.loc 1 65 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.c:67 	while (pRVA != NULL) {
+	.loc 1 67 2
 	setp.ne.s64	%p5, %rd15, 0;
 	@%p5 bra 	BB8_2;
 	bra.uni 	BB8_6;
 
 BB8_4:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.cu:66 		if (rva >= pRVA->baseAddress && rva < pRVA->baseAddress+pRVA->size) {
-	.loc 1 66 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.c:68 		if (rva >= pRVA->baseAddress && rva < pRVA->baseAddress+pRVA->size) {
+	.loc 1 68 3
 	ld.u32 	%r5, [%rd15];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.cu:67 			return (char*)(pRVA->pData) + (rva - pRVA->baseAddress);
-	.loc 1 67 4
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.c:69 			return (char*)(pRVA->pData) + (rva - pRVA->baseAddress);
+	.loc 1 69 4
 	sub.s32 	%r6, %r2, %r5;
 	cvt.u64.u32	%rd12, %r6;
 	ld.u64 	%rd13, [%rd15+8];
@@ -389,11 +414,11 @@ BB8_4:
 BB8_6:
 	st.param.b64	[func_retval0+0], %rd16;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.cu:71 	return NULL;
-	.loc 1 71 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.c:73 	return NULL;
+	.loc 1 73 2
 	ret;
 }
 
-	.file	1 "C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.cu", 1509046919, 2315
+	.file	1 "C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.c", 1511871630, 2386
 	.file	2 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v9.0\\include\\cuda_device_runtime_api.h", 1504359958, 14836
 

@@ -184,7 +184,7 @@
 	add.u64 	%rd4, %SP, 10000;
 	cvta.to.local.u64 	%rd5, %rd4;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Sys.cu:33 	Gprintf("\n\n*** CRASH ***\n");
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Sys.c:33 	Gprintf("\n\n*** CRASH ***\n");
 	.loc 1 33 2
 	mov.u64 	%rd6, $str;
 	cvta.global.u64 	%rd7, %rd6;
@@ -205,7 +205,7 @@
 	//{
 	}// Callseq End 0
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Sys.cu:34 	printf("%s\n", pMsg);
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Sys.c:34 	printf("%s\n", pMsg);
 	.loc 1 34 2
 	st.local.u64 	[%rd5], %rd1;
 	mov.u64 	%rd8, $str1;
@@ -230,17 +230,17 @@
 	//{
 	}// Callseq End 1
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Sys.cu:36 	va_start(va, pMsg);
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Sys.c:36 	va_start(va, pMsg);
 	.loc 1 36 2
 	mov.u64 	%rd10, %VAParam;
 	mov.u64 	%rd17, %rd10;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Sys.cu:38 	Gvsprintf(buf, pMsg, va);
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Sys.c:38 	Gvsprintf(buf, pMsg, va);
 	.loc 1 38 2
 	mov.u64 	%rd11, %rd17;
 	add.u64 	%rd12, %SP, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Sys.cu:38 	Gvsprintf(buf, pMsg, va);
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Sys.c:38 	Gvsprintf(buf, pMsg, va);
 	.loc 1 38 2
 	// Callseq Start 2
 	{
@@ -265,7 +265,7 @@
 	//{
 	}// Callseq End 2
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Sys.cu:39 	Gprintf("%s", buf);
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Sys.c:39 	Gprintf("%s", buf);
 	.loc 1 39 2
 	mov.u64 	%rd13, $str2;
 	cvta.global.u64 	%rd14, %rd13;
@@ -289,7 +289,7 @@
 	//{
 	}// Callseq End 3
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Sys.cu:42 	Gprintf("\n\n");
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Sys.c:42 	Gprintf("\n\n");
 	.loc 1 42 2
 	mov.u64 	%rd15, $str3;
 	cvta.global.u64 	%rd16, %rd15;
@@ -310,7 +310,7 @@
 	//{
 	}// Callseq End 4
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Sys.cu:52 }
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Sys.c:52 }
 	.loc 1 52 1
 	ret;
 }
@@ -329,21 +329,21 @@
 
 	ld.param.u32 	%r1, [_Z5log_fjPKcz_param_0];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Sys.cu:58 	if (logLevel >= level) {
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Sys.c:58 	if (logLevel >= level) {
 	.loc 1 58 2
 	ld.global.u32 	%r2, [logLevel];
 	setp.lt.u32	%p1, %r2, %r1;
 	@%p1 bra 	BB7_2;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Sys.cu:59 		va_start(va, pMsg);
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Sys.c:59 		va_start(va, pMsg);
 	.loc 1 59 3
 	mov.u64 	%rd1, %VAParam;
 	mov.u64 	%rd2, %rd1;
 
 BB7_2:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Sys.cu:63 }
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Sys.c:63 }
 	.loc 1 63 1
 	ret;
 }
@@ -361,7 +361,7 @@ BB7_2:
 
 	ld.param.u64 	%rd3, [_Z17Sys_GetMethodDescP14tMD_MethodDef__param_0];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Sys.cu:69 	Gsprintf(methodName, "%s.%s.%s(", pMethod->pParentType->nameSpace, pMethod->pParentType->name, pMethod->name);
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Sys.c:69 	Gsprintf(methodName, "%s.%s.%s(", pMethod->pParentType->nameSpace, pMethod->pParentType->name, pMethod->name);
 	.loc 1 69 2
 	add.s64 	%rd1, %rd3, 96;
 	ld.u64 	%rd4, [%rd3+96];
@@ -397,14 +397,14 @@ BB7_2:
 	//{
 	}// Callseq End 5
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Sys.cu:70 	for (i=METHOD_ISSTATIC(pMethod)?0:1; i<pMethod->numberOfParameters; i++) {
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Sys.c:70 	for (i=METHOD_ISSTATIC(pMethod)?0:1; i<pMethod->numberOfParameters; i++) {
 	.loc 1 70 7
 	ld.u16 	%rs6, [%rd3+26];
 	and.b16  	%rs4, %rs6, 16;
 	setp.eq.s16	%p1, %rs4, 0;
 	selp.u32	%r14, 1, 0, %p1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Sys.cu:70 	for (i=METHOD_ISSTATIC(pMethod)?0:1; i<pMethod->numberOfParameters; i++) {
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Sys.c:70 	for (i=METHOD_ISSTATIC(pMethod)?0:1; i<pMethod->numberOfParameters; i++) {
 	.loc 1 70 2
 	ld.u16 	%r5, [%rd3+66];
 	setp.ge.u32	%p2, %r14, %r5;
@@ -415,7 +415,7 @@ BB7_2:
 
 BB8_6:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Sys.cu:71 		if (i > (U32)(METHOD_ISSTATIC(pMethod)?0:1)) {
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Sys.c:71 		if (i > (U32)(METHOD_ISSTATIC(pMethod)?0:1)) {
 	.loc 1 71 3
 	ld.u16 	%rs6, [%rd2+-6];
 
@@ -428,7 +428,7 @@ BB8_2:
 
 	mov.u32 	%r7, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Sys.cu:72 			Gsprintf(Gstrchr(methodName, 0), ",");
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Sys.c:72 			Gsprintf(Gstrchr(methodName, 0), ",");
 	.loc 1 72 13
 	// Callseq Start 6
 	{
@@ -450,7 +450,7 @@ BB8_2:
 	//{
 	}// Callseq End 6
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Sys.cu:72 			Gsprintf(Gstrchr(methodName, 0), ",");
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Sys.c:72 			Gsprintf(Gstrchr(methodName, 0), ",");
 	.loc 1 72 4
 	mov.u64 	%rd15, $str5;
 	cvta.global.u64 	%rd16, %rd15;
@@ -477,7 +477,7 @@ BB8_2:
 BB8_4:
 	mov.u32 	%r9, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Sys.cu:74 		Gsprintf(Gstrchr(methodName, 0), pMethod->pParams[i].pTypeDef->name);
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Sys.c:74 		Gsprintf(Gstrchr(methodName, 0), pMethod->pParams[i].pTypeDef->name);
 	.loc 1 74 12
 	// Callseq Start 8
 	{
@@ -504,7 +504,7 @@ BB8_4:
 	ld.u64 	%rd23, [%rd22];
 	ld.u64 	%rd24, [%rd23+24];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Sys.cu:74 		Gsprintf(Gstrchr(methodName, 0), pMethod->pParams[i].pTypeDef->name);
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Sys.c:74 		Gsprintf(Gstrchr(methodName, 0), pMethod->pParams[i].pTypeDef->name);
 	.loc 1 74 3
 	// Callseq Start 9
 	{
@@ -526,15 +526,15 @@ BB8_4:
 	//{
 	}// Callseq End 9
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Sys.cu:70 	for (i=METHOD_ISSTATIC(pMethod)?0:1; i<pMethod->numberOfParameters; i++) {
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Sys.c:70 	for (i=METHOD_ISSTATIC(pMethod)?0:1; i<pMethod->numberOfParameters; i++) {
 	.loc 1 70 2
 	ld.u16 	%r11, [%rd1+-30];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Sys.cu:70 	for (i=METHOD_ISSTATIC(pMethod)?0:1; i<pMethod->numberOfParameters; i++) {
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Sys.c:70 	for (i=METHOD_ISSTATIC(pMethod)?0:1; i<pMethod->numberOfParameters; i++) {
 	.loc 1 70 71
 	add.s32 	%r14, %r14, 1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Sys.cu:70 	for (i=METHOD_ISSTATIC(pMethod)?0:1; i<pMethod->numberOfParameters; i++) {
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Sys.c:70 	for (i=METHOD_ISSTATIC(pMethod)?0:1; i<pMethod->numberOfParameters; i++) {
 	.loc 1 70 2
 	setp.lt.u32	%p5, %r14, %r11;
 	@%p5 bra 	BB8_6;
@@ -542,7 +542,7 @@ BB8_4:
 BB8_5:
 	mov.u32 	%r12, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Sys.cu:76 	Gsprintf(Gstrchr(methodName, 0), ")");
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Sys.c:76 	Gsprintf(Gstrchr(methodName, 0), ")");
 	.loc 1 76 11
 	// Callseq Start 10
 	{
@@ -564,7 +564,7 @@ BB8_5:
 	//{
 	}// Callseq End 10
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Sys.cu:76 	Gsprintf(Gstrchr(methodName, 0), ")");
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Sys.c:76 	Gsprintf(Gstrchr(methodName, 0), ")");
 	.loc 1 76 2
 	mov.u64 	%rd28, $str6;
 	cvta.global.u64 	%rd29, %rd28;
@@ -589,7 +589,7 @@ BB8_5:
 	}// Callseq End 11
 	st.param.b64	[func_retval0+0], %rd9;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Sys.cu:77 	return methodName;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Sys.c:77 	return methodName;
 	.loc 1 77 2
 	ret;
 }
@@ -605,14 +605,14 @@ BB8_5:
 
 	ld.param.u32 	%r1, [_Z13mallocForeverj_param_0];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Sys.cu:83 	mallocForeverSize += size;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Sys.c:83 	mallocForeverSize += size;
 	.loc 1 83 2
 	ld.global.u32 	%r2, [__nv_static_24__11_Sys_cpp1_ii_686caf96_mallocForeverSize];
 	add.s32 	%r3, %r2, %r1;
 	st.global.u32 	[__nv_static_24__11_Sys_cpp1_ii_686caf96_mallocForeverSize], %r3;
 	mov.u32 	%r4, 3;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Sys.cu:84 log_f(3, "--- mallocForever: TotalSize %d\n", mallocForeverSize);
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Sys.c:84 log_f(3, "--- mallocForever: TotalSize %d\n", mallocForeverSize);
 	.loc 1 84 1
 	// Callseq Start 12
 	{
@@ -635,11 +635,11 @@ BB8_5:
 	//{
 	}// Callseq End 12
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Sys.cu:85 	return Gmalloc(size);
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Sys.c:85 	return Gmalloc(size);
 	.loc 1 85 2
 	cvt.u64.u32	%rd2, %r1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Sys.cu:85 	return Gmalloc(size);
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Sys.c:85 	return Gmalloc(size);
 	.loc 1 85 9
 	// Callseq Start 13
 	{
@@ -669,10 +669,11 @@ BB8_5:
 	.reg .b64 	%rd<2>;
 
 
+	mov.u64 	%rd1, 0;
 	st.param.b64	[func_retval0+0], %rd1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Sys.cu:116 }
-	.loc 1 116 1
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Sys.c:116 	return 0;
+	.loc 1 116 2
 	ret;
 }
 
@@ -684,10 +685,11 @@ BB8_5:
 	.reg .b64 	%rd<2>;
 
 
+	mov.u64 	%rd1, 0;
 	st.param.b64	[func_retval0+0], %rd1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Sys.cu:137 }
-	.loc 1 137 1
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Sys.c:138 	return 0;
+	.loc 1 138 2
 	ret;
 }
 
@@ -700,11 +702,11 @@ BB8_5:
 
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Sys.cu:147 }
-	.loc 1 147 1
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Sys.c:149 }
+	.loc 1 149 1
 	ret;
 }
 
-	.file	1 "C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Sys.cu", 1512570476, 4036
+	.file	1 "C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Sys.c", 1512763318, 4060
 	.file	2 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v9.0\\include\\cuda_device_runtime_api.h", 1504359958, 14836
 

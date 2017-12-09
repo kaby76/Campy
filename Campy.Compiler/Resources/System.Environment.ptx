@@ -131,7 +131,7 @@
 	mov.u64 	%rd1, 0;
 	st.param.b64	[func_retval0+0], %rd1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Environment.cu:38 	return NULL;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Environment.c:38 	return NULL;
 	.loc 1 38 2
 	ret;
 }
@@ -149,7 +149,7 @@
 	mov.u64 	%rd1, 0;
 	st.param.b64	[func_retval0+0], %rd1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Environment.cu:57 	return NULL;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Environment.c:57 	return NULL;
 	.loc 1 57 2
 	ret;
 }
@@ -167,11 +167,11 @@
 	mov.u64 	%rd1, 0;
 	st.param.b64	[func_retval0+0], %rd1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Environment.cu:69 	return NULL;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Environment.c:69 	return NULL;
 	.loc 1 69 2
 	ret;
 }
 
-	.file	1 "C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Environment.cu", 1509046919, 2527
+	.file	1 "C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Environment.c", 1509046919, 2527
 	.file	2 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v9.0\\include\\cuda_device_runtime_api.h", 1504359958, 14836
 

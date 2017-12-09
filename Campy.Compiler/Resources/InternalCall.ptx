@@ -854,12 +854,12 @@
 	.reg .pred 	%p<10>;
 	.reg .b16 	%rs<3>;
 	.reg .b32 	%r<7>;
-	.reg .b64 	%rd<48>;
+	.reg .b64 	%rd<49>;
 
 
 	ld.param.u64 	%rd14, [_Z16InternalCall_MapP14tMD_MethodDef__param_0];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/InternalCall.cu:181 	if (pMethod->pParentType->pParent == types[TYPE_SYSTEM_MULTICASTDELEGATE]) {
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/InternalCall.c:181 	if (pMethod->pParentType->pParent == types[TYPE_SYSTEM_MULTICASTDELEGATE]) {
 	.loc 1 181 2
 	add.s64 	%rd1, %rd14, 96;
 	ld.u64 	%rd15, [%rd14+96];
@@ -867,50 +867,53 @@
 	ld.u64 	%rd17, [%rd16+160];
 	ld.u64 	%rd18, [%rd15+64];
 	setp.eq.s64	%p1, %rd18, %rd17;
-	@%p1 bra 	BB6_7;
+	@%p1 bra 	BB6_8;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/InternalCall.cu:189 		for (pCall = internalCalls; pCall->method != NULL; pCall++) {
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/InternalCall.c:189 		for (pCall = internalCalls; pCall->method != NULL; pCall++) {
 	.loc 1 189 3
-	ld.global.u64 	%rd22, [__nv_static_33__20_InternalCall_cpp1_ii_6e6d69b0_internalCalls+16];
-	mov.u64 	%rd45, __nv_static_33__20_InternalCall_cpp1_ii_6e6d69b0_internalCalls;
-	cvta.global.u64 	%rd44, %rd45;
+	ld.global.u64 	%rd23, [__nv_static_33__20_InternalCall_cpp1_ii_6e6d69b0_internalCalls+16];
+	mov.u64 	%rd46, __nv_static_33__20_InternalCall_cpp1_ii_6e6d69b0_internalCalls;
+	cvta.global.u64 	%rd45, %rd46;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/InternalCall.cu:189 		for (pCall = internalCalls; pCall->method != NULL; pCall++) {
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/InternalCall.c:189 		for (pCall = internalCalls; pCall->method != NULL; pCall++) {
 	.loc 1 189 3
-	setp.eq.s64	%p2, %rd22, 0;
-	@%p2 bra 	BB6_8;
+	setp.eq.s64	%p2, %rd23, 0;
+	mov.u64 	%rd44, 0;
+	@%p2 bra 	BB6_9;
 
-BB6_2:
-	mov.u64 	%rd4, %rd45;
+	mov.u64 	%rd47, %rd44;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/InternalCall.cu:190 			if (pCall->nameSpace != NULL) {
+BB6_3:
+	mov.u64 	%rd4, %rd46;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/InternalCall.c:190 			if (pCall->nameSpace != NULL) {
 	.loc 1 190 4
-	ld.global.u64 	%rd23, [%rd4];
-	setp.eq.s64	%p3, %rd23, 0;
-	selp.b64	%rd46, %rd46, %rd23, %p3;
+	ld.global.u64 	%rd24, [%rd4];
+	setp.eq.s64	%p3, %rd24, 0;
+	selp.b64	%rd47, %rd47, %rd24, %p3;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/InternalCall.cu:193 			if (pCall->type != NULL) {
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/InternalCall.c:193 			if (pCall->type != NULL) {
 	.loc 1 193 4
-	ld.global.u64 	%rd24, [%rd4+8];
-	setp.eq.s64	%p4, %rd24, 0;
-	selp.b64	%rd43, %rd43, %rd24, %p4;
+	ld.global.u64 	%rd25, [%rd4+8];
+	setp.eq.s64	%p4, %rd25, 0;
+	selp.b64	%rd44, %rd44, %rd25, %p4;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/InternalCall.cu:196 			if (Gstrcmp(pMethod->pParentType->nameSpace, curNameSpace) == 0) {
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/InternalCall.c:196 			if (Gstrcmp(pMethod->pParentType->nameSpace, curNameSpace) == 0) {
 	.loc 1 196 4
-	ld.u64 	%rd25, [%rd1];
-	ld.u64 	%rd26, [%rd25+32];
+	ld.u64 	%rd26, [%rd1];
+	ld.u64 	%rd27, [%rd26+32];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/InternalCall.cu:196 			if (Gstrcmp(pMethod->pParentType->nameSpace, curNameSpace) == 0) {
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/InternalCall.c:196 			if (Gstrcmp(pMethod->pParentType->nameSpace, curNameSpace) == 0) {
 	.loc 1 196 8
 	// Callseq Start 0
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
 	.param .b64 param0;
-	st.param.b64	[param0+0], %rd26;
+	st.param.b64	[param0+0], %rd27;
 	.param .b64 param1;
-	st.param.b64	[param1+0], %rd46;
+	st.param.b64	[param1+0], %rd47;
 	.param .b32 retval0;
 	call.uni (retval0), 
 	_Z7GstrcmpPKcS0_, 
@@ -923,24 +926,24 @@ BB6_2:
 	//{
 	}// Callseq End 0
 	setp.ne.s32	%p5, %r1, 0;
-	@%p5 bra 	BB6_6;
+	@%p5 bra 	BB6_7;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/InternalCall.cu:197 				if (Gstrcmp(pMethod->pParentType->name, curType) == 0) {
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/InternalCall.c:197 				if (Gstrcmp(pMethod->pParentType->name, curType) == 0) {
 	.loc 1 197 5
-	ld.u64 	%rd27, [%rd1];
-	ld.u64 	%rd28, [%rd27+24];
+	ld.u64 	%rd28, [%rd1];
+	ld.u64 	%rd29, [%rd28+24];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/InternalCall.cu:197 				if (Gstrcmp(pMethod->pParentType->name, curType) == 0) {
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/InternalCall.c:197 				if (Gstrcmp(pMethod->pParentType->name, curType) == 0) {
 	.loc 1 197 9
 	// Callseq Start 1
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
 	.param .b64 param0;
-	st.param.b64	[param0+0], %rd28;
+	st.param.b64	[param0+0], %rd29;
 	.param .b64 param1;
-	st.param.b64	[param1+0], %rd43;
+	st.param.b64	[param1+0], %rd44;
 	.param .b32 retval0;
 	call.uni (retval0), 
 	_Z7GstrcmpPKcS0_, 
@@ -953,22 +956,22 @@ BB6_2:
 	//{
 	}// Callseq End 1
 	setp.ne.s32	%p6, %r2, 0;
-	@%p6 bra 	BB6_6;
+	@%p6 bra 	BB6_7;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/InternalCall.cu:198 					if (Type_IsMethod(pMethod, pCall->method, types[pCall->returnType], pCall->numParameters, pCall->parameterTypes)) {
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/InternalCall.c:198 					if (Type_IsMethod(pMethod, pCall->method, types[pCall->returnType], pCall->numParameters, pCall->parameterTypes)) {
 	.loc 1 198 6
-	ld.global.u64 	%rd29, [%rd4+16];
+	ld.global.u64 	%rd30, [%rd4+16];
 	ld.global.v2.u8 	{%rs1, %rs2}, [%rd4+32];
 	cvt.u32.u16	%r3, %rs2;
-	ld.global.u64 	%rd30, [types];
+	ld.global.u64 	%rd31, [types];
 	cvt.u32.u16	%r4, %rs1;
-	mul.wide.u32 	%rd31, %r4, 8;
-	add.s64 	%rd32, %rd30, %rd31;
-	ld.u64 	%rd33, [%rd32];
-	add.s64 	%rd34, %rd44, 34;
+	mul.wide.u32 	%rd32, %r4, 8;
+	add.s64 	%rd33, %rd31, %rd32;
+	ld.u64 	%rd34, [%rd33];
+	add.s64 	%rd35, %rd45, 34;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/InternalCall.cu:198 					if (Type_IsMethod(pMethod, pCall->method, types[pCall->returnType], pCall->numParameters, pCall->parameterTypes)) {
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/InternalCall.c:198 					if (Type_IsMethod(pMethod, pCall->method, types[pCall->returnType], pCall->numParameters, pCall->parameterTypes)) {
 	.loc 1 198 10
 	// Callseq Start 2
 	{
@@ -977,13 +980,13 @@ BB6_2:
 	.param .b64 param0;
 	st.param.b64	[param0+0], %rd14;
 	.param .b64 param1;
-	st.param.b64	[param1+0], %rd29;
+	st.param.b64	[param1+0], %rd30;
 	.param .b64 param2;
-	st.param.b64	[param2+0], %rd33;
+	st.param.b64	[param2+0], %rd34;
 	.param .b32 param3;
 	st.param.b32	[param3+0], %r3;
 	.param .b64 param4;
-	st.param.b64	[param4+0], %rd34;
+	st.param.b64	[param4+0], %rd35;
 	.param .b32 retval0;
 	call.uni (retval0), 
 	_Z13Type_IsMethodP14tMD_MethodDef_PcP12tMD_TypeDef_jPh, 
@@ -999,26 +1002,26 @@ BB6_2:
 	//{
 	}// Callseq End 2
 	setp.eq.s32	%p7, %r5, 0;
-	@%p7 bra 	BB6_6;
-	bra.uni 	BB6_5;
-
-BB6_6:
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/InternalCall.cu:189 		for (pCall = internalCalls; pCall->method != NULL; pCall++) {
-	.loc 1 189 51
-	add.s64 	%rd45, %rd4, 40;
-	add.s64 	%rd44, %rd44, 40;
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/InternalCall.cu:189 		for (pCall = internalCalls; pCall->method != NULL; pCall++) {
-	.loc 1 189 3
-	ld.global.u64 	%rd35, [%rd4+56];
-	setp.eq.s64	%p8, %rd35, 0;
-	@%p8 bra 	BB6_8;
-	bra.uni 	BB6_2;
+	@%p7 bra 	BB6_7;
+	bra.uni 	BB6_6;
 
 BB6_7:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/InternalCall.cu:183 		fnInternalCall fn = Map_Delegate(pMethod);
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/InternalCall.c:189 		for (pCall = internalCalls; pCall->method != NULL; pCall++) {
+	.loc 1 189 51
+	add.s64 	%rd46, %rd4, 40;
+	add.s64 	%rd45, %rd45, 40;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/InternalCall.c:189 		for (pCall = internalCalls; pCall->method != NULL; pCall++) {
+	.loc 1 189 3
+	ld.global.u64 	%rd36, [%rd4+56];
+	setp.eq.s64	%p8, %rd36, 0;
+	@%p8 bra 	BB6_9;
+	bra.uni 	BB6_3;
+
+BB6_8:
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/InternalCall.c:183 		fnInternalCall fn = Map_Delegate(pMethod);
 	.loc 1 183 23
 	// Callseq Start 3
 	{
@@ -1032,36 +1035,36 @@ BB6_7:
 	(
 	param0
 	);
-	ld.param.b64	%rd47, [retval0+0];
+	ld.param.b64	%rd48, [retval0+0];
 	
 	//{
 	}// Callseq End 3
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/InternalCall.cu:184 		if (fn != NULL) {
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/InternalCall.c:184 		if (fn != NULL) {
 	.loc 1 184 3
-	setp.ne.s64	%p9, %rd47, 0;
-	@%p9 bra 	BB6_9;
+	setp.ne.s64	%p9, %rd48, 0;
+	@%p9 bra 	BB6_10;
 
-BB6_8:
+BB6_9:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/InternalCall.cu:206 	Crash("InternalCall_Map(): Cannot map [%s]%s.%s", pMethod->pParentType->nameSpace, pMethod->pParentType->name, pMethod->name);
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/InternalCall.c:206 	Crash("InternalCall_Map(): Cannot map [%s]%s.%s", pMethod->pParentType->nameSpace, pMethod->pParentType->name, pMethod->name);
 	.loc 1 206 2
-	ld.u64 	%rd37, [%rd1];
-	ld.u64 	%rd38, [%rd37+32];
-	ld.u64 	%rd39, [%rd37+24];
-	ld.u64 	%rd40, [%rd1+-64];
-	mov.u64 	%rd41, $str106;
-	cvta.global.u64 	%rd42, %rd41;
+	ld.u64 	%rd38, [%rd1];
+	ld.u64 	%rd39, [%rd38+32];
+	ld.u64 	%rd40, [%rd38+24];
+	ld.u64 	%rd41, [%rd1+-64];
+	mov.u64 	%rd42, $str106;
+	cvta.global.u64 	%rd43, %rd42;
 	// Callseq Start 4
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
 	.param .b64 param0;
-	st.param.b64	[param0+0], %rd42;
+	st.param.b64	[param0+0], %rd43;
 	.param .align 8 .b8 param1[24];
-	st.param.b64	[param1+0], %rd38;
-	st.param.b64	[param1+8], %rd39;
-	st.param.b64	[param1+16], %rd40;
+	st.param.b64	[param1+0], %rd39;
+	st.param.b64	[param1+8], %rd40;
+	st.param.b64	[param1+16], %rd41;
 	call.uni 
 	_Z5CrashPKcz, 
 	(
@@ -1073,7 +1076,7 @@ BB6_8:
 	}// Callseq End 4
 	mov.u32 	%r6, 101;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/InternalCall.cu:207 	FAKE_RETURN;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/InternalCall.c:207 	FAKE_RETURN;
 	.loc 1 207 2
 	// Callseq Start 5
 	{
@@ -1089,22 +1092,23 @@ BB6_8:
 	
 	//{
 	}// Callseq End 5
+	mov.u64 	%rd48, 0;
 
-BB6_9:
-	st.param.b64	[func_retval0+0], %rd47;
+BB6_10:
+	st.param.b64	[func_retval0+0], %rd48;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/InternalCall.cu:208 }
-	.loc 1 208 1
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/InternalCall.c:208 	return NULL;
+	.loc 1 208 2
 	ret;
 
-BB6_5:
+BB6_6:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/InternalCall.cu:199 						return pCall->fn;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/InternalCall.c:199 						return pCall->fn;
 	.loc 1 199 7
-	ld.global.u64 	%rd47, [%rd4+24];
-	bra.uni 	BB6_9;
+	ld.global.u64 	%rd48, [%rd4+24];
+	bra.uni 	BB6_10;
 }
 
-	.file	1 "C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/InternalCall.cu", 1511710520, 14384
+	.file	1 "C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/InternalCall.c", 1512763013, 14413
 	.file	2 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v9.0\\include\\cuda_device_runtime_api.h", 1504359958, 14836
 

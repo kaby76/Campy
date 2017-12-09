@@ -131,11 +131,11 @@
 	mov.u64 	%rd1, 0;
 	st.param.b64	[func_retval0+0], %rd1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.DateTime.cu:58 	return NULL;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.DateTime.c:58 	return NULL;
 	.loc 1 58 2
 	ret;
 }
 
-	.file	1 "C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.DateTime.cu", 1509046919, 1928
+	.file	1 "C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.DateTime.c", 1512782626, 1928
 	.file	2 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v9.0\\include\\cuda_device_runtime_api.h", 1504359958, 14836
 

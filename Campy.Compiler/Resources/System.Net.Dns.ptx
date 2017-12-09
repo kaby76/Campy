@@ -131,11 +131,11 @@
 	mov.u64 	%rd1, 0;
 	st.param.b64	[func_retval0+0], %rd1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Net.Dns.cu:61 	return NULL;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Net.Dns.c:61 	return NULL;
 	.loc 1 61 2
 	ret;
 }
 
-	.file	1 "C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Net.Dns.cu", 1509046920, 2320
+	.file	1 "C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Net.Dns.c", 1509046920, 2320
 	.file	2 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v9.0\\include\\cuda_device_runtime_api.h", 1504359958, 14836
 

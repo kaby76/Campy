@@ -312,8 +312,8 @@
 	cvta.local.u64 	%SP, %rd236;
 	ld.param.u64 	%rd32, [_Z30CLIFile_GetMetaDataForAssemblyPc_param_0];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:54 	if (Gstrcmp(pAssemblyName, "mscorlib") == 0) {
-	.loc 1 54 6
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:53 	if (Gstrcmp(pAssemblyName, "mscorlib") == 0) {
+	.loc 1 53 6
 	mov.u64 	%rd33, $str;
 	cvta.global.u64 	%rd34, %rd33;
 	// Callseq Start 0
@@ -340,8 +340,8 @@
 	cvta.global.u64 	%rd36, %rd35;
 	selp.b64	%rd1, %rd36, %rd32, %p1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:58 	Gprintf("looking at pfiles.\n");
-	.loc 1 58 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:57 	Gprintf("looking at pfiles.\n");
+	.loc 1 57 2
 	mov.u64 	%rd37, $str2;
 	cvta.global.u64 	%rd38, %rd37;
 	// Callseq Start 1
@@ -361,19 +361,19 @@
 	//{
 	}// Callseq End 1
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:61 	pFiles = pFilesLoaded;
-	.loc 1 61 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:60 	pFiles = pFilesLoaded;
+	.loc 1 60 2
 	ld.global.u64 	%rd229, [__nv_static_28__15_CLIFile_cpp1_ii_0293f222_pFilesLoaded];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:62 	while (pFiles != NULL) {
-	.loc 1 62 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:61 	while (pFiles != NULL) {
+	.loc 1 61 2
 	setp.eq.s64	%p2, %rd229, 0;
 	@%p2 bra 	BB6_3;
 
 BB6_1:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:63 		Gprintf("pFiles not null.\n");
-	.loc 1 63 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:62 		Gprintf("pFiles not null.\n");
+	.loc 1 62 3
 	mov.u64 	%rd39, $str3;
 	cvta.global.u64 	%rd40, %rd39;
 	// Callseq Start 2
@@ -393,18 +393,18 @@ BB6_1:
 	//{
 	}// Callseq End 2
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:67 		pCLIFile = pFiles->pCLIFile;
-	.loc 1 67 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:66 		pCLIFile = pFiles->pCLIFile;
+	.loc 1 66 3
 	ld.u64 	%rd41, [%rd229];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:69 		pThisAssembly = (tMD_Assembly*)MetaData_GetTableRow(pCLIFile->pMetaData, MAKE_TABLE_INDEX(0x20, 1));
-	.loc 1 69 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:68 		pThisAssembly = (tMD_Assembly*)MetaData_GetTableRow(pCLIFile->pMetaData, MAKE_TABLE_INDEX(0x20, 1));
+	.loc 1 68 3
 	add.s64 	%rd5, %rd41, 32;
 	ld.u64 	%rd42, [%rd41+32];
 	mov.u32 	%r39, 536870913;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:69 		pThisAssembly = (tMD_Assembly*)MetaData_GetTableRow(pCLIFile->pMetaData, MAKE_TABLE_INDEX(0x20, 1));
-	.loc 1 69 34
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:68 		pThisAssembly = (tMD_Assembly*)MetaData_GetTableRow(pCLIFile->pMetaData, MAKE_TABLE_INDEX(0x20, 1));
+	.loc 1 68 34
 	// Callseq Start 3
 	{
 	.reg .b32 temp_param_reg;
@@ -425,12 +425,12 @@ BB6_1:
 	//{
 	}// Callseq End 3
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:70 		if (Gstrcmp(pAssemblyName, pThisAssembly->name) == 0) {
-	.loc 1 70 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:69 		if (Gstrcmp(pAssemblyName, pThisAssembly->name) == 0) {
+	.loc 1 69 3
 	ld.u64 	%rd44, [%rd43+24];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:70 		if (Gstrcmp(pAssemblyName, pThisAssembly->name) == 0) {
-	.loc 1 70 7
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:69 		if (Gstrcmp(pAssemblyName, pThisAssembly->name) == 0) {
+	.loc 1 69 7
 	// Callseq Start 4
 	{
 	.reg .b32 temp_param_reg;
@@ -454,20 +454,20 @@ BB6_1:
 	@%p3 bra 	BB6_56;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:74 		pFiles = pFiles->pNext;
-	.loc 1 74 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:73 		pFiles = pFiles->pNext;
+	.loc 1 73 3
 	ld.u64 	%rd229, [%rd229+8];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:62 	while (pFiles != NULL) {
-	.loc 1 62 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:61 	while (pFiles != NULL) {
+	.loc 1 61 2
 	setp.eq.s64	%p4, %rd229, 0;
 	@%p4 bra 	BB6_3;
 	bra.uni 	BB6_1;
 
 BB6_3:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:77 	Gprintf("Doing load\n");
-	.loc 1 77 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:76 	Gprintf("Doing load\n");
+	.loc 1 76 2
 	mov.u64 	%rd45, $str4;
 	cvta.global.u64 	%rd46, %rd45;
 	// Callseq Start 5
@@ -487,14 +487,14 @@ BB6_3:
 	//{
 	}// Callseq End 5
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:83 		printf("In CLIFile_GetMetaDataForAssembly0\n");
-	.loc 1 83 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:82 		printf("In CLIFile_GetMetaDataForAssembly0\n");
+	.loc 1 82 3
 	mov.u64 	%rd47, $str5;
 	cvta.global.u64 	%rd48, %rd47;
 	mov.u64 	%rd230, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:83 		printf("In CLIFile_GetMetaDataForAssembly0\n");
-	.loc 1 83 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:82 		printf("In CLIFile_GetMetaDataForAssembly0\n");
+	.loc 1 82 3
 	// Callseq Start 6
 	{
 	.reg .b32 temp_param_reg;
@@ -515,8 +515,8 @@ BB6_3:
 	//{
 	}// Callseq End 6
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:306 	Gprintf("In CLIFile_Load1\n");
-	.loc 1 306 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:305 	Gprintf("In CLIFile_Load1\n");
+	.loc 1 305 2
 	mov.u64 	%rd50, $str37;
 	cvta.global.u64 	%rd51, %rd50;
 	// Callseq Start 7
@@ -536,8 +536,8 @@ BB6_3:
 	//{
 	}// Callseq End 7
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:104 	if (Gstrcmp("corlib", pFileName) != 0)
-	.loc 1 104 6
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:103 	if (Gstrcmp("corlib", pFileName) != 0)
+	.loc 1 103 6
 	// Callseq Start 8
 	{
 	.reg .b32 temp_param_reg;
@@ -559,14 +559,14 @@ BB6_3:
 	}// Callseq End 8
 	setp.eq.s32	%p5, %r44, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:123 	return pData;
-	.loc 1 123 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:122 	return pData;
+	.loc 1 122 2
 	mov.u64 	%rd54, Gdata;
 	cvta.global.u64 	%rd55, %rd54;
 	selp.b64	%rd8, %rd55, 0, %p5;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:309 	if (pRawFile == NULL) {
-	.loc 1 309 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:308 	if (pRawFile == NULL) {
+	.loc 1 308 2
 	setp.ne.s32	%p6, %r44, 0;
 	setp.eq.s64	%p7, %rd55, 0;
 	or.pred  	%p8, %p6, %p7;
@@ -575,8 +575,8 @@ BB6_3:
 
 BB6_4:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:310 		Crash("Cannot load file: %s", pFileName);
-	.loc 1 310 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:309 		Crash("Cannot load file: %s", pFileName);
+	.loc 1 309 3
 	mov.u64 	%rd56, $str38;
 	cvta.global.u64 	%rd57, %rd56;
 	// Callseq Start 9
@@ -601,14 +601,14 @@ BB6_5:
 	add.u64 	%rd10, %SP, 0;
 	cvta.to.local.u64 	%rd9, %rd10;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:313 	log_f(1, "\nLoading file: %s\n", pFileName);
-	.loc 1 313 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:312 	log_f(1, "\nLoading file: %s\n", pFileName);
+	.loc 1 312 2
 	mov.u64 	%rd61, $str39;
 	cvta.global.u64 	%rd62, %rd61;
 	mov.u32 	%r45, 1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:313 	log_f(1, "\nLoading file: %s\n", pFileName);
-	.loc 1 313 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:312 	log_f(1, "\nLoading file: %s\n", pFileName);
+	.loc 1 312 2
 	// Callseq Start 10
 	{
 	.reg .b32 temp_param_reg;
@@ -630,8 +630,8 @@ BB6_5:
 	//{
 	}// Callseq End 10
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:128 	printf("LoadPEFile\n");
-	.loc 1 128 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:127 	printf("LoadPEFile\n");
+	.loc 1 127 2
 	mov.u64 	%rd65, $str8;
 	cvta.global.u64 	%rd66, %rd65;
 	// Callseq Start 11
@@ -655,8 +655,8 @@ BB6_5:
 	}// Callseq End 11
 	mov.u64 	%rd67, 40;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:130 	tCLIFile *pRet = TMALLOC(tCLIFile);
-	.loc 1 130 30
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:129 	tCLIFile *pRet = TMALLOC(tCLIFile);
+	.loc 1 129 30
 	// Callseq Start 12
 	{
 	.reg .b32 temp_param_reg;
@@ -686,14 +686,14 @@ BB6_6:
 
 BB6_7:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:132 	printf("LoadPEFile2\n");
-	.loc 1 132 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:131 	printf("LoadPEFile2\n");
+	.loc 1 131 2
 	mov.u64 	%rd69, $str9;
 	cvta.global.u64 	%rd70, %rd69;
 	mov.u64 	%rd71, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:132 	printf("LoadPEFile2\n");
-	.loc 1 132 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:131 	printf("LoadPEFile2\n");
+	.loc 1 131 2
 	// Callseq Start 13
 	{
 	.reg .b32 temp_param_reg;
@@ -714,8 +714,8 @@ BB6_7:
 	//{
 	}// Callseq End 13
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:141 	printf("LoadPEFile2.5\n");
-	.loc 1 141 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:140 	printf("LoadPEFile2.5\n");
+	.loc 1 140 2
 	mov.u64 	%rd72, $str10;
 	cvta.global.u64 	%rd73, %rd72;
 	// Callseq Start 14
@@ -738,8 +738,8 @@ BB6_7:
 	//{
 	}// Callseq End 14
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:144 	printf("LoadPEFile2.5a\n");
-	.loc 1 144 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:143 	printf("LoadPEFile2.5a\n");
+	.loc 1 143 2
 	mov.u64 	%rd74, $str11;
 	cvta.global.u64 	%rd75, %rd74;
 	// Callseq Start 15
@@ -762,8 +762,8 @@ BB6_7:
 	//{
 	}// Callseq End 15
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:146 	printf("LoadPEFile2.5b\n");
-	.loc 1 146 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:145 	printf("LoadPEFile2.5b\n");
+	.loc 1 145 2
 	mov.u64 	%rd76, $str12;
 	cvta.global.u64 	%rd77, %rd76;
 	// Callseq Start 16
@@ -786,8 +786,8 @@ BB6_7:
 	//{
 	}// Callseq End 16
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:148 	printf("LoadPEFile2.5c\n");
-	.loc 1 148 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:147 	printf("LoadPEFile2.5c\n");
+	.loc 1 147 2
 	mov.u64 	%rd78, $str13;
 	cvta.global.u64 	%rd79, %rd78;
 	// Callseq Start 17
@@ -810,8 +810,8 @@ BB6_7:
 	//{
 	}// Callseq End 17
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:150 	printf("LoadPEFile2.53\n");
-	.loc 1 150 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:149 	printf("LoadPEFile2.53\n");
+	.loc 1 149 2
 	mov.u64 	%rd80, $str14;
 	cvta.global.u64 	%rd81, %rd80;
 	// Callseq Start 18
@@ -834,8 +834,8 @@ BB6_7:
 	//{
 	}// Callseq End 18
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:156 	printf("LoadPEFile2.54\n");
-	.loc 1 156 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:155 	printf("LoadPEFile2.54\n");
+	.loc 1 155 2
 	mov.u64 	%rd82, $str15;
 	cvta.global.u64 	%rd83, %rd82;
 	// Callseq Start 19
@@ -858,8 +858,8 @@ BB6_7:
 	//{
 	}// Callseq End 19
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:157 	printf("In LoadPEFile2.55 %llx\n", pRet);
-	.loc 1 157 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:156 	printf("In LoadPEFile2.55 %llx\n", pRet);
+	.loc 1 156 2
 	st.local.u64 	[%rd9], %rd234;
 	mov.u64 	%rd84, $str16;
 	cvta.global.u64 	%rd85, %rd84;
@@ -883,8 +883,8 @@ BB6_7:
 	//{
 	}// Callseq End 20
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:158 	pRet->pRVA = RVA();
-	.loc 1 158 15
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:157 	pRet->pRVA = RVA();
+	.loc 1 157 15
 	// Callseq Start 21
 	{
 	.reg .b32 temp_param_reg;
@@ -901,8 +901,8 @@ BB6_7:
 	add.s64 	%rd15, %rd234, 8;
 	st.u64 	[%rd234+8], %rd86;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:159 	printf("LoadPEFile2.6\n");
-	.loc 1 159 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:158 	printf("LoadPEFile2.6\n");
+	.loc 1 158 2
 	mov.u64 	%rd87, $str17;
 	cvta.global.u64 	%rd88, %rd87;
 	// Callseq Start 22
@@ -925,8 +925,8 @@ BB6_7:
 	//{
 	}// Callseq End 22
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:160 	pRet->pMetaData = pMetaData = MetaData();
-	.loc 1 160 32
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:159 	pRet->pMetaData = pMetaData = MetaData();
+	.loc 1 159 32
 	// Callseq Start 23
 	{
 	.reg .b32 temp_param_reg;
@@ -942,8 +942,8 @@ BB6_7:
 	}// Callseq End 23
 	st.u64 	[%rd234+32], %rd16;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:161 	printf("LoadPEFile3\n");
-	.loc 1 161 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:160 	printf("LoadPEFile3\n");
+	.loc 1 160 2
 	mov.u64 	%rd89, $str18;
 	cvta.global.u64 	%rd90, %rd89;
 	// Callseq Start 24
@@ -966,12 +966,12 @@ BB6_7:
 	//{
 	}// Callseq End 24
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:162 	lfanew = GetU32(&(pMSDOSHeader[0x3c]));
-	.loc 1 162 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:161 	lfanew = GetU32(&(pMSDOSHeader[0x3c]));
+	.loc 1 161 2
 	add.s64 	%rd91, %rd8, 60;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:162 	lfanew = GetU32(&(pMSDOSHeader[0x3c]));
-	.loc 1 162 11
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:161 	lfanew = GetU32(&(pMSDOSHeader[0x3c]));
+	.loc 1 161 11
 	// Callseq Start 25
 	{
 	.reg .b32 temp_param_reg;
@@ -989,18 +989,18 @@ BB6_7:
 	//{
 	}// Callseq End 25
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:163 	pPEHeader = pMSDOSHeader + lfanew + 4;
-	.loc 1 163 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:162 	pPEHeader = pMSDOSHeader + lfanew + 4;
+	.loc 1 162 2
 	cvt.u64.u32	%rd17, %r57;
 	add.s64 	%rd92, %rd17, %rd8;
 	add.s64 	%rd93, %rd92, 4;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:165 	pPESectionHeaders = pPEOptionalHeader + 224;
-	.loc 1 165 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:164 	pPESectionHeaders = pPEOptionalHeader + 224;
+	.loc 1 164 2
 	add.s64 	%rd18, %rd17, 248;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:166 	printf("LoadPEFile4\n");
-	.loc 1 166 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:165 	printf("LoadPEFile4\n");
+	.loc 1 165 2
 	mov.u64 	%rd94, $str19;
 	cvta.global.u64 	%rd95, %rd94;
 	// Callseq Start 26
@@ -1023,8 +1023,8 @@ BB6_7:
 	//{
 	}// Callseq End 26
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:168 	machine = GetU16(&(pPEHeader[0]));
-	.loc 1 168 12
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:167 	machine = GetU16(&(pPEHeader[0]));
+	.loc 1 167 12
 	// Callseq Start 27
 	{
 	.reg .b32 temp_param_reg;
@@ -1042,8 +1042,8 @@ BB6_7:
 	//{
 	}// Callseq End 27
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:169 	if (machine != DOT_NET_MACHINE) {
-	.loc 1 169 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:168 	if (machine != DOT_NET_MACHINE) {
+	.loc 1 168 2
 	cvt.u16.u32	%rs3, %r59;
 	setp.eq.s16	%p11, %rs3, 332;
 	@%p11 bra 	BB6_9;
@@ -1051,14 +1051,14 @@ BB6_7:
 
 BB6_9:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:173 	printf("LoadPEFile5\n");
-	.loc 1 173 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:172 	printf("LoadPEFile5\n");
+	.loc 1 172 2
 	mov.u64 	%rd99, $str21;
 	cvta.global.u64 	%rd100, %rd99;
 	mov.u64 	%rd232, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:173 	printf("LoadPEFile5\n");
-	.loc 1 173 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:172 	printf("LoadPEFile5\n");
+	.loc 1 172 2
 	// Callseq Start 29
 	{
 	.reg .b32 temp_param_reg;
@@ -1079,12 +1079,12 @@ BB6_9:
 	//{
 	}// Callseq End 29
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:175 	numSections = GetU16(&(pPEHeader[2]));
-	.loc 1 175 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:174 	numSections = GetU16(&(pPEHeader[2]));
+	.loc 1 174 2
 	add.s64 	%rd103, %rd92, 6;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:175 	numSections = GetU16(&(pPEHeader[2]));
-	.loc 1 175 16
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:174 	numSections = GetU16(&(pPEHeader[2]));
+	.loc 1 174 16
 	// Callseq Start 30
 	{
 	.reg .b32 temp_param_reg;
@@ -1102,8 +1102,8 @@ BB6_9:
 	//{
 	}// Callseq End 30
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:176 	printf("LoadPEFile6\n");
-	.loc 1 176 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:175 	printf("LoadPEFile6\n");
+	.loc 1 175 2
 	mov.u64 	%rd104, $str22;
 	cvta.global.u64 	%rd105, %rd104;
 	// Callseq Start 31
@@ -1126,12 +1126,12 @@ BB6_9:
 	//{
 	}// Callseq End 31
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:178 	imageBase = GetU32(&(pPEOptionalHeader[28]));
-	.loc 1 178 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:177 	imageBase = GetU32(&(pPEOptionalHeader[28]));
+	.loc 1 177 2
 	add.s64 	%rd106, %rd92, 52;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:178 	imageBase = GetU32(&(pPEOptionalHeader[28]));
-	.loc 1 178 14
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:177 	imageBase = GetU32(&(pPEOptionalHeader[28]));
+	.loc 1 177 14
 	// Callseq Start 32
 	{
 	.reg .b32 temp_param_reg;
@@ -1149,8 +1149,8 @@ BB6_9:
 	//{
 	}// Callseq End 32
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:179 	printf("LoadPEFile7\n");
-	.loc 1 179 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:178 	printf("LoadPEFile7\n");
+	.loc 1 178 2
 	mov.u64 	%rd107, $str23;
 	cvta.global.u64 	%rd108, %rd107;
 	// Callseq Start 33
@@ -1173,12 +1173,12 @@ BB6_9:
 	//{
 	}// Callseq End 33
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:180 	fileAlignment = GetU32(&(pPEOptionalHeader[36]));
-	.loc 1 180 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:179 	fileAlignment = GetU32(&(pPEOptionalHeader[36]));
+	.loc 1 179 2
 	add.s64 	%rd109, %rd92, 60;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:180 	fileAlignment = GetU32(&(pPEOptionalHeader[36]));
-	.loc 1 180 18
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:179 	fileAlignment = GetU32(&(pPEOptionalHeader[36]));
+	.loc 1 179 18
 	// Callseq Start 34
 	{
 	.reg .b32 temp_param_reg;
@@ -1196,8 +1196,8 @@ BB6_9:
 	//{
 	}// Callseq End 34
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:181 	printf("LoadPEFile8\n");
-	.loc 1 181 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:180 	printf("LoadPEFile8\n");
+	.loc 1 180 2
 	mov.u64 	%rd110, $str24;
 	cvta.global.u64 	%rd111, %rd110;
 	// Callseq Start 35
@@ -1220,8 +1220,8 @@ BB6_9:
 	//{
 	}// Callseq End 35
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:183 	for (i=0; i<numSections; i++) {
-	.loc 1 183 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:182 	for (i=0; i<numSections; i++) {
+	.loc 1 182 2
 	setp.lt.s32	%p12, %r1, 1;
 	@%p12 bra 	BB6_19;
 
@@ -1239,12 +1239,12 @@ BB6_9:
 	@%p15 bra 	BB6_14;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:184 		unsigned char *pSection = pPESectionHeaders + i * 40;
-	.loc 1 184 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:183 		unsigned char *pSection = pPESectionHeaders + i * 40;
+	.loc 1 183 27
 	add.s64 	%rd112, %rd8, %rd18;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:185 		RVA_Create(pRet->pRVA, pData, pSection);
-	.loc 1 185 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:184 		RVA_Create(pRet->pRVA, pData, pSection);
+	.loc 1 184 3
 	ld.u64 	%rd113, [%rd15];
 	// Callseq Start 36
 	{
@@ -1272,16 +1272,16 @@ BB6_9:
 
 BB6_14:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:184 		unsigned char *pSection = pPESectionHeaders + i * 40;
-	.loc 1 184 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:183 		unsigned char *pSection = pPESectionHeaders + i * 40;
+	.loc 1 183 27
 	neg.s32 	%r71, %r136;
 	and.b32  	%r72, %r71, 40;
 	cvt.u64.u32	%rd115, %r72;
 	add.s64 	%rd116, %rd18, %rd115;
 	add.s64 	%rd117, %rd8, %rd116;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:185 		RVA_Create(pRet->pRVA, pData, pSection);
-	.loc 1 185 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:184 		RVA_Create(pRet->pRVA, pData, pSection);
+	.loc 1 184 3
 	ld.u64 	%rd118, [%rd15];
 	// Callseq Start 37
 	{
@@ -1306,21 +1306,21 @@ BB6_14:
 	//{
 	}// Callseq End 37
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:183 	for (i=0; i<numSections; i++) {
-	.loc 1 183 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:182 	for (i=0; i<numSections; i++) {
+	.loc 1 182 27
 	add.s32 	%r137, %r136, 1;
 
 BB6_15:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:184 		unsigned char *pSection = pPESectionHeaders + i * 40;
-	.loc 1 184 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:183 		unsigned char *pSection = pPESectionHeaders + i * 40;
+	.loc 1 183 27
 	mul.lo.s32 	%r73, %r137, 40;
 	cvt.s64.s32	%rd120, %r73;
 	add.s64 	%rd121, %rd18, %rd120;
 	add.s64 	%rd122, %rd8, %rd121;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:185 		RVA_Create(pRet->pRVA, pData, pSection);
-	.loc 1 185 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:184 		RVA_Create(pRet->pRVA, pData, pSection);
+	.loc 1 184 3
 	ld.u64 	%rd123, [%rd15];
 	// Callseq Start 38
 	{
@@ -1345,8 +1345,8 @@ BB6_15:
 	//{
 	}// Callseq End 38
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:183 	for (i=0; i<numSections; i++) {
-	.loc 1 183 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:182 	for (i=0; i<numSections; i++) {
+	.loc 1 182 27
 	add.s32 	%r140, %r137, 1;
 
 BB6_16:
@@ -1354,8 +1354,8 @@ BB6_16:
 	@%p16 bra 	BB6_19;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:184 		unsigned char *pSection = pPESectionHeaders + i * 40;
-	.loc 1 184 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:183 		unsigned char *pSection = pPESectionHeaders + i * 40;
+	.loc 1 183 27
 	mul.lo.s32 	%r139, %r140, 40;
 
 BB6_18:
@@ -1363,8 +1363,8 @@ BB6_18:
 	add.s64 	%rd126, %rd18, %rd125;
 	add.s64 	%rd127, %rd8, %rd126;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:185 		RVA_Create(pRet->pRVA, pData, pSection);
-	.loc 1 185 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:184 		RVA_Create(pRet->pRVA, pData, pSection);
+	.loc 1 184 3
 	ld.u64 	%rd128, [%rd15];
 	// Callseq Start 39
 	{
@@ -1389,15 +1389,15 @@ BB6_18:
 	//{
 	}// Callseq End 39
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:184 		unsigned char *pSection = pPESectionHeaders + i * 40;
-	.loc 1 184 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:183 		unsigned char *pSection = pPESectionHeaders + i * 40;
+	.loc 1 183 27
 	add.s32 	%r74, %r139, 40;
 	cvt.s64.s32	%rd130, %r74;
 	add.s64 	%rd131, %rd18, %rd130;
 	add.s64 	%rd132, %rd8, %rd131;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:185 		RVA_Create(pRet->pRVA, pData, pSection);
-	.loc 1 185 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:184 		RVA_Create(pRet->pRVA, pData, pSection);
+	.loc 1 184 3
 	ld.u64 	%rd133, [%rd15];
 	// Callseq Start 40
 	{
@@ -1422,15 +1422,15 @@ BB6_18:
 	//{
 	}// Callseq End 40
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:184 		unsigned char *pSection = pPESectionHeaders + i * 40;
-	.loc 1 184 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:183 		unsigned char *pSection = pPESectionHeaders + i * 40;
+	.loc 1 183 27
 	add.s32 	%r75, %r139, 80;
 	cvt.s64.s32	%rd135, %r75;
 	add.s64 	%rd136, %rd18, %rd135;
 	add.s64 	%rd137, %rd8, %rd136;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:185 		RVA_Create(pRet->pRVA, pData, pSection);
-	.loc 1 185 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:184 		RVA_Create(pRet->pRVA, pData, pSection);
+	.loc 1 184 3
 	ld.u64 	%rd138, [%rd15];
 	// Callseq Start 41
 	{
@@ -1455,15 +1455,15 @@ BB6_18:
 	//{
 	}// Callseq End 41
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:184 		unsigned char *pSection = pPESectionHeaders + i * 40;
-	.loc 1 184 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:183 		unsigned char *pSection = pPESectionHeaders + i * 40;
+	.loc 1 183 27
 	add.s32 	%r76, %r139, 120;
 	cvt.s64.s32	%rd140, %r76;
 	add.s64 	%rd141, %rd18, %rd140;
 	add.s64 	%rd142, %rd8, %rd141;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:185 		RVA_Create(pRet->pRVA, pData, pSection);
-	.loc 1 185 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:184 		RVA_Create(pRet->pRVA, pData, pSection);
+	.loc 1 184 3
 	ld.u64 	%rd143, [%rd15];
 	// Callseq Start 42
 	{
@@ -1488,23 +1488,23 @@ BB6_18:
 	//{
 	}// Callseq End 42
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:183 	for (i=0; i<numSections; i++) {
-	.loc 1 183 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:182 	for (i=0; i<numSections; i++) {
+	.loc 1 182 2
 	add.s32 	%r139, %r139, 160;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:183 	for (i=0; i<numSections; i++) {
-	.loc 1 183 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:182 	for (i=0; i<numSections; i++) {
+	.loc 1 182 27
 	add.s32 	%r140, %r140, 4;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:183 	for (i=0; i<numSections; i++) {
-	.loc 1 183 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:182 	for (i=0; i<numSections; i++) {
+	.loc 1 182 2
 	setp.lt.s32	%p17, %r140, %r1;
 	@%p17 bra 	BB6_18;
 
 BB6_19:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:188 	Gprintf("C1.\n");
-	.loc 1 188 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:187 	Gprintf("C1.\n");
+	.loc 1 187 2
 	mov.u64 	%rd146, $str25;
 	cvta.global.u64 	%rd147, %rd146;
 	// Callseq Start 43
@@ -1524,12 +1524,12 @@ BB6_19:
 	//{
 	}// Callseq End 43
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:190 	cliHeaderRVA = GetU32(&(pPEOptionalHeader[208]));
-	.loc 1 190 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:189 	cliHeaderRVA = GetU32(&(pPEOptionalHeader[208]));
+	.loc 1 189 2
 	add.s64 	%rd149, %rd92, 232;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:190 	cliHeaderRVA = GetU32(&(pPEOptionalHeader[208]));
-	.loc 1 190 17
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:189 	cliHeaderRVA = GetU32(&(pPEOptionalHeader[208]));
+	.loc 1 189 17
 	// Callseq Start 44
 	{
 	.reg .b32 temp_param_reg;
@@ -1547,12 +1547,12 @@ BB6_19:
 	//{
 	}// Callseq End 44
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:191 	cliHeaderSize = GetU32(&(pPEOptionalHeader[212]));
-	.loc 1 191 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:190 	cliHeaderSize = GetU32(&(pPEOptionalHeader[212]));
+	.loc 1 190 2
 	add.s64 	%rd150, %rd92, 236;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:191 	cliHeaderSize = GetU32(&(pPEOptionalHeader[212]));
-	.loc 1 191 18
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:190 	cliHeaderSize = GetU32(&(pPEOptionalHeader[212]));
+	.loc 1 190 18
 	// Callseq Start 45
 	{
 	.reg .b32 temp_param_reg;
@@ -1570,12 +1570,12 @@ BB6_19:
 	//{
 	}// Callseq End 45
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:193 	pCLIHeader = (unsigned char *)RVA_FindData(pRet->pRVA, cliHeaderRVA);
-	.loc 1 193 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:192 	pCLIHeader = (unsigned char *)RVA_FindData(pRet->pRVA, cliHeaderRVA);
+	.loc 1 192 2
 	ld.u64 	%rd151, [%rd15];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:193 	pCLIHeader = (unsigned char *)RVA_FindData(pRet->pRVA, cliHeaderRVA);
-	.loc 1 193 32
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:192 	pCLIHeader = (unsigned char *)RVA_FindData(pRet->pRVA, cliHeaderRVA);
+	.loc 1 192 32
 	// Callseq Start 46
 	{
 	.reg .b32 temp_param_reg;
@@ -1596,8 +1596,8 @@ BB6_19:
 	//{
 	}// Callseq End 46
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:194 	Gprintf("C2.\n");
-	.loc 1 194 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:193 	Gprintf("C2.\n");
+	.loc 1 193 2
 	mov.u64 	%rd153, $str26;
 	cvta.global.u64 	%rd154, %rd153;
 	// Callseq Start 47
@@ -1617,12 +1617,12 @@ BB6_19:
 	//{
 	}// Callseq End 47
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:196 	metaDataRVA = GetU32(&(pCLIHeader[8]));
-	.loc 1 196 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:195 	metaDataRVA = GetU32(&(pCLIHeader[8]));
+	.loc 1 195 2
 	add.s64 	%rd155, %rd152, 8;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:196 	metaDataRVA = GetU32(&(pCLIHeader[8]));
-	.loc 1 196 16
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:195 	metaDataRVA = GetU32(&(pCLIHeader[8]));
+	.loc 1 195 16
 	// Callseq Start 48
 	{
 	.reg .b32 temp_param_reg;
@@ -1640,12 +1640,12 @@ BB6_19:
 	//{
 	}// Callseq End 48
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:197 	metaDataSize = GetU32(&(pCLIHeader[12]));
-	.loc 1 197 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:196 	metaDataSize = GetU32(&(pCLIHeader[12]));
+	.loc 1 196 2
 	add.s64 	%rd156, %rd152, 12;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:197 	metaDataSize = GetU32(&(pCLIHeader[12]));
-	.loc 1 197 17
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:196 	metaDataSize = GetU32(&(pCLIHeader[12]));
+	.loc 1 196 17
 	// Callseq Start 49
 	{
 	.reg .b32 temp_param_reg;
@@ -1663,12 +1663,12 @@ BB6_19:
 	//{
 	}// Callseq End 49
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:198 	pRet->entryPoint = GetU32(&(pCLIHeader[20]));
-	.loc 1 198 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:197 	pRet->entryPoint = GetU32(&(pCLIHeader[20]));
+	.loc 1 197 2
 	add.s64 	%rd157, %rd152, 20;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:198 	pRet->entryPoint = GetU32(&(pCLIHeader[20]));
-	.loc 1 198 21
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:197 	pRet->entryPoint = GetU32(&(pCLIHeader[20]));
+	.loc 1 197 21
 	// Callseq Start 50
 	{
 	.reg .b32 temp_param_reg;
@@ -1687,12 +1687,12 @@ BB6_19:
 	}// Callseq End 50
 	st.u32 	[%rd15+16], %r84;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:199 	pRawMetaData = (unsigned char*)RVA_FindData(pRet->pRVA, metaDataRVA);
-	.loc 1 199 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:198 	pRawMetaData = (unsigned char*)RVA_FindData(pRet->pRVA, metaDataRVA);
+	.loc 1 198 2
 	ld.u64 	%rd158, [%rd15];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:199 	pRawMetaData = (unsigned char*)RVA_FindData(pRet->pRVA, metaDataRVA);
-	.loc 1 199 33
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:198 	pRawMetaData = (unsigned char*)RVA_FindData(pRet->pRVA, metaDataRVA);
+	.loc 1 198 33
 	// Callseq Start 51
 	{
 	.reg .b32 temp_param_reg;
@@ -1713,8 +1713,8 @@ BB6_19:
 	//{
 	}// Callseq End 51
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:200 	Gprintf("C3.\n");
-	.loc 1 200 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:199 	Gprintf("C3.\n");
+	.loc 1 199 2
 	mov.u64 	%rd159, $str27;
 	cvta.global.u64 	%rd160, %rd159;
 	// Callseq Start 52
@@ -1734,12 +1734,12 @@ BB6_19:
 	//{
 	}// Callseq End 52
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:204 		unsigned int versionLen = GetU32(&(pRawMetaData[12]));
-	.loc 1 204 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:203 		unsigned int versionLen = GetU32(&(pRawMetaData[12]));
+	.loc 1 203 27
 	add.s64 	%rd161, %rd19, 12;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:204 		unsigned int versionLen = GetU32(&(pRawMetaData[12]));
-	.loc 1 204 29
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:203 		unsigned int versionLen = GetU32(&(pRawMetaData[12]));
+	.loc 1 203 29
 	// Callseq Start 53
 	{
 	.reg .b32 temp_param_reg;
@@ -1757,13 +1757,13 @@ BB6_19:
 	//{
 	}// Callseq End 53
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:208 		pRet->pVersion = &(pRawMetaData[16]);
-	.loc 1 208 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:207 		pRet->pVersion = &(pRawMetaData[16]);
+	.loc 1 207 3
 	add.s64 	%rd162, %rd19, 16;
 	st.u64 	[%rd15+8], %rd162;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:209 		log_f(1, "CLI version: %s\n", pRet->pVersion);
-	.loc 1 209 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:208 		log_f(1, "CLI version: %s\n", pRet->pVersion);
+	.loc 1 208 3
 	mov.u64 	%rd163, $str28;
 	cvta.global.u64 	%rd164, %rd163;
 	// Callseq Start 54
@@ -1787,14 +1787,14 @@ BB6_19:
 	//{
 	}// Callseq End 54
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:211 		numberOfStreams = GetU16(&(pRawMetaData[ofs + 2]));
-	.loc 1 211 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:210 		numberOfStreams = GetU16(&(pRawMetaData[ofs + 2]));
+	.loc 1 210 3
 	add.s32 	%r87, %r13, 18;
 	cvt.u64.u32	%rd165, %r87;
 	add.s64 	%rd166, %rd19, %rd165;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:211 		numberOfStreams = GetU16(&(pRawMetaData[ofs + 2]));
-	.loc 1 211 21
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:210 		numberOfStreams = GetU16(&(pRawMetaData[ofs + 2]));
+	.loc 1 210 21
 	// Callseq Start 55
 	{
 	.reg .b32 temp_param_reg;
@@ -1812,42 +1812,42 @@ BB6_19:
 	//{
 	}// Callseq End 55
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:215 		for (i=0; i<(signed)numberOfStreams; i++) {
-	.loc 1 215 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:214 		for (i=0; i<(signed)numberOfStreams; i++) {
+	.loc 1 214 3
 	setp.lt.s32	%p18, %r14, 1;
 	@%p18 bra 	BB6_40;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:212 		ofs += 4;
-	.loc 1 212 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:211 		ofs += 4;
+	.loc 1 211 3
 	add.s32 	%r141, %r13, 20;
 	mov.u32 	%r143, 0;
 	mov.u64 	%rd232, 0;
 
 BB6_21:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:217 			for (; ; ++q)
-	.loc 1 217 4
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:216 			for (; ; ++q)
+	.loc 1 216 4
 	mov.u32 	%r19, %r141;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:219 				if (pRawMetaData[q] == '#')
-	.loc 1 219 5
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:218 				if (pRawMetaData[q] == '#')
+	.loc 1 218 5
 	cvt.s64.s32	%rd168, %r19;
 	add.s64 	%rd21, %rd19, %rd168;
 	ld.u8 	%rs4, [%rd21];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:221 					if (pRawMetaData[q + 1] == 'S' && pRawMetaData[q + 2] == 't')
-	.loc 1 221 6
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:220 					if (pRawMetaData[q + 1] == 'S' && pRawMetaData[q + 2] == 't')
+	.loc 1 220 6
 	add.s32 	%r141, %r19, 1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:219 				if (pRawMetaData[q] == '#')
-	.loc 1 219 5
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:218 				if (pRawMetaData[q] == '#')
+	.loc 1 218 5
 	setp.ne.s16	%p19, %rs4, 35;
 	@%p19 bra 	BB6_21;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:221 					if (pRawMetaData[q + 1] == 'S' && pRawMetaData[q + 2] == 't')
-	.loc 1 221 6
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:220 					if (pRawMetaData[q + 1] == 'S' && pRawMetaData[q + 2] == 't')
+	.loc 1 220 6
 	ld.u8 	%rs1, [%rd21+1];
 	setp.ne.s16	%p20, %rs1, 83;
 	@%p20 bra 	BB6_24;
@@ -1858,8 +1858,8 @@ BB6_21:
 
 BB6_24:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:223 					if (pRawMetaData[q + 1] == 'U' && pRawMetaData[q + 2] == 'S')
-	.loc 1 223 6
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:222 					if (pRawMetaData[q + 1] == 'U' && pRawMetaData[q + 2] == 'S')
+	.loc 1 222 6
 	setp.ne.s16	%p22, %rs1, 85;
 	@%p22 bra 	BB6_26;
 
@@ -1869,8 +1869,8 @@ BB6_24:
 
 BB6_26:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:225 					if (pRawMetaData[q + 1] == 'B' && pRawMetaData[q + 2] == 'l')
-	.loc 1 225 6
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:224 					if (pRawMetaData[q + 1] == 'B' && pRawMetaData[q + 2] == 'l')
+	.loc 1 224 6
 	setp.ne.s16	%p24, %rs1, 66;
 	@%p24 bra 	BB6_28;
 
@@ -1880,67 +1880,67 @@ BB6_26:
 
 BB6_28:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:227 					if (pRawMetaData[q + 1] == 'G' && pRawMetaData[q + 2] == 'U')
-	.loc 1 227 6
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:226 					if (pRawMetaData[q + 1] == 'G' && pRawMetaData[q + 2] == 'U')
+	.loc 1 226 6
 	setp.eq.s16	%p26, %rs1, 71;
 	@%p26 bra 	BB6_57;
 	bra.uni 	BB6_29;
 
 BB6_57:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:227 					if (pRawMetaData[q + 1] == 'G' && pRawMetaData[q + 2] == 'U')
-	.loc 1 227 6
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:226 					if (pRawMetaData[q + 1] == 'G' && pRawMetaData[q + 2] == 'U')
+	.loc 1 226 6
 	ld.u8 	%rs8, [%rd21+2];
 	setp.eq.s16	%p28, %rs8, 85;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:229 					if (pRawMetaData[q + 1] == '~')
-	.loc 1 229 6
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:228 					if (pRawMetaData[q + 1] == '~')
+	.loc 1 228 6
 	setp.eq.s16	%p29, %rs1, 126;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:227 					if (pRawMetaData[q + 1] == 'G' && pRawMetaData[q + 2] == 'U')
-	.loc 1 227 6
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:226 					if (pRawMetaData[q + 1] == 'G' && pRawMetaData[q + 2] == 'U')
+	.loc 1 226 6
 	or.pred  	%p30, %p28, %p29;
 	@!%p30 bra 	BB6_21;
 	bra.uni 	BB6_30;
 
 BB6_29:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:229 					if (pRawMetaData[q + 1] == '~')
-	.loc 1 229 6
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:228 					if (pRawMetaData[q + 1] == '~')
+	.loc 1 228 6
 	setp.eq.s16	%p27, %rs1, 126;
 	@%p27 bra 	BB6_30;
 	bra.uni 	BB6_21;
 
 BB6_30:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:233 			ofs = q - 8;
-	.loc 1 233 4
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:232 			ofs = q - 8;
+	.loc 1 232 4
 	add.s32 	%r90, %r19, -8;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:234 			unsigned int streamOffset = *(unsigned int*)&pRawMetaData[ofs];
-	.loc 1 234 30
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:233 			unsigned int streamOffset = *(unsigned int*)&pRawMetaData[ofs];
+	.loc 1 233 30
 	cvt.u64.u32	%rd169, %r90;
 	add.s64 	%rd170, %rd19, %rd169;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:235 			unsigned int streamSize = *(unsigned int*)&pRawMetaData[ofs+4];
-	.loc 1 235 28
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:234 			unsigned int streamSize = *(unsigned int*)&pRawMetaData[ofs+4];
+	.loc 1 234 28
 	add.s32 	%r91, %r19, -4;
 	cvt.u64.u32	%rd171, %r91;
 	add.s64 	%rd172, %rd19, %rd171;
 	ld.u32 	%r21, [%rd172];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:236 			unsigned char *pStreamName = &pRawMetaData[ofs+8];
-	.loc 1 236 31
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:235 			unsigned char *pStreamName = &pRawMetaData[ofs+8];
+	.loc 1 235 31
 	cvt.u64.u32	%rd173, %r19;
 	add.s64 	%rd22, %rd19, %rd173;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:237 			unsigned char *pStream = pRawMetaData + streamOffset;
-	.loc 1 237 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:236 			unsigned char *pStream = pRawMetaData + streamOffset;
+	.loc 1 236 27
 	ld.u32 	%rd174, [%rd170];
 	add.s64 	%rd23, %rd19, %rd174;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:240 			if (Gstrcasecmp((const char*)pStreamName, "#Strings") == 0) {
-	.loc 1 240 8
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:239 			if (Gstrcasecmp((const char*)pStreamName, "#Strings") == 0) {
+	.loc 1 239 8
 	mov.u64 	%rd175, $str29;
 	cvta.global.u64 	%rd176, %rd175;
 	// Callseq Start 56
@@ -1968,8 +1968,8 @@ BB6_30:
 
 BB6_38:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:241 				MetaData_LoadStrings(pMetaData, pStream, streamSize);
-	.loc 1 241 5
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:240 				MetaData_LoadStrings(pMetaData, pStream, streamSize);
+	.loc 1 240 5
 	// Callseq Start 64
 	{
 	.reg .b32 temp_param_reg;
@@ -1994,8 +1994,8 @@ BB6_38:
 
 BB6_31:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:242 			} else if (Gstrcasecmp((const char*)pStreamName, "#US") == 0) {
-	.loc 1 242 15
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:241 			} else if (Gstrcasecmp((const char*)pStreamName, "#US") == 0) {
+	.loc 1 241 15
 	mov.u64 	%rd177, $str30;
 	cvta.global.u64 	%rd178, %rd177;
 	// Callseq Start 57
@@ -2023,8 +2023,8 @@ BB6_31:
 
 BB6_37:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:243 				MetaData_LoadUserStrings(pMetaData, pStream, streamSize);
-	.loc 1 243 5
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:242 				MetaData_LoadUserStrings(pMetaData, pStream, streamSize);
+	.loc 1 242 5
 	// Callseq Start 63
 	{
 	.reg .b32 temp_param_reg;
@@ -2049,8 +2049,8 @@ BB6_37:
 
 BB6_32:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:244 			} else if (Gstrcasecmp((const char*)pStreamName, "#Blob") == 0) {
-	.loc 1 244 15
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:243 			} else if (Gstrcasecmp((const char*)pStreamName, "#Blob") == 0) {
+	.loc 1 243 15
 	mov.u64 	%rd179, $str31;
 	cvta.global.u64 	%rd180, %rd179;
 	// Callseq Start 58
@@ -2078,8 +2078,8 @@ BB6_32:
 
 BB6_36:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:245 				MetaData_LoadBlobs(pMetaData, pStream, streamSize);
-	.loc 1 245 5
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:244 				MetaData_LoadBlobs(pMetaData, pStream, streamSize);
+	.loc 1 244 5
 	// Callseq Start 62
 	{
 	.reg .b32 temp_param_reg;
@@ -2104,8 +2104,8 @@ BB6_36:
 
 BB6_33:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:246 			} else if (Gstrcasecmp((const char*)pStreamName, "#GUID") == 0) {
-	.loc 1 246 15
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:245 			} else if (Gstrcasecmp((const char*)pStreamName, "#GUID") == 0) {
+	.loc 1 245 15
 	mov.u64 	%rd181, $str32;
 	cvta.global.u64 	%rd182, %rd181;
 	// Callseq Start 59
@@ -2133,8 +2133,8 @@ BB6_33:
 
 BB6_35:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:247 				MetaData_LoadGUIDs(pMetaData, pStream, streamSize);
-	.loc 1 247 5
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:246 				MetaData_LoadGUIDs(pMetaData, pStream, streamSize);
+	.loc 1 246 5
 	// Callseq Start 61
 	{
 	.reg .b32 temp_param_reg;
@@ -2159,8 +2159,8 @@ BB6_35:
 
 BB6_34:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:248 			} else if (Gstrcasecmp((const char*)pStreamName, "#~") == 0) {
-	.loc 1 248 15
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:247 			} else if (Gstrcasecmp((const char*)pStreamName, "#~") == 0) {
+	.loc 1 247 15
 	mov.u64 	%rd183, $str33;
 	cvta.global.u64 	%rd184, %rd183;
 	// Callseq Start 60
@@ -2188,25 +2188,25 @@ BB6_34:
 
 BB6_39:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:215 		for (i=0; i<(signed)numberOfStreams; i++) {
-	.loc 1 215 40
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:214 		for (i=0; i<(signed)numberOfStreams; i++) {
+	.loc 1 214 40
 	add.s32 	%r143, %r143, 1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:215 		for (i=0; i<(signed)numberOfStreams; i++) {
-	.loc 1 215 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:214 		for (i=0; i<(signed)numberOfStreams; i++) {
+	.loc 1 214 3
 	setp.lt.s32	%p36, %r143, %r14;
 	@%p36 bra 	BB6_21;
 
 BB6_40:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:254 		if (pTableStream != NULL) {
-	.loc 1 254 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:253 		if (pTableStream != NULL) {
+	.loc 1 253 3
 	setp.eq.s64	%p37, %rd232, 0;
 	@%p37 bra 	BB6_42;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:255 			MetaData_LoadTables(pMetaData, pRet->pRVA, pTableStream, tableStreamSize);
-	.loc 1 255 4
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:254 			MetaData_LoadTables(pMetaData, pRet->pRVA, pTableStream, tableStreamSize);
+	.loc 1 254 4
 	ld.u64 	%rd185, [%rd234+8];
 	// Callseq Start 65
 	{
@@ -2234,8 +2234,8 @@ BB6_40:
 
 BB6_42:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:258 	Gprintf("C4.\n");
-	.loc 1 258 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:257 	Gprintf("C4.\n");
+	.loc 1 257 2
 	mov.u64 	%rd186, $str34;
 	cvta.global.u64 	%rd187, %rd186;
 	// Callseq Start 66
@@ -2255,8 +2255,8 @@ BB6_42:
 	//{
 	}// Callseq End 66
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:285 	Gprintf("C5.\n");
-	.loc 1 285 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:284 	Gprintf("C5.\n");
+	.loc 1 284 2
 	mov.u64 	%rd188, $str35;
 	cvta.global.u64 	%rd189, %rd188;
 	// Callseq Start 67
@@ -2276,12 +2276,12 @@ BB6_42:
 	//{
 	}// Callseq End 67
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:288 	for (i=pMetaData->tables.numRows[MD_TABLE_NESTEDCLASS]; i>0; i--) {
-	.loc 1 288 7
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:287 	for (i=pMetaData->tables.numRows[MD_TABLE_NESTEDCLASS]; i>0; i--) {
+	.loc 1 287 7
 	ld.u32 	%r26, [%rd16+204];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:288 	for (i=pMetaData->tables.numRows[MD_TABLE_NESTEDCLASS]; i>0; i--) {
-	.loc 1 288 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:287 	for (i=pMetaData->tables.numRows[MD_TABLE_NESTEDCLASS]; i>0; i--) {
+	.loc 1 287 2
 	setp.lt.s32	%p38, %r26, 1;
 	@%p38 bra 	BB6_51;
 
@@ -2299,13 +2299,13 @@ BB6_42:
 	@%p41 bra 	BB6_47;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:292 		pNested = (tMD_NestedClass*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_NESTEDCLASS, i));
-	.loc 1 292 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:291 		pNested = (tMD_NestedClass*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_NESTEDCLASS, i));
+	.loc 1 291 3
 	and.b32  	%r99, %r26, 16777215;
 	or.b32  	%r100, %r99, 687865856;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:292 		pNested = (tMD_NestedClass*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_NESTEDCLASS, i));
-	.loc 1 292 31
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:291 		pNested = (tMD_NestedClass*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_NESTEDCLASS, i));
+	.loc 1 291 31
 	// Callseq Start 68
 	{
 	.reg .b32 temp_param_reg;
@@ -2326,12 +2326,12 @@ BB6_42:
 	//{
 	}// Callseq End 68
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:293 		pParent = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->enclosingClass);
-	.loc 1 293 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:292 		pParent = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->enclosingClass);
+	.loc 1 292 3
 	ld.u32 	%r101, [%rd190+4];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:293 		pParent = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->enclosingClass);
-	.loc 1 293 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:292 		pParent = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->enclosingClass);
+	.loc 1 292 27
 	// Callseq Start 69
 	{
 	.reg .b32 temp_param_reg;
@@ -2352,12 +2352,12 @@ BB6_42:
 	//{
 	}// Callseq End 69
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:294 		pChild = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->nestedClass);
-	.loc 1 294 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:293 		pChild = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->nestedClass);
+	.loc 1 293 3
 	ld.u32 	%r102, [%rd190];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:294 		pChild = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->nestedClass);
-	.loc 1 294 26
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:293 		pChild = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->nestedClass);
+	.loc 1 293 26
 	// Callseq Start 70
 	{
 	.reg .b32 temp_param_reg;
@@ -2378,23 +2378,23 @@ BB6_42:
 	//{
 	}// Callseq End 70
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:295 		pChild->pNestedIn = pParent;
-	.loc 1 295 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:294 		pChild->pNestedIn = pParent;
+	.loc 1 294 3
 	st.u64 	[%rd192+208], %rd191;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:288 	for (i=pMetaData->tables.numRows[MD_TABLE_NESTEDCLASS]; i>0; i--) {
-	.loc 1 288 47
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:287 	for (i=pMetaData->tables.numRows[MD_TABLE_NESTEDCLASS]; i>0; i--) {
+	.loc 1 287 47
 	add.s32 	%r147, %r26, -1;
 
 BB6_47:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:292 		pNested = (tMD_NestedClass*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_NESTEDCLASS, i));
-	.loc 1 292 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:291 		pNested = (tMD_NestedClass*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_NESTEDCLASS, i));
+	.loc 1 291 3
 	and.b32  	%r103, %r147, 16777215;
 	or.b32  	%r104, %r103, 687865856;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:292 		pNested = (tMD_NestedClass*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_NESTEDCLASS, i));
-	.loc 1 292 31
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:291 		pNested = (tMD_NestedClass*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_NESTEDCLASS, i));
+	.loc 1 291 31
 	// Callseq Start 71
 	{
 	.reg .b32 temp_param_reg;
@@ -2415,12 +2415,12 @@ BB6_47:
 	//{
 	}// Callseq End 71
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:293 		pParent = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->enclosingClass);
-	.loc 1 293 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:292 		pParent = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->enclosingClass);
+	.loc 1 292 3
 	ld.u32 	%r105, [%rd193+4];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:293 		pParent = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->enclosingClass);
-	.loc 1 293 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:292 		pParent = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->enclosingClass);
+	.loc 1 292 27
 	// Callseq Start 72
 	{
 	.reg .b32 temp_param_reg;
@@ -2441,12 +2441,12 @@ BB6_47:
 	//{
 	}// Callseq End 72
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:294 		pChild = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->nestedClass);
-	.loc 1 294 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:293 		pChild = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->nestedClass);
+	.loc 1 293 3
 	ld.u32 	%r106, [%rd193];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:294 		pChild = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->nestedClass);
-	.loc 1 294 26
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:293 		pChild = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->nestedClass);
+	.loc 1 293 26
 	// Callseq Start 73
 	{
 	.reg .b32 temp_param_reg;
@@ -2467,23 +2467,23 @@ BB6_47:
 	//{
 	}// Callseq End 73
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:295 		pChild->pNestedIn = pParent;
-	.loc 1 295 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:294 		pChild->pNestedIn = pParent;
+	.loc 1 294 3
 	st.u64 	[%rd195+208], %rd194;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:288 	for (i=pMetaData->tables.numRows[MD_TABLE_NESTEDCLASS]; i>0; i--) {
-	.loc 1 288 47
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:287 	for (i=pMetaData->tables.numRows[MD_TABLE_NESTEDCLASS]; i>0; i--) {
+	.loc 1 287 47
 	add.s32 	%r148, %r147, -1;
 
 BB6_48:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:292 		pNested = (tMD_NestedClass*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_NESTEDCLASS, i));
-	.loc 1 292 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:291 		pNested = (tMD_NestedClass*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_NESTEDCLASS, i));
+	.loc 1 291 3
 	and.b32  	%r107, %r148, 16777215;
 	or.b32  	%r108, %r107, 687865856;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:292 		pNested = (tMD_NestedClass*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_NESTEDCLASS, i));
-	.loc 1 292 31
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:291 		pNested = (tMD_NestedClass*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_NESTEDCLASS, i));
+	.loc 1 291 31
 	// Callseq Start 74
 	{
 	.reg .b32 temp_param_reg;
@@ -2504,12 +2504,12 @@ BB6_48:
 	//{
 	}// Callseq End 74
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:293 		pParent = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->enclosingClass);
-	.loc 1 293 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:292 		pParent = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->enclosingClass);
+	.loc 1 292 3
 	ld.u32 	%r109, [%rd196+4];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:293 		pParent = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->enclosingClass);
-	.loc 1 293 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:292 		pParent = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->enclosingClass);
+	.loc 1 292 27
 	// Callseq Start 75
 	{
 	.reg .b32 temp_param_reg;
@@ -2530,12 +2530,12 @@ BB6_48:
 	//{
 	}// Callseq End 75
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:294 		pChild = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->nestedClass);
-	.loc 1 294 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:293 		pChild = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->nestedClass);
+	.loc 1 293 3
 	ld.u32 	%r110, [%rd196];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:294 		pChild = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->nestedClass);
-	.loc 1 294 26
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:293 		pChild = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->nestedClass);
+	.loc 1 293 26
 	// Callseq Start 76
 	{
 	.reg .b32 temp_param_reg;
@@ -2556,12 +2556,12 @@ BB6_48:
 	//{
 	}// Callseq End 76
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:295 		pChild->pNestedIn = pParent;
-	.loc 1 295 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:294 		pChild->pNestedIn = pParent;
+	.loc 1 294 3
 	st.u64 	[%rd198+208], %rd197;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:288 	for (i=pMetaData->tables.numRows[MD_TABLE_NESTEDCLASS]; i>0; i--) {
-	.loc 1 288 47
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:287 	for (i=pMetaData->tables.numRows[MD_TABLE_NESTEDCLASS]; i>0; i--) {
+	.loc 1 287 47
 	add.s32 	%r150, %r148, -1;
 
 BB6_49:
@@ -2570,13 +2570,13 @@ BB6_49:
 
 BB6_50:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:292 		pNested = (tMD_NestedClass*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_NESTEDCLASS, i));
-	.loc 1 292 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:291 		pNested = (tMD_NestedClass*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_NESTEDCLASS, i));
+	.loc 1 291 3
 	and.b32  	%r111, %r150, 16777215;
 	or.b32  	%r112, %r111, 687865856;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:292 		pNested = (tMD_NestedClass*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_NESTEDCLASS, i));
-	.loc 1 292 31
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:291 		pNested = (tMD_NestedClass*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_NESTEDCLASS, i));
+	.loc 1 291 31
 	// Callseq Start 77
 	{
 	.reg .b32 temp_param_reg;
@@ -2597,12 +2597,12 @@ BB6_50:
 	//{
 	}// Callseq End 77
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:293 		pParent = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->enclosingClass);
-	.loc 1 293 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:292 		pParent = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->enclosingClass);
+	.loc 1 292 3
 	ld.u32 	%r113, [%rd199+4];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:293 		pParent = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->enclosingClass);
-	.loc 1 293 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:292 		pParent = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->enclosingClass);
+	.loc 1 292 27
 	// Callseq Start 78
 	{
 	.reg .b32 temp_param_reg;
@@ -2623,12 +2623,12 @@ BB6_50:
 	//{
 	}// Callseq End 78
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:294 		pChild = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->nestedClass);
-	.loc 1 294 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:293 		pChild = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->nestedClass);
+	.loc 1 293 3
 	ld.u32 	%r114, [%rd199];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:294 		pChild = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->nestedClass);
-	.loc 1 294 26
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:293 		pChild = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->nestedClass);
+	.loc 1 293 26
 	// Callseq Start 79
 	{
 	.reg .b32 temp_param_reg;
@@ -2649,21 +2649,21 @@ BB6_50:
 	//{
 	}// Callseq End 79
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:295 		pChild->pNestedIn = pParent;
-	.loc 1 295 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:294 		pChild->pNestedIn = pParent;
+	.loc 1 294 3
 	st.u64 	[%rd201+208], %rd200;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:288 	for (i=pMetaData->tables.numRows[MD_TABLE_NESTEDCLASS]; i>0; i--) {
-	.loc 1 288 47
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:287 	for (i=pMetaData->tables.numRows[MD_TABLE_NESTEDCLASS]; i>0; i--) {
+	.loc 1 287 47
 	add.s32 	%r115, %r150, 16777215;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:292 		pNested = (tMD_NestedClass*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_NESTEDCLASS, i));
-	.loc 1 292 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:291 		pNested = (tMD_NestedClass*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_NESTEDCLASS, i));
+	.loc 1 291 3
 	and.b32  	%r116, %r115, 16777215;
 	or.b32  	%r117, %r116, 687865856;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:292 		pNested = (tMD_NestedClass*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_NESTEDCLASS, i));
-	.loc 1 292 31
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:291 		pNested = (tMD_NestedClass*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_NESTEDCLASS, i));
+	.loc 1 291 31
 	// Callseq Start 80
 	{
 	.reg .b32 temp_param_reg;
@@ -2684,12 +2684,12 @@ BB6_50:
 	//{
 	}// Callseq End 80
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:293 		pParent = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->enclosingClass);
-	.loc 1 293 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:292 		pParent = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->enclosingClass);
+	.loc 1 292 3
 	ld.u32 	%r118, [%rd202+4];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:293 		pParent = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->enclosingClass);
-	.loc 1 293 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:292 		pParent = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->enclosingClass);
+	.loc 1 292 27
 	// Callseq Start 81
 	{
 	.reg .b32 temp_param_reg;
@@ -2710,12 +2710,12 @@ BB6_50:
 	//{
 	}// Callseq End 81
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:294 		pChild = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->nestedClass);
-	.loc 1 294 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:293 		pChild = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->nestedClass);
+	.loc 1 293 3
 	ld.u32 	%r119, [%rd202];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:294 		pChild = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->nestedClass);
-	.loc 1 294 26
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:293 		pChild = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->nestedClass);
+	.loc 1 293 26
 	// Callseq Start 82
 	{
 	.reg .b32 temp_param_reg;
@@ -2736,21 +2736,21 @@ BB6_50:
 	//{
 	}// Callseq End 82
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:295 		pChild->pNestedIn = pParent;
-	.loc 1 295 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:294 		pChild->pNestedIn = pParent;
+	.loc 1 294 3
 	st.u64 	[%rd204+208], %rd203;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:288 	for (i=pMetaData->tables.numRows[MD_TABLE_NESTEDCLASS]; i>0; i--) {
-	.loc 1 288 47
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:287 	for (i=pMetaData->tables.numRows[MD_TABLE_NESTEDCLASS]; i>0; i--) {
+	.loc 1 287 47
 	add.s32 	%r120, %r150, 16777214;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:292 		pNested = (tMD_NestedClass*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_NESTEDCLASS, i));
-	.loc 1 292 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:291 		pNested = (tMD_NestedClass*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_NESTEDCLASS, i));
+	.loc 1 291 3
 	and.b32  	%r121, %r120, 16777215;
 	or.b32  	%r122, %r121, 687865856;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:292 		pNested = (tMD_NestedClass*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_NESTEDCLASS, i));
-	.loc 1 292 31
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:291 		pNested = (tMD_NestedClass*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_NESTEDCLASS, i));
+	.loc 1 291 31
 	// Callseq Start 83
 	{
 	.reg .b32 temp_param_reg;
@@ -2771,12 +2771,12 @@ BB6_50:
 	//{
 	}// Callseq End 83
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:293 		pParent = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->enclosingClass);
-	.loc 1 293 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:292 		pParent = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->enclosingClass);
+	.loc 1 292 3
 	ld.u32 	%r123, [%rd205+4];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:293 		pParent = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->enclosingClass);
-	.loc 1 293 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:292 		pParent = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->enclosingClass);
+	.loc 1 292 27
 	// Callseq Start 84
 	{
 	.reg .b32 temp_param_reg;
@@ -2797,12 +2797,12 @@ BB6_50:
 	//{
 	}// Callseq End 84
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:294 		pChild = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->nestedClass);
-	.loc 1 294 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:293 		pChild = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->nestedClass);
+	.loc 1 293 3
 	ld.u32 	%r124, [%rd205];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:294 		pChild = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->nestedClass);
-	.loc 1 294 26
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:293 		pChild = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->nestedClass);
+	.loc 1 293 26
 	// Callseq Start 85
 	{
 	.reg .b32 temp_param_reg;
@@ -2823,21 +2823,21 @@ BB6_50:
 	//{
 	}// Callseq End 85
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:295 		pChild->pNestedIn = pParent;
-	.loc 1 295 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:294 		pChild->pNestedIn = pParent;
+	.loc 1 294 3
 	st.u64 	[%rd207+208], %rd206;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:288 	for (i=pMetaData->tables.numRows[MD_TABLE_NESTEDCLASS]; i>0; i--) {
-	.loc 1 288 47
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:287 	for (i=pMetaData->tables.numRows[MD_TABLE_NESTEDCLASS]; i>0; i--) {
+	.loc 1 287 47
 	add.s32 	%r125, %r150, 16777213;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:292 		pNested = (tMD_NestedClass*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_NESTEDCLASS, i));
-	.loc 1 292 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:291 		pNested = (tMD_NestedClass*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_NESTEDCLASS, i));
+	.loc 1 291 3
 	and.b32  	%r126, %r125, 16777215;
 	or.b32  	%r127, %r126, 687865856;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:292 		pNested = (tMD_NestedClass*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_NESTEDCLASS, i));
-	.loc 1 292 31
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:291 		pNested = (tMD_NestedClass*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_NESTEDCLASS, i));
+	.loc 1 291 31
 	// Callseq Start 86
 	{
 	.reg .b32 temp_param_reg;
@@ -2858,12 +2858,12 @@ BB6_50:
 	//{
 	}// Callseq End 86
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:293 		pParent = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->enclosingClass);
-	.loc 1 293 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:292 		pParent = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->enclosingClass);
+	.loc 1 292 3
 	ld.u32 	%r128, [%rd208+4];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:293 		pParent = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->enclosingClass);
-	.loc 1 293 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:292 		pParent = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->enclosingClass);
+	.loc 1 292 27
 	// Callseq Start 87
 	{
 	.reg .b32 temp_param_reg;
@@ -2884,12 +2884,12 @@ BB6_50:
 	//{
 	}// Callseq End 87
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:294 		pChild = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->nestedClass);
-	.loc 1 294 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:293 		pChild = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->nestedClass);
+	.loc 1 293 3
 	ld.u32 	%r129, [%rd208];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:294 		pChild = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->nestedClass);
-	.loc 1 294 26
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:293 		pChild = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->nestedClass);
+	.loc 1 293 26
 	// Callseq Start 88
 	{
 	.reg .b32 temp_param_reg;
@@ -2910,23 +2910,23 @@ BB6_50:
 	//{
 	}// Callseq End 88
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:295 		pChild->pNestedIn = pParent;
-	.loc 1 295 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:294 		pChild->pNestedIn = pParent;
+	.loc 1 294 3
 	st.u64 	[%rd210+208], %rd209;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:288 	for (i=pMetaData->tables.numRows[MD_TABLE_NESTEDCLASS]; i>0; i--) {
-	.loc 1 288 47
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:287 	for (i=pMetaData->tables.numRows[MD_TABLE_NESTEDCLASS]; i>0; i--) {
+	.loc 1 287 47
 	add.s32 	%r150, %r150, -4;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:288 	for (i=pMetaData->tables.numRows[MD_TABLE_NESTEDCLASS]; i>0; i--) {
-	.loc 1 288 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:287 	for (i=pMetaData->tables.numRows[MD_TABLE_NESTEDCLASS]; i>0; i--) {
+	.loc 1 287 2
 	setp.gt.s32	%p43, %r150, 0;
 	@%p43 bra 	BB6_50;
 
 BB6_51:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:297 	Gprintf("normal exit LoadPEFile\n");
-	.loc 1 297 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:296 	Gprintf("normal exit LoadPEFile\n");
+	.loc 1 296 2
 	mov.u64 	%rd211, $str36;
 	cvta.global.u64 	%rd212, %rd211;
 	// Callseq Start 89
@@ -2949,8 +2949,8 @@ BB6_51:
 
 BB6_8:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:170 		Gprintf("Not DOT_NET_MACHINE.\n");
-	.loc 1 170 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:169 		Gprintf("Not DOT_NET_MACHINE.\n");
+	.loc 1 169 3
 	mov.u64 	%rd97, $str20;
 	cvta.global.u64 	%rd98, %rd97;
 	// Callseq Start 28
@@ -2970,14 +2970,14 @@ BB6_8:
 	//{
 	}// Callseq End 28
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:171 		return NULL;
-	.loc 1 171 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:170 		return NULL;
+	.loc 1 170 3
 	mov.u64 	%rd234, %rd71;
 
 BB6_52:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:316 	printf("In CLIFile_Load2\n");
-	.loc 1 316 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:315 	printf("In CLIFile_Load2\n");
+	.loc 1 315 2
 	mov.u64 	%rd213, $str40;
 	cvta.global.u64 	%rd214, %rd213;
 	// Callseq Start 90
@@ -3000,8 +3000,8 @@ BB6_52:
 	//{
 	}// Callseq End 90
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:317 	pRet->pFileName = (char*)mallocForever((U32)Gstrlen(pFileName) + 1);
-	.loc 1 317 46
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:316 	pRet->pFileName = (char*)mallocForever((U32)Gstrlen(pFileName) + 1);
+	.loc 1 316 46
 	// Callseq Start 91
 	{
 	.reg .b32 temp_param_reg;
@@ -3021,8 +3021,8 @@ BB6_52:
 	cvt.u32.u64	%r132, %rd218;
 	add.s32 	%r133, %r132, 1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:317 	pRet->pFileName = (char*)mallocForever((U32)Gstrlen(pFileName) + 1);
-	.loc 1 317 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:316 	pRet->pFileName = (char*)mallocForever((U32)Gstrlen(pFileName) + 1);
+	.loc 1 316 27
 	// Callseq Start 92
 	{
 	.reg .b32 temp_param_reg;
@@ -3041,8 +3041,8 @@ BB6_52:
 	}// Callseq End 92
 	st.u64 	[%rd234], %rd219;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:318 	Gstrcpy(pRet->pFileName, pFileName);
-	.loc 1 318 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:317 	Gstrcpy(pRet->pFileName, pFileName);
+	.loc 1 317 2
 	// Callseq Start 93
 	{
 	.reg .b32 temp_param_reg;
@@ -3064,8 +3064,8 @@ BB6_52:
 	}// Callseq End 93
 	mov.u32 	%r134, 16;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:321 	pNewFile = TMALLOCFOREVER(tFilesLoaded);
-	.loc 1 321 28
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:320 	pNewFile = TMALLOCFOREVER(tFilesLoaded);
+	.loc 1 320 28
 	// Callseq Start 94
 	{
 	.reg .b32 temp_param_reg;
@@ -3083,21 +3083,21 @@ BB6_52:
 	//{
 	}// Callseq End 94
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:322 	pNewFile->pCLIFile = pRet;
-	.loc 1 322 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:321 	pNewFile->pCLIFile = pRet;
+	.loc 1 321 2
 	st.u64 	[%rd221], %rd234;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:323 	pNewFile->pNext = pFilesLoaded;
-	.loc 1 323 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:322 	pNewFile->pNext = pFilesLoaded;
+	.loc 1 322 2
 	ld.global.u64 	%rd222, [__nv_static_28__15_CLIFile_cpp1_ii_0293f222_pFilesLoaded];
 	st.u64 	[%rd221+8], %rd222;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:324 	pFilesLoaded = pNewFile;
-	.loc 1 324 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:323 	pFilesLoaded = pNewFile;
+	.loc 1 323 2
 	st.global.u64 	[__nv_static_28__15_CLIFile_cpp1_ii_0293f222_pFilesLoaded], %rd221;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:86 		printf("In CLIFile_GetMetaDataForAssembly1\n");
-	.loc 1 86 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:85 		printf("In CLIFile_GetMetaDataForAssembly1\n");
+	.loc 1 85 3
 	mov.u64 	%rd223, $str6;
 	cvta.global.u64 	%rd224, %rd223;
 	// Callseq Start 95
@@ -3120,34 +3120,34 @@ BB6_52:
 	//{
 	}// Callseq End 95
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:89 		if (pCLIFile == NULL) {
-	.loc 1 89 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:88 		if (pCLIFile == NULL) {
+	.loc 1 88 3
 	setp.eq.s64	%p44, %rd234, 0;
 	@%p44 bra 	BB6_54;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:93 		return pCLIFile->pMetaData;
-	.loc 1 93 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:92 		return pCLIFile->pMetaData;
+	.loc 1 92 3
 	ld.u64 	%rd235, [%rd234+32];
 	bra.uni 	BB6_55;
 
 BB6_56:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:72 			return pCLIFile->pMetaData;
-	.loc 1 72 4
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:71 			return pCLIFile->pMetaData;
+	.loc 1 71 4
 	ld.u64 	%rd235, [%rd5];
 	bra.uni 	BB6_55;
 
 BB6_54:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:90 			Crash("Cannot load required assembly file: %s", fileName);
-	.loc 1 90 4
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:89 			Crash("Cannot load required assembly file: %s", fileName);
+	.loc 1 89 4
 	mov.u64 	%rd226, $str7;
 	cvta.global.u64 	%rd227, %rd226;
 	add.u64 	%rd228, %SP, 8;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:90 			Crash("Cannot load required assembly file: %s", fileName);
-	.loc 1 90 4
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:89 			Crash("Cannot load required assembly file: %s", fileName);
+	.loc 1 89 4
 	// Callseq Start 96
 	{
 	.reg .b32 temp_param_reg;
@@ -3170,8 +3170,8 @@ BB6_54:
 BB6_55:
 	st.param.b64	[func_retval0+0], %rd235;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:93 		return pCLIFile->pMetaData;
-	.loc 1 93 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:92 		return pCLIFile->pMetaData;
+	.loc 1 92 3
 	ret;
 }
 
@@ -3193,8 +3193,8 @@ BB6_55:
 	cvta.local.u64 	%SP, %rd195;
 	ld.param.u64 	%rd22, [_Z12CLIFile_LoadPc_param_0];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:306 	Gprintf("In CLIFile_Load1\n");
-	.loc 1 306 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:305 	Gprintf("In CLIFile_Load1\n");
+	.loc 1 305 2
 	mov.u64 	%rd23, $str37;
 	cvta.global.u64 	%rd24, %rd23;
 	// Callseq Start 97
@@ -3214,8 +3214,8 @@ BB6_55:
 	//{
 	}// Callseq End 97
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:104 	if (Gstrcmp("corlib", pFileName) != 0)
-	.loc 1 104 6
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:103 	if (Gstrcmp("corlib", pFileName) != 0)
+	.loc 1 103 6
 	mov.u64 	%rd25, $str1;
 	cvta.global.u64 	%rd26, %rd25;
 	// Callseq Start 98
@@ -3239,14 +3239,14 @@ BB6_55:
 	}// Callseq End 98
 	setp.eq.s32	%p1, %r37, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:123 	return pData;
-	.loc 1 123 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:122 	return pData;
+	.loc 1 122 2
 	mov.u64 	%rd27, Gdata;
 	cvta.global.u64 	%rd28, %rd27;
 	selp.b64	%rd1, %rd28, 0, %p1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:309 	if (pRawFile == NULL) {
-	.loc 1 309 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:308 	if (pRawFile == NULL) {
+	.loc 1 308 2
 	setp.ne.s32	%p2, %r37, 0;
 	setp.eq.s64	%p3, %rd28, 0;
 	or.pred  	%p4, %p2, %p3;
@@ -3255,8 +3255,8 @@ BB6_55:
 
 BB7_1:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:310 		Crash("Cannot load file: %s", pFileName);
-	.loc 1 310 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:309 		Crash("Cannot load file: %s", pFileName);
+	.loc 1 309 3
 	mov.u64 	%rd29, $str38;
 	cvta.global.u64 	%rd30, %rd29;
 	// Callseq Start 99
@@ -3280,18 +3280,18 @@ BB7_1:
 BB7_2:
 	add.u64 	%rd3, %SP, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:306 	Gprintf("In CLIFile_Load1\n");
-	.loc 1 306 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:305 	Gprintf("In CLIFile_Load1\n");
+	.loc 1 305 2
 	cvta.to.local.u64 	%rd2, %rd3;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:313 	log_f(1, "\nLoading file: %s\n", pFileName);
-	.loc 1 313 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:312 	log_f(1, "\nLoading file: %s\n", pFileName);
+	.loc 1 312 2
 	mov.u64 	%rd32, $str39;
 	cvta.global.u64 	%rd33, %rd32;
 	mov.u32 	%r38, 1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:313 	log_f(1, "\nLoading file: %s\n", pFileName);
-	.loc 1 313 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:312 	log_f(1, "\nLoading file: %s\n", pFileName);
+	.loc 1 312 2
 	// Callseq Start 100
 	{
 	.reg .b32 temp_param_reg;
@@ -3313,14 +3313,14 @@ BB7_2:
 	//{
 	}// Callseq End 100
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:128 	printf("LoadPEFile\n");
-	.loc 1 128 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:127 	printf("LoadPEFile\n");
+	.loc 1 127 2
 	mov.u64 	%rd34, $str8;
 	cvta.global.u64 	%rd35, %rd34;
 	mov.u64 	%rd190, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:128 	printf("LoadPEFile\n");
-	.loc 1 128 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:127 	printf("LoadPEFile\n");
+	.loc 1 127 2
 	// Callseq Start 101
 	{
 	.reg .b32 temp_param_reg;
@@ -3342,8 +3342,8 @@ BB7_2:
 	}// Callseq End 101
 	mov.u64 	%rd36, 40;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:130 	tCLIFile *pRet = TMALLOC(tCLIFile);
-	.loc 1 130 30
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:129 	tCLIFile *pRet = TMALLOC(tCLIFile);
+	.loc 1 129 30
 	// Callseq Start 102
 	{
 	.reg .b32 temp_param_reg;
@@ -3373,14 +3373,14 @@ BB7_3:
 
 BB7_4:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:132 	printf("LoadPEFile2\n");
-	.loc 1 132 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:131 	printf("LoadPEFile2\n");
+	.loc 1 131 2
 	mov.u64 	%rd38, $str9;
 	cvta.global.u64 	%rd39, %rd38;
 	mov.u64 	%rd40, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:132 	printf("LoadPEFile2\n");
-	.loc 1 132 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:131 	printf("LoadPEFile2\n");
+	.loc 1 131 2
 	// Callseq Start 103
 	{
 	.reg .b32 temp_param_reg;
@@ -3401,8 +3401,8 @@ BB7_4:
 	//{
 	}// Callseq End 103
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:141 	printf("LoadPEFile2.5\n");
-	.loc 1 141 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:140 	printf("LoadPEFile2.5\n");
+	.loc 1 140 2
 	mov.u64 	%rd41, $str10;
 	cvta.global.u64 	%rd42, %rd41;
 	// Callseq Start 104
@@ -3425,8 +3425,8 @@ BB7_4:
 	//{
 	}// Callseq End 104
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:144 	printf("LoadPEFile2.5a\n");
-	.loc 1 144 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:143 	printf("LoadPEFile2.5a\n");
+	.loc 1 143 2
 	mov.u64 	%rd43, $str11;
 	cvta.global.u64 	%rd44, %rd43;
 	// Callseq Start 105
@@ -3449,8 +3449,8 @@ BB7_4:
 	//{
 	}// Callseq End 105
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:146 	printf("LoadPEFile2.5b\n");
-	.loc 1 146 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:145 	printf("LoadPEFile2.5b\n");
+	.loc 1 145 2
 	mov.u64 	%rd45, $str12;
 	cvta.global.u64 	%rd46, %rd45;
 	// Callseq Start 106
@@ -3473,8 +3473,8 @@ BB7_4:
 	//{
 	}// Callseq End 106
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:148 	printf("LoadPEFile2.5c\n");
-	.loc 1 148 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:147 	printf("LoadPEFile2.5c\n");
+	.loc 1 147 2
 	mov.u64 	%rd47, $str13;
 	cvta.global.u64 	%rd48, %rd47;
 	// Callseq Start 107
@@ -3497,8 +3497,8 @@ BB7_4:
 	//{
 	}// Callseq End 107
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:150 	printf("LoadPEFile2.53\n");
-	.loc 1 150 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:149 	printf("LoadPEFile2.53\n");
+	.loc 1 149 2
 	mov.u64 	%rd49, $str14;
 	cvta.global.u64 	%rd50, %rd49;
 	// Callseq Start 108
@@ -3521,8 +3521,8 @@ BB7_4:
 	//{
 	}// Callseq End 108
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:156 	printf("LoadPEFile2.54\n");
-	.loc 1 156 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:155 	printf("LoadPEFile2.54\n");
+	.loc 1 155 2
 	mov.u64 	%rd51, $str15;
 	cvta.global.u64 	%rd52, %rd51;
 	// Callseq Start 109
@@ -3545,8 +3545,8 @@ BB7_4:
 	//{
 	}// Callseq End 109
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:157 	printf("In LoadPEFile2.55 %llx\n", pRet);
-	.loc 1 157 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:156 	printf("In LoadPEFile2.55 %llx\n", pRet);
+	.loc 1 156 2
 	st.local.u64 	[%rd2], %rd194;
 	mov.u64 	%rd53, $str16;
 	cvta.global.u64 	%rd54, %rd53;
@@ -3570,8 +3570,8 @@ BB7_4:
 	//{
 	}// Callseq End 110
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:158 	pRet->pRVA = RVA();
-	.loc 1 158 15
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:157 	pRet->pRVA = RVA();
+	.loc 1 157 15
 	// Callseq Start 111
 	{
 	.reg .b32 temp_param_reg;
@@ -3588,8 +3588,8 @@ BB7_4:
 	add.s64 	%rd8, %rd194, 8;
 	st.u64 	[%rd194+8], %rd55;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:159 	printf("LoadPEFile2.6\n");
-	.loc 1 159 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:158 	printf("LoadPEFile2.6\n");
+	.loc 1 158 2
 	mov.u64 	%rd56, $str17;
 	cvta.global.u64 	%rd57, %rd56;
 	// Callseq Start 112
@@ -3612,8 +3612,8 @@ BB7_4:
 	//{
 	}// Callseq End 112
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:160 	pRet->pMetaData = pMetaData = MetaData();
-	.loc 1 160 32
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:159 	pRet->pMetaData = pMetaData = MetaData();
+	.loc 1 159 32
 	// Callseq Start 113
 	{
 	.reg .b32 temp_param_reg;
@@ -3629,8 +3629,8 @@ BB7_4:
 	}// Callseq End 113
 	st.u64 	[%rd194+32], %rd9;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:161 	printf("LoadPEFile3\n");
-	.loc 1 161 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:160 	printf("LoadPEFile3\n");
+	.loc 1 160 2
 	mov.u64 	%rd58, $str18;
 	cvta.global.u64 	%rd59, %rd58;
 	// Callseq Start 114
@@ -3653,12 +3653,12 @@ BB7_4:
 	//{
 	}// Callseq End 114
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:162 	lfanew = GetU32(&(pMSDOSHeader[0x3c]));
-	.loc 1 162 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:161 	lfanew = GetU32(&(pMSDOSHeader[0x3c]));
+	.loc 1 161 2
 	add.s64 	%rd60, %rd1, 60;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:162 	lfanew = GetU32(&(pMSDOSHeader[0x3c]));
-	.loc 1 162 11
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:161 	lfanew = GetU32(&(pMSDOSHeader[0x3c]));
+	.loc 1 161 11
 	// Callseq Start 115
 	{
 	.reg .b32 temp_param_reg;
@@ -3676,18 +3676,18 @@ BB7_4:
 	//{
 	}// Callseq End 115
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:163 	pPEHeader = pMSDOSHeader + lfanew + 4;
-	.loc 1 163 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:162 	pPEHeader = pMSDOSHeader + lfanew + 4;
+	.loc 1 162 2
 	cvt.u64.u32	%rd10, %r50;
 	add.s64 	%rd61, %rd10, %rd1;
 	add.s64 	%rd62, %rd61, 4;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:165 	pPESectionHeaders = pPEOptionalHeader + 224;
-	.loc 1 165 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:164 	pPESectionHeaders = pPEOptionalHeader + 224;
+	.loc 1 164 2
 	add.s64 	%rd11, %rd10, 248;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:166 	printf("LoadPEFile4\n");
-	.loc 1 166 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:165 	printf("LoadPEFile4\n");
+	.loc 1 165 2
 	mov.u64 	%rd63, $str19;
 	cvta.global.u64 	%rd64, %rd63;
 	// Callseq Start 116
@@ -3710,8 +3710,8 @@ BB7_4:
 	//{
 	}// Callseq End 116
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:168 	machine = GetU16(&(pPEHeader[0]));
-	.loc 1 168 12
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:167 	machine = GetU16(&(pPEHeader[0]));
+	.loc 1 167 12
 	// Callseq Start 117
 	{
 	.reg .b32 temp_param_reg;
@@ -3729,8 +3729,8 @@ BB7_4:
 	//{
 	}// Callseq End 117
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:169 	if (machine != DOT_NET_MACHINE) {
-	.loc 1 169 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:168 	if (machine != DOT_NET_MACHINE) {
+	.loc 1 168 2
 	cvt.u16.u32	%rs3, %r52;
 	setp.eq.s16	%p7, %rs3, 332;
 	@%p7 bra 	BB7_6;
@@ -3738,14 +3738,14 @@ BB7_4:
 
 BB7_6:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:173 	printf("LoadPEFile5\n");
-	.loc 1 173 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:172 	printf("LoadPEFile5\n");
+	.loc 1 172 2
 	mov.u64 	%rd68, $str21;
 	cvta.global.u64 	%rd69, %rd68;
 	mov.u64 	%rd192, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:173 	printf("LoadPEFile5\n");
-	.loc 1 173 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:172 	printf("LoadPEFile5\n");
+	.loc 1 172 2
 	// Callseq Start 119
 	{
 	.reg .b32 temp_param_reg;
@@ -3766,12 +3766,12 @@ BB7_6:
 	//{
 	}// Callseq End 119
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:175 	numSections = GetU16(&(pPEHeader[2]));
-	.loc 1 175 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:174 	numSections = GetU16(&(pPEHeader[2]));
+	.loc 1 174 2
 	add.s64 	%rd72, %rd61, 6;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:175 	numSections = GetU16(&(pPEHeader[2]));
-	.loc 1 175 16
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:174 	numSections = GetU16(&(pPEHeader[2]));
+	.loc 1 174 16
 	// Callseq Start 120
 	{
 	.reg .b32 temp_param_reg;
@@ -3789,8 +3789,8 @@ BB7_6:
 	//{
 	}// Callseq End 120
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:176 	printf("LoadPEFile6\n");
-	.loc 1 176 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:175 	printf("LoadPEFile6\n");
+	.loc 1 175 2
 	mov.u64 	%rd73, $str22;
 	cvta.global.u64 	%rd74, %rd73;
 	// Callseq Start 121
@@ -3813,12 +3813,12 @@ BB7_6:
 	//{
 	}// Callseq End 121
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:178 	imageBase = GetU32(&(pPEOptionalHeader[28]));
-	.loc 1 178 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:177 	imageBase = GetU32(&(pPEOptionalHeader[28]));
+	.loc 1 177 2
 	add.s64 	%rd75, %rd61, 52;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:178 	imageBase = GetU32(&(pPEOptionalHeader[28]));
-	.loc 1 178 14
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:177 	imageBase = GetU32(&(pPEOptionalHeader[28]));
+	.loc 1 177 14
 	// Callseq Start 122
 	{
 	.reg .b32 temp_param_reg;
@@ -3836,8 +3836,8 @@ BB7_6:
 	//{
 	}// Callseq End 122
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:179 	printf("LoadPEFile7\n");
-	.loc 1 179 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:178 	printf("LoadPEFile7\n");
+	.loc 1 178 2
 	mov.u64 	%rd76, $str23;
 	cvta.global.u64 	%rd77, %rd76;
 	// Callseq Start 123
@@ -3860,12 +3860,12 @@ BB7_6:
 	//{
 	}// Callseq End 123
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:180 	fileAlignment = GetU32(&(pPEOptionalHeader[36]));
-	.loc 1 180 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:179 	fileAlignment = GetU32(&(pPEOptionalHeader[36]));
+	.loc 1 179 2
 	add.s64 	%rd78, %rd61, 60;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:180 	fileAlignment = GetU32(&(pPEOptionalHeader[36]));
-	.loc 1 180 18
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:179 	fileAlignment = GetU32(&(pPEOptionalHeader[36]));
+	.loc 1 179 18
 	// Callseq Start 124
 	{
 	.reg .b32 temp_param_reg;
@@ -3883,8 +3883,8 @@ BB7_6:
 	//{
 	}// Callseq End 124
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:181 	printf("LoadPEFile8\n");
-	.loc 1 181 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:180 	printf("LoadPEFile8\n");
+	.loc 1 180 2
 	mov.u64 	%rd79, $str24;
 	cvta.global.u64 	%rd80, %rd79;
 	// Callseq Start 125
@@ -3907,8 +3907,8 @@ BB7_6:
 	//{
 	}// Callseq End 125
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:183 	for (i=0; i<numSections; i++) {
-	.loc 1 183 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:182 	for (i=0; i<numSections; i++) {
+	.loc 1 182 2
 	setp.lt.s32	%p8, %r1, 1;
 	@%p8 bra 	BB7_16;
 
@@ -3926,12 +3926,12 @@ BB7_6:
 	@%p11 bra 	BB7_11;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:184 		unsigned char *pSection = pPESectionHeaders + i * 40;
-	.loc 1 184 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:183 		unsigned char *pSection = pPESectionHeaders + i * 40;
+	.loc 1 183 27
 	add.s64 	%rd81, %rd1, %rd11;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:185 		RVA_Create(pRet->pRVA, pData, pSection);
-	.loc 1 185 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:184 		RVA_Create(pRet->pRVA, pData, pSection);
+	.loc 1 184 3
 	ld.u64 	%rd82, [%rd8];
 	// Callseq Start 126
 	{
@@ -3959,16 +3959,16 @@ BB7_6:
 
 BB7_11:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:184 		unsigned char *pSection = pPESectionHeaders + i * 40;
-	.loc 1 184 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:183 		unsigned char *pSection = pPESectionHeaders + i * 40;
+	.loc 1 183 27
 	neg.s32 	%r64, %r128;
 	and.b32  	%r65, %r64, 40;
 	cvt.u64.u32	%rd84, %r65;
 	add.s64 	%rd85, %rd11, %rd84;
 	add.s64 	%rd86, %rd1, %rd85;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:185 		RVA_Create(pRet->pRVA, pData, pSection);
-	.loc 1 185 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:184 		RVA_Create(pRet->pRVA, pData, pSection);
+	.loc 1 184 3
 	ld.u64 	%rd87, [%rd8];
 	// Callseq Start 127
 	{
@@ -3993,21 +3993,21 @@ BB7_11:
 	//{
 	}// Callseq End 127
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:183 	for (i=0; i<numSections; i++) {
-	.loc 1 183 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:182 	for (i=0; i<numSections; i++) {
+	.loc 1 182 27
 	add.s32 	%r129, %r128, 1;
 
 BB7_12:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:184 		unsigned char *pSection = pPESectionHeaders + i * 40;
-	.loc 1 184 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:183 		unsigned char *pSection = pPESectionHeaders + i * 40;
+	.loc 1 183 27
 	mul.lo.s32 	%r66, %r129, 40;
 	cvt.s64.s32	%rd89, %r66;
 	add.s64 	%rd90, %rd11, %rd89;
 	add.s64 	%rd91, %rd1, %rd90;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:185 		RVA_Create(pRet->pRVA, pData, pSection);
-	.loc 1 185 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:184 		RVA_Create(pRet->pRVA, pData, pSection);
+	.loc 1 184 3
 	ld.u64 	%rd92, [%rd8];
 	// Callseq Start 128
 	{
@@ -4032,8 +4032,8 @@ BB7_12:
 	//{
 	}// Callseq End 128
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:183 	for (i=0; i<numSections; i++) {
-	.loc 1 183 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:182 	for (i=0; i<numSections; i++) {
+	.loc 1 182 27
 	add.s32 	%r132, %r129, 1;
 
 BB7_13:
@@ -4041,8 +4041,8 @@ BB7_13:
 	@%p12 bra 	BB7_16;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:184 		unsigned char *pSection = pPESectionHeaders + i * 40;
-	.loc 1 184 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:183 		unsigned char *pSection = pPESectionHeaders + i * 40;
+	.loc 1 183 27
 	mul.lo.s32 	%r131, %r132, 40;
 
 BB7_15:
@@ -4050,8 +4050,8 @@ BB7_15:
 	add.s64 	%rd95, %rd11, %rd94;
 	add.s64 	%rd96, %rd1, %rd95;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:185 		RVA_Create(pRet->pRVA, pData, pSection);
-	.loc 1 185 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:184 		RVA_Create(pRet->pRVA, pData, pSection);
+	.loc 1 184 3
 	ld.u64 	%rd97, [%rd8];
 	// Callseq Start 129
 	{
@@ -4076,15 +4076,15 @@ BB7_15:
 	//{
 	}// Callseq End 129
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:184 		unsigned char *pSection = pPESectionHeaders + i * 40;
-	.loc 1 184 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:183 		unsigned char *pSection = pPESectionHeaders + i * 40;
+	.loc 1 183 27
 	add.s32 	%r67, %r131, 40;
 	cvt.s64.s32	%rd99, %r67;
 	add.s64 	%rd100, %rd11, %rd99;
 	add.s64 	%rd101, %rd1, %rd100;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:185 		RVA_Create(pRet->pRVA, pData, pSection);
-	.loc 1 185 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:184 		RVA_Create(pRet->pRVA, pData, pSection);
+	.loc 1 184 3
 	ld.u64 	%rd102, [%rd8];
 	// Callseq Start 130
 	{
@@ -4109,15 +4109,15 @@ BB7_15:
 	//{
 	}// Callseq End 130
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:184 		unsigned char *pSection = pPESectionHeaders + i * 40;
-	.loc 1 184 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:183 		unsigned char *pSection = pPESectionHeaders + i * 40;
+	.loc 1 183 27
 	add.s32 	%r68, %r131, 80;
 	cvt.s64.s32	%rd104, %r68;
 	add.s64 	%rd105, %rd11, %rd104;
 	add.s64 	%rd106, %rd1, %rd105;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:185 		RVA_Create(pRet->pRVA, pData, pSection);
-	.loc 1 185 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:184 		RVA_Create(pRet->pRVA, pData, pSection);
+	.loc 1 184 3
 	ld.u64 	%rd107, [%rd8];
 	// Callseq Start 131
 	{
@@ -4142,15 +4142,15 @@ BB7_15:
 	//{
 	}// Callseq End 131
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:184 		unsigned char *pSection = pPESectionHeaders + i * 40;
-	.loc 1 184 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:183 		unsigned char *pSection = pPESectionHeaders + i * 40;
+	.loc 1 183 27
 	add.s32 	%r69, %r131, 120;
 	cvt.s64.s32	%rd109, %r69;
 	add.s64 	%rd110, %rd11, %rd109;
 	add.s64 	%rd111, %rd1, %rd110;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:185 		RVA_Create(pRet->pRVA, pData, pSection);
-	.loc 1 185 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:184 		RVA_Create(pRet->pRVA, pData, pSection);
+	.loc 1 184 3
 	ld.u64 	%rd112, [%rd8];
 	// Callseq Start 132
 	{
@@ -4175,23 +4175,23 @@ BB7_15:
 	//{
 	}// Callseq End 132
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:183 	for (i=0; i<numSections; i++) {
-	.loc 1 183 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:182 	for (i=0; i<numSections; i++) {
+	.loc 1 182 2
 	add.s32 	%r131, %r131, 160;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:183 	for (i=0; i<numSections; i++) {
-	.loc 1 183 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:182 	for (i=0; i<numSections; i++) {
+	.loc 1 182 27
 	add.s32 	%r132, %r132, 4;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:183 	for (i=0; i<numSections; i++) {
-	.loc 1 183 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:182 	for (i=0; i<numSections; i++) {
+	.loc 1 182 2
 	setp.lt.s32	%p13, %r132, %r1;
 	@%p13 bra 	BB7_15;
 
 BB7_16:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:188 	Gprintf("C1.\n");
-	.loc 1 188 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:187 	Gprintf("C1.\n");
+	.loc 1 187 2
 	mov.u64 	%rd115, $str25;
 	cvta.global.u64 	%rd116, %rd115;
 	// Callseq Start 133
@@ -4211,12 +4211,12 @@ BB7_16:
 	//{
 	}// Callseq End 133
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:190 	cliHeaderRVA = GetU32(&(pPEOptionalHeader[208]));
-	.loc 1 190 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:189 	cliHeaderRVA = GetU32(&(pPEOptionalHeader[208]));
+	.loc 1 189 2
 	add.s64 	%rd118, %rd61, 232;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:190 	cliHeaderRVA = GetU32(&(pPEOptionalHeader[208]));
-	.loc 1 190 17
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:189 	cliHeaderRVA = GetU32(&(pPEOptionalHeader[208]));
+	.loc 1 189 17
 	// Callseq Start 134
 	{
 	.reg .b32 temp_param_reg;
@@ -4234,12 +4234,12 @@ BB7_16:
 	//{
 	}// Callseq End 134
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:191 	cliHeaderSize = GetU32(&(pPEOptionalHeader[212]));
-	.loc 1 191 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:190 	cliHeaderSize = GetU32(&(pPEOptionalHeader[212]));
+	.loc 1 190 2
 	add.s64 	%rd119, %rd61, 236;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:191 	cliHeaderSize = GetU32(&(pPEOptionalHeader[212]));
-	.loc 1 191 18
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:190 	cliHeaderSize = GetU32(&(pPEOptionalHeader[212]));
+	.loc 1 190 18
 	// Callseq Start 135
 	{
 	.reg .b32 temp_param_reg;
@@ -4257,12 +4257,12 @@ BB7_16:
 	//{
 	}// Callseq End 135
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:193 	pCLIHeader = (unsigned char *)RVA_FindData(pRet->pRVA, cliHeaderRVA);
-	.loc 1 193 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:192 	pCLIHeader = (unsigned char *)RVA_FindData(pRet->pRVA, cliHeaderRVA);
+	.loc 1 192 2
 	ld.u64 	%rd120, [%rd8];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:193 	pCLIHeader = (unsigned char *)RVA_FindData(pRet->pRVA, cliHeaderRVA);
-	.loc 1 193 32
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:192 	pCLIHeader = (unsigned char *)RVA_FindData(pRet->pRVA, cliHeaderRVA);
+	.loc 1 192 32
 	// Callseq Start 136
 	{
 	.reg .b32 temp_param_reg;
@@ -4283,8 +4283,8 @@ BB7_16:
 	//{
 	}// Callseq End 136
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:194 	Gprintf("C2.\n");
-	.loc 1 194 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:193 	Gprintf("C2.\n");
+	.loc 1 193 2
 	mov.u64 	%rd122, $str26;
 	cvta.global.u64 	%rd123, %rd122;
 	// Callseq Start 137
@@ -4304,12 +4304,12 @@ BB7_16:
 	//{
 	}// Callseq End 137
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:196 	metaDataRVA = GetU32(&(pCLIHeader[8]));
-	.loc 1 196 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:195 	metaDataRVA = GetU32(&(pCLIHeader[8]));
+	.loc 1 195 2
 	add.s64 	%rd124, %rd121, 8;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:196 	metaDataRVA = GetU32(&(pCLIHeader[8]));
-	.loc 1 196 16
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:195 	metaDataRVA = GetU32(&(pCLIHeader[8]));
+	.loc 1 195 16
 	// Callseq Start 138
 	{
 	.reg .b32 temp_param_reg;
@@ -4327,12 +4327,12 @@ BB7_16:
 	//{
 	}// Callseq End 138
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:197 	metaDataSize = GetU32(&(pCLIHeader[12]));
-	.loc 1 197 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:196 	metaDataSize = GetU32(&(pCLIHeader[12]));
+	.loc 1 196 2
 	add.s64 	%rd125, %rd121, 12;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:197 	metaDataSize = GetU32(&(pCLIHeader[12]));
-	.loc 1 197 17
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:196 	metaDataSize = GetU32(&(pCLIHeader[12]));
+	.loc 1 196 17
 	// Callseq Start 139
 	{
 	.reg .b32 temp_param_reg;
@@ -4350,12 +4350,12 @@ BB7_16:
 	//{
 	}// Callseq End 139
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:198 	pRet->entryPoint = GetU32(&(pCLIHeader[20]));
-	.loc 1 198 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:197 	pRet->entryPoint = GetU32(&(pCLIHeader[20]));
+	.loc 1 197 2
 	add.s64 	%rd126, %rd121, 20;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:198 	pRet->entryPoint = GetU32(&(pCLIHeader[20]));
-	.loc 1 198 21
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:197 	pRet->entryPoint = GetU32(&(pCLIHeader[20]));
+	.loc 1 197 21
 	// Callseq Start 140
 	{
 	.reg .b32 temp_param_reg;
@@ -4374,12 +4374,12 @@ BB7_16:
 	}// Callseq End 140
 	st.u32 	[%rd8+16], %r77;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:199 	pRawMetaData = (unsigned char*)RVA_FindData(pRet->pRVA, metaDataRVA);
-	.loc 1 199 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:198 	pRawMetaData = (unsigned char*)RVA_FindData(pRet->pRVA, metaDataRVA);
+	.loc 1 198 2
 	ld.u64 	%rd127, [%rd8];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:199 	pRawMetaData = (unsigned char*)RVA_FindData(pRet->pRVA, metaDataRVA);
-	.loc 1 199 33
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:198 	pRawMetaData = (unsigned char*)RVA_FindData(pRet->pRVA, metaDataRVA);
+	.loc 1 198 33
 	// Callseq Start 141
 	{
 	.reg .b32 temp_param_reg;
@@ -4400,8 +4400,8 @@ BB7_16:
 	//{
 	}// Callseq End 141
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:200 	Gprintf("C3.\n");
-	.loc 1 200 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:199 	Gprintf("C3.\n");
+	.loc 1 199 2
 	mov.u64 	%rd128, $str27;
 	cvta.global.u64 	%rd129, %rd128;
 	// Callseq Start 142
@@ -4421,12 +4421,12 @@ BB7_16:
 	//{
 	}// Callseq End 142
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:204 		unsigned int versionLen = GetU32(&(pRawMetaData[12]));
-	.loc 1 204 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:203 		unsigned int versionLen = GetU32(&(pRawMetaData[12]));
+	.loc 1 203 27
 	add.s64 	%rd130, %rd12, 12;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:204 		unsigned int versionLen = GetU32(&(pRawMetaData[12]));
-	.loc 1 204 29
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:203 		unsigned int versionLen = GetU32(&(pRawMetaData[12]));
+	.loc 1 203 29
 	// Callseq Start 143
 	{
 	.reg .b32 temp_param_reg;
@@ -4444,13 +4444,13 @@ BB7_16:
 	//{
 	}// Callseq End 143
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:208 		pRet->pVersion = &(pRawMetaData[16]);
-	.loc 1 208 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:207 		pRet->pVersion = &(pRawMetaData[16]);
+	.loc 1 207 3
 	add.s64 	%rd131, %rd12, 16;
 	st.u64 	[%rd8+8], %rd131;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:209 		log_f(1, "CLI version: %s\n", pRet->pVersion);
-	.loc 1 209 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:208 		log_f(1, "CLI version: %s\n", pRet->pVersion);
+	.loc 1 208 3
 	mov.u64 	%rd132, $str28;
 	cvta.global.u64 	%rd133, %rd132;
 	// Callseq Start 144
@@ -4474,14 +4474,14 @@ BB7_16:
 	//{
 	}// Callseq End 144
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:211 		numberOfStreams = GetU16(&(pRawMetaData[ofs + 2]));
-	.loc 1 211 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:210 		numberOfStreams = GetU16(&(pRawMetaData[ofs + 2]));
+	.loc 1 210 3
 	add.s32 	%r80, %r13, 18;
 	cvt.u64.u32	%rd134, %r80;
 	add.s64 	%rd135, %rd12, %rd134;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:211 		numberOfStreams = GetU16(&(pRawMetaData[ofs + 2]));
-	.loc 1 211 21
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:210 		numberOfStreams = GetU16(&(pRawMetaData[ofs + 2]));
+	.loc 1 210 21
 	// Callseq Start 145
 	{
 	.reg .b32 temp_param_reg;
@@ -4499,42 +4499,42 @@ BB7_16:
 	//{
 	}// Callseq End 145
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:215 		for (i=0; i<(signed)numberOfStreams; i++) {
-	.loc 1 215 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:214 		for (i=0; i<(signed)numberOfStreams; i++) {
+	.loc 1 214 3
 	setp.lt.s32	%p14, %r14, 1;
 	@%p14 bra 	BB7_37;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:212 		ofs += 4;
-	.loc 1 212 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:211 		ofs += 4;
+	.loc 1 211 3
 	add.s32 	%r133, %r13, 20;
 	mov.u32 	%r135, 0;
 	mov.u64 	%rd192, 0;
 
 BB7_18:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:217 			for (; ; ++q)
-	.loc 1 217 4
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:216 			for (; ; ++q)
+	.loc 1 216 4
 	mov.u32 	%r19, %r133;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:219 				if (pRawMetaData[q] == '#')
-	.loc 1 219 5
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:218 				if (pRawMetaData[q] == '#')
+	.loc 1 218 5
 	cvt.s64.s32	%rd137, %r19;
 	add.s64 	%rd14, %rd12, %rd137;
 	ld.u8 	%rs4, [%rd14];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:221 					if (pRawMetaData[q + 1] == 'S' && pRawMetaData[q + 2] == 't')
-	.loc 1 221 6
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:220 					if (pRawMetaData[q + 1] == 'S' && pRawMetaData[q + 2] == 't')
+	.loc 1 220 6
 	add.s32 	%r133, %r19, 1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:219 				if (pRawMetaData[q] == '#')
-	.loc 1 219 5
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:218 				if (pRawMetaData[q] == '#')
+	.loc 1 218 5
 	setp.ne.s16	%p15, %rs4, 35;
 	@%p15 bra 	BB7_18;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:221 					if (pRawMetaData[q + 1] == 'S' && pRawMetaData[q + 2] == 't')
-	.loc 1 221 6
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:220 					if (pRawMetaData[q + 1] == 'S' && pRawMetaData[q + 2] == 't')
+	.loc 1 220 6
 	ld.u8 	%rs1, [%rd14+1];
 	setp.ne.s16	%p16, %rs1, 83;
 	@%p16 bra 	BB7_21;
@@ -4545,8 +4545,8 @@ BB7_18:
 
 BB7_21:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:223 					if (pRawMetaData[q + 1] == 'U' && pRawMetaData[q + 2] == 'S')
-	.loc 1 223 6
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:222 					if (pRawMetaData[q + 1] == 'U' && pRawMetaData[q + 2] == 'S')
+	.loc 1 222 6
 	setp.ne.s16	%p18, %rs1, 85;
 	@%p18 bra 	BB7_23;
 
@@ -4556,8 +4556,8 @@ BB7_21:
 
 BB7_23:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:225 					if (pRawMetaData[q + 1] == 'B' && pRawMetaData[q + 2] == 'l')
-	.loc 1 225 6
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:224 					if (pRawMetaData[q + 1] == 'B' && pRawMetaData[q + 2] == 'l')
+	.loc 1 224 6
 	setp.ne.s16	%p20, %rs1, 66;
 	@%p20 bra 	BB7_25;
 
@@ -4567,67 +4567,67 @@ BB7_23:
 
 BB7_25:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:227 					if (pRawMetaData[q + 1] == 'G' && pRawMetaData[q + 2] == 'U')
-	.loc 1 227 6
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:226 					if (pRawMetaData[q + 1] == 'G' && pRawMetaData[q + 2] == 'U')
+	.loc 1 226 6
 	setp.eq.s16	%p22, %rs1, 71;
 	@%p22 bra 	BB7_50;
 	bra.uni 	BB7_26;
 
 BB7_50:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:227 					if (pRawMetaData[q + 1] == 'G' && pRawMetaData[q + 2] == 'U')
-	.loc 1 227 6
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:226 					if (pRawMetaData[q + 1] == 'G' && pRawMetaData[q + 2] == 'U')
+	.loc 1 226 6
 	ld.u8 	%rs8, [%rd14+2];
 	setp.eq.s16	%p24, %rs8, 85;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:229 					if (pRawMetaData[q + 1] == '~')
-	.loc 1 229 6
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:228 					if (pRawMetaData[q + 1] == '~')
+	.loc 1 228 6
 	setp.eq.s16	%p25, %rs1, 126;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:227 					if (pRawMetaData[q + 1] == 'G' && pRawMetaData[q + 2] == 'U')
-	.loc 1 227 6
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:226 					if (pRawMetaData[q + 1] == 'G' && pRawMetaData[q + 2] == 'U')
+	.loc 1 226 6
 	or.pred  	%p26, %p24, %p25;
 	@!%p26 bra 	BB7_18;
 	bra.uni 	BB7_27;
 
 BB7_26:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:229 					if (pRawMetaData[q + 1] == '~')
-	.loc 1 229 6
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:228 					if (pRawMetaData[q + 1] == '~')
+	.loc 1 228 6
 	setp.eq.s16	%p23, %rs1, 126;
 	@%p23 bra 	BB7_27;
 	bra.uni 	BB7_18;
 
 BB7_27:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:233 			ofs = q - 8;
-	.loc 1 233 4
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:232 			ofs = q - 8;
+	.loc 1 232 4
 	add.s32 	%r83, %r19, -8;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:234 			unsigned int streamOffset = *(unsigned int*)&pRawMetaData[ofs];
-	.loc 1 234 30
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:233 			unsigned int streamOffset = *(unsigned int*)&pRawMetaData[ofs];
+	.loc 1 233 30
 	cvt.u64.u32	%rd138, %r83;
 	add.s64 	%rd139, %rd12, %rd138;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:235 			unsigned int streamSize = *(unsigned int*)&pRawMetaData[ofs+4];
-	.loc 1 235 28
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:234 			unsigned int streamSize = *(unsigned int*)&pRawMetaData[ofs+4];
+	.loc 1 234 28
 	add.s32 	%r84, %r19, -4;
 	cvt.u64.u32	%rd140, %r84;
 	add.s64 	%rd141, %rd12, %rd140;
 	ld.u32 	%r21, [%rd141];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:236 			unsigned char *pStreamName = &pRawMetaData[ofs+8];
-	.loc 1 236 31
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:235 			unsigned char *pStreamName = &pRawMetaData[ofs+8];
+	.loc 1 235 31
 	cvt.u64.u32	%rd142, %r19;
 	add.s64 	%rd15, %rd12, %rd142;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:237 			unsigned char *pStream = pRawMetaData + streamOffset;
-	.loc 1 237 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:236 			unsigned char *pStream = pRawMetaData + streamOffset;
+	.loc 1 236 27
 	ld.u32 	%rd143, [%rd139];
 	add.s64 	%rd16, %rd12, %rd143;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:240 			if (Gstrcasecmp((const char*)pStreamName, "#Strings") == 0) {
-	.loc 1 240 8
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:239 			if (Gstrcasecmp((const char*)pStreamName, "#Strings") == 0) {
+	.loc 1 239 8
 	mov.u64 	%rd144, $str29;
 	cvta.global.u64 	%rd145, %rd144;
 	// Callseq Start 146
@@ -4655,8 +4655,8 @@ BB7_27:
 
 BB7_35:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:241 				MetaData_LoadStrings(pMetaData, pStream, streamSize);
-	.loc 1 241 5
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:240 				MetaData_LoadStrings(pMetaData, pStream, streamSize);
+	.loc 1 240 5
 	// Callseq Start 154
 	{
 	.reg .b32 temp_param_reg;
@@ -4681,8 +4681,8 @@ BB7_35:
 
 BB7_28:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:242 			} else if (Gstrcasecmp((const char*)pStreamName, "#US") == 0) {
-	.loc 1 242 15
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:241 			} else if (Gstrcasecmp((const char*)pStreamName, "#US") == 0) {
+	.loc 1 241 15
 	mov.u64 	%rd146, $str30;
 	cvta.global.u64 	%rd147, %rd146;
 	// Callseq Start 147
@@ -4710,8 +4710,8 @@ BB7_28:
 
 BB7_34:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:243 				MetaData_LoadUserStrings(pMetaData, pStream, streamSize);
-	.loc 1 243 5
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:242 				MetaData_LoadUserStrings(pMetaData, pStream, streamSize);
+	.loc 1 242 5
 	// Callseq Start 153
 	{
 	.reg .b32 temp_param_reg;
@@ -4736,8 +4736,8 @@ BB7_34:
 
 BB7_29:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:244 			} else if (Gstrcasecmp((const char*)pStreamName, "#Blob") == 0) {
-	.loc 1 244 15
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:243 			} else if (Gstrcasecmp((const char*)pStreamName, "#Blob") == 0) {
+	.loc 1 243 15
 	mov.u64 	%rd148, $str31;
 	cvta.global.u64 	%rd149, %rd148;
 	// Callseq Start 148
@@ -4765,8 +4765,8 @@ BB7_29:
 
 BB7_33:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:245 				MetaData_LoadBlobs(pMetaData, pStream, streamSize);
-	.loc 1 245 5
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:244 				MetaData_LoadBlobs(pMetaData, pStream, streamSize);
+	.loc 1 244 5
 	// Callseq Start 152
 	{
 	.reg .b32 temp_param_reg;
@@ -4791,8 +4791,8 @@ BB7_33:
 
 BB7_30:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:246 			} else if (Gstrcasecmp((const char*)pStreamName, "#GUID") == 0) {
-	.loc 1 246 15
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:245 			} else if (Gstrcasecmp((const char*)pStreamName, "#GUID") == 0) {
+	.loc 1 245 15
 	mov.u64 	%rd150, $str32;
 	cvta.global.u64 	%rd151, %rd150;
 	// Callseq Start 149
@@ -4820,8 +4820,8 @@ BB7_30:
 
 BB7_32:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:247 				MetaData_LoadGUIDs(pMetaData, pStream, streamSize);
-	.loc 1 247 5
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:246 				MetaData_LoadGUIDs(pMetaData, pStream, streamSize);
+	.loc 1 246 5
 	// Callseq Start 151
 	{
 	.reg .b32 temp_param_reg;
@@ -4846,8 +4846,8 @@ BB7_32:
 
 BB7_31:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:248 			} else if (Gstrcasecmp((const char*)pStreamName, "#~") == 0) {
-	.loc 1 248 15
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:247 			} else if (Gstrcasecmp((const char*)pStreamName, "#~") == 0) {
+	.loc 1 247 15
 	mov.u64 	%rd152, $str33;
 	cvta.global.u64 	%rd153, %rd152;
 	// Callseq Start 150
@@ -4875,25 +4875,25 @@ BB7_31:
 
 BB7_36:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:215 		for (i=0; i<(signed)numberOfStreams; i++) {
-	.loc 1 215 40
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:214 		for (i=0; i<(signed)numberOfStreams; i++) {
+	.loc 1 214 40
 	add.s32 	%r135, %r135, 1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:215 		for (i=0; i<(signed)numberOfStreams; i++) {
-	.loc 1 215 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:214 		for (i=0; i<(signed)numberOfStreams; i++) {
+	.loc 1 214 3
 	setp.lt.s32	%p32, %r135, %r14;
 	@%p32 bra 	BB7_18;
 
 BB7_37:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:254 		if (pTableStream != NULL) {
-	.loc 1 254 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:253 		if (pTableStream != NULL) {
+	.loc 1 253 3
 	setp.eq.s64	%p33, %rd192, 0;
 	@%p33 bra 	BB7_39;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:255 			MetaData_LoadTables(pMetaData, pRet->pRVA, pTableStream, tableStreamSize);
-	.loc 1 255 4
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:254 			MetaData_LoadTables(pMetaData, pRet->pRVA, pTableStream, tableStreamSize);
+	.loc 1 254 4
 	ld.u64 	%rd154, [%rd194+8];
 	// Callseq Start 155
 	{
@@ -4921,8 +4921,8 @@ BB7_37:
 
 BB7_39:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:258 	Gprintf("C4.\n");
-	.loc 1 258 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:257 	Gprintf("C4.\n");
+	.loc 1 257 2
 	mov.u64 	%rd155, $str34;
 	cvta.global.u64 	%rd156, %rd155;
 	// Callseq Start 156
@@ -4942,8 +4942,8 @@ BB7_39:
 	//{
 	}// Callseq End 156
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:285 	Gprintf("C5.\n");
-	.loc 1 285 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:284 	Gprintf("C5.\n");
+	.loc 1 284 2
 	mov.u64 	%rd157, $str35;
 	cvta.global.u64 	%rd158, %rd157;
 	// Callseq Start 157
@@ -4963,12 +4963,12 @@ BB7_39:
 	//{
 	}// Callseq End 157
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:288 	for (i=pMetaData->tables.numRows[MD_TABLE_NESTEDCLASS]; i>0; i--) {
-	.loc 1 288 7
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:287 	for (i=pMetaData->tables.numRows[MD_TABLE_NESTEDCLASS]; i>0; i--) {
+	.loc 1 287 7
 	ld.u32 	%r26, [%rd9+204];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:288 	for (i=pMetaData->tables.numRows[MD_TABLE_NESTEDCLASS]; i>0; i--) {
-	.loc 1 288 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:287 	for (i=pMetaData->tables.numRows[MD_TABLE_NESTEDCLASS]; i>0; i--) {
+	.loc 1 287 2
 	setp.lt.s32	%p34, %r26, 1;
 	@%p34 bra 	BB7_48;
 
@@ -4986,13 +4986,13 @@ BB7_39:
 	@%p37 bra 	BB7_44;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:292 		pNested = (tMD_NestedClass*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_NESTEDCLASS, i));
-	.loc 1 292 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:291 		pNested = (tMD_NestedClass*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_NESTEDCLASS, i));
+	.loc 1 291 3
 	and.b32  	%r92, %r26, 16777215;
 	or.b32  	%r93, %r92, 687865856;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:292 		pNested = (tMD_NestedClass*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_NESTEDCLASS, i));
-	.loc 1 292 31
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:291 		pNested = (tMD_NestedClass*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_NESTEDCLASS, i));
+	.loc 1 291 31
 	// Callseq Start 158
 	{
 	.reg .b32 temp_param_reg;
@@ -5013,12 +5013,12 @@ BB7_39:
 	//{
 	}// Callseq End 158
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:293 		pParent = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->enclosingClass);
-	.loc 1 293 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:292 		pParent = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->enclosingClass);
+	.loc 1 292 3
 	ld.u32 	%r94, [%rd159+4];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:293 		pParent = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->enclosingClass);
-	.loc 1 293 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:292 		pParent = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->enclosingClass);
+	.loc 1 292 27
 	// Callseq Start 159
 	{
 	.reg .b32 temp_param_reg;
@@ -5039,12 +5039,12 @@ BB7_39:
 	//{
 	}// Callseq End 159
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:294 		pChild = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->nestedClass);
-	.loc 1 294 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:293 		pChild = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->nestedClass);
+	.loc 1 293 3
 	ld.u32 	%r95, [%rd159];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:294 		pChild = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->nestedClass);
-	.loc 1 294 26
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:293 		pChild = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->nestedClass);
+	.loc 1 293 26
 	// Callseq Start 160
 	{
 	.reg .b32 temp_param_reg;
@@ -5065,23 +5065,23 @@ BB7_39:
 	//{
 	}// Callseq End 160
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:295 		pChild->pNestedIn = pParent;
-	.loc 1 295 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:294 		pChild->pNestedIn = pParent;
+	.loc 1 294 3
 	st.u64 	[%rd161+208], %rd160;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:288 	for (i=pMetaData->tables.numRows[MD_TABLE_NESTEDCLASS]; i>0; i--) {
-	.loc 1 288 47
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:287 	for (i=pMetaData->tables.numRows[MD_TABLE_NESTEDCLASS]; i>0; i--) {
+	.loc 1 287 47
 	add.s32 	%r139, %r26, -1;
 
 BB7_44:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:292 		pNested = (tMD_NestedClass*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_NESTEDCLASS, i));
-	.loc 1 292 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:291 		pNested = (tMD_NestedClass*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_NESTEDCLASS, i));
+	.loc 1 291 3
 	and.b32  	%r96, %r139, 16777215;
 	or.b32  	%r97, %r96, 687865856;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:292 		pNested = (tMD_NestedClass*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_NESTEDCLASS, i));
-	.loc 1 292 31
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:291 		pNested = (tMD_NestedClass*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_NESTEDCLASS, i));
+	.loc 1 291 31
 	// Callseq Start 161
 	{
 	.reg .b32 temp_param_reg;
@@ -5102,12 +5102,12 @@ BB7_44:
 	//{
 	}// Callseq End 161
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:293 		pParent = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->enclosingClass);
-	.loc 1 293 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:292 		pParent = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->enclosingClass);
+	.loc 1 292 3
 	ld.u32 	%r98, [%rd162+4];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:293 		pParent = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->enclosingClass);
-	.loc 1 293 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:292 		pParent = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->enclosingClass);
+	.loc 1 292 27
 	// Callseq Start 162
 	{
 	.reg .b32 temp_param_reg;
@@ -5128,12 +5128,12 @@ BB7_44:
 	//{
 	}// Callseq End 162
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:294 		pChild = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->nestedClass);
-	.loc 1 294 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:293 		pChild = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->nestedClass);
+	.loc 1 293 3
 	ld.u32 	%r99, [%rd162];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:294 		pChild = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->nestedClass);
-	.loc 1 294 26
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:293 		pChild = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->nestedClass);
+	.loc 1 293 26
 	// Callseq Start 163
 	{
 	.reg .b32 temp_param_reg;
@@ -5154,23 +5154,23 @@ BB7_44:
 	//{
 	}// Callseq End 163
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:295 		pChild->pNestedIn = pParent;
-	.loc 1 295 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:294 		pChild->pNestedIn = pParent;
+	.loc 1 294 3
 	st.u64 	[%rd164+208], %rd163;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:288 	for (i=pMetaData->tables.numRows[MD_TABLE_NESTEDCLASS]; i>0; i--) {
-	.loc 1 288 47
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:287 	for (i=pMetaData->tables.numRows[MD_TABLE_NESTEDCLASS]; i>0; i--) {
+	.loc 1 287 47
 	add.s32 	%r140, %r139, -1;
 
 BB7_45:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:292 		pNested = (tMD_NestedClass*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_NESTEDCLASS, i));
-	.loc 1 292 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:291 		pNested = (tMD_NestedClass*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_NESTEDCLASS, i));
+	.loc 1 291 3
 	and.b32  	%r100, %r140, 16777215;
 	or.b32  	%r101, %r100, 687865856;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:292 		pNested = (tMD_NestedClass*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_NESTEDCLASS, i));
-	.loc 1 292 31
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:291 		pNested = (tMD_NestedClass*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_NESTEDCLASS, i));
+	.loc 1 291 31
 	// Callseq Start 164
 	{
 	.reg .b32 temp_param_reg;
@@ -5191,12 +5191,12 @@ BB7_45:
 	//{
 	}// Callseq End 164
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:293 		pParent = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->enclosingClass);
-	.loc 1 293 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:292 		pParent = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->enclosingClass);
+	.loc 1 292 3
 	ld.u32 	%r102, [%rd165+4];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:293 		pParent = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->enclosingClass);
-	.loc 1 293 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:292 		pParent = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->enclosingClass);
+	.loc 1 292 27
 	// Callseq Start 165
 	{
 	.reg .b32 temp_param_reg;
@@ -5217,12 +5217,12 @@ BB7_45:
 	//{
 	}// Callseq End 165
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:294 		pChild = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->nestedClass);
-	.loc 1 294 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:293 		pChild = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->nestedClass);
+	.loc 1 293 3
 	ld.u32 	%r103, [%rd165];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:294 		pChild = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->nestedClass);
-	.loc 1 294 26
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:293 		pChild = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->nestedClass);
+	.loc 1 293 26
 	// Callseq Start 166
 	{
 	.reg .b32 temp_param_reg;
@@ -5243,12 +5243,12 @@ BB7_45:
 	//{
 	}// Callseq End 166
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:295 		pChild->pNestedIn = pParent;
-	.loc 1 295 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:294 		pChild->pNestedIn = pParent;
+	.loc 1 294 3
 	st.u64 	[%rd167+208], %rd166;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:288 	for (i=pMetaData->tables.numRows[MD_TABLE_NESTEDCLASS]; i>0; i--) {
-	.loc 1 288 47
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:287 	for (i=pMetaData->tables.numRows[MD_TABLE_NESTEDCLASS]; i>0; i--) {
+	.loc 1 287 47
 	add.s32 	%r142, %r140, -1;
 
 BB7_46:
@@ -5257,13 +5257,13 @@ BB7_46:
 
 BB7_47:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:292 		pNested = (tMD_NestedClass*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_NESTEDCLASS, i));
-	.loc 1 292 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:291 		pNested = (tMD_NestedClass*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_NESTEDCLASS, i));
+	.loc 1 291 3
 	and.b32  	%r104, %r142, 16777215;
 	or.b32  	%r105, %r104, 687865856;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:292 		pNested = (tMD_NestedClass*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_NESTEDCLASS, i));
-	.loc 1 292 31
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:291 		pNested = (tMD_NestedClass*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_NESTEDCLASS, i));
+	.loc 1 291 31
 	// Callseq Start 167
 	{
 	.reg .b32 temp_param_reg;
@@ -5284,12 +5284,12 @@ BB7_47:
 	//{
 	}// Callseq End 167
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:293 		pParent = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->enclosingClass);
-	.loc 1 293 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:292 		pParent = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->enclosingClass);
+	.loc 1 292 3
 	ld.u32 	%r106, [%rd168+4];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:293 		pParent = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->enclosingClass);
-	.loc 1 293 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:292 		pParent = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->enclosingClass);
+	.loc 1 292 27
 	// Callseq Start 168
 	{
 	.reg .b32 temp_param_reg;
@@ -5310,12 +5310,12 @@ BB7_47:
 	//{
 	}// Callseq End 168
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:294 		pChild = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->nestedClass);
-	.loc 1 294 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:293 		pChild = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->nestedClass);
+	.loc 1 293 3
 	ld.u32 	%r107, [%rd168];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:294 		pChild = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->nestedClass);
-	.loc 1 294 26
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:293 		pChild = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->nestedClass);
+	.loc 1 293 26
 	// Callseq Start 169
 	{
 	.reg .b32 temp_param_reg;
@@ -5336,21 +5336,21 @@ BB7_47:
 	//{
 	}// Callseq End 169
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:295 		pChild->pNestedIn = pParent;
-	.loc 1 295 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:294 		pChild->pNestedIn = pParent;
+	.loc 1 294 3
 	st.u64 	[%rd170+208], %rd169;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:288 	for (i=pMetaData->tables.numRows[MD_TABLE_NESTEDCLASS]; i>0; i--) {
-	.loc 1 288 47
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:287 	for (i=pMetaData->tables.numRows[MD_TABLE_NESTEDCLASS]; i>0; i--) {
+	.loc 1 287 47
 	add.s32 	%r108, %r142, 16777215;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:292 		pNested = (tMD_NestedClass*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_NESTEDCLASS, i));
-	.loc 1 292 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:291 		pNested = (tMD_NestedClass*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_NESTEDCLASS, i));
+	.loc 1 291 3
 	and.b32  	%r109, %r108, 16777215;
 	or.b32  	%r110, %r109, 687865856;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:292 		pNested = (tMD_NestedClass*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_NESTEDCLASS, i));
-	.loc 1 292 31
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:291 		pNested = (tMD_NestedClass*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_NESTEDCLASS, i));
+	.loc 1 291 31
 	// Callseq Start 170
 	{
 	.reg .b32 temp_param_reg;
@@ -5371,12 +5371,12 @@ BB7_47:
 	//{
 	}// Callseq End 170
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:293 		pParent = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->enclosingClass);
-	.loc 1 293 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:292 		pParent = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->enclosingClass);
+	.loc 1 292 3
 	ld.u32 	%r111, [%rd171+4];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:293 		pParent = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->enclosingClass);
-	.loc 1 293 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:292 		pParent = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->enclosingClass);
+	.loc 1 292 27
 	// Callseq Start 171
 	{
 	.reg .b32 temp_param_reg;
@@ -5397,12 +5397,12 @@ BB7_47:
 	//{
 	}// Callseq End 171
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:294 		pChild = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->nestedClass);
-	.loc 1 294 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:293 		pChild = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->nestedClass);
+	.loc 1 293 3
 	ld.u32 	%r112, [%rd171];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:294 		pChild = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->nestedClass);
-	.loc 1 294 26
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:293 		pChild = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->nestedClass);
+	.loc 1 293 26
 	// Callseq Start 172
 	{
 	.reg .b32 temp_param_reg;
@@ -5423,21 +5423,21 @@ BB7_47:
 	//{
 	}// Callseq End 172
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:295 		pChild->pNestedIn = pParent;
-	.loc 1 295 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:294 		pChild->pNestedIn = pParent;
+	.loc 1 294 3
 	st.u64 	[%rd173+208], %rd172;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:288 	for (i=pMetaData->tables.numRows[MD_TABLE_NESTEDCLASS]; i>0; i--) {
-	.loc 1 288 47
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:287 	for (i=pMetaData->tables.numRows[MD_TABLE_NESTEDCLASS]; i>0; i--) {
+	.loc 1 287 47
 	add.s32 	%r113, %r142, 16777214;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:292 		pNested = (tMD_NestedClass*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_NESTEDCLASS, i));
-	.loc 1 292 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:291 		pNested = (tMD_NestedClass*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_NESTEDCLASS, i));
+	.loc 1 291 3
 	and.b32  	%r114, %r113, 16777215;
 	or.b32  	%r115, %r114, 687865856;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:292 		pNested = (tMD_NestedClass*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_NESTEDCLASS, i));
-	.loc 1 292 31
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:291 		pNested = (tMD_NestedClass*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_NESTEDCLASS, i));
+	.loc 1 291 31
 	// Callseq Start 173
 	{
 	.reg .b32 temp_param_reg;
@@ -5458,12 +5458,12 @@ BB7_47:
 	//{
 	}// Callseq End 173
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:293 		pParent = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->enclosingClass);
-	.loc 1 293 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:292 		pParent = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->enclosingClass);
+	.loc 1 292 3
 	ld.u32 	%r116, [%rd174+4];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:293 		pParent = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->enclosingClass);
-	.loc 1 293 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:292 		pParent = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->enclosingClass);
+	.loc 1 292 27
 	// Callseq Start 174
 	{
 	.reg .b32 temp_param_reg;
@@ -5484,12 +5484,12 @@ BB7_47:
 	//{
 	}// Callseq End 174
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:294 		pChild = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->nestedClass);
-	.loc 1 294 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:293 		pChild = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->nestedClass);
+	.loc 1 293 3
 	ld.u32 	%r117, [%rd174];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:294 		pChild = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->nestedClass);
-	.loc 1 294 26
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:293 		pChild = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->nestedClass);
+	.loc 1 293 26
 	// Callseq Start 175
 	{
 	.reg .b32 temp_param_reg;
@@ -5510,21 +5510,21 @@ BB7_47:
 	//{
 	}// Callseq End 175
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:295 		pChild->pNestedIn = pParent;
-	.loc 1 295 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:294 		pChild->pNestedIn = pParent;
+	.loc 1 294 3
 	st.u64 	[%rd176+208], %rd175;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:288 	for (i=pMetaData->tables.numRows[MD_TABLE_NESTEDCLASS]; i>0; i--) {
-	.loc 1 288 47
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:287 	for (i=pMetaData->tables.numRows[MD_TABLE_NESTEDCLASS]; i>0; i--) {
+	.loc 1 287 47
 	add.s32 	%r118, %r142, 16777213;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:292 		pNested = (tMD_NestedClass*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_NESTEDCLASS, i));
-	.loc 1 292 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:291 		pNested = (tMD_NestedClass*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_NESTEDCLASS, i));
+	.loc 1 291 3
 	and.b32  	%r119, %r118, 16777215;
 	or.b32  	%r120, %r119, 687865856;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:292 		pNested = (tMD_NestedClass*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_NESTEDCLASS, i));
-	.loc 1 292 31
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:291 		pNested = (tMD_NestedClass*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_NESTEDCLASS, i));
+	.loc 1 291 31
 	// Callseq Start 176
 	{
 	.reg .b32 temp_param_reg;
@@ -5545,12 +5545,12 @@ BB7_47:
 	//{
 	}// Callseq End 176
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:293 		pParent = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->enclosingClass);
-	.loc 1 293 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:292 		pParent = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->enclosingClass);
+	.loc 1 292 3
 	ld.u32 	%r121, [%rd177+4];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:293 		pParent = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->enclosingClass);
-	.loc 1 293 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:292 		pParent = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->enclosingClass);
+	.loc 1 292 27
 	// Callseq Start 177
 	{
 	.reg .b32 temp_param_reg;
@@ -5571,12 +5571,12 @@ BB7_47:
 	//{
 	}// Callseq End 177
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:294 		pChild = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->nestedClass);
-	.loc 1 294 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:293 		pChild = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->nestedClass);
+	.loc 1 293 3
 	ld.u32 	%r122, [%rd177];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:294 		pChild = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->nestedClass);
-	.loc 1 294 26
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:293 		pChild = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->nestedClass);
+	.loc 1 293 26
 	// Callseq Start 178
 	{
 	.reg .b32 temp_param_reg;
@@ -5597,23 +5597,23 @@ BB7_47:
 	//{
 	}// Callseq End 178
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:295 		pChild->pNestedIn = pParent;
-	.loc 1 295 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:294 		pChild->pNestedIn = pParent;
+	.loc 1 294 3
 	st.u64 	[%rd179+208], %rd178;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:288 	for (i=pMetaData->tables.numRows[MD_TABLE_NESTEDCLASS]; i>0; i--) {
-	.loc 1 288 47
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:287 	for (i=pMetaData->tables.numRows[MD_TABLE_NESTEDCLASS]; i>0; i--) {
+	.loc 1 287 47
 	add.s32 	%r142, %r142, -4;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:288 	for (i=pMetaData->tables.numRows[MD_TABLE_NESTEDCLASS]; i>0; i--) {
-	.loc 1 288 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:287 	for (i=pMetaData->tables.numRows[MD_TABLE_NESTEDCLASS]; i>0; i--) {
+	.loc 1 287 2
 	setp.gt.s32	%p39, %r142, 0;
 	@%p39 bra 	BB7_47;
 
 BB7_48:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:297 	Gprintf("normal exit LoadPEFile\n");
-	.loc 1 297 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:296 	Gprintf("normal exit LoadPEFile\n");
+	.loc 1 296 2
 	mov.u64 	%rd180, $str36;
 	cvta.global.u64 	%rd181, %rd180;
 	// Callseq Start 179
@@ -5636,8 +5636,8 @@ BB7_48:
 
 BB7_5:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:170 		Gprintf("Not DOT_NET_MACHINE.\n");
-	.loc 1 170 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:169 		Gprintf("Not DOT_NET_MACHINE.\n");
+	.loc 1 169 3
 	mov.u64 	%rd66, $str20;
 	cvta.global.u64 	%rd67, %rd66;
 	// Callseq Start 118
@@ -5657,14 +5657,14 @@ BB7_5:
 	//{
 	}// Callseq End 118
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:171 		return NULL;
-	.loc 1 171 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:170 		return NULL;
+	.loc 1 170 3
 	mov.u64 	%rd194, %rd40;
 
 BB7_49:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:316 	printf("In CLIFile_Load2\n");
-	.loc 1 316 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:315 	printf("In CLIFile_Load2\n");
+	.loc 1 315 2
 	mov.u64 	%rd182, $str40;
 	cvta.global.u64 	%rd183, %rd182;
 	// Callseq Start 180
@@ -5687,8 +5687,8 @@ BB7_49:
 	//{
 	}// Callseq End 180
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:317 	pRet->pFileName = (char*)mallocForever((U32)Gstrlen(pFileName) + 1);
-	.loc 1 317 46
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:316 	pRet->pFileName = (char*)mallocForever((U32)Gstrlen(pFileName) + 1);
+	.loc 1 316 46
 	// Callseq Start 181
 	{
 	.reg .b32 temp_param_reg;
@@ -5708,8 +5708,8 @@ BB7_49:
 	cvt.u32.u64	%r125, %rd185;
 	add.s32 	%r126, %r125, 1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:317 	pRet->pFileName = (char*)mallocForever((U32)Gstrlen(pFileName) + 1);
-	.loc 1 317 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:316 	pRet->pFileName = (char*)mallocForever((U32)Gstrlen(pFileName) + 1);
+	.loc 1 316 27
 	// Callseq Start 182
 	{
 	.reg .b32 temp_param_reg;
@@ -5728,8 +5728,8 @@ BB7_49:
 	}// Callseq End 182
 	st.u64 	[%rd194], %rd186;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:318 	Gstrcpy(pRet->pFileName, pFileName);
-	.loc 1 318 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:317 	Gstrcpy(pRet->pFileName, pFileName);
+	.loc 1 317 2
 	// Callseq Start 183
 	{
 	.reg .b32 temp_param_reg;
@@ -5751,8 +5751,8 @@ BB7_49:
 	}// Callseq End 183
 	mov.u32 	%r127, 16;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:321 	pNewFile = TMALLOCFOREVER(tFilesLoaded);
-	.loc 1 321 28
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:320 	pNewFile = TMALLOCFOREVER(tFilesLoaded);
+	.loc 1 320 28
 	// Callseq Start 184
 	{
 	.reg .b32 temp_param_reg;
@@ -5770,22 +5770,22 @@ BB7_49:
 	//{
 	}// Callseq End 184
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:322 	pNewFile->pCLIFile = pRet;
-	.loc 1 322 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:321 	pNewFile->pCLIFile = pRet;
+	.loc 1 321 2
 	st.u64 	[%rd188], %rd194;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:323 	pNewFile->pNext = pFilesLoaded;
-	.loc 1 323 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:322 	pNewFile->pNext = pFilesLoaded;
+	.loc 1 322 2
 	ld.global.u64 	%rd189, [__nv_static_28__15_CLIFile_cpp1_ii_0293f222_pFilesLoaded];
 	st.u64 	[%rd188+8], %rd189;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:324 	pFilesLoaded = pNewFile;
-	.loc 1 324 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:323 	pFilesLoaded = pNewFile;
+	.loc 1 323 2
 	st.global.u64 	[__nv_static_28__15_CLIFile_cpp1_ii_0293f222_pFilesLoaded], %rd188;
 	st.param.b64	[func_retval0+0], %rd194;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:326 	return pRet;
-	.loc 1 326 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:325 	return pRet;
+	.loc 1 325 2
 	ret;
 }
 
@@ -5802,8 +5802,8 @@ BB7_49:
 	mov.u32 	%r1, 0;
 	st.param.b32	[func_retval0+0], %r1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:350 	return 0;
-	.loc 1 350 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:349 	return 0;
+	.loc 1 349 2
 	ret;
 }
 
@@ -5816,11 +5816,11 @@ BB7_49:
 
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu:361 }
-	.loc 1 361 1
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c:360 }
+	.loc 1 360 1
 	ret;
 }
 
-	.file	1 "C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.cu", 1512666451, 11349
+	.file	1 "C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/CLIFile.c", 1512762833, 11330
 	.file	2 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v9.0\\include\\cuda_device_runtime_api.h", 1504359958, 14836
 

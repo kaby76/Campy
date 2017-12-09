@@ -119,6 +119,6 @@
 	ret;
 }
 
-	.file	1 "C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/corlib.cu", 1511735486, 1497865
+	.file	1 "C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/corlib.c", 1512762177, 1497888
 	.file	2 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v9.0\\include\\cuda_device_runtime_api.h", 1504359958, 14836
 

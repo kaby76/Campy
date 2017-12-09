@@ -162,12 +162,12 @@
 
 	ld.param.u64 	%rd1, [_Z15RuntimeType_NewP12tMD_TypeDef__param_0];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:36 	pRuntimeType = (tRuntimeType*)Heap_AllocType(types[TYPE_SYSTEM_RUNTIMETYPE]);
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:36 	pRuntimeType = (tRuntimeType*)Heap_AllocType(types[TYPE_SYSTEM_RUNTIMETYPE]);
 	.loc 1 36 2
 	ld.global.u64 	%rd2, [types];
 	ld.u64 	%rd3, [%rd2+208];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:36 	pRuntimeType = (tRuntimeType*)Heap_AllocType(types[TYPE_SYSTEM_RUNTIMETYPE]);
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:36 	pRuntimeType = (tRuntimeType*)Heap_AllocType(types[TYPE_SYSTEM_RUNTIMETYPE]);
 	.loc 1 36 32
 	// Callseq Start 0
 	{
@@ -186,7 +186,7 @@
 	//{
 	}// Callseq End 0
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:37 	Heap_MakeUndeletable((HEAP_PTR)pRuntimeType);
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:37 	Heap_MakeUndeletable((HEAP_PTR)pRuntimeType);
 	.loc 1 37 2
 	// Callseq Start 1
 	{
@@ -203,12 +203,12 @@
 	//{
 	}// Callseq End 1
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:38 	pRuntimeType->pTypeDef = pTypeDef;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:38 	pRuntimeType->pTypeDef = pTypeDef;
 	.loc 1 38 2
 	st.u64 	[%rd4], %rd1;
 	st.param.b64	[func_retval0+0], %rd4;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:40 	return (HEAP_PTR)pRuntimeType;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:40 	return (HEAP_PTR)pRuntimeType;
 	.loc 1 40 2
 	ret;
 }
@@ -226,12 +226,12 @@
 	ld.param.u64 	%rd1, [_Z27System_RuntimeType_get_NamePhS_S__param_0];
 	ld.param.u64 	%rd2, [_Z27System_RuntimeType_get_NamePhS_S__param_2];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:47 	strResult = SystemString_FromCharPtrASCII(pRuntimeType->pTypeDef->name);
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:47 	strResult = SystemString_FromCharPtrASCII(pRuntimeType->pTypeDef->name);
 	.loc 1 47 2
 	ld.u64 	%rd3, [%rd1];
 	ld.u64 	%rd4, [%rd3+24];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:47 	strResult = SystemString_FromCharPtrASCII(pRuntimeType->pTypeDef->name);
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:47 	strResult = SystemString_FromCharPtrASCII(pRuntimeType->pTypeDef->name);
 	.loc 1 47 14
 	// Callseq Start 2
 	{
@@ -250,13 +250,13 @@
 	//{
 	}// Callseq End 2
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:48 	*(HEAP_PTR*)pReturnValue = strResult;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:48 	*(HEAP_PTR*)pReturnValue = strResult;
 	.loc 1 48 2
 	st.u64 	[%rd2], %rd5;
 	mov.u64 	%rd6, 0;
 	st.param.b64	[func_retval0+0], %rd6;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:50 	return NULL;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:50 	return NULL;
 	.loc 1 50 2
 	ret;
 }
@@ -274,12 +274,12 @@
 	ld.param.u64 	%rd1, [_Z32System_RuntimeType_get_NamespacePhS_S__param_0];
 	ld.param.u64 	%rd2, [_Z32System_RuntimeType_get_NamespacePhS_S__param_2];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:57 	strResult = SystemString_FromCharPtrASCII(pRuntimeType->pTypeDef->nameSpace);
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:57 	strResult = SystemString_FromCharPtrASCII(pRuntimeType->pTypeDef->nameSpace);
 	.loc 1 57 2
 	ld.u64 	%rd3, [%rd1];
 	ld.u64 	%rd4, [%rd3+32];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:57 	strResult = SystemString_FromCharPtrASCII(pRuntimeType->pTypeDef->nameSpace);
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:57 	strResult = SystemString_FromCharPtrASCII(pRuntimeType->pTypeDef->nameSpace);
 	.loc 1 57 14
 	// Callseq Start 3
 	{
@@ -298,13 +298,13 @@
 	//{
 	}// Callseq End 3
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:58 	*(HEAP_PTR*)pReturnValue = strResult;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:58 	*(HEAP_PTR*)pReturnValue = strResult;
 	.loc 1 58 2
 	st.u64 	[%rd2], %rd5;
 	mov.u64 	%rd6, 0;
 	st.param.b64	[func_retval0+0], %rd6;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:60 	return NULL;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:60 	return NULL;
 	.loc 1 60 2
 	ret;
 }
@@ -323,23 +323,23 @@
 	ld.param.u64 	%rd6, [_Z39System_RuntimeType_GetNestingParentTypePhS_S__param_0];
 	ld.param.u64 	%rd4, [_Z39System_RuntimeType_GetNestingParentTypePhS_S__param_2];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:67 	pNestingParentType = pRuntimeType->pTypeDef->pNestedIn;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:67 	pNestingParentType = pRuntimeType->pTypeDef->pNestedIn;
 	.loc 1 67 2
 	ld.u64 	%rd7, [%rd6];
 	ld.u64 	%rd1, [%rd7+208];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:68 	if (pNestingParentType == NULL) {
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:68 	if (pNestingParentType == NULL) {
 	.loc 1 68 2
 	setp.eq.s64	%p1, %rd1, 0;
 	mov.u64 	%rd5, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:68 	if (pNestingParentType == NULL) {
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:68 	if (pNestingParentType == NULL) {
 	.loc 1 68 2
 	mov.u64 	%rd9, %rd5;
 	@%p1 bra 	BB9_2;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:71 		*(HEAP_PTR*)pReturnValue = Type_GetTypeObject(pNestingParentType);
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:71 		*(HEAP_PTR*)pReturnValue = Type_GetTypeObject(pNestingParentType);
 	.loc 1 71 30
 	// Callseq Start 4
 	{
@@ -360,12 +360,12 @@
 
 BB9_2:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:69 		*(HEAP_PTR*)pReturnValue = NULL;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:69 		*(HEAP_PTR*)pReturnValue = NULL;
 	.loc 1 69 3
 	st.u64 	[%rd4], %rd9;
 	st.param.b64	[func_retval0+0], %rd5;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:74 	return NULL;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:74 	return NULL;
 	.loc 1 74 2
 	ret;
 }
@@ -384,23 +384,23 @@ BB9_2:
 	ld.param.u64 	%rd6, [_Z31System_RuntimeType_get_BaseTypePhS_S__param_0];
 	ld.param.u64 	%rd4, [_Z31System_RuntimeType_get_BaseTypePhS_S__param_2];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:79 	tMD_TypeDef *pBaseType = pRuntimeType->pTypeDef->pParent;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:79 	tMD_TypeDef *pBaseType = pRuntimeType->pTypeDef->pParent;
 	.loc 1 79 25
 	ld.u64 	%rd7, [%rd6];
 	ld.u64 	%rd1, [%rd7+64];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:81 	if (pBaseType == NULL) {
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:81 	if (pBaseType == NULL) {
 	.loc 1 81 2
 	setp.eq.s64	%p1, %rd1, 0;
 	mov.u64 	%rd5, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:81 	if (pBaseType == NULL) {
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:81 	if (pBaseType == NULL) {
 	.loc 1 81 2
 	mov.u64 	%rd9, %rd5;
 	@%p1 bra 	BB10_2;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:84 		*(HEAP_PTR*)pReturnValue = Type_GetTypeObject(pBaseType);
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:84 		*(HEAP_PTR*)pReturnValue = Type_GetTypeObject(pBaseType);
 	.loc 1 84 30
 	// Callseq Start 5
 	{
@@ -421,12 +421,12 @@ BB9_2:
 
 BB10_2:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:82 		*(HEAP_PTR*)pReturnValue = NULL;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:82 		*(HEAP_PTR*)pReturnValue = NULL;
 	.loc 1 82 3
 	st.u64 	[%rd4], %rd9;
 	st.param.b64	[func_retval0+0], %rd5;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:87 	return NULL;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:87 	return NULL;
 	.loc 1 87 2
 	ret;
 }
@@ -446,11 +446,11 @@ BB10_2:
 	ld.param.u64 	%rd1, [_Z29System_RuntimeType_get_IsEnumPhS_S__param_0];
 	ld.param.u64 	%rd2, [_Z29System_RuntimeType_get_IsEnumPhS_S__param_2];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:91 	tMD_TypeDef *pType = ((tRuntimeType*)pThis_)->pTypeDef;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:91 	tMD_TypeDef *pType = ((tRuntimeType*)pThis_)->pTypeDef;
 	.loc 1 91 21
 	ld.u64 	%rd3, [%rd1];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:93 	U32 isEnum = pType->pParent == types[TYPE_SYSTEM_ENUM];
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:93 	U32 isEnum = pType->pParent == types[TYPE_SYSTEM_ENUM];
 	.loc 1 93 13
 	ld.u64 	%rd4, [%rd3+64];
 	ld.global.u64 	%rd5, [types];
@@ -458,13 +458,13 @@ BB10_2:
 	setp.eq.s64	%p1, %rd4, %rd6;
 	selp.u32	%r1, 1, 0, %p1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:94 	*(U32*)pReturnValue = isEnum;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:94 	*(U32*)pReturnValue = isEnum;
 	.loc 1 94 2
 	st.u32 	[%rd2], %r1;
 	mov.u64 	%rd7, 0;
 	st.param.b64	[func_retval0+0], %rd7;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:96 	return NULL;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:96 	return NULL;
 	.loc 1 96 2
 	ret;
 }
@@ -485,17 +485,17 @@ BB10_2:
 	ld.param.u64 	%rd3, [_Z36System_RuntimeType_get_IsGenericTypePhS_S__param_0];
 	ld.param.u64 	%rd2, [_Z36System_RuntimeType_get_IsGenericTypePhS_S__param_2];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:100 	tMD_TypeDef *pType = ((tRuntimeType*)pThis_)->pTypeDef;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:100 	tMD_TypeDef *pType = ((tRuntimeType*)pThis_)->pTypeDef;
 	.loc 1 100 21
 	ld.u64 	%rd4, [%rd3];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:102 	*(U32*)pReturnValue = TYPE_ISGENERICINSTANCE(pType) || pType->isGenericDefinition;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:102 	*(U32*)pReturnValue = TYPE_ISGENERICINSTANCE(pType) || pType->isGenericDefinition;
 	.loc 1 102 2
 	add.s64 	%rd1, %rd4, 152;
 	ld.u64 	%rd5, [%rd4+152];
 	mov.pred 	%p5, -1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:102 	*(U32*)pReturnValue = TYPE_ISGENERICINSTANCE(pType) || pType->isGenericDefinition;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:102 	*(U32*)pReturnValue = TYPE_ISGENERICINSTANCE(pType) || pType->isGenericDefinition;
 	.loc 1 102 2
 	setp.ne.s64	%p4, %rd5, 0;
 	@%p4 bra 	BB12_2;
@@ -509,7 +509,7 @@ BB12_2:
 	mov.u64 	%rd6, 0;
 	st.param.b64	[func_retval0+0], %rd6;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:103 	return NULL;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:103 	return NULL;
 	.loc 1 103 2
 	ret;
 }
@@ -528,17 +528,17 @@ BB12_2:
 	ld.param.u64 	%rd1, [_Z52System_RuntimeType_Internal_GetGenericTypeDefinitionPhS_S__param_0];
 	ld.param.u64 	%rd2, [_Z52System_RuntimeType_Internal_GetGenericTypeDefinitionPhS_S__param_2];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:107 	tMD_TypeDef *pType = ((tRuntimeType*)pThis_)->pTypeDef;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:107 	tMD_TypeDef *pType = ((tRuntimeType*)pThis_)->pTypeDef;
 	.loc 1 107 21
 	ld.u64 	%rd3, [%rd1];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:109 	if (TYPE_ISGENERICINSTANCE(pType)) {
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:109 	if (TYPE_ISGENERICINSTANCE(pType)) {
 	.loc 1 109 2
 	ld.u64 	%rd4, [%rd3+152];
 	setp.eq.s64	%p1, %rd4, 0;
 	selp.b64	%rd5, %rd3, %rd4, %p1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:113 	*(HEAP_PTR*)pReturnValue = Type_GetTypeObject(pType);
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:113 	*(HEAP_PTR*)pReturnValue = Type_GetTypeObject(pType);
 	.loc 1 113 29
 	// Callseq Start 6
 	{
@@ -560,7 +560,7 @@ BB12_2:
 	mov.u64 	%rd7, 0;
 	st.param.b64	[func_retval0+0], %rd7;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:115 	return NULL;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:115 	return NULL;
 	.loc 1 115 2
 	ret;
 }
@@ -586,31 +586,31 @@ BB12_2:
 	ld.param.u64 	%rd10, [_Z38System_RuntimeType_GetGenericArgumentsPhS_S__param_2];
 	add.u64 	%rd12, %SP, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:119 	tMD_TypeDef *pType = ((tRuntimeType*)pThis_)->pTypeDef;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:119 	tMD_TypeDef *pType = ((tRuntimeType*)pThis_)->pTypeDef;
 	.loc 1 119 21
 	cvta.to.local.u64 	%rd1, %rd12;
 	ld.u64 	%rd2, [%rd11];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:124 	pCoreType = pType->pGenericDefinition;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:124 	pCoreType = pType->pGenericDefinition;
 	.loc 1 124 2
 	add.s64 	%rd3, %rd2, 152;
 	ld.u64 	%rd4, [%rd2+152];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:125 	if (pCoreType != NULL) {
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:125 	if (pCoreType != NULL) {
 	.loc 1 125 2
 	setp.eq.s64	%p1, %rd4, 0;
 	mov.u32 	%r26, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:125 	if (pCoreType != NULL) {
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:125 	if (pCoreType != NULL) {
 	.loc 1 125 2
 	@%p1 bra 	BB14_5;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:127 		tGenericInstance *pInst = pCoreType->pGenericInstances;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:127 		tGenericInstance *pInst = pCoreType->pGenericInstances;
 	.loc 1 127 27
 	ld.u64 	%rd54, [%rd4+144];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:128 		while (pInst != NULL) {
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:128 		while (pInst != NULL) {
 	.loc 1 128 3
 	setp.eq.s64	%p2, %rd54, 0;
 	mov.u32 	%r26, 0;
@@ -618,36 +618,36 @@ BB12_2:
 
 BB14_2:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:129 			if (pInst->pInstanceTypeDef == pType) {
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:129 			if (pInst->pInstanceTypeDef == pType) {
 	.loc 1 129 4
 	ld.u64 	%rd13, [%rd54];
 	setp.ne.s64	%p3, %rd13, %rd2;
 	@%p3 bra 	BB14_4;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:131 				argCount = pInst->numTypeArgs;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:131 				argCount = pInst->numTypeArgs;
 	.loc 1 131 5
 	ld.u32 	%r26, [%rd54+16];
 
 BB14_4:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:133 			pInst = pInst->pNext;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:133 			pInst = pInst->pNext;
 	.loc 1 133 4
 	ld.u64 	%rd54, [%rd54+8];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:128 		while (pInst != NULL) {
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:128 		while (pInst != NULL) {
 	.loc 1 128 3
 	setp.ne.s64	%p4, %rd54, 0;
 	@%p4 bra 	BB14_2;
 
 BB14_5:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:137 	ret = SystemArray_NewVector(types[TYPE_SYSTEM_ARRAY_TYPE], argCount);
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:137 	ret = SystemArray_NewVector(types[TYPE_SYSTEM_ARRAY_TYPE], argCount);
 	.loc 1 137 2
 	ld.global.u64 	%rd14, [types];
 	ld.u64 	%rd15, [%rd14+376];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:137 	ret = SystemArray_NewVector(types[TYPE_SYSTEM_ARRAY_TYPE], argCount);
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:137 	ret = SystemArray_NewVector(types[TYPE_SYSTEM_ARRAY_TYPE], argCount);
 	.loc 1 137 8
 	// Callseq Start 7
 	{
@@ -669,11 +669,11 @@ BB14_5:
 	//{
 	}// Callseq End 7
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:139 	*(HEAP_PTR*)pReturnValue = ret;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:139 	*(HEAP_PTR*)pReturnValue = ret;
 	.loc 1 139 2
 	st.u64 	[%rd10], %rd9;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:141 	for (i=0; i<argCount; i++) {
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:141 	for (i=0; i<argCount; i++) {
 	.loc 1 141 2
 	setp.eq.s32	%p5, %r26, 0;
 	@%p5 bra 	BB14_14;
@@ -692,12 +692,12 @@ BB14_5:
 	@%p8 bra 	BB14_10;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:142 		HEAP_PTR argType = Type_GetTypeObject(pType->ppClassTypeArgs[i]);
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:142 		HEAP_PTR argType = Type_GetTypeObject(pType->ppClassTypeArgs[i]);
 	.loc 1 142 20
 	ld.u64 	%rd16, [%rd3+8];
 	ld.u64 	%rd17, [%rd16];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:142 		HEAP_PTR argType = Type_GetTypeObject(pType->ppClassTypeArgs[i]);
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:142 		HEAP_PTR argType = Type_GetTypeObject(pType->ppClassTypeArgs[i]);
 	.loc 1 142 22
 	// Callseq Start 8
 	{
@@ -718,7 +718,7 @@ BB14_5:
 	st.local.u64 	[%rd1], %rd18;
 	mov.u32 	%r20, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:143 		SystemArray_StoreElement(ret, i, (PTR)&argType);
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:143 		SystemArray_StoreElement(ret, i, (PTR)&argType);
 	.loc 1 143 3
 	// Callseq Start 9
 	{
@@ -744,14 +744,14 @@ BB14_5:
 
 BB14_10:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:142 		HEAP_PTR argType = Type_GetTypeObject(pType->ppClassTypeArgs[i]);
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:142 		HEAP_PTR argType = Type_GetTypeObject(pType->ppClassTypeArgs[i]);
 	.loc 1 142 20
 	ld.u64 	%rd20, [%rd3+8];
 	mul.wide.u32 	%rd21, %r27, 8;
 	add.s64 	%rd22, %rd20, %rd21;
 	ld.u64 	%rd23, [%rd22];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:142 		HEAP_PTR argType = Type_GetTypeObject(pType->ppClassTypeArgs[i]);
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:142 		HEAP_PTR argType = Type_GetTypeObject(pType->ppClassTypeArgs[i]);
 	.loc 1 142 22
 	// Callseq Start 10
 	{
@@ -771,7 +771,7 @@ BB14_10:
 	}// Callseq End 10
 	st.local.u64 	[%rd1], %rd24;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:143 		SystemArray_StoreElement(ret, i, (PTR)&argType);
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:143 		SystemArray_StoreElement(ret, i, (PTR)&argType);
 	.loc 1 143 3
 	// Callseq Start 11
 	{
@@ -794,20 +794,20 @@ BB14_10:
 	//{
 	}// Callseq End 11
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:141 	for (i=0; i<argCount; i++) {
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:141 	for (i=0; i<argCount; i++) {
 	.loc 1 141 24
 	add.s32 	%r28, %r27, 1;
 
 BB14_11:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:142 		HEAP_PTR argType = Type_GetTypeObject(pType->ppClassTypeArgs[i]);
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:142 		HEAP_PTR argType = Type_GetTypeObject(pType->ppClassTypeArgs[i]);
 	.loc 1 142 20
 	ld.u64 	%rd26, [%rd3+8];
 	mul.wide.u32 	%rd27, %r28, 8;
 	add.s64 	%rd28, %rd26, %rd27;
 	ld.u64 	%rd29, [%rd28];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:142 		HEAP_PTR argType = Type_GetTypeObject(pType->ppClassTypeArgs[i]);
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:142 		HEAP_PTR argType = Type_GetTypeObject(pType->ppClassTypeArgs[i]);
 	.loc 1 142 22
 	// Callseq Start 12
 	{
@@ -827,7 +827,7 @@ BB14_11:
 	}// Callseq End 12
 	st.local.u64 	[%rd1], %rd30;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:143 		SystemArray_StoreElement(ret, i, (PTR)&argType);
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:143 		SystemArray_StoreElement(ret, i, (PTR)&argType);
 	.loc 1 143 3
 	// Callseq Start 13
 	{
@@ -850,7 +850,7 @@ BB14_11:
 	//{
 	}// Callseq End 13
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:141 	for (i=0; i<argCount; i++) {
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:141 	for (i=0; i<argCount; i++) {
 	.loc 1 141 24
 	add.s32 	%r30, %r28, 1;
 
@@ -860,14 +860,14 @@ BB14_12:
 
 BB14_13:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:142 		HEAP_PTR argType = Type_GetTypeObject(pType->ppClassTypeArgs[i]);
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:142 		HEAP_PTR argType = Type_GetTypeObject(pType->ppClassTypeArgs[i]);
 	.loc 1 142 20
 	ld.u64 	%rd32, [%rd3+8];
 	mul.wide.u32 	%rd33, %r30, 8;
 	add.s64 	%rd34, %rd32, %rd33;
 	ld.u64 	%rd35, [%rd34];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:142 		HEAP_PTR argType = Type_GetTypeObject(pType->ppClassTypeArgs[i]);
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:142 		HEAP_PTR argType = Type_GetTypeObject(pType->ppClassTypeArgs[i]);
 	.loc 1 142 22
 	// Callseq Start 14
 	{
@@ -887,7 +887,7 @@ BB14_13:
 	}// Callseq End 14
 	st.local.u64 	[%rd1], %rd36;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:143 		SystemArray_StoreElement(ret, i, (PTR)&argType);
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:143 		SystemArray_StoreElement(ret, i, (PTR)&argType);
 	.loc 1 143 3
 	// Callseq Start 15
 	{
@@ -910,18 +910,18 @@ BB14_13:
 	//{
 	}// Callseq End 15
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:141 	for (i=0; i<argCount; i++) {
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:141 	for (i=0; i<argCount; i++) {
 	.loc 1 141 24
 	add.s32 	%r21, %r30, 1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:142 		HEAP_PTR argType = Type_GetTypeObject(pType->ppClassTypeArgs[i]);
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:142 		HEAP_PTR argType = Type_GetTypeObject(pType->ppClassTypeArgs[i]);
 	.loc 1 142 20
 	ld.u64 	%rd38, [%rd3+8];
 	mul.wide.u32 	%rd39, %r21, 8;
 	add.s64 	%rd40, %rd38, %rd39;
 	ld.u64 	%rd41, [%rd40];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:142 		HEAP_PTR argType = Type_GetTypeObject(pType->ppClassTypeArgs[i]);
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:142 		HEAP_PTR argType = Type_GetTypeObject(pType->ppClassTypeArgs[i]);
 	.loc 1 142 22
 	// Callseq Start 16
 	{
@@ -941,7 +941,7 @@ BB14_13:
 	}// Callseq End 16
 	st.local.u64 	[%rd1], %rd42;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:143 		SystemArray_StoreElement(ret, i, (PTR)&argType);
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:143 		SystemArray_StoreElement(ret, i, (PTR)&argType);
 	.loc 1 143 3
 	// Callseq Start 17
 	{
@@ -964,21 +964,21 @@ BB14_13:
 	//{
 	}// Callseq End 17
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:142 		HEAP_PTR argType = Type_GetTypeObject(pType->ppClassTypeArgs[i]);
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:142 		HEAP_PTR argType = Type_GetTypeObject(pType->ppClassTypeArgs[i]);
 	.loc 1 142 20
 	ld.u64 	%rd43, [%rd3+8];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:141 	for (i=0; i<argCount; i++) {
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:141 	for (i=0; i<argCount; i++) {
 	.loc 1 141 24
 	add.s32 	%r22, %r30, 2;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:142 		HEAP_PTR argType = Type_GetTypeObject(pType->ppClassTypeArgs[i]);
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:142 		HEAP_PTR argType = Type_GetTypeObject(pType->ppClassTypeArgs[i]);
 	.loc 1 142 20
 	mul.wide.u32 	%rd44, %r22, 8;
 	add.s64 	%rd45, %rd43, %rd44;
 	ld.u64 	%rd46, [%rd45];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:142 		HEAP_PTR argType = Type_GetTypeObject(pType->ppClassTypeArgs[i]);
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:142 		HEAP_PTR argType = Type_GetTypeObject(pType->ppClassTypeArgs[i]);
 	.loc 1 142 22
 	// Callseq Start 18
 	{
@@ -998,7 +998,7 @@ BB14_13:
 	}// Callseq End 18
 	st.local.u64 	[%rd1], %rd47;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:143 		SystemArray_StoreElement(ret, i, (PTR)&argType);
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:143 		SystemArray_StoreElement(ret, i, (PTR)&argType);
 	.loc 1 143 3
 	// Callseq Start 19
 	{
@@ -1021,21 +1021,21 @@ BB14_13:
 	//{
 	}// Callseq End 19
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:142 		HEAP_PTR argType = Type_GetTypeObject(pType->ppClassTypeArgs[i]);
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:142 		HEAP_PTR argType = Type_GetTypeObject(pType->ppClassTypeArgs[i]);
 	.loc 1 142 20
 	ld.u64 	%rd48, [%rd3+8];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:141 	for (i=0; i<argCount; i++) {
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:141 	for (i=0; i<argCount; i++) {
 	.loc 1 141 24
 	add.s32 	%r23, %r30, 3;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:142 		HEAP_PTR argType = Type_GetTypeObject(pType->ppClassTypeArgs[i]);
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:142 		HEAP_PTR argType = Type_GetTypeObject(pType->ppClassTypeArgs[i]);
 	.loc 1 142 20
 	mul.wide.u32 	%rd49, %r23, 8;
 	add.s64 	%rd50, %rd48, %rd49;
 	ld.u64 	%rd51, [%rd50];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:142 		HEAP_PTR argType = Type_GetTypeObject(pType->ppClassTypeArgs[i]);
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:142 		HEAP_PTR argType = Type_GetTypeObject(pType->ppClassTypeArgs[i]);
 	.loc 1 142 22
 	// Callseq Start 20
 	{
@@ -1055,7 +1055,7 @@ BB14_13:
 	}// Callseq End 20
 	st.local.u64 	[%rd1], %rd52;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:143 		SystemArray_StoreElement(ret, i, (PTR)&argType);
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:143 		SystemArray_StoreElement(ret, i, (PTR)&argType);
 	.loc 1 143 3
 	// Callseq Start 21
 	{
@@ -1078,7 +1078,7 @@ BB14_13:
 	//{
 	}// Callseq End 21
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:141 	for (i=0; i<argCount; i++) {
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:141 	for (i=0; i<argCount; i++) {
 	.loc 1 141 2
 	add.s32 	%r30, %r30, 4;
 	setp.lt.u32	%p10, %r30, %r26;
@@ -1088,7 +1088,7 @@ BB14_14:
 	mov.u64 	%rd53, 0;
 	st.param.b64	[func_retval0+0], %rd53;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:146 	return NULL;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:146 	return NULL;
 	.loc 1 146 2
 	ret;
 }
@@ -1103,13 +1103,13 @@ BB14_14:
 
 	ld.param.u64 	%rd1, [_Z17RuntimeType_DeRefPh_param_0];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu:150 	return ((tRuntimeType*)type)->pTypeDef;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c:150 	return ((tRuntimeType*)type)->pTypeDef;
 	.loc 1 150 2
 	ld.u64 	%rd2, [%rd1];
 	st.param.b64	[func_retval0+0], %rd2;
 	ret;
 }
 
-	.file	1 "C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.cu", 1509046920, 5016
+	.file	1 "C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.RuntimeType.c", 1509046920, 5016
 	.file	2 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v9.0\\include\\cuda_device_runtime_api.h", 1504359958, 14836
 

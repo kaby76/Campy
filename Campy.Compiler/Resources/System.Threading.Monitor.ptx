@@ -154,15 +154,15 @@
 	ld.param.u64 	%rd1, [_ZN54_INTERNAL_32_System_Threading_Monitor_cpp1_ii_41a269de23Internal_TryEntry_CheckEPhS0_S0_P11tAsyncCall__param_2];
 	ld.param.u64 	%rd2, [_ZN54_INTERNAL_32_System_Threading_Monitor_cpp1_ii_41a269de23Internal_TryEntry_CheckEPhS0_S0_P11tAsyncCall__param_3];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Monitor.cu:30 	HEAP_PTR pObj = ((HEAP_PTR*)pParams)[0];
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Monitor.c:30 	HEAP_PTR pObj = ((HEAP_PTR*)pParams)[0];
 	.loc 1 30 16
 	ld.u64 	%rd4, [%rd3];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Monitor.cu:31 	I32 timeout = ((I32*)pParams)[1];
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Monitor.c:31 	I32 timeout = ((I32*)pParams)[1];
 	.loc 1 31 14
 	ld.u32 	%r1, [%rd3+4];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Monitor.cu:32 	U32 ret = Heap_SyncTryEnter(pObj);
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Monitor.c:32 	U32 ret = Heap_SyncTryEnter(pObj);
 	.loc 1 32 12
 	// Callseq Start 0
 	{
@@ -181,43 +181,43 @@
 	//{
 	}// Callseq End 0
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Monitor.cu:34 	if (ret) {
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Monitor.c:34 	if (ret) {
 	.loc 1 34 2
 	setp.eq.s32	%p1, %r3, 0;
 	@%p1 bra 	BB6_2;
 
 	mov.u32 	%r13, 1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Monitor.cu:36 		*(U32*)pReturnValue = 1;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Monitor.c:36 		*(U32*)pReturnValue = 1;
 	.loc 1 36 3
 	st.u32 	[%rd1], %r13;
 	bra.uni 	BB6_9;
 
 BB6_2:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Monitor.cu:40 	if (timeout < 0) {
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Monitor.c:40 	if (timeout < 0) {
 	.loc 1 40 2
 	setp.lt.s32	%p2, %r1, 0;
 	mov.u32 	%r13, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Monitor.cu:40 	if (timeout < 0) {
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Monitor.c:40 	if (timeout < 0) {
 	.loc 1 40 2
 	@%p2 bra 	BB6_9;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Monitor.cu:44 	if (timeout == 0) {
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Monitor.c:44 	if (timeout == 0) {
 	.loc 1 44 2
 	setp.eq.s32	%p3, %r1, 0;
 	@%p3 bra 	BB6_7;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Monitor.cu:49 	if (pAsync == NULL) {
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Monitor.c:49 	if (pAsync == NULL) {
 	.loc 1 49 2
 	setp.eq.s64	%p4, %rd2, 0;
 	@%p4 bra 	BB6_9;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Monitor.cu:53 	now = msTime();
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Monitor.c:53 	now = msTime();
 	.loc 1 53 8
 	// Callseq Start 1
 	{
@@ -233,7 +233,7 @@ BB6_2:
 	//{
 	}// Callseq End 1
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Monitor.cu:54 	if ((I32)(now - pAsync->startTime) > timeout) {
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Monitor.c:54 	if ((I32)(now - pAsync->startTime) > timeout) {
 	.loc 1 54 2
 	ld.u64 	%rd6, [%rd2+24];
 	sub.s64 	%rd7, %rd5, %rd6;
@@ -243,7 +243,7 @@ BB6_2:
 
 	mov.u32 	%r10, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Monitor.cu:56 		*(U32*)pReturnValue = 0;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Monitor.c:56 		*(U32*)pReturnValue = 0;
 	.loc 1 56 3
 	st.u32 	[%rd1], %r10;
 	bra.uni 	BB6_8;
@@ -251,7 +251,7 @@ BB6_2:
 BB6_7:
 	mov.u32 	%r12, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Monitor.cu:46 		*(U32*)pReturnValue = 0;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Monitor.c:46 		*(U32*)pReturnValue = 0;
 	.loc 1 46 3
 	st.u32 	[%rd1], %r12;
 
@@ -261,7 +261,7 @@ BB6_8:
 BB6_9:
 	st.param.b32	[func_retval0+0], %r13;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Monitor.cu:60 	return 0;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Monitor.c:60 	return 0;
 	.loc 1 60 2
 	ret;
 }
@@ -273,30 +273,31 @@ BB6_9:
 	.param .b64 _Z42System_Threading_Monitor_Internal_TryEnterPhS_S__param_2
 )
 {
-	.reg .pred 	%p<3>;
+	.reg .pred 	%p<5>;
+	.reg .b16 	%rs<2>;
 	.reg .b32 	%r<6>;
-	.reg .b64 	%rd<12>;
+	.reg .b64 	%rd<18>;
 
 
-	ld.param.u64 	%rd4, [_Z42System_Threading_Monitor_Internal_TryEnterPhS_S__param_1];
+	ld.param.u64 	%rd7, [_Z42System_Threading_Monitor_Internal_TryEnterPhS_S__param_1];
 	ld.param.u64 	%rd1, [_Z42System_Threading_Monitor_Internal_TryEnterPhS_S__param_2];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Monitor.cu:30 	HEAP_PTR pObj = ((HEAP_PTR*)pParams)[0];
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Monitor.c:30 	HEAP_PTR pObj = ((HEAP_PTR*)pParams)[0];
 	.loc 1 30 16
-	ld.u64 	%rd5, [%rd4];
+	ld.u64 	%rd8, [%rd7];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Monitor.cu:31 	I32 timeout = ((I32*)pParams)[1];
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Monitor.c:31 	I32 timeout = ((I32*)pParams)[1];
 	.loc 1 31 14
-	ld.u32 	%r1, [%rd4+4];
+	ld.u32 	%r1, [%rd7+4];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Monitor.cu:32 	U32 ret = Heap_SyncTryEnter(pObj);
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Monitor.c:32 	U32 ret = Heap_SyncTryEnter(pObj);
 	.loc 1 32 12
 	// Callseq Start 2
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
 	.param .b64 param0;
-	st.param.b64	[param0+0], %rd5;
+	st.param.b64	[param0+0], %rd8;
 	.param .b32 retval0;
 	call.uni (retval0), 
 	_Z17Heap_SyncTryEnterPh, 
@@ -308,77 +309,90 @@ BB6_9:
 	//{
 	}// Callseq End 2
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Monitor.cu:34 	if (ret) {
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Monitor.c:34 	if (ret) {
 	.loc 1 34 2
 	setp.eq.s32	%p1, %r2, 0;
 	@%p1 bra 	BB7_2;
 
 	mov.u32 	%r3, 1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Monitor.cu:36 		*(U32*)pReturnValue = 1;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Monitor.c:36 		*(U32*)pReturnValue = 1;
 	.loc 1 36 3
 	st.u32 	[%rd1], %r3;
-	bra.uni 	BB7_5;
+	bra.uni 	BB7_7;
 
 BB7_2:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Monitor.cu:40 	if (timeout < 0) {
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Monitor.c:40 	if (timeout < 0) {
 	.loc 1 40 2
 	setp.eq.s32	%p2, %r1, 0;
-	@%p2 bra 	BB7_4;
+	@%p2 bra 	BB7_6;
 
-	mov.u64 	%rd7, 32;
+	mov.u64 	%rd11, 32;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Monitor.cu:70 	pAsync = TMALLOC(tAsyncCall);
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Monitor.c:70 	pAsync = TMALLOC(tAsyncCall);
 	.loc 1 70 24
 	// Callseq Start 3
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
 	.param .b64 param0;
-	st.param.b64	[param0+0], %rd7;
+	st.param.b64	[param0+0], %rd11;
 	.param .b64 retval0;
 	call.uni (retval0), 
 	_Z7Gmallocy, 
 	(
 	param0
 	);
-	ld.param.b64	%rd11, [retval0+0];
+	ld.param.b64	%rd17, [retval0+0];
 	
 	//{
 	}// Callseq End 3
-	mov.u32 	%r4, -1;
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Monitor.cu:71 	pAsync->sleepTime = -1;
-	.loc 1 71 2
-	st.u32 	[%rd11], %r4;
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Monitor.cu:72 	pAsync->checkFn = Internal_TryEntry_Check;
-	.loc 1 72 2
-	mov.u64 	%rd8, _ZN54_INTERNAL_32_System_Threading_Monitor_cpp1_ii_41a269de23Internal_TryEntry_CheckEPhS0_S0_P11tAsyncCall_;
-	st.u64 	[%rd11+8], %rd8;
-	mov.u64 	%rd9, 0;
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Monitor.cu:73 	pAsync->state = NULL;
-	.loc 1 73 2
-	st.u64 	[%rd11+16], %rd9;
-	bra.uni 	BB7_6;
+	mov.u64 	%rd16, 0;
+	mov.pred 	%p3, 0;
+	@%p3 bra 	BB7_5;
 
 BB7_4:
+	add.s64 	%rd12, %rd17, %rd16;
+	mov.u16 	%rs1, 0;
+	st.u8 	[%rd12], %rs1;
+	add.s64 	%rd16, %rd16, 1;
+	setp.lt.u64	%p4, %rd16, 32;
+	@%p4 bra 	BB7_4;
+
+BB7_5:
+	mov.u32 	%r4, -1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Monitor.c:73 	pAsync->sleepTime = -1;
+	.loc 1 73 2
+	st.u32 	[%rd17], %r4;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Monitor.c:74 	pAsync->checkFn = Internal_TryEntry_Check;
+	.loc 1 74 2
+	mov.u64 	%rd13, _ZN54_INTERNAL_32_System_Threading_Monitor_cpp1_ii_41a269de23Internal_TryEntry_CheckEPhS0_S0_P11tAsyncCall_;
+	st.u64 	[%rd17+8], %rd13;
+	mov.u64 	%rd14, 0;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Monitor.c:75 	pAsync->state = NULL;
+	.loc 1 75 2
+	st.u64 	[%rd17+16], %rd14;
+	bra.uni 	BB7_8;
+
+BB7_6:
 	mov.u32 	%r5, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Monitor.cu:46 		*(U32*)pReturnValue = 0;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Monitor.c:46 		*(U32*)pReturnValue = 0;
 	.loc 1 46 3
 	st.u32 	[%rd1], %r5;
 
-BB7_5:
-	mov.u64 	%rd11, 0;
+BB7_7:
+	mov.u64 	%rd17, 0;
 
-BB7_6:
-	st.param.b64	[func_retval0+0], %rd11;
+BB7_8:
+	st.param.b64	[func_retval0+0], %rd17;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Monitor.cu:74 	return pAsync;
-	.loc 1 74 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Monitor.c:76 	return pAsync;
+	.loc 1 76 2
 	ret;
 }
 
@@ -395,12 +409,12 @@ BB7_6:
 
 	ld.param.u64 	%rd1, [_Z38System_Threading_Monitor_Internal_ExitPhS_S__param_1];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Monitor.cu:78 	HEAP_PTR pObj = ((HEAP_PTR*)pParams)[0];
-	.loc 1 78 16
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Monitor.c:80 	HEAP_PTR pObj = ((HEAP_PTR*)pParams)[0];
+	.loc 1 80 16
 	ld.u64 	%rd2, [%rd1];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Monitor.cu:79 	Heap_SyncExit(pObj);
-	.loc 1 79 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Monitor.c:81 	Heap_SyncExit(pObj);
+	.loc 1 81 2
 	// Callseq Start 4
 	{
 	.reg .b32 temp_param_reg;
@@ -420,11 +434,11 @@ BB7_6:
 	mov.u64 	%rd3, 1;
 	st.param.b64	[func_retval0+0], %rd3;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Monitor.cu:80 	return ASYNC_LOCK_EXIT;
-	.loc 1 80 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Monitor.c:82 	return ASYNC_LOCK_EXIT;
+	.loc 1 82 2
 	ret;
 }
 
-	.file	1 "C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Monitor.cu", 1509046920, 2890
+	.file	1 "C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Monitor.c", 1512782838, 2933
 	.file	2 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v9.0\\include\\cuda_device_runtime_api.h", 1504359958, 14836
 

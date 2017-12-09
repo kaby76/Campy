@@ -154,14 +154,14 @@
 	ld.param.u64 	%rd1, [_Z31System_WeakReference_get_TargetPhS_S__param_0];
 	ld.param.u64 	%rd2, [_Z31System_WeakReference_get_TargetPhS_S__param_2];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.WeakReference.cu:43 	*(HEAP_PTR*)pReturnValue = pThis->target;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.WeakReference.c:43 	*(HEAP_PTR*)pReturnValue = pThis->target;
 	.loc 1 43 2
 	ld.u64 	%rd3, [%rd1];
 	st.u64 	[%rd2], %rd3;
 	mov.u64 	%rd4, 0;
 	st.param.b64	[func_retval0+0], %rd4;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.WeakReference.cu:44 	return NULL;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.WeakReference.c:44 	return NULL;
 	.loc 1 44 2
 	ret;
 }
@@ -180,18 +180,18 @@
 	ld.param.u64 	%rd8, [_Z31System_WeakReference_set_TargetPhS_S__param_0];
 	ld.param.u64 	%rd9, [_Z31System_WeakReference_set_TargetPhS_S__param_1];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.WeakReference.cu:49 	HEAP_PTR target = ((HEAP_PTR*)pParams)[0];
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.WeakReference.c:49 	HEAP_PTR target = ((HEAP_PTR*)pParams)[0];
 	.loc 1 49 18
 	ld.u64 	%rd1, [%rd9];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.WeakReference.cu:51 	if (pThis->target != NULL) {
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.WeakReference.c:51 	if (pThis->target != NULL) {
 	.loc 1 51 2
 	ld.u64 	%rd3, [%rd8];
 	setp.eq.s64	%p1, %rd3, 0;
 	@%p1 bra 	BB7_6;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.WeakReference.cu:52 		tWeakRef **ppWeakRef = (tWeakRef**)Heap_GetWeakRefAddress(pThis->target);
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.WeakReference.c:52 		tWeakRef **ppWeakRef = (tWeakRef**)Heap_GetWeakRefAddress(pThis->target);
 	.loc 1 52 38
 	// Callseq Start 0
 	{
@@ -212,7 +212,7 @@
 
 BB7_2:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.WeakReference.cu:53 		while (*ppWeakRef != NULL) {
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.WeakReference.c:53 		while (*ppWeakRef != NULL) {
 	.loc 1 53 3
 	mov.u64 	%rd5, %rd16;
 	ld.u64 	%rd6, [%rd5];
@@ -220,22 +220,22 @@ BB7_2:
 	@%p2 bra 	BB7_5;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.WeakReference.cu:56 				*ppWeakRef = pWeakRef->pNextWeakRef;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.WeakReference.c:56 				*ppWeakRef = pWeakRef->pNextWeakRef;
 	.loc 1 56 5
 	add.s64 	%rd16, %rd6, 16;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.WeakReference.cu:55 			if (pWeakRef == pThis) {
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.WeakReference.c:55 			if (pWeakRef == pThis) {
 	.loc 1 55 4
 	setp.ne.s64	%p3, %rd6, %rd8;
 	@%p3 bra 	BB7_2;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.WeakReference.cu:56 				*ppWeakRef = pWeakRef->pNextWeakRef;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.WeakReference.c:56 				*ppWeakRef = pWeakRef->pNextWeakRef;
 	.loc 1 56 5
 	ld.u64 	%rd10, [%rd16];
 	st.u64 	[%rd5], %rd10;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.WeakReference.cu:57 				Heap_RemovedWeakRefTarget(pWeakRef->target);
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.WeakReference.c:57 				Heap_RemovedWeakRefTarget(pWeakRef->target);
 	.loc 1 57 5
 	ld.u64 	%rd11, [%rd8];
 	// Callseq Start 1
@@ -256,7 +256,7 @@ BB7_2:
 
 BB7_5:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.WeakReference.cu:62 		Crash("WeakRef.set_Target() Error: cannot find weak-ref target for removal");
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.WeakReference.c:62 		Crash("WeakRef.set_Target() Error: cannot find weak-ref target for removal");
 	.loc 1 62 3
 	mov.u64 	%rd12, $str;
 	cvta.global.u64 	%rd13, %rd12;
@@ -277,17 +277,17 @@ BB7_5:
 
 BB7_6:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.WeakReference.cu:65 	pThis->target = target;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.WeakReference.c:65 	pThis->target = target;
 	.loc 1 65 2
 	st.u64 	[%rd8], %rd1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.WeakReference.cu:66 	if (target != NULL) {
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.WeakReference.c:66 	if (target != NULL) {
 	.loc 1 66 2
 	setp.eq.s64	%p4, %rd1, 0;
 	@%p4 bra 	BB7_8;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.WeakReference.cu:67 		pThis->pNextWeakRef = (tWeakRef*)Heap_SetWeakRefTarget(target, (HEAP_PTR)pThis);
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.WeakReference.c:67 		pThis->pNextWeakRef = (tWeakRef*)Heap_SetWeakRefTarget(target, (HEAP_PTR)pThis);
 	.loc 1 67 36
 	// Callseq Start 3
 	{
@@ -314,7 +314,7 @@ BB7_8:
 	mov.u64 	%rd15, 0;
 	st.param.b64	[func_retval0+0], %rd15;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.WeakReference.cu:70 	return NULL;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.WeakReference.c:70 	return NULL;
 	.loc 1 70 2
 	ret;
 }
@@ -333,18 +333,18 @@ BB7_8:
 	ld.param.u64 	%rd16, [_Z30SystemWeakReference_TargetGonePPhj_param_0];
 	ld.param.u32 	%r1, [_Z30SystemWeakReference_TargetGonePPhj_param_1];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.WeakReference.cu:75 	tWeakRef *pWeakRef = *ppWeakRef;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.WeakReference.c:75 	tWeakRef *pWeakRef = *ppWeakRef;
 	.loc 1 75 21
 	ld.u64 	%rd15, [%rd16];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.WeakReference.cu:76 	while (pWeakRef != NULL) {
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.WeakReference.c:76 	while (pWeakRef != NULL) {
 	.loc 1 76 2
 	setp.eq.s64	%p1, %rd15, 0;
 	@%p1 bra 	BB8_6;
 
 BB8_1:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.WeakReference.cu:77 		if (removeLongRefs || !pWeakRef->trackRes) {
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.WeakReference.c:77 		if (removeLongRefs || !pWeakRef->trackRes) {
 	.loc 1 77 3
 	setp.ne.s32	%p2, %r1, 0;
 	@%p2 bra 	BB8_4;
@@ -357,28 +357,28 @@ BB8_1:
 BB8_4:
 	mov.u64 	%rd13, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.WeakReference.cu:79 			pWeakRef->target = NULL;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.WeakReference.c:79 			pWeakRef->target = NULL;
 	.loc 1 79 4
 	st.u64 	[%rd15], %rd13;
 	bra.uni 	BB8_5;
 
 BB8_3:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.WeakReference.cu:82 			*ppWeakRef = pWeakRef;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.WeakReference.c:82 			*ppWeakRef = pWeakRef;
 	.loc 1 82 4
 	st.u64 	[%rd16], %rd15;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.WeakReference.cu:83 			ppWeakRef = &(pWeakRef->pNextWeakRef);
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.WeakReference.c:83 			ppWeakRef = &(pWeakRef->pNextWeakRef);
 	.loc 1 83 4
 	add.s64 	%rd16, %rd15, 16;
 
 BB8_5:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.WeakReference.cu:85 		pWeakRef = pWeakRef->pNextWeakRef;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.WeakReference.c:85 		pWeakRef = pWeakRef->pNextWeakRef;
 	.loc 1 85 3
 	ld.u64 	%rd15, [%rd15+16];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.WeakReference.cu:76 	while (pWeakRef != NULL) {
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.WeakReference.c:76 	while (pWeakRef != NULL) {
 	.loc 1 76 2
 	setp.ne.s64	%p4, %rd15, 0;
 	@%p4 bra 	BB8_1;
@@ -386,15 +386,15 @@ BB8_5:
 BB8_6:
 	mov.u64 	%rd14, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.WeakReference.cu:87 	*ppWeakRef = NULL;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.WeakReference.c:87 	*ppWeakRef = NULL;
 	.loc 1 87 2
 	st.u64 	[%rd16], %rd14;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.WeakReference.cu:88 }
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.WeakReference.c:88 }
 	.loc 1 88 1
 	ret;
 }
 
-	.file	1 "C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.WeakReference.cu", 1509046920, 3053
+	.file	1 "C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.WeakReference.c", 1509046920, 3053
 	.file	2 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v9.0\\include\\cuda_device_runtime_api.h", 1504359958, 14836
 

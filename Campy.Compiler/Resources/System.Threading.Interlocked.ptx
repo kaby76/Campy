@@ -133,31 +133,31 @@
 	ld.param.u64 	%rd2, [_Z50System_Threading_Interlocked_CompareExchange_Int32PhS_S__param_1];
 	ld.param.u64 	%rd3, [_Z50System_Threading_Interlocked_CompareExchange_Int32PhS_S__param_2];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Interlocked.cu:28 	U32 value = INTERNALCALL_PARAM(4, U32);
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Interlocked.c:28 	U32 value = INTERNALCALL_PARAM(4, U32);
 	.loc 1 28 12
 	ld.u32 	%r1, [%rd2+4];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Interlocked.cu:29 	U32 comparand = INTERNALCALL_PARAM(8, U32);
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Interlocked.c:29 	U32 comparand = INTERNALCALL_PARAM(8, U32);
 	.loc 1 29 16
 	ld.u32 	%r2, [%rd2+8];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Interlocked.cu:27 	U32 *pLoc = INTERNALCALL_PARAM(0, U32*);
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Interlocked.c:27 	U32 *pLoc = INTERNALCALL_PARAM(0, U32*);
 	.loc 1 27 12
 	ld.u64 	%rd1, [%rd2];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Interlocked.cu:31 	*(U32*)pReturnValue = *pLoc;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Interlocked.c:31 	*(U32*)pReturnValue = *pLoc;
 	.loc 1 31 2
 	ld.u32 	%r3, [%rd1];
 	st.u32 	[%rd3], %r3;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Interlocked.cu:32 	if (*pLoc == comparand) {
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Interlocked.c:32 	if (*pLoc == comparand) {
 	.loc 1 32 2
 	ld.u32 	%r4, [%rd1];
 	setp.ne.s32	%p1, %r4, %r2;
 	@%p1 bra 	BB6_2;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Interlocked.cu:33 		*pLoc = value;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Interlocked.c:33 		*pLoc = value;
 	.loc 1 33 3
 	st.u32 	[%rd1], %r1;
 
@@ -165,7 +165,7 @@ BB6_2:
 	mov.u64 	%rd4, 0;
 	st.param.b64	[func_retval0+0], %rd4;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Interlocked.cu:36 	return NULL;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Interlocked.c:36 	return NULL;
 	.loc 1 36 2
 	ret;
 }
@@ -184,23 +184,23 @@ BB6_2:
 	ld.param.u64 	%rd1, [_Z44System_Threading_Interlocked_Increment_Int32PhS_S__param_1];
 	ld.param.u64 	%rd2, [_Z44System_Threading_Interlocked_Increment_Int32PhS_S__param_2];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Interlocked.cu:40 	I32 *pLoc = INTERNALCALL_PARAM(0, I32*);
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Interlocked.c:40 	I32 *pLoc = INTERNALCALL_PARAM(0, I32*);
 	.loc 1 40 12
 	ld.u64 	%rd3, [%rd1];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Interlocked.cu:42 	(*pLoc)++;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Interlocked.c:42 	(*pLoc)++;
 	.loc 1 42 2
 	ld.u32 	%r1, [%rd3];
 	add.s32 	%r2, %r1, 1;
 	st.u32 	[%rd3], %r2;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Interlocked.cu:43 	*(I32*)pReturnValue = *pLoc;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Interlocked.c:43 	*(I32*)pReturnValue = *pLoc;
 	.loc 1 43 2
 	st.u32 	[%rd2], %r2;
 	mov.u64 	%rd4, 0;
 	st.param.b64	[func_retval0+0], %rd4;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Interlocked.cu:45 	return NULL;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Interlocked.c:45 	return NULL;
 	.loc 1 45 2
 	ret;
 }
@@ -219,23 +219,23 @@ BB6_2:
 	ld.param.u64 	%rd1, [_Z44System_Threading_Interlocked_Decrement_Int32PhS_S__param_1];
 	ld.param.u64 	%rd2, [_Z44System_Threading_Interlocked_Decrement_Int32PhS_S__param_2];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Interlocked.cu:49 	I32 *pLoc = INTERNALCALL_PARAM(0, I32*);
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Interlocked.c:49 	I32 *pLoc = INTERNALCALL_PARAM(0, I32*);
 	.loc 1 49 12
 	ld.u64 	%rd3, [%rd1];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Interlocked.cu:51 	(*pLoc)--;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Interlocked.c:51 	(*pLoc)--;
 	.loc 1 51 2
 	ld.u32 	%r1, [%rd3];
 	add.s32 	%r2, %r1, -1;
 	st.u32 	[%rd3], %r2;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Interlocked.cu:52 	*(I32*)pReturnValue = *pLoc;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Interlocked.c:52 	*(I32*)pReturnValue = *pLoc;
 	.loc 1 52 2
 	st.u32 	[%rd2], %r2;
 	mov.u64 	%rd4, 0;
 	st.param.b64	[func_retval0+0], %rd4;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Interlocked.cu:54 	return NULL;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Interlocked.c:54 	return NULL;
 	.loc 1 54 2
 	ret;
 }
@@ -254,27 +254,27 @@ BB6_2:
 	ld.param.u64 	%rd1, [_Z38System_Threading_Interlocked_Add_Int32PhS_S__param_1];
 	ld.param.u64 	%rd2, [_Z38System_Threading_Interlocked_Add_Int32PhS_S__param_2];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Interlocked.cu:58 	U32 *pLoc = INTERNALCALL_PARAM(0, U32*);
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Interlocked.c:58 	U32 *pLoc = INTERNALCALL_PARAM(0, U32*);
 	.loc 1 58 12
 	ld.u64 	%rd3, [%rd1];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Interlocked.cu:59 	U32 value = INTERNALCALL_PARAM(4, U32);
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Interlocked.c:59 	U32 value = INTERNALCALL_PARAM(4, U32);
 	.loc 1 59 12
 	ld.u32 	%r1, [%rd1+4];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Interlocked.cu:61 	*pLoc += value;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Interlocked.c:61 	*pLoc += value;
 	.loc 1 61 2
 	ld.u32 	%r2, [%rd3];
 	add.s32 	%r3, %r2, %r1;
 	st.u32 	[%rd3], %r3;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Interlocked.cu:62 	*(U32*)pReturnValue = *pLoc;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Interlocked.c:62 	*(U32*)pReturnValue = *pLoc;
 	.loc 1 62 2
 	st.u32 	[%rd2], %r3;
 	mov.u64 	%rd4, 0;
 	st.param.b64	[func_retval0+0], %rd4;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Interlocked.cu:64 	return NULL;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Interlocked.c:64 	return NULL;
 	.loc 1 64 2
 	ret;
 }
@@ -293,30 +293,30 @@ BB6_2:
 	ld.param.u64 	%rd1, [_Z43System_Threading_Interlocked_Exchange_Int32PhS_S__param_1];
 	ld.param.u64 	%rd2, [_Z43System_Threading_Interlocked_Exchange_Int32PhS_S__param_2];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Interlocked.cu:68 	U32 *pLoc = INTERNALCALL_PARAM(0, U32*);
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Interlocked.c:68 	U32 *pLoc = INTERNALCALL_PARAM(0, U32*);
 	.loc 1 68 12
 	ld.u64 	%rd3, [%rd1];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Interlocked.cu:69 	U32 value = INTERNALCALL_PARAM(4, U32);
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Interlocked.c:69 	U32 value = INTERNALCALL_PARAM(4, U32);
 	.loc 1 69 12
 	ld.u32 	%r1, [%rd1+4];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Interlocked.cu:71 	*(U32*)pReturnValue = *pLoc;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Interlocked.c:71 	*(U32*)pReturnValue = *pLoc;
 	.loc 1 71 2
 	ld.u32 	%r2, [%rd3];
 	st.u32 	[%rd2], %r2;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Interlocked.cu:72 	*pLoc = value;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Interlocked.c:72 	*pLoc = value;
 	.loc 1 72 2
 	st.u32 	[%rd3], %r1;
 	mov.u64 	%rd4, 0;
 	st.param.b64	[func_retval0+0], %rd4;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Interlocked.cu:74 	return NULL;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Interlocked.c:74 	return NULL;
 	.loc 1 74 2
 	ret;
 }
 
-	.file	1 "C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Interlocked.cu", 1509046920, 2559
+	.file	1 "C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Threading.Interlocked.c", 1509046920, 2559
 	.file	2 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v9.0\\include\\cuda_device_runtime_api.h", 1504359958, 14836
 

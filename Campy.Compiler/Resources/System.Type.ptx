@@ -136,11 +136,11 @@
 	ld.param.u64 	%rd1, [_Z29System_Type_GetTypeFromHandlePhS_S__param_1];
 	ld.param.u64 	%rd2, [_Z29System_Type_GetTypeFromHandlePhS_S__param_2];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Type.cu:31 	tMD_TypeDef *pTypeDef = *(tMD_TypeDef**)pParams;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Type.c:31 	tMD_TypeDef *pTypeDef = *(tMD_TypeDef**)pParams;
 	.loc 1 31 24
 	ld.u64 	%rd3, [%rd1];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Type.cu:33 	*(HEAP_PTR*)pReturnValue = Type_GetTypeObject(pTypeDef);
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Type.c:33 	*(HEAP_PTR*)pReturnValue = Type_GetTypeObject(pTypeDef);
 	.loc 1 33 29
 	// Callseq Start 0
 	{
@@ -162,7 +162,7 @@
 	mov.u64 	%rd5, 0;
 	st.param.b64	[func_retval0+0], %rd5;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Type.cu:35 	return NULL;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Type.c:35 	return NULL;
 	.loc 1 35 2
 	ret;
 }
@@ -181,7 +181,7 @@
 	ld.param.u64 	%rd1, [_Z27System_Type_get_IsValueTypePhS_S__param_0];
 	ld.param.u64 	%rd2, [_Z27System_Type_get_IsValueTypePhS_S__param_2];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Type.cu:41 	*(U32*)pReturnValue = pRuntimeType->pTypeDef->isValueType;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Type.c:41 	*(U32*)pReturnValue = pRuntimeType->pTypeDef->isValueType;
 	.loc 1 41 2
 	ld.u64 	%rd3, [%rd1];
 	ld.u8 	%r1, [%rd3+54];
@@ -189,11 +189,11 @@
 	mov.u64 	%rd4, 0;
 	st.param.b64	[func_retval0+0], %rd4;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Type.cu:43 	return NULL;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Type.c:43 	return NULL;
 	.loc 1 43 2
 	ret;
 }
 
-	.file	1 "C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Type.cu", 1509046920, 1742
+	.file	1 "C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Type.c", 1509046920, 1742
 	.file	2 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v9.0\\include\\cuda_device_runtime_api.h", 1504359958, 14836
 

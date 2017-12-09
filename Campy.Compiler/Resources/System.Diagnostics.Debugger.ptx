@@ -131,6 +131,6 @@
 	trap;
 }
 
-	.file	1 "C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Diagnostics.Debugger.cu", 1511349446, 1475
+	.file	1 "C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Diagnostics.Debugger.c", 1512782638, 1475
 	.file	2 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v9.0\\include\\cuda_device_runtime_api.h", 1504359958, 14836
 

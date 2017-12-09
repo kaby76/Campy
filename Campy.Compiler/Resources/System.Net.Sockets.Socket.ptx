@@ -127,7 +127,7 @@
 
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Net.Sockets.Socket.cu:45 }
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Net.Sockets.Socket.c:45 }
 	.loc 1 45 1
 	ret;
 }
@@ -145,7 +145,7 @@
 	mov.u64 	%rd1, 0;
 	st.param.b64	[func_retval0+0], %rd1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Net.Sockets.Socket.cu:80 	return NULL;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Net.Sockets.Socket.c:80 	return NULL;
 	.loc 1 80 2
 	ret;
 }
@@ -163,7 +163,7 @@
 	mov.u64 	%rd1, 0;
 	st.param.b64	[func_retval0+0], %rd1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Net.Sockets.Socket.cu:104 	return NULL;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Net.Sockets.Socket.c:104 	return NULL;
 	.loc 1 104 2
 	ret;
 }
@@ -181,7 +181,7 @@
 	mov.u64 	%rd1, 0;
 	st.param.b64	[func_retval0+0], %rd1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Net.Sockets.Socket.cu:117 	return NULL;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Net.Sockets.Socket.c:117 	return NULL;
 	.loc 1 117 2
 	ret;
 }
@@ -199,7 +199,7 @@
 	mov.u64 	%rd1, 0;
 	st.param.b64	[func_retval0+0], %rd1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Net.Sockets.Socket.cu:129 	return NULL;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Net.Sockets.Socket.c:129 	return NULL;
 	.loc 1 129 2
 	ret;
 }
@@ -217,7 +217,7 @@
 	mov.u64 	%rd1, 0;
 	st.param.b64	[func_retval0+0], %rd1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Net.Sockets.Socket.cu:167 	return NULL;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Net.Sockets.Socket.c:167 	return NULL;
 	.loc 1 167 2
 	ret;
 }
@@ -235,7 +235,7 @@
 	mov.u64 	%rd1, 0;
 	st.param.b64	[func_retval0+0], %rd1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Net.Sockets.Socket.cu:230 	return NULL;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Net.Sockets.Socket.c:230 	return NULL;
 	.loc 1 230 2
 	ret;
 }
@@ -253,7 +253,7 @@
 	mov.u64 	%rd1, 0;
 	st.param.b64	[func_retval0+0], %rd1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Net.Sockets.Socket.cu:306 	return NULL;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Net.Sockets.Socket.c:306 	return NULL;
 	.loc 1 306 2
 	ret;
 }
@@ -271,11 +271,11 @@
 	mov.u64 	%rd1, 0;
 	st.param.b64	[func_retval0+0], %rd1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Net.Sockets.Socket.cu:371 	return NULL;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Net.Sockets.Socket.c:371 	return NULL;
 	.loc 1 371 2
 	ret;
 }
 
-	.file	1 "C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Net.Sockets.Socket.cu", 1509046920, 9841
+	.file	1 "C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Net.Sockets.Socket.c", 1509046920, 9841
 	.file	2 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v9.0\\include\\cuda_device_runtime_api.h", 1504359958, 14836
 

@@ -146,8 +146,8 @@
 	ld.param.u64 	%rd11, [_Z12GstrncasecmpPKcS0_y_param_1];
 	ld.param.u64 	%rd10, [_Z12GstrncasecmpPKcS0_y_param_2];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:34 	if (len) {
-	.loc 1 34 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:33 	if (len) {
+	.loc 1 33 2
 	setp.eq.s64	%p1, %rd10, 0;
 	mov.u16 	%rs19, 0;
 	mov.u16 	%rs20, %rs19;
@@ -155,88 +155,88 @@
 
 BB6_1:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:36 			c1 = *s1; c2 = *s2;
-	.loc 1 36 14
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:35 			c1 = *s1; c2 = *s2;
+	.loc 1 35 14
 	ld.u8 	%rs20, [%rd11];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:36 			c1 = *s1; c2 = *s2;
-	.loc 1 36 4
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:35 			c1 = *s1; c2 = *s2;
+	.loc 1 35 4
 	ld.u8 	%rs19, [%rd12];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:38 			if (!c1)
-	.loc 1 38 4
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:37 			if (!c1)
+	.loc 1 37 4
 	setp.eq.s16	%p2, %rs19, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:40 			if (!c2)
-	.loc 1 40 4
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:39 			if (!c2)
+	.loc 1 39 4
 	setp.eq.s16	%p3, %rs20, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:38 			if (!c1)
-	.loc 1 38 4
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:37 			if (!c1)
+	.loc 1 37 4
 	or.pred  	%p4, %p2, %p3;
 	@%p4 bra 	BB6_5;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:42 			if (c1 == c2)
-	.loc 1 42 4
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:41 			if (c1 == c2)
+	.loc 1 41 4
 	setp.eq.s16	%p5, %rs19, %rs20;
 	@%p5 bra 	BB6_4;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:621 		c = 'a' + (c - 'A');
-	.loc 1 621 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:620 		c = 'a' + (c - 'A');
+	.loc 1 620 3
 	cvt.u32.u16	%r1, %rs20;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:620 	if (('A' <= c) && (c <= 'Z'))
-	.loc 1 620 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:619 	if (('A' <= c) && (c <= 'Z'))
+	.loc 1 619 2
 	add.s16 	%rs10, %rs19, -65;
 	and.b16  	%rs11, %rs10, 255;
 	setp.lt.u16	%p6, %rs11, 26;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:621 		c = 'a' + (c - 'A');
-	.loc 1 621 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:620 		c = 'a' + (c - 'A');
+	.loc 1 620 3
 	cvt.u32.u16	%r2, %rs19;
 	add.s32 	%r3, %r2, 32;
 	cvt.u16.u32	%rs12, %r3;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:620 	if (('A' <= c) && (c <= 'Z'))
-	.loc 1 620 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:619 	if (('A' <= c) && (c <= 'Z'))
+	.loc 1 619 2
 	selp.b16	%rs19, %rs12, %rs19, %p6;
 	and.b16  	%rs13, %rs19, 255;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:620 	if (('A' <= c) && (c <= 'Z'))
-	.loc 1 620 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:619 	if (('A' <= c) && (c <= 'Z'))
+	.loc 1 619 2
 	add.s16 	%rs14, %rs20, -65;
 	and.b16  	%rs15, %rs14, 255;
 	setp.lt.u16	%p7, %rs15, 26;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:621 		c = 'a' + (c - 'A');
-	.loc 1 621 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:620 		c = 'a' + (c - 'A');
+	.loc 1 620 3
 	add.s32 	%r4, %r1, 32;
 	cvt.u16.u32	%rs16, %r4;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:620 	if (('A' <= c) && (c <= 'Z'))
-	.loc 1 620 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:619 	if (('A' <= c) && (c <= 'Z'))
+	.loc 1 619 2
 	selp.b16	%rs20, %rs16, %rs20, %p7;
 	and.b16  	%rs17, %rs20, 255;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:46 			if (c1 != c2)
-	.loc 1 46 4
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:45 			if (c1 != c2)
+	.loc 1 45 4
 	setp.ne.s16	%p8, %rs13, %rs17;
 	@%p8 bra 	BB6_5;
 
 BB6_4:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:37 			s1++; s2++;
-	.loc 1 37 4
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:36 			s1++; s2++;
+	.loc 1 36 4
 	add.s64 	%rd12, %rd12, 1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:37 			s1++; s2++;
-	.loc 1 37 10
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:36 			s1++; s2++;
+	.loc 1 36 10
 	add.s64 	%rd11, %rd11, 1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:48 		} while (--len);
-	.loc 1 48 12
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:47 		} while (--len);
+	.loc 1 47 12
 	add.s64 	%rd10, %rd10, -1;
 	setp.ne.s64	%p9, %rd10, 0;
 	mov.u16 	%rs20, %rs19;
@@ -244,8 +244,8 @@ BB6_4:
 
 BB6_5:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:50 	return (int)c1 - (int)c2;
-	.loc 1 50 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:49 	return (int)c1 - (int)c2;
+	.loc 1 49 2
 	cvt.u32.u16	%r5, %rs20;
 	and.b32  	%r6, %r5, 255;
 	cvt.u32.u16	%r7, %rs19;
@@ -267,24 +267,24 @@ BB6_5:
 
 	ld.param.s8 	%rs1, [_Z8Gtolowerc_param_0];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:620 	if (('A' <= c) && (c <= 'Z'))
-	.loc 1 620 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:619 	if (('A' <= c) && (c <= 'Z'))
+	.loc 1 619 2
 	add.s16 	%rs2, %rs1, -65;
 	and.b16  	%rs3, %rs2, 255;
 	setp.lt.u16	%p1, %rs3, 26;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:621 		c = 'a' + (c - 'A');
-	.loc 1 621 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:620 		c = 'a' + (c - 'A');
+	.loc 1 620 3
 	cvt.u32.u16	%r1, %rs1;
 	add.s32 	%r2, %r1, 32;
 	cvt.u16.u32	%rs4, %r2;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:620 	if (('A' <= c) && (c <= 'Z'))
-	.loc 1 620 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:619 	if (('A' <= c) && (c <= 'Z'))
+	.loc 1 619 2
 	selp.b16	%rs5, %rs4, %rs1, %p1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:622 	return c;
-	.loc 1 622 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:621 	return c;
+	.loc 1 621 2
 	cvt.u32.u16	%r3, %rs5;
 	cvt.s32.s8 	%r4, %r3;
 	st.param.b32	[func_retval0+0], %r4;
@@ -297,461 +297,129 @@ BB6_5:
 	.param .b64 _Z11GstrcasecmpPKcS0__param_1
 )
 {
-	.reg .pred 	%p<32>;
-	.reg .b16 	%rs<87>;
-	.reg .b32 	%r<26>;
-	.reg .b64 	%rd<15>;
+	.reg .pred 	%p<8>;
+	.reg .b16 	%rs<23>;
+	.reg .b32 	%r<14>;
+	.reg .b64 	%rd<9>;
 
 
-	ld.param.u64 	%rd3, [_Z11GstrcasecmpPKcS0__param_0];
-	ld.param.u64 	%rd2, [_Z11GstrcasecmpPKcS0__param_1];
-	mov.u64 	%rd1, 4294967295;
+	ld.param.u64 	%rd8, [_Z11GstrcasecmpPKcS0__param_0];
+	ld.param.u64 	%rd7, [_Z11GstrcasecmpPKcS0__param_1];
+	mov.u32 	%r1, -1;
 
 BB8_1:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:36 			c1 = *s1; c2 = *s2;
-	.loc 1 36 4
-	ld.u8 	%rs85, [%rd3];
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:35 			c1 = *s1; c2 = *s2;
+	.loc 1 35 4
+	ld.u8 	%rs21, [%rd8];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:36 			c1 = *s1; c2 = *s2;
-	.loc 1 36 14
-	ld.u8 	%rs2, [%rd2];
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:35 			c1 = *s1; c2 = *s2;
+	.loc 1 35 14
+	ld.u8 	%rs2, [%rd7];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:38 			if (!c1)
-	.loc 1 38 4
-	setp.eq.s16	%p1, %rs85, 0;
-	mov.u16 	%rs24, 0;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:37 			if (!c1)
+	.loc 1 37 4
+	setp.eq.s16	%p1, %rs21, 0;
+	mov.u16 	%rs8, 0;
 	@%p1 bra 	BB8_2;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:40 			if (!c2)
-	.loc 1 40 4
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:36 			s1++; s2++;
+	.loc 1 36 4
+	add.s64 	%rd8, %rd8, 1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:36 			s1++; s2++;
+	.loc 1 36 10
+	add.s64 	%rd7, %rd7, 1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:39 			if (!c2)
+	.loc 1 39 4
 	setp.eq.s16	%p2, %rs2, 0;
-	mov.u16 	%rs86, 0;
+	mov.u16 	%rs22, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:40 			if (!c2)
-	.loc 1 40 4
-	@%p2 bra 	BB8_27;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:39 			if (!c2)
+	.loc 1 39 4
+	@%p2 bra 	BB8_7;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:42 			if (c1 == c2)
-	.loc 1 42 4
-	setp.eq.s16	%p3, %rs85, %rs2;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:41 			if (c1 == c2)
+	.loc 1 41 4
+	setp.eq.s16	%p3, %rs21, %rs2;
 	@%p3 bra 	BB8_6;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:621 		c = 'a' + (c - 'A');
-	.loc 1 621 3
-	cvt.u32.u16	%r1, %rs85;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:620 		c = 'a' + (c - 'A');
+	.loc 1 620 3
+	cvt.u32.u16	%r4, %rs21;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:621 		c = 'a' + (c - 'A');
-	.loc 1 621 3
-	cvt.u32.u16	%r2, %rs2;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:620 		c = 'a' + (c - 'A');
+	.loc 1 620 3
+	cvt.u32.u16	%r5, %rs2;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:620 	if (('A' <= c) && (c <= 'Z'))
-	.loc 1 620 2
-	add.s16 	%rs28, %rs85, -65;
-	and.b16  	%rs29, %rs28, 255;
-	setp.lt.u16	%p4, %rs29, 26;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:619 	if (('A' <= c) && (c <= 'Z'))
+	.loc 1 619 2
+	add.s16 	%rs12, %rs21, -65;
+	and.b16  	%rs13, %rs12, 255;
+	setp.lt.u16	%p4, %rs13, 26;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:621 		c = 'a' + (c - 'A');
-	.loc 1 621 3
-	add.s32 	%r3, %r1, 32;
-	cvt.u16.u32	%rs30, %r3;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:620 		c = 'a' + (c - 'A');
+	.loc 1 620 3
+	add.s32 	%r6, %r4, 32;
+	cvt.u16.u32	%rs14, %r6;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:620 	if (('A' <= c) && (c <= 'Z'))
-	.loc 1 620 2
-	selp.b16	%rs85, %rs30, %rs85, %p4;
-	and.b16  	%rs31, %rs85, 255;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:619 	if (('A' <= c) && (c <= 'Z'))
+	.loc 1 619 2
+	selp.b16	%rs21, %rs14, %rs21, %p4;
+	and.b16  	%rs15, %rs21, 255;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:620 	if (('A' <= c) && (c <= 'Z'))
-	.loc 1 620 2
-	add.s16 	%rs32, %rs2, -65;
-	and.b16  	%rs33, %rs32, 255;
-	setp.lt.u16	%p5, %rs33, 26;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:619 	if (('A' <= c) && (c <= 'Z'))
+	.loc 1 619 2
+	add.s16 	%rs16, %rs2, -65;
+	and.b16  	%rs17, %rs16, 255;
+	setp.lt.u16	%p5, %rs17, 26;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:621 		c = 'a' + (c - 'A');
-	.loc 1 621 3
-	add.s32 	%r4, %r2, 32;
-	cvt.u16.u32	%rs34, %r4;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:620 		c = 'a' + (c - 'A');
+	.loc 1 620 3
+	add.s32 	%r7, %r5, 32;
+	cvt.u16.u32	%rs18, %r7;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:620 	if (('A' <= c) && (c <= 'Z'))
-	.loc 1 620 2
-	selp.b16	%rs86, %rs34, %rs2, %p5;
-	and.b16  	%rs35, %rs86, 255;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:619 	if (('A' <= c) && (c <= 'Z'))
+	.loc 1 619 2
+	selp.b16	%rs22, %rs18, %rs2, %p5;
+	and.b16  	%rs19, %rs22, 255;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:46 			if (c1 != c2)
-	.loc 1 46 4
-	setp.ne.s16	%p6, %rs31, %rs35;
-	@%p6 bra 	BB8_27;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:45 			if (c1 != c2)
+	.loc 1 45 4
+	setp.ne.s16	%p6, %rs15, %rs19;
+	@%p6 bra 	BB8_7;
 
 BB8_6:
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:36 			c1 = *s1; c2 = *s2;
-	.loc 1 36 4
-	ld.u8 	%rs85, [%rd3+1];
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:36 			c1 = *s1; c2 = *s2;
-	.loc 1 36 14
-	ld.u8 	%rs6, [%rd2+1];
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:38 			if (!c1)
-	.loc 1 38 4
-	setp.eq.s16	%p7, %rs85, 0;
-	mov.u16 	%rs36, 0;
-	@%p7 bra 	BB8_7;
-
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:40 			if (!c2)
-	.loc 1 40 4
-	setp.eq.s16	%p8, %rs6, 0;
-	mov.u16 	%rs86, 0;
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:40 			if (!c2)
-	.loc 1 40 4
-	@%p8 bra 	BB8_27;
-
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:42 			if (c1 == c2)
-	.loc 1 42 4
-	setp.eq.s16	%p9, %rs85, %rs6;
-	@%p9 bra 	BB8_11;
-
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:621 		c = 'a' + (c - 'A');
-	.loc 1 621 3
-	cvt.u32.u16	%r5, %rs85;
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:621 		c = 'a' + (c - 'A');
-	.loc 1 621 3
-	cvt.u32.u16	%r6, %rs6;
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:620 	if (('A' <= c) && (c <= 'Z'))
-	.loc 1 620 2
-	add.s16 	%rs40, %rs85, -65;
-	and.b16  	%rs41, %rs40, 255;
-	setp.lt.u16	%p10, %rs41, 26;
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:621 		c = 'a' + (c - 'A');
-	.loc 1 621 3
-	add.s32 	%r7, %r5, 32;
-	cvt.u16.u32	%rs42, %r7;
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:620 	if (('A' <= c) && (c <= 'Z'))
-	.loc 1 620 2
-	selp.b16	%rs85, %rs42, %rs85, %p10;
-	and.b16  	%rs43, %rs85, 255;
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:620 	if (('A' <= c) && (c <= 'Z'))
-	.loc 1 620 2
-	add.s16 	%rs44, %rs6, -65;
-	and.b16  	%rs45, %rs44, 255;
-	setp.lt.u16	%p11, %rs45, 26;
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:621 		c = 'a' + (c - 'A');
-	.loc 1 621 3
-	add.s32 	%r8, %r6, 32;
-	cvt.u16.u32	%rs46, %r8;
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:620 	if (('A' <= c) && (c <= 'Z'))
-	.loc 1 620 2
-	selp.b16	%rs86, %rs46, %rs6, %p11;
-	and.b16  	%rs47, %rs86, 255;
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:46 			if (c1 != c2)
-	.loc 1 46 4
-	setp.ne.s16	%p12, %rs43, %rs47;
-	@%p12 bra 	BB8_27;
-
-BB8_11:
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:36 			c1 = *s1; c2 = *s2;
-	.loc 1 36 4
-	ld.u8 	%rs85, [%rd3+2];
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:36 			c1 = *s1; c2 = *s2;
-	.loc 1 36 14
-	ld.u8 	%rs10, [%rd2+2];
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:38 			if (!c1)
-	.loc 1 38 4
-	setp.eq.s16	%p13, %rs85, 0;
-	mov.u16 	%rs48, 0;
-	@%p13 bra 	BB8_12;
-
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:40 			if (!c2)
-	.loc 1 40 4
-	setp.eq.s16	%p14, %rs10, 0;
-	mov.u16 	%rs86, 0;
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:40 			if (!c2)
-	.loc 1 40 4
-	@%p14 bra 	BB8_27;
-
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:42 			if (c1 == c2)
-	.loc 1 42 4
-	setp.eq.s16	%p15, %rs85, %rs10;
-	@%p15 bra 	BB8_16;
-
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:621 		c = 'a' + (c - 'A');
-	.loc 1 621 3
-	cvt.u32.u16	%r9, %rs85;
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:621 		c = 'a' + (c - 'A');
-	.loc 1 621 3
-	cvt.u32.u16	%r10, %rs10;
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:620 	if (('A' <= c) && (c <= 'Z'))
-	.loc 1 620 2
-	add.s16 	%rs52, %rs85, -65;
-	and.b16  	%rs53, %rs52, 255;
-	setp.lt.u16	%p16, %rs53, 26;
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:621 		c = 'a' + (c - 'A');
-	.loc 1 621 3
-	add.s32 	%r11, %r9, 32;
-	cvt.u16.u32	%rs54, %r11;
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:620 	if (('A' <= c) && (c <= 'Z'))
-	.loc 1 620 2
-	selp.b16	%rs85, %rs54, %rs85, %p16;
-	and.b16  	%rs55, %rs85, 255;
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:620 	if (('A' <= c) && (c <= 'Z'))
-	.loc 1 620 2
-	add.s16 	%rs56, %rs10, -65;
-	and.b16  	%rs57, %rs56, 255;
-	setp.lt.u16	%p17, %rs57, 26;
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:621 		c = 'a' + (c - 'A');
-	.loc 1 621 3
-	add.s32 	%r12, %r10, 32;
-	cvt.u16.u32	%rs58, %r12;
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:620 	if (('A' <= c) && (c <= 'Z'))
-	.loc 1 620 2
-	selp.b16	%rs86, %rs58, %rs10, %p17;
-	and.b16  	%rs59, %rs86, 255;
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:46 			if (c1 != c2)
-	.loc 1 46 4
-	setp.ne.s16	%p18, %rs55, %rs59;
-	@%p18 bra 	BB8_27;
-
-BB8_16:
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:36 			c1 = *s1; c2 = *s2;
-	.loc 1 36 4
-	ld.u8 	%rs85, [%rd3+3];
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:36 			c1 = *s1; c2 = *s2;
-	.loc 1 36 14
-	ld.u8 	%rs14, [%rd2+3];
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:38 			if (!c1)
-	.loc 1 38 4
-	setp.eq.s16	%p19, %rs85, 0;
-	mov.u16 	%rs60, 0;
-	@%p19 bra 	BB8_17;
-
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:40 			if (!c2)
-	.loc 1 40 4
-	setp.eq.s16	%p20, %rs14, 0;
-	mov.u16 	%rs86, 0;
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:40 			if (!c2)
-	.loc 1 40 4
-	@%p20 bra 	BB8_27;
-
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:42 			if (c1 == c2)
-	.loc 1 42 4
-	setp.eq.s16	%p21, %rs85, %rs14;
-	@%p21 bra 	BB8_21;
-
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:621 		c = 'a' + (c - 'A');
-	.loc 1 621 3
-	cvt.u32.u16	%r13, %rs85;
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:621 		c = 'a' + (c - 'A');
-	.loc 1 621 3
-	cvt.u32.u16	%r14, %rs14;
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:620 	if (('A' <= c) && (c <= 'Z'))
-	.loc 1 620 2
-	add.s16 	%rs64, %rs85, -65;
-	and.b16  	%rs65, %rs64, 255;
-	setp.lt.u16	%p22, %rs65, 26;
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:621 		c = 'a' + (c - 'A');
-	.loc 1 621 3
-	add.s32 	%r15, %r13, 32;
-	cvt.u16.u32	%rs66, %r15;
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:620 	if (('A' <= c) && (c <= 'Z'))
-	.loc 1 620 2
-	selp.b16	%rs85, %rs66, %rs85, %p22;
-	and.b16  	%rs67, %rs85, 255;
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:620 	if (('A' <= c) && (c <= 'Z'))
-	.loc 1 620 2
-	add.s16 	%rs68, %rs14, -65;
-	and.b16  	%rs69, %rs68, 255;
-	setp.lt.u16	%p23, %rs69, 26;
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:621 		c = 'a' + (c - 'A');
-	.loc 1 621 3
-	add.s32 	%r16, %r14, 32;
-	cvt.u16.u32	%rs70, %r16;
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:620 	if (('A' <= c) && (c <= 'Z'))
-	.loc 1 620 2
-	selp.b16	%rs86, %rs70, %rs14, %p23;
-	and.b16  	%rs71, %rs86, 255;
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:46 			if (c1 != c2)
-	.loc 1 46 4
-	setp.ne.s16	%p24, %rs67, %rs71;
-	@%p24 bra 	BB8_27;
-
-BB8_21:
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:36 			c1 = *s1; c2 = *s2;
-	.loc 1 36 4
-	ld.u8 	%rs85, [%rd3+4];
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:36 			c1 = *s1; c2 = *s2;
-	.loc 1 36 14
-	ld.u8 	%rs18, [%rd2+4];
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:37 			s1++; s2++;
-	.loc 1 37 4
-	add.s64 	%rd3, %rd3, 5;
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:37 			s1++; s2++;
-	.loc 1 37 10
-	add.s64 	%rd2, %rd2, 5;
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:38 			if (!c1)
-	.loc 1 38 4
-	setp.eq.s16	%p25, %rs85, 0;
-	mov.u16 	%rs72, 0;
-	@%p25 bra 	BB8_22;
-
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:40 			if (!c2)
-	.loc 1 40 4
-	setp.eq.s16	%p26, %rs18, 0;
-	mov.u16 	%rs86, 0;
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:40 			if (!c2)
-	.loc 1 40 4
-	@%p26 bra 	BB8_27;
-
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:42 			if (c1 == c2)
-	.loc 1 42 4
-	setp.eq.s16	%p27, %rs85, %rs18;
-	@%p27 bra 	BB8_26;
-
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:621 		c = 'a' + (c - 'A');
-	.loc 1 621 3
-	cvt.u32.u16	%r17, %rs85;
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:621 		c = 'a' + (c - 'A');
-	.loc 1 621 3
-	cvt.u32.u16	%r18, %rs18;
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:620 	if (('A' <= c) && (c <= 'Z'))
-	.loc 1 620 2
-	add.s16 	%rs76, %rs85, -65;
-	and.b16  	%rs77, %rs76, 255;
-	setp.lt.u16	%p28, %rs77, 26;
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:621 		c = 'a' + (c - 'A');
-	.loc 1 621 3
-	add.s32 	%r19, %r17, 32;
-	cvt.u16.u32	%rs78, %r19;
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:620 	if (('A' <= c) && (c <= 'Z'))
-	.loc 1 620 2
-	selp.b16	%rs85, %rs78, %rs85, %p28;
-	and.b16  	%rs79, %rs85, 255;
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:620 	if (('A' <= c) && (c <= 'Z'))
-	.loc 1 620 2
-	add.s16 	%rs80, %rs18, -65;
-	and.b16  	%rs81, %rs80, 255;
-	setp.lt.u16	%p29, %rs81, 26;
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:621 		c = 'a' + (c - 'A');
-	.loc 1 621 3
-	add.s32 	%r20, %r18, 32;
-	cvt.u16.u32	%rs82, %r20;
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:620 	if (('A' <= c) && (c <= 'Z'))
-	.loc 1 620 2
-	selp.b16	%rs86, %rs82, %rs18, %p29;
-	and.b16  	%rs83, %rs86, 255;
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:46 			if (c1 != c2)
-	.loc 1 46 4
-	setp.ne.s16	%p30, %rs79, %rs83;
-	@%p30 bra 	BB8_27;
-
-BB8_26:
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:48 		} while (--len);
-	.loc 1 48 12
-	add.s64 	%rd1, %rd1, -5;
-	setp.ne.s64	%p31, %rd1, 0;
-	mov.u16 	%rs86, %rs85;
-	@%p31 bra 	BB8_1;
-	bra.uni 	BB8_27;
+	add.s32 	%r1, %r1, -1;
+
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:47 		} while (--len);
+	.loc 1 47 12
+	setp.ne.s32	%p7, %r1, 0;
+	mov.u16 	%rs22, %rs21;
+	@%p7 bra 	BB8_1;
+	bra.uni 	BB8_7;
 
 BB8_2:
-	mov.u16 	%rs85, %rs24;
-	mov.u16 	%rs86, %rs2;
-	bra.uni 	BB8_27;
+	mov.u16 	%rs21, %rs8;
+	mov.u16 	%rs22, %rs2;
 
 BB8_7:
-	mov.u16 	%rs85, %rs36;
-	mov.u16 	%rs86, %rs6;
-	bra.uni 	BB8_27;
 
-BB8_12:
-	mov.u16 	%rs85, %rs48;
-	mov.u16 	%rs86, %rs10;
-	bra.uni 	BB8_27;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:49 	return (int)c1 - (int)c2;
+	.loc 1 49 2
+	cvt.u32.u16	%r8, %rs22;
+	and.b32  	%r9, %r8, 255;
+	cvt.u32.u16	%r10, %rs21;
+	and.b32  	%r11, %r10, 255;
+	sub.s32 	%r12, %r11, %r9;
+	st.param.b32	[func_retval0+0], %r12;
 
-BB8_17:
-	mov.u16 	%rs85, %rs60;
-	mov.u16 	%rs86, %rs14;
-	bra.uni 	BB8_27;
-
-BB8_22:
-	mov.u16 	%rs85, %rs72;
-	mov.u16 	%rs86, %rs18;
-
-BB8_27:
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:50 	return (int)c1 - (int)c2;
-	.loc 1 50 2
-	cvt.u32.u16	%r21, %rs86;
-	and.b32  	%r22, %r21, 255;
-	cvt.u32.u16	%r23, %rs85;
-	and.b32  	%r24, %r23, 255;
-	sub.s32 	%r25, %r24, %r22;
-	st.param.b32	[func_retval0+0], %r25;
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:60 	return Gstrncasecmp(s1, s2, -1U);
-	.loc 1 60 9
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:59 	return Gstrncasecmp(s1, s2, (size_t)-1);
+	.loc 1 59 9
 	ret;
 }
 
@@ -769,8 +437,8 @@ BB8_27:
 	ld.param.u64 	%rd5, [_Z7GstrcpyPcPKc_param_0];
 	ld.param.u64 	%rd7, [_Z7GstrcpyPcPKc_param_1];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:75 	while ((*dest++ = *src++) != '\0')
-	.loc 1 75 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:74 	while ((*dest++ = *src++) != '\0')
+	.loc 1 74 2
 	ld.u8 	%rs1, [%rd7];
 	st.u8 	[%rd5], %rs1;
 	setp.eq.s16	%p1, %rs1, 0;
@@ -780,8 +448,8 @@ BB8_27:
 
 BB9_2:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:75 	while ((*dest++ = *src++) != '\0')
-	.loc 1 75 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:74 	while ((*dest++ = *src++) != '\0')
+	.loc 1 74 2
 	add.s64 	%rd3, %rd8, 1;
 	add.s64 	%rd4, %rd7, 1;
 	ld.u8 	%rs2, [%rd7+1];
@@ -794,8 +462,8 @@ BB9_2:
 BB9_3:
 	st.param.b64	[func_retval0+0], %rd5;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:77 	return tmp;
-	.loc 1 77 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:76 	return tmp;
+	.loc 1 76 2
 	ret;
 }
 
@@ -818,13 +486,13 @@ BB9_3:
 
 BB10_1:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:96 	while (count-- && (*dest++ = *src++) != '\0')
-	.loc 1 96 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:95 	while (count-- && (*dest++ = *src++) != '\0')
+	.loc 1 95 2
 	setp.eq.s64	%p4, %rd14, 0;
 	mov.pred 	%p5, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:96 	while (count-- && (*dest++ = *src++) != '\0')
-	.loc 1 96 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:95 	while (count-- && (*dest++ = *src++) != '\0')
+	.loc 1 95 2
 	@%p4 bra 	BB10_3;
 
 	add.s64 	%rd4, %rd12, 1;
@@ -837,15 +505,15 @@ BB10_1:
 
 BB10_3:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:96 	while (count-- && (*dest++ = *src++) != '\0')
-	.loc 1 96 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:95 	while (count-- && (*dest++ = *src++) != '\0')
+	.loc 1 95 2
 	add.s64 	%rd14, %rd14, -1;
 	@%p5 bra 	BB10_1;
 
 	st.param.b64	[func_retval0+0], %rd9;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:99 	return tmp;
-	.loc 1 99 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:98 	return tmp;
+	.loc 1 98 2
 	ret;
 }
 
@@ -866,8 +534,8 @@ BB10_3:
 	ld.param.u64 	%rd43, [_Z8GstrlcpyPcPKcy_param_1];
 	ld.param.u64 	%rd79, [_Z8GstrlcpyPcPKcy_param_2];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:117 	size_t ret = Gstrlen(src);
-	.loc 1 117 15
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:116 	size_t ret = Gstrlen(src);
+	.loc 1 116 15
 	// Callseq Start 0
 	{
 	.reg .b32 temp_param_reg;
@@ -885,36 +553,36 @@ BB10_3:
 	//{
 	}// Callseq End 0
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:119 	if (size) {
-	.loc 1 119 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:118 	if (size) {
+	.loc 1 118 2
 	setp.eq.s64	%p1, %rd79, 0;
 	@%p1 bra 	BB11_28;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:463 	if (src == dest)
-	.loc 1 463 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:462 	if (src == dest)
+	.loc 1 462 2
 	setp.eq.s64	%p2, %rd43, %rd77;
 	@%p2 bra 	BB11_27;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:467 	if ((((unsigned long)dest | (unsigned long)src) & (sizeof(*dl) - 1)) == 0) {
-	.loc 1 467 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:466 	if ((((unsigned long)dest | (unsigned long)src) & (sizeof(*dl) - 1)) == 0) {
+	.loc 1 466 2
 	or.b64  	%rd80, %rd43, %rd77;
 	and.b64  	%rd81, %rd80, 3;
 	setp.eq.s64	%p3, %rd81, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:120 		size_t len = (ret >= size) ? size - 1 : ret;
-	.loc 1 120 14
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:119 		size_t len = (ret >= size) ? size - 1 : ret;
+	.loc 1 119 14
 	add.s64 	%rd82, %rd79, -1;
 	setp.lt.u64	%p4, %rd1, %rd79;
 	selp.b64	%rd128, %rd1, %rd82, %p4;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:468 		while (count >= sizeof(*dl)) {
-	.loc 1 468 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:467 		while (count >= sizeof(*dl)) {
+	.loc 1 467 3
 	setp.gt.u64	%p5, %rd128, 3;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:467 	if ((((unsigned long)dest | (unsigned long)src) & (sizeof(*dl) - 1)) == 0) {
-	.loc 1 467 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:466 	if ((((unsigned long)dest | (unsigned long)src) & (sizeof(*dl) - 1)) == 0) {
+	.loc 1 466 2
 	and.pred  	%p6, %p3, %p5;
 	mov.u64 	%rd44, %rd77;
 	@!%p6 bra 	BB11_15;
@@ -922,8 +590,8 @@ BB10_3:
 
 BB11_3:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:120 		size_t len = (ret >= size) ? size - 1 : ret;
-	.loc 1 120 14
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:119 		size_t len = (ret >= size) ? size - 1 : ret;
+	.loc 1 119 14
 	selp.b64	%rd117, %rd1, %rd82, %p4;
 	add.s64 	%rd87, %rd117, -4;
 	shr.u64 	%rd88, %rd87, 2;
@@ -934,8 +602,8 @@ BB11_3:
 	@%p8 bra 	BB11_4;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:120 		size_t len = (ret >= size) ? size - 1 : ret;
-	.loc 1 120 14
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:119 		size_t len = (ret >= size) ? size - 1 : ret;
+	.loc 1 119 14
 	selp.b64	%rd114, %rd1, %rd82, %p4;
 	add.s64 	%rd92, %rd114, -4;
 	shr.u64 	%rd93, %rd92, 2;
@@ -958,8 +626,8 @@ BB11_4:
 
 BB11_7:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:120 		size_t len = (ret >= size) ? size - 1 : ret;
-	.loc 1 120 14
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:119 		size_t len = (ret >= size) ? size - 1 : ret;
+	.loc 1 119 14
 	selp.b64	%rd111, %rd1, %rd82, %p4;
 	add.s64 	%rd97, %rd111, -4;
 	shr.u64 	%rd98, %rd97, 2;
@@ -976,19 +644,19 @@ BB11_8:
 
 BB11_9:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:469 			*dl++ = *sl++;
-	.loc 1 469 4
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:468 			*dl++ = *sl++;
+	.loc 1 468 4
 	add.s64 	%rd113, %rd43, 4;
 	ld.u32 	%r1, [%rd43];
 	add.s64 	%rd112, %rd77, 4;
 	st.u32 	[%rd77], %r1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:120 		size_t len = (ret >= size) ? size - 1 : ret;
-	.loc 1 120 14
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:119 		size_t len = (ret >= size) ? size - 1 : ret;
+	.loc 1 119 14
 	selp.b64	%rd102, %rd1, %rd82, %p4;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:469 			*dl++ = *sl++;
-	.loc 1 469 4
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:468 			*dl++ = *sl++;
+	.loc 1 468 4
 	add.s64 	%rd111, %rd102, -4;
 
 BB11_10:
@@ -997,21 +665,21 @@ BB11_10:
 	add.s64 	%rd115, %rd112, 4;
 	st.u32 	[%rd112], %r2;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:470 			count -= sizeof(*dl);
-	.loc 1 470 4
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:469 			count -= sizeof(*dl);
+	.loc 1 469 4
 	add.s64 	%rd114, %rd111, -4;
 
 BB11_11:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:469 			*dl++ = *sl++;
-	.loc 1 469 4
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:468 			*dl++ = *sl++;
+	.loc 1 468 4
 	add.s64 	%rd125, %rd43, 4;
 	ld.u32 	%r3, [%rd43];
 	add.s64 	%rd124, %rd115, 4;
 	st.u32 	[%rd115], %r3;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:470 			count -= sizeof(*dl);
-	.loc 1 470 4
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:469 			count -= sizeof(*dl);
+	.loc 1 469 4
 	add.s64 	%rd117, %rd114, -4;
 	mov.u64 	%rd128, %rd117;
 	mov.u64 	%rd44, %rd124;
@@ -1025,8 +693,8 @@ BB11_12:
 
 BB11_14:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:469 			*dl++ = *sl++;
-	.loc 1 469 4
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:468 			*dl++ = *sl++;
+	.loc 1 468 4
 	ld.u32 	%r4, [%rd125];
 	st.u32 	[%rd124], %r4;
 	ld.u32 	%r5, [%rd125+4];
@@ -1038,12 +706,12 @@ BB11_14:
 	add.s64 	%rd44, %rd124, 16;
 	st.u32 	[%rd124+12], %r7;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:470 			count -= sizeof(*dl);
-	.loc 1 470 4
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:469 			count -= sizeof(*dl);
+	.loc 1 469 4
 	add.s64 	%rd128, %rd128, -16;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:468 		while (count >= sizeof(*dl)) {
-	.loc 1 468 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:467 		while (count >= sizeof(*dl)) {
+	.loc 1 467 3
 	setp.gt.u64	%p16, %rd128, 3;
 	mov.u64 	%rd124, %rd44;
 	mov.u64 	%rd125, %rd43;
@@ -1051,8 +719,8 @@ BB11_14:
 
 BB11_15:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:476 	while (count--)
-	.loc 1 476 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:475 	while (count--)
+	.loc 1 475 2
 	setp.eq.s64	%p17, %rd128, 0;
 	@%p17 bra 	BB11_27;
 
@@ -1087,12 +755,12 @@ BB11_21:
 
 BB11_22:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:476 	while (count--)
-	.loc 1 476 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:475 	while (count--)
+	.loc 1 475 2
 	add.s64 	%rd131, %rd128, -1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:477 		*d8++ = *s8++;
-	.loc 1 477 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:476 		*d8++ = *s8++;
+	.loc 1 476 3
 	add.s64 	%rd129, %rd43, 1;
 	ld.u8 	%rs1, [%rd43];
 	add.s64 	%rd130, %rd44, 1;
@@ -1100,12 +768,12 @@ BB11_22:
 
 BB11_23:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:476 	while (count--)
-	.loc 1 476 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:475 	while (count--)
+	.loc 1 475 2
 	add.s64 	%rd134, %rd131, -1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:477 		*d8++ = *s8++;
-	.loc 1 477 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:476 		*d8++ = *s8++;
+	.loc 1 476 3
 	add.s64 	%rd43, %rd129, 1;
 	ld.u8 	%rs2, [%rd129];
 	add.s64 	%rd44, %rd130, 1;
@@ -1113,12 +781,12 @@ BB11_23:
 
 BB11_24:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:476 	while (count--)
-	.loc 1 476 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:475 	while (count--)
+	.loc 1 475 2
 	add.s64 	%rd140, %rd134, -1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:477 		*d8++ = *s8++;
-	.loc 1 477 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:476 		*d8++ = *s8++;
+	.loc 1 476 3
 	add.s64 	%rd138, %rd43, 1;
 	ld.u8 	%rs3, [%rd43];
 	add.s64 	%rd139, %rd44, 1;
@@ -1130,8 +798,8 @@ BB11_25:
 
 BB11_26:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:477 		*d8++ = *s8++;
-	.loc 1 477 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:476 		*d8++ = *s8++;
+	.loc 1 476 3
 	ld.u8 	%rs4, [%rd138];
 	st.u8 	[%rd139], %rs4;
 	ld.u8 	%rs5, [%rd138+1];
@@ -1141,39 +809,39 @@ BB11_26:
 	ld.u8 	%rs7, [%rd138+3];
 	st.u8 	[%rd139+3], %rs7;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:476 	while (count--)
-	.loc 1 476 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:475 	while (count--)
+	.loc 1 475 2
 	add.s64 	%rd140, %rd140, -4;
 	add.s64 	%rd138, %rd138, 4;
 	add.s64 	%rd139, %rd139, 4;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:476 	while (count--)
-	.loc 1 476 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:475 	while (count--)
+	.loc 1 475 2
 	setp.ne.s64	%p22, %rd140, 0;
 	@%p22 bra 	BB11_26;
 
 BB11_27:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:120 		size_t len = (ret >= size) ? size - 1 : ret;
-	.loc 1 120 14
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:119 		size_t len = (ret >= size) ? size - 1 : ret;
+	.loc 1 119 14
 	setp.lt.u64	%p23, %rd1, %rd79;
 	add.s64 	%rd108, %rd79, -1;
 	selp.b64	%rd109, %rd1, %rd108, %p23;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:122 		dest[len] = '\0';
-	.loc 1 122 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:121 		dest[len] = '\0';
+	.loc 1 121 3
 	add.s64 	%rd110, %rd77, %rd109;
 	mov.u16 	%rs8, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:122 		dest[len] = '\0';
-	.loc 1 122 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:121 		dest[len] = '\0';
+	.loc 1 121 3
 	st.u8 	[%rd110], %rs8;
 
 BB11_28:
 	st.param.b64	[func_retval0+0], %rd1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:124 	return ret;
-	.loc 1 124 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:123 	return ret;
+	.loc 1 123 2
 	ret;
 }
 
@@ -1194,24 +862,24 @@ BB11_28:
 	ld.param.u64 	%rd40, [_Z7GmemcpyPvPKvy_param_1];
 	ld.param.u64 	%rd100, [_Z7GmemcpyPvPKvy_param_2];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:463 	if (src == dest)
-	.loc 1 463 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:462 	if (src == dest)
+	.loc 1 462 2
 	setp.eq.s64	%p1, %rd40, %rd74;
 	@%p1 bra 	BB12_26;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:467 	if ((((unsigned long)dest | (unsigned long)src) & (sizeof(*dl) - 1)) == 0) {
-	.loc 1 467 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:466 	if ((((unsigned long)dest | (unsigned long)src) & (sizeof(*dl) - 1)) == 0) {
+	.loc 1 466 2
 	or.b64  	%rd77, %rd40, %rd74;
 	and.b64  	%rd78, %rd77, 3;
 	setp.eq.s64	%p2, %rd78, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:468 		while (count >= sizeof(*dl)) {
-	.loc 1 468 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:467 		while (count >= sizeof(*dl)) {
+	.loc 1 467 3
 	setp.gt.u64	%p3, %rd100, 3;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:467 	if ((((unsigned long)dest | (unsigned long)src) & (sizeof(*dl) - 1)) == 0) {
-	.loc 1 467 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:466 	if ((((unsigned long)dest | (unsigned long)src) & (sizeof(*dl) - 1)) == 0) {
+	.loc 1 466 2
 	and.pred  	%p4, %p2, %p3;
 	mov.u64 	%rd41, %rd74;
 	@!%p4 bra 	BB12_14;
@@ -1255,8 +923,8 @@ BB12_7:
 
 BB12_8:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:469 			*dl++ = *sl++;
-	.loc 1 469 4
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:468 			*dl++ = *sl++;
+	.loc 1 468 4
 	add.s64 	%rd85, %rd40, 4;
 	ld.u32 	%r1, [%rd40];
 	add.s64 	%rd84, %rd74, 4;
@@ -1268,21 +936,21 @@ BB12_9:
 	add.s64 	%rd87, %rd84, 4;
 	st.u32 	[%rd84], %r2;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:470 			count -= sizeof(*dl);
-	.loc 1 470 4
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:469 			count -= sizeof(*dl);
+	.loc 1 469 4
 	add.s64 	%rd100, %rd5, -4;
 
 BB12_10:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:469 			*dl++ = *sl++;
-	.loc 1 469 4
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:468 			*dl++ = *sl++;
+	.loc 1 468 4
 	add.s64 	%rd97, %rd40, 4;
 	ld.u32 	%r3, [%rd40];
 	add.s64 	%rd96, %rd87, 4;
 	st.u32 	[%rd87], %r3;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:470 			count -= sizeof(*dl);
-	.loc 1 470 4
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:469 			count -= sizeof(*dl);
+	.loc 1 469 4
 	add.s64 	%rd89, %rd100, -4;
 	mov.u64 	%rd100, %rd89;
 	mov.u64 	%rd41, %rd96;
@@ -1296,8 +964,8 @@ BB12_11:
 
 BB12_13:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:469 			*dl++ = *sl++;
-	.loc 1 469 4
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:468 			*dl++ = *sl++;
+	.loc 1 468 4
 	ld.u32 	%r4, [%rd97];
 	st.u32 	[%rd96], %r4;
 	ld.u32 	%r5, [%rd97+4];
@@ -1309,12 +977,12 @@ BB12_13:
 	add.s64 	%rd41, %rd96, 16;
 	st.u32 	[%rd96+12], %r7;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:470 			count -= sizeof(*dl);
-	.loc 1 470 4
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:469 			count -= sizeof(*dl);
+	.loc 1 469 4
 	add.s64 	%rd100, %rd100, -16;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:468 		while (count >= sizeof(*dl)) {
-	.loc 1 468 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:467 		while (count >= sizeof(*dl)) {
+	.loc 1 467 3
 	setp.gt.u64	%p9, %rd100, 3;
 	mov.u64 	%rd96, %rd41;
 	mov.u64 	%rd97, %rd40;
@@ -1322,8 +990,8 @@ BB12_13:
 
 BB12_14:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:476 	while (count--)
-	.loc 1 476 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:475 	while (count--)
+	.loc 1 475 2
 	setp.eq.s64	%p10, %rd100, 0;
 	@%p10 bra 	BB12_26;
 
@@ -1358,12 +1026,12 @@ BB12_20:
 
 BB12_21:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:476 	while (count--)
-	.loc 1 476 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:475 	while (count--)
+	.loc 1 475 2
 	add.s64 	%rd103, %rd100, -1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:477 		*d8++ = *s8++;
-	.loc 1 477 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:476 		*d8++ = *s8++;
+	.loc 1 476 3
 	add.s64 	%rd101, %rd40, 1;
 	ld.u8 	%rs1, [%rd40];
 	add.s64 	%rd102, %rd41, 1;
@@ -1371,12 +1039,12 @@ BB12_21:
 
 BB12_22:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:476 	while (count--)
-	.loc 1 476 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:475 	while (count--)
+	.loc 1 475 2
 	add.s64 	%rd106, %rd103, -1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:477 		*d8++ = *s8++;
-	.loc 1 477 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:476 		*d8++ = *s8++;
+	.loc 1 476 3
 	add.s64 	%rd40, %rd101, 1;
 	ld.u8 	%rs2, [%rd101];
 	add.s64 	%rd41, %rd102, 1;
@@ -1384,12 +1052,12 @@ BB12_22:
 
 BB12_23:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:476 	while (count--)
-	.loc 1 476 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:475 	while (count--)
+	.loc 1 475 2
 	add.s64 	%rd112, %rd106, -1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:477 		*d8++ = *s8++;
-	.loc 1 477 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:476 		*d8++ = *s8++;
+	.loc 1 476 3
 	add.s64 	%rd110, %rd40, 1;
 	ld.u8 	%rs3, [%rd40];
 	add.s64 	%rd111, %rd41, 1;
@@ -1401,8 +1069,8 @@ BB12_24:
 
 BB12_25:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:477 		*d8++ = *s8++;
-	.loc 1 477 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:476 		*d8++ = *s8++;
+	.loc 1 476 3
 	ld.u8 	%rs4, [%rd110];
 	st.u8 	[%rd111], %rs4;
 	ld.u8 	%rs5, [%rd110+1];
@@ -1412,22 +1080,22 @@ BB12_25:
 	ld.u8 	%rs7, [%rd110+3];
 	st.u8 	[%rd111+3], %rs7;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:476 	while (count--)
-	.loc 1 476 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:475 	while (count--)
+	.loc 1 475 2
 	add.s64 	%rd112, %rd112, -4;
 	add.s64 	%rd110, %rd110, 4;
 	add.s64 	%rd111, %rd111, 4;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:476 	while (count--)
-	.loc 1 476 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:475 	while (count--)
+	.loc 1 475 2
 	setp.ne.s64	%p15, %rd112, 0;
 	@%p15 bra 	BB12_25;
 
 BB12_26:
 	st.param.b64	[func_retval0+0], %rd74;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:479 	return dest;
-	.loc 1 479 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:478 	return dest;
+	.loc 1 478 2
 	ret;
 }
 
@@ -1448,23 +1116,23 @@ BB12_26:
 
 BB13_1:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:138 	while (*dest)
-	.loc 1 138 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:137 	while (*dest)
+	.loc 1 137 2
 	mov.u64 	%rd11, %rd9;
 	ld.u8 	%rs1, [%rd11];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:139 		dest++;
-	.loc 1 139 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:138 		dest++;
+	.loc 1 138 3
 	add.s64 	%rd9, %rd11, 1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:138 	while (*dest)
-	.loc 1 138 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:137 	while (*dest)
+	.loc 1 137 2
 	setp.ne.s16	%p1, %rs1, 0;
 	@%p1 bra 	BB13_1;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:140 	while ((*dest++ = *src++) != '\0')
-	.loc 1 140 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:139 	while ((*dest++ = *src++) != '\0')
+	.loc 1 139 2
 	ld.u8 	%rs2, [%rd10];
 	st.u8 	[%rd11], %rs2;
 	setp.eq.s16	%p2, %rs2, 0;
@@ -1472,8 +1140,8 @@ BB13_1:
 
 BB13_3:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:140 	while ((*dest++ = *src++) != '\0')
-	.loc 1 140 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:139 	while ((*dest++ = *src++) != '\0')
+	.loc 1 139 2
 	add.s64 	%rd5, %rd11, 1;
 	add.s64 	%rd6, %rd10, 1;
 	ld.u8 	%rs3, [%rd10+1];
@@ -1486,8 +1154,8 @@ BB13_3:
 BB13_4:
 	st.param.b64	[func_retval0+0], %rd7;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:143 	return tmp;
-	.loc 1 143 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:142 	return tmp;
+	.loc 1 142 2
 	ret;
 }
 
@@ -1507,8 +1175,8 @@ BB13_4:
 	ld.param.u64 	%rd13, [_Z8GstrncatPcPKcy_param_1];
 	ld.param.u64 	%rd15, [_Z8GstrncatPcPKcy_param_2];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:161 	if (count) {
-	.loc 1 161 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:160 	if (count) {
+	.loc 1 160 2
 	setp.eq.s64	%p1, %rd15, 0;
 	@%p1 bra 	BB14_6;
 
@@ -1516,24 +1184,24 @@ BB13_4:
 
 BB14_2:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:162 		while (*dest)
-	.loc 1 162 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:161 		while (*dest)
+	.loc 1 161 3
 	mov.u64 	%rd14, %rd12;
 	ld.u8 	%rs1, [%rd14];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:163 			dest++;
-	.loc 1 163 4
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:162 			dest++;
+	.loc 1 162 4
 	add.s64 	%rd12, %rd14, 1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:162 		while (*dest)
-	.loc 1 162 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:161 		while (*dest)
+	.loc 1 161 3
 	setp.ne.s16	%p2, %rs1, 0;
 	@%p2 bra 	BB14_2;
 
 BB14_3:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:164 		while ((*dest++ = *src++)) {
-	.loc 1 164 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:163 		while ((*dest++ = *src++)) {
+	.loc 1 163 3
 	mov.u64 	%rd4, %rd14;
 	ld.u8 	%rs2, [%rd13];
 	st.u8 	[%rd4], %rs2;
@@ -1543,23 +1211,23 @@ BB14_3:
 	add.s64 	%rd14, %rd4, 1;
 	add.s64 	%rd13, %rd13, 1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:165 			if (--count == 0) {
-	.loc 1 165 4
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:164 			if (--count == 0) {
+	.loc 1 164 4
 	add.s64 	%rd15, %rd15, -1;
 	setp.ne.s64	%p4, %rd15, 0;
 	@%p4 bra 	BB14_3;
 
 	mov.u16 	%rs3, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:166 				*dest = '\0';
-	.loc 1 166 5
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:165 				*dest = '\0';
+	.loc 1 165 5
 	st.u8 	[%rd4+1], %rs3;
 
 BB14_6:
 	st.param.b64	[func_retval0+0], %rd9;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:172 	return tmp;
-	.loc 1 172 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:171 	return tmp;
+	.loc 1 171 2
 	ret;
 }
 
@@ -1579,8 +1247,8 @@ BB14_6:
 
 BB15_1:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:187 		if ((__res = *cs - *ct++) != 0 || !*cs++)
-	.loc 1 187 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:186 		if ((__res = *cs - *ct++) != 0 || !*cs++)
+	.loc 1 186 3
 	ld.u8 	%r2, [%rd9];
 	add.s64 	%rd3, %rd8, 1;
 	ld.u8 	%r3, [%rd8];
@@ -1598,8 +1266,8 @@ BB15_1:
 
 BB15_2:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:191 	return __res;
-	.loc 1 191 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:190 	return __res;
+	.loc 1 190 2
 	cvt.s32.s8 	%r5, %r1;
 	st.param.b32	[func_retval0+0], %r5;
 	ret;
@@ -1621,16 +1289,16 @@ BB15_2:
 	ld.param.u64 	%rd12, [_Z8GstrncmpPKcS0_y_param_1];
 	ld.param.u64 	%rd13, [_Z8GstrncmpPKcS0_y_param_2];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:206 	while (count) {
-	.loc 1 206 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:205 	while (count) {
+	.loc 1 205 2
 	setp.eq.s64	%p1, %rd13, 0;
 	mov.u32 	%r8, 0;
 	@%p1 bra 	BB16_3;
 
 BB16_1:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:207 		if ((__res = *cs - *ct++) != 0 || !*cs++)
-	.loc 1 207 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:206 		if ((__res = *cs - *ct++) != 0 || !*cs++)
+	.loc 1 206 3
 	ld.s8 	%r5, [%rd11];
 	add.s64 	%rd4, %rd12, 1;
 	ld.s8 	%r6, [%rd12];
@@ -1643,16 +1311,16 @@ BB16_1:
 	setp.ne.s32	%p4, %r7, 0;
 	or.pred  	%p5, %p3, %p4;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:209 		count--;
-	.loc 1 209 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:208 		count--;
+	.loc 1 208 3
 	add.s64 	%rd13, %rd13, -1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:206 	while (count) {
-	.loc 1 206 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:205 	while (count) {
+	.loc 1 205 2
 	setp.eq.s64	%p6, %rd13, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:207 		if ((__res = *cs - *ct++) != 0 || !*cs++)
-	.loc 1 207 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:206 		if ((__res = *cs - *ct++) != 0 || !*cs++)
+	.loc 1 206 3
 	or.pred  	%p7, %p5, %p6;
 	mov.u64 	%rd12, %rd4;
 	@!%p7 bra 	BB16_1;
@@ -1664,8 +1332,8 @@ BB16_2:
 BB16_3:
 	st.param.b32	[func_retval0+0], %r8;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:212 	return __res;
-	.loc 1 212 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:211 	return __res;
+	.loc 1 211 2
 	ret;
 }
 
@@ -1683,15 +1351,15 @@ BB16_3:
 
 	ld.param.u64 	%rd6, [_Z7GstrchrPKci_param_0];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:224 	for (; *s != (char)c; ++s)
-	.loc 1 224 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:223 	for (; *s != (char)c; ++s)
+	.loc 1 223 2
 	ld.u8 	%rs5, [%rd6];
 	cvt.u32.u16	%r2, %rs5;
 	cvt.s32.s8 	%r3, %r2;
 	ld.param.s8 	%r1, [_Z7GstrchrPKci_param_1];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:224 	for (; *s != (char)c; ++s)
-	.loc 1 224 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:223 	for (; *s != (char)c; ++s)
+	.loc 1 223 2
 	setp.eq.s32	%p1, %r3, %r1;
 	@%p1 bra 	BB17_1;
 	bra.uni 	BB17_2;
@@ -1702,22 +1370,22 @@ BB17_1:
 
 BB17_2:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:225 		if (*s == '\0')
-	.loc 1 225 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:224 		if (*s == '\0')
+	.loc 1 224 3
 	setp.eq.s16	%p2, %rs5, 0;
 	mov.u64 	%rd7, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:225 		if (*s == '\0')
-	.loc 1 225 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:224 		if (*s == '\0')
+	.loc 1 224 3
 	@%p2 bra 	BB17_4;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:224 	for (; *s != (char)c; ++s)
-	.loc 1 224 24
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:223 	for (; *s != (char)c; ++s)
+	.loc 1 223 24
 	add.s64 	%rd7, %rd6, 1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:224 	for (; *s != (char)c; ++s)
-	.loc 1 224 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:223 	for (; *s != (char)c; ++s)
+	.loc 1 223 2
 	ld.u8 	%rs5, [%rd6+1];
 	cvt.u32.u16	%r4, %rs5;
 	cvt.s32.s8 	%r5, %r4;
@@ -1728,8 +1396,8 @@ BB17_2:
 BB17_4:
 	st.param.b64	[func_retval0+0], %rd7;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:227 	return (char *)s;
-	.loc 1 227 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:226 	return (char *)s;
+	.loc 1 226 2
 	ret;
 }
 
@@ -1746,8 +1414,8 @@ BB17_4:
 
 	ld.param.u64 	%rd5, [_Z8GstrrchrPKci_param_0];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:239 	const char *p = s + Gstrlen(s);
-	.loc 1 239 22
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:238 	const char *p = s + Gstrlen(s);
+	.loc 1 238 22
 	// Callseq Start 1
 	{
 	.reg .b32 temp_param_reg;
@@ -1769,20 +1437,20 @@ BB17_4:
 
 BB18_1:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:241 		if (*p == (char)c)
-	.loc 1 241 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:240 		if (*p == (char)c)
+	.loc 1 240 3
 	ld.s8 	%r2, [%rd8];
 	setp.eq.s32	%p1, %r2, %r1;
 	@%p1 bra 	BB18_2;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:243 	} while (--p >= s);
-	.loc 1 243 11
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:242 	} while (--p >= s);
+	.loc 1 242 11
 	add.s64 	%rd8, %rd8, -1;
 	mov.u64 	%rd9, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:243 	} while (--p >= s);
-	.loc 1 243 11
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:242 	} while (--p >= s);
+	.loc 1 242 11
 	setp.ge.u64	%p2, %rd8, %rd5;
 	@%p2 bra 	BB18_1;
 	bra.uni 	BB18_4;
@@ -1793,8 +1461,8 @@ BB18_2:
 BB18_4:
 	st.param.b64	[func_retval0+0], %rd9;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:244 	return NULL;
-	.loc 1 244 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:243 	return NULL;
+	.loc 1 243 2
 	ret;
 }
 
@@ -1813,23 +1481,23 @@ BB18_4:
 
 BB19_1:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:257 	for (sc = s; *sc != '\0'; ++sc)
-	.loc 1 257 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:256 	for (sc = s; *sc != '\0'; ++sc)
+	.loc 1 256 2
 	mov.u64 	%rd1, %rd5;
 	ld.u8 	%rs1, [%rd1];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:257 	for (sc = s; *sc != '\0'; ++sc)
-	.loc 1 257 28
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:256 	for (sc = s; *sc != '\0'; ++sc)
+	.loc 1 256 28
 	add.s64 	%rd5, %rd1, 1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:257 	for (sc = s; *sc != '\0'; ++sc)
-	.loc 1 257 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:256 	for (sc = s; *sc != '\0'; ++sc)
+	.loc 1 256 2
 	setp.ne.s16	%p1, %rs1, 0;
 	@%p1 bra 	BB19_1;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:259 	return sc - s;
-	.loc 1 259 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:258 	return sc - s;
+	.loc 1 258 2
 	sub.s64 	%rd4, %rd1, %rd3;
 	st.param.b64	[func_retval0+0], %rd4;
 	ret;
@@ -1849,8 +1517,8 @@ BB19_1:
 	ld.param.u64 	%rd6, [_Z8GstrnlenPKcy_param_0];
 	ld.param.u64 	%rd9, [_Z8GstrnlenPKcy_param_1];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:273 	for (sc = s; count-- && *sc != '\0'; ++sc)
-	.loc 1 273 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:272 	for (sc = s; count-- && *sc != '\0'; ++sc)
+	.loc 1 272 2
 	setp.eq.s64	%p1, %rd9, 0;
 	mov.u64 	%rd11, %rd6;
 	@%p1 bra 	BB20_4;
@@ -1859,27 +1527,27 @@ BB19_1:
 
 BB20_2:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:273 	for (sc = s; count-- && *sc != '\0'; ++sc)
-	.loc 1 273 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:272 	for (sc = s; count-- && *sc != '\0'; ++sc)
+	.loc 1 272 2
 	add.s64 	%rd9, %rd9, -1;
 	ld.u8 	%rs1, [%rd11];
 	setp.eq.s16	%p2, %rs1, 0;
 	@%p2 bra 	BB20_4;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:273 	for (sc = s; count-- && *sc != '\0'; ++sc)
-	.loc 1 273 39
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:272 	for (sc = s; count-- && *sc != '\0'; ++sc)
+	.loc 1 272 39
 	add.s64 	%rd11, %rd11, 1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:273 	for (sc = s; count-- && *sc != '\0'; ++sc)
-	.loc 1 273 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:272 	for (sc = s; count-- && *sc != '\0'; ++sc)
+	.loc 1 272 2
 	setp.ne.s64	%p3, %rd9, 0;
 	@%p3 bra 	BB20_2;
 
 BB20_4:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:275 	return sc - s;
-	.loc 1 275 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:274 	return sc - s;
+	.loc 1 274 2
 	sub.s64 	%rd8, %rd11, %rd6;
 	st.param.b64	[func_retval0+0], %rd8;
 	ret;
@@ -1897,8 +1565,8 @@ BB20_4:
 
 	ld.param.u64 	%rd18, [_Z7GstrdupPKc_param_0];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:284 	if ((s == NULL) ||
-	.loc 1 284 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:283 	if ((s == NULL) ||
+	.loc 1 283 2
 	setp.eq.s64	%p4, %rd18, 0;
 	mov.pred 	%p8, -1;
 	@%p4 bra 	BB21_4;
@@ -1907,32 +1575,32 @@ BB20_4:
 
 BB21_2:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:257 	for (sc = s; *sc != '\0'; ++sc)
-	.loc 1 257 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:256 	for (sc = s; *sc != '\0'; ++sc)
+	.loc 1 256 2
 	mov.u64 	%rd1, %rd16;
 	ld.u8 	%rs1, [%rd1];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:257 	for (sc = s; *sc != '\0'; ++sc)
-	.loc 1 257 28
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:256 	for (sc = s; *sc != '\0'; ++sc)
+	.loc 1 256 28
 	add.s64 	%rd16, %rd1, 1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:257 	for (sc = s; *sc != '\0'; ++sc)
-	.loc 1 257 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:256 	for (sc = s; *sc != '\0'; ++sc)
+	.loc 1 256 2
 	setp.ne.s16	%p5, %rs1, 0;
 	@%p5 bra 	BB21_2;
 
 	mov.u64 	%rd12, 1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:259 	return sc - s;
-	.loc 1 259 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:258 	return sc - s;
+	.loc 1 258 2
 	sub.s64 	%rd13, %rd12, %rd18;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:285 		((nw = (char*)Gmalloc(strlen(s) + 1)) == NULL)) {
-	.loc 1 285 25
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:284 		((nw = (char*)Gmalloc(strlen(s) + 1)) == NULL)) {
+	.loc 1 284 25
 	add.s64 	%rd14, %rd13, %rd1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:285 		((nw = (char*)Gmalloc(strlen(s) + 1)) == NULL)) {
-	.loc 1 285 17
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:284 		((nw = (char*)Gmalloc(strlen(s) + 1)) == NULL)) {
+	.loc 1 284 17
 	// Callseq Start 2
 	{
 	.reg .b32 temp_param_reg;
@@ -1954,13 +1622,13 @@ BB21_2:
 BB21_4:
 	mov.u64 	%rd20, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:285 		((nw = (char*)Gmalloc(strlen(s) + 1)) == NULL)) {
-	.loc 1 285 17
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:284 		((nw = (char*)Gmalloc(strlen(s) + 1)) == NULL)) {
+	.loc 1 284 17
 	@%p8 bra 	BB21_9;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:75 	while ((*dest++ = *src++) != '\0')
-	.loc 1 75 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:74 	while ((*dest++ = *src++) != '\0')
+	.loc 1 74 2
 	ld.u8 	%rs2, [%rd18];
 	st.u8 	[%rd17], %rs2;
 	setp.eq.s16	%p6, %rs2, 0;
@@ -1970,8 +1638,8 @@ BB21_4:
 
 BB21_7:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:75 	while ((*dest++ = *src++) != '\0')
-	.loc 1 75 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:74 	while ((*dest++ = *src++) != '\0')
+	.loc 1 74 2
 	add.s64 	%rd7, %rd18, 1;
 	ld.u8 	%rs3, [%rd18+1];
 	add.s64 	%rd8, %rd19, 1;
@@ -1987,8 +1655,8 @@ BB21_8:
 BB21_9:
 	st.param.b64	[func_retval0+0], %rd20;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:290 	return nw;
-	.loc 1 290 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:289 	return nw;
+	.loc 1 289 2
 	ret;
 }
 
@@ -2006,19 +1674,19 @@ BB21_9:
 	ld.param.u64 	%rd13, [_Z7GstrspnPKcS0__param_0];
 	ld.param.u64 	%rd9, [_Z7GstrspnPKcS0__param_1];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:307 	for (p = s; *p != '\0'; ++p) {
-	.loc 1 307 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:306 	for (p = s; *p != '\0'; ++p) {
+	.loc 1 306 2
 	ld.u8 	%rs3, [%rd13];
 	setp.eq.s16	%p1, %rs3, 0;
 	mov.u64 	%rd15, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:307 	for (p = s; *p != '\0'; ++p) {
-	.loc 1 307 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:306 	for (p = s; *p != '\0'; ++p) {
+	.loc 1 306 2
 	@%p1 bra 	BB22_8;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:308 		for (a = accept; *a != '\0'; ++a) {
-	.loc 1 308 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:307 		for (a = accept; *a != '\0'; ++a) {
+	.loc 1 307 3
 	ld.u8 	%rs2, [%rd9];
 	mov.u64 	%rd15, 0;
 
@@ -2026,26 +1694,26 @@ BB22_2:
 	setp.eq.s16	%p2, %rs2, 0;
 	mov.u16 	%rs16, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:308 		for (a = accept; *a != '\0'; ++a) {
-	.loc 1 308 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:307 		for (a = accept; *a != '\0'; ++a) {
+	.loc 1 307 3
 	mov.u16 	%rs15, %rs2;
 	mov.u64 	%rd14, %rd9;
 	@%p2 bra 	BB22_6;
 
 BB22_3:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:309 			if (*p == *a)
-	.loc 1 309 4
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:308 			if (*p == *a)
+	.loc 1 308 4
 	setp.eq.s16	%p3, %rs3, %rs15;
 	@%p3 bra 	BB22_4;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:308 		for (a = accept; *a != '\0'; ++a) {
-	.loc 1 308 32
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:307 		for (a = accept; *a != '\0'; ++a) {
+	.loc 1 307 32
 	add.s64 	%rd4, %rd14, 1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:308 		for (a = accept; *a != '\0'; ++a) {
-	.loc 1 308 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:307 		for (a = accept; *a != '\0'; ++a) {
+	.loc 1 307 3
 	ld.u8 	%rs15, [%rd14+1];
 	setp.ne.s16	%p4, %rs15, 0;
 	mov.u64 	%rd14, %rd4;
@@ -2057,23 +1725,23 @@ BB22_4:
 
 BB22_6:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:312 		if (*a == '\0')
-	.loc 1 312 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:311 		if (*a == '\0')
+	.loc 1 311 3
 	and.b16  	%rs13, %rs16, 255;
 	setp.eq.s16	%p5, %rs13, 0;
 	@%p5 bra 	BB22_8;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:314 		++count;
-	.loc 1 314 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:313 		++count;
+	.loc 1 313 3
 	add.s64 	%rd15, %rd15, 1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:307 	for (p = s; *p != '\0'; ++p) {
-	.loc 1 307 26
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:306 	for (p = s; *p != '\0'; ++p) {
+	.loc 1 306 26
 	add.s64 	%rd6, %rd13, 1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:307 	for (p = s; *p != '\0'; ++p) {
-	.loc 1 307 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:306 	for (p = s; *p != '\0'; ++p) {
+	.loc 1 306 2
 	ld.u8 	%rs3, [%rd13+1];
 	setp.ne.s16	%p6, %rs3, 0;
 	mov.u64 	%rd13, %rd6;
@@ -2082,8 +1750,8 @@ BB22_6:
 BB22_8:
 	st.param.b64	[func_retval0+0], %rd15;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:317 	return count;
-	.loc 1 317 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:316 	return count;
+	.loc 1 316 2
 	ret;
 }
 
@@ -2101,44 +1769,44 @@ BB22_8:
 	ld.param.u64 	%rd10, [_Z8GstrpbrkPKcS0__param_0];
 	ld.param.u64 	%rd7, [_Z8GstrpbrkPKcS0__param_1];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:331 	for (sc1 = cs; *sc1 != '\0'; ++sc1) {
-	.loc 1 331 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:330 	for (sc1 = cs; *sc1 != '\0'; ++sc1) {
+	.loc 1 330 2
 	ld.u8 	%rs10, [%rd10];
 	setp.eq.s16	%p1, %rs10, 0;
 	mov.u64 	%rd12, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:331 	for (sc1 = cs; *sc1 != '\0'; ++sc1) {
-	.loc 1 331 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:330 	for (sc1 = cs; *sc1 != '\0'; ++sc1) {
+	.loc 1 330 2
 	@%p1 bra 	BB23_7;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:332 		for (sc2 = ct; *sc2 != '\0'; ++sc2) {
-	.loc 1 332 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:331 		for (sc2 = ct; *sc2 != '\0'; ++sc2) {
+	.loc 1 331 3
 	ld.u8 	%rs2, [%rd7];
 
 BB23_2:
 	setp.eq.s16	%p2, %rs2, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:332 		for (sc2 = ct; *sc2 != '\0'; ++sc2) {
-	.loc 1 332 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:331 		for (sc2 = ct; *sc2 != '\0'; ++sc2) {
+	.loc 1 331 3
 	mov.u16 	%rs11, %rs2;
 	mov.u64 	%rd11, %rd7;
 	@%p2 bra 	BB23_6;
 
 BB23_3:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:333 			if (*sc1 == *sc2)
-	.loc 1 333 4
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:332 			if (*sc1 == *sc2)
+	.loc 1 332 4
 	setp.eq.s16	%p3, %rs10, %rs11;
 	@%p3 bra 	BB23_4;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:332 		for (sc2 = ct; *sc2 != '\0'; ++sc2) {
-	.loc 1 332 32
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:331 		for (sc2 = ct; *sc2 != '\0'; ++sc2) {
+	.loc 1 331 32
 	add.s64 	%rd3, %rd11, 1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:332 		for (sc2 = ct; *sc2 != '\0'; ++sc2) {
-	.loc 1 332 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:331 		for (sc2 = ct; *sc2 != '\0'; ++sc2) {
+	.loc 1 331 3
 	ld.u8 	%rs11, [%rd11+1];
 	setp.ne.s16	%p4, %rs11, 0;
 	mov.u64 	%rd11, %rd3;
@@ -2146,12 +1814,12 @@ BB23_3:
 
 BB23_6:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:331 	for (sc1 = cs; *sc1 != '\0'; ++sc1) {
-	.loc 1 331 31
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:330 	for (sc1 = cs; *sc1 != '\0'; ++sc1) {
+	.loc 1 330 31
 	add.s64 	%rd4, %rd10, 1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:331 	for (sc1 = cs; *sc1 != '\0'; ++sc1) {
-	.loc 1 331 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:330 	for (sc1 = cs; *sc1 != '\0'; ++sc1) {
+	.loc 1 330 2
 	ld.u8 	%rs10, [%rd10+1];
 	setp.ne.s16	%p5, %rs10, 0;
 	mov.u64 	%rd10, %rd4;
@@ -2164,8 +1832,8 @@ BB23_4:
 BB23_7:
 	st.param.b64	[func_retval0+0], %rd12;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:337 	return NULL;
-	.loc 1 337 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:336 	return NULL;
+	.loc 1 336 2
 	ret;
 }
 
@@ -2183,35 +1851,35 @@ BB23_7:
 	ld.param.u64 	%rd20, [_Z7GstrtokPcPKc_param_0];
 	ld.param.u64 	%rd18, [_Z7GstrtokPcPKc_param_1];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:353 	sbegin = s ? s : ___strtok;
-	.loc 1 353 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:352 	sbegin = s ? s : ___strtok;
+	.loc 1 352 2
 	setp.eq.s64	%p1, %rd20, 0;
 	ld.global.u64 	%rd21, [___strtok];
 	selp.b64	%rd1, %rd21, %rd20, %p1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:354 	if (!sbegin) {
-	.loc 1 354 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:353 	if (!sbegin) {
+	.loc 1 353 2
 	setp.eq.s64	%p2, %rd1, 0;
 	mov.u64 	%rd35, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:354 	if (!sbegin) {
-	.loc 1 354 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:353 	if (!sbegin) {
+	.loc 1 353 2
 	@%p2 bra 	BB24_22;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:307 	for (p = s; *p != '\0'; ++p) {
-	.loc 1 307 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:306 	for (p = s; *p != '\0'; ++p) {
+	.loc 1 306 2
 	ld.u8 	%rs3, [%rd1];
 	setp.eq.s16	%p3, %rs3, 0;
 	mov.u64 	%rd30, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:307 	for (p = s; *p != '\0'; ++p) {
-	.loc 1 307 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:306 	for (p = s; *p != '\0'; ++p) {
+	.loc 1 306 2
 	@%p3 bra 	BB24_9;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:308 		for (a = accept; *a != '\0'; ++a) {
-	.loc 1 308 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:307 		for (a = accept; *a != '\0'; ++a) {
+	.loc 1 307 3
 	ld.u8 	%rs2, [%rd18];
 	mov.u64 	%rd30, 0;
 	mov.u64 	%rd28, %rd1;
@@ -2220,26 +1888,26 @@ BB24_3:
 	setp.eq.s16	%p4, %rs2, 0;
 	mov.u16 	%rs27, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:308 		for (a = accept; *a != '\0'; ++a) {
-	.loc 1 308 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:307 		for (a = accept; *a != '\0'; ++a) {
+	.loc 1 307 3
 	mov.u16 	%rs26, %rs2;
 	mov.u64 	%rd29, %rd18;
 	@%p4 bra 	BB24_7;
 
 BB24_4:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:309 			if (*p == *a)
-	.loc 1 309 4
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:308 			if (*p == *a)
+	.loc 1 308 4
 	setp.eq.s16	%p5, %rs3, %rs26;
 	@%p5 bra 	BB24_5;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:308 		for (a = accept; *a != '\0'; ++a) {
-	.loc 1 308 32
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:307 		for (a = accept; *a != '\0'; ++a) {
+	.loc 1 307 32
 	add.s64 	%rd5, %rd29, 1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:308 		for (a = accept; *a != '\0'; ++a) {
-	.loc 1 308 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:307 		for (a = accept; *a != '\0'; ++a) {
+	.loc 1 307 3
 	ld.u8 	%rs26, [%rd29+1];
 	setp.ne.s16	%p6, %rs26, 0;
 	mov.u64 	%rd29, %rd5;
@@ -2251,23 +1919,23 @@ BB24_5:
 
 BB24_7:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:312 		if (*a == '\0')
-	.loc 1 312 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:311 		if (*a == '\0')
+	.loc 1 311 3
 	and.b16  	%rs19, %rs27, 255;
 	setp.eq.s16	%p7, %rs19, 0;
 	@%p7 bra 	BB24_9;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:314 		++count;
-	.loc 1 314 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:313 		++count;
+	.loc 1 313 3
 	add.s64 	%rd30, %rd30, 1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:307 	for (p = s; *p != '\0'; ++p) {
-	.loc 1 307 26
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:306 	for (p = s; *p != '\0'; ++p) {
+	.loc 1 306 26
 	add.s64 	%rd7, %rd28, 1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:307 	for (p = s; *p != '\0'; ++p) {
-	.loc 1 307 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:306 	for (p = s; *p != '\0'; ++p) {
+	.loc 1 306 2
 	ld.u8 	%rs3, [%rd28+1];
 	setp.ne.s16	%p8, %rs3, 0;
 	mov.u64 	%rd28, %rd7;
@@ -2275,45 +1943,45 @@ BB24_7:
 
 BB24_9:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:357 	sbegin += Gstrspn(sbegin, ct);
-	.loc 1 357 12
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:356 	sbegin += Gstrspn(sbegin, ct);
+	.loc 1 356 12
 	add.s64 	%rd35, %rd1, %rd30;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:358 	if (*sbegin == '\0') {
-	.loc 1 358 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:357 	if (*sbegin == '\0') {
+	.loc 1 357 2
 	ld.u8 	%rs28, [%rd35];
 	setp.eq.s16	%p9, %rs28, 0;
 	@%p9 bra 	BB24_21;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:332 		for (sc2 = ct; *sc2 != '\0'; ++sc2) {
-	.loc 1 332 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:331 		for (sc2 = ct; *sc2 != '\0'; ++sc2) {
+	.loc 1 331 3
 	ld.u8 	%rs9, [%rd18];
 	mov.u64 	%rd31, %rd35;
 
 BB24_11:
 	setp.eq.s16	%p10, %rs9, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:332 		for (sc2 = ct; *sc2 != '\0'; ++sc2) {
-	.loc 1 332 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:331 		for (sc2 = ct; *sc2 != '\0'; ++sc2) {
+	.loc 1 331 3
 	mov.u16 	%rs29, %rs9;
 	mov.u64 	%rd32, %rd18;
 	@%p10 bra 	BB24_15;
 
 BB24_12:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:333 			if (*sc1 == *sc2)
-	.loc 1 333 4
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:332 			if (*sc1 == *sc2)
+	.loc 1 332 4
 	setp.eq.s16	%p11, %rs28, %rs29;
 	@%p11 bra 	BB24_13;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:332 		for (sc2 = ct; *sc2 != '\0'; ++sc2) {
-	.loc 1 332 32
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:331 		for (sc2 = ct; *sc2 != '\0'; ++sc2) {
+	.loc 1 331 32
 	add.s64 	%rd12, %rd32, 1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:332 		for (sc2 = ct; *sc2 != '\0'; ++sc2) {
-	.loc 1 332 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:331 		for (sc2 = ct; *sc2 != '\0'; ++sc2) {
+	.loc 1 331 3
 	ld.u8 	%rs29, [%rd32+1];
 	setp.ne.s16	%p12, %rs29, 0;
 	mov.u64 	%rd32, %rd12;
@@ -2321,17 +1989,17 @@ BB24_12:
 
 BB24_15:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:331 	for (sc1 = cs; *sc1 != '\0'; ++sc1) {
-	.loc 1 331 31
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:330 	for (sc1 = cs; *sc1 != '\0'; ++sc1) {
+	.loc 1 330 31
 	add.s64 	%rd13, %rd31, 1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:331 	for (sc1 = cs; *sc1 != '\0'; ++sc1) {
-	.loc 1 331 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:330 	for (sc1 = cs; *sc1 != '\0'; ++sc1) {
+	.loc 1 330 2
 	ld.u8 	%rs28, [%rd31+1];
 	mov.u64 	%rd33, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:331 	for (sc1 = cs; *sc1 != '\0'; ++sc1) {
-	.loc 1 331 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:330 	for (sc1 = cs; *sc1 != '\0'; ++sc1) {
+	.loc 1 330 2
 	setp.ne.s16	%p13, %rs28, 0;
 	mov.u64 	%rd31, %rd13;
 	@%p13 bra 	BB24_11;
@@ -2342,13 +2010,13 @@ BB24_13:
 
 BB24_16:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:363 	if (send && *send != '\0')
-	.loc 1 363 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:362 	if (send && *send != '\0')
+	.loc 1 362 2
 	setp.eq.s64	%p14, %rd33, 0;
 	mov.u64 	%rd34, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:363 	if (send && *send != '\0')
-	.loc 1 363 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:362 	if (send && *send != '\0')
+	.loc 1 362 2
 	@%p14 bra 	BB24_20;
 
 	ld.u8 	%rs23, [%rd33];
@@ -2356,21 +2024,21 @@ BB24_16:
 	@%p15 bra 	BB24_18;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:364 		*send++ = '\0';
-	.loc 1 364 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:363 		*send++ = '\0';
+	.loc 1 363 3
 	add.s64 	%rd34, %rd33, 1;
 	mov.u16 	%rs24, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:364 		*send++ = '\0';
-	.loc 1 364 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:363 		*send++ = '\0';
+	.loc 1 363 3
 	st.u8 	[%rd33], %rs24;
 	bra.uni 	BB24_20;
 
 BB24_21:
 	mov.u64 	%rd35, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:359 		___strtok = NULL;
-	.loc 1 359 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:358 		___strtok = NULL;
+	.loc 1 358 3
 	st.global.u64 	[___strtok], %rd35;
 	bra.uni 	BB24_22;
 
@@ -2379,15 +2047,15 @@ BB24_18:
 
 BB24_20:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:365 	___strtok = send;
-	.loc 1 365 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:364 	___strtok = send;
+	.loc 1 364 2
 	st.global.u64 	[___strtok], %rd34;
 
 BB24_22:
 	st.param.b64	[func_retval0+0], %rd35;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:366 	return (sbegin);
-	.loc 1 366 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:365 	return (sbegin);
+	.loc 1 365 2
 	ret;
 }
 
@@ -2405,60 +2073,60 @@ BB24_22:
 	ld.param.u64 	%rd10, [_Z7GstrsepPPcPKc_param_0];
 	ld.param.u64 	%rd11, [_Z7GstrsepPPcPKc_param_1];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:384 	char *sbegin = *s, *end;
-	.loc 1 384 15
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:383 	char *sbegin = *s, *end;
+	.loc 1 383 15
 	ld.u64 	%rd1, [%rd10];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:386 	if (sbegin == NULL)
-	.loc 1 386 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:385 	if (sbegin == NULL)
+	.loc 1 385 2
 	setp.eq.s64	%p1, %rd1, 0;
 	mov.u64 	%rd20, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:386 	if (sbegin == NULL)
-	.loc 1 386 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:385 	if (sbegin == NULL)
+	.loc 1 385 2
 	@%p1 bra 	BB25_11;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:331 	for (sc1 = cs; *sc1 != '\0'; ++sc1) {
-	.loc 1 331 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:330 	for (sc1 = cs; *sc1 != '\0'; ++sc1) {
+	.loc 1 330 2
 	ld.u8 	%rs11, [%rd1];
 	setp.eq.s16	%p2, %rs11, 0;
 	mov.u64 	%rd19, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:331 	for (sc1 = cs; *sc1 != '\0'; ++sc1) {
-	.loc 1 331 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:330 	for (sc1 = cs; *sc1 != '\0'; ++sc1) {
+	.loc 1 330 2
 	mov.u64 	%rd18, %rd19;
 	@%p2 bra 	BB25_8;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:332 		for (sc2 = ct; *sc2 != '\0'; ++sc2) {
-	.loc 1 332 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:331 		for (sc2 = ct; *sc2 != '\0'; ++sc2) {
+	.loc 1 331 3
 	ld.u8 	%rs2, [%rd11];
 	mov.u64 	%rd18, %rd1;
 
 BB25_3:
 	setp.eq.s16	%p3, %rs2, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:332 		for (sc2 = ct; *sc2 != '\0'; ++sc2) {
-	.loc 1 332 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:331 		for (sc2 = ct; *sc2 != '\0'; ++sc2) {
+	.loc 1 331 3
 	mov.u16 	%rs12, %rs2;
 	mov.u64 	%rd17, %rd11;
 	@%p3 bra 	BB25_6;
 
 BB25_4:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:333 			if (*sc1 == *sc2)
-	.loc 1 333 4
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:332 			if (*sc1 == *sc2)
+	.loc 1 332 4
 	setp.eq.s16	%p4, %rs11, %rs12;
 	@%p4 bra 	BB25_8;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:332 		for (sc2 = ct; *sc2 != '\0'; ++sc2) {
-	.loc 1 332 32
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:331 		for (sc2 = ct; *sc2 != '\0'; ++sc2) {
+	.loc 1 331 32
 	add.s64 	%rd4, %rd17, 1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:332 		for (sc2 = ct; *sc2 != '\0'; ++sc2) {
-	.loc 1 332 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:331 		for (sc2 = ct; *sc2 != '\0'; ++sc2) {
+	.loc 1 331 3
 	ld.u8 	%rs12, [%rd17+1];
 	setp.ne.s16	%p5, %rs12, 0;
 	mov.u64 	%rd17, %rd4;
@@ -2466,12 +2134,12 @@ BB25_4:
 
 BB25_6:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:331 	for (sc1 = cs; *sc1 != '\0'; ++sc1) {
-	.loc 1 331 31
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:330 	for (sc1 = cs; *sc1 != '\0'; ++sc1) {
+	.loc 1 330 31
 	add.s64 	%rd5, %rd18, 1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:331 	for (sc1 = cs; *sc1 != '\0'; ++sc1) {
-	.loc 1 331 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:330 	for (sc1 = cs; *sc1 != '\0'; ++sc1) {
+	.loc 1 330 2
 	ld.u8 	%rs11, [%rd18+1];
 	setp.ne.s16	%p6, %rs11, 0;
 	mov.u64 	%rd18, %rd5;
@@ -2481,33 +2149,33 @@ BB25_6:
 
 BB25_8:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:390 	if (end)
-	.loc 1 390 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:389 	if (end)
+	.loc 1 389 2
 	setp.eq.s64	%p7, %rd18, 0;
 	@%p7 bra 	BB25_10;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:391 		*end++ = '\0';
-	.loc 1 391 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:390 		*end++ = '\0';
+	.loc 1 390 3
 	add.s64 	%rd19, %rd18, 1;
 	mov.u16 	%rs10, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:391 		*end++ = '\0';
-	.loc 1 391 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:390 		*end++ = '\0';
+	.loc 1 390 3
 	st.u8 	[%rd18], %rs10;
 
 BB25_10:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:392 	*s = end;
-	.loc 1 392 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:391 	*s = end;
+	.loc 1 391 2
 	st.u64 	[%rd10], %rd19;
 	mov.u64 	%rd20, %rd1;
 
 BB25_11:
 	st.param.b64	[func_retval0+0], %rd20;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:394 	return sbegin;
-	.loc 1 394 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:393 	return sbegin;
+	.loc 1 393 2
 	ret;
 }
 
@@ -2523,13 +2191,13 @@ BB25_11:
 
 	ld.param.u64 	%rd5, [_Z7strswabPKc_param_0];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:410 	if ((NULL == s) || ('\0' == *s)) {
-	.loc 1 410 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:409 	if ((NULL == s) || ('\0' == *s)) {
+	.loc 1 409 2
 	setp.eq.s64	%p1, %rd5, 0;
 	mov.u64 	%rd9, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:410 	if ((NULL == s) || ('\0' == *s)) {
-	.loc 1 410 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:409 	if ((NULL == s) || ('\0' == *s)) {
+	.loc 1 409 2
 	@%p1 bra 	BB26_6;
 
 	ld.u8 	%rs5, [%rd5];
@@ -2537,33 +2205,33 @@ BB25_11:
 	@%p2 bra 	BB26_6;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:414 	for (p = (char *)s, q = p + 1; (*p != '\0') && (*q != '\0'); p += 2, q += 2) {
-	.loc 1 414 7
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:413 	for (p = (char *)s, q = p + 1; (*p != '\0') && (*q != '\0'); p += 2, q += 2) {
+	.loc 1 413 7
 	add.s64 	%rd8, %rd5, 1;
 
 BB26_3:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:414 	for (p = (char *)s, q = p + 1; (*p != '\0') && (*q != '\0'); p += 2, q += 2) {
-	.loc 1 414 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:413 	for (p = (char *)s, q = p + 1; (*p != '\0') && (*q != '\0'); p += 2, q += 2) {
+	.loc 1 413 2
 	ld.u8 	%rs3, [%rd8];
 	setp.eq.s16	%p3, %rs3, 0;
 	@%p3 bra 	BB26_5;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:418 		*p = *q;
-	.loc 1 418 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:417 		*p = *q;
+	.loc 1 417 3
 	st.u8 	[%rd8+-1], %rs3;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:419 		*q = tmp;
-	.loc 1 419 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:418 		*q = tmp;
+	.loc 1 418 3
 	st.u8 	[%rd8], %rs5;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:414 	for (p = (char *)s, q = p + 1; (*p != '\0') && (*q != '\0'); p += 2, q += 2) {
-	.loc 1 414 63
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:413 	for (p = (char *)s, q = p + 1; (*p != '\0') && (*q != '\0'); p += 2, q += 2) {
+	.loc 1 413 63
 	add.s64 	%rd3, %rd8, 2;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:414 	for (p = (char *)s, q = p + 1; (*p != '\0') && (*q != '\0'); p += 2, q += 2) {
-	.loc 1 414 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:413 	for (p = (char *)s, q = p + 1; (*p != '\0') && (*q != '\0'); p += 2, q += 2) {
+	.loc 1 413 2
 	ld.u8 	%rs5, [%rd8+1];
 	setp.ne.s16	%p4, %rs5, 0;
 	mov.u64 	%rd8, %rd3;
@@ -2575,8 +2243,8 @@ BB26_5:
 BB26_6:
 	st.param.b64	[func_retval0+0], %rd9;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:422 	return (char *)s;
-	.loc 1 422 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:421 	return (char *)s;
+	.loc 1 421 2
 	ret;
 }
 
@@ -2597,14 +2265,14 @@ BB26_6:
 	ld.param.u32 	%r1, [_Z7GmemsetPviy_param_1];
 	ld.param.u64 	%rd19, [_Z7GmemsetPviy_param_2];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:441 	while (count--)
-	.loc 1 441 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:440 	while (count--)
+	.loc 1 440 2
 	setp.eq.s64	%p1, %rd19, 0;
 	@%p1 bra 	BB27_9;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:442 		*s8++ = c;
-	.loc 1 442 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:441 		*s8++ = c;
+	.loc 1 441 3
 	cvt.u16.u32	%rs1, %r1;
 	and.b64  	%rd1, %rd19, 3;
 	setp.eq.s64	%p2, %rd1, 0;
@@ -2623,34 +2291,34 @@ BB26_6:
 	@%p4 bra 	BB27_5;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:441 	while (count--)
-	.loc 1 441 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:440 	while (count--)
+	.loc 1 440 2
 	add.s64 	%rd21, %rd19, -1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:442 		*s8++ = c;
-	.loc 1 442 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:441 		*s8++ = c;
+	.loc 1 441 3
 	add.s64 	%rd20, %rd18, 1;
 	st.u8 	[%rd18], %rs1;
 
 BB27_5:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:441 	while (count--)
-	.loc 1 441 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:440 	while (count--)
+	.loc 1 440 2
 	add.s64 	%rd23, %rd21, -1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:442 		*s8++ = c;
-	.loc 1 442 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:441 		*s8++ = c;
+	.loc 1 441 3
 	add.s64 	%rd22, %rd20, 1;
 	st.u8 	[%rd20], %rs1;
 
 BB27_6:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:441 	while (count--)
-	.loc 1 441 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:440 	while (count--)
+	.loc 1 440 2
 	add.s64 	%rd27, %rd23, -1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:442 		*s8++ = c;
-	.loc 1 442 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:441 		*s8++ = c;
+	.loc 1 441 3
 	add.s64 	%rd26, %rd22, 1;
 	st.u8 	[%rd22], %rs1;
 
@@ -2660,28 +2328,28 @@ BB27_7:
 
 BB27_8:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:442 		*s8++ = c;
-	.loc 1 442 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:441 		*s8++ = c;
+	.loc 1 441 3
 	st.u8 	[%rd26], %rs1;
 	st.u8 	[%rd26+1], %rs1;
 	st.u8 	[%rd26+2], %rs1;
 	st.u8 	[%rd26+3], %rs1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:441 	while (count--)
-	.loc 1 441 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:440 	while (count--)
+	.loc 1 440 2
 	add.s64 	%rd27, %rd27, -4;
 	add.s64 	%rd26, %rd26, 4;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:441 	while (count--)
-	.loc 1 441 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:440 	while (count--)
+	.loc 1 440 2
 	setp.ne.s64	%p6, %rd27, 0;
 	@%p6 bra 	BB27_8;
 
 BB27_9:
 	st.param.b64	[func_retval0+0], %rd18;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:444 	return s;
-	.loc 1 444 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:443 	return s;
+	.loc 1 443 2
 	ret;
 }
 
@@ -2702,26 +2370,26 @@ BB27_9:
 	ld.param.u64 	%rd40, [_Z8GmemmovePvPKvy_param_1];
 	ld.param.u64 	%rd127, [_Z8GmemmovePvPKvy_param_2];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:496 	if (dest <= src) {
-	.loc 1 496 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:495 	if (dest <= src) {
+	.loc 1 495 2
 	setp.gt.u64	%p1, %rd101, %rd40;
 	@%p1 bra 	BB28_27;
 	bra.uni 	BB28_1;
 
 BB28_27:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:502 		while (count--)
-	.loc 1 502 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:501 		while (count--)
+	.loc 1 501 3
 	setp.eq.s64	%p17, %rd127, 0;
 	@%p17 bra 	BB28_38;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:500 		tmp = (char *)dest + count;
-	.loc 1 500 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:499 		tmp = (char *)dest + count;
+	.loc 1 499 3
 	add.s64 	%rd150, %rd101, %rd127;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:501 		s = (char *)src + count;
-	.loc 1 501 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:500 		s = (char *)src + count;
+	.loc 1 500 3
 	add.s64 	%rd149, %rd40, %rd127;
 	and.b64  	%rd76, %rd127, 3;
 	setp.eq.s64	%p18, %rd76, 0;
@@ -2739,24 +2407,24 @@ BB28_31:
 
 BB28_1:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:463 	if (src == dest)
-	.loc 1 463 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:462 	if (src == dest)
+	.loc 1 462 2
 	setp.eq.s64	%p2, %rd40, %rd101;
 	@%p2 bra 	BB28_38;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:467 	if ((((unsigned long)dest | (unsigned long)src) & (sizeof(*dl) - 1)) == 0) {
-	.loc 1 467 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:466 	if ((((unsigned long)dest | (unsigned long)src) & (sizeof(*dl) - 1)) == 0) {
+	.loc 1 466 2
 	or.b64  	%rd104, %rd40, %rd101;
 	and.b64  	%rd105, %rd104, 3;
 	setp.eq.s64	%p3, %rd105, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:468 		while (count >= sizeof(*dl)) {
-	.loc 1 468 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:467 		while (count >= sizeof(*dl)) {
+	.loc 1 467 3
 	setp.gt.u64	%p4, %rd127, 3;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:467 	if ((((unsigned long)dest | (unsigned long)src) & (sizeof(*dl) - 1)) == 0) {
-	.loc 1 467 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:466 	if ((((unsigned long)dest | (unsigned long)src) & (sizeof(*dl) - 1)) == 0) {
+	.loc 1 466 2
 	and.pred  	%p5, %p3, %p4;
 	mov.u64 	%rd41, %rd101;
 	@!%p5 bra 	BB28_15;
@@ -2789,12 +2457,12 @@ BB28_32:
 	@%p20 bra 	BB28_34;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:502 		while (count--)
-	.loc 1 502 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:501 		while (count--)
+	.loc 1 501 3
 	add.s64 	%rd142, %rd127, -1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:503 			*--tmp = *--s;
-	.loc 1 503 4
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:502 			*--tmp = *--s;
+	.loc 1 502 4
 	add.s64 	%rd149, %rd40, %rd142;
 	ld.u8 	%rs8, [%rd149];
 	add.s64 	%rd150, %rd101, %rd142;
@@ -2802,12 +2470,12 @@ BB28_32:
 
 BB28_34:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:502 		while (count--)
-	.loc 1 502 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:501 		while (count--)
+	.loc 1 501 3
 	add.s64 	%rd145, %rd142, -1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:503 			*--tmp = *--s;
-	.loc 1 503 4
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:502 			*--tmp = *--s;
+	.loc 1 502 4
 	add.s64 	%rd143, %rd149, -1;
 	ld.u8 	%rs9, [%rd149+-1];
 	add.s64 	%rd144, %rd150, -1;
@@ -2815,12 +2483,12 @@ BB28_34:
 
 BB28_35:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:502 		while (count--)
-	.loc 1 502 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:501 		while (count--)
+	.loc 1 501 3
 	add.s64 	%rd151, %rd145, -1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:503 			*--tmp = *--s;
-	.loc 1 503 4
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:502 			*--tmp = *--s;
+	.loc 1 502 4
 	add.s64 	%rd149, %rd143, -1;
 	ld.u8 	%rs10, [%rd143+-1];
 	add.s64 	%rd150, %rd144, -1;
@@ -2832,8 +2500,8 @@ BB28_36:
 
 BB28_37:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:503 			*--tmp = *--s;
-	.loc 1 503 4
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:502 			*--tmp = *--s;
+	.loc 1 502 4
 	ld.u8 	%rs11, [%rd149+-1];
 	st.u8 	[%rd150+-1], %rs11;
 	ld.u8 	%rs12, [%rd149+-2];
@@ -2845,8 +2513,8 @@ BB28_37:
 	add.s64 	%rd99, %rd150, -4;
 	st.u8 	[%rd150+-4], %rs14;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:502 		while (count--)
-	.loc 1 502 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:501 		while (count--)
+	.loc 1 501 3
 	add.s64 	%rd151, %rd151, -4;
 	setp.ne.s64	%p22, %rd151, 0;
 	mov.u64 	%rd149, %rd98;
@@ -2875,8 +2543,8 @@ BB28_8:
 
 BB28_9:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:469 			*dl++ = *sl++;
-	.loc 1 469 4
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:468 			*dl++ = *sl++;
+	.loc 1 468 4
 	add.s64 	%rd112, %rd40, 4;
 	ld.u32 	%r1, [%rd40];
 	add.s64 	%rd111, %rd101, 4;
@@ -2888,21 +2556,21 @@ BB28_10:
 	add.s64 	%rd114, %rd111, 4;
 	st.u32 	[%rd111], %r2;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:470 			count -= sizeof(*dl);
-	.loc 1 470 4
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:469 			count -= sizeof(*dl);
+	.loc 1 469 4
 	add.s64 	%rd127, %rd5, -4;
 
 BB28_11:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:469 			*dl++ = *sl++;
-	.loc 1 469 4
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:468 			*dl++ = *sl++;
+	.loc 1 468 4
 	add.s64 	%rd124, %rd40, 4;
 	ld.u32 	%r3, [%rd40];
 	add.s64 	%rd123, %rd114, 4;
 	st.u32 	[%rd114], %r3;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:470 			count -= sizeof(*dl);
-	.loc 1 470 4
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:469 			count -= sizeof(*dl);
+	.loc 1 469 4
 	add.s64 	%rd116, %rd127, -4;
 	mov.u64 	%rd127, %rd116;
 	mov.u64 	%rd41, %rd123;
@@ -2916,8 +2584,8 @@ BB28_12:
 
 BB28_14:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:469 			*dl++ = *sl++;
-	.loc 1 469 4
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:468 			*dl++ = *sl++;
+	.loc 1 468 4
 	ld.u32 	%r4, [%rd124];
 	st.u32 	[%rd123], %r4;
 	ld.u32 	%r5, [%rd124+4];
@@ -2929,12 +2597,12 @@ BB28_14:
 	add.s64 	%rd41, %rd123, 16;
 	st.u32 	[%rd123+12], %r7;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:470 			count -= sizeof(*dl);
-	.loc 1 470 4
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:469 			count -= sizeof(*dl);
+	.loc 1 469 4
 	add.s64 	%rd127, %rd127, -16;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:468 		while (count >= sizeof(*dl)) {
-	.loc 1 468 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:467 		while (count >= sizeof(*dl)) {
+	.loc 1 467 3
 	setp.gt.u64	%p10, %rd127, 3;
 	mov.u64 	%rd123, %rd41;
 	mov.u64 	%rd124, %rd40;
@@ -2942,8 +2610,8 @@ BB28_14:
 
 BB28_15:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:476 	while (count--)
-	.loc 1 476 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:475 	while (count--)
+	.loc 1 475 2
 	setp.eq.s64	%p11, %rd127, 0;
 	@%p11 bra 	BB28_38;
 
@@ -2978,12 +2646,12 @@ BB28_21:
 
 BB28_22:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:476 	while (count--)
-	.loc 1 476 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:475 	while (count--)
+	.loc 1 475 2
 	add.s64 	%rd130, %rd127, -1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:477 		*d8++ = *s8++;
-	.loc 1 477 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:476 		*d8++ = *s8++;
+	.loc 1 476 3
 	add.s64 	%rd128, %rd40, 1;
 	ld.u8 	%rs1, [%rd40];
 	add.s64 	%rd129, %rd41, 1;
@@ -2991,12 +2659,12 @@ BB28_22:
 
 BB28_23:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:476 	while (count--)
-	.loc 1 476 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:475 	while (count--)
+	.loc 1 475 2
 	add.s64 	%rd133, %rd130, -1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:477 		*d8++ = *s8++;
-	.loc 1 477 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:476 		*d8++ = *s8++;
+	.loc 1 476 3
 	add.s64 	%rd40, %rd128, 1;
 	ld.u8 	%rs2, [%rd128];
 	add.s64 	%rd41, %rd129, 1;
@@ -3004,12 +2672,12 @@ BB28_23:
 
 BB28_24:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:476 	while (count--)
-	.loc 1 476 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:475 	while (count--)
+	.loc 1 475 2
 	add.s64 	%rd139, %rd133, -1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:477 		*d8++ = *s8++;
-	.loc 1 477 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:476 		*d8++ = *s8++;
+	.loc 1 476 3
 	add.s64 	%rd137, %rd40, 1;
 	ld.u8 	%rs3, [%rd40];
 	add.s64 	%rd138, %rd41, 1;
@@ -3021,8 +2689,8 @@ BB28_25:
 
 BB28_26:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:477 		*d8++ = *s8++;
-	.loc 1 477 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:476 		*d8++ = *s8++;
+	.loc 1 476 3
 	ld.u8 	%rs4, [%rd137];
 	st.u8 	[%rd138], %rs4;
 	ld.u8 	%rs5, [%rd137+1];
@@ -3032,23 +2700,23 @@ BB28_26:
 	ld.u8 	%rs7, [%rd137+3];
 	st.u8 	[%rd138+3], %rs7;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:476 	while (count--)
-	.loc 1 476 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:475 	while (count--)
+	.loc 1 475 2
 	add.s64 	%rd139, %rd139, -4;
 	setp.eq.s64	%p16, %rd139, 0;
 	add.s64 	%rd137, %rd137, 4;
 	add.s64 	%rd138, %rd138, 4;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:476 	while (count--)
-	.loc 1 476 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:475 	while (count--)
+	.loc 1 475 2
 	@%p16 bra 	BB28_38;
 	bra.uni 	BB28_26;
 
 BB28_38:
 	st.param.b64	[func_retval0+0], %rd101;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:506 	return dest;
-	.loc 1 506 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:505 	return dest;
+	.loc 1 505 2
 	ret;
 }
 
@@ -3069,37 +2737,37 @@ BB28_38:
 	ld.param.u64 	%rd10, [_Z7GmemcmpPKvS0_y_param_1];
 	ld.param.u64 	%rd12, [_Z7GmemcmpPKvS0_y_param_2];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:522 	for (su1 = (unsigned char *)cs, su2 = (unsigned char *)ct; 0 < count; ++su1, ++su2, count--)
-	.loc 1 522 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:521 	for (su1 = (unsigned char *)cs, su2 = (unsigned char *)ct; 0 < count; ++su1, ++su2, count--)
+	.loc 1 521 2
 	setp.eq.s64	%p1, %rd12, 0;
 	mov.u32 	%r6, 0;
 	@%p1 bra 	BB29_4;
 
 BB29_1:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:523 		if ((res = *su1 - *su2) != 0)
-	.loc 1 523 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:522 		if ((res = *su1 - *su2) != 0)
+	.loc 1 522 3
 	ld.u8 	%rs1, [%rd11];
 	ld.u8 	%rs2, [%rd10];
 	setp.ne.s16	%p2, %rs1, %rs2;
 	@%p2 bra 	BB29_3;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:522 	for (su1 = (unsigned char *)cs, su2 = (unsigned char *)ct; 0 < count; ++su1, ++su2, count--)
-	.loc 1 522 72
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:521 	for (su1 = (unsigned char *)cs, su2 = (unsigned char *)ct; 0 < count; ++su1, ++su2, count--)
+	.loc 1 521 72
 	add.s64 	%rd11, %rd11, 1;
 	add.s64 	%rd10, %rd10, 1;
 	add.s64 	%rd12, %rd12, -1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:522 	for (su1 = (unsigned char *)cs, su2 = (unsigned char *)ct; 0 < count; ++su1, ++su2, count--)
-	.loc 1 522 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:521 	for (su1 = (unsigned char *)cs, su2 = (unsigned char *)ct; 0 < count; ++su1, ++su2, count--)
+	.loc 1 521 2
 	setp.ne.s64	%p3, %rd12, 0;
 	@%p3 bra 	BB29_1;
 
 BB29_3:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:523 		if ((res = *su1 - *su2) != 0)
-	.loc 1 523 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:522 		if ((res = *su1 - *su2) != 0)
+	.loc 1 522 3
 	cvt.u32.u16	%r4, %rs1;
 	cvt.u32.u16	%r5, %rs2;
 	sub.s32 	%r6, %r4, %r5;
@@ -3107,8 +2775,8 @@ BB29_3:
 BB29_4:
 	st.param.b32	[func_retval0+0], %r6;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:525 	return res;
-	.loc 1 525 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:524 	return res;
+	.loc 1 524 2
 	ret;
 }
 
@@ -3128,38 +2796,38 @@ BB29_4:
 	ld.param.u32 	%r1, [_Z8GmemscanPviy_param_1];
 	ld.param.u64 	%rd9, [_Z8GmemscanPviy_param_2];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:543 	while (size) {
-	.loc 1 543 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:542 	while (size) {
+	.loc 1 542 2
 	setp.eq.s64	%p1, %rd9, 0;
 	@%p1 bra 	BB30_3;
 
 BB30_1:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:544 		if (*p == c)
-	.loc 1 544 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:543 		if (*p == c)
+	.loc 1 543 3
 	ld.u8 	%r2, [%rd10];
 	setp.eq.s32	%p2, %r2, %r1;
 	@%p2 bra 	BB30_3;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:546 		p++;
-	.loc 1 546 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:545 		p++;
+	.loc 1 545 3
 	add.s64 	%rd10, %rd10, 1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:547 		size--;
-	.loc 1 547 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:546 		size--;
+	.loc 1 546 3
 	add.s64 	%rd9, %rd9, -1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:543 	while (size) {
-	.loc 1 543 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:542 	while (size) {
+	.loc 1 542 2
 	setp.ne.s64	%p3, %rd9, 0;
 	@%p3 bra 	BB30_1;
 
 BB30_3:
 	st.param.b64	[func_retval0+0], %rd10;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:549 	return (void *)p;
-	.loc 1 549 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:548 	return (void *)p;
+	.loc 1 548 2
 	ret;
 }
 
@@ -3181,37 +2849,37 @@ BB30_3:
 
 BB31_1:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:257 	for (sc = s; *sc != '\0'; ++sc)
-	.loc 1 257 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:256 	for (sc = s; *sc != '\0'; ++sc)
+	.loc 1 256 2
 	mov.u64 	%rd1, %rd19;
 	ld.u8 	%rs1, [%rd1];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:257 	for (sc = s; *sc != '\0'; ++sc)
-	.loc 1 257 28
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:256 	for (sc = s; *sc != '\0'; ++sc)
+	.loc 1 256 28
 	add.s64 	%rd19, %rd1, 1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:257 	for (sc = s; *sc != '\0'; ++sc)
-	.loc 1 257 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:256 	for (sc = s; *sc != '\0'; ++sc)
+	.loc 1 256 2
 	setp.ne.s16	%p1, %rs1, 0;
 	@%p1 bra 	BB31_1;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:259 	return sc - s;
-	.loc 1 259 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:258 	return sc - s;
+	.loc 1 258 2
 	sub.s64 	%rd3, %rd1, %rd15;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:563 	l2 = strlen(s2);
-	.loc 1 563 7
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:562 	l2 = strlen(s2);
+	.loc 1 562 7
 	cvt.u32.u64	%r1, %rd3;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:564 	if (!l2)
-	.loc 1 564 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:563 	if (!l2)
+	.loc 1 563 2
 	setp.eq.s32	%p2, %r1, 0;
 	@%p2 bra 	BB31_12;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:566 	l1 = Gstrlen(s1);
-	.loc 1 566 7
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:565 	l1 = Gstrlen(s1);
+	.loc 1 565 7
 	// Callseq Start 3
 	{
 	.reg .b32 temp_param_reg;
@@ -3230,26 +2898,26 @@ BB31_1:
 	}// Callseq End 3
 	cvt.u32.u64	%r10, %rd17;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:567 	while (l1 >= l2) {
-	.loc 1 567 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:566 	while (l1 >= l2) {
+	.loc 1 566 2
 	setp.lt.s32	%p3, %r10, %r1;
 	mov.u64 	%rd16, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:567 	while (l1 >= l2) {
-	.loc 1 567 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:566 	while (l1 >= l2) {
+	.loc 1 566 2
 	@%p3 bra 	BB31_11;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:569 		if (!Gmemcmp(s1, s2, l2))
-	.loc 1 569 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:568 		if (!Gmemcmp(s1, s2, l2))
+	.loc 1 568 3
 	cvt.s64.s32 	%rd4, %rd3;
 
 BB31_5:
 	setp.eq.s64	%p4, %rd4, 0;
 	mov.u32 	%r11, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:522 	for (su1 = (unsigned char *)cs, su2 = (unsigned char *)ct; 0 < count; ++su1, ++su2, count--)
-	.loc 1 522 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:521 	for (su1 = (unsigned char *)cs, su2 = (unsigned char *)ct; 0 < count; ++su1, ++su2, count--)
+	.loc 1 521 2
 	mov.u64 	%rd21, %rd15;
 	mov.u64 	%rd22, %rd20;
 	mov.u64 	%rd23, %rd4;
@@ -3257,8 +2925,8 @@ BB31_5:
 
 BB31_6:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:523 		if ((res = *su1 - *su2) != 0)
-	.loc 1 523 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:522 		if ((res = *su1 - *su2) != 0)
+	.loc 1 522 3
 	ld.u8 	%rs2, [%rd22];
 	cvt.u32.u16	%r4, %rs2;
 	ld.u8 	%rs3, [%rd21];
@@ -3267,41 +2935,41 @@ BB31_6:
 	@%p5 bra 	BB31_8;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:522 	for (su1 = (unsigned char *)cs, su2 = (unsigned char *)ct; 0 < count; ++su1, ++su2, count--)
-	.loc 1 522 72
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:521 	for (su1 = (unsigned char *)cs, su2 = (unsigned char *)ct; 0 < count; ++su1, ++su2, count--)
+	.loc 1 521 72
 	add.s64 	%rd22, %rd22, 1;
 	add.s64 	%rd21, %rd21, 1;
 	add.s64 	%rd23, %rd23, -1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:522 	for (su1 = (unsigned char *)cs, su2 = (unsigned char *)ct; 0 < count; ++su1, ++su2, count--)
-	.loc 1 522 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:521 	for (su1 = (unsigned char *)cs, su2 = (unsigned char *)ct; 0 < count; ++su1, ++su2, count--)
+	.loc 1 521 2
 	setp.ne.s64	%p6, %rd23, 0;
 	@%p6 bra 	BB31_6;
 
 BB31_8:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:523 		if ((res = *su1 - *su2) != 0)
-	.loc 1 523 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:522 		if ((res = *su1 - *su2) != 0)
+	.loc 1 522 3
 	sub.s32 	%r11, %r4, %r5;
 
 BB31_9:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:569 		if (!Gmemcmp(s1, s2, l2))
-	.loc 1 569 8
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:568 		if (!Gmemcmp(s1, s2, l2))
+	.loc 1 568 8
 	setp.eq.s32	%p7, %r11, 0;
 	@%p7 bra 	BB31_12;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:568 		l1--;
-	.loc 1 568 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:567 		l1--;
+	.loc 1 567 3
 	add.s32 	%r8, %r10, -1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:571 		s1++;
-	.loc 1 571 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:570 		s1++;
+	.loc 1 570 3
 	add.s64 	%rd20, %rd20, 1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:567 	while (l1 >= l2) {
-	.loc 1 567 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:566 	while (l1 >= l2) {
+	.loc 1 566 2
 	setp.gt.s32	%p8, %r10, %r1;
 	mov.u32 	%r10, %r8;
 	@%p8 bra 	BB31_5;
@@ -3312,8 +2980,8 @@ BB31_11:
 BB31_12:
 	st.param.b64	[func_retval0+0], %rd20;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:573 	return NULL;
-	.loc 1 573 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:572 	return NULL;
+	.loc 1 572 2
 	ret;
 }
 
@@ -3334,40 +3002,40 @@ BB31_12:
 	ld.param.u32 	%r1, [_Z7GmemchrPKviy_param_1];
 	ld.param.u64 	%rd10, [_Z7GmemchrPKviy_param_2];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:590 	while (n-- != 0) {
-	.loc 1 590 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:589 	while (n-- != 0) {
+	.loc 1 589 2
 	setp.eq.s64	%p1, %rd10, 0;
 	mov.u64 	%rd12, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:590 	while (n-- != 0) {
-	.loc 1 590 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:589 	while (n-- != 0) {
+	.loc 1 589 2
 	@%p1 bra 	BB32_5;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:591 		if ((unsigned char)c == *p++) {
-	.loc 1 591 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:590 		if ((unsigned char)c == *p++) {
+	.loc 1 590 3
 	cvt.u16.u32	%rs1, %r1;
 	and.b16  	%rs3, %rs1, 255;
 
 BB32_2:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:590 	while (n-- != 0) {
-	.loc 1 590 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:589 	while (n-- != 0) {
+	.loc 1 589 2
 	add.s64 	%rd10, %rd10, -1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:591 		if ((unsigned char)c == *p++) {
-	.loc 1 591 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:590 		if ((unsigned char)c == *p++) {
+	.loc 1 590 3
 	ld.u8 	%rs2, [%rd11];
 	setp.eq.s16	%p2, %rs2, %rs3;
 	@%p2 bra 	BB32_3;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:591 		if ((unsigned char)c == *p++) {
-	.loc 1 591 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:590 		if ((unsigned char)c == *p++) {
+	.loc 1 590 3
 	add.s64 	%rd11, %rd11, 1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:590 	while (n-- != 0) {
-	.loc 1 590 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:589 	while (n-- != 0) {
+	.loc 1 589 2
 	setp.ne.s64	%p3, %rd10, 0;
 	@%p3 bra 	BB32_2;
 	bra.uni 	BB32_5;
@@ -3378,8 +3046,8 @@ BB32_3:
 BB32_5:
 	st.param.b64	[func_retval0+0], %rd12;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:595 	return NULL;
-	.loc 1 595 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:594 	return NULL;
+	.loc 1 594 2
 	ret;
 }
 
@@ -3396,36 +3064,36 @@ BB32_5:
 
 	ld.param.u64 	%rd4, [_Z9GstoupperPc_param_0];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:602 	for (; *s; s++)
-	.loc 1 602 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:601 	for (; *s; s++)
+	.loc 1 601 2
 	ld.u8 	%rs6, [%rd4];
 	setp.eq.s16	%p1, %rs6, 0;
 	@%p1 bra 	BB33_4;
 
 BB33_1:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:603 		if (('a' <= *s) && (*s <= 'z'))
-	.loc 1 603 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:602 		if (('a' <= *s) && (*s <= 'z'))
+	.loc 1 602 3
 	add.s16 	%rs4, %rs6, -97;
 	and.b16  	%rs5, %rs4, 255;
 	setp.gt.u16	%p2, %rs5, 25;
 	@%p2 bra 	BB33_3;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:604 			*s = 'A' + (*s - 'a');
-	.loc 1 604 4
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:603 			*s = 'A' + (*s - 'a');
+	.loc 1 603 4
 	cvt.u32.u16	%r1, %rs6;
 	add.s32 	%r2, %r1, 224;
 	st.u8 	[%rd4], %r2;
 
 BB33_3:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:602 	for (; *s; s++)
-	.loc 1 602 13
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:601 	for (; *s; s++)
+	.loc 1 601 13
 	add.s64 	%rd2, %rd4, 1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:602 	for (; *s; s++)
-	.loc 1 602 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:601 	for (; *s; s++)
+	.loc 1 601 2
 	ld.u8 	%rs6, [%rd4+1];
 	setp.ne.s16	%p3, %rs6, 0;
 	mov.u64 	%rd4, %rd2;
@@ -3433,8 +3101,8 @@ BB33_3:
 
 BB33_4:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:605 }
-	.loc 1 605 1
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:604 }
+	.loc 1 604 1
 	ret;
 }
 
@@ -3451,36 +3119,36 @@ BB33_4:
 
 	ld.param.u64 	%rd4, [_Z9GstolowerPc_param_0];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:608 	for (; *s; s++)
-	.loc 1 608 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:607 	for (; *s; s++)
+	.loc 1 607 2
 	ld.u8 	%rs6, [%rd4];
 	setp.eq.s16	%p1, %rs6, 0;
 	@%p1 bra 	BB34_4;
 
 BB34_1:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:609 		if (('A' <= *s) && (*s <= 'Z'))
-	.loc 1 609 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:608 		if (('A' <= *s) && (*s <= 'Z'))
+	.loc 1 608 3
 	add.s16 	%rs4, %rs6, -65;
 	and.b16  	%rs5, %rs4, 255;
 	setp.gt.u16	%p2, %rs5, 25;
 	@%p2 bra 	BB34_3;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:610 			*s = 'a' + (*s - 'A');
-	.loc 1 610 4
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:609 			*s = 'a' + (*s - 'A');
+	.loc 1 609 4
 	cvt.u32.u16	%r1, %rs6;
 	add.s32 	%r2, %r1, 32;
 	st.u8 	[%rd4], %r2;
 
 BB34_3:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:608 	for (; *s; s++)
-	.loc 1 608 13
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:607 	for (; *s; s++)
+	.loc 1 607 13
 	add.s64 	%rd2, %rd4, 1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:608 	for (; *s; s++)
-	.loc 1 608 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:607 	for (; *s; s++)
+	.loc 1 607 2
 	ld.u8 	%rs6, [%rd4+1];
 	setp.ne.s16	%p3, %rs6, 0;
 	mov.u64 	%rd4, %rd2;
@@ -3488,8 +3156,8 @@ BB34_3:
 
 BB34_4:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:611 }
-	.loc 1 611 1
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:610 }
+	.loc 1 610 1
 	ret;
 }
 
@@ -3505,30 +3173,30 @@ BB34_4:
 
 	ld.param.s8 	%rs1, [_Z8Gtoupperc_param_0];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:614 	if (('a' <= c) && (c <= 'z'))
-	.loc 1 614 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:613 	if (('a' <= c) && (c <= 'z'))
+	.loc 1 613 2
 	add.s16 	%rs2, %rs1, -97;
 	and.b16  	%rs3, %rs2, 255;
 	setp.lt.u16	%p1, %rs3, 26;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:615 		c = 'A' + (c - 'a');
-	.loc 1 615 3
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:614 		c = 'A' + (c - 'a');
+	.loc 1 614 3
 	cvt.u32.u16	%r1, %rs1;
 	add.s32 	%r2, %r1, 224;
 	cvt.u16.u32	%rs4, %r2;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:614 	if (('a' <= c) && (c <= 'z'))
-	.loc 1 614 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:613 	if (('a' <= c) && (c <= 'z'))
+	.loc 1 613 2
 	selp.b16	%rs5, %rs4, %rs1, %p1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu:616 	return c;
-	.loc 1 616 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c:615 	return c;
+	.loc 1 615 2
 	cvt.u32.u16	%r3, %rs5;
 	cvt.s32.s8 	%r4, %r3;
 	st.param.b32	[func_retval0+0], %r4;
 	ret;
 }
 
-	.file	1 "C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.cu", 1511710520, 13034
+	.file	1 "C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Gstring.c", 1512762815, 13022
 	.file	2 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v9.0\\include\\cuda_device_runtime_api.h", 1504359958, 14836
 

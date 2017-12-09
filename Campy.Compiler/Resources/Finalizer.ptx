@@ -143,12 +143,12 @@
 
 	mov.u32 	%r1, 4;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Finalizer.cu:30 	toFinalizeCapacity = 4;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Finalizer.c:30 	toFinalizeCapacity = 4;
 	.loc 1 30 2
 	st.global.u32 	[__nv_static_30__17_Finalizer_cpp1_ii_60dfb416_toFinalizeCapacity], %r1;
 	mov.u64 	%rd1, 32;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Finalizer.cu:31 	ppToFinalize = (HEAP_PTR*)malloc(toFinalizeCapacity * sizeof(void*));
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Finalizer.c:31 	ppToFinalize = (HEAP_PTR*)malloc(toFinalizeCapacity * sizeof(void*));
 	.loc 1 31 28
 	// Callseq Start 0
 	{
@@ -169,11 +169,11 @@
 	st.global.u64 	[__nv_static_30__17_Finalizer_cpp1_ii_60dfb416_ppToFinalize], %rd2;
 	mov.u32 	%r2, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Finalizer.cu:32 	toFinalizeOfs = 0;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Finalizer.c:32 	toFinalizeOfs = 0;
 	.loc 1 32 2
 	st.global.u32 	[__nv_static_30__17_Finalizer_cpp1_ii_60dfb416_toFinalizeOfs], %r2;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Finalizer.cu:33 }
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Finalizer.c:33 }
 	.loc 1 33 1
 	ret;
 }
@@ -190,7 +190,7 @@
 
 	ld.param.u64 	%rd4, [_Z12AddFinalizerPh_param_0];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Finalizer.cu:36 	if (toFinalizeOfs >= toFinalizeCapacity) {
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Finalizer.c:36 	if (toFinalizeOfs >= toFinalizeCapacity) {
 	.loc 1 36 2
 	ld.global.u32 	%r7, [__nv_static_30__17_Finalizer_cpp1_ii_60dfb416_toFinalizeOfs];
 	ld.global.u32 	%r2, [__nv_static_30__17_Finalizer_cpp1_ii_60dfb416_toFinalizeCapacity];
@@ -200,24 +200,24 @@
 
 BB7_2:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Finalizer.cu:40 	ppToFinalize[toFinalizeOfs++] = ptr;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Finalizer.c:40 	ppToFinalize[toFinalizeOfs++] = ptr;
 	.loc 1 40 2
 	ld.global.u64 	%rd9, [__nv_static_30__17_Finalizer_cpp1_ii_60dfb416_ppToFinalize];
 	bra.uni 	BB7_3;
 
 BB7_1:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Finalizer.cu:37 		toFinalizeCapacity <<= 1;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Finalizer.c:37 		toFinalizeCapacity <<= 1;
 	.loc 1 37 3
 	shl.b32 	%r5, %r2, 1;
 	st.global.u32 	[__nv_static_30__17_Finalizer_cpp1_ii_60dfb416_toFinalizeCapacity], %r5;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Finalizer.cu:38 		ppToFinalize = (HEAP_PTR*)Grealloc(ppToFinalize, toFinalizeCapacity * sizeof(void*));
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Finalizer.c:38 		ppToFinalize = (HEAP_PTR*)Grealloc(ppToFinalize, toFinalizeCapacity * sizeof(void*));
 	.loc 1 38 3
 	ld.global.u64 	%rd5, [__nv_static_30__17_Finalizer_cpp1_ii_60dfb416_ppToFinalize];
 	mul.wide.s32 	%rd6, %r5, 8;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Finalizer.cu:38 		ppToFinalize = (HEAP_PTR*)Grealloc(ppToFinalize, toFinalizeCapacity * sizeof(void*));
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Finalizer.c:38 		ppToFinalize = (HEAP_PTR*)Grealloc(ppToFinalize, toFinalizeCapacity * sizeof(void*));
 	.loc 1 38 29
 	// Callseq Start 1
 	{
@@ -240,7 +240,7 @@ BB7_1:
 	}// Callseq End 1
 	st.global.u64 	[__nv_static_30__17_Finalizer_cpp1_ii_60dfb416_ppToFinalize], %rd9;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Finalizer.cu:40 	ppToFinalize[toFinalizeOfs++] = ptr;
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Finalizer.c:40 	ppToFinalize[toFinalizeOfs++] = ptr;
 	.loc 1 40 2
 	ld.global.u32 	%r7, [__nv_static_30__17_Finalizer_cpp1_ii_60dfb416_toFinalizeOfs];
 
@@ -251,7 +251,7 @@ BB7_3:
 	add.s64 	%rd8, %rd9, %rd7;
 	st.u64 	[%rd8], %rd4;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Finalizer.cu:41 }
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Finalizer.c:41 }
 	.loc 1 41 1
 	ret;
 }
@@ -267,18 +267,18 @@ BB7_3:
 
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Finalizer.cu:44 	if (toFinalizeOfs == 0) {
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Finalizer.c:44 	if (toFinalizeOfs == 0) {
 	.loc 1 44 2
 	ld.global.u32 	%r1, [__nv_static_30__17_Finalizer_cpp1_ii_60dfb416_toFinalizeOfs];
 	setp.eq.s32	%p1, %r1, 0;
 	mov.u64 	%rd7, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Finalizer.cu:44 	if (toFinalizeOfs == 0) {
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Finalizer.c:44 	if (toFinalizeOfs == 0) {
 	.loc 1 44 2
 	@%p1 bra 	BB8_2;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Finalizer.cu:47 	return ppToFinalize[--toFinalizeOfs];
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Finalizer.c:47 	return ppToFinalize[--toFinalizeOfs];
 	.loc 1 47 2
 	ld.global.u64 	%rd4, [__nv_static_30__17_Finalizer_cpp1_ii_60dfb416_ppToFinalize];
 	add.s32 	%r2, %r1, -1;
@@ -292,6 +292,6 @@ BB8_2:
 	ret;
 }
 
-	.file	1 "C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Finalizer.cu", 1511710520, 1851
+	.file	1 "C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Finalizer.c", 1511710520, 1851
 	.file	2 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v9.0\\include\\cuda_device_runtime_api.h", 1504359958, 14836
 
