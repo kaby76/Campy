@@ -1717,8 +1717,9 @@ namespace Campy.Compiler
             CheckCudaError(res);
             res = Cuda.cuDeviceGetName(out string name, 100, device);
             CheckCudaError(res);
-            res = Cuda.cuCtxCreate_v2(out CUcontext cuContext, 0, device);
-            CheckCudaError(res);
+            // Create context done around cuInit() call.
+            //res = Cuda.cuCtxCreate_v2(out CUcontext cuContext, 0, device);
+            //CheckCudaError(res);
 
             // Add in all of the GPU BCL runtime required.
             CUjit_option[] op = new CUjit_option[0];
