@@ -128,6 +128,9 @@ namespace Campy
                         bb.Name, inclusive_start);
 
                     Converter.CheckCudaError(Cuda.cuInit(0));
+                    Converter.CheckCudaError(Cuda.cuCtxGetCurrent(out CUcontext pctx));
+                    
+
 
                     var ptr_to_kernel = Singleton()._converter.GetCudaFunction(bb.Name, ptx);
 
@@ -291,7 +294,10 @@ namespace Campy
                     var elapse_compiler = stopwatch_compiler.Elapsed;
 
                     Converter.CheckCudaError(Cuda.cuInit(0));
-
+                    Converter.CheckCudaError(Cuda.cuCtxCreate_v2(out CUcontext pctx, 0, 0));
+                    Converter.CheckCudaError(Cuda.cuCtxGetLimit(out ulong pvalue, CUlimit.CU_LIMIT_STACK_SIZE));
+                    Converter.CheckCudaError(Cuda.cuCtxSetLimit(CUlimit.CU_LIMIT_STACK_SIZE, (uint)pvalue*25));
+                    System.Console.WriteLine("Stack size " + pvalue);
                     var stopwatch_cuda_compile = new Stopwatch();
                     stopwatch_cuda_compile.Reset();
                     stopwatch_cuda_compile.Start();
