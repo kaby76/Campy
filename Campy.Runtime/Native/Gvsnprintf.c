@@ -70,7 +70,7 @@
 *    added C99 semantics
 *
 **************************************************************/
-
+#include "Compat.h"
 #include <stdio.h>
 #include <stdarg.h>
 #include "Gprintf.h"
@@ -80,15 +80,15 @@
 
 
 
-/* __device__ */ static size_t dopr(char *buffer, size_t maxlen, P_CONST char *format,
+__device__ static size_t dopr(char *buffer, size_t maxlen, P_CONST char *format,
 	va_list args);
-/* __device__ */ static void fmtstr(char *buffer, size_t *currlen, size_t maxlen,
+__device__ static void fmtstr(char *buffer, size_t *currlen, size_t maxlen,
 	char *value, int flags, int min, int max);
-/* __device__ */ static void fmtint(char *buffer, size_t *currlen, size_t maxlen,
+__device__ static void fmtint(char *buffer, size_t *currlen, size_t maxlen,
 	long value, int base, int min, int max, int flags);
-/* __device__ */ static void fmtfp(char *buffer, size_t *currlen, size_t maxlen,
+__device__ static void fmtfp(char *buffer, size_t *currlen, size_t maxlen,
 	LDOUBLE fvalue, int min, int max, int flags);
-/* __device__ */ static void dopr_outch(char *buffer, size_t *currlen, size_t maxlen, char c);
+__device__ static void dopr_outch(char *buffer, size_t *currlen, size_t maxlen, char c);
 
 /*
 * dopr(): poor man's version of doprintf
@@ -125,7 +125,7 @@
 #undef  isdigit
 #define isdigit(c) ((unsigned char)((c)-'0')<=(unsigned char)('9'-'0'))
 
-/* __device__ */ static size_t dopr(char *buffer, size_t maxlen, P_CONST char *format, va_list args) {
+__device__ static size_t dopr(char *buffer, size_t maxlen, P_CONST char *format, va_list args) {
 	char ch;
 	LLONG value;
 	LDOUBLE fvalue;
@@ -388,7 +388,7 @@
 	return currlen;
 }
 
-/* __device__ */ static void fmtstr(char *buffer, size_t *currlen, size_t maxlen,
+__device__ static void fmtstr(char *buffer, size_t *currlen, size_t maxlen,
 	char *value, int flags, int min, int max) {
 	int padlen, strln; /* amount to pad */
 	int cnt = 0;
@@ -425,7 +425,7 @@
 
 /* Have to handle DP_F_NUM (ie 0x and 0 alternates) */
 
-/* __device__ */ static void fmtint(char *buffer, size_t *currlen, size_t maxlen,
+__device__ static void fmtint(char *buffer, size_t *currlen, size_t maxlen,
 	long value, int base, int min, int max, int flags) {
 	int signvalue = 0;
 	unsigned long uvalue;
@@ -509,19 +509,19 @@
 	}
 }
 
-/* __device__ */ static void dopr_outch(char *buffer, size_t *currlen, size_t maxlen, char c) {
+__device__ static void dopr_outch(char *buffer, size_t *currlen, size_t maxlen, char c) {
 	if (*currlen < maxlen) {
 		buffer[(*currlen)] = c;
 	}
 	(*currlen)++;
 }
 
-/* __device__ */ sizeret_t Gvsnprintf(char *str, size_t count, P_CONST char *fmt, va_list args) {
+__device__ sizeret_t Gvsnprintf(char *str, size_t count, P_CONST char *fmt, va_list args) {
 	return dopr(str, count, fmt, args);
 
 }
 
-/* __device__ */ sizeret_t Gvasprintf(char **ptr, P_CONST char *format, va_list ap) {
+__device__ sizeret_t Gvasprintf(char **ptr, P_CONST char *format, va_list ap) {
 	size_t ret;
 
 	ret = Gvsnprintf((char*)NULL, 0, format, ap);
@@ -533,7 +533,7 @@
 	return ret;
 }
 
-/* __device__ */ sizeret_t Gasprintf(char **ptr, P_CONST char *format, ...) {
+__device__ sizeret_t Gasprintf(char **ptr, P_CONST char *format, ...) {
 	va_list ap;
 	sizeret_t ret;
 
@@ -544,7 +544,7 @@
 	return ret;
 }
 
-/* __device__ */ int
+__device__ int
 Gvsprintf(char *buf, const char *format, va_list ap)
 {
 	int ret;
@@ -552,7 +552,7 @@ Gvsprintf(char *buf, const char *format, va_list ap)
 	return ret;
 }
 
-/* __device__ */ int Gsprintf(
+__device__ int Gsprintf(
 	char*       const _Buffer,
 	char const* const _Format,
 	...)
@@ -566,17 +566,16 @@ Gvsprintf(char *buf, const char *format, va_list ap)
 }
 
 
-/* __device__ */ int Gprintf(const char * _Format, ...)
+__device__ int Gprintf(const char * _Format, ...)
 {
 	va_list arg;
-	int done = 0;
 	va_start(arg, _Format);
-	printf(_Format, arg);
+	int done = printf(_Format, arg);
 	va_end(arg);
 	return done;
 }
 
-/* __device__ */ int Gvprintf(const char * format, va_list arg)
+__device__ int Gvprintf(const char * format, va_list arg)
 {
 	int ret;
 	char buf[2000];

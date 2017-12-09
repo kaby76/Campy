@@ -25,11 +25,13 @@
 #include "Types.h"
 #include "Gstring.h"
 #include "Gprintf.h"
+#include <stdio.h>
 
-/* __device__ */ void Crash(const char *pMsg, ...) {
+__device__ void Crash(const char *pMsg, ...) {
 	va_list va;
 
 	Gprintf("\n\n*** CRASH ***\n");
+	printf("%s\n", pMsg);
 
 	va_start(va, pMsg);
 	char buf[10000];
@@ -49,9 +51,9 @@
 //	gpuexit(1);
 }
 
-/* __device__ */ U32 logLevel = 0;
+__device__ U32 logLevel = 0;
 
-/* __device__ */ void log_f(U32 level, const char *pMsg, ...) {
+__device__ void log_f(U32 level, const char *pMsg, ...) {
 	va_list va;
 	if (logLevel >= level) {
 		va_start(va, pMsg);
@@ -60,8 +62,8 @@
 	}
 }
 
-/* __device__ */ static char methodName[2048];
-/* __device__ */ char* Sys_GetMethodDesc(tMD_MethodDef *pMethod) {
+__device__ static char methodName[2048];
+__device__ char* Sys_GetMethodDesc(tMD_MethodDef *pMethod) {
 	U32 i;
 
 	Gsprintf(methodName, "%s.%s.%s(", pMethod->pParentType->nameSpace, pMethod->pParentType->name, pMethod->name);
@@ -75,9 +77,9 @@
 	return methodName;
 }
 
-/* __device__ */ static U32 mallocForeverSize = 0;
+__device__ static U32 mallocForeverSize = 0;
 // malloc() some memory that will never need to be resized or freed.
-/* __device__ */ void* mallocForever(U32 size) {
+__device__ void* mallocForever(U32 size) {
 	mallocForeverSize += size;
 log_f(3, "--- mallocForever: TotalSize %d\n", mallocForeverSize);
 	return Gmalloc(size);
@@ -93,7 +95,7 @@ void* mallocTrace(int s, char *pFile, int line) {
 #endif
 */
 
-/* __device__ */ U64 msTime() {
+__device__ U64 msTime() {
 //#ifdef WIN32
 //	static LARGE_INTEGER freq = {0,0};
 //	LARGE_INTEGER time;
@@ -115,7 +117,7 @@ void* mallocTrace(int s, char *pFile, int line) {
 }
 
 #if defined(DIAG_METHOD_CALLS) || defined(DIAG_OPCODE_TIMES) || defined(DIAG_GC) || defined(DIAG_TOTAL_TIME)
-/* __device__ */ U64 microTime() {
+__device__ U64 microTime() {
 //#ifdef WIN32
 //	static LARGE_INTEGER freq = {0,0};
 //	LARGE_INTEGER time;
@@ -137,7 +139,7 @@ void* mallocTrace(int s, char *pFile, int line) {
 }
 #endif
 
-/* __device__ */ void SleepMS(U32 ms) {
+__device__ void SleepMS(U32 ms) {
 //#ifdef WIN32
 //	Sleep(ms);
 //#else

@@ -40,7 +40,7 @@ struct tSystemString_ {
 };
 
 // length in characters, not bytes
-static /* __device__ */ tSystemString* CreateStringHeapObj(U32 len) {
+static __device__ tSystemString* CreateStringHeapObj(U32 len) {
 	tSystemString *pSystemString;
 	U32 totalSize;
 	
@@ -50,7 +50,7 @@ static /* __device__ */ tSystemString* CreateStringHeapObj(U32 len) {
 	return pSystemString;
 }
 
-/* __device__ */ tAsyncCall* System_String_ctor_CharInt32(PTR pThis_, PTR pParams, PTR pReturnValue) {
+__device__ tAsyncCall* System_String_ctor_CharInt32(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tSystemString *pSystemString;
 	CHAR2 c;
 	U32 i, len;
@@ -66,7 +66,7 @@ static /* __device__ */ tSystemString* CreateStringHeapObj(U32 len) {
 	return NULL;
 }
 
-/* __device__ */ tAsyncCall* System_String_ctor_CharAIntInt(PTR pThis_, PTR pParams, PTR pReturnValue) {
+__device__ tAsyncCall* System_String_ctor_CharAIntInt(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tSystemString *pSystemString;
 	HEAP_PTR charArray;
 	PTR charElements;
@@ -84,7 +84,7 @@ static /* __device__ */ tSystemString* CreateStringHeapObj(U32 len) {
 	return NULL;
 }
 
-/* __device__ */ tAsyncCall* System_String_ctor_StringIntInt(PTR pThis_, PTR pParams, PTR pReturnValue) {
+__device__ tAsyncCall* System_String_ctor_StringIntInt(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tSystemString *pThis, *pStr;
 	U32 startIndex, length;
 
@@ -99,7 +99,7 @@ static /* __device__ */ tSystemString* CreateStringHeapObj(U32 len) {
 	return NULL;
 }
 
-/* __device__ */ tAsyncCall* System_String_get_Chars(PTR pThis_, PTR pParams, PTR pReturnValue) {
+__device__ tAsyncCall* System_String_get_Chars(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tSystemString *pThis = (tSystemString*)pThis_;
 	U32 index;
 
@@ -109,7 +109,7 @@ static /* __device__ */ tSystemString* CreateStringHeapObj(U32 len) {
 	return NULL;
 }
 
-/* __device__ */ tAsyncCall* System_String_InternalConcat(PTR pThis_, PTR pParams, PTR pReturnValue) {
+__device__ tAsyncCall* System_String_InternalConcat(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tSystemString *s0, *s1, *ret;
 
 	s0 = (tSystemString*)(((HEAP_PTR*)pParams)[0]);
@@ -122,7 +122,7 @@ static /* __device__ */ tSystemString* CreateStringHeapObj(U32 len) {
 	return NULL;
 }
 
-/* __device__ */ tAsyncCall* System_String_InternalTrim(PTR pThis_, PTR pParams, PTR pReturnValue) {
+__device__ tAsyncCall* System_String_InternalTrim(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tSystemString *pThis = (tSystemString*)pThis_;
 	HEAP_PTR pWhiteChars;
 	U32 trimType, i, j, checkCharsLen;
@@ -183,7 +183,7 @@ static /* __device__ */ tSystemString* CreateStringHeapObj(U32 len) {
 	return NULL;
 }
 
-/* __device__ */ tAsyncCall* System_String_Equals(PTR pThis_, PTR pParams, PTR pReturnValue) {
+__device__ tAsyncCall* System_String_Equals(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tSystemString *a, *b;
 	U32 ret;
 
@@ -202,7 +202,7 @@ static /* __device__ */ tSystemString* CreateStringHeapObj(U32 len) {
 	return NULL;
 }
 
-/* __device__ */ tAsyncCall* System_String_GetHashCode(PTR pThis_, PTR pParams, PTR pReturnValue) {
+__device__ tAsyncCall* System_String_GetHashCode(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tSystemString *pThis = (tSystemString*)pThis_;
 	U16 *pChar, *pEnd;
 	I32 hash;
@@ -222,7 +222,7 @@ static /* __device__ */ tSystemString* CreateStringHeapObj(U32 len) {
 	return NULL;
 }
 
-/* __device__ */ tAsyncCall* System_String_InternalReplace(PTR pThis_, PTR pParams, PTR pReturnValue) {
+__device__ tAsyncCall* System_String_InternalReplace(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tSystemString *pThis = (tSystemString*)pThis_;
 	tSystemString *pOld = ((tSystemString**)pParams)[0];
 	tSystemString *pNew = ((tSystemString**)pParams)[1];
@@ -284,7 +284,7 @@ static /* __device__ */ tSystemString* CreateStringHeapObj(U32 len) {
 	return NULL;
 }
 
-/* __device__ */ tAsyncCall* System_String_InternalIndexOf(PTR pThis_, PTR pParams, PTR pReturnValue) {
+__device__ tAsyncCall* System_String_InternalIndexOf(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tSystemString *pThis = (tSystemString*)pThis_;
 	U16 value = ((U16*)pParams)[0];
 	I32 startIndex = ((I32*)pParams)[1];
@@ -314,7 +314,7 @@ static /* __device__ */ tSystemString* CreateStringHeapObj(U32 len) {
 	return NULL;
 }
 
-/* __device__ */ tAsyncCall* System_String_InternalIndexOfAny(PTR pThis_, PTR pParams, PTR pReturnValue) {
+__device__ tAsyncCall* System_String_InternalIndexOfAny(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tSystemString *pThis = (tSystemString*)pThis_;
 	HEAP_PTR valueArray = ((HEAP_PTR*)pParams)[0];
 	I32 startIndex = ((I32*)pParams)[1];
@@ -350,7 +350,7 @@ static /* __device__ */ tSystemString* CreateStringHeapObj(U32 len) {
 	return NULL;
 }
 
-/* __device__ */ HEAP_PTR SystemString_FromUserStrings(tMetaData *pMetaData, IDX_USERSTRINGS index) {
+__device__ HEAP_PTR SystemString_FromUserStrings(tMetaData *pMetaData, IDX_USERSTRINGS index) {
 	unsigned int stringLen;
 	STRING2 string;
 	tSystemString *pSystemString;
@@ -362,7 +362,7 @@ static /* __device__ */ tSystemString* CreateStringHeapObj(U32 len) {
 	return (HEAP_PTR)pSystemString;
 }
 
-/* __device__ */ HEAP_PTR SystemString_FromCharPtrASCII(char *pStr) {
+__device__ HEAP_PTR SystemString_FromCharPtrASCII(char *pStr) {
 	int stringLen, i;
 	tSystemString *pSystemString;
 
@@ -374,7 +374,7 @@ static /* __device__ */ tSystemString* CreateStringHeapObj(U32 len) {
 	return (HEAP_PTR)pSystemString;
 }
 
-/* __device__ */ HEAP_PTR SystemString_FromCharPtrUTF16(U16 *pStr) {
+__device__ HEAP_PTR SystemString_FromCharPtrUTF16(U16 *pStr) {
 	tSystemString *pSystemString;
 	int strLen = 0;
 
@@ -386,7 +386,7 @@ static /* __device__ */ tSystemString* CreateStringHeapObj(U32 len) {
 	return (HEAP_PTR)pSystemString;
 }
 
-/* __device__ */ STRING2 SystemString_GetString(HEAP_PTR pThis_, U32 *pLength) {
+__device__ STRING2 SystemString_GetString(HEAP_PTR pThis_, U32 *pLength) {
 	tSystemString *pThis = (tSystemString*)pThis_;
 
 	if (pLength != NULL) {
@@ -395,6 +395,6 @@ static /* __device__ */ tSystemString* CreateStringHeapObj(U32 len) {
 	return pThis->chars;
 }
 
-/* __device__ */ U32 SystemString_GetNumBytes(HEAP_PTR pThis_) {
+__device__ U32 SystemString_GetNumBytes(HEAP_PTR pThis_) {
 	return (((tSystemString*)pThis_)->length << 1) + sizeof(tSystemString);
 }

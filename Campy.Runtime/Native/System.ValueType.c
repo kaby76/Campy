@@ -32,7 +32,7 @@
 // Get all the fields in the value-types in the parameters.
 // If the 2nd parameter is NULL, then don't include it!
 // The type of the objects will always be identical.
-/* __device__ */ tAsyncCall* System_ValueType_GetFields(PTR pThis_, PTR pParams, PTR pReturnValue) {
+__device__ tAsyncCall* System_ValueType_GetFields(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	HEAP_PTR o1,o2, ret;
 	tMD_TypeDef *pType;
 	tMetaData *pMetaData;

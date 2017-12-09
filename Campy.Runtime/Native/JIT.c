@@ -65,7 +65,7 @@ struct tTypeStack_ {
 #define DeleteOps(ops_) free(ops_.p)
 
 // Turn this into a MACRO at some point?
-/* __device__ */ static U32 Translate(U32 op, U32 getDynamic) {
+__device__ static U32 Translate(U32 op, U32 getDynamic) {
 	if (op >= JIT_OPCODE_MAXNUM) {
 		Crash("Illegal opcode: %d", op);
 	}
@@ -107,7 +107,7 @@ struct tTypeStack_ {
 
 #define MayCopyTypeStack() if (u32Value > cilOfs) ppTypeStacks[u32Value] = DeepCopyTypeStack(&typeStack)
 
-/* __device__ */ static void PushStackType_(tTypeStack *pTypeStack, tMD_TypeDef *pType) {
+__device__ static void PushStackType_(tTypeStack *pTypeStack, tMD_TypeDef *pType) {
 	U32 i, size;
 
 	MetaData_Fill_TypeDef(pType, NULL, NULL);
@@ -123,7 +123,7 @@ struct tTypeStack_ {
 	//printf("Stack ofs = %d; Max stack size: %d (0x%x)\n", pTypeStack->ofs, size, size);
 }
 
-/* __device__ */ static void PushU32_(tOps *pOps, U32 v) {
+__device__ static void PushU32_(tOps *pOps, U32 v) {
 //	if (pOps->ofs >= pOps->capacity) {
 //		pOps->capacity <<= 1;
 ////		printf("a.pOps->p = 0x%08x size=%d\n", pOps->p, pOps->capacity * sizeof(U32));
@@ -132,7 +132,7 @@ struct tTypeStack_ {
 //	pOps->p[pOps->ofs++] = v;
 }
 
-/* __device__ */ static U32 GetUnalignedU32(U8 *pCIL, U32 *pCILOfs) {
+__device__ static U32 GetUnalignedU32(U8 *pCIL, U32 *pCILOfs) {
 	U32 a,b,c,d;
 	a = pCIL[(*pCILOfs)++];
 	b = pCIL[(*pCILOfs)++];
@@ -141,7 +141,7 @@ struct tTypeStack_ {
 	return a | (b << 8) | (c << 16) | (d << 24);
 }
 
-/* __device__ */ static tTypeStack* DeepCopyTypeStack(tTypeStack *pToCopy) {
+__device__ static tTypeStack* DeepCopyTypeStack(tTypeStack *pToCopy) {
 	//tTypeStack *pCopy;
 
 	//pCopy = TMALLOC(tTypeStack);
@@ -157,7 +157,7 @@ struct tTypeStack_ {
 	return NULL;
 }
 
-/* __device__ */ static void RestoreTypeStack(tTypeStack *pMainStack, tTypeStack *pCopyFrom) {
+__device__ static void RestoreTypeStack(tTypeStack *pMainStack, tTypeStack *pCopyFrom) {
 	// This does not effect maxBytes, as the current value will always be equal
 	// or greater than the value being copied from.
 	if (pCopyFrom == NULL) {
@@ -231,7 +231,7 @@ static U32 GenCombined(tOps *pOps, tOps *pIsDynamic, U32 startOfs, U32 count, U3
 }
 #endif
 
-/* __device__ */ static U32* JITit(tMD_MethodDef *pMethodDef, U8 *pCIL, U32 codeSize, tParameter *pLocals, tJITted *pJITted, U32 genCombinedOpcodes) {
+__device__ static U32* JITit(tMD_MethodDef *pMethodDef, U8 *pCIL, U32 codeSize, tParameter *pLocals, tJITted *pJITted, U32 genCombinedOpcodes) {
 //	U32 maxStack = pJITted->maxStack;
 //	U32 i;
 //	U32 cilOfs;
@@ -1610,7 +1610,7 @@ return NULL;
 
 // Prepare a method for execution
 // This makes sure that the method has been JITed.
-/* __device__ */ void JIT_Prepare(tMD_MethodDef *pMethodDef, U32 genCombinedOpcodes) {
+__device__ void JIT_Prepare(tMD_MethodDef *pMethodDef, U32 genCombinedOpcodes) {
 	tMetaData *pMetaData;
 	U8 *pMethodHeader;
 	tJITted *pJITted;

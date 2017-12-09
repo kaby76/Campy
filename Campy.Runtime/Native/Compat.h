@@ -21,11 +21,14 @@
 #if !defined (__COMPAT_H)
 #define __COMPAT_H
 
+#if defined(CUDA)
 #include <cuda.h>
+#else
+#define __device__
+#endif
 
-
-//#include <stdio.h>
-//#include <stdarg.h>
+#include <stdio.h>
+#include <stdarg.h>
 //#include <fcntl.h>
 
 #ifdef WIN32

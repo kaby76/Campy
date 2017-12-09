@@ -27,6 +27,7 @@
 #include "Thread.h"
 #include "MetaDataTables.h"
 #include "Type.h"
+#include <stdio.h>
 
 #include "System.Array.h"
 #include "System.String.h"
@@ -43,9 +44,9 @@ struct tFilesLoaded_ {
 };
 
 // Keep track of all the files currently loaded
-/* __device__ */ static tFilesLoaded *pFilesLoaded = NULL;
+__device__ static tFilesLoaded *pFilesLoaded = NULL;
 
-/* __device__ */ tMetaData* CLIFile_GetMetaDataForAssembly(char *pAssemblyName) {
+__device__ tMetaData* CLIFile_GetMetaDataForAssembly(char *pAssemblyName) {
 	tFilesLoaded *pFiles;
 
 	// Convert "mscorlib" to "corlib"
@@ -76,20 +77,25 @@ struct tFilesLoaded_ {
 	// Assembly not loaded, so load it if possible
 	{
 		tCLIFile *pCLIFile;
-		char fileName[2000];
-		Gsprintf(fileName, "%s.dll", pAssemblyName);
-		//pCLIFile = CLIFile_Load(fileName);
-		pCLIFile = CLIFile_Load(pAssemblyName);
+		char fileName[30];
+
+		printf("In CLIFile_GetMetaDataForAssembly0\n");
+		//Gsprintf(fileName, "%s.dll", pAssemblyName);
+		pCLIFile = CLIFile_Load("corlib");
+		printf("In CLIFile_GetMetaDataForAssembly1\n");
+		//pCLIFile = CLIFile_Load(pAssemblyName);
+		//printf("In CLIFile_GetMetaDataForAssembly2\n");
 		if (pCLIFile == NULL) {
 			Crash("Cannot load required assembly file: %s", fileName);
+			return NULL;
 		}
 		return pCLIFile->pMetaData;
 	}
 }
 
-/* __device__ */ unsigned char Gdata[];
+__device__ unsigned char Gdata[];
 
-/* __device__ */ static void* LoadFileFromDisk(char *pFileName) {
+__device__ static void* LoadFileFromDisk(char *pFileName) {
 	int f;
 	void *pData = NULL;
 	char buf[1000];
@@ -116,12 +122,13 @@ struct tFilesLoaded_ {
 	return pData;
 }
 
-/* __device__ */ static tCLIFile* LoadPEFile(void *pData) {
+__device__ static tCLIFile* LoadPEFile(void *pData) {
 
-	Gprintf("LoadPEFile\n");
+	printf("LoadPEFile\n");
 
 	tCLIFile *pRet = TMALLOC(tCLIFile);
 	memset(pRet, 0, sizeof(tCLIFile));
+	printf("LoadPEFile2\n");
 
 	unsigned char *pMSDOSHeader = (unsigned char*)&(((unsigned char*)pData)[0]);
 	unsigned char *pPEHeader;
@@ -130,33 +137,47 @@ struct tFilesLoaded_ {
 	unsigned char *pCLIHeader;
 	unsigned char *pRawMetaData;
 
+	printf("LoadPEFile2.5\n");
+
 	int i;
+	printf("LoadPEFile2.5a\n");
 	unsigned int lfanew;
+	printf("LoadPEFile2.5b\n");
 	unsigned short machine;
+	printf("LoadPEFile2.5c\n");
 	int numSections;
+	printf("LoadPEFile2.53\n");
 	unsigned int imageBase;
 	int fileAlignment;
 	unsigned int cliHeaderRVA, cliHeaderSize;
 	unsigned int metaDataRVA, metaDataSize;
 	tMetaData *pMetaData;
-
+	printf("LoadPEFile2.54\n");
+	printf("In LoadPEFile2.55 %llx\n", pRet);
 	pRet->pRVA = RVA();
+	printf("LoadPEFile2.6\n");
 	pRet->pMetaData = pMetaData = MetaData();
-
-	lfanew = *(unsigned int*)&(pMSDOSHeader[0x3c]);
+	printf("LoadPEFile3\n");
+	lfanew = GetU32(&(pMSDOSHeader[0x3c]));
 	pPEHeader = pMSDOSHeader + lfanew + 4;
 	pPEOptionalHeader = pPEHeader + 20;
 	pPESectionHeaders = pPEOptionalHeader + 224;
+	printf("LoadPEFile4\n");
 
-	machine = *(unsigned short*)&(pPEHeader[0]);
+	machine = GetU16(&(pPEHeader[0]));
 	if (machine != DOT_NET_MACHINE) {
 		Gprintf("Not DOT_NET_MACHINE.\n");
 		return NULL;
 	}
-	numSections = *(unsigned short*)&(pPEHeader[2]);
+	printf("LoadPEFile5\n");
 
-	imageBase = *(unsigned int*)&(pPEOptionalHeader[28]);
-	fileAlignment = *(int*)&(pPEOptionalHeader[36]);
+	numSections = GetU16(&(pPEHeader[2]));
+	printf("LoadPEFile6\n");
+
+	imageBase = GetU32(&(pPEOptionalHeader[28]));
+	printf("LoadPEFile7\n");
+	fileAlignment = GetU32(&(pPEOptionalHeader[36]));
+	printf("LoadPEFile8\n");
 
 	for (i=0; i<numSections; i++) {
 		unsigned char *pSection = pPESectionHeaders + i * 40;
@@ -165,28 +186,28 @@ struct tFilesLoaded_ {
 
 	Gprintf("C1.\n");
 
-	cliHeaderRVA = *(unsigned int*)&(pPEOptionalHeader[208]);
-	cliHeaderSize = *(unsigned int*)&(pPEOptionalHeader[212]);
+	cliHeaderRVA = GetU32(&(pPEOptionalHeader[208]));
+	cliHeaderSize = GetU32(&(pPEOptionalHeader[212]));
 
 	pCLIHeader = (unsigned char *)RVA_FindData(pRet->pRVA, cliHeaderRVA);
 	Gprintf("C2.\n");
 
-	metaDataRVA = *(unsigned int*)&(pCLIHeader[8]);
-	metaDataSize = *(unsigned int*)&(pCLIHeader[12]);
-	pRet->entryPoint = *(unsigned int*)&(pCLIHeader[20]);
+	metaDataRVA = GetU32(&(pCLIHeader[8]));
+	metaDataSize = GetU32(&(pCLIHeader[12]));
+	pRet->entryPoint = GetU32(&(pCLIHeader[20]));
 	pRawMetaData = (unsigned char*)RVA_FindData(pRet->pRVA, metaDataRVA);
 	Gprintf("C3.\n");
 
 	// Load all metadata
 	{
-		unsigned int versionLen = *(unsigned int*)&(pRawMetaData[12]);
+		unsigned int versionLen = GetU32(&(pRawMetaData[12]));
 		unsigned int ofs, numberOfStreams;
-		void *pTableStream = NULL;
+		unsigned char *pTableStream = NULL;
 		unsigned int tableStreamSize;
 		pRet->pVersion = &(pRawMetaData[16]);
 		log_f(1, "CLI version: %s\n", pRet->pVersion);
 		ofs = 16 + versionLen;
-		numberOfStreams = *(unsigned short*)&(pRawMetaData[ofs + 2]);
+		numberOfStreams = GetU16(&(pRawMetaData[ofs + 2]));
 		ofs += 4;
 		int q = ofs;
 
@@ -212,7 +233,7 @@ struct tFilesLoaded_ {
 			unsigned int streamOffset = *(unsigned int*)&pRawMetaData[ofs];
 			unsigned int streamSize = *(unsigned int*)&pRawMetaData[ofs+4];
 			unsigned char *pStreamName = &pRawMetaData[ofs+8];
-			void *pStream = pRawMetaData + streamOffset;
+			unsigned char *pStream = pRawMetaData + streamOffset;
 			q = q + 1;
 			//ofs += (unsigned int)((Gstrlen((const char*)pStreamName)+4) & (~0x3)) + 8;
 			if (Gstrcasecmp((const char*)pStreamName, "#Strings") == 0) {
@@ -277,11 +298,11 @@ struct tFilesLoaded_ {
 	return pRet;
 }
 
-/* __device__ */ tCLIFile* CLIFile_Load(char *pFileName) {
+__device__ tCLIFile* CLIFile_Load(char *pFileName) {
 	void *pRawFile;
 	tCLIFile *pRet;
 	tFilesLoaded *pNewFile;
-	Gprintf("In CLIFile_Load\n");
+	Gprintf("In CLIFile_Load1\n");
 	pRawFile = LoadFileFromDisk(pFileName);
 
 	if (pRawFile == NULL) {
@@ -291,6 +312,7 @@ struct tFilesLoaded_ {
 	log_f(1, "\nLoading file: %s\n", pFileName);
 
 	pRet = LoadPEFile(pRawFile);
+	printf("In CLIFile_Load2\n");
 	pRet->pFileName = (char*)mallocForever((U32)Gstrlen(pFileName) + 1);
 	Gstrcpy(pRet->pFileName, pFileName);
 
@@ -303,7 +325,7 @@ struct tFilesLoaded_ {
 	return pRet;
 }
 
-/* __device__ */ I32 CLIFile_Execute(tCLIFile *pThis, int argc, char **argp) {
+__device__ I32 CLIFile_Execute(tCLIFile *pThis, int argc, char **argp) {
 	//tThread *pThread;
 	//HEAP_PTR args;
 	//int i;
@@ -327,7 +349,7 @@ struct tFilesLoaded_ {
 	return 0;
 }
 
-/* __device__ */ void CLIFile_GetHeapRoots(tHeapRoots *pHeapRoots) {
+__device__ void CLIFile_GetHeapRoots(tHeapRoots *pHeapRoots) {
 	//tFilesLoaded *pFile;
 
 	//pFile = pFilesLoaded;

@@ -39,9 +39,9 @@ struct tLoadedLib_ {
 	tLoadedLib *pNext;
 };
 
-/* __device__ */ static tLoadedLib *pLoadedLibs = NULL;
+__device__ static tLoadedLib *pLoadedLibs = NULL;
 
-/* __device__ */ static tLoadedLib* GetLib(STRING name) {
+__device__ static tLoadedLib* GetLib(STRING name) {
 //	// See if it's already loaded
 //	tLoadedLib *pLib = pLoadedLibs;
 //	char libName[256];
@@ -89,7 +89,7 @@ struct tLoadedLib_ {
 	return NULL;
 }
 
-/* __device__ */ fnPInvoke PInvoke_GetFunction(tMetaData *pMetaData, tMD_ImplMap *pImplMap) {
+__device__ fnPInvoke PInvoke_GetFunction(tMetaData *pMetaData, tMD_ImplMap *pImplMap) {
 	tLoadedLib *pLib;
 	STRING libName;
 	void *pProc = NULL;
@@ -109,7 +109,7 @@ struct tLoadedLib_ {
 	return pProc;
 }
 
-/* __device__ */ static void* ConvertStringToANSI(HEAP_PTR pHeapEntry) {
+__device__ static void* ConvertStringToANSI(HEAP_PTR pHeapEntry) {
 	U32 strLen, i;
 	STRING2 str = SystemString_GetString(pHeapEntry, &strLen);
 	unsigned char *pAnsi = (unsigned char*)malloc(strLen+1);
@@ -121,7 +121,7 @@ struct tLoadedLib_ {
 }
 
 // This function is needed to maintain string immutability, and to add a null-terminator
-/* __device__ */ static void* ConvertStringToUnicode(HEAP_PTR pHeapEntry) {
+__device__ static void* ConvertStringToUnicode(HEAP_PTR pHeapEntry) {
 	U32 strLen;
 	STRING2 str = SystemString_GetString(pHeapEntry, &strLen);
 	unsigned short *pUnicode = (unsigned short*)malloc((strLen+1) << 1);
@@ -159,7 +159,7 @@ typedef U64    (STDCALL *_uCuuuuuuuuuu)(U32 _0, U32 _1, U32 _2, U32 _3, U32 _4, 
 #define SET_ARG_TYPE(paramNum, type) funcParams |= (type << ((paramNum+1) << 1))
 
 #define MAX_ARGS 16
-/* __device__ */ U32 PInvoke_Call(tJITCallPInvoke *pCall, PTR pParams, PTR pReturnValue) {
+__device__ U32 PInvoke_Call(tJITCallPInvoke *pCall, PTR pParams, PTR pReturnValue) {
 	U32 _args[MAX_ARGS];
 	double _argsd[MAX_ARGS];
 	void* _pTempMem[MAX_ARGS];

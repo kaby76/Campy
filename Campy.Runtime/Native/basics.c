@@ -1,5 +1,4 @@
-//#include "Compat.h"
-
+#include "Compat.h"
 #include <stdio.h>
 #include <stdarg.h>
 #include "Gprintf.h"
@@ -7,19 +6,19 @@
 #include <string.h>
 
 
-/* __device__ */  void gpuexit(int _Code) {}
+__device__  void gpuexit(int _Code) {}
 
-/* __device__ */ size_t Gstrlen(
+__device__ size_t Gstrlen(
 	char const* _Str
 )
 {
-	size_t r = 0;
-	for (size_t l = 0; _Str[l] != 0; r = ++l)
-		;
+    size_t r = 0;
+    for (size_t l = 0; _Str[l] != 0; r = ++l)
+        ;
     return r;
 }
 
-///* __device__ */ int  gpumemcmp(
+//__device__ int  gpumemcmp(
 //	void const* _Buf1,
 //	void const* _Buf2,
 //	size_t      _Size
@@ -38,7 +37,7 @@
 //	return 0;
 //}
 
-///* __device__ */ void* __cdecl gpumemcpy(
+//__device__ void* __cdecl gpumemcpy(
 //	void* _Dst,
 //	void const* _Src,
 //	size_t      _Size
@@ -50,7 +49,7 @@
 
 
 
-/* __device__ */ void* __cdecl Grealloc(
+__device__ void* __cdecl Grealloc(
 	void*  _Block,
 	size_t _Size
 )
@@ -62,7 +61,7 @@
 }
 
 
-/* __device__ */ void* Gmalloc(
+__device__ void* Gmalloc(
 	size_t _Size
 )
 {
@@ -72,7 +71,7 @@
 
 
 
-///* __device__ */ void* Gmemset(
+//__device__ void* Gmemset(
 //	void*  _Dst,
 //	int    _Val,
 //	size_t _Size

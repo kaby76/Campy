@@ -27,7 +27,7 @@
 #include "Types.h"
 #include "Type.h"
 
-/* __device__ */ tAsyncCall* System_Type_GetTypeFromHandle(PTR pThis_, PTR pParams, PTR pReturnValue) {
+__device__ tAsyncCall* System_Type_GetTypeFromHandle(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tMD_TypeDef *pTypeDef = *(tMD_TypeDef**)pParams;
 
 	*(HEAP_PTR*)pReturnValue = Type_GetTypeObject(pTypeDef);
@@ -35,7 +35,7 @@
 	return NULL;
 }
 
-/* __device__ */ tAsyncCall* System_Type_get_IsValueType(PTR pThis_, PTR pParams, PTR pReturnValue) {
+__device__ tAsyncCall* System_Type_get_IsValueType(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tRuntimeType *pRuntimeType = (tRuntimeType*)pThis_;
 	
 	*(U32*)pReturnValue = pRuntimeType->pTypeDef->isValueType;

@@ -42,13 +42,13 @@ struct tDelegate_ {
 	tDelegate *pNext;
 };
 
-/* __device__ */ tMD_MethodDef* Delegate_GetMethod(void *pThis_) {
+__device__ tMD_MethodDef* Delegate_GetMethod(void *pThis_) {
 	tDelegate *pThis = (tDelegate*)pThis_;
 
 	return pThis->pTargetMethod;
 }
 
-/* __device__ */ tMD_MethodDef* Delegate_GetMethodAndStore(void *pThis_, HEAP_PTR *pTargetObj, void **ppNextDelegate) {
+__device__ tMD_MethodDef* Delegate_GetMethodAndStore(void *pThis_, HEAP_PTR *pTargetObj, void **ppNextDelegate) {
 	tDelegate *pThis = (tDelegate*)pThis_;
 
 	*pTargetObj = pThis->targetObj;
@@ -58,7 +58,7 @@ struct tDelegate_ {
 	return pThis->pTargetMethod;
 }
 
-/* __device__ */ static tAsyncCall* ctor(PTR pThis_, PTR pParams, PTR pReturnValue) {
+__device__ static tAsyncCall* ctor(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	// Note that the 'this' object is already allocated because this method is not
 	// marked as 'InternalMethod' - it is marked as 'runtime'
 	tDelegate *pThis = (tDelegate*)pThis_;
@@ -70,7 +70,7 @@ struct tDelegate_ {
 	return NULL;
 }
 
-/* __device__ */ fnInternalCall Map_Delegate(tMD_MethodDef *pMethod) {
+__device__ fnInternalCall Map_Delegate(tMD_MethodDef *pMethod) {
 	// Note that it is not neccessary to check argument types here, as delegates are very tightly controlled
 	if (Gstrcmp(pMethod->name, ".ctor") == 0) {
 		return ctor;

@@ -34,7 +34,7 @@
 #define TicksAtUnixEpoch 621355968000000000L
 #define TicksAtFileTimeEpoch 504911232000000000L
 
-/* __device__ */ tAsyncCall* System_DateTime_InternalUtcNow(PTR pThis_, PTR pParams, PTR pReturnValue) {
+__device__ tAsyncCall* System_DateTime_InternalUtcNow(PTR pThis_, PTR pParams, PTR pReturnValue) {
 
 #ifdef WIN32
 

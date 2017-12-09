@@ -31,6 +31,10 @@
 #include "Thread.h"
 #include "Gstring.h"
 #include "Gprintf.h"
+#if defined(CUDA)
+#include <crt/host_defines.h>
+#endif
+#include <stdio.h>
 
 typedef struct tArrayTypeDefs_ tArrayTypeDefs;
 struct tArrayTypeDefs_ {
@@ -40,11 +44,11 @@ struct tArrayTypeDefs_ {
 	tArrayTypeDefs *pNext;
 };
 
-/* __device__ */ static tArrayTypeDefs *pArrays;
+__device__ static tArrayTypeDefs *pArrays;
 
 #define GENERICARRAYMETHODS_NUM 13
-/* __device__ */ static U8 genericArrayMethodsInited = 0;
-/* __device__ */ static tMD_MethodDef *ppGenericArrayMethods[GENERICARRAYMETHODS_NUM];
+__device__ static U8 genericArrayMethodsInited = 0;
+__device__ static tMD_MethodDef *ppGenericArrayMethods[GENERICARRAYMETHODS_NUM];
 
 #define GENERICARRAYMETHODS_Internal_GetGenericEnumerator 0
 #define GENERICARRAYMETHODS_get_Length 1
@@ -59,7 +63,7 @@ struct tArrayTypeDefs_ {
 #define GENERICARRAYMETHODS_Internal_GenericRemoveAt 10
 #define GENERICARRAYMETHODS_Internal_GenericGetItem 11
 #define GENERICARRAYMETHODS_Internal_GenericSetItem 12
-/* __device__ */ static char *pGenericArrayMethodsInit[GENERICARRAYMETHODS_NUM] = {
+__device__ static char *pGenericArrayMethodsInit[GENERICARRAYMETHODS_NUM] = {
 	"Internal_GetGenericEnumerator",
 	"get_Length",
 	"Internal_GenericIsReadOnly",
@@ -75,7 +79,7 @@ struct tArrayTypeDefs_ {
 	"Internal_GenericSetItem",
 };
 
-/* __device__ */ static void GetMethodDefs() {
+__device__ static void GetMethodDefs() {
 	IDX_TABLE token, last;
 	tMetaData *pMetaData;
 
@@ -100,7 +104,7 @@ struct tArrayTypeDefs_ {
 	genericArrayMethodsInited = 1;
 }
 
-/* __device__ */ static void CreateNewArrayType(tMD_TypeDef *pNewArrayType, tMD_TypeDef *pElementType, tMD_TypeDef **ppClassTypeArgs, tMD_TypeDef **ppMethodTypeArgs) {
+__device__ static void CreateNewArrayType(tMD_TypeDef *pNewArrayType, tMD_TypeDef *pElementType, tMD_TypeDef **ppClassTypeArgs, tMD_TypeDef **ppMethodTypeArgs) {
 	MetaData_Fill_TypeDef(types[TYPE_SYSTEM_ARRAY_NO_TYPE], NULL, NULL);
 
 	memcpy(pNewArrayType, types[TYPE_SYSTEM_ARRAY_NO_TYPE], sizeof(tMD_TypeDef));
@@ -164,7 +168,7 @@ struct tArrayTypeDefs_ {
 }
 
 // Returns a TypeDef for an array to the given element type
-/* __device__ */ tMD_TypeDef* Type_GetArrayTypeDef(tMD_TypeDef *pElementType, tMD_TypeDef **ppClassTypeArgs, tMD_TypeDef **ppMethodTypeArgs) {
+__device__ tMD_TypeDef* Type_GetArrayTypeDef(tMD_TypeDef *pElementType, tMD_TypeDef **ppClassTypeArgs, tMD_TypeDef **ppMethodTypeArgs) {
 	tArrayTypeDefs *pIterArrays;
 
 	if (pElementType == NULL) {
@@ -186,13 +190,13 @@ struct tArrayTypeDefs_ {
 	pIterArrays->pNext = pArrays;
 	pArrays = pIterArrays;
 	pIterArrays->pArrayType = TMALLOC(tMD_TypeDef);
-	memset(pIterArrays->pArrayType, 0, sizeof(tMD_TypeDef));
+	Gmemset(pIterArrays->pArrayType, 0, sizeof(tMD_TypeDef));
 
 	CreateNewArrayType(pIterArrays->pArrayType, pElementType, ppClassTypeArgs, ppMethodTypeArgs);
 	return pIterArrays->pArrayType;
 }
 
-/* __device__ */ U32 Type_IsValueType(tMD_TypeDef *pTypeDef) {
+__device__ U32 Type_IsValueType(tMD_TypeDef *pTypeDef) {
 	// If this type is an interface, then return 0
 	if (TYPE_ISINTERFACE(pTypeDef)) {
 		return 0;
@@ -216,7 +220,7 @@ struct tArrayTypeDefs_ {
 // Also get the size of a field from the signature
 // This is needed to avoid recursive sizing of types like System.Boolean,
 // that has a field of type System.Boolean
-/* __device__ */ tMD_TypeDef* Type_GetTypeFromSig(tMetaData *pMetaData, SIG *pSig, tMD_TypeDef **ppClassTypeArgs, tMD_TypeDef **ppMethodTypeArgs) {
+__device__ tMD_TypeDef* Type_GetTypeFromSig(tMetaData *pMetaData, SIG *pSig, tMD_TypeDef **ppClassTypeArgs, tMD_TypeDef **ppMethodTypeArgs) {
 	U32 entry;
 
 	entry = MetaData_DecodeSigEntry(pSig);
@@ -333,9 +337,9 @@ struct tArrayTypeDefs_ {
 	return 0;
 }
 
-/* __device__ */ tMD_TypeDef **types;
+__device__ tMD_TypeDef **types;
 
-/* __device__ */ static U32 numInitTypes;
+__device__ static U32 numInitTypes;
 
 typedef struct tTypeInit_ tTypeInit;
 struct tTypeInit_ {
@@ -348,80 +352,79 @@ struct tTypeInit_ {
 	U8 instanceMemSize;
 };
 
-/* __device__ */
+__device__
 static char mscorlib[] = "mscorlib";
-/* __device__ */
+__device__
 static char System[] = "System";
-/* __device__ */
+__device__
 static char SystemCollectionsGeneric[] = "System.Collections.Generic";
-/* __device__ */
+__device__
 static char SystemThreading[] = "System.Threading";
-/* __device__ */
+__device__
 static char SystemIO[] = "System.IO";
-/* __device__ */
+__device__
 static char SystemGlobalization[] = "System.Globalization";
 
-///* __device__ */
-//static tTypeInit typeInit[] = {
-//	{ mscorlib, System, "Object", EVALSTACK_O,		4, 4, 0 },
-//	{ mscorlib, System, "Array", EVALSTACK_O,		4, 4, 0 },
-//	{ mscorlib, System, "Void", EVALSTACK_O,			4, 4, 0 },
-//	{ mscorlib, System, "Boolean", EVALSTACK_INT32,	4, 4, 4 },
-//	{ mscorlib, System, "Byte", EVALSTACK_INT32,		4, 1, 4 },
-//	{ mscorlib, System, "SByte", EVALSTACK_INT32,	4, 1, 4 },
-//	{ mscorlib, System, "Char", EVALSTACK_INT32,		4, 2, 4 },
-//	{ mscorlib, System, "Int16", EVALSTACK_INT32,	4, 2, 4 },
-//	{ mscorlib, System, "Int32", EVALSTACK_INT32,	4, 4, 4 },
-//	{ mscorlib, System, "String", EVALSTACK_O,		4, 4, 0 },
-//	{ mscorlib, System, "IntPtr", EVALSTACK_PTR,		sizeof(void*), sizeof(void*), 0 },
-//	{ mscorlib, System, "RuntimeFieldHandle", EVALSTACK_O, 4, 4, 0 },
-//	{ mscorlib, System, "InvalidCastException", EVALSTACK_O, 0, 0, 0 },
-//	{ mscorlib, System, "UInt32", EVALSTACK_INT32,	4, 4, 4 },
-//	{ mscorlib, System, "UInt16", EVALSTACK_INT32,	4, 2, 4 },
-//	{ NULL, NULL, (char*)TYPE_SYSTEM_CHAR, 0, 0, 0, 0 },
-//	{ NULL, NULL, (char*)TYPE_SYSTEM_OBJECT, 0, 0, 0, 0 },
-//	{ mscorlib, SystemCollectionsGeneric, "IEnumerable`1", EVALSTACK_O,	4, 4, 0 },
-//	{ mscorlib, SystemCollectionsGeneric, "ICollection`1", EVALSTACK_O,	4, 4, 0 },
-//	{ mscorlib, SystemCollectionsGeneric, "IList`1", EVALSTACK_O,		4, 4, 0 },
-//	{ mscorlib, System, "MulticastDelegate", EVALSTACK_O,				0, 0, 0 },
-//	{ mscorlib, System, "NullReferenceException", EVALSTACK_O,			0, 0, 0 },
-//	{ mscorlib, System, "Single", EVALSTACK_F32,		4, 4, 4 },
-//	{ mscorlib, System, "Double", EVALSTACK_F64,		8, 8, 8 },
-//	{ mscorlib, System, "Int64", EVALSTACK_INT64,	8, 8, 8 },
-//	{ mscorlib, System, "UInt64", EVALSTACK_INT64,	8, 8, 8 },
-//	{ mscorlib, System, "RuntimeType", EVALSTACK_O,	4, 4, sizeof(tRuntimeType) },
-//	{ mscorlib, System, "Type", EVALSTACK_O,			4, 4, 0 },
-//	{ mscorlib, System, "RuntimeTypeHandle", EVALSTACK_O, 4, 4, 0 },
-//	{ mscorlib, System, "RuntimeMethodHandle", EVALSTACK_O, 4, 4, 0 },
-//	{ mscorlib, System, "Enum", EVALSTACK_VALUETYPE, 0, 0, 0 },
-//	{ NULL, NULL, (char*)TYPE_SYSTEM_STRING, 0, 0, 0, 0 },
-//	{ NULL, NULL, (char*)TYPE_SYSTEM_INT32, 0, 0, 0, 0 },
-//	{ mscorlib, SystemThreading, "Thread", EVALSTACK_O, 4, 4, sizeof(tThread) },
-//	{ mscorlib, SystemThreading, "ThreadStart", EVALSTACK_O, 0, 0, 0 },
-//	{ mscorlib, SystemThreading, "ParameterizedThreadStart", EVALSTACK_O, 0, 0, 0 },
-//	{ mscorlib, System, "WeakReference", EVALSTACK_O, 4, 4, 0 },
-//	{ mscorlib, SystemIO, "FileMode", EVALSTACK_O, 0, 0, 0 },
-//	{ mscorlib, SystemIO, "FileAccess", EVALSTACK_O, 0, 0, 0 },
-//	{ mscorlib, SystemIO, "FileShare", EVALSTACK_O, 0, 0, 0 },
-//	{ NULL, NULL, (char*)TYPE_SYSTEM_BYTE, 0, 0, 0, 0 },
-//	{ mscorlib, SystemGlobalization, "UnicodeCategory", EVALSTACK_INT32,	0, 0, 0 },
-//	{ mscorlib, System, "OverflowException", EVALSTACK_O,				0, 0, 0 },
-//	{ mscorlib, System, "PlatformID", EVALSTACK_INT32,					0, 0, 0 },
-//	{ mscorlib, SystemIO, "FileAttributes", EVALSTACK_O, 0, 0, 0 },
-//	{ mscorlib, System, "UIntPtr", EVALSTACK_PTR,		sizeof(void*), sizeof(void*), 0 },
-//	{ mscorlib, System, "Nullable`1", EVALSTACK_VALUETYPE, 0, 0, 0 },
-//	{ NULL, NULL, (char*)TYPE_SYSTEM_TYPE, 0, 0, 0, 0 },
-//};
-/* __device__ */
+__device__
 static tTypeInit typeInit[] = {
 	{ mscorlib, System, "Object", EVALSTACK_O,		4, 4, 0 },
+	{ mscorlib, System, "Array", EVALSTACK_O,		4, 4, 0 },
+	{ mscorlib, System, "Void", EVALSTACK_O,			4, 4, 0 },
+	{ mscorlib, System, "Boolean", EVALSTACK_INT32,	4, 4, 4 },
+	{ mscorlib, System, "Byte", EVALSTACK_INT32,		4, 1, 4 },
+	{ mscorlib, System, "SByte", EVALSTACK_INT32,	4, 1, 4 },
+	{ mscorlib, System, "Char", EVALSTACK_INT32,		4, 2, 4 },
+	{ mscorlib, System, "Int16", EVALSTACK_INT32,	4, 2, 4 },
+	{ mscorlib, System, "Int32", EVALSTACK_INT32,	4, 4, 4 },
+	{ mscorlib, System, "String", EVALSTACK_O,		4, 4, 0 },
+	{ mscorlib, System, "IntPtr", EVALSTACK_PTR,		sizeof(void*), sizeof(void*), 0 },
+	{ mscorlib, System, "RuntimeFieldHandle", EVALSTACK_O, 4, 4, 0 },
+	{ mscorlib, System, "InvalidCastException", EVALSTACK_O, 0, 0, 0 },
+	{ mscorlib, System, "UInt32", EVALSTACK_INT32,	4, 4, 4 },
+	{ mscorlib, System, "UInt16", EVALSTACK_INT32,	4, 2, 4 },
+	{ NULL, NULL, (char*)TYPE_SYSTEM_CHAR, 0, 0, 0, 0 },
+	{ NULL, NULL, (char*)TYPE_SYSTEM_OBJECT, 0, 0, 0, 0 },
+	{ mscorlib, SystemCollectionsGeneric, "IEnumerable`1", EVALSTACK_O,	4, 4, 0 },
+	{ mscorlib, SystemCollectionsGeneric, "ICollection`1", EVALSTACK_O,	4, 4, 0 },
+	{ mscorlib, SystemCollectionsGeneric, "IList`1", EVALSTACK_O,		4, 4, 0 },
+	{ mscorlib, System, "MulticastDelegate", EVALSTACK_O,				0, 0, 0 },
+	{ mscorlib, System, "NullReferenceException", EVALSTACK_O,			0, 0, 0 },
+	{ mscorlib, System, "Single", EVALSTACK_F32,		4, 4, 4 },
+	{ mscorlib, System, "Double", EVALSTACK_F64,		8, 8, 8 },
+	{ mscorlib, System, "Int64", EVALSTACK_INT64,	8, 8, 8 },
+	{ mscorlib, System, "UInt64", EVALSTACK_INT64,	8, 8, 8 },
+	{ mscorlib, System, "RuntimeType", EVALSTACK_O,	4, 4, sizeof(tRuntimeType) },
+	{ mscorlib, System, "Type", EVALSTACK_O,			4, 4, 0 },
+	{ mscorlib, System, "RuntimeTypeHandle", EVALSTACK_O, 4, 4, 0 },
+	{ mscorlib, System, "RuntimeMethodHandle", EVALSTACK_O, 4, 4, 0 },
+	{ mscorlib, System, "Enum", EVALSTACK_VALUETYPE, 0, 0, 0 },
+	{ NULL, NULL, (char*)TYPE_SYSTEM_STRING, 0, 0, 0, 0 },
+	{ NULL, NULL, (char*)TYPE_SYSTEM_INT32, 0, 0, 0, 0 },
+	{ mscorlib, SystemThreading, "Thread", EVALSTACK_O, 4, 4, sizeof(tThread) },
+	{ mscorlib, SystemThreading, "ThreadStart", EVALSTACK_O, 0, 0, 0 },
+	{ mscorlib, SystemThreading, "ParameterizedThreadStart", EVALSTACK_O, 0, 0, 0 },
+	{ mscorlib, System, "WeakReference", EVALSTACK_O, 4, 4, 0 },
+	{ mscorlib, SystemIO, "FileMode", EVALSTACK_O, 0, 0, 0 },
+	{ mscorlib, SystemIO, "FileAccess", EVALSTACK_O, 0, 0, 0 },
+	{ mscorlib, SystemIO, "FileShare", EVALSTACK_O, 0, 0, 0 },
+	{ NULL, NULL, (char*)TYPE_SYSTEM_BYTE, 0, 0, 0, 0 },
+	{ mscorlib, SystemGlobalization, "UnicodeCategory", EVALSTACK_INT32,	0, 0, 0 },
+	{ mscorlib, System, "OverflowException", EVALSTACK_O,				0, 0, 0 },
+	{ mscorlib, System, "PlatformID", EVALSTACK_INT32,					0, 0, 0 },
+	{ mscorlib, SystemIO, "FileAttributes", EVALSTACK_O, 0, 0, 0 },
+	{ mscorlib, System, "UIntPtr", EVALSTACK_PTR,		sizeof(void*), sizeof(void*), 0 },
+	{ mscorlib, System, "Nullable`1", EVALSTACK_VALUETYPE, 0, 0, 0 },
 	{ NULL, NULL, (char*)TYPE_SYSTEM_TYPE, 0, 0, 0, 0 },
 };
+//__device__
+//static tTypeInit typeInit[] = {
+//	{ mscorlib, System, "Object", EVALSTACK_O,		4, 4, 0 },
+//};
 
-/* __device__ */
+__device__
 int CorLibDone = 0;
 
-/* __device__ */
+__device__
 void Type_Init() {
 	U32 i;
 	Gprintf("hi there\n");
@@ -434,6 +437,9 @@ void Type_Init() {
 			// Normal type initialisation
 			Gprintf("hi there3\n");
 			types[i] = MetaData_GetTypeDefFromFullName((STRING)typeInit[i].assemblyName, (STRING)typeInit[i].nameSpace, (STRING)typeInit[i].name);
+			
+			printf("Here asdf %s\n", (STRING)typeInit[i].name);
+			
 			// For the pre-defined system types, fill in the well-known memory sizes
 			types[i]->stackType = typeInit[i].stackType;
 			types[i]->stackSize = typeInit[i].stackSize;
@@ -441,7 +447,7 @@ void Type_Init() {
 			types[i]->instanceMemSize = typeInit[i].instanceMemSize;
 		}
 	}
-return;
+
 	for (i=0; i<numInitTypes; i++) {
 		if (typeInit[i].assemblyName != NULL) {
 			MetaData_Fill_TypeDef(types[i], NULL, NULL);
@@ -453,7 +459,7 @@ return;
 	CorLibDone = 1;
 }
 
-/* __device__ */
+__device__
 U32 Type_IsMethod(tMD_MethodDef *pMethod, STRING name, tMD_TypeDef *pReturnType, U32 numParams, U8 *pParamTypeIndexs) {
 	SIG sig;
 	U32 sigLen, numSigParams, i, nameLen;
@@ -505,7 +511,7 @@ endBad:
 	return 0;
 }
 
-/* __device__ */
+__device__
 U32 Type_IsDerivedFromOrSame(tMD_TypeDef *pBaseType, tMD_TypeDef *pTestType) {
 	while (pTestType != NULL) {
 		if (pTestType == pBaseType) {
@@ -517,7 +523,7 @@ U32 Type_IsDerivedFromOrSame(tMD_TypeDef *pBaseType, tMD_TypeDef *pTestType) {
 	return 0;
 }
 
-/* __device__ */
+__device__
 U32 Type_IsImplemented(tMD_TypeDef *pInterface, tMD_TypeDef *pTestType) {
 	U32 i;
 
@@ -529,14 +535,14 @@ U32 Type_IsImplemented(tMD_TypeDef *pInterface, tMD_TypeDef *pTestType) {
 	return 0;
 }
 
-/* __device__ */
+__device__
 U32 Type_IsAssignableFrom(tMD_TypeDef *pToType, tMD_TypeDef *pFromType) {
 	return
 		Type_IsDerivedFromOrSame(pToType, pFromType) ||
 		(TYPE_ISINTERFACE(pToType) && Type_IsImplemented(pToType, pFromType));
 }
 
-/* __device__ */
+__device__
 HEAP_PTR Type_GetTypeObject(tMD_TypeDef *pTypeDef) {
 	if (pTypeDef->typeObject == NULL) {
 		pTypeDef->typeObject = RuntimeType_New(pTypeDef);

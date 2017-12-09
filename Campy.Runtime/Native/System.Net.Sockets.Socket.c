@@ -44,7 +44,7 @@ void Socket_Init() {
 //#endif
 }
 
-/* __device__ */ tAsyncCall* System_Net_Sockets_Internal_CreateSocket(PTR pThis_, PTR pParams, PTR pReturnValue) {
+__device__ tAsyncCall* System_Net_Sockets_Internal_CreateSocket(PTR pThis_, PTR pParams, PTR pReturnValue) {
 
 //	int s;
 //
@@ -80,7 +80,7 @@ void Socket_Init() {
 	return NULL;
 }
 
-/* __device__ */ tAsyncCall* System_Net_Sockets_Internal_Bind(PTR pThis_, PTR pParams, PTR pReturnValue) {
+__device__ tAsyncCall* System_Net_Sockets_Internal_Bind(PTR pThis_, PTR pParams, PTR pReturnValue) {
 
 //	struct sockaddr_in sa;
 //	int r;
@@ -104,7 +104,7 @@ void Socket_Init() {
 	return NULL;
 }
 
-/* __device__ */ tAsyncCall* System_Net_Sockets_Internal_Close(PTR pThis_, PTR pParams, PTR pReturnValue) {
+__device__ tAsyncCall* System_Net_Sockets_Internal_Close(PTR pThis_, PTR pParams, PTR pReturnValue) {
 
 //	int s = INTERNALCALL_PARAM(0, int);
 //
@@ -117,7 +117,7 @@ void Socket_Init() {
 	return NULL;
 }
 
-/* __device__ */ tAsyncCall* System_Net_Sockets_Internal_Listen(PTR pThis_, PTR pParams, PTR pReturnValue) {
+__device__ tAsyncCall* System_Net_Sockets_Internal_Listen(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	//int s = INTERNALCALL_PARAM(0, int);
 	//U32 backlog = INTERNALCALL_PARAM(4, U32);
 	//U32 *pError = INTERNALCALL_PARAM(8, U32*);
@@ -129,7 +129,7 @@ void Socket_Init() {
 	return NULL;
 }
 
-/* __device__ */ static U32 Accept_Check(PTR pThis_, PTR pParams, PTR pReturnValue, tAsyncCall *pAsync) {
+__device__ static U32 Accept_Check(PTR pThis_, PTR pParams, PTR pReturnValue, tAsyncCall *pAsync) {
 	//int s = INTERNALCALL_PARAM(0, int);
 	//U32 *pError = INTERNALCALL_PARAM(4, U32*);
 	//int newS;
@@ -153,7 +153,7 @@ void Socket_Init() {
 	return 0;
 }
 
-/* __device__ */ tAsyncCall* System_Net_Sockets_Internal_Accept(PTR pThis_, PTR pParams, PTR pReturnValue) {
+__device__ tAsyncCall* System_Net_Sockets_Internal_Accept(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	//U32 ret = Accept_Check(pThis_, pParams, pReturnValue, NULL);
 	//if (ret) {
 	//	return NULL;
@@ -167,7 +167,7 @@ void Socket_Init() {
 	return NULL;
 }
 
-/* __device__ */ static U32 Connect_Check(PTR pThis_, PTR pParams, PTR pReturnValue, tAsyncCall *pAsync) {
+__device__ static U32 Connect_Check(PTR pThis_, PTR pParams, PTR pReturnValue, tAsyncCall *pAsync) {
 //	struct sockaddr_in sa;
 //	int r;
 //
@@ -216,7 +216,7 @@ void Socket_Init() {
 	return 0;
 }
 
-/* __device__ */ tAsyncCall* System_Net_Sockets_Internal_Connect(PTR pThis_, PTR pParams, PTR pReturnValue) {
+__device__ tAsyncCall* System_Net_Sockets_Internal_Connect(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	//U32 ret = Connect_Check(pThis_, pParams, pReturnValue, NULL);
 	//if (ret) {
 	//	return NULL;
@@ -236,7 +236,7 @@ struct tSendRecvState_ {
 	U32 count;
 };
 
-/* __device__ */ static U32 Receive_Check(PTR pThis_, PTR pParams, PTR pReturnValue, tAsyncCall *pAsync) {
+__device__ static U32 Receive_Check(PTR pThis_, PTR pParams, PTR pReturnValue, tAsyncCall *pAsync) {
 //	PTR buffer;
 //	int r;
 //	tSendRecvState *pState = (tSendRecvState*)pAsync->state;
@@ -287,7 +287,7 @@ struct tSendRecvState_ {
 	return 0;
 }
 
-/* __device__ */ tAsyncCall* System_Net_Sockets_Internal_Receive(PTR pThis_, PTR pParams, PTR pReturnValue) {
+__device__ tAsyncCall* System_Net_Sockets_Internal_Receive(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	//U32 ok;
 	//tAsyncCall *pAsync = TMALLOC(tAsyncCall);
 	//tSendRecvState *pState = TMALLOC(tSendRecvState);
@@ -306,7 +306,7 @@ struct tSendRecvState_ {
 	return NULL;
 }
 
-/* __device__ */ static U32 Send_Check(PTR pThis_, PTR pParams, PTR pReturnValue, tAsyncCall *pAsync) {
+__device__ static U32 Send_Check(PTR pThis_, PTR pParams, PTR pReturnValue, tAsyncCall *pAsync) {
 //	PTR buffer;
 //	int r;
 //	tSendRecvState *pState = (tSendRecvState*)pAsync->state;
@@ -352,7 +352,7 @@ struct tSendRecvState_ {
 	return 0;
 }
 
-/* __device__ */ tAsyncCall* System_Net_Sockets_Internal_Send(PTR pThis_, PTR pParams, PTR pReturnValue) {
+__device__ tAsyncCall* System_Net_Sockets_Internal_Send(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	//U32 ok;
 	//tAsyncCall *pAsync = TMALLOC(tAsyncCall);
 	//tSendRecvState *pState = TMALLOC(tSendRecvState);

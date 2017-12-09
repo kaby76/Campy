@@ -30,7 +30,7 @@
 #include "System.RuntimeType.h"
 #include "System.Array.h"
 
-/* __device__ */ HEAP_PTR RuntimeType_New(tMD_TypeDef *pTypeDef) {
+__device__ HEAP_PTR RuntimeType_New(tMD_TypeDef *pTypeDef) {
 	tRuntimeType *pRuntimeType;
 
 	pRuntimeType = (tRuntimeType*)Heap_AllocType(types[TYPE_SYSTEM_RUNTIMETYPE]);
@@ -40,7 +40,7 @@
 	return (HEAP_PTR)pRuntimeType;
 }
 
-/* __device__ */ tAsyncCall* System_RuntimeType_get_Name(PTR pThis_, PTR pParams, PTR pReturnValue) {
+__device__ tAsyncCall* System_RuntimeType_get_Name(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tRuntimeType *pRuntimeType = (tRuntimeType*)pThis_;
 	HEAP_PTR strResult;
 
@@ -50,7 +50,7 @@
 	return NULL;
 }
 
-/* __device__ */ tAsyncCall* System_RuntimeType_get_Namespace(PTR pThis_, PTR pParams, PTR pReturnValue) {
+__device__ tAsyncCall* System_RuntimeType_get_Namespace(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tRuntimeType *pRuntimeType = (tRuntimeType*)pThis_;
 	HEAP_PTR strResult;
 
@@ -60,7 +60,7 @@
 	return NULL;
 }
 
-/* __device__ */ tAsyncCall* System_RuntimeType_GetNestingParentType(PTR pThis_, PTR pParams, PTR pReturnValue) {
+__device__ tAsyncCall* System_RuntimeType_GetNestingParentType(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tRuntimeType *pRuntimeType = (tRuntimeType*)pThis_;
 	tMD_TypeDef *pNestingParentType;
 	
@@ -74,7 +74,7 @@
 	return NULL;
 }
 
-/* __device__ */ tAsyncCall* System_RuntimeType_get_BaseType(PTR pThis_, PTR pParams, PTR pReturnValue) {
+__device__ tAsyncCall* System_RuntimeType_get_BaseType(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tRuntimeType *pRuntimeType = (tRuntimeType*)pThis_;
 	tMD_TypeDef *pBaseType = pRuntimeType->pTypeDef->pParent;
 
@@ -87,7 +87,7 @@
 	return NULL;
 }
 
-/* __device__ */ tAsyncCall* System_RuntimeType_get_IsEnum(PTR pThis_, PTR pParams, PTR pReturnValue) {
+__device__ tAsyncCall* System_RuntimeType_get_IsEnum(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tMD_TypeDef *pType = ((tRuntimeType*)pThis_)->pTypeDef;
 
 	U32 isEnum = pType->pParent == types[TYPE_SYSTEM_ENUM];
@@ -96,14 +96,14 @@
 	return NULL;
 }
 
-/* __device__ */ tAsyncCall* System_RuntimeType_get_IsGenericType(PTR pThis_, PTR pParams, PTR pReturnValue) {
+__device__ tAsyncCall* System_RuntimeType_get_IsGenericType(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tMD_TypeDef *pType = ((tRuntimeType*)pThis_)->pTypeDef;
 
 	*(U32*)pReturnValue = TYPE_ISGENERICINSTANCE(pType) || pType->isGenericDefinition;
 	return NULL;
 }
 
-/* __device__ */ tAsyncCall* System_RuntimeType_Internal_GetGenericTypeDefinition(PTR pThis_, PTR pParams, PTR pReturnValue) {
+__device__ tAsyncCall* System_RuntimeType_Internal_GetGenericTypeDefinition(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tMD_TypeDef *pType = ((tRuntimeType*)pThis_)->pTypeDef;
 
 	if (TYPE_ISGENERICINSTANCE(pType)) {
@@ -115,7 +115,7 @@
 	return NULL;
 }
 
-/* __device__ */ tAsyncCall* System_RuntimeType_GetGenericArguments(PTR pThis_, PTR pParams, PTR pReturnValue) {
+__device__ tAsyncCall* System_RuntimeType_GetGenericArguments(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tMD_TypeDef *pType = ((tRuntimeType*)pThis_)->pTypeDef;
 	tMD_TypeDef *pCoreType;
 	U32 i, argCount = 0;
@@ -146,6 +146,6 @@
 	return NULL;
 }
 
-/* __device__ */ tMD_TypeDef* RuntimeType_DeRef(PTR type) {
+__device__ tMD_TypeDef* RuntimeType_DeRef(PTR type) {
 	return ((tRuntimeType*)type)->pTypeDef;
 }

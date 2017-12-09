@@ -23,7 +23,9 @@
 
 #include "Types.h"
 #include "RVA.h"
+#if defined(CUDA)
 #include <crt/host_defines.h>
+#endif
 
 #define MAX_TABLES 48
 

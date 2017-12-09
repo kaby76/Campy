@@ -174,16 +174,57 @@
 .global .align 16 .b8 __nv_static_25__12_Type_cpp1_ii_b0106068_SystemIO[10] = {83, 121, 115, 116, 101, 109, 46, 73, 79, 0};
 .global .align 16 .b8 __nv_static_25__12_Type_cpp1_ii_b0106068_SystemGlobalization[21] = {83, 121, 115, 116, 101, 109, 46, 71, 108, 111, 98, 97, 108, 105, 122, 97, 116, 105, 111, 110, 0};
 .global .align 8 .b8 $str13[7] = {79, 98, 106, 101, 99, 116, 0};
-.global .align 16 .u64 __nv_static_25__12_Type_cpp1_ii_b0106068_typeInit[4] = {generic(__nv_static_25__12_Type_cpp1_ii_b0106068_mscorlib), generic(__nv_static_25__12_Type_cpp1_ii_b0106068_System), generic($str13), 263173};
+.global .align 8 .b8 $str14[6] = {65, 114, 114, 97, 121, 0};
+.global .align 8 .b8 $str15[5] = {86, 111, 105, 100, 0};
+.global .align 8 .b8 $str16[8] = {66, 111, 111, 108, 101, 97, 110, 0};
+.global .align 8 .b8 $str17[5] = {66, 121, 116, 101, 0};
+.global .align 8 .b8 $str18[6] = {83, 66, 121, 116, 101, 0};
+.global .align 8 .b8 $str19[5] = {67, 104, 97, 114, 0};
+.global .align 8 .b8 $str20[6] = {73, 110, 116, 49, 54, 0};
+.global .align 8 .b8 $str21[6] = {73, 110, 116, 51, 50, 0};
+.global .align 8 .b8 $str22[7] = {83, 116, 114, 105, 110, 103, 0};
+.global .align 8 .b8 $str23[7] = {73, 110, 116, 80, 116, 114, 0};
+.global .align 16 .b8 $str24[19] = {82, 117, 110, 116, 105, 109, 101, 70, 105, 101, 108, 100, 72, 97, 110, 100, 108, 101, 0};
+.global .align 16 .b8 $str25[21] = {73, 110, 118, 97, 108, 105, 100, 67, 97, 115, 116, 69, 120, 99, 101, 112, 116, 105, 111, 110, 0};
+.global .align 8 .b8 $str26[7] = {85, 73, 110, 116, 51, 50, 0};
+.global .align 8 .b8 $str27[7] = {85, 73, 110, 116, 49, 54, 0};
+.global .align 16 .b8 $str28[14] = {73, 69, 110, 117, 109, 101, 114, 97, 98, 108, 101, 96, 49, 0};
+.global .align 16 .b8 $str29[14] = {73, 67, 111, 108, 108, 101, 99, 116, 105, 111, 110, 96, 49, 0};
+.global .align 8 .b8 $str30[8] = {73, 76, 105, 115, 116, 96, 49, 0};
+.global .align 16 .b8 $str31[18] = {77, 117, 108, 116, 105, 99, 97, 115, 116, 68, 101, 108, 101, 103, 97, 116, 101, 0};
+.global .align 16 .b8 $str32[23] = {78, 117, 108, 108, 82, 101, 102, 101, 114, 101, 110, 99, 101, 69, 120, 99, 101, 112, 116, 105, 111, 110, 0};
+.global .align 8 .b8 $str33[7] = {83, 105, 110, 103, 108, 101, 0};
+.global .align 8 .b8 $str34[7] = {68, 111, 117, 98, 108, 101, 0};
+.global .align 8 .b8 $str35[6] = {73, 110, 116, 54, 52, 0};
+.global .align 8 .b8 $str36[7] = {85, 73, 110, 116, 54, 52, 0};
+.global .align 16 .b8 $str37[12] = {82, 117, 110, 116, 105, 109, 101, 84, 121, 112, 101, 0};
+.global .align 8 .b8 $str38[5] = {84, 121, 112, 101, 0};
+.global .align 16 .b8 $str39[18] = {82, 117, 110, 116, 105, 109, 101, 84, 121, 112, 101, 72, 97, 110, 100, 108, 101, 0};
+.global .align 16 .b8 $str40[20] = {82, 117, 110, 116, 105, 109, 101, 77, 101, 116, 104, 111, 100, 72, 97, 110, 100, 108, 101, 0};
+.global .align 8 .b8 $str41[5] = {69, 110, 117, 109, 0};
+.global .align 8 .b8 $str42[7] = {84, 104, 114, 101, 97, 100, 0};
+.global .align 16 .b8 $str43[12] = {84, 104, 114, 101, 97, 100, 83, 116, 97, 114, 116, 0};
+.global .align 16 .b8 $str44[25] = {80, 97, 114, 97, 109, 101, 116, 101, 114, 105, 122, 101, 100, 84, 104, 114, 101, 97, 100, 83, 116, 97, 114, 116, 0};
+.global .align 16 .b8 $str45[14] = {87, 101, 97, 107, 82, 101, 102, 101, 114, 101, 110, 99, 101, 0};
+.global .align 16 .b8 $str46[9] = {70, 105, 108, 101, 77, 111, 100, 101, 0};
+.global .align 16 .b8 $str47[11] = {70, 105, 108, 101, 65, 99, 99, 101, 115, 115, 0};
+.global .align 16 .b8 $str48[10] = {70, 105, 108, 101, 83, 104, 97, 114, 101, 0};
+.global .align 16 .b8 $str49[16] = {85, 110, 105, 99, 111, 100, 101, 67, 97, 116, 101, 103, 111, 114, 121, 0};
+.global .align 16 .b8 $str50[18] = {79, 118, 101, 114, 102, 108, 111, 119, 69, 120, 99, 101, 112, 116, 105, 111, 110, 0};
+.global .align 16 .b8 $str51[11] = {80, 108, 97, 116, 102, 111, 114, 109, 73, 68, 0};
+.global .align 16 .b8 $str52[15] = {70, 105, 108, 101, 65, 116, 116, 114, 105, 98, 117, 116, 101, 115, 0};
+.global .align 8 .b8 $str53[8] = {85, 73, 110, 116, 80, 116, 114, 0};
+.global .align 16 .b8 $str54[11] = {78, 117, 108, 108, 97, 98, 108, 101, 96, 49, 0};
+.global .align 16 .u64 __nv_static_25__12_Type_cpp1_ii_b0106068_typeInit[192] = {generic(__nv_static_25__12_Type_cpp1_ii_b0106068_mscorlib), generic(__nv_static_25__12_Type_cpp1_ii_b0106068_System), generic($str13), 263173, generic(__nv_static_25__12_Type_cpp1_ii_b0106068_mscorlib), generic(__nv_static_25__12_Type_cpp1_ii_b0106068_System), generic($str14), 263173, generic(__nv_static_25__12_Type_cpp1_ii_b0106068_mscorlib), generic(__nv_static_25__12_Type_cpp1_ii_b0106068_System), generic($str15), 263173, generic(__nv_static_25__12_Type_cpp1_ii_b0106068_mscorlib), generic(__nv_static_25__12_Type_cpp1_ii_b0106068_System), generic($str16), 67372033, generic(__nv_static_25__12_Type_cpp1_ii_b0106068_mscorlib), generic(__nv_static_25__12_Type_cpp1_ii_b0106068_System), generic($str17), 67175425, generic(__nv_static_25__12_Type_cpp1_ii_b0106068_mscorlib), generic(__nv_static_25__12_Type_cpp1_ii_b0106068_System), generic($str18), 67175425, generic(__nv_static_25__12_Type_cpp1_ii_b0106068_mscorlib), generic(__nv_static_25__12_Type_cpp1_ii_b0106068_System), generic($str19), 67240961, generic(__nv_static_25__12_Type_cpp1_ii_b0106068_mscorlib), generic(__nv_static_25__12_Type_cpp1_ii_b0106068_System), generic($str20), 67240961, generic(__nv_static_25__12_Type_cpp1_ii_b0106068_mscorlib), generic(__nv_static_25__12_Type_cpp1_ii_b0106068_System), generic($str21), 67372033, generic(__nv_static_25__12_Type_cpp1_ii_b0106068_mscorlib), generic(__nv_static_25__12_Type_cpp1_ii_b0106068_System), generic($str22), 263173, generic(__nv_static_25__12_Type_cpp1_ii_b0106068_mscorlib), generic(__nv_static_25__12_Type_cpp1_ii_b0106068_System), generic($str23), 526340, generic(__nv_static_25__12_Type_cpp1_ii_b0106068_mscorlib), generic(__nv_static_25__12_Type_cpp1_ii_b0106068_System), generic($str24), 263173, generic(__nv_static_25__12_Type_cpp1_ii_b0106068_mscorlib), generic(__nv_static_25__12_Type_cpp1_ii_b0106068_System), generic($str25), 5, generic(__nv_static_25__12_Type_cpp1_ii_b0106068_mscorlib), generic(__nv_static_25__12_Type_cpp1_ii_b0106068_System), generic($str26), 67372033, generic(__nv_static_25__12_Type_cpp1_ii_b0106068_mscorlib), generic(__nv_static_25__12_Type_cpp1_ii_b0106068_System), generic($str27), 67240961, 0, 0, 6, 0, 0, 0, 0, 0, generic(__nv_static_25__12_Type_cpp1_ii_b0106068_mscorlib), generic(__nv_static_25__12_Type_cpp1_ii_b0106068_SystemCollectionsGeneric), generic($str28), 263173, generic(__nv_static_25__12_Type_cpp1_ii_b0106068_mscorlib), generic(__nv_static_25__12_Type_cpp1_ii_b0106068_SystemCollectionsGeneric), generic($str29), 263173, generic(__nv_static_25__12_Type_cpp1_ii_b0106068_mscorlib), generic(__nv_static_25__12_Type_cpp1_ii_b0106068_SystemCollectionsGeneric), generic($str30), 263173, generic(__nv_static_25__12_Type_cpp1_ii_b0106068_mscorlib), generic(__nv_static_25__12_Type_cpp1_ii_b0106068_System), generic($str31), 5, generic(__nv_static_25__12_Type_cpp1_ii_b0106068_mscorlib), generic(__nv_static_25__12_Type_cpp1_ii_b0106068_System), generic($str32), 5, generic(__nv_static_25__12_Type_cpp1_ii_b0106068_mscorlib), generic(__nv_static_25__12_Type_cpp1_ii_b0106068_System), generic($str33), 67372038, generic(__nv_static_25__12_Type_cpp1_ii_b0106068_mscorlib), generic(__nv_static_25__12_Type_cpp1_ii_b0106068_System), generic($str34), 134744067, generic(__nv_static_25__12_Type_cpp1_ii_b0106068_mscorlib), generic(__nv_static_25__12_Type_cpp1_ii_b0106068_System), generic($str35), 134744064, generic(__nv_static_25__12_Type_cpp1_ii_b0106068_mscorlib), generic(__nv_static_25__12_Type_cpp1_ii_b0106068_System), generic($str36), 134744064, generic(__nv_static_25__12_Type_cpp1_ii_b0106068_mscorlib), generic(__nv_static_25__12_Type_cpp1_ii_b0106068_System), generic($str37), 134480901, generic(__nv_static_25__12_Type_cpp1_ii_b0106068_mscorlib), generic(__nv_static_25__12_Type_cpp1_ii_b0106068_System), generic($str38), 263173, generic(__nv_static_25__12_Type_cpp1_ii_b0106068_mscorlib), generic(__nv_static_25__12_Type_cpp1_ii_b0106068_System), generic($str39), 263173, generic(__nv_static_25__12_Type_cpp1_ii_b0106068_mscorlib), generic(__nv_static_25__12_Type_cpp1_ii_b0106068_System), generic($str40), 263173, generic(__nv_static_25__12_Type_cpp1_ii_b0106068_mscorlib), generic(__nv_static_25__12_Type_cpp1_ii_b0106068_System), generic($str41), 7, 0, 0, 9, 0, 0, 0, 8, 0, generic(__nv_static_25__12_Type_cpp1_ii_b0106068_mscorlib), generic(__nv_static_25__12_Type_cpp1_ii_b0106068_SystemThreading), generic($str42), 2013529093, generic(__nv_static_25__12_Type_cpp1_ii_b0106068_mscorlib), generic(__nv_static_25__12_Type_cpp1_ii_b0106068_SystemThreading), generic($str43), 5, generic(__nv_static_25__12_Type_cpp1_ii_b0106068_mscorlib), generic(__nv_static_25__12_Type_cpp1_ii_b0106068_SystemThreading), generic($str44), 5, generic(__nv_static_25__12_Type_cpp1_ii_b0106068_mscorlib), generic(__nv_static_25__12_Type_cpp1_ii_b0106068_System), generic($str45), 263173, generic(__nv_static_25__12_Type_cpp1_ii_b0106068_mscorlib), generic(__nv_static_25__12_Type_cpp1_ii_b0106068_SystemIO), generic($str46), 5, generic(__nv_static_25__12_Type_cpp1_ii_b0106068_mscorlib), generic(__nv_static_25__12_Type_cpp1_ii_b0106068_SystemIO), generic($str47), 5, generic(__nv_static_25__12_Type_cpp1_ii_b0106068_mscorlib), generic(__nv_static_25__12_Type_cpp1_ii_b0106068_SystemIO), generic($str48), 5, 0, 0, 4, 0, generic(__nv_static_25__12_Type_cpp1_ii_b0106068_mscorlib), generic(__nv_static_25__12_Type_cpp1_ii_b0106068_SystemGlobalization), generic($str49), 1, generic(__nv_static_25__12_Type_cpp1_ii_b0106068_mscorlib), generic(__nv_static_25__12_Type_cpp1_ii_b0106068_System), generic($str50), 5, generic(__nv_static_25__12_Type_cpp1_ii_b0106068_mscorlib), generic(__nv_static_25__12_Type_cpp1_ii_b0106068_System), generic($str51), 1, generic(__nv_static_25__12_Type_cpp1_ii_b0106068_mscorlib), generic(__nv_static_25__12_Type_cpp1_ii_b0106068_SystemIO), generic($str52), 5, generic(__nv_static_25__12_Type_cpp1_ii_b0106068_mscorlib), generic(__nv_static_25__12_Type_cpp1_ii_b0106068_System), generic($str53), 526340, generic(__nv_static_25__12_Type_cpp1_ii_b0106068_mscorlib), generic(__nv_static_25__12_Type_cpp1_ii_b0106068_System), generic($str54), 7, 0, 0, 27, 0};
 .visible .global .align 4 .u32 CorLibDone;
-.global .align 16 .b8 $str14[21] = {65, 114, 114, 97, 121, 58, 32, 65, 114, 114, 97, 121, 91, 37, 115, 46, 37, 115, 93, 10, 0};
-.global .align 8 .b8 $str15[7] = {83, 121, 115, 116, 101, 109, 0};
-.global .align 16 .b8 $str16[10] = {86, 97, 108, 117, 101, 84, 121, 112, 101, 0};
-.global .align 16 .b8 $str17[68] = {84, 121, 112, 101, 95, 71, 101, 116, 84, 121, 112, 101, 70, 114, 111, 109, 83, 105, 103, 40, 41, 58, 32, 67, 97, 110, 110, 111, 116, 32, 104, 97, 110, 100, 108, 101, 32, 115, 105, 103, 110, 97, 116, 117, 114, 101, 32, 101, 108, 101, 109, 101, 110, 116, 32, 116, 121, 112, 101, 58, 32, 48, 120, 37, 48, 50, 120, 0};
-.global .align 16 .b8 $str18[10] = {104, 105, 32, 116, 104, 101, 114, 101, 10, 0};
-.global .align 16 .b8 $str19[11] = {104, 105, 32, 116, 104, 101, 114, 101, 50, 10, 0};
-.global .align 16 .b8 $str20[11] = {104, 105, 32, 116, 104, 101, 114, 101, 51, 10, 0};
-.global .align 16 .b8 $str21[14] = {72, 101, 114, 101, 32, 97, 115, 100, 102, 32, 37, 115, 10, 0};
+.global .align 16 .b8 $str55[21] = {65, 114, 114, 97, 121, 58, 32, 65, 114, 114, 97, 121, 91, 37, 115, 46, 37, 115, 93, 10, 0};
+.global .align 8 .b8 $str56[7] = {83, 121, 115, 116, 101, 109, 0};
+.global .align 16 .b8 $str57[10] = {86, 97, 108, 117, 101, 84, 121, 112, 101, 0};
+.global .align 16 .b8 $str58[68] = {84, 121, 112, 101, 95, 71, 101, 116, 84, 121, 112, 101, 70, 114, 111, 109, 83, 105, 103, 40, 41, 58, 32, 67, 97, 110, 110, 111, 116, 32, 104, 97, 110, 100, 108, 101, 32, 115, 105, 103, 110, 97, 116, 117, 114, 101, 32, 101, 108, 101, 109, 101, 110, 116, 32, 116, 121, 112, 101, 58, 32, 48, 120, 37, 48, 50, 120, 0};
+.global .align 16 .b8 $str59[10] = {104, 105, 32, 116, 104, 101, 114, 101, 10, 0};
+.global .align 16 .b8 $str60[11] = {104, 105, 32, 116, 104, 101, 114, 101, 50, 10, 0};
+.global .align 16 .b8 $str61[11] = {104, 105, 32, 116, 104, 101, 114, 101, 51, 10, 0};
+.global .align 16 .b8 $str62[14] = {72, 101, 114, 101, 32, 97, 115, 100, 102, 32, 37, 115, 10, 0};
 
 .weak .func  (.param .b32 func_retval0) cudaMalloc(
 	.param .b64 cudaMalloc_param_0,
@@ -1654,7 +1695,7 @@ BB6_31:
 	ld.local.u64 	%rd150, [%rd1];
 	ld.u64 	%rd151, [%rd150+32];
 	ld.u64 	%rd152, [%rd150+24];
-	mov.u64 	%rd153, $str14;
+	mov.u64 	%rd153, $str55;
 	cvta.global.u64 	%rd154, %rd153;
 	mov.u32 	%r37, 2;
 
@@ -1729,7 +1770,7 @@ BB7_2:
 
 //C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:203 	if (Gstrcmp((const char*) pTypeDef->nameSpace, "System") == 0) {
 	.loc 1 203 6
-	mov.u64 	%rd6, $str15;
+	mov.u64 	%rd6, $str56;
 	cvta.global.u64 	%rd7, %rd6;
 	// Callseq Start 35
 	{
@@ -1760,7 +1801,7 @@ BB7_2:
 
 //C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:204 		if (Gstrcmp((const char*)pTypeDef->name, "ValueType") == 0) {
 	.loc 1 204 7
-	mov.u64 	%rd9, $str16;
+	mov.u64 	%rd9, $str57;
 	cvta.global.u64 	%rd10, %rd9;
 	// Callseq Start 36
 	{
@@ -2642,7 +2683,7 @@ BB8_29:
 
 //C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:332 			Crash("Type_GetTypeFromSig(): Cannot handle signature element type: 0x%02x", entry);
 	.loc 1 332 4
-	mov.u64 	%rd207, $str17;
+	mov.u64 	%rd207, $str58;
 	cvta.global.u64 	%rd208, %rd207;
 	// Callseq Start 83
 	{
@@ -3813,7 +3854,7 @@ BB8_71:
 	ld.local.u64 	%rd179, [%rd1];
 	ld.u64 	%rd180, [%rd179+32];
 	ld.u64 	%rd181, [%rd179+24];
-	mov.u64 	%rd182, $str14;
+	mov.u64 	%rd182, $str55;
 	cvta.global.u64 	%rd183, %rd182;
 	mov.u32 	%r41, 2;
 
@@ -3868,7 +3909,7 @@ BB8_71:
 
 //C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:428 	Gprintf("hi there\n");
 	.loc 1 428 2
-	mov.u64 	%rd46, $str18;
+	mov.u64 	%rd46, $str59;
 	cvta.global.u64 	%rd47, %rd46;
 	// Callseq Start 85
 	{
@@ -3886,7 +3927,7 @@ BB8_71:
 	
 	//{
 	}// Callseq End 85
-	mov.u32 	%r20, 1;
+	mov.u32 	%r20, 48;
 
 //C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:430 	numInitTypes = sizeof(typeInit) / sizeof(typeInit[0]);
 	.loc 1 430 2
@@ -3894,7 +3935,7 @@ BB8_71:
 
 //C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:431 	Gprintf("hi there2\n");
 	.loc 1 431 2
-	mov.u64 	%rd48, $str19;
+	mov.u64 	%rd48, $str60;
 	cvta.global.u64 	%rd49, %rd48;
 	// Callseq Start 86
 	{
@@ -3960,7 +4001,7 @@ BB9_2:
 
 //C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:436 			Gprintf("hi there3\n");
 	.loc 1 436 4
-	mov.u64 	%rd54, $str20;
+	mov.u64 	%rd54, $str61;
 	cvta.global.u64 	%rd55, %rd54;
 	// Callseq Start 88
 	{
@@ -4017,7 +4058,7 @@ BB9_2:
 	.loc 1 439 4
 	ld.global.u64 	%rd65, [%rd3+16];
 	st.local.u64 	[%rd1], %rd65;
-	mov.u64 	%rd66, $str21;
+	mov.u64 	%rd66, $str62;
 	cvta.global.u64 	%rd67, %rd66;
 	// Callseq Start 90
 	{
@@ -4984,6 +5025,7 @@ BB9_41:
 	.loc 1 131 3
 	ld.global.u64 	%rd152, [types];
 	ld.u64 	%rd153, [%rd152+136];
+	mov.u32 	%r51, 1;
 
 //C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:131 		pInterfaceT = Generics_GetGenericTypeFromCoreType(types[TYPE_SYSTEM_COLLECTIONS_GENERIC_IENUMERABLE_T], 1, &pElementType);
 	.loc 1 131 17
@@ -4994,7 +5036,7 @@ BB9_41:
 	.param .b64 param0;
 	st.param.b64	[param0+0], %rd153;
 	.param .b32 param1;
-	st.param.b32	[param1+0], %r20;
+	st.param.b32	[param1+0], %r51;
 	.param .b64 param2;
 	st.param.b64	[param2+0], %rd95;
 	.param .b64 retval0;
@@ -5061,7 +5103,7 @@ BB9_41:
 	.param .b64 param1;
 	st.param.b64	[param1+0], %rd15;
 	.param .b32 param2;
-	st.param.b32	[param2+0], %r20;
+	st.param.b32	[param2+0], %r51;
 	.param .b64 param3;
 	st.param.b64	[param3+0], %rd95;
 	.param .b64 retval0;
@@ -5101,7 +5143,7 @@ BB9_41:
 	.param .b64 param0;
 	st.param.b64	[param0+0], %rd164;
 	.param .b32 param1;
-	st.param.b32	[param1+0], %r20;
+	st.param.b32	[param1+0], %r51;
 	.param .b64 param2;
 	st.param.b64	[param2+0], %rd95;
 	.param .b64 retval0;
@@ -5178,7 +5220,7 @@ BB9_41:
 	.param .b64 param1;
 	st.param.b64	[param1+0], %rd15;
 	.param .b32 param2;
-	st.param.b32	[param2+0], %r20;
+	st.param.b32	[param2+0], %r51;
 	.param .b64 param3;
 	st.param.b64	[param3+0], %rd95;
 	.param .b64 retval0;
@@ -5218,7 +5260,7 @@ BB9_41:
 	.param .b64 param1;
 	st.param.b64	[param1+0], %rd15;
 	.param .b32 param2;
-	st.param.b32	[param2+0], %r20;
+	st.param.b32	[param2+0], %r51;
 	.param .b64 param3;
 	st.param.b64	[param3+0], %rd95;
 	.param .b64 retval0;
@@ -5252,7 +5294,7 @@ BB9_41:
 	.param .b64 param1;
 	st.param.b64	[param1+0], %rd15;
 	.param .b32 param2;
-	st.param.b32	[param2+0], %r20;
+	st.param.b32	[param2+0], %r51;
 	.param .b64 param3;
 	st.param.b64	[param3+0], %rd95;
 	.param .b64 retval0;
@@ -5286,7 +5328,7 @@ BB9_41:
 	.param .b64 param1;
 	st.param.b64	[param1+0], %rd15;
 	.param .b32 param2;
-	st.param.b32	[param2+0], %r20;
+	st.param.b32	[param2+0], %r51;
 	.param .b64 param3;
 	st.param.b64	[param3+0], %rd95;
 	.param .b64 retval0;
@@ -5323,7 +5365,7 @@ BB9_41:
 	.param .b64 param0;
 	st.param.b64	[param0+0], %rd187;
 	.param .b32 param1;
-	st.param.b32	[param1+0], %r20;
+	st.param.b32	[param1+0], %r51;
 	.param .b64 param2;
 	st.param.b64	[param2+0], %rd95;
 	.param .b64 retval0;
@@ -5389,7 +5431,7 @@ BB9_41:
 	.param .b64 param1;
 	st.param.b64	[param1+0], %rd15;
 	.param .b32 param2;
-	st.param.b32	[param2+0], %r20;
+	st.param.b32	[param2+0], %r51;
 	.param .b64 param3;
 	st.param.b64	[param3+0], %rd95;
 	.param .b64 retval0;
@@ -5423,7 +5465,7 @@ BB9_41:
 	.param .b64 param1;
 	st.param.b64	[param1+0], %rd15;
 	.param .b32 param2;
-	st.param.b32	[param2+0], %r20;
+	st.param.b32	[param2+0], %r51;
 	.param .b64 param3;
 	st.param.b64	[param3+0], %rd95;
 	.param .b64 retval0;
@@ -5463,7 +5505,7 @@ BB9_41:
 	.param .b64 param1;
 	st.param.b64	[param1+0], %rd15;
 	.param .b32 param2;
-	st.param.b32	[param2+0], %r20;
+	st.param.b32	[param2+0], %r51;
 	.param .b64 param3;
 	st.param.b64	[param3+0], %rd95;
 	.param .b64 retval0;
@@ -5497,7 +5539,7 @@ BB9_41:
 	.param .b64 param1;
 	st.param.b64	[param1+0], %rd15;
 	.param .b32 param2;
-	st.param.b32	[param2+0], %r20;
+	st.param.b32	[param2+0], %r51;
 	.param .b64 param3;
 	st.param.b64	[param3+0], %rd95;
 	.param .b64 retval0;
@@ -5521,7 +5563,7 @@ BB9_41:
 	ld.local.u64 	%rd207, [%rd96];
 	ld.u64 	%rd208, [%rd207+32];
 	ld.u64 	%rd209, [%rd207+24];
-	mov.u64 	%rd210, $str14;
+	mov.u64 	%rd210, $str55;
 	cvta.global.u64 	%rd211, %rd210;
 	mov.u32 	%r60, 2;
 
@@ -5576,10 +5618,11 @@ BB9_44:
 	@%p33 bra 	BB9_7;
 
 BB9_45:
+	mov.u32 	%r63, 1;
 
 //C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:457 	CorLibDone = 1;
 	.loc 1 457 2
-	st.global.u32 	[CorLibDone], %r20;
+	st.global.u32 	[CorLibDone], %r63;
 
 //C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:458 }
 	.loc 1 458 1
@@ -6957,7 +7000,7 @@ BB10_117:
 	ld.local.u64 	%rd288, [%rd177];
 	ld.u64 	%rd289, [%rd288+32];
 	ld.u64 	%rd290, [%rd288+24];
-	mov.u64 	%rd291, $str14;
+	mov.u64 	%rd291, $str55;
 	cvta.global.u64 	%rd292, %rd291;
 	mov.u32 	%r73, 2;
 
@@ -7517,7 +7560,7 @@ BB10_230:
 
 //C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:332 			Crash("Type_GetTypeFromSig(): Cannot handle signature element type: 0x%02x", entry);
 	.loc 1 332 4
-	mov.u64 	%rd609, $str17;
+	mov.u64 	%rd609, $str58;
 	cvta.global.u64 	%rd610, %rd609;
 	// Callseq Start 265
 	{
@@ -8182,7 +8225,7 @@ BB10_219:
 
 //C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:332 			Crash("Type_GetTypeFromSig(): Cannot handle signature element type: 0x%02x", entry);
 	.loc 1 332 4
-	mov.u64 	%rd591, $str17;
+	mov.u64 	%rd591, $str58;
 	cvta.global.u64 	%rd592, %rd591;
 	// Callseq Start 263
 	{
@@ -8458,7 +8501,7 @@ BB10_133:
 
 //C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu:332 			Crash("Type_GetTypeFromSig(): Cannot handle signature element type: 0x%02x", entry);
 	.loc 1 332 4
-	mov.u64 	%rd321, $str17;
+	mov.u64 	%rd321, $str58;
 	cvta.global.u64 	%rd322, %rd321;
 	// Callseq Start 179
 	{
@@ -9851,7 +9894,7 @@ BB10_165:
 	ld.local.u64 	%rd440, [%rd329];
 	ld.u64 	%rd441, [%rd440+32];
 	ld.u64 	%rd442, [%rd440+24];
-	mov.u64 	%rd443, $str14;
+	mov.u64 	%rd443, $str55;
 	cvta.global.u64 	%rd444, %rd443;
 	mov.u32 	%r106, 2;
 
@@ -11218,7 +11261,7 @@ BB10_217:
 	ld.local.u64 	%rd576, [%rd465];
 	ld.u64 	%rd577, [%rd576+32];
 	ld.u64 	%rd578, [%rd576+24];
-	mov.u64 	%rd579, $str14;
+	mov.u64 	%rd579, $str55;
 	cvta.global.u64 	%rd580, %rd579;
 	mov.u32 	%r142, 2;
 
@@ -11677,6 +11720,6 @@ BB14_2:
 	ret;
 }
 
-	.file	1 "C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu", 1512687434, 20800
+	.file	1 "C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/Type.cu", 1512741544, 20706
 	.file	2 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v9.0\\include\\cuda_device_runtime_api.h", 1504359958, 14836
 

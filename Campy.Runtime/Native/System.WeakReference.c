@@ -38,13 +38,13 @@ struct tWeakRef_ {
 	tWeakRef *pNextWeakRef;
 };
 
-/* __device__ */ tAsyncCall* System_WeakReference_get_Target(PTR pThis_, PTR pParams, PTR pReturnValue) {
+__device__ tAsyncCall* System_WeakReference_get_Target(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tWeakRef *pThis = (tWeakRef*)pThis_;
 	*(HEAP_PTR*)pReturnValue = pThis->target;
 	return NULL;
 }
 
-/* __device__ */ tAsyncCall* System_WeakReference_set_Target(PTR pThis_, PTR pParams, PTR pReturnValue) {
+__device__ tAsyncCall* System_WeakReference_set_Target(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tWeakRef *pThis = (tWeakRef*)pThis_;
 	HEAP_PTR target = ((HEAP_PTR*)pParams)[0];
 
@@ -70,7 +70,7 @@ foundOK:;
 	return NULL;
 }
 
-/* __device__ */ void SystemWeakReference_TargetGone(HEAP_PTR *ppWeakRef_, U32 removeLongRefs) {
+__device__ void SystemWeakReference_TargetGone(HEAP_PTR *ppWeakRef_, U32 removeLongRefs) {
 	tWeakRef **ppWeakRef = (tWeakRef**)ppWeakRef_;
 	tWeakRef *pWeakRef = *ppWeakRef;
 	while (pWeakRef != NULL) {

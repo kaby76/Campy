@@ -24,7 +24,7 @@
 * @s2: The other string
 * @len: the maximum number of characters to compare
 */
-/* __device__ */ int Gstrncasecmp(const char *s1, const char *s2, size_t len)
+__device__ int Gstrncasecmp(const char *s1, const char *s2, size_t len)
 {
 	/* Yes, Virginia, it had better be unsigned */
 	unsigned char c1, c2;
@@ -54,12 +54,12 @@
 * @s1: One string
 * @s2: The other string
 */
-/* __device__ */ int Gstrcasecmp(const char *s1, const char *s2)
+__device__ int Gstrcasecmp(const char *s1, const char *s2)
 {
-	return Gstrncasecmp(s1, s2, -1);
+	return Gstrncasecmp(s1, s2, (size_t)-1);
 }
 
-/* __device__ */ char * ___strtok;
+__device__ char * ___strtok;
 
 #ifndef __HAVE_ARCH_STRCPY
 /**
@@ -67,7 +67,7 @@
 * @dest: Where to copy the string to
 * @src: Where to copy the string from
 */
-/* __device__ */ char * Gstrcpy(char * dest, const char *src)
+__device__ char * Gstrcpy(char * dest, const char *src)
 {
 	char *tmp = dest;
 
@@ -88,7 +88,7 @@
 * However, the result is not %NUL-terminated if the source exceeds
 * @count bytes.
 */
-/* __device__ */ char * Gstrncpy(char * dest, const char *src, size_t count)
+__device__ char * Gstrncpy(char * dest, const char *src, size_t count)
 {
 	char *tmp = dest;
 
@@ -111,7 +111,7 @@
 * of course, the buffer size is zero). It does not pad
 * out the result like strncpy() does.
 */
-/* __device__ */ size_t Gstrlcpy(char *dest, const char *src, size_t size)
+__device__ size_t Gstrlcpy(char *dest, const char *src, size_t size)
 {
 	size_t ret = Gstrlen(src);
 
@@ -130,7 +130,7 @@
 * @dest: The string to be appended to
 * @src: The string to append to it
 */
-/* __device__ */ char * Gstrcat(char * dest, const char * src)
+__device__ char * Gstrcat(char * dest, const char * src)
 {
 	char *tmp = dest;
 
@@ -153,7 +153,7 @@
 * Note that in contrast to strncpy, strncat ensures the result is
 * terminated.
 */
-/* __device__ */ char * Gstrncat(char *dest, const char *src, size_t count)
+__device__ char * Gstrncat(char *dest, const char *src, size_t count)
 {
 	char *tmp = dest;
 
@@ -178,7 +178,7 @@
 * @cs: One string
 * @ct: Another string
 */
-/* __device__ */ int Gstrcmp(const char * cs, const char * ct)
+__device__ int Gstrcmp(const char * cs, const char * ct)
 {
 	register signed char __res;
 
@@ -198,7 +198,7 @@
 * @ct: Another string
 * @count: The maximum number of bytes to compare
 */
-/* __device__ */ int Gstrncmp(const char * cs, const char * ct, size_t count)
+__device__ int Gstrncmp(const char * cs, const char * ct, size_t count)
 {
 	register signed char __res = 0;
 
@@ -218,7 +218,7 @@
 * @s: The string to be searched
 * @c: The character to search for
 */
-/* __device__ */ char * Gstrchr(const char * s, int c)
+__device__ char * Gstrchr(const char * s, int c)
 {
 	for (; *s != (char)c; ++s)
 		if (*s == '\0')
@@ -233,7 +233,7 @@
 * @s: The string to be searched
 * @c: The character to search for
 */
-/* __device__ */ char * Gstrrchr(const char * s, int c)
+__device__ char * Gstrrchr(const char * s, int c)
 {
 	const char *p = s + Gstrlen(s);
 	do {
@@ -249,7 +249,7 @@
 * strlen - Find the length of a string
 * @s: The string to be sized
 */
-/* __device__ */ size_t strlen(const char * s)
+__device__ size_t strlen(const char * s)
 {
 	const char *sc;
 
@@ -265,7 +265,7 @@
 * @s: The string to be sized
 * @count: The maximum number of bytes to search
 */
-/* __device__ */ size_t Gstrnlen(const char * s, size_t count)
+__device__ size_t Gstrnlen(const char * s, size_t count)
 {
 	const char *sc;
 
@@ -276,7 +276,7 @@
 #endif
 
 #ifndef __HAVE_ARCH_STRDUP
-/* __device__ */ char * Gstrdup(const char *s)
+__device__ char * Gstrdup(const char *s)
 {
 	char *nw;
 
@@ -297,7 +297,7 @@
 * @s: The string to be searched
 * @accept: The string to search for
 */
-/* __device__ */ size_t Gstrspn(const char *s, const char *accept)
+__device__ size_t Gstrspn(const char *s, const char *accept)
 {
 	const char *p;
 	const char *a;
@@ -323,7 +323,7 @@
 * @cs: The string to be searched
 * @ct: The characters to search for
 */
-/* __device__ */ char * Gstrpbrk(const char * cs, const char * ct)
+__device__ char * Gstrpbrk(const char * cs, const char * ct)
 {
 	const char *sc1, *sc2;
 
@@ -345,7 +345,7 @@
 *
 * WARNING: strtok is deprecated, use strsep instead.
 */
-/* __device__ */ char * Gstrtok(char * s, const char * ct)
+__device__ char * Gstrtok(char * s, const char * ct)
 {
 	char *sbegin, *send;
 
@@ -378,7 +378,7 @@
 * of that name. In fact, it was stolen from glibc2 and de-fancy-fied.
 * Same semantics, slimmer shape. ;)
 */
-/* __device__ */ char * Gstrsep(char **s, const char *ct)
+__device__ char * Gstrsep(char **s, const char *ct)
 {
 	char *sbegin = *s, *end;
 
@@ -402,7 +402,7 @@
 * returns the address of the swapped string or NULL on error. If
 * string length is odd, last byte is untouched.
 */
-/* __device__ */ char *strswab(const char *s)
+__device__ char *strswab(const char *s)
 {
 	char *p, *q;
 
@@ -431,7 +431,7 @@
 *
 * Do not use memset() to access IO space, use memset_io() instead.
 */
-/* __device__ */ void * Gmemset(void * s, int c, size_t count)
+__device__ void * Gmemset(void * s, int c, size_t count)
 {
 	unsigned long *sl = (unsigned long *)s;
 	char *s8;
@@ -454,7 +454,7 @@
 * You should not use this function to access IO space, use memcpy_toio()
 * or memcpy_fromio() instead.
 */
-/* __device__ */ void * Gmemcpy(void *dest, const void *src, size_t count)
+__device__ void * Gmemcpy(void *dest, const void *src, size_t count)
 {
 	unsigned long *dl = (unsigned long *)dest, *sl = (unsigned long *)src;
 	char *d8, *s8;
@@ -488,7 +488,7 @@
 *
 * Unlike memcpy(), memmove() copes with overlapping areas.
 */
-/* __device__ */ void * Gmemmove(void * dest, const void *src, size_t count)
+__device__ void * Gmemmove(void * dest, const void *src, size_t count)
 {
 	char *tmp, *s;
 
@@ -513,7 +513,7 @@
 * @ct: Another area of memory
 * @count: The size of the area.
 */
-/* __device__ */ int Gmemcmp(const void * cs, const void * ct, size_t count)
+__device__ int Gmemcmp(const void * cs, const void * ct, size_t count)
 {
 	unsigned char *su1, *su2;
 	int res = 0;
@@ -535,7 +535,7 @@
 * returns the address of the first occurrence of @c, or 1 byte past
 * the area if @c is not found
 */
-/* __device__ */ void * Gmemscan(void * addr, int c, size_t size)
+__device__ void * Gmemscan(void * addr, int c, size_t size)
 {
 	unsigned char * p = (unsigned char *)addr;
 
@@ -555,7 +555,7 @@
 * @s1: The string to be searched
 * @s2: The string to search for
 */
-/* __device__ */ char * Gstrstr(const char * s1, const char * s2)
+__device__ char * Gstrstr(const char * s1, const char * s2)
 {
 	int l1, l2;
 
@@ -583,7 +583,7 @@
 * returns the address of the first occurrence of @c, or %NULL
 * if @c is not found
 */
-/* __device__ */ void * Gmemchr(const void *s, int c, size_t n)
+__device__ void * Gmemchr(const void *s, int c, size_t n)
 {
 	unsigned char *p = (unsigned char *)s;
 	while (n-- != 0) {
@@ -596,25 +596,25 @@
 
 #endif
 
-/* __device__ */ void Gstoupper(char *s)
+__device__ void Gstoupper(char *s)
 {
 	for (; *s; s++)
 		if (('a' <= *s) && (*s <= 'z'))
 			*s = 'A' + (*s - 'a');
 }
-/* __device__ */ void Gstolower(char *s)
+__device__ void Gstolower(char *s)
 {
 	for (; *s; s++)
 		if (('A' <= *s) && (*s <= 'Z'))
 			*s = 'a' + (*s - 'A');
 }
-/* __device__ */ char Gtoupper(char c)
+__device__ char Gtoupper(char c)
 {
 	if (('a' <= c) && (c <= 'z'))
 		c = 'A' + (c - 'a');
 	return c;
 }
-/* __device__ */ char Gtolower(char c)
+__device__ char Gtolower(char c)
 {
 	if (('A' <= c) && (c <= 'Z'))
 		c = 'a' + (c - 'A');

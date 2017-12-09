@@ -20,6 +20,7 @@
 
 #if !defined (__RVA_H)
 #define __RVA_H
+#include "Compat.h"
 
 typedef struct tRVA_Item_ tRVA_Item;
 struct tRVA_Item_ {

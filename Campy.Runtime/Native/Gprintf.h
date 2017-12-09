@@ -1,6 +1,9 @@
 #pragma once
 
+#if defined(CUDA)
 #include <cuda.h>
+#endif
+
 #include <stdarg.h>
 #define LDOUBLE double
 #define LLONG long

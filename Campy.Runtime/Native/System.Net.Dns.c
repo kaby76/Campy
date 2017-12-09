@@ -31,7 +31,7 @@
 #include <netdb.h>
 #endif
 
-/* __device__ */ tAsyncCall* System_Net_Dns_Internal_GetHostEnt(PTR pThis_, PTR pParams, PTR pReturnValue) {
+__device__ tAsyncCall* System_Net_Dns_Internal_GetHostEnt(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	//struct hostent *pHostEnt;
 	//U32 i, len;
 	//STRING2 name2;

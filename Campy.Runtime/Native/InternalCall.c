@@ -63,7 +63,7 @@ struct tInternalCall_ {
 	U8 parameterTypes[MAX_PARAMS];
 };
 
-/* __device__ */ static tInternalCall internalCalls[] = {
+__device__ static tInternalCall internalCalls[] = {
 	{"System", "Object", "Equals", System_Object_Equals, TYPE_SYSTEM_BOOLEAN, 1, {TYPE_SYSTEM_OBJECT}},
 	{NULL,      NULL,    "Clone", System_Object_Clone, TYPE_SYSTEM_OBJECT, 1, {TYPE_SYSTEM_OBJECT}},
 	{NULL,      NULL,    "GetHashCode", System_Object_GetHashCode, TYPE_SYSTEM_INT32, 0},
@@ -173,10 +173,10 @@ struct tInternalCall_ {
 	{NULL, NULL, NULL, NULL}
 };
 
-/* __device__ */ fnInternalCall InternalCall_Map(tMD_MethodDef *pMethod) {
+__device__ fnInternalCall InternalCall_Map(tMD_MethodDef *pMethod) {
 	tInternalCall *pCall;
-	STRING curNameSpace = 0;
-	STRING curType = 0;
+	STRING curNameSpace = NULL;
+	STRING curType = NULL;
 
 	if (pMethod->pParentType->pParent == types[TYPE_SYSTEM_MULTICASTDELEGATE]) {
 		// Special case to handle delegates
@@ -205,5 +205,5 @@ struct tInternalCall_ {
 	}
 	Crash("InternalCall_Map(): Cannot map [%s]%s.%s", pMethod->pParentType->nameSpace, pMethod->pParentType->name, pMethod->name);
 	FAKE_RETURN;
-	return 0;
+	return NULL;
 }

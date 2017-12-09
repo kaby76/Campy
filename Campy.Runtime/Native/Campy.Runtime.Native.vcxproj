@@ -101,6 +101,7 @@
       <CodeGeneration>compute_35,sm_35</CodeGeneration>
       <InterleaveSourceInPTX>true</InterleaveSourceInPTX>
       <GenerateLineInfo>true</GenerateLineInfo>
+      <Defines>CUDA</Defines>
     </CudaCompile>
     <CudaLink>
       <AdditionalLibraryDirectories>
@@ -188,166 +189,166 @@
     <ClInclude Include="Types.h" />
   </ItemGroup>
   <ItemGroup>
-    <CudaCompile Include="basics.cu" />
-    <CudaCompile Include="CLIFile.cu">
+    <CudaCompile Include="basics.c" />
+    <CudaCompile Include="CLIFile.c">
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">64</TargetMachinePlatform>
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">64</TargetMachinePlatform>
       <InterleaveSourceInPTX Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</InterleaveSourceInPTX>
       <NvccCompilation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">compile</NvccCompilation>
     </CudaCompile>
-    <CudaCompile Include="corlib.cu" />
-    <CudaCompile Include="Delegate.cu">
+    <CudaCompile Include="corlib.c" />
+    <CudaCompile Include="Delegate.c">
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">64</TargetMachinePlatform>
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">64</TargetMachinePlatform>
     </CudaCompile>
-    <CudaCompile Include="Finalizer.cu">
+    <CudaCompile Include="Finalizer.c">
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">64</TargetMachinePlatform>
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">64</TargetMachinePlatform>
     </CudaCompile>
-    <CudaCompile Include="Generics.cu">
+    <CudaCompile Include="Generics.c">
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">64</TargetMachinePlatform>
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">64</TargetMachinePlatform>
     </CudaCompile>
-    <CudaCompile Include="Gstring.cu" />
-    <CudaCompile Include="Heap.cu">
+    <CudaCompile Include="Gstring.c" />
+    <CudaCompile Include="Heap.c">
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">64</TargetMachinePlatform>
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">64</TargetMachinePlatform>
     </CudaCompile>
-    <CudaCompile Include="InternalCall.cu">
+    <CudaCompile Include="InternalCall.c">
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">64</TargetMachinePlatform>
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">64</TargetMachinePlatform>
     </CudaCompile>
-    <CudaCompile Include="MetaData.cu">
+    <CudaCompile Include="MetaData.c">
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">64</TargetMachinePlatform>
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">64</TargetMachinePlatform>
     </CudaCompile>
-    <CudaCompile Include="MetaData_Fill.cu">
+    <CudaCompile Include="MetaData_Fill.c">
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">64</TargetMachinePlatform>
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">64</TargetMachinePlatform>
     </CudaCompile>
-    <CudaCompile Include="MetaData_Search.cu">
+    <CudaCompile Include="MetaData_Search.c">
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">64</TargetMachinePlatform>
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">64</TargetMachinePlatform>
     </CudaCompile>
-    <CudaCompile Include="MethodState.cu">
+    <CudaCompile Include="MethodState.c">
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">64</TargetMachinePlatform>
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">64</TargetMachinePlatform>
     </CudaCompile>
-    <CudaCompile Include="PInvoke.cu">
+    <CudaCompile Include="PInvoke.c">
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">64</TargetMachinePlatform>
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">64</TargetMachinePlatform>
     </CudaCompile>
-    <CudaCompile Include="RVA.cu">
+    <CudaCompile Include="RVA.c">
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">64</TargetMachinePlatform>
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">64</TargetMachinePlatform>
     </CudaCompile>
-    <CudaCompile Include="Sys.cu">
+    <CudaCompile Include="Sys.c">
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">64</TargetMachinePlatform>
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">64</TargetMachinePlatform>
     </CudaCompile>
-    <CudaCompile Include="System.Array.cu">
+    <CudaCompile Include="System.Array.c">
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">64</TargetMachinePlatform>
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">64</TargetMachinePlatform>
     </CudaCompile>
-    <CudaCompile Include="System.Char.cu">
+    <CudaCompile Include="System.Char.c">
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">64</TargetMachinePlatform>
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">64</TargetMachinePlatform>
     </CudaCompile>
-    <CudaCompile Include="System.Console.cu">
+    <CudaCompile Include="System.Console.c">
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">64</TargetMachinePlatform>
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">64</TargetMachinePlatform>
     </CudaCompile>
-    <CudaCompile Include="System.DateTime.cu">
+    <CudaCompile Include="System.DateTime.c">
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">64</TargetMachinePlatform>
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">64</TargetMachinePlatform>
     </CudaCompile>
-    <CudaCompile Include="System.Diagnostics.Debugger.cu">
+    <CudaCompile Include="System.Diagnostics.Debugger.c">
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">64</TargetMachinePlatform>
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">64</TargetMachinePlatform>
     </CudaCompile>
-    <CudaCompile Include="System.Enum.cu">
+    <CudaCompile Include="System.Enum.c">
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">64</TargetMachinePlatform>
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">64</TargetMachinePlatform>
     </CudaCompile>
-    <CudaCompile Include="System.Environment.cu">
+    <CudaCompile Include="System.Environment.c">
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">64</TargetMachinePlatform>
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">64</TargetMachinePlatform>
     </CudaCompile>
-    <CudaCompile Include="System.GC.cu">
+    <CudaCompile Include="System.GC.c">
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">64</TargetMachinePlatform>
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">64</TargetMachinePlatform>
     </CudaCompile>
-    <CudaCompile Include="System.IO.FileInternal.cu">
+    <CudaCompile Include="System.IO.FileInternal.c">
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">64</TargetMachinePlatform>
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">64</TargetMachinePlatform>
     </CudaCompile>
-    <CudaCompile Include="System.Math.cu">
+    <CudaCompile Include="System.Math.c">
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">64</TargetMachinePlatform>
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">64</TargetMachinePlatform>
     </CudaCompile>
-    <CudaCompile Include="System.Net.Dns.cu">
+    <CudaCompile Include="System.Net.Dns.c">
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">64</TargetMachinePlatform>
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">64</TargetMachinePlatform>
     </CudaCompile>
-    <CudaCompile Include="System.Net.Sockets.Socket.cu">
+    <CudaCompile Include="System.Net.Sockets.Socket.c">
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">64</TargetMachinePlatform>
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">64</TargetMachinePlatform>
     </CudaCompile>
-    <CudaCompile Include="System.Object.cu">
+    <CudaCompile Include="System.Object.c">
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">64</TargetMachinePlatform>
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">64</TargetMachinePlatform>
     </CudaCompile>
-    <CudaCompile Include="System.Runtime.CompilerServices.RuntimeHelpers.cu">
+    <CudaCompile Include="System.Runtime.CompilerServices.RuntimeHelpers.c">
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">64</TargetMachinePlatform>
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">64</TargetMachinePlatform>
     </CudaCompile>
-    <CudaCompile Include="System.RuntimeType.cu">
+    <CudaCompile Include="System.RuntimeType.c">
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">64</TargetMachinePlatform>
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">64</TargetMachinePlatform>
     </CudaCompile>
-    <CudaCompile Include="System.String.cu">
+    <CudaCompile Include="System.String.c">
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">64</TargetMachinePlatform>
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">64</TargetMachinePlatform>
     </CudaCompile>
-    <CudaCompile Include="System.Threading.Interlocked.cu">
+    <CudaCompile Include="System.Threading.Interlocked.c">
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">64</TargetMachinePlatform>
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">64</TargetMachinePlatform>
     </CudaCompile>
-    <CudaCompile Include="System.Threading.Monitor.cu">
+    <CudaCompile Include="System.Threading.Monitor.c">
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">64</TargetMachinePlatform>
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">64</TargetMachinePlatform>
     </CudaCompile>
-    <CudaCompile Include="System.Threading.Thread.cu">
+    <CudaCompile Include="System.Threading.Thread.c">
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">64</TargetMachinePlatform>
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">64</TargetMachinePlatform>
     </CudaCompile>
-    <CudaCompile Include="System.Type.cu">
+    <CudaCompile Include="System.Type.c">
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">64</TargetMachinePlatform>
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">64</TargetMachinePlatform>
     </CudaCompile>
-    <CudaCompile Include="System.ValueType.cu">
+    <CudaCompile Include="System.ValueType.c">
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">64</TargetMachinePlatform>
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">64</TargetMachinePlatform>
     </CudaCompile>
-    <CudaCompile Include="System.WeakReference.cu">
+    <CudaCompile Include="System.WeakReference.c">
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">64</TargetMachinePlatform>
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">64</TargetMachinePlatform>
     </CudaCompile>
-    <CudaCompile Include="Thread.cu">
+    <CudaCompile Include="Thread.c">
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">64</TargetMachinePlatform>
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">64</TargetMachinePlatform>
     </CudaCompile>
-    <CudaCompile Include="Type.cu">
+    <CudaCompile Include="Type.c">
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">64</TargetMachinePlatform>
       <TargetMachinePlatform Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">64</TargetMachinePlatform>
     </CudaCompile>
-    <CudaCompile Include="Gvsnprintf.cu" />
+    <CudaCompile Include="Gvsnprintf.c" />
   </ItemGroup>
   <ItemGroup>
-    <CudaCompile Include="JIT.cu">
+    <CudaCompile Include="JIT.c">
       <FileType>Document</FileType>
     </CudaCompile>
-    <CudaCompile Include="JIT_Execute.cu">
+    <CudaCompile Include="JIT_Execute.c">
       <FileType>Document</FileType>
     </CudaCompile>
   </ItemGroup>

@@ -27,7 +27,7 @@
 #include "Types.h"
 #include "Type.h"
 
-/* __device__ */ tAsyncCall* System_Console_Write(PTR pThis_, PTR pParams, PTR pReturnValue) {
+__device__ tAsyncCall* System_Console_Write(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	HEAP_PTR string;
 	STRING2 str;
 	U32 i, strLen;
@@ -54,8 +54,8 @@
 	return NULL;
 }
 
-/* __device__ */ static U32 nextKeybC = 0xffffffff;
-/* __device__ */ static U32 Internal_ReadKey_Check(PTR pThis_, PTR pParams, PTR pReturnValue, tAsyncCall *pAsync) {
+__device__ static U32 nextKeybC = 0xffffffff;
+__device__ static U32 Internal_ReadKey_Check(PTR pThis_, PTR pParams, PTR pReturnValue, tAsyncCall *pAsync) {
 //	if (nextKeybC != 0xffffffff) {
 //		*(U32*)pReturnValue = nextKeybC;
 //		nextKeybC = 0xffffffff;
@@ -97,9 +97,8 @@
 	return 0;
 }
 
-/* __device__ */ tAsyncCall* System_Console_Internal_ReadKey(PTR pThis_, PTR pParams, PTR pReturnValue) {
+__device__ tAsyncCall* System_Console_Internal_ReadKey(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tAsyncCall *pAsync = TMALLOC(tAsyncCall);
-	memset(pAsync, 0, sizeof(tAsyncCall));
 
 	pAsync->sleepTime = -1;
 	pAsync->checkFn = Internal_ReadKey_Check;
@@ -108,7 +107,7 @@
 	return pAsync;
 }
 
-/* __device__ */ tAsyncCall* System_Console_Internal_KeyAvailable(PTR pThis_, PTR pParams, PTR pReturnValue) {
+__device__ tAsyncCall* System_Console_Internal_KeyAvailable(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	U32 c, isKey;
 
 	isKey = Internal_ReadKey_Check(NULL, NULL, (PTR)&c, NULL);
