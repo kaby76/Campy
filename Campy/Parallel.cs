@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -292,7 +293,8 @@ namespace Campy
 
                     stopwatch_compiler.Stop();
                     var elapse_compiler = stopwatch_compiler.Elapsed;
-
+                    var current_directory = Directory.GetCurrentDirectory();
+                    System.Console.WriteLine("Current directory " + current_directory);
                     Converter.CheckCudaError(Cuda.cuInit(0));
                     Converter.CheckCudaError(Cuda.cuDevicePrimaryCtxReset(0));
                     Converter.CheckCudaError(Cuda.cuCtxCreate_v2(out CUcontext pctx, 0, 0));
