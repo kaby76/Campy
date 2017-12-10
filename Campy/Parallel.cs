@@ -294,7 +294,10 @@ namespace Campy
                     var elapse_compiler = stopwatch_compiler.Elapsed;
 
                     Converter.CheckCudaError(Cuda.cuInit(0));
+                    Converter.CheckCudaError(Cuda.cuDevicePrimaryCtxReset(0));
                     Converter.CheckCudaError(Cuda.cuCtxCreate_v2(out CUcontext pctx, 0, 0));
+                    Converter.CheckCudaError(Cuda.cuMemGetInfo_v2(out ulong free_memory, out ulong total_memory));
+                    System.Console.WriteLine("total memory " + total_memory + " free memory " + free_memory);
                     Converter.CheckCudaError(Cuda.cuCtxGetLimit(out ulong pvalue, CUlimit.CU_LIMIT_STACK_SIZE));
                     Converter.CheckCudaError(Cuda.cuCtxSetLimit(CUlimit.CU_LIMIT_STACK_SIZE, (uint)pvalue*25));
                     System.Console.WriteLine("Stack size " + pvalue);
@@ -392,6 +395,8 @@ namespace Campy
 
                     stopwatch_deep_copy_back.Stop();
                     var elapse_deep_copy_back = stopwatch_deep_copy_back.Elapsed;
+
+                    Cuda.cuCtxDestroy_v2(pctx);
 
                     System.Console.WriteLine("discovery     " + elapse_discovery);
                     System.Console.WriteLine("compiler      " + elapse_compiler);
