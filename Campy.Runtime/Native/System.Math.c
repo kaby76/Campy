@@ -29,8 +29,6 @@
 
 __device__ tAsyncCall* System_Math_Sin(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	*(double*)pReturnValue = sin(INTERNALCALL_PARAM(0, double));
-	MetaData_Init();
-	Type_Init();
 	return NULL;
 }
 

@@ -11,16 +11,6 @@
 .address_size 64
 
 	// .weak	cudaMalloc
-.extern .func _Z13MetaData_Initv
-(
-
-)
-;
-.extern .func _Z9Type_Initv
-(
-
-)
-;
 .func  (.param .b64 func_retval0) __internal_trig_reduction_slowpathd
 (
 	.param .b64 __internal_trig_reduction_slowpathd_param_0,
@@ -321,39 +311,11 @@ BB6_4:
 
 BB6_6:
 	st.f64 	[%rd2], %fd52;
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:32 	MetaData_Init();
-	.loc 1 32 2
-	// Callseq Start 1
-	{
-	.reg .b32 temp_param_reg;
-	// <end>}
-	call.uni 
-	_Z13MetaData_Initv, 
-	(
-	);
-	
-	//{
-	}// Callseq End 1
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:33 	Type_Init();
-	.loc 1 33 2
-	// Callseq Start 2
-	{
-	.reg .b32 temp_param_reg;
-	// <end>}
-	call.uni 
-	_Z9Type_Initv, 
-	(
-	);
-	
-	//{
-	}// Callseq End 2
 	mov.u64 	%rd6, 0;
 	st.param.b64	[func_retval0+0], %rd6;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:34 	return NULL;
-	.loc 1 34 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:32 	return NULL;
+	.loc 1 32 2
 	ret;
 }
 
@@ -379,21 +341,21 @@ BB6_6:
 	ld.param.u64 	%rd2, [_Z15System_Math_CosPhS_S__param_2];
 	add.u64 	%rd4, %SP, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:38 	*(double*)pReturnValue = cos(INTERNALCALL_PARAM(0, double));
-	.loc 1 38 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:36 	*(double*)pReturnValue = cos(INTERNALCALL_PARAM(0, double));
+	.loc 1 36 2
 	cvta.to.local.u64 	%rd1, %rd4;
 	ld.f64 	%fd51, [%rd3];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:38 	*(double*)pReturnValue = cos(INTERNALCALL_PARAM(0, double));
-	.loc 1 38 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:36 	*(double*)pReturnValue = cos(INTERNALCALL_PARAM(0, double));
+	.loc 1 36 27
 	abs.f64 	%fd10, %fd51;
 	setp.neu.f64	%p1, %fd10, 0d7FF0000000000000;
 	@%p1 bra 	BB7_2;
 
 	mov.f64 	%fd11, 0d0000000000000000;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:38 	*(double*)pReturnValue = cos(INTERNALCALL_PARAM(0, double));
-	.loc 1 38 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:36 	*(double*)pReturnValue = cos(INTERNALCALL_PARAM(0, double));
+	.loc 1 36 27
 	mul.rn.f64 	%fd51, %fd51, %fd11;
 
 BB7_2:
@@ -404,18 +366,18 @@ BB7_2:
 	neg.f64 	%fd14, %fd13;
 	mov.f64 	%fd15, 0d3FF921FB54442D18;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:38 	*(double*)pReturnValue = cos(INTERNALCALL_PARAM(0, double));
-	.loc 1 38 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:36 	*(double*)pReturnValue = cos(INTERNALCALL_PARAM(0, double));
+	.loc 1 36 27
 	fma.rn.f64 	%fd16, %fd14, %fd15, %fd51;
 	mov.f64 	%fd17, 0d3C91A62633145C00;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:38 	*(double*)pReturnValue = cos(INTERNALCALL_PARAM(0, double));
-	.loc 1 38 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:36 	*(double*)pReturnValue = cos(INTERNALCALL_PARAM(0, double));
+	.loc 1 36 27
 	fma.rn.f64 	%fd18, %fd14, %fd17, %fd16;
 	mov.f64 	%fd19, 0d397B839A252049C0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:38 	*(double*)pReturnValue = cos(INTERNALCALL_PARAM(0, double));
-	.loc 1 38 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:36 	*(double*)pReturnValue = cos(INTERNALCALL_PARAM(0, double));
+	.loc 1 36 27
 	fma.rn.f64 	%fd52, %fd14, %fd19, %fd18;
 	{
 	.reg .b32 %temp; 
@@ -425,7 +387,7 @@ BB7_2:
 	setp.lt.u32	%p2, %r5, 1105199104;
 	@%p2 bra 	BB7_4;
 
-	// Callseq Start 3
+	// Callseq Start 1
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
@@ -443,7 +405,7 @@ BB7_2:
 	ld.param.f64	%fd52, [retval0+0];
 	
 	//{
-	}// Callseq End 3
+	}// Callseq End 1
 	ld.local.u32 	%r14, [%rd1];
 
 BB7_4:
@@ -451,69 +413,69 @@ BB7_4:
 	mov.f64 	%fd21, 0d3E21EEA7C1EF8528;
 	mov.f64 	%fd22, 0dBDA8FF8320FD8164;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:38 	*(double*)pReturnValue = cos(INTERNALCALL_PARAM(0, double));
-	.loc 1 38 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:36 	*(double*)pReturnValue = cos(INTERNALCALL_PARAM(0, double));
+	.loc 1 36 27
 	fma.rn.f64 	%fd23, %fd22, %fd20, %fd21;
 	mov.f64 	%fd24, 0dBE927E4F8E06E6D9;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:38 	*(double*)pReturnValue = cos(INTERNALCALL_PARAM(0, double));
-	.loc 1 38 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:36 	*(double*)pReturnValue = cos(INTERNALCALL_PARAM(0, double));
+	.loc 1 36 27
 	fma.rn.f64 	%fd25, %fd23, %fd20, %fd24;
 	mov.f64 	%fd26, 0d3EFA01A019DDBCE9;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:38 	*(double*)pReturnValue = cos(INTERNALCALL_PARAM(0, double));
-	.loc 1 38 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:36 	*(double*)pReturnValue = cos(INTERNALCALL_PARAM(0, double));
+	.loc 1 36 27
 	fma.rn.f64 	%fd27, %fd25, %fd20, %fd26;
 	mov.f64 	%fd28, 0dBF56C16C16C15D47;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:38 	*(double*)pReturnValue = cos(INTERNALCALL_PARAM(0, double));
-	.loc 1 38 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:36 	*(double*)pReturnValue = cos(INTERNALCALL_PARAM(0, double));
+	.loc 1 36 27
 	fma.rn.f64 	%fd29, %fd27, %fd20, %fd28;
 	mov.f64 	%fd30, 0d3FA5555555555551;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:38 	*(double*)pReturnValue = cos(INTERNALCALL_PARAM(0, double));
-	.loc 1 38 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:36 	*(double*)pReturnValue = cos(INTERNALCALL_PARAM(0, double));
+	.loc 1 36 27
 	fma.rn.f64 	%fd31, %fd29, %fd20, %fd30;
 	mov.f64 	%fd32, 0dBFE0000000000000;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:38 	*(double*)pReturnValue = cos(INTERNALCALL_PARAM(0, double));
-	.loc 1 38 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:36 	*(double*)pReturnValue = cos(INTERNALCALL_PARAM(0, double));
+	.loc 1 36 27
 	fma.rn.f64 	%fd33, %fd31, %fd20, %fd32;
 	mov.f64 	%fd34, 0d3FF0000000000000;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:38 	*(double*)pReturnValue = cos(INTERNALCALL_PARAM(0, double));
-	.loc 1 38 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:36 	*(double*)pReturnValue = cos(INTERNALCALL_PARAM(0, double));
+	.loc 1 36 27
 	fma.rn.f64 	%fd35, %fd33, %fd20, %fd34;
 	mov.f64 	%fd36, 0dBE5AE5F12CB0D246;
 	mov.f64 	%fd37, 0d3DE5DB65F9785EBA;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:38 	*(double*)pReturnValue = cos(INTERNALCALL_PARAM(0, double));
-	.loc 1 38 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:36 	*(double*)pReturnValue = cos(INTERNALCALL_PARAM(0, double));
+	.loc 1 36 27
 	fma.rn.f64 	%fd38, %fd37, %fd20, %fd36;
 	mov.f64 	%fd39, 0d3EC71DE369ACE392;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:38 	*(double*)pReturnValue = cos(INTERNALCALL_PARAM(0, double));
-	.loc 1 38 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:36 	*(double*)pReturnValue = cos(INTERNALCALL_PARAM(0, double));
+	.loc 1 36 27
 	fma.rn.f64 	%fd40, %fd38, %fd20, %fd39;
 	mov.f64 	%fd41, 0dBF2A01A019DB62A1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:38 	*(double*)pReturnValue = cos(INTERNALCALL_PARAM(0, double));
-	.loc 1 38 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:36 	*(double*)pReturnValue = cos(INTERNALCALL_PARAM(0, double));
+	.loc 1 36 27
 	fma.rn.f64 	%fd42, %fd40, %fd20, %fd41;
 	mov.f64 	%fd43, 0d3F81111111110818;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:38 	*(double*)pReturnValue = cos(INTERNALCALL_PARAM(0, double));
-	.loc 1 38 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:36 	*(double*)pReturnValue = cos(INTERNALCALL_PARAM(0, double));
+	.loc 1 36 27
 	fma.rn.f64 	%fd44, %fd42, %fd20, %fd43;
 	mov.f64 	%fd45, 0dBFC5555555555554;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:38 	*(double*)pReturnValue = cos(INTERNALCALL_PARAM(0, double));
-	.loc 1 38 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:36 	*(double*)pReturnValue = cos(INTERNALCALL_PARAM(0, double));
+	.loc 1 36 27
 	fma.rn.f64 	%fd46, %fd44, %fd20, %fd45;
 	mov.f64 	%fd47, 0d0000000000000000;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:38 	*(double*)pReturnValue = cos(INTERNALCALL_PARAM(0, double));
-	.loc 1 38 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:36 	*(double*)pReturnValue = cos(INTERNALCALL_PARAM(0, double));
+	.loc 1 36 27
 	fma.rn.f64 	%fd48, %fd46, %fd20, %fd47;
 	fma.rn.f64 	%fd49, %fd48, %fd52, %fd52;
 	{
@@ -550,8 +512,8 @@ BB7_6:
 	mov.u64 	%rd6, 0;
 	st.param.b64	[func_retval0+0], %rd6;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:40 	return NULL;
-	.loc 1 40 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:38 	return NULL;
+	.loc 1 38 2
 	ret;
 }
 
@@ -577,21 +539,21 @@ BB7_6:
 	ld.param.u64 	%rd2, [_Z15System_Math_TanPhS_S__param_2];
 	add.u64 	%rd4, %SP, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:44 	*(double*)pReturnValue = tan(INTERNALCALL_PARAM(0, double));
-	.loc 1 44 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:42 	*(double*)pReturnValue = tan(INTERNALCALL_PARAM(0, double));
+	.loc 1 42 2
 	cvta.to.local.u64 	%rd1, %rd4;
 	ld.f64 	%fd63, [%rd3];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:44 	*(double*)pReturnValue = tan(INTERNALCALL_PARAM(0, double));
-	.loc 1 44 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:42 	*(double*)pReturnValue = tan(INTERNALCALL_PARAM(0, double));
+	.loc 1 42 27
 	abs.f64 	%fd11, %fd63;
 	setp.neu.f64	%p1, %fd11, 0d7FF0000000000000;
 	@%p1 bra 	BB8_2;
 
 	mov.f64 	%fd12, 0d0000000000000000;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:44 	*(double*)pReturnValue = tan(INTERNALCALL_PARAM(0, double));
-	.loc 1 44 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:42 	*(double*)pReturnValue = tan(INTERNALCALL_PARAM(0, double));
+	.loc 1 42 27
 	mul.rn.f64 	%fd63, %fd63, %fd12;
 
 BB8_2:
@@ -602,18 +564,18 @@ BB8_2:
 	neg.f64 	%fd15, %fd14;
 	mov.f64 	%fd16, 0d3FF921FB54442D18;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:44 	*(double*)pReturnValue = tan(INTERNALCALL_PARAM(0, double));
-	.loc 1 44 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:42 	*(double*)pReturnValue = tan(INTERNALCALL_PARAM(0, double));
+	.loc 1 42 27
 	fma.rn.f64 	%fd17, %fd15, %fd16, %fd63;
 	mov.f64 	%fd18, 0d3C91A62633145C00;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:44 	*(double*)pReturnValue = tan(INTERNALCALL_PARAM(0, double));
-	.loc 1 44 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:42 	*(double*)pReturnValue = tan(INTERNALCALL_PARAM(0, double));
+	.loc 1 42 27
 	fma.rn.f64 	%fd19, %fd15, %fd18, %fd17;
 	mov.f64 	%fd20, 0d397B839A252049C0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:44 	*(double*)pReturnValue = tan(INTERNALCALL_PARAM(0, double));
-	.loc 1 44 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:42 	*(double*)pReturnValue = tan(INTERNALCALL_PARAM(0, double));
+	.loc 1 42 27
 	fma.rn.f64 	%fd64, %fd15, %fd20, %fd19;
 	{
 	.reg .b32 %temp; 
@@ -623,7 +585,7 @@ BB8_2:
 	setp.lt.u32	%p2, %r5, 1105199104;
 	@%p2 bra 	BB8_4;
 
-	// Callseq Start 4
+	// Callseq Start 2
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
@@ -641,7 +603,7 @@ BB8_2:
 	ld.param.f64	%fd64, [retval0+0];
 	
 	//{
-	}// Callseq End 4
+	}// Callseq End 2
 	ld.local.u32 	%r7, [%rd1];
 
 BB8_4:
@@ -649,73 +611,73 @@ BB8_4:
 	mov.f64 	%fd22, 0dBEF9757C5B27EBB1;
 	mov.f64 	%fd23, 0d3EE48DAC2799BCB9;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:44 	*(double*)pReturnValue = tan(INTERNALCALL_PARAM(0, double));
-	.loc 1 44 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:42 	*(double*)pReturnValue = tan(INTERNALCALL_PARAM(0, double));
+	.loc 1 42 27
 	fma.rn.f64 	%fd24, %fd23, %fd21, %fd22;
 	mov.f64 	%fd25, 0d3F0980E90FD91E04;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:44 	*(double*)pReturnValue = tan(INTERNALCALL_PARAM(0, double));
-	.loc 1 44 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:42 	*(double*)pReturnValue = tan(INTERNALCALL_PARAM(0, double));
+	.loc 1 42 27
 	fma.rn.f64 	%fd26, %fd24, %fd21, %fd25;
 	mov.f64 	%fd27, 0dBEFAE2B0417D7E1D;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:44 	*(double*)pReturnValue = tan(INTERNALCALL_PARAM(0, double));
-	.loc 1 44 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:42 	*(double*)pReturnValue = tan(INTERNALCALL_PARAM(0, double));
+	.loc 1 42 27
 	fma.rn.f64 	%fd28, %fd26, %fd21, %fd27;
 	mov.f64 	%fd29, 0d3F119F5341BFBA57;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:44 	*(double*)pReturnValue = tan(INTERNALCALL_PARAM(0, double));
-	.loc 1 44 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:42 	*(double*)pReturnValue = tan(INTERNALCALL_PARAM(0, double));
+	.loc 1 42 27
 	fma.rn.f64 	%fd30, %fd28, %fd21, %fd29;
 	mov.f64 	%fd31, 0d3F15E791A00F6919;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:44 	*(double*)pReturnValue = tan(INTERNALCALL_PARAM(0, double));
-	.loc 1 44 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:42 	*(double*)pReturnValue = tan(INTERNALCALL_PARAM(0, double));
+	.loc 1 42 27
 	fma.rn.f64 	%fd32, %fd30, %fd21, %fd31;
 	mov.f64 	%fd33, 0d3F2FF2E7FADEC73A;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:44 	*(double*)pReturnValue = tan(INTERNALCALL_PARAM(0, double));
-	.loc 1 44 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:42 	*(double*)pReturnValue = tan(INTERNALCALL_PARAM(0, double));
+	.loc 1 42 27
 	fma.rn.f64 	%fd34, %fd32, %fd21, %fd33;
 	mov.f64 	%fd35, 0d3F434BC1B206DA62;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:44 	*(double*)pReturnValue = tan(INTERNALCALL_PARAM(0, double));
-	.loc 1 44 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:42 	*(double*)pReturnValue = tan(INTERNALCALL_PARAM(0, double));
+	.loc 1 42 27
 	fma.rn.f64 	%fd36, %fd34, %fd21, %fd35;
 	mov.f64 	%fd37, 0d3F57DB18EF2F83F9;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:44 	*(double*)pReturnValue = tan(INTERNALCALL_PARAM(0, double));
-	.loc 1 44 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:42 	*(double*)pReturnValue = tan(INTERNALCALL_PARAM(0, double));
+	.loc 1 42 27
 	fma.rn.f64 	%fd38, %fd36, %fd21, %fd37;
 	mov.f64 	%fd39, 0d3F6D6D2E7AE49FBC;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:44 	*(double*)pReturnValue = tan(INTERNALCALL_PARAM(0, double));
-	.loc 1 44 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:42 	*(double*)pReturnValue = tan(INTERNALCALL_PARAM(0, double));
+	.loc 1 42 27
 	fma.rn.f64 	%fd40, %fd38, %fd21, %fd39;
 	mov.f64 	%fd41, 0d3F8226E3A816A776;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:44 	*(double*)pReturnValue = tan(INTERNALCALL_PARAM(0, double));
-	.loc 1 44 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:42 	*(double*)pReturnValue = tan(INTERNALCALL_PARAM(0, double));
+	.loc 1 42 27
 	fma.rn.f64 	%fd42, %fd40, %fd21, %fd41;
 	mov.f64 	%fd43, 0d3F9664F485D25660;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:44 	*(double*)pReturnValue = tan(INTERNALCALL_PARAM(0, double));
-	.loc 1 44 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:42 	*(double*)pReturnValue = tan(INTERNALCALL_PARAM(0, double));
+	.loc 1 42 27
 	fma.rn.f64 	%fd44, %fd42, %fd21, %fd43;
 	mov.f64 	%fd45, 0d3FABA1BA1BABF31D;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:44 	*(double*)pReturnValue = tan(INTERNALCALL_PARAM(0, double));
-	.loc 1 44 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:42 	*(double*)pReturnValue = tan(INTERNALCALL_PARAM(0, double));
+	.loc 1 42 27
 	fma.rn.f64 	%fd46, %fd44, %fd21, %fd45;
 	mov.f64 	%fd47, 0d3FC11111111105D2;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:44 	*(double*)pReturnValue = tan(INTERNALCALL_PARAM(0, double));
-	.loc 1 44 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:42 	*(double*)pReturnValue = tan(INTERNALCALL_PARAM(0, double));
+	.loc 1 42 27
 	fma.rn.f64 	%fd48, %fd46, %fd21, %fd47;
 	mov.f64 	%fd49, 0d3FD555555555555E;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:44 	*(double*)pReturnValue = tan(INTERNALCALL_PARAM(0, double));
-	.loc 1 44 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:42 	*(double*)pReturnValue = tan(INTERNALCALL_PARAM(0, double));
+	.loc 1 42 27
 	fma.rn.f64 	%fd50, %fd48, %fd21, %fd49;
 	mul.f64 	%fd7, %fd21, %fd50;
 	fma.rn.f64 	%fd65, %fd7, %fd64, %fd64;
@@ -732,8 +694,8 @@ BB8_5:
 	rcp.approx.ftz.f64 	%fd55, %fd65;
 	mov.f64 	%fd56, 0d3FF0000000000000;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:44 	*(double*)pReturnValue = tan(INTERNALCALL_PARAM(0, double));
-	.loc 1 44 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:42 	*(double*)pReturnValue = tan(INTERNALCALL_PARAM(0, double));
+	.loc 1 42 27
 	fma.rn.f64 	%fd57, %fd54, %fd55, %fd56;
 	fma.rn.f64 	%fd58, %fd57, %fd57, %fd57;
 	fma.rn.f64 	%fd59, %fd58, %fd55, %fd55;
@@ -747,8 +709,8 @@ BB8_6:
 	mov.u64 	%rd6, 0;
 	st.param.b64	[func_retval0+0], %rd6;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:46 	return NULL;
-	.loc 1 46 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:44 	return NULL;
+	.loc 1 44 2
 	ret;
 }
 
@@ -768,23 +730,23 @@ BB8_6:
 	ld.param.u64 	%rd2, [_Z15System_Math_PowPhS_S__param_1];
 	ld.param.u64 	%rd1, [_Z15System_Math_PowPhS_S__param_2];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:50 	*(double*)pReturnValue = pow(INTERNALCALL_PARAM(0, double), INTERNALCALL_PARAM(8, double));
-	.loc 1 50 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:48 	*(double*)pReturnValue = pow(INTERNALCALL_PARAM(0, double), INTERNALCALL_PARAM(8, double));
+	.loc 1 48 2
 	ld.f64 	%fd1, [%rd2];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:50 	*(double*)pReturnValue = pow(INTERNALCALL_PARAM(0, double), INTERNALCALL_PARAM(8, double));
-	.loc 1 50 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:48 	*(double*)pReturnValue = pow(INTERNALCALL_PARAM(0, double), INTERNALCALL_PARAM(8, double));
+	.loc 1 48 27
 	{
 	.reg .b32 %temp; 
 	mov.b64 	{%temp, %r1}, %fd1;
 	}
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:50 	*(double*)pReturnValue = pow(INTERNALCALL_PARAM(0, double), INTERNALCALL_PARAM(8, double));
-	.loc 1 50 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:48 	*(double*)pReturnValue = pow(INTERNALCALL_PARAM(0, double), INTERNALCALL_PARAM(8, double));
+	.loc 1 48 2
 	ld.f64 	%fd2, [%rd2+8];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:50 	*(double*)pReturnValue = pow(INTERNALCALL_PARAM(0, double), INTERNALCALL_PARAM(8, double));
-	.loc 1 50 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:48 	*(double*)pReturnValue = pow(INTERNALCALL_PARAM(0, double), INTERNALCALL_PARAM(8, double));
+	.loc 1 48 27
 	{
 	.reg .b32 %temp; 
 	mov.b64 	{%temp, %r2}, %fd2;
@@ -795,7 +757,7 @@ BB8_6:
 	shl.b64 	%rd4, %rd3, %r4;
 	setp.eq.s64	%p2, %rd4, -9223372036854775808;
 	abs.f64 	%fd3, %fd1;
-	// Callseq Start 5
+	// Callseq Start 3
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
@@ -813,7 +775,7 @@ BB8_6:
 	ld.param.f64	%fd18, [retval0+0];
 	
 	//{
-	}// Callseq End 5
+	}// Callseq End 3
 	setp.lt.s32	%p3, %r1, 0;
 	and.pred  	%p1, %p3, %p2;
 	@!%p1 bra 	BB9_2;
@@ -838,8 +800,8 @@ BB9_2:
 
 BB9_5:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:50 	*(double*)pReturnValue = pow(INTERNALCALL_PARAM(0, double), INTERNALCALL_PARAM(8, double));
-	.loc 1 50 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:48 	*(double*)pReturnValue = pow(INTERNALCALL_PARAM(0, double), INTERNALCALL_PARAM(8, double));
+	.loc 1 48 27
 	bfe.u32 	%r8, %r2, 20, 11;
 	add.s32 	%r9, %r8, -1012;
 	shl.b64 	%rd6, %rd3, %r9;
@@ -850,15 +812,15 @@ BB9_5:
 	selp.b32	%r12, %r11, %r10, %p8;
 	mov.u32 	%r13, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:50 	*(double*)pReturnValue = pow(INTERNALCALL_PARAM(0, double), INTERNALCALL_PARAM(8, double));
-	.loc 1 50 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:48 	*(double*)pReturnValue = pow(INTERNALCALL_PARAM(0, double), INTERNALCALL_PARAM(8, double));
+	.loc 1 48 27
 	mov.b64 	%fd18, {%r13, %r12};
 	bra.uni 	BB9_6;
 
 BB9_3:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:50 	*(double*)pReturnValue = pow(INTERNALCALL_PARAM(0, double), INTERNALCALL_PARAM(8, double));
-	.loc 1 50 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:48 	*(double*)pReturnValue = pow(INTERNALCALL_PARAM(0, double), INTERNALCALL_PARAM(8, double));
+	.loc 1 48 27
 	setp.gt.s32	%p5, %r1, -1;
 	@%p5 bra 	BB9_6;
 
@@ -877,8 +839,8 @@ BB9_6:
 	@%p9 bra 	BB9_7;
 
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:50 	*(double*)pReturnValue = pow(INTERNALCALL_PARAM(0, double), INTERNALCALL_PARAM(8, double));
-	.loc 1 50 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:48 	*(double*)pReturnValue = pow(INTERNALCALL_PARAM(0, double), INTERNALCALL_PARAM(8, double));
+	.loc 1 48 27
 	setp.gtu.f64	%p10, %fd3, 0d7FF0000000000000;
 	@%p10 bra 	BB9_14;
 
@@ -892,8 +854,8 @@ BB9_6:
 
 BB9_13:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:50 	*(double*)pReturnValue = pow(INTERNALCALL_PARAM(0, double), INTERNALCALL_PARAM(8, double));
-	.loc 1 50 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:48 	*(double*)pReturnValue = pow(INTERNALCALL_PARAM(0, double), INTERNALCALL_PARAM(8, double));
+	.loc 1 48 27
 	setp.gt.f64	%p14, %fd3, 0d3FF0000000000000;
 	selp.b32	%r22, 2146435072, 0, %p14;
 	xor.b32  	%r23, %r22, 2146435072;
@@ -903,8 +865,8 @@ BB9_13:
 	selp.b32	%r25, 1072693248, %r24, %p16;
 	mov.u32 	%r26, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:50 	*(double*)pReturnValue = pow(INTERNALCALL_PARAM(0, double), INTERNALCALL_PARAM(8, double));
-	.loc 1 50 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:48 	*(double*)pReturnValue = pow(INTERNALCALL_PARAM(0, double), INTERNALCALL_PARAM(8, double));
+	.loc 1 48 27
 	mov.b64 	%fd19, {%r26, %r25};
 	bra.uni 	BB9_14;
 
@@ -913,8 +875,8 @@ BB9_7:
 
 BB9_14:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:50 	*(double*)pReturnValue = pow(INTERNALCALL_PARAM(0, double), INTERNALCALL_PARAM(8, double));
-	.loc 1 50 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:48 	*(double*)pReturnValue = pow(INTERNALCALL_PARAM(0, double), INTERNALCALL_PARAM(8, double));
+	.loc 1 48 27
 	setp.eq.f64	%p17, %fd2, 0d0000000000000000;
 	setp.eq.f64	%p18, %fd1, 0d3FF0000000000000;
 	or.pred  	%p19, %p18, %p17;
@@ -923,14 +885,14 @@ BB9_14:
 	mov.u64 	%rd7, 0;
 	st.param.b64	[func_retval0+0], %rd7;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:52 	return NULL;
-	.loc 1 52 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:50 	return NULL;
+	.loc 1 50 2
 	ret;
 
 BB9_11:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:50 	*(double*)pReturnValue = pow(INTERNALCALL_PARAM(0, double), INTERNALCALL_PARAM(8, double));
-	.loc 1 50 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:48 	*(double*)pReturnValue = pow(INTERNALCALL_PARAM(0, double), INTERNALCALL_PARAM(8, double));
+	.loc 1 48 27
 	setp.neu.f64	%p13, %fd3, 0d7FF0000000000000;
 	mov.f64 	%fd19, %fd18;
 	@%p13 bra 	BB9_14;
@@ -942,8 +904,8 @@ BB9_11:
 	selp.b32	%r20, %r19, %r18, %p1;
 	mov.u32 	%r21, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:50 	*(double*)pReturnValue = pow(INTERNALCALL_PARAM(0, double), INTERNALCALL_PARAM(8, double));
-	.loc 1 50 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:48 	*(double*)pReturnValue = pow(INTERNALCALL_PARAM(0, double), INTERNALCALL_PARAM(8, double));
+	.loc 1 48 27
 	mov.b64 	%fd19, {%r21, %r20};
 	bra.uni 	BB9_14;
 }
@@ -962,19 +924,19 @@ BB9_11:
 	ld.param.u64 	%rd1, [_Z16System_Math_SqrtPhS_S__param_1];
 	ld.param.u64 	%rd2, [_Z16System_Math_SqrtPhS_S__param_2];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:56 	*(double*)pReturnValue = sqrt(INTERNALCALL_PARAM(0, double));
-	.loc 1 56 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:54 	*(double*)pReturnValue = sqrt(INTERNALCALL_PARAM(0, double));
+	.loc 1 54 2
 	ld.f64 	%fd1, [%rd1];
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:56 	*(double*)pReturnValue = sqrt(INTERNALCALL_PARAM(0, double));
-	.loc 1 56 27
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:54 	*(double*)pReturnValue = sqrt(INTERNALCALL_PARAM(0, double));
+	.loc 1 54 27
 	sqrt.rn.f64 	%fd2, %fd1;
 	st.f64 	[%rd2], %fd2;
 	mov.u64 	%rd3, 0;
 	st.param.b64	[func_retval0+0], %rd3;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:58 	return NULL;
-	.loc 1 58 2
+//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c:56 	return NULL;
+	.loc 1 56 2
 	ret;
 }
 
@@ -1454,6 +1416,6 @@ BB12_9:
 	ret;
 }
 
-	.file	1 "C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c", 1512786660, 2177
+	.file	1 "C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/System.Math.c", 1512940989, 2143
 	.file	2 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v9.0\\include\\cuda_device_runtime_api.h", 1504359958, 14836
 
