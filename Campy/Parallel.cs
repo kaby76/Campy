@@ -26,7 +26,52 @@ namespace Campy
             _importer = new Importer();
             _graph = _importer.Cfg;
             _converter = new Campy.Compiler.Converter(_graph);
-           // var ok = GC.TryStartNoGCRegion(200000000);
+            InitCuda();
+            // var ok = GC.TryStartNoGCRegion(200000000);
+        }
+
+        private void InitCuda()
+        {
+            Converter.CheckCudaError(Cuda.cuInit(0));
+            Converter.CheckCudaError(Cuda.cuDevicePrimaryCtxReset(0));
+            Converter.CheckCudaError(Cuda.cuCtxCreate_v2(out CUcontext pctx, 0, 0));
+            Converter.CheckCudaError(Cuda.cuCtxGetLimit(out ulong pvalue, CUlimit.CU_LIMIT_STACK_SIZE));
+            Converter.CheckCudaError(Cuda.cuCtxSetLimit(CUlimit.CU_LIMIT_STACK_SIZE, (uint)pvalue * 25));
+            System.Console.WriteLine("Stack size " + pvalue);
+            _converter.InitializeRuntime();
+            _converter.RuntimeModule = _converter.InitializeModule(_converter.RuntimeCubinImage);
+
+            CUmodule module = _converter.RuntimeModule;
+            CUfunction meta_data_init = _converter.MetaDataInit(module);
+            MakeLinearTiling(1, out dim3 tile_size, out dim3 tiles);
+            var res = Cuda.cuLaunchKernel(
+                meta_data_init,
+                tiles.x, tiles.y, tiles.z, // grid has one block.
+                tile_size.x, tile_size.y, tile_size.z, // n threads.
+                0, // no shared memory
+                default(CUstream),
+                (IntPtr)IntPtr.Zero,
+                (IntPtr)IntPtr.Zero
+            );
+            Converter.CheckCudaError(res);
+            res = Cuda.cuCtxSynchronize(); // Make sure it's copied back to host.
+            Converter.CheckCudaError(res);
+            CUfunction type_init = _converter.TypeInit(module);
+            res = Cuda.cuLaunchKernel(
+                type_init,
+                tiles.x, tiles.y, tiles.z, // grid has one block.
+                tile_size.x, tile_size.y, tile_size.z, // n threads.
+                0, // no shared memory
+                default(CUstream),
+                (IntPtr)IntPtr.Zero,
+                (IntPtr)IntPtr.Zero
+            );
+            Converter.CheckCudaError(res);
+            res = Cuda.cuCtxSynchronize(); // Make sure it's copied back to host.
+            Converter.CheckCudaError(res);
+
+            // Now reset the stack size.
+            Converter.CheckCudaError(Cuda.cuCtxSetLimit(CUlimit.CU_LIMIT_STACK_SIZE, (uint)pvalue));
         }
 
         public static Parallel Singleton()
@@ -37,9 +82,6 @@ namespace Campy
             }
             return _singleton;
         }
-
-        [DllImport("kernel32.dll", EntryPoint = "CopyMemory", SetLastError = false)]
-        public static extern void CopyMemory(IntPtr dest, IntPtr src, uint count);
 
         public static void For(int number_of_threads, KernelType kernel)
         {
@@ -128,10 +170,7 @@ namespace Campy
                     string ptx = Singleton()._converter.CompileToLLVM(cs, list_of_mono_data_types_used,
                         bb.Name, inclusive_start);
 
-                    Converter.CheckCudaError(Cuda.cuInit(0));
                     Converter.CheckCudaError(Cuda.cuCtxGetCurrent(out CUcontext pctx));
-                    
-
 
                     var ptr_to_kernel = Singleton()._converter.GetCudaFunction(bb.Name, ptx);
 
@@ -295,13 +334,10 @@ namespace Campy
                     var elapse_compiler = stopwatch_compiler.Elapsed;
                     var current_directory = Directory.GetCurrentDirectory();
                     System.Console.WriteLine("Current directory " + current_directory);
-                    Converter.CheckCudaError(Cuda.cuInit(0));
-                    Converter.CheckCudaError(Cuda.cuDevicePrimaryCtxReset(0));
-                    Converter.CheckCudaError(Cuda.cuCtxCreate_v2(out CUcontext pctx, 0, 0));
+
                     Converter.CheckCudaError(Cuda.cuMemGetInfo_v2(out ulong free_memory, out ulong total_memory));
                     System.Console.WriteLine("total memory " + total_memory + " free memory " + free_memory);
                     Converter.CheckCudaError(Cuda.cuCtxGetLimit(out ulong pvalue, CUlimit.CU_LIMIT_STACK_SIZE));
-                    Converter.CheckCudaError(Cuda.cuCtxSetLimit(CUlimit.CU_LIMIT_STACK_SIZE, (uint)pvalue*25));
                     System.Console.WriteLine("Stack size " + pvalue);
                     var stopwatch_cuda_compile = new Stopwatch();
                     stopwatch_cuda_compile.Reset();
@@ -397,8 +433,6 @@ namespace Campy
 
                     stopwatch_deep_copy_back.Stop();
                     var elapse_deep_copy_back = stopwatch_deep_copy_back.Elapsed;
-
-                    Cuda.cuCtxDestroy_v2(pctx);
 
                     System.Console.WriteLine("discovery     " + elapse_discovery);
                     System.Console.WriteLine("compiler      " + elapse_compiler);

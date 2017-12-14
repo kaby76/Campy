@@ -847,7 +847,7 @@ BB10_6:
 }
 
 	// .globl	_Z13MetaData_Initv
-.visible .func _Z13MetaData_Initv(
+.visible .entry _Z13MetaData_Initv(
 
 )
 {

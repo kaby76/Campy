@@ -1722,39 +1722,272 @@ namespace Campy.Compiler
             //CheckCudaError(res);
 
             // Add in all of the GPU BCL runtime required.
+		    uint num_ops_link = 5;
+		    var op_link = new CUjit_option[num_ops_link];
+		    ulong[] op_values_link = new ulong[num_ops_link];
+
+		    int size = 1024 * 100;
+		    op_link[0] = CUjit_option.CU_JIT_INFO_LOG_BUFFER_SIZE_BYTES;
+		    op_values_link[0] = (ulong)size;
+
+		    op_link[1] = CUjit_option.CU_JIT_INFO_LOG_BUFFER;
+		    byte[] info_log_buffer = new byte[size];
+		    var info_log_buffer_handle = GCHandle.Alloc(info_log_buffer, GCHandleType.Pinned);
+		    var info_log_buffer_intptr = info_log_buffer_handle.AddrOfPinnedObject();
+		    op_values_link[1] = (ulong)info_log_buffer_intptr;
+
+		    op_link[2] = CUjit_option.CU_JIT_ERROR_LOG_BUFFER_SIZE_BYTES;
+		    op_values_link[2] = (ulong)size;
+
+		    op_link[3] = CUjit_option.CU_JIT_ERROR_LOG_BUFFER;
+		    byte[] error_log_buffer = new byte[size];
+		    var error_log_buffer_handle = GCHandle.Alloc(error_log_buffer, GCHandleType.Pinned);
+		    var error_log_buffer_intptr = error_log_buffer_handle.AddrOfPinnedObject();
+		    op_values_link[3] = (ulong)error_log_buffer_intptr;
+
+		    op_link[4] = CUjit_option.CU_JIT_LOG_VERBOSE;
+		    op_values_link[4] = (ulong)1;
+
+            //op_link[5] = CUjit_option.CU_JIT_TARGET;
+            //op_values_link[5] = (ulong)CUjit_target.CU_TARGET_COMPUTE_35;
+
+            var op_values_link_handle = GCHandle.Alloc(op_values_link, GCHandleType.Pinned);
+		    var op_values_link_intptr = op_values_link_handle.AddrOfPinnedObject();
+		    res = Cuda.cuLinkCreate_v2(num_ops_link, op_link, op_values_link_intptr, out CUlinkState linkState);
+		    CheckCudaError(res);
+
+
+            IntPtr ptr = Marshal.StringToHGlobalAnsi(ptx);
             CUjit_option[] op = new CUjit_option[0];
-            res = Cuda.cuLinkCreate_v2(0, op, IntPtr.Zero, out CUlinkState linkState);
+            ulong[] op_values = new ulong[0];
+            var op_values_handle = GCHandle.Alloc(op_values, GCHandleType.Pinned);
+            var op_values_intptr = op_values_handle.AddrOfPinnedObject();
+            res = Cuda.cuLinkAddData_v2(linkState, CUjitInputType.CU_JIT_INPUT_PTX, ptr, (uint)ptx.Length, "", 0, op, op_values_intptr);
+            {
+                string info = Marshal.PtrToStringAnsi(info_log_buffer_intptr);
+                System.Console.WriteLine(info);
+                string error = Marshal.PtrToStringAnsi(error_log_buffer_intptr);
+                System.Console.WriteLine(error);
+            }
             CheckCudaError(res);
+
+
+            res = Cuda.cuLinkAddData_v2(linkState, CUjitInputType.CU_JIT_INPUT_LIBRARY, RuntimeCubinImage, (uint)RuntimeCubinImageSize, "", 0, op, op_values_intptr);
+            {
+                string info = Marshal.PtrToStringAnsi(info_log_buffer_intptr);
+                System.Console.WriteLine(info);
+                string error = Marshal.PtrToStringAnsi(error_log_buffer_intptr);
+                System.Console.WriteLine(error);
+            }
+            CheckCudaError(res);
+
+            IntPtr image;
+            res = Cuda.cuLinkComplete(linkState, out image, out ulong sz);
+            {
+                string info = Marshal.PtrToStringAnsi(info_log_buffer_intptr);
+                System.Console.WriteLine(info);
+                string error = Marshal.PtrToStringAnsi(error_log_buffer_intptr);
+                System.Console.WriteLine(error);
+            }
+            CheckCudaError(res);
+
+            CUmodule module = InitializeModule(image);
+
+                //res = Cuda.cuModuleLoadData(out CUmodule cuModule, ptr);
+                //CheckCudaError(res);
+                var normalized_method_name = Converter.RenameToLegalLLVMName(Converter.MethodName(basic_block.ExpectedCalleeSignature));
+                res = Cuda.cuModuleGetFunction(out CUfunction helloWorld, module, normalized_method_name);
+                CheckCudaError(res);
+                return helloWorld;
+        }
+
+
+
+        public void InitializeRuntime()
+        {
+            //CUjit_option[] op = new CUjit_option[0];
+            //var res = Cuda.cuLinkCreate_v2(0, op, IntPtr.Zero, out CUlinkState linkState);
+            //CheckCudaError(res);
+            //var assembly = Assembly.GetAssembly(this.GetType());
+            //var resource_names = assembly.GetManifestResourceNames();
+            //foreach (var resource_name in resource_names)
+            //{
+            //    using (Stream stream = assembly.GetManifestResourceStream(resource_name))
+            //    using (StreamReader reader = new StreamReader(stream))
+            //    {
+            //        string gpu_bcl_ptx = reader.ReadToEnd();
+            //        IntPtr ptr2 = Marshal.StringToHGlobalAnsi(gpu_bcl_ptx);
+            //        res = Cuda.cuLinkAddData_v2(linkState, CUjitInputType.CU_JIT_INPUT_PTX, ptr2, (uint)gpu_bcl_ptx.Length, "", 0, op, IntPtr.Zero);
+            //        CheckCudaError(res);
+            //    }
+            //}
+
+            //IntPtr image;
+            //res = Cuda.cuLinkComplete(linkState, out image, out ulong sz);
+            //CheckCudaError(res);
+            //res = Cuda.cuModuleLoadDataEx(out CUmodule module, image, 0, op, IntPtr.Zero);
+            //CheckCudaError(res);
+
+            CUresult res = CUresult.CUDA_SUCCESS;
+            //res = Cuda.cuDeviceGet(out int device, 0);
+            //CheckCudaError(res);
+            //res = Cuda.cuDeviceGetPCIBusId(out string pciBusId, 100, device);
+            //CheckCudaError(res);
+            //res = Cuda.cuDeviceGetName(out string name, 100, device);
+            //CheckCudaError(res);
+            //// Create a link image.
+            //CUlinkState linkState;
+
+            uint num_ops_link = 5;
+            var op_link = new CUjit_option[num_ops_link];
+            ulong[] op_values_link = new ulong[num_ops_link];
+
+            int size = 1024 * 100;
+            op_link[0] = CUjit_option.CU_JIT_INFO_LOG_BUFFER_SIZE_BYTES;
+            op_values_link[0] = (ulong)size;
+
+            op_link[1] = CUjit_option.CU_JIT_INFO_LOG_BUFFER;
+            byte[] info_log_buffer = new byte[size];
+            var info_log_buffer_handle = GCHandle.Alloc(info_log_buffer, GCHandleType.Pinned);
+            var info_log_buffer_intptr = info_log_buffer_handle.AddrOfPinnedObject();
+            op_values_link[1] = (ulong)info_log_buffer_intptr;
+
+            op_link[2] = CUjit_option.CU_JIT_ERROR_LOG_BUFFER_SIZE_BYTES;
+            op_values_link[2] = (ulong)size;
+
+            op_link[3] = CUjit_option.CU_JIT_ERROR_LOG_BUFFER;
+            byte[] error_log_buffer = new byte[size];
+            var error_log_buffer_handle = GCHandle.Alloc(error_log_buffer, GCHandleType.Pinned);
+            var error_log_buffer_intptr = error_log_buffer_handle.AddrOfPinnedObject();
+            op_values_link[3] = (ulong)error_log_buffer_intptr;
+
+            op_link[4] = CUjit_option.CU_JIT_LOG_VERBOSE;
+            op_values_link[4] = (ulong)1;
+
+            //op_link[5] = CUjit_option.CU_JIT_TARGET;
+            //op_values_link[5] = (ulong)CUjit_target.CU_TARGET_COMPUTE_35;
+
+            var op_values_link_handle = GCHandle.Alloc(op_values_link, GCHandleType.Pinned);
+            var op_values_link_intptr = op_values_link_handle.AddrOfPinnedObject();
+            res = Cuda.cuLinkCreate_v2(num_ops_link, op_link, op_values_link_intptr, out CUlinkState linkState);
+            CheckCudaError(res);
+            //linkState = outLinkState;
+
+            // Add in all of the GPU BCL runtime required.
             var assembly = Assembly.GetAssembly(this.GetType());
             var resource_names = assembly.GetManifestResourceNames();
+            uint num_ops = 0;
+            var op = new CUjit_option[num_ops];
+            var op_values = new ulong[num_ops];
+            var op_values_handle = GCHandle.Alloc(op_values, GCHandleType.Pinned);
+            var op_values_intptr = op_values_handle.AddrOfPinnedObject();
             foreach (var resource_name in resource_names)
             {
                 using (Stream stream = assembly.GetManifestResourceStream(resource_name))
                 using (StreamReader reader = new StreamReader(stream))
                 {
                     string gpu_bcl_ptx = reader.ReadToEnd();
-                    IntPtr ptr2 = Marshal.StringToHGlobalAnsi(gpu_bcl_ptx);
-                    res = Cuda.cuLinkAddData_v2(linkState, CUjitInputType.CU_JIT_INPUT_PTX, ptr2, (uint)gpu_bcl_ptx.Length, "", 0, op, IntPtr.Zero);
+                    //gpu_bcl_ptx = gpu_bcl_ptx.Replace("\r", "");
+                    int len = gpu_bcl_ptx.Count();
+                    IntPtr gpu_bcl_ptx_intptr = Marshal.StringToHGlobalAnsi(gpu_bcl_ptx);
+
+                    res = Cuda.cuLinkAddData_v2(linkState, CUjitInputType.CU_JIT_INPUT_PTX,
+                        gpu_bcl_ptx_intptr, (uint)len,
+                        "", num_ops, op, op_values_intptr);
+                    {
+                        string info = Marshal.PtrToStringAnsi(info_log_buffer_intptr);
+                        System.Console.WriteLine(info);
+                        string error = Marshal.PtrToStringAnsi(error_log_buffer_intptr);
+                        System.Console.WriteLine(error);
+                    }
                     CheckCudaError(res);
                 }
             }
 
-            IntPtr ptr = Marshal.StringToHGlobalAnsi(ptx);
-            res = Cuda.cuLinkAddData_v2(linkState, CUjitInputType.CU_JIT_INPUT_PTX, ptr, (uint)ptx.Length, "", 0, op, IntPtr.Zero);
-            CheckCudaError(res);
-
             IntPtr image;
             res = Cuda.cuLinkComplete(linkState, out image, out ulong sz);
-            CheckCudaError(res);
-            res = Cuda.cuModuleLoadDataEx(out CUmodule module, image, 0, op, IntPtr.Zero);
-            CheckCudaError(res);
 
-            //res = Cuda.cuModuleLoadData(out CUmodule cuModule, ptr);
-            //CheckCudaError(res);
-            var normalized_method_name = Converter.RenameToLegalLLVMName(Converter.MethodName(basic_block.ExpectedCalleeSignature));
-            res = Cuda.cuModuleGetFunction(out CUfunction helloWorld, module, normalized_method_name);
+            {
+                string info = Marshal.PtrToStringAnsi(info_log_buffer_intptr);
+                System.Console.WriteLine(info);
+                string error = Marshal.PtrToStringAnsi(error_log_buffer_intptr);
+                System.Console.WriteLine(error);
+            }
             CheckCudaError(res);
-            return helloWorld;
+            //res = Cuda.cuModuleLoadDataEx(out CUmodule module, image, 0, op, IntPtr.Zero);
+            //CheckCudaError(res);
+
+
+            //IntPtr image;
+            //res = Cuda.cuLinkComplete(linkState, out image, out ulong sz);
+            //CheckCudaError(res);
+
+            RuntimeCubinImage = image;
+            RuntimeCubinImageSize = sz;
+        }
+
+        public IntPtr RuntimeCubinImage
+        {
+            get; private set;
+        }
+
+        public ulong RuntimeCubinImageSize
+        {
+            get; private set;
+        }
+
+        public CUmodule InitializeModule(IntPtr cubin)
+        {
+            uint num_ops = 0;
+            var op = new CUjit_option[num_ops];
+            ulong[] op_values = new ulong[num_ops];
+
+            //int size = 1024;
+            //op[0] = CUjit_option.CU_JIT_INFO_LOG_BUFFER_SIZE_BYTES;
+            //op_values[0] = (ulong)size;
+
+            //op[1] = CUjit_option.CU_JIT_INFO_LOG_BUFFER;
+            //byte[] info_log_buffer = new byte[size];
+            //var info_log_buffer_handle = GCHandle.Alloc(info_log_buffer, GCHandleType.Pinned);
+            //var info_log_buffer_intptr = info_log_buffer_handle.AddrOfPinnedObject();
+            //op_values[1] = (ulong)info_log_buffer_intptr;
+
+            //op[2] = CUjit_option.CU_JIT_ERROR_LOG_BUFFER_SIZE_BYTES;
+            //op_values[2] = (ulong)size;
+
+            //op[3] = CUjit_option.CU_JIT_ERROR_LOG_BUFFER;
+            //byte[] error_log_buffer = new byte[size];
+            //var error_log_buffer_handle = GCHandle.Alloc(error_log_buffer, GCHandleType.Pinned);
+            //var error_log_buffer_intptr = error_log_buffer_handle.AddrOfPinnedObject();
+            //op_values[3] = (ulong)error_log_buffer_intptr;
+
+            //op[4] = CUjit_option.CU_JIT_LOG_VERBOSE;
+            //op_values[4] = (ulong)1;
+
+            var op_values_link_handle = GCHandle.Alloc(op_values, GCHandleType.Pinned);
+            var op_values_link_intptr = op_values_link_handle.AddrOfPinnedObject();
+
+            CUresult res = Cuda.cuModuleLoadDataEx(out CUmodule module, cubin, 0, op, op_values_link_intptr);
+            CheckCudaError(res);
+            return module;
+        }
+
+        public CUmodule RuntimeModule
+        {
+            get; set;
+        }
+
+
+        public CUfunction MetaDataInit(CUmodule module)
+        {
+            CheckCudaError(Cuda.cuModuleGetFunction(out CUfunction function, module, "_Z13MetaData_Initv"));
+            return function;
+        }
+
+        public CUfunction TypeInit(CUmodule module)
+        {
+            CheckCudaError(Cuda.cuModuleGetFunction(out CUfunction function, module, "_Z9Type_Initv"));
+            return function;
         }
 
         public static void CheckCudaError(Swigged.Cuda.CUresult res)

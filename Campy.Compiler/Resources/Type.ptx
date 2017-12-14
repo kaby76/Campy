@@ -3889,7 +3889,7 @@ BB8_71:
 }
 
 	// .globl	_Z9Type_Initv
-.visible .func _Z9Type_Initv(
+.visible .entry _Z9Type_Initv(
 
 )
 {
