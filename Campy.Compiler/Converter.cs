@@ -1717,12 +1717,19 @@ namespace Campy.Compiler
             CheckCudaError(res);
             res = Cuda.cuDeviceGetName(out string name, 100, device);
             CheckCudaError(res);
+
+            res = Cuda.cuCtxGetCurrent(out CUcontext pctx);
+            CheckCudaError(res);
+
+            res = Cuda.cuCtxGetApiVersion(pctx, out uint version);
+            CheckCudaError(res);
+
             // Create context done around cuInit() call.
             //res = Cuda.cuCtxCreate_v2(out CUcontext cuContext, 0, device);
             //CheckCudaError(res);
 
             // Add in all of the GPU BCL runtime required.
-		    uint num_ops_link = 5;
+            uint num_ops_link = 5;
 		    var op_link = new CUjit_option[num_ops_link];
 		    ulong[] op_values_link = new ulong[num_ops_link];
 
@@ -1772,7 +1779,54 @@ namespace Campy.Compiler
             CheckCudaError(res);
 
 
-            res = Cuda.cuLinkAddData_v2(linkState, CUjitInputType.CU_JIT_INPUT_LIBRARY, RuntimeCubinImage, (uint)RuntimeCubinImageSize, "", 0, op, op_values_intptr);
+            //res = Cuda.cuLinkAddData_v2(linkState, CUjitInputType.CU_JIT_INPUT_CUBIN, RuntimeCubinImage, (uint)RuntimeCubinImageSize, "", 0, op, op_values_intptr);
+
+            //res = Cuda.cuLinkAddFile_v2(linkState, CUjitInputType.CU_JIT_INPUT_LIBRARY, @"c:\Users\kenne\Documents\Campy2\Campy.Compiler\Resources - Copy\a_dlink.obj", 0, op, op_values_intptr);
+            res = Cuda.cuLinkAddFile_v2(linkState, CUjitInputType.CU_JIT_INPUT_OBJECT, @"c:\Users\kenne\Documents\Campy2\Campy.Compiler\Resources - Copy\basics.obj", 0, op, op_values_intptr);
+            res = Cuda.cuLinkAddFile_v2(linkState, CUjitInputType.CU_JIT_INPUT_OBJECT, @"c:\Users\kenne\Documents\Campy2\Campy.Compiler\Resources - Copy\CLIFile.obj", 0, op, op_values_intptr);
+            res = Cuda.cuLinkAddFile_v2(linkState, CUjitInputType.CU_JIT_INPUT_OBJECT, @"c:\Users\kenne\Documents\Campy2\Campy.Compiler\Resources - Copy\corlib.obj", 0, op, op_values_intptr);
+            res = Cuda.cuLinkAddFile_v2(linkState, CUjitInputType.CU_JIT_INPUT_OBJECT, @"c:\Users\kenne\Documents\Campy2\Campy.Compiler\Resources - Copy\Delegate.obj", 0, op, op_values_intptr);
+            res = Cuda.cuLinkAddFile_v2(linkState, CUjitInputType.CU_JIT_INPUT_OBJECT, @"c:\Users\kenne\Documents\Campy2\Campy.Compiler\Resources - Copy\Finalizer.obj", 0, op, op_values_intptr);
+            res = Cuda.cuLinkAddFile_v2(linkState, CUjitInputType.CU_JIT_INPUT_OBJECT, @"c:\Users\kenne\Documents\Campy2\Campy.Compiler\Resources - Copy\Generics.obj", 0, op, op_values_intptr);
+            res = Cuda.cuLinkAddFile_v2(linkState, CUjitInputType.CU_JIT_INPUT_OBJECT, @"c:\Users\kenne\Documents\Campy2\Campy.Compiler\Resources - Copy\Gstring.obj", 0, op, op_values_intptr);
+            res = Cuda.cuLinkAddFile_v2(linkState, CUjitInputType.CU_JIT_INPUT_OBJECT, @"c:\Users\kenne\Documents\Campy2\Campy.Compiler\Resources - Copy\Gvsnprintf.obj", 0, op, op_values_intptr);
+            res = Cuda.cuLinkAddFile_v2(linkState, CUjitInputType.CU_JIT_INPUT_OBJECT, @"c:\Users\kenne\Documents\Campy2\Campy.Compiler\Resources - Copy\Heap.obj", 0, op, op_values_intptr);
+            res = Cuda.cuLinkAddFile_v2(linkState, CUjitInputType.CU_JIT_INPUT_OBJECT, @"c:\Users\kenne\Documents\Campy2\Campy.Compiler\Resources - Copy\InternalCall.obj", 0, op, op_values_intptr);
+            res = Cuda.cuLinkAddFile_v2(linkState, CUjitInputType.CU_JIT_INPUT_OBJECT, @"c:\Users\kenne\Documents\Campy2\Campy.Compiler\Resources - Copy\JIT.obj", 0, op, op_values_intptr);
+            res = Cuda.cuLinkAddFile_v2(linkState, CUjitInputType.CU_JIT_INPUT_OBJECT, @"c:\Users\kenne\Documents\Campy2\Campy.Compiler\Resources - Copy\JIT_Execute.obj", 0, op, op_values_intptr);
+            res = Cuda.cuLinkAddFile_v2(linkState, CUjitInputType.CU_JIT_INPUT_OBJECT, @"c:\Users\kenne\Documents\Campy2\Campy.Compiler\Resources - Copy\MetaData.obj", 0, op, op_values_intptr);
+            res = Cuda.cuLinkAddFile_v2(linkState, CUjitInputType.CU_JIT_INPUT_OBJECT, @"c:\Users\kenne\Documents\Campy2\Campy.Compiler\Resources - Copy\MetaData_Fill.obj", 0, op, op_values_intptr);
+            res = Cuda.cuLinkAddFile_v2(linkState, CUjitInputType.CU_JIT_INPUT_OBJECT, @"c:\Users\kenne\Documents\Campy2\Campy.Compiler\Resources - Copy\MetaData_Search.obj", 0, op, op_values_intptr);
+            res = Cuda.cuLinkAddFile_v2(linkState, CUjitInputType.CU_JIT_INPUT_OBJECT, @"c:\Users\kenne\Documents\Campy2\Campy.Compiler\Resources - Copy\MethodState.obj", 0, op, op_values_intptr);
+            res = Cuda.cuLinkAddFile_v2(linkState, CUjitInputType.CU_JIT_INPUT_OBJECT, @"c:\Users\kenne\Documents\Campy2\Campy.Compiler\Resources - Copy\PInvoke.obj", 0, op, op_values_intptr);
+            res = Cuda.cuLinkAddFile_v2(linkState, CUjitInputType.CU_JIT_INPUT_OBJECT, @"c:\Users\kenne\Documents\Campy2\Campy.Compiler\Resources - Copy\RVA.obj", 0, op, op_values_intptr);
+            res = Cuda.cuLinkAddFile_v2(linkState, CUjitInputType.CU_JIT_INPUT_OBJECT, @"c:\Users\kenne\Documents\Campy2\Campy.Compiler\Resources - Copy\Sys.obj", 0, op, op_values_intptr);
+            res = Cuda.cuLinkAddFile_v2(linkState, CUjitInputType.CU_JIT_INPUT_OBJECT, @"c:\Users\kenne\Documents\Campy2\Campy.Compiler\Resources - Copy\System.Array.obj", 0, op, op_values_intptr);
+            res = Cuda.cuLinkAddFile_v2(linkState, CUjitInputType.CU_JIT_INPUT_OBJECT, @"c:\Users\kenne\Documents\Campy2\Campy.Compiler\Resources - Copy\System.Char.obj", 0, op, op_values_intptr);
+            res = Cuda.cuLinkAddFile_v2(linkState, CUjitInputType.CU_JIT_INPUT_OBJECT, @"c:\Users\kenne\Documents\Campy2\Campy.Compiler\Resources - Copy\System.Console.obj", 0, op, op_values_intptr);
+            res = Cuda.cuLinkAddFile_v2(linkState, CUjitInputType.CU_JIT_INPUT_OBJECT, @"c:\Users\kenne\Documents\Campy2\Campy.Compiler\Resources - Copy\System.DateTime.obj", 0, op, op_values_intptr);
+            res = Cuda.cuLinkAddFile_v2(linkState, CUjitInputType.CU_JIT_INPUT_OBJECT, @"c:\Users\kenne\Documents\Campy2\Campy.Compiler\Resources - Copy\System.Diagnostics.Debugger.obj", 0, op, op_values_intptr);
+            res = Cuda.cuLinkAddFile_v2(linkState, CUjitInputType.CU_JIT_INPUT_OBJECT, @"c:\Users\kenne\Documents\Campy2\Campy.Compiler\Resources - Copy\System.Enum.obj", 0, op, op_values_intptr);
+            res = Cuda.cuLinkAddFile_v2(linkState, CUjitInputType.CU_JIT_INPUT_OBJECT, @"c:\Users\kenne\Documents\Campy2\Campy.Compiler\Resources - Copy\System.Environment.obj", 0, op, op_values_intptr);
+            res = Cuda.cuLinkAddFile_v2(linkState, CUjitInputType.CU_JIT_INPUT_OBJECT, @"c:\Users\kenne\Documents\Campy2\Campy.Compiler\Resources - Copy\System.GC.obj", 0, op, op_values_intptr);
+            res = Cuda.cuLinkAddFile_v2(linkState, CUjitInputType.CU_JIT_INPUT_OBJECT, @"c:\Users\kenne\Documents\Campy2\Campy.Compiler\Resources - Copy\System.IO.FileInternal.obj", 0, op, op_values_intptr);
+            res = Cuda.cuLinkAddFile_v2(linkState, CUjitInputType.CU_JIT_INPUT_OBJECT, @"c:\Users\kenne\Documents\Campy2\Campy.Compiler\Resources - Copy\System.Math.obj", 0, op, op_values_intptr);
+            res = Cuda.cuLinkAddFile_v2(linkState, CUjitInputType.CU_JIT_INPUT_OBJECT, @"c:\Users\kenne\Documents\Campy2\Campy.Compiler\Resources - Copy\System.Net.Dns.obj", 0, op, op_values_intptr);
+            res = Cuda.cuLinkAddFile_v2(linkState, CUjitInputType.CU_JIT_INPUT_OBJECT, @"c:\Users\kenne\Documents\Campy2\Campy.Compiler\Resources - Copy\System.Net.Sockets.Socket.obj", 0, op, op_values_intptr);
+            res = Cuda.cuLinkAddFile_v2(linkState, CUjitInputType.CU_JIT_INPUT_OBJECT, @"c:\Users\kenne\Documents\Campy2\Campy.Compiler\Resources - Copy\System.Object.obj", 0, op, op_values_intptr);
+            res = Cuda.cuLinkAddFile_v2(linkState, CUjitInputType.CU_JIT_INPUT_OBJECT, @"c:\Users\kenne\Documents\Campy2\Campy.Compiler\Resources - Copy\System.Runtime.CompilerServices.RuntimeHelpers.obj", 0, op, op_values_intptr);
+            res = Cuda.cuLinkAddFile_v2(linkState, CUjitInputType.CU_JIT_INPUT_OBJECT, @"c:\Users\kenne\Documents\Campy2\Campy.Compiler\Resources - Copy\System.RuntimeType.obj", 0, op, op_values_intptr);
+            res = Cuda.cuLinkAddFile_v2(linkState, CUjitInputType.CU_JIT_INPUT_OBJECT, @"c:\Users\kenne\Documents\Campy2\Campy.Compiler\Resources - Copy\System.String.obj", 0, op, op_values_intptr);
+            res = Cuda.cuLinkAddFile_v2(linkState, CUjitInputType.CU_JIT_INPUT_OBJECT, @"c:\Users\kenne\Documents\Campy2\Campy.Compiler\Resources - Copy\System.Threading.Interlocked.obj", 0, op, op_values_intptr);
+            res = Cuda.cuLinkAddFile_v2(linkState, CUjitInputType.CU_JIT_INPUT_OBJECT, @"c:\Users\kenne\Documents\Campy2\Campy.Compiler\Resources - Copy\System.Threading.Monitor.obj", 0, op, op_values_intptr);
+            res = Cuda.cuLinkAddFile_v2(linkState, CUjitInputType.CU_JIT_INPUT_OBJECT, @"c:\Users\kenne\Documents\Campy2\Campy.Compiler\Resources - Copy\System.Threading.Thread.obj", 0, op, op_values_intptr);
+            res = Cuda.cuLinkAddFile_v2(linkState, CUjitInputType.CU_JIT_INPUT_OBJECT, @"c:\Users\kenne\Documents\Campy2\Campy.Compiler\Resources - Copy\System.Type.obj", 0, op, op_values_intptr);
+            res = Cuda.cuLinkAddFile_v2(linkState, CUjitInputType.CU_JIT_INPUT_OBJECT, @"c:\Users\kenne\Documents\Campy2\Campy.Compiler\Resources - Copy\System.ValueType.obj", 0, op, op_values_intptr);
+            res = Cuda.cuLinkAddFile_v2(linkState, CUjitInputType.CU_JIT_INPUT_OBJECT, @"c:\Users\kenne\Documents\Campy2\Campy.Compiler\Resources - Copy\System.WeakReference.obj", 0, op, op_values_intptr);
+            res = Cuda.cuLinkAddFile_v2(linkState, CUjitInputType.CU_JIT_INPUT_OBJECT, @"c:\Users\kenne\Documents\Campy2\Campy.Compiler\Resources - Copy\Thread.obj", 0, op, op_values_intptr);
+            res = Cuda.cuLinkAddFile_v2(linkState, CUjitInputType.CU_JIT_INPUT_OBJECT, @"c:\Users\kenne\Documents\Campy2\Campy.Compiler\Resources - Copy\Type.obj", 0, op, op_values_intptr);
+
+
             {
                 string info = Marshal.PtrToStringAnsi(info_log_buffer_intptr);
                 System.Console.WriteLine(info);
