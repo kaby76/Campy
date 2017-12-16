@@ -164,250 +164,134 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <CudaCompile Include="basics.cu">
+    <CudaCompile Include="basics.c">
       <Filter>Source Files</Filter>
     </CudaCompile>
-    <CudaCompile Include="CLIFile.cu">
+    <CudaCompile Include="CLIFile.c">
       <Filter>Source Files</Filter>
     </CudaCompile>
-    <CudaCompile Include="Delegate.cu">
+    <CudaCompile Include="corlib.c">
       <Filter>Source Files</Filter>
     </CudaCompile>
-    <CudaCompile Include="Finalizer.cu">
+    <CudaCompile Include="Delegate.c">
       <Filter>Source Files</Filter>
     </CudaCompile>
-    <CudaCompile Include="Generics.cu">
+    <CudaCompile Include="Finalizer.c">
       <Filter>Source Files</Filter>
     </CudaCompile>
-    <CudaCompile Include="Gvsnprintf.cu">
+    <CudaCompile Include="Generics.c">
       <Filter>Source Files</Filter>
     </CudaCompile>
-    <CudaCompile Include="Heap.cu">
+    <CudaCompile Include="Gstring.c">
       <Filter>Source Files</Filter>
     </CudaCompile>
-    <CudaCompile Include="InternalCall.cu">
+    <CudaCompile Include="Heap.c">
       <Filter>Source Files</Filter>
     </CudaCompile>
-    <CudaCompile Include="JIT.cu">
+    <CudaCompile Include="InternalCall.c">
       <Filter>Source Files</Filter>
     </CudaCompile>
-    <CudaCompile Include="JIT_Execute.cu">
+    <CudaCompile Include="MetaData.c">
       <Filter>Source Files</Filter>
     </CudaCompile>
-    <CudaCompile Include="MetaData.cu">
+    <CudaCompile Include="MetaData_Fill.c">
       <Filter>Source Files</Filter>
     </CudaCompile>
-    <CudaCompile Include="MetaData_Fill.cu">
+    <CudaCompile Include="MetaData_Search.c">
       <Filter>Source Files</Filter>
     </CudaCompile>
-    <CudaCompile Include="MetaData_Search.cu">
+    <CudaCompile Include="MethodState.c">
       <Filter>Source Files</Filter>
     </CudaCompile>
-    <CudaCompile Include="MethodState.cu">
+    <CudaCompile Include="PInvoke.c">
       <Filter>Source Files</Filter>
     </CudaCompile>
-    <CudaCompile Include="PInvoke.cu">
+    <CudaCompile Include="RVA.c">
       <Filter>Source Files</Filter>
     </CudaCompile>
-    <CudaCompile Include="RVA.cu">
+    <CudaCompile Include="Sys.c">
       <Filter>Source Files</Filter>
     </CudaCompile>
-    <CudaCompile Include="Sys.cu">
+    <CudaCompile Include="System.Array.c">
       <Filter>Source Files</Filter>
     </CudaCompile>
-    <CudaCompile Include="System.Array.cu">
+    <CudaCompile Include="System.Char.c">
       <Filter>Source Files</Filter>
     </CudaCompile>
-    <CudaCompile Include="System.Char.cu">
+    <CudaCompile Include="System.Console.c">
       <Filter>Source Files</Filter>
     </CudaCompile>
-    <CudaCompile Include="System.Console.cu">
+    <CudaCompile Include="System.DateTime.c">
       <Filter>Source Files</Filter>
     </CudaCompile>
-    <CudaCompile Include="System.DateTime.cu">
+    <CudaCompile Include="System.Diagnostics.Debugger.c">
       <Filter>Source Files</Filter>
     </CudaCompile>
-    <CudaCompile Include="System.Diagnostics.Debugger.cu">
+    <CudaCompile Include="System.Enum.c">
       <Filter>Source Files</Filter>
     </CudaCompile>
-    <CudaCompile Include="System.Enum.cu">
+    <CudaCompile Include="System.Environment.c">
       <Filter>Source Files</Filter>
     </CudaCompile>
-    <CudaCompile Include="System.Environment.cu">
+    <CudaCompile Include="System.GC.c">
       <Filter>Source Files</Filter>
     </CudaCompile>
-    <CudaCompile Include="System.GC.cu">
+    <CudaCompile Include="System.IO.FileInternal.c">
       <Filter>Source Files</Filter>
     </CudaCompile>
-    <CudaCompile Include="System.IO.FileInternal.cu">
+    <CudaCompile Include="System.Math.c">
       <Filter>Source Files</Filter>
     </CudaCompile>
-    <CudaCompile Include="System.Math.cu">
+    <CudaCompile Include="System.Net.Dns.c">
       <Filter>Source Files</Filter>
     </CudaCompile>
-    <CudaCompile Include="System.Net.Dns.cu">
+    <CudaCompile Include="System.Net.Sockets.Socket.c">
       <Filter>Source Files</Filter>
     </CudaCompile>
-    <CudaCompile Include="System.Net.Sockets.Socket.cu">
+    <CudaCompile Include="System.Object.c">
       <Filter>Source Files</Filter>
     </CudaCompile>
-    <CudaCompile Include="System.Object.cu">
+    <CudaCompile Include="System.Runtime.CompilerServices.RuntimeHelpers.c">
       <Filter>Source Files</Filter>
     </CudaCompile>
-    <CudaCompile Include="System.Runtime.CompilerServices.RuntimeHelpers.cu">
+    <CudaCompile Include="System.RuntimeType.c">
       <Filter>Source Files</Filter>
     </CudaCompile>
-    <CudaCompile Include="System.RuntimeType.cu">
+    <CudaCompile Include="System.String.c">
       <Filter>Source Files</Filter>
     </CudaCompile>
-    <CudaCompile Include="System.String.cu">
+    <CudaCompile Include="System.Threading.Interlocked.c">
       <Filter>Source Files</Filter>
     </CudaCompile>
-    <CudaCompile Include="System.Threading.Interlocked.cu">
+    <CudaCompile Include="System.Threading.Monitor.c">
       <Filter>Source Files</Filter>
     </CudaCompile>
-    <CudaCompile Include="System.Threading.Monitor.cu">
+    <CudaCompile Include="System.Threading.Thread.c">
       <Filter>Source Files</Filter>
     </CudaCompile>
-    <CudaCompile Include="System.Threading.Thread.cu">
+    <CudaCompile Include="System.Type.c">
       <Filter>Source Files</Filter>
     </CudaCompile>
-    <CudaCompile Include="System.Type.cu">
+    <CudaCompile Include="System.ValueType.c">
       <Filter>Source Files</Filter>
     </CudaCompile>
-    <CudaCompile Include="System.ValueType.cu">
+    <CudaCompile Include="System.WeakReference.c">
       <Filter>Source Files</Filter>
     </CudaCompile>
-    <CudaCompile Include="System.WeakReference.cu">
+    <CudaCompile Include="Thread.c">
       <Filter>Source Files</Filter>
     </CudaCompile>
-    <CudaCompile Include="Thread.cu">
+    <CudaCompile Include="Type.c">
       <Filter>Source Files</Filter>
     </CudaCompile>
-    <CudaCompile Include="Type.cu">
+    <CudaCompile Include="Gvsnprintf.c">
       <Filter>Source Files</Filter>
     </CudaCompile>
-    <CudaCompile Include="Gstring.cu">
+    <CudaCompile Include="JIT.c">
       <Filter>Source Files</Filter>
     </CudaCompile>
-    <CudaCompile Include="corlib.cu">
+    <CudaCompile Include="JIT_Execute.c">
       <Filter>Source Files</Filter>
     </CudaCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="x64\Debug\Finalizer.ptx">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="x64\Debug\Generics.ptx">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="x64\Debug\Heap.ptx">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="x64\Debug\InternalCall.ptx">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="x64\Debug\JIT.ptx">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="x64\Debug\JIT_Execute.ptx">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="x64\Debug\MetaData.ptx">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="x64\Debug\MetaData_Fill.ptx">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="x64\Debug\MetaData_Search.ptx">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="x64\Debug\MethodState.ptx">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="x64\Debug\PInvoke.ptx">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="x64\Debug\RVA.ptx">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="x64\Debug\Sys.ptx">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="x64\Debug\System.Array.ptx">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="x64\Debug\System.Char.ptx">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="x64\Debug\System.Console.ptx">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="x64\Debug\System.DateTime.ptx">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="x64\Debug\System.Diagnostics.Debugger.ptx">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="x64\Debug\System.Enum.ptx">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="x64\Debug\System.Environment.ptx">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="x64\Debug\System.GC.ptx">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="x64\Debug\System.IO.FileInternal.ptx">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="x64\Debug\System.Math.ptx">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="x64\Debug\System.Net.Dns.ptx">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="x64\Debug\System.Net.Sockets.Socket.ptx">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="x64\Debug\System.Object.ptx">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="x64\Debug\System.Runtime.CompilerServices.RuntimeHelpers.ptx">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="x64\Debug\System.RuntimeType.ptx">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="x64\Debug\System.String.ptx">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="x64\Debug\System.Threading.Interlocked.ptx">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="x64\Debug\System.Threading.Monitor.ptx">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="x64\Debug\System.Threading.Thread.ptx">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="x64\Debug\System.Type.ptx">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="x64\Debug\System.ValueType.ptx">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="x64\Debug\System.WeakReference.ptx">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="x64\Debug\Thread.ptx">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="x64\Debug\Type.ptx">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="x64\Debug\Delegate.ptx">
-      <Filter>Source Files</Filter>
-    </None>
   </ItemGroup>
 </Project>
