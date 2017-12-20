@@ -8,6 +8,7 @@ using Campy.Utils;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Swigged.LLVM;
+using System.Runtime.InteropServices;
 
 namespace Campy.Compiler
 {
@@ -1212,7 +1213,7 @@ namespace Campy.Compiler
                 var context = LLVM.GetModuleContext(Converter.global_llvm_module);
 
                 tInternalCall mat = null;
-                foreach (tInternalCall ci in new CallInfo())
+                foreach (tInternalCall ci in BclRewrites.InternalCalls)
                 {
                     if (ci._fn == full_name)
                     {
@@ -4620,41 +4621,53 @@ namespace Campy.Compiler
 
         public override Inst Convert(Converter converter, State state)
         {
-            // Allocate buffer, and set string.
-            // Call PTX method.
-            var full_name = "";
-            // For now, look for qualified name not including parameters.
-            Regex regex = new Regex(@"^[^\s]+\s+(?<name>[^\(]+).+$");
-            Match m = regex.Match(full_name);
-            if (!m.Success)
-                throw new Exception();
-            var demangled_name = m.Groups["name"].Value;
-            demangled_name = demangled_name.Replace("::", "_");
-            demangled_name = demangled_name.Replace(".", "_");
+            // Call SystemString_FromCharPtrASCII and push new string object on the stack.
+            // _Z29SystemString_FromCharPtrASCIIPc
 
-            BuilderRef bu = this.Builder;
+            unsafe {
+                ValueRef[] args = new ValueRef[1];
 
-            // Find the specific function called.
-            var xx = Campy.Utils.DictionaryHelpers.PartialMatch(
-                Converter.built_in_functions,
-                demangled_name,
-                (string a, string b) => a.Contains(b) || b.Contains(a));
-            ValueRef fv = xx.FirstOrDefault();
-            var t_fun = LLVM.TypeOf(fv);
-            var t_fun_con = LLVM.GetTypeContext(t_fun);
-            var context = LLVM.GetModuleContext(Converter.global_llvm_module);
+                // Get char string froom instruction.
+                var operand = Operand;
+                string str = (string)operand;
 
-            tInternalCall mat = null;
-            foreach (tInternalCall ci in new CallInfo())
-            {
-                if (ci._fn == full_name)
-                {
-                    mat = ci;
-                    break;
-                }
+                ValueRef llvm_cstr = LLVM.ConstString(str, (uint)str.Length, false);
+                args[0] = llvm_cstr;
+                string name = "_Z29SystemString_FromCharPtrASCIIPc";
+                var fv = Converter.built_in_functions["_Z29SystemString_FromCharPtrASCIIPc"];
+                var call = LLVM.BuildCall(Builder, fv, args, name);
+                state._stack.Push(new Value(call));
+
+                // Set up return. For now, always allocate buffer.
+                // Note function return is type of third parameter.
+                //var return_type = mat._returnType.ToTypeRef();
+                //var return_buffer = LLVM.BuildAlloca(Builder, return_type, "");
+                //LLVM.SetAlignment(return_buffer, 64);
+                //LLVM.PositionBuilderAtEnd(Builder, this.Block.BasicBlock);
+
+                //// Set up call.
+                //var pt = LLVM.BuildPointerCast(Builder, t.V,
+                //    LLVM.PointerType(LLVM.VoidType(), 0), "");
+                //var pp = LLVM.BuildPointerCast(Builder, param_buffer,
+                //    LLVM.PointerType(LLVM.VoidType(), 0), "");
+                //var pr = LLVM.BuildPointerCast(Builder, return_buffer,
+                //    LLVM.PointerType(LLVM.VoidType(), 0), "");
+
+                //args[0] = pt;
+                //args[1] = pp;
+                //args[2] = pr;
+
+                //var call = LLVM.BuildCall(Builder, fv, args, name);
+
+                //if (ret)
+                //{
+                //    var load = LLVM.BuildLoad(Builder, return_buffer, "");
+                //    state._stack.Push(new Value(load));
+                //}
+
+                //if (Campy.Utils.Options.IsOn("jit_trace"))
+                //    System.Console.WriteLine(call.ToString());
             }
-
-            //var call = LLVM.BuildCall(Builder, fv, args, name);
 
             return Next;
         }
@@ -4941,6 +4954,16 @@ namespace Campy.Compiler
                 BuilderRef bu = this.Builder;
                 var as_name = mr.Module.Assembly.Name;
 
+                tInternalCall mat = null;
+                foreach (tInternalCall ci in BclRewrites.InternalCalls)
+                {
+                    if (ci._fn == full_name)
+                    {
+                        mat = ci;
+                        break;
+                    }
+                }
+
                 // Find the specific function called.
                 var xx = Campy.Utils.DictionaryHelpers.PartialMatch(
                     Converter.built_in_functions,
@@ -4951,15 +4974,6 @@ namespace Campy.Compiler
                 var t_fun_con = LLVM.GetTypeContext(t_fun);
                 var context = LLVM.GetModuleContext(Converter.global_llvm_module);
 
-                tInternalCall mat = null;
-                foreach (tInternalCall ci in new CallInfo())
-                {
-                    if (ci._fn == full_name)
-                    {
-                        mat = ci;
-                        break;
-                    }
-                }
 
                 {
                     ValueRef[] args = new ValueRef[3];
@@ -5689,6 +5703,15 @@ namespace Campy.Compiler
         public override void ComputeStackLevel(Converter converter, ref int level_after)
         {
             level_after--;
+        }
+
+        public override Inst Convert(Converter converter, State state)
+        {
+            var rhs = state._stack.Pop();
+            if (Campy.Utils.Options.IsOn("jit_trace"))
+                System.Console.WriteLine(rhs);
+
+            return Next;
         }
     }
 

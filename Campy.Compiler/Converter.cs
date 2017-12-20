@@ -48,6 +48,8 @@ namespace Campy.Compiler
                     return kv.Value;
             }
 
+            tr = BclRewrites.RewriteType(tr);
+
             try
             {
                 // Check basic types using TypeDefinition.
@@ -494,9 +496,9 @@ namespace Campy.Compiler
                 typeof(System.Type).ToMonoTypeReference(),
                 LLVM.PointerType(LLVM.VoidType(), 0));
 
-            basic_llvm_types_created.Add(
-                typeof(string).ToMonoTypeReference(),
-                LLVM.PointerType(LLVM.VoidType(), 0));
+            //basic_llvm_types_created.Add(
+            //    typeof(string).ToMonoTypeReference(),
+            //    LLVM.PointerType(LLVM.VoidType(), 0));
 
 
 
@@ -578,7 +580,60 @@ namespace Campy.Compiler
 
             Campy.Compiler.Runtime.ParseBCL(this);
 
+            InitializeBCLRewrites();
 
+            BclRewrites.Initialize();
+
+            InitCuda();
+        }
+
+        private void InitializeBCLRewrites()
+        {
+
+        }
+
+        private void InitCuda()
+        {
+            Converter.CheckCudaError(Cuda.cuInit(0));
+            Converter.CheckCudaError(Cuda.cuDevicePrimaryCtxReset(0));
+            Converter.CheckCudaError(Cuda.cuCtxCreate_v2(out CUcontext pctx, 0, 0));
+            Converter.CheckCudaError(Cuda.cuCtxGetLimit(out ulong pvalue, CUlimit.CU_LIMIT_STACK_SIZE));
+            Converter.CheckCudaError(Cuda.cuCtxSetLimit(CUlimit.CU_LIMIT_STACK_SIZE, (uint)pvalue * 25));
+            System.Console.WriteLine("Stack size " + pvalue);
+            InitializeRuntime();
+            RuntimeModule = InitializeModule(RuntimeCubinImage);
+
+            CUmodule module = RuntimeModule;
+            CUfunction meta_data_init = MetaDataInit(module);
+            Campy.Utils.CudaHelpers.MakeLinearTiling(1, out Campy.Utils.CudaHelpers.dim3 tile_size, out Campy.Utils.CudaHelpers.dim3 tiles);
+            var res = Cuda.cuLaunchKernel(
+                meta_data_init,
+                tiles.x, tiles.y, tiles.z, // grid has one block.
+                tile_size.x, tile_size.y, tile_size.z, // n threads.
+                0, // no shared memory
+                default(CUstream),
+                (IntPtr)IntPtr.Zero,
+                (IntPtr)IntPtr.Zero
+            );
+            Converter.CheckCudaError(res);
+            res = Cuda.cuCtxSynchronize(); // Make sure it's copied back to host.
+            Converter.CheckCudaError(res);
+            CUfunction type_init = TypeInit(module);
+            res = Cuda.cuLaunchKernel(
+                type_init,
+                tiles.x, tiles.y, tiles.z, // grid has one block.
+                tile_size.x, tile_size.y, tile_size.z, // n threads.
+                0, // no shared memory
+                default(CUstream),
+                (IntPtr)IntPtr.Zero,
+                (IntPtr)IntPtr.Zero
+            );
+            Converter.CheckCudaError(res);
+            res = Cuda.cuCtxSynchronize(); // Make sure it's copied back to host.
+            Converter.CheckCudaError(res);
+
+            // Now reset the stack size.
+            Converter.CheckCudaError(Cuda.cuCtxSetLimit(CUlimit.CU_LIMIT_STACK_SIZE, (uint)pvalue));
         }
 
         public class Comparer : IEqualityComparer<Tuple<CFG.Vertex, Mono.Cecil.TypeReference, System.Type>>

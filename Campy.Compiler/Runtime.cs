@@ -129,6 +129,7 @@ namespace Campy.Compiler
                         {
                             var mangled_name = m.Groups["name"].Value;
                             var demangled_name = mangled_name;
+                            System.Console.WriteLine("Adding PTX method " + demangled_name);
                             Converter.built_in_functions.Add(demangled_name,
                                 LLVM.AddFunction(
                                     Converter.global_llvm_module,
@@ -144,8 +145,6 @@ namespace Campy.Compiler
                     }
                 }
             }
-
-            CallInfo.Initialize();
         }
     }
 
@@ -170,31 +169,58 @@ namespace Campy.Compiler
         }
     }
 
-    // This table encodes runtime type information for internal calls in the native portion of
-    // the BCL for the GPU. It was originally encoded in dna/internal.c. However, it's easier and
-    // safer to derive the information from the C# portion of the BCL using System.Reflection.
-    //
-    // Why is this information needed? In Inst.c, I need to make a call of a function to the runtime.
-    // I only have PTX files, which removes the type information from the signature of
-    // the original call (it is all three parameters of void*).
-    public class CallInfo : IEnumerable<tInternalCall>
+    public class BclRewrites
     {
-        public static void Add(string ns, string type, string method, string fn,
-            TypeReference returntype, List<Mono.Cecil.ParameterDefinition> parametertypes)
+        // This table encodes runtime type information for rewriting internal calls in the native portion of
+        // the BCL for the GPU. It was originally encoded in dna/internal.c. However, it's easier and
+        // safer to derive the information from the C# portion of the BCL using System.Reflection.
+        //
+        // Why is this information needed? In Inst.c, I need to make a call of a function to the runtime.
+        // I only have PTX files, which removes the type information from the signature of
+        // the original call (it is all three parameters of void*).
+        private static List<tInternalCall> _internalCalls = new List<tInternalCall>();
+
+        // This table encode runtime type information for rewriting BCL types. Use this to determine
+        // what the type maps into in the GPU BCL.
+        private static Dictionary<TypeReference, TypeReference> _substituted_bcl = new Dictionary<TypeReference, TypeReference>();
+
+        private class InternalCallEnumerable : IEnumerable<tInternalCall>
         {
-            internalCalls.Add(new tInternalCall(ns, type, method, fn, returntype, parametertypes));
+            public InternalCallEnumerable()
+            {
+            }
+
+            public IEnumerator<tInternalCall> GetEnumerator()
+            {
+                foreach (var key in _internalCalls)
+                {
+                    yield return key;
+                }
+            }
+
+            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+            {
+                return GetEnumerator();
+            }
         }
 
-        public static List<tInternalCall> internalCalls = new List<tInternalCall>();
-
-        public IEnumerator<tInternalCall> GetEnumerator()
+        public static IEnumerable<tInternalCall> InternalCalls
         {
-            return internalCalls.GetEnumerator();
+            get
+            {
+                return new InternalCallEnumerable();
+            }
         }
 
-        IEnumerator IEnumerable.GetEnumerator()
+
+        public static TypeReference RewriteType(TypeReference tr)
         {
-            return GetEnumerator();
+            foreach (var kv in _substituted_bcl)
+            {
+                if (kv.Key.FullName == tr.FullName)
+                    tr = kv.Value;
+            }
+            return tr;
         }
 
         public static void Initialize()
@@ -202,15 +228,25 @@ namespace Campy.Compiler
             // Load C# library for BCL.
             string yopath = @"C:\Users\kenne\Documents\Campy\Campy.Runtime\Corlib\bin\Debug\netstandard1.3\corlib.dll";
             Mono.Cecil.ModuleDefinition md = Mono.Cecil.ModuleDefinition.ReadModule(yopath);
-            foreach (var t in md.GetTypes())
+            foreach (var bcl_type in md.GetTypes())
             {
-                System.Console.WriteLine(t.FullName);
-                foreach (var m in t.Methods)
+                var t_system_type = System.Type.GetType(bcl_type.FullName);
+                if (t_system_type == null) continue;
+
+                System.Console.WriteLine("BCL type added: " + bcl_type.FullName);
+
+                var to_mono = t_system_type.ToMonoTypeReference();
+
+                _substituted_bcl.Add(to_mono, bcl_type);
+
+                foreach (var m in bcl_type.Methods)
                 {
                     var x = m.ImplAttributes;
                     if ((x & MethodImplAttributes.InternalCall) != 0)
                     {
-                        Add(t.Namespace, t.FullName, m.Name, m.FullName, m.ReturnType, m.Parameters.ToList());
+                        System.Console.WriteLine("BCL internal method added: " + m.FullName);
+
+                        _internalCalls.Add(new tInternalCall(bcl_type.Namespace, bcl_type.FullName, m.Name, m.FullName, m.ReturnType, m.Parameters.ToList()));
                     }
                 }
             }

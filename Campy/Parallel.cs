@@ -26,53 +26,10 @@ namespace Campy
             _importer = new Importer();
             _graph = _importer.Cfg;
             _converter = new Campy.Compiler.Converter(_graph);
-            InitCuda();
+            //InitCuda();
             // var ok = GC.TryStartNoGCRegion(200000000);
         }
 
-        private void InitCuda()
-        {
-            Converter.CheckCudaError(Cuda.cuInit(0));
-            Converter.CheckCudaError(Cuda.cuDevicePrimaryCtxReset(0));
-            Converter.CheckCudaError(Cuda.cuCtxCreate_v2(out CUcontext pctx, 0, 0));
-            Converter.CheckCudaError(Cuda.cuCtxGetLimit(out ulong pvalue, CUlimit.CU_LIMIT_STACK_SIZE));
-            Converter.CheckCudaError(Cuda.cuCtxSetLimit(CUlimit.CU_LIMIT_STACK_SIZE, (uint)pvalue * 25));
-            System.Console.WriteLine("Stack size " + pvalue);
-            _converter.InitializeRuntime();
-            _converter.RuntimeModule = _converter.InitializeModule(_converter.RuntimeCubinImage);
-
-            CUmodule module = _converter.RuntimeModule;
-            CUfunction meta_data_init = _converter.MetaDataInit(module);
-            MakeLinearTiling(1, out dim3 tile_size, out dim3 tiles);
-            var res = Cuda.cuLaunchKernel(
-                meta_data_init,
-                tiles.x, tiles.y, tiles.z, // grid has one block.
-                tile_size.x, tile_size.y, tile_size.z, // n threads.
-                0, // no shared memory
-                default(CUstream),
-                (IntPtr)IntPtr.Zero,
-                (IntPtr)IntPtr.Zero
-            );
-            Converter.CheckCudaError(res);
-            res = Cuda.cuCtxSynchronize(); // Make sure it's copied back to host.
-            Converter.CheckCudaError(res);
-            CUfunction type_init = _converter.TypeInit(module);
-            res = Cuda.cuLaunchKernel(
-                type_init,
-                tiles.x, tiles.y, tiles.z, // grid has one block.
-                tile_size.x, tile_size.y, tile_size.z, // n threads.
-                0, // no shared memory
-                default(CUstream),
-                (IntPtr)IntPtr.Zero,
-                (IntPtr)IntPtr.Zero
-            );
-            Converter.CheckCudaError(res);
-            res = Cuda.cuCtxSynchronize(); // Make sure it's copied back to host.
-            Converter.CheckCudaError(res);
-
-            // Now reset the stack size.
-            Converter.CheckCudaError(Cuda.cuCtxSetLimit(CUlimit.CU_LIMIT_STACK_SIZE, (uint)pvalue));
-        }
 
         public static Parallel Singleton()
         {
@@ -219,7 +176,7 @@ namespace Campy
                     fixed (IntPtr* kernelParams = kp)
                     {
                         //MakeLinearTiling(number_of_threads, out dim3 tile_size, out dim3 tiles);
-                        MakeLinearTiling(1, out dim3 tile_size, out dim3 tiles);
+                        Campy.Utils.CudaHelpers.MakeLinearTiling(1, out Campy.Utils.CudaHelpers.dim3 tile_size, out Campy.Utils.CudaHelpers.dim3 tiles);
 
                         res = Cuda.cuLaunchKernel(
                             ptr_to_kernel,
@@ -404,7 +361,7 @@ namespace Campy
                     var res = CUresult.CUDA_SUCCESS;
                     fixed (IntPtr* kernelParams = kp)
                     {
-                        MakeLinearTiling(number_of_threads, out dim3 tile_size, out dim3 tiles);
+                        Campy.Utils.CudaHelpers.MakeLinearTiling(number_of_threads, out Campy.Utils.CudaHelpers.dim3 tile_size, out Campy.Utils.CudaHelpers.dim3 tiles);
 
                         //MakeLinearTiling(1, out dim3 tile_size, out dim3 tiles);
 
@@ -462,68 +419,6 @@ namespace Campy
 
         private static void For(AcceleratorView view, TiledExtent extent, KernelTiledType kernel)
         {
-        }
-
-        public struct dim3
-        {
-            public uint x;
-            public uint y;
-            public uint z;
-        }
-
-        public static void MakeLinearTiling(int size, out dim3 tile_size, out dim3 tiles)
-        {
-            int max_dimensionality = 3;
-            int[] blocks = new int[10];
-            for (int j = 0; j < max_dimensionality; ++j)
-                blocks[j] = 1;
-            int[] max_threads = new int[]{ 1024, 1024, 64 };
-            int[] max_blocks = new int[] { 65535, 65535, 65535 };
-            int[] threads = new int[10];
-            for (int j = 0; j < max_dimensionality; ++j)
-                threads[j] = 1;
-            int b = size / (max_threads[0] * max_blocks[0]);
-            if (b == 0)
-            {
-                b = size / max_threads[0];
-                if (size % max_threads[0] != 0)
-                    b++;
-
-                if (b == 1)
-                    max_threads[0] = size;
-
-                // done. return the result.
-                blocks[0] = b;
-                threads[0] = max_threads[0];
-                SetBlockAndThreadDim(blocks, threads, max_dimensionality, out tile_size, out tiles);
-                return;
-            }
-
-            int sqrt_size = (int)Math.Sqrt((float)size / max_threads[0]);
-            sqrt_size++;
-
-            int b2 = sqrt_size / max_blocks[1];
-            if (b2 == 0)
-            {
-                b = sqrt_size;
-
-                // done. return the result.
-                blocks[0] = blocks[1] = b;
-                threads[0] = max_threads[0];
-                SetBlockAndThreadDim(blocks, threads, max_dimensionality, out tile_size, out tiles);
-                return;
-            }
-            throw new Exception();
-        }
-
-        private static void SetBlockAndThreadDim(int[] blocks, int[] threads, int max_dimensionality, out dim3 tile_size, out dim3 tiles)
-        {
-            tiles.x = (uint)blocks[0];
-            tiles.y = (uint)blocks[1];
-            tiles.z = (uint)blocks[2];
-            tile_size.x = (uint)threads[0];
-            tile_size.y = (uint)threads[1];
-            tile_size.z = (uint)threads[2];
         }
     }
 }

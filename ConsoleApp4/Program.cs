@@ -32,26 +32,14 @@ namespace ConsoleApp4
 
             //int n = 4;
 
-            //string[] data = new string[] { "hihihihi", "there" };
-            //int n2 = data.Length;
-            //Campy.Parallel.For(n2, i =>
-            //{
-            //    data[i] = data[i].Substring(0, 3);
-            //});
+            string[] data = new string[] { "hihihihi", "there" };
+            int n2 = data.Length;
+            Campy.Parallel.For(n2, i =>
+            {
+                data[i] = data[i].Substring(0, 3);
+            });
 
-
-
-            //int[] t1 = new int[n];
-            //Campy.Parallel.For(n, i => t1[i] = i);
-            //for (int i = 0; i < n; ++i) if (t1[i] != i) throw new Exception();
-
-            //double[] buffer = new double[] { 0.1 };
-            //Campy.Parallel.For(buffer.Length, k =>
-            //{
-            //    buffer[k] = Math.Sin(buffer[k]);
-            //});
-
-            FFTC.FFT_Test();
+           // FFTC.FFT_Test();
         }
     }
 
