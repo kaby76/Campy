@@ -517,7 +517,7 @@ namespace Campy.Compiler
             {
                 var fn = mr_dt.Module.Assembly.FullName;
                 // Find in Campy.Runtime.
-                string yopath = @"C:\Users\kenne\Documents\Campy\Campy.Runtime\Corlib\bin\Debug\netstandard1.3\corlib.dll";
+                string yopath = @"C:\Users\kenne\Documents\Campy2\Campy.Runtime\Corlib\bin\Debug\netstandard1.3\corlib.dll";
                 Mono.Cecil.ModuleDefinition md = Mono.Cecil.ModuleDefinition.ReadModule(yopath);
                 var sub = mr_dt.SubstituteMonoTypeReference(md);
                 foreach (var meth in sub.Methods)
@@ -611,7 +611,7 @@ namespace Campy.Compiler
                         var fn = mr_dt.Module.Assembly.FullName;
                         // Find in Campy.Runtime.
                         string yopath =
-                            @"C:\Users\kenne\Documents\Campy\Campy.Runtime\Corlib\bin\Debug\netstandard1.3\corlib.dll";
+                            @"C:\Users\kenne\Documents\Campy2\Campy.Runtime\Corlib\bin\Debug\netstandard1.3\corlib.dll";
                         Mono.Cecil.ModuleDefinition md = Mono.Cecil.ModuleDefinition.ReadModule(yopath);
                         var sub = mr_dt.SubstituteMonoTypeReference(md);
                         foreach (var meth in sub.Methods)

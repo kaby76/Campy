@@ -1203,19 +1203,17 @@ namespace Campy.Compiler
                 var as_name = mr.Module.Assembly.Name;
 
                 // Find the specific function called.
-                var xx = Campy.Utils.DictionaryHelpers.PartialMatch(
-                    Converter.built_in_functions,
-                    demangled_name,
-                    (string a, string b) => a.Contains(b) || b.Contains(a));
-                ValueRef fv = xx.FirstOrDefault();
+                var xx = Converter.built_in_functions.Where(t => t.Key.Contains(demangled_name) || demangled_name.Contains(t.Key));
+                var first_kv_pair = xx.FirstOrDefault();
+                ValueRef fv = first_kv_pair.Value;
                 var t_fun = LLVM.TypeOf(fv);
                 var t_fun_con = LLVM.GetTypeContext(t_fun);
                 var context = LLVM.GetModuleContext(Converter.global_llvm_module);
 
-                tInternalCall mat = null;
-                foreach (tInternalCall ci in BclRewrites.InternalCalls)
+                Runtime.BclNativeMethod mat = null;
+                foreach (Runtime.BclNativeMethod ci in Runtime.BclNativeMethods)
                 {
-                    if (ci._fn == full_name)
+                    if (ci._short_name == full_name)
                     {
                         mat = ci;
                         break;
@@ -4634,39 +4632,20 @@ namespace Campy.Compiler
                 ValueRef llvm_cstr = LLVM.ConstString(str, (uint)str.Length, false);
                 args[0] = llvm_cstr;
                 string name = "_Z29SystemString_FromCharPtrASCIIPc";
-                var fv = Converter.built_in_functions["_Z29SystemString_FromCharPtrASCIIPc"];
+
+                var list = Runtime.BclNativeMethods.ToList();
+                foreach (var l in list) System.Console.WriteLine("l = " + l._native_name);
+
+                var list2 = Runtime.PtxFunctions.ToList();
+                foreach (var l in list2) System.Console.WriteLine("l = " + l);
+
+                var f = list2.Where(t => t._mangled_name == name).First();
+                ValueRef fv = f._valueref;
                 var call = LLVM.BuildCall(Builder, fv, args, name);
                 state._stack.Push(new Value(call));
 
-                // Set up return. For now, always allocate buffer.
-                // Note function return is type of third parameter.
-                //var return_type = mat._returnType.ToTypeRef();
-                //var return_buffer = LLVM.BuildAlloca(Builder, return_type, "");
-                //LLVM.SetAlignment(return_buffer, 64);
-                //LLVM.PositionBuilderAtEnd(Builder, this.Block.BasicBlock);
-
-                //// Set up call.
-                //var pt = LLVM.BuildPointerCast(Builder, t.V,
-                //    LLVM.PointerType(LLVM.VoidType(), 0), "");
-                //var pp = LLVM.BuildPointerCast(Builder, param_buffer,
-                //    LLVM.PointerType(LLVM.VoidType(), 0), "");
-                //var pr = LLVM.BuildPointerCast(Builder, return_buffer,
-                //    LLVM.PointerType(LLVM.VoidType(), 0), "");
-
-                //args[0] = pt;
-                //args[1] = pp;
-                //args[2] = pr;
-
-                //var call = LLVM.BuildCall(Builder, fv, args, name);
-
-                //if (ret)
-                //{
-                //    var load = LLVM.BuildLoad(Builder, return_buffer, "");
-                //    state._stack.Push(new Value(load));
-                //}
-
-                //if (Campy.Utils.Options.IsOn("jit_trace"))
-                //    System.Console.WriteLine(call.ToString());
+                if (Campy.Utils.Options.IsOn("jit_trace"))
+                    System.Console.WriteLine(call.ToString());
             }
 
             return Next;
@@ -4925,7 +4904,7 @@ namespace Campy.Compiler
             if (the_entry == null)
             {
                 MethodReference mr = method;
-                // Call PTX method.
+                // Call BCL/PTX InternalCall method.
                 Mono.Cecil.MethodReturnType rt = mr.MethodReturnType;
                 Mono.Cecil.TypeReference tr = rt.ReturnType;
                 var ret = tr.FullName != "System.Void";
@@ -4950,26 +4929,26 @@ namespace Campy.Compiler
                 var demangled_name = m.Groups["name"].Value;
                 demangled_name = demangled_name.Replace("::", "_");
                 demangled_name = demangled_name.Replace(".", "_");
+                demangled_name = demangled_name.Replace("__", "_");
 
                 BuilderRef bu = this.Builder;
                 var as_name = mr.Module.Assembly.Name;
 
-                tInternalCall mat = null;
-                foreach (tInternalCall ci in BclRewrites.InternalCalls)
-                {
-                    if (ci._fn == full_name)
+                Runtime.BclNativeMethod mat = null;
+                var xx = Runtime.BclNativeMethods
+                    .Where(t =>
                     {
-                        mat = ci;
-                        break;
-                    }
-                }
+                        return t._full_name == full_name;
+                    });
 
+                var xxx = xx.ToList();
                 // Find the specific function called.
-                var xx = Campy.Utils.DictionaryHelpers.PartialMatch(
-                    Converter.built_in_functions,
-                    demangled_name,
-                    (string a, string b) => a.Contains(b) || b.Contains(a));
-                ValueRef fv = xx.FirstOrDefault();
+                Runtime.BclNativeMethod first_kv_pair = xx.FirstOrDefault();
+                if (first_kv_pair == null)
+                    throw new Exception("Yikes.");
+
+                Runtime.PtxFunction fffv = Runtime.PtxFunctions.Where(t => t._short_name == first_kv_pair._native_name).First();
+                ValueRef fv = fffv._valueref;
                 var t_fun = LLVM.TypeOf(fv);
                 var t_fun_con = LLVM.GetTypeContext(t_fun);
                 var context = LLVM.GetModuleContext(Converter.global_llvm_module);

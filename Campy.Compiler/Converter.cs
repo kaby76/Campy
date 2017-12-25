@@ -48,7 +48,7 @@ namespace Campy.Compiler
                     return kv.Value;
             }
 
-            tr = BclRewrites.RewriteType(tr);
+            tr = Runtime.RewriteType(tr);
 
             try
             {
@@ -578,11 +578,9 @@ namespace Campy.Compiler
                     LLVM.FunctionType(LLVM.Int32Type(),
                         new TypeRef[] { }, false)));
 
-            Campy.Compiler.Runtime.ParseBCL(this);
-
             InitializeBCLRewrites();
 
-            BclRewrites.Initialize();
+            Runtime.Initialize();
 
             InitCuda();
         }

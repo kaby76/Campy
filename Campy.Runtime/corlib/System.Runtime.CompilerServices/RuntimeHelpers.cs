@@ -26,6 +26,7 @@ namespace System.Runtime.CompilerServices {
 	public static class RuntimeHelpers {
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+        [GPUBCLAttribute("System_Runtime_CompilerServices_InitializeArray")]
 		extern public static void InitializeArray(Array array, RuntimeFieldHandle fldHandle);
 
 	}

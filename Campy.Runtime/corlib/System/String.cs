@@ -40,33 +40,41 @@ namespace System {
 		private int length;
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+        [System.GPUBCLAttribute("System_String_ctor_CharInt32")]
 		extern public String(char c, int count);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		extern public String(char[] chars);
+        extern public String(char[] chars);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		extern public String(char[] chars, int startIndex, int length);
-		
-		#region Private Internal Calls
+        [System.GPUBCLAttribute("System_String_ctor_CharAIntInt")]
+        extern public String(char[] chars, int startIndex, int length);
+
+        #region Private Internal Calls
+        
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        [System.GPUBCLAttribute("System_String_ctor_StringIntInt")]
+        extern private String(string str, int startIndex, int length);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		extern private String(string str, int startIndex, int length);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
+        [GPUBCLAttribute("System_String_InternalConcat")]
 		extern private static string InternalConcat(string str0, string str1);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+        [GPUBCLAttribute("System_String_InternalReplace")]
 		extern private string InternalReplace(string oldValue, string newValue);
 
 		// trimType: bit 0 = start; bit 1 = end
 		[MethodImpl(MethodImplOptions.InternalCall)]
+        [GPUBCLAttribute("System_String_InternalTrim")]
 		extern private string InternalTrim(char[] trimChars, int trimType);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+        [GPUBCLAttribute("System_String_InternalIndexOf")]
 		extern private int InternalIndexOf(char value, int startIndex, int count, bool forwards);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+        [GPUBCLAttribute("System_String_InternalIndexOfAny")]
 		extern private int InternalIndexOfAny(char[] anyOf, int startIndex, int count, bool forward);
 
 		#endregion
@@ -80,6 +88,7 @@ namespace System {
 		[IndexerName("Chars")]
 		extern virtual public char this[int index] {
 			[MethodImpl(MethodImplOptions.InternalCall)]
+            [GPUBCLAttribute("System_String_get_Chars")]
 			get;
 		}
 
@@ -551,9 +560,11 @@ namespace System {
 		}
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		extern public static bool Equals(string a, string b);
+        [GPUBCLAttribute("System_String_Equals")]
+        extern public static bool Equals(string a, string b);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+        [GPUBCLAttribute("System_String_GetHashCode")]
 		extern public override int GetHashCode();
 
 		#endregion
