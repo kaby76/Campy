@@ -4871,24 +4871,27 @@ namespace Campy.Compiler
 
         public override Inst Convert(Converter converter, State state)
         {
-            // Create a new object of a reference type or a new instance of a value type.
+            // The JIT of a call instructure requires a little explanation. The operand
+            // for the instruction is a MethodReference, which is a C# method of some type.
+            // Note, however, there are two cases here. One case is that the method has
+            // CLI code that implements the method. The other are those that are DLL references.
+            // These have no code that Mono.Cecil can pick up as it is usally C-code, which
+            // is compiled for a specific target. The function signature of the native function
+            // is not necessarily the same as that declared in the C#/NET assembly. This method,
+            // Convert(), needs to handle native function calls carefully. These functions will
+            // create native structures that C# references.
+
+            // Get some basic information about the instruction, method, and type of object to create.
             object operand = this.Operand;
-            
-            // Get the type of object to create.
             MethodReference method = operand as MethodReference;
             TypeReference type = method.DeclaringType;
-
             if (type == null)
                 throw new Exception("Cannot get type of object/value for newobj instruction.");
 
-            // Create type.
-            var llvm_type = type.ToTypeRef();
-            var td = type.Resolve();
-
+            // Find the entry block corresponding to the method called in this instruction.
+            // Note, if there is no block, then it's a native C call.
             var inst = this;
-
             CFG graph = (CFG)this.Block._graph;
-
             var name = Converter.MethodName(method);
             CFG.Vertex the_entry = this.Block._graph.Vertices.Where(node
                 =>
@@ -4901,48 +4904,46 @@ namespace Campy.Compiler
                 else return false;
             }).ToList().FirstOrDefault();
 
+            // JIT type into LLVM.
+            var llvm_type = type.ToTypeRef();
+            var td = type.Resolve();
+
+
             if (the_entry == null)
             {
-                MethodReference mr = method;
-                // Call BCL/PTX InternalCall method.
-                Mono.Cecil.MethodReturnType rt = mr.MethodReturnType;
-                Mono.Cecil.TypeReference tr = rt.ReturnType;
-                var ret = tr.FullName != "System.Void";
-                var HasScalarReturnValue = ret && !tr.IsStruct();
-                var HasStructReturnValue = ret && tr.IsStruct();
-                var HasThis = mr.HasThis;
-                var NumberOfArguments = mr.Parameters.Count
-                                        + (HasThis ? 1 : 0)
-                                        + (HasStructReturnValue ? 1 : 0);
+                // Calling BCL native (C-code) layer. First, get information on the C# interface.
+                Mono.Cecil.MethodReturnType cs_method_return_type_aux = method.MethodReturnType;
+                Mono.Cecil.TypeReference cs_method_return_type = cs_method_return_type_aux.ReturnType;
+                var cs_has_ret = cs_method_return_type.FullName != "System.Void";
+                var cs_HasScalarReturnValue = cs_has_ret && !cs_method_return_type.IsStruct();
+                var cs_HasStructReturnValue = cs_has_ret && cs_method_return_type.IsStruct();
+                var cs_HasThis = method.HasThis;
+                var cs_NumberOfArguments = method.Parameters.Count
+                                        + (cs_HasThis ? 1 : 0)
+                                        + (cs_HasStructReturnValue ? 1 : 0);
                 int locals = 0;
                 var NumberOfLocals = locals;
-                int xret = (HasScalarReturnValue || HasStructReturnValue) ? 1 : 0;
-                int xargs = NumberOfArguments;
+                int cs_xret = (cs_HasScalarReturnValue || cs_HasStructReturnValue) ? 1 : 0;
+                int cs_xargs = cs_NumberOfArguments;
 
-                name = mr.Name;
-                var full_name = mr.FullName;
-                // For now, look for qualified name not including parameters.
+                // Search for native function in loaded libraries.
+                name = method.Name;
+                var full_name = method.FullName;
                 Regex regex = new Regex(@"^[^\s]+\s+(?<name>[^\(]+).+$");
                 Match m = regex.Match(full_name);
-                if (!m.Success)
-                    throw new Exception();
+                if (!m.Success) throw new Exception();
                 var demangled_name = m.Groups["name"].Value;
                 demangled_name = demangled_name.Replace("::", "_");
                 demangled_name = demangled_name.Replace(".", "_");
                 demangled_name = demangled_name.Replace("__", "_");
-
                 BuilderRef bu = this.Builder;
-                var as_name = mr.Module.Assembly.Name;
-
-                Runtime.BclNativeMethod mat = null;
+                var as_name = method.Module.Assembly.Name;
                 var xx = Runtime.BclNativeMethods
                     .Where(t =>
                     {
                         return t._full_name == full_name;
                     });
-
                 var xxx = xx.ToList();
-                // Find the specific function called.
                 Runtime.BclNativeMethod first_kv_pair = xx.FirstOrDefault();
                 if (first_kv_pair == null)
                     throw new Exception("Yikes.");
@@ -4969,13 +4970,13 @@ namespace Campy.Compiler
                     LLVM.PositionBuilderBefore(Builder, beginning);
                     var parameter_type = LLVM.ArrayType(
                         LLVM.Int8Type(),
-                        (uint) mr.Parameters.Count * 8);
+                        (uint)method.Parameters.Count * 8);
                     var param_buffer = LLVM.BuildAlloca(Builder,
                         parameter_type, "");
                     LLVM.SetAlignment(param_buffer, 64);
                     LLVM.PositionBuilderAtEnd(Builder, this.Block.BasicBlock);
                     int offset = 0;
-                    for (int i = mr.Parameters.Count - 1; i >= 0; i--)
+                    for (int i = method.Parameters.Count - 1; i >= 0; i--)
                     {
                         Value p = state._stack.Pop();
 
@@ -4993,16 +4994,11 @@ namespace Campy.Compiler
                             v);
                     }
 
-                    if (HasThis)
-                    {
-                        t = state._stack.Pop();
-                    }
-
                     // Set up return. For now, always allocate buffer.
                     // Note function return is type of third parameter.
-                    var return_type = mat._returnType.ToTypeRef();
-                    var return_buffer = LLVM.BuildAlloca(Builder, return_type, "");
-                    LLVM.SetAlignment(return_buffer, 64);
+                    var native_return_type = first_kv_pair._returnType.ToTypeRef();
+                    var native_return_buffer = LLVM.BuildAlloca(Builder, native_return_type, "");
+                    LLVM.SetAlignment(native_return_buffer, 64);
                     LLVM.PositionBuilderAtEnd(Builder, this.Block.BasicBlock);
 
                     // Set up call.
@@ -5010,7 +5006,7 @@ namespace Campy.Compiler
                         LLVM.PointerType(LLVM.VoidType(), 0), "");
                     var pp = LLVM.BuildPointerCast(Builder, param_buffer,
                         LLVM.PointerType(LLVM.VoidType(), 0), "");
-                    var pr = LLVM.BuildPointerCast(Builder, return_buffer,
+                    var pr = LLVM.BuildPointerCast(Builder, native_return_buffer,
                         LLVM.PointerType(LLVM.VoidType(), 0), "");
 
                     args[0] = pt;
@@ -5019,14 +5015,19 @@ namespace Campy.Compiler
 
                     var call = LLVM.BuildCall(Builder, fv, args, name);
 
-                    if (ret)
-                    {
-                        var load = LLVM.BuildLoad(Builder, return_buffer, "");
-                        state._stack.Push(new Value(load));
-                    }
+
+                    // There is always a return from a newobj instruction.
+                    //var load = LLVM.BuildLoad(Builder, native_return_buffer, "");
+
+                    // Cast the damn object into the right type.
+                    Value ptr_cast = new Value(LLVM.BuildBitCast(Builder,
+                        native_return_buffer,
+                        llvm_type, ""));
+
+                    state._stack.Push(ptr_cast);
 
                     if (Campy.Utils.Options.IsOn("jit_trace"))
-                        System.Console.WriteLine(call.ToString());
+                        System.Console.WriteLine(ptr_cast);
                 }
 
                 return Next;
