@@ -457,7 +457,7 @@ namespace Campy.Compiler
                     case Mono.Cecil.Cil.FlowControl.Next:
                     case Mono.Cecil.Cil.FlowControl.Phi:
                     //case Mono.Cecil.Cil.FlowControl.Return:
-                    //case Mono.Cecil.Cil.FlowControl.Throw:
+                    case Mono.Cecil.Cil.FlowControl.Throw:
                         {
                             int next = method_definition.Body.Instructions.ToList().FindIndex(
                                            n =>
@@ -657,37 +657,6 @@ namespace Campy.Compiler
                     }
                 }
             }
-            //Dictionary<TypeReference, System.Type> additional = new Dictionary<TypeReference, System.Type>();
-            //var mr_gp = method_reference.GenericParameters;
-            //var mr_hgp = method_reference.HasGenericParameters;
-            //var mr_dt_hgp = method_reference.DeclaringType.HasGenericParameters;
-            //var mr_igi = method_reference.IsGenericInstance;
-            //var mr_dt_igi = method_reference.DeclaringType.IsGenericInstance;
-            //if (mr_igi)
-            //{
-            //    GenericInstanceMethod i = method_reference as GenericInstanceMethod;
-            //    var mr_hga = i.HasGenericArguments;
-            //}
-            //if (mr_dt_igi)
-            //{
-            //    GenericInstanceType git = mr_dt as GenericInstanceType;
-            //    var mr_dt_hga = git.HasGenericArguments;
-            //    Collection<TypeReference> ga = git.GenericArguments;
-            //    var e1 = git.ElementType;
-            //    var e2 = git.GetElementType();
-            //    Collection<GenericParameter> gg = e1.GenericParameters;
-            //    // Map parameter to instantiated type.
-            //    for (int i = 0; i < gg.Count; ++i)
-            //    {
-            //        GenericParameter pp = gg[i];
-            //        TypeReference qq = ga[i];
-            //        TypeReference trrr = pp as TypeReference;
-            //        var system_type = qq
-            //            .ToSystemType();
-            //        if (system_type == null) throw new Exception("Failed to convert " + qq);
-            //        additional[pp] = system_type;
-            //    }
-            //}
         }
     }
 }

@@ -427,18 +427,13 @@ int CorLibDone = 0;
 __device__
 void Type_Init() {
 	U32 i;
-	Gprintf("hi there\n");
 	// Build all the types needed by the interpreter.
 	numInitTypes = sizeof(typeInit) / sizeof(typeInit[0]);
-	Gprintf("hi there2\n");
 	types = (tMD_TypeDef**)mallocForever(numInitTypes * sizeof(tMD_TypeDef*));
 	for (i=0; i<numInitTypes; i++) {
 		if (typeInit[i].assemblyName != NULL) {
 			// Normal type initialisation
-			Gprintf("hi there3\n");
 			types[i] = MetaData_GetTypeDefFromFullName((STRING)typeInit[i].assemblyName, (STRING)typeInit[i].nameSpace, (STRING)typeInit[i].name);
-			
-			printf("Here asdf %s\n", (STRING)typeInit[i].name);
 			
 			// For the pre-defined system types, fill in the well-known memory sizes
 			types[i]->stackType = typeInit[i].stackType;

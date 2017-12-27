@@ -25,6 +25,7 @@
 #include <cuda.h>
 #else
 #define __device__
+#define __global__
 #endif
 
 #include <stdio.h>

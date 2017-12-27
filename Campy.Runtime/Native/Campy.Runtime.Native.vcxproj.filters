@@ -293,5 +293,8 @@
     <CudaCompile Include="JIT_Execute.c">
       <Filter>Source Files</Filter>
     </CudaCompile>
+    <CudaCompile Include="Filesystem.c">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
   </ItemGroup>
 </Project>

@@ -117,6 +117,7 @@
     <ClCompile Include="corlib.c" />
     <ClCompile Include="Delegate.c" />
     <ClCompile Include="dna.c" />
+    <ClCompile Include="Filesystem.c" />
     <ClCompile Include="Finalizer.c" />
     <ClCompile Include="Generics.c" />
     <ClCompile Include="Gstring.c" />
@@ -131,7 +132,7 @@
     <ClCompile Include="MethodState.c" />
     <ClCompile Include="PInvoke.c" />
     <ClCompile Include="RVA.c" />
-    <ClCompile Include="Source.c" />
+    <ClCompile Include="StandAloneTestProgram.c" />
     <ClCompile Include="Sys.c" />
     <ClCompile Include="System.Array.c" />
     <ClCompile Include="System.Char.c" />
@@ -165,6 +166,7 @@
     <ClInclude Include="Config.h" />
     <ClInclude Include="Delegate.h" />
     <ClInclude Include="EvalStack.h" />
+    <ClInclude Include="Filesystem.h" />
     <ClInclude Include="Finalizer.h" />
     <ClInclude Include="Generics.h" />
     <ClInclude Include="Gprintf.h" />

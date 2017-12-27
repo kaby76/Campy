@@ -1495,8 +1495,11 @@ namespace Campy.Compiler
                         if (Campy.Utils.Options.IsOn("state_computation_trace"))
                             bb.StateOut.OutputTrace();
                     }
-                    if (last_inst != null && (last_inst.OpCode.FlowControl == Mono.Cecil.Cil.FlowControl.Next
-                        || last_inst.OpCode.FlowControl == FlowControl.Call))
+                    if (last_inst != null
+                        && (
+                            last_inst.OpCode.FlowControl == Mono.Cecil.Cil.FlowControl.Next
+                            || last_inst.OpCode.FlowControl == FlowControl.Call
+                            || last_inst.OpCode.FlowControl == FlowControl.Throw))
                     {
                         // Need to insert instruction to branch to fall through.
                         var edge = bb._graph.SuccessorEdges(bb).FirstOrDefault();

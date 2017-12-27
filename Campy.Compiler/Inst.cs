@@ -4908,10 +4908,12 @@ namespace Campy.Compiler
             var llvm_type = type.ToTypeRef();
             var td = type.Resolve();
 
-
             if (the_entry == null)
             {
-                // Calling BCL native (C-code) layer. First, get information on the C# interface.
+                // As noted in JIT_execute.c code of BCL:
+                // "All internal constructors MUST allocate their own 'this' objects"
+                // So, we don't call any allocator here, just the internal function in the BCL,
+                // as that function will do the allocation over on the GPU.
                 Mono.Cecil.MethodReturnType cs_method_return_type_aux = method.MethodReturnType;
                 Mono.Cecil.TypeReference cs_method_return_type = cs_method_return_type_aux.ReturnType;
                 var cs_has_ret = cs_method_return_type.FullName != "System.Void";
@@ -4953,7 +4955,6 @@ namespace Campy.Compiler
                 var t_fun = LLVM.TypeOf(fv);
                 var t_fun_con = LLVM.GetTypeContext(t_fun);
                 var context = LLVM.GetModuleContext(Converter.global_llvm_module);
-
 
                 {
                     ValueRef[] args = new ValueRef[3];
@@ -5015,7 +5016,6 @@ namespace Campy.Compiler
 
                     var call = LLVM.BuildCall(Builder, fv, args, name);
 
-
                     // There is always a return from a newobj instruction.
                     //var load = LLVM.BuildLoad(Builder, native_return_buffer, "");
 
@@ -5034,60 +5034,81 @@ namespace Campy.Compiler
             }
 
             {
-                int nargs = the_entry.NumberOfArguments;
-                int ret = the_entry.HasScalarReturnValue ? 1 : 0;
+                // Allocate an object of the correct type, then call the constructor. Note,
+                // allocation must call the GPU BCL native code, but the constructor is in CLI,
+                // which we have discovered as corresponding to "the_entry".
+                // obj = Heap_AllocType(pConstructorDef->pParentType);
+                // To do this, we must have the type defined in the meta for the BCL!!!
+                // To do that, we have to define up front the classes used in this code to the BCL.
+                // The BCL is extended to construct types for this kernel!
 
-                // First, create a struct.
-                var entry = this.Block.Entry.BasicBlock;
-                var beginning = LLVM.GetFirstInstruction(entry);
-                LLVM.PositionBuilderBefore(Builder, beginning);
-                var new_obj =
-                    LLVM.BuildAlloca(Builder, llvm_type,
-                        ""); // Allocates struct on stack, but returns a pointer to struct.
-                LLVM.PositionBuilderAtEnd(Builder, this.Block.BasicBlock);
-                if (Campy.Utils.Options.IsOn("jit_trace"))
-                    System.Console.WriteLine(new Value(new_obj));
-
-                BuilderRef bu = this.Builder;
-                ValueRef fv = the_entry.MethodValueRef;
-                var t_fun = LLVM.TypeOf(fv);
-                var t_fun_con = LLVM.GetTypeContext(t_fun);
-                var context = LLVM.GetModuleContext(Converter.global_llvm_module);
-                if (t_fun_con != context) throw new Exception("not equal");
-
-                // Set up args, type casting if required.
-                ValueRef[] args = new ValueRef[nargs];
-                for (int k = nargs - 1; k >= 1; --k)
                 {
-                    Value v = state._stack.Pop();
-                    ValueRef par = LLVM.GetParam(fv, (uint) k);
-                    ValueRef value = v.V;
-                    if (LLVM.TypeOf(value) != LLVM.TypeOf(par))
-                    {
-                        if (LLVM.GetTypeKind(LLVM.TypeOf(par)) == TypeKind.PointerTypeKind)
-                        {
-                            value = LLVM.BuildPointerCast(Builder, value, LLVM.TypeOf(par), "");
-                        }
-                        else
-                        {
-                            value = LLVM.BuildBitCast(Builder, value, LLVM.TypeOf(par), "");
-                        }
-                    }
-                    args[k] = value;
+                    // Create object via Heap_Alloc, e.g.,
+                    // (tSystemString*)Heap_Alloc(types[TYPE_SYSTEM_STRING]);
+                    ValueRef[] args = new ValueRef[2];
+                    args[0] = LLVM.ConstInt(LLVM.Int32Type(), 0, false);
+                    var call = LLVM.BuildCall(Builder, fv, args, name);
+                    state._stack.Push(new Value(call));
+                    if (Campy.Utils.Options.IsOn("jit_trace"))
+                        System.Console.WriteLine(call);
                 }
-                args[0] = new_obj;
 
-                var call = LLVM.BuildCall(Builder, fv, args, "");
-                if (Campy.Utils.Options.IsOn("jit_trace"))
-                    System.Console.WriteLine(new Value(call));
+                {
+                    int nargs = the_entry.NumberOfArguments;
+                    int ret = the_entry.HasScalarReturnValue ? 1 : 0;
 
-                var load = LLVM.BuildLoad(Builder, new_obj, "");
-                if (Campy.Utils.Options.IsOn("jit_trace"))
-                    System.Console.WriteLine(new Value(load));
+                    // First, create a struct.
+                    var entry = this.Block.Entry.BasicBlock;
+                    var beginning = LLVM.GetFirstInstruction(entry);
+                    LLVM.PositionBuilderBefore(Builder, beginning);
+                    var new_obj =
+                        LLVM.BuildAlloca(Builder, llvm_type,
+                            ""); // Allocates struct on stack, but returns a pointer to struct.
+                    LLVM.PositionBuilderAtEnd(Builder, this.Block.BasicBlock);
+                    if (Campy.Utils.Options.IsOn("jit_trace"))
+                        System.Console.WriteLine(new Value(new_obj));
 
-                state._stack.Push(new Value(load));
+                    BuilderRef bu = this.Builder;
+                    ValueRef fv = the_entry.MethodValueRef;
+                    var t_fun = LLVM.TypeOf(fv);
+                    var t_fun_con = LLVM.GetTypeContext(t_fun);
+                    var context = LLVM.GetModuleContext(Converter.global_llvm_module);
+                    if (t_fun_con != context) throw new Exception("not equal");
 
-                return Next;
+                    // Set up args, type casting if required.
+                    ValueRef[] args = new ValueRef[nargs];
+                    for (int k = nargs - 1; k >= 1; --k)
+                    {
+                        Value v = state._stack.Pop();
+                        ValueRef par = LLVM.GetParam(fv, (uint)k);
+                        ValueRef value = v.V;
+                        if (LLVM.TypeOf(value) != LLVM.TypeOf(par))
+                        {
+                            if (LLVM.GetTypeKind(LLVM.TypeOf(par)) == TypeKind.PointerTypeKind)
+                            {
+                                value = LLVM.BuildPointerCast(Builder, value, LLVM.TypeOf(par), "");
+                            }
+                            else
+                            {
+                                value = LLVM.BuildBitCast(Builder, value, LLVM.TypeOf(par), "");
+                            }
+                        }
+                        args[k] = value;
+                    }
+                    args[0] = new_obj;
+
+                    var call = LLVM.BuildCall(Builder, fv, args, "");
+                    if (Campy.Utils.Options.IsOn("jit_trace"))
+                        System.Console.WriteLine(new Value(call));
+
+                    var load = LLVM.BuildLoad(Builder, new_obj, "");
+                    if (Campy.Utils.Options.IsOn("jit_trace"))
+                        System.Console.WriteLine(new Value(load));
+
+                    state._stack.Push(new Value(load));
+
+                    return Next;
+                }
             }
         }
     }
