@@ -33,6 +33,7 @@
 #include "System.String.h"
 #include "Gstring.h"
 #include "Gprintf.h"
+#include "Filesystem.h"
 
 // Is this exe/dll file for the .NET virtual machine?
 #define DOT_NET_MACHINE 0x14c
@@ -80,8 +81,8 @@ __device__ tMetaData* CLIFile_GetMetaDataForAssembly(char *pAssemblyName) {
 		char fileName[30];
 
 		printf("In CLIFile_GetMetaDataForAssembly0\n");
-		//Gsprintf(fileName, "%s.dll", pAssemblyName);
-		pCLIFile = CLIFile_Load("corlib");
+		Gsprintf(fileName, "%s.dll", pAssemblyName);
+		pCLIFile = CLIFile_Load(fileName);
 		printf("In CLIFile_GetMetaDataForAssembly1\n");
 		//pCLIFile = CLIFile_Load(pAssemblyName);
 		//printf("In CLIFile_GetMetaDataForAssembly2\n");
@@ -98,10 +99,10 @@ __device__ unsigned char Gdata[];
 __device__ static void* LoadFileFromDisk(char *pFileName) {
 	int f;
 	void *pData = NULL;
-	char buf[1000];
 	// Crashes! Gprintf("File name = %s\n", pFileName);
-	if (Gstrcmp("corlib", pFileName) != 0)
-		return NULL;
+	int handle = Gfs_open_file(pFileName);
+	pData = Gfs_read(handle);
+
 	//f = open(pFileName, O_RDONLY|O_BINARY);
 	//if (f >= 0) {
 	//	int len;
@@ -118,7 +119,7 @@ __device__ static void* LoadFileFromDisk(char *pFileName) {
 	//	}
 	//	close(f);
 	//}
-	pData = Gdata;
+	//pData = Gdata;
 	return pData;
 }
 
