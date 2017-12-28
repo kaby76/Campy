@@ -96,12 +96,13 @@ __device__ tMetaData* CLIFile_GetMetaDataForAssembly(char *pAssemblyName) {
 
 __device__ unsigned char Gdata[];
 
-__device__ static void* LoadFileFromDisk(char *pFileName) {
-	int f;
-	void *pData = NULL;
+__device__ static void* LoadFileFromDisk(char *pFileName)
+{
+	char *pData = NULL;
 	// Crashes! Gprintf("File name = %s\n", pFileName);
-	int handle = Gfs_open_file(pFileName);
-	pData = Gfs_read(handle);
+	int handle;
+	Gfs_open_file(pFileName, &handle);
+	Gfs_read(handle, &pData);
 
 	//f = open(pFileName, O_RDONLY|O_BINARY);
 	//if (f >= 0) {
@@ -125,11 +126,8 @@ __device__ static void* LoadFileFromDisk(char *pFileName) {
 
 __device__ static tCLIFile* LoadPEFile(void *pData) {
 
-	printf("LoadPEFile\n");
-
 	tCLIFile *pRet = TMALLOC(tCLIFile);
 	memset(pRet, 0, sizeof(tCLIFile));
-	printf("LoadPEFile2\n");
 
 	unsigned char *pMSDOSHeader = (unsigned char*)&(((unsigned char*)pData)[0]);
 	unsigned char *pPEHeader;
@@ -138,66 +136,46 @@ __device__ static tCLIFile* LoadPEFile(void *pData) {
 	unsigned char *pCLIHeader;
 	unsigned char *pRawMetaData;
 
-	printf("LoadPEFile2.5\n");
-
 	int i;
-	printf("LoadPEFile2.5a\n");
 	unsigned int lfanew;
-	printf("LoadPEFile2.5b\n");
 	unsigned short machine;
-	printf("LoadPEFile2.5c\n");
 	int numSections;
-	printf("LoadPEFile2.53\n");
 	unsigned int imageBase;
 	int fileAlignment;
 	unsigned int cliHeaderRVA, cliHeaderSize;
 	unsigned int metaDataRVA, metaDataSize;
 	tMetaData *pMetaData;
-	printf("LoadPEFile2.54\n");
-	printf("In LoadPEFile2.55 %llx\n", pRet);
 	pRet->pRVA = RVA();
-	printf("LoadPEFile2.6\n");
 	pRet->pMetaData = pMetaData = MetaData();
-	printf("LoadPEFile3\n");
 	lfanew = GetU32(&(pMSDOSHeader[0x3c]));
 	pPEHeader = pMSDOSHeader + lfanew + 4;
 	pPEOptionalHeader = pPEHeader + 20;
 	pPESectionHeaders = pPEOptionalHeader + 224;
-	printf("LoadPEFile4\n");
 
 	machine = GetU16(&(pPEHeader[0]));
 	if (machine != DOT_NET_MACHINE) {
 		Gprintf("Not DOT_NET_MACHINE.\n");
 		return NULL;
 	}
-	printf("LoadPEFile5\n");
 
 	numSections = GetU16(&(pPEHeader[2]));
-	printf("LoadPEFile6\n");
-
 	imageBase = GetU32(&(pPEOptionalHeader[28]));
-	printf("LoadPEFile7\n");
 	fileAlignment = GetU32(&(pPEOptionalHeader[36]));
-	printf("LoadPEFile8\n");
 
 	for (i=0; i<numSections; i++) {
 		unsigned char *pSection = pPESectionHeaders + i * 40;
 		RVA_Create(pRet->pRVA, pData, pSection);
 	}
 
-	Gprintf("C1.\n");
-
 	cliHeaderRVA = GetU32(&(pPEOptionalHeader[208]));
 	cliHeaderSize = GetU32(&(pPEOptionalHeader[212]));
 
 	pCLIHeader = (unsigned char *)RVA_FindData(pRet->pRVA, cliHeaderRVA);
-	Gprintf("C2.\n");
 
 	metaDataRVA = GetU32(&(pCLIHeader[8]));
 	metaDataSize = GetU32(&(pCLIHeader[12]));
 	pRet->entryPoint = GetU32(&(pCLIHeader[20]));
 	pRawMetaData = (unsigned char*)RVA_FindData(pRet->pRVA, metaDataRVA);
-	Gprintf("C3.\n");
 
 	// Load all metadata
 	{
@@ -255,7 +233,6 @@ __device__ static tCLIFile* LoadPEFile(void *pData) {
 			MetaData_LoadTables(pMetaData, pRet->pRVA, pTableStream, tableStreamSize);
 		}
 	}
-	Gprintf("C4.\n");
 
 	// Mark all generic definition types and methods as such
 	//for (i=pMetaData->tables.numRows[MD_TABLE_GENERICPARAM]; i>0; i--) {
@@ -282,7 +259,6 @@ __device__ static tCLIFile* LoadPEFile(void *pData) {
 	//			Crash("Wrong generic parameter owner: 0x%08x", ownerIdx);
 	//	}
 	//}
-	Gprintf("C5.\n");
 
 	// Mark all nested classes as such
 	for (i=pMetaData->tables.numRows[MD_TABLE_NESTEDCLASS]; i>0; i--) {

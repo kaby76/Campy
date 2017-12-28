@@ -557,7 +557,7 @@ __device__ void * Gmemscan(void * addr, int c, size_t size)
 */
 __device__ char * Gstrstr(const char * s1, const char * s2)
 {
-	int l1, l2;
+	size_t l1, l2;
 
 	l2 = strlen(s2);
 	if (!l2)

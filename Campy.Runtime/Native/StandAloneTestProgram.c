@@ -6,7 +6,8 @@ extern unsigned char Gdata[];
 
 int main()
 {
-	Gfs_add_file("corlib.dll", Gdata, 267250 + 14);
+	int result;
+	Gfs_add_file("corlib.dll", Gdata, 267250 + 14, &result);
 
 	MetaData_Init();
 	Type_Init();

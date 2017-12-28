@@ -517,7 +517,6 @@ __device__ void FieldPtrTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char 
 
 	unsigned char * pSource = (unsigned char *)*ppSource;
 
-	int v;
 	*ppSource = pSource;
 }
 
@@ -629,8 +628,6 @@ __device__ void InterfaceImplTableReader(tMetaData *pThis, tRVA *pRVA, unsigned 
 	memset(p, 0, sizeof(tMD_InterfaceImpl));
 
 	unsigned char * pSource = (unsigned char *)*ppSource;
-
-	int v;
 
 	p->class_ = Coded2Index(pThis, 4, &pSource);
 
@@ -752,8 +749,6 @@ __device__ void ClassLayoutTableReader(tMetaData *pThis, tRVA *pRVA, unsigned ch
 
 	unsigned char * pSource = (unsigned char *)*ppSource;
 
-	int v;
-
 	p->packingSize = GetU16(pSource);
 	pSource += 2;
 
@@ -794,8 +789,6 @@ __device__ void EventMapTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char 
 	memset(p, 0, sizeof(tMD_EventMap));
 
 	unsigned char * pSource = (unsigned char *)*ppSource;
-
-	int v;
 
 	p->parent = Coded2Index(pThis, 2, &pSource);
 
@@ -1178,7 +1171,7 @@ __device__ void GenericParamConstraintTableReader(tMetaData *pThis, tRVA *pRVA, 
 __device__ static void* LoadSingleTable(tMetaData *pThis, tRVA *pRVA, int tableID, void **ppTable) {
 	int numRows = pThis->tables.numRows[tableID];
 	int rowLen = 0; // Number of bytes taken by each row in memory.
-	int i, row;
+	int row;
 	const char *pDef = tableDefs[tableID];
 	int defLen = (int)Gstrlen(pDef);
 	void *pRet;

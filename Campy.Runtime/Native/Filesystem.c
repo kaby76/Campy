@@ -22,27 +22,28 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
+#include "Gstring.h"
 #include "Filesystem.h"
 
-static char** names;
-static char** files;
-static size_t* lengths;
-static boolean init;
-static int initial_size;
+__device__ static char** names;
+__device__ static char** files;
+__device__ static size_t* lengths;
+__device__ static boolean init;
+__device__ static int initial_size;
 
-__global__ void Gfs_init()
+__device__ void Gfs_init()
 {
 	initial_size = 10;
-	names = malloc(initial_size * sizeof(char*));
+	names = (char**)malloc(initial_size * sizeof(char*));
 	memset(names, 0, initial_size * sizeof(char*));
-	files = malloc(initial_size * sizeof(char*));
+	files = (char**)malloc(initial_size * sizeof(char*));
 	memset(files, 0, initial_size * sizeof(char*));
-	lengths = malloc(initial_size * sizeof(size_t));
+	lengths = (size_t*)malloc(initial_size * sizeof(size_t));
 	memset(lengths, 0, initial_size * sizeof(size_t));
 	init = 1;
 }
 
-__global__ int Gfs_add_file(char * name, char * file, size_t length)
+__device__ void Gfs_add_file(char * name, char * file, size_t length, int * result)
 {
 	if (init == 0) Gfs_init();
 	char ** ptr_name = names;
@@ -52,11 +53,12 @@ __global__ int Gfs_add_file(char * name, char * file, size_t length)
 	{
 		if (*ptr_name == NULL)
 		{
-			*ptr_name = strdup(name);
-			*ptr_file = malloc(length);
+			*ptr_name = Gstrdup(name);
+			*ptr_file = (char *)malloc(length);
 			memcpy(*ptr_file, file, length);
 			*ptr_length = length;
-			return 1;
+			*result = i;
+			return;
 		}
 		else
 		{
@@ -65,10 +67,10 @@ __global__ int Gfs_add_file(char * name, char * file, size_t length)
 			ptr_length++;
 		}
 	}
-	return 0;
+	*result = -1;
 }
 
-__global__ int Gfs_remove_file(char * name)
+__device__ void Gfs_remove_file(char * name, int * result)
 {
 	// Delete a pseudo file system for the meta system to work,
 	if (init == 0) Gfs_init();
@@ -77,14 +79,15 @@ __global__ int Gfs_remove_file(char * name)
 	size_t * ptr_length = lengths;
 	for (int i = 0; i < initial_size; ++i)
 	{
-		if (*ptr_name != NULL && strcmp(*ptr_name, name) == 0)
+		if (*ptr_name != NULL && Gstrcmp(*ptr_name, name) == 0)
 		{
 			free(*ptr_name);
 			*ptr_name = NULL;
 			free(*ptr_file);
 			*ptr_file = NULL;
 			*ptr_length = 0;
-			return 1;
+			*result = i;
+			return;
 		}
 		else
 		{
@@ -93,10 +96,10 @@ __global__ int Gfs_remove_file(char * name)
 			ptr_length++;
 		}
 	}
-	return 0;
+	*result = -1;
 }
 
-__global__ int Gfs_open_file(char * name)
+__device__ void Gfs_open_file(char * name, int * result)
 {
 	if (init == 0) Gfs_init();
 	char ** ptr_name = names;
@@ -104,9 +107,10 @@ __global__ int Gfs_open_file(char * name)
 	size_t * ptr_length = lengths;
 	for (int i = 0; i < initial_size; ++i)
 	{
-		if (*ptr_name != NULL && strcmp(*ptr_name, name) == 0)
+		if (*ptr_name != NULL && Gstrcmp(*ptr_name, name) == 0)
 		{
-			return i;
+			*result = i;
+			return;
 		}
 		else
 		{
@@ -115,24 +119,24 @@ __global__ int Gfs_open_file(char * name)
 			ptr_length++;
 		}
 	}
-	return -1;
+	*result = -1;
 }
 
-__global__ int Gfs_close_file(int file)
+__device__ void Gfs_close_file(int file, int * result)
 {
 	if (init == 0) Gfs_init();
-	return 0;
+	*result = 0;
 }
 
-__global__ char * Gfs_read(int file)
+__device__ void Gfs_read(int file, char ** result)
 {
 	if (init == 0) Gfs_init();
-	return files[file];
+	*result = files[file];
 }
 
-__global__ size_t Gfs_length(int file)
+__device__ void Gfs_length(int file, size_t * result)
 {
 	if (init == 0) Gfs_init();
-	return lengths[file];
+	*result = lengths[file];
 }
 
