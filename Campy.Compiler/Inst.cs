@@ -5047,7 +5047,7 @@ namespace Campy.Compiler
                     // (tSystemString*)Heap_Alloc(types[TYPE_SYSTEM_STRING]);
                     ValueRef[] args = new ValueRef[2];
                     args[0] = LLVM.ConstInt(LLVM.Int32Type(), 0, false);
-                    var call = LLVM.BuildCall(Builder, fv, args, name);
+                    var call = default(ValueRef);// LLVM.BuildCall(Builder, fv, args, name);
                     state._stack.Push(new Value(call));
                     if (Campy.Utils.Options.IsOn("jit_trace"))
                         System.Console.WriteLine(call);

@@ -47,8 +47,16 @@ struct tFilesLoaded_ {
 // Keep track of all the files currently loaded
 __device__ static tFilesLoaded *pFilesLoaded = NULL;
 
-__device__ tMetaData* CLIFile_GetMetaDataForAssembly(char *pAssemblyName) {
+__device__ tMetaData* CLIFile_GetMetaDataForAssembly(char * fileName) {
 	tFilesLoaded *pFiles;
+	char * pAssemblyName;
+	char assemblyName[50];
+	Gstrcpy(assemblyName, fileName);
+	char * r = strstr(assemblyName, ".exe");
+	if (r > 0) *r = 0;
+	r = strstr(assemblyName, ".dll");
+	if (r > 0) *r = 0;
+	pAssemblyName = assemblyName;
 
 	// Convert "mscorlib" to "corlib"
 	if (Gstrcmp(pAssemblyName, "mscorlib") == 0) {
@@ -78,10 +86,7 @@ __device__ tMetaData* CLIFile_GetMetaDataForAssembly(char *pAssemblyName) {
 	// Assembly not loaded, so load it if possible
 	{
 		tCLIFile *pCLIFile;
-		char fileName[30];
-
 		printf("In CLIFile_GetMetaDataForAssembly0\n");
-		Gsprintf(fileName, "%s.dll", pAssemblyName);
 		pCLIFile = CLIFile_Load(fileName);
 		printf("In CLIFile_GetMetaDataForAssembly1\n");
 		//pCLIFile = CLIFile_Load(pAssemblyName);

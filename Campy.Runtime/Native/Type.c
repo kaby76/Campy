@@ -353,7 +353,7 @@ struct tTypeInit_ {
 };
 
 __device__
-static char mscorlib[] = "mscorlib";
+static char mscorlib[] = "corlib.dll";
 __device__
 static char System[] = "System";
 __device__
