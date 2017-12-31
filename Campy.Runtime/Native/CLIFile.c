@@ -52,9 +52,9 @@ __device__ tMetaData* CLIFile_GetMetaDataForAssembly(char * fileName) {
 	char * pAssemblyName;
 	char assemblyName[50];
 	Gstrcpy(assemblyName, fileName);
-	char * r = strstr(assemblyName, ".exe");
+	char * r = Gstrstr(assemblyName, ".exe");
 	if (r > 0) *r = 0;
-	r = strstr(assemblyName, ".dll");
+	r = Gstrstr(assemblyName, ".dll");
 	if (r > 0) *r = 0;
 	pAssemblyName = assemblyName;
 

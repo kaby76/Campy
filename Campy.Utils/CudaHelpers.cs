@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Swigged.Cuda;
+using System.Runtime.InteropServices;
 
 namespace Campy.Utils
 {
@@ -66,6 +68,16 @@ namespace Campy.Utils
             tile_size.x = (uint)threads[0];
             tile_size.y = (uint)threads[1];
             tile_size.z = (uint)threads[2];
+        }
+
+        public static void CheckCudaError(Swigged.Cuda.CUresult res)
+        {
+            if (res != CUresult.CUDA_SUCCESS)
+            {
+                Cuda.cuGetErrorString(res, out IntPtr pStr);
+                var cuda_error = Marshal.PtrToStringAnsi(pStr);
+                throw new Exception("CUDA error: " + cuda_error);
+            }
         }
     }
 }

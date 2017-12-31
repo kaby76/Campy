@@ -53,7 +53,7 @@ namespace Campy.Compiler
             var fun = basic_block.MethodValueRef;
             var t_fun = LLVM.TypeOf(fun);
             var t_fun_con = LLVM.GetTypeContext(t_fun);
-            var context = LLVM.GetModuleContext(Converter.global_llvm_module);
+            var context = LLVM.GetModuleContext(CampyConverter.global_llvm_module);
             if (t_fun_con != context) throw new Exception("not equal");
 
             for (uint i = 0; i < args; ++i)
@@ -141,7 +141,7 @@ namespace Campy.Compiler
                 var fun = bb.MethodValueRef;
                 var t_fun = LLVM.TypeOf(fun);
                 var t_fun_con = LLVM.GetTypeContext(t_fun);
-                var context = LLVM.GetModuleContext(Converter.global_llvm_module);
+                var context = LLVM.GetModuleContext(CampyConverter.global_llvm_module);
                 if (t_fun_con != context) throw new Exception("not equal");
 
                 for (uint i = 0; i < args; ++i)

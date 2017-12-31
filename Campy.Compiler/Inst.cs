@@ -35,13 +35,13 @@ namespace Campy.Compiler
         // Required instruction sequencing so we can translate groups of instructions.
         public virtual Inst Next { get; set; }
 
-        public virtual void ComputeStackLevel(Converter converter, ref int level_after)
+        public virtual void ComputeStackLevel(CampyConverter converter, ref int level_after)
         {
             throw new Exception("Must have an implementation for ComputeStackLevel! The instruction is: "
                 + this.ToString());
         }
 
-        public virtual Inst Convert(Converter converter, State state)
+        public virtual Inst Convert(CampyConverter converter, State state)
         {
             throw new Exception("Must have an implementation for Convert! The instruction is: "
                                 + this.ToString());
@@ -529,12 +529,12 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(Converter converter, ref int level_after)
+        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
         {
             level_after--;
         }
 
-        public override Inst Convert(Converter converter, State state)
+        public override Inst Convert(CampyConverter converter, State state)
         {
             var rhs = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -686,7 +686,7 @@ namespace Campy.Compiler
                     if ((Size1 <= TargetPointerSizeInBits) &&
                         (Size2 <= TargetPointerSizeInBits))
                     {
-                        return new Type(Type.getIntNTy(LLVM.GetModuleContext(Converter.global_llvm_module),
+                        return new Type(Type.getIntNTy(LLVM.GetModuleContext(CampyConverter.global_llvm_module),
                             TargetPointerSizeInBits));
                     }
                 }
@@ -695,7 +695,7 @@ namespace Campy.Compiler
                     if (IsSub && GcInfo.isGcPointer(Type2))
                     {
                         // The difference of two managed pointers is a native int.
-                        return new Type(Type.getIntNTy(LLVM.GetModuleContext(Converter.global_llvm_module),
+                        return new Type(Type.getIntNTy(LLVM.GetModuleContext(CampyConverter.global_llvm_module),
                             TargetPointerSizeInBits));
                     }
                     else if (IsStrictlyAddOrSub && Type2IsInt && (Size1 >= Size2))
@@ -750,7 +750,7 @@ namespace Campy.Compiler
 
             Type CharPtrTy = new Type(
                 Type.getInt8PtrTy(
-                LLVM.GetModuleContext(Converter.global_llvm_module),
+                LLVM.GetModuleContext(CampyConverter.global_llvm_module),
                 BasePtr.T.getPointerAddressSpace()));
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(CharPtrTy);
@@ -795,7 +795,7 @@ namespace Campy.Compiler
             // Build an LLVM GEP for the resulting address.
             // For now we "flatten" to byte offsets.
             Type CharPtrTy = new Type(Type.getInt8PtrTy(
-                LLVM.GetModuleContext(Converter.global_llvm_module), BasePtr.T.getPointerAddressSpace()));
+                LLVM.GetModuleContext(CampyConverter.global_llvm_module), BasePtr.T.getPointerAddressSpace()));
             Value BasePtrCast = new Value(LLVM.BuildBitCast(Builder, BasePtr.V, CharPtrTy.IntermediateType, ""));
             Value NegOffset = new Value(LLVM.BuildNeg(Builder, Offset.V, ""));
             Value ResultPtr = new Value(LLVM.BuildGEP(Builder, BasePtrCast.V, new ValueRef[] { NegOffset.V }, ""));
@@ -865,7 +865,7 @@ namespace Campy.Compiler
                     // Arithmetic with overflow must use an appropriately-sized integer to
                     // perform the arithmetic, then convert the result back to the pointer
                     // type.
-                    ArithType = new Type(Type.getIntNTy(LLVM.GetModuleContext(Converter.global_llvm_module), TargetPointerSizeInBits));
+                    ArithType = new Type(Type.getIntNTy(LLVM.GetModuleContext(CampyConverter.global_llvm_module), TargetPointerSizeInBits));
                 }
             }
 
@@ -985,12 +985,12 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(Converter converter, ref int level_after)
+        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
         {
             level_after++;
         }
 
-        public override Inst Convert(Converter converter, State state)
+        public override Inst Convert(CampyConverter converter, State state)
         {
             Value value = state._arguments[_arg];
             if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -1009,12 +1009,12 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(Converter converter, ref int level_after)
+        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
         {
             level_after--;
         }
 
-        public override Inst Convert(Converter converter, State state)
+        public override Inst Convert(CampyConverter converter, State state)
         {
             Value value = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -1038,12 +1038,12 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(Converter converter, ref int level_after)
+        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
         {
             level_after++;
         }
 
-        public override Inst Convert(Converter converter, State state)
+        public override Inst Convert(CampyConverter converter, State state)
         {
             Value value = new Value(LLVM.ConstInt(LLVM.Int32Type(), (ulong)_arg, true));
             state._stack.Push(value);
@@ -1059,12 +1059,12 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(Converter converter, ref int level_after)
+        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
         {
             level_after++;
         }
 
-        public override Inst Convert(Converter converter, State state)
+        public override Inst Convert(CampyConverter converter, State state)
         {
             Value value = new Value(LLVM.ConstInt(LLVM.Int64Type(), (ulong)_arg, true));
             state._stack.Push(value);
@@ -1080,12 +1080,12 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(Converter converter, ref int level_after)
+        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
         {
             level_after++;
         }
 
-        public override Inst Convert(Converter converter, State state)
+        public override Inst Convert(CampyConverter converter, State state)
         {
             Value value = new Value(LLVM.ConstReal(LLVM.FloatType(), _arg));
             state._stack.Push(value);
@@ -1101,12 +1101,12 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(Converter converter, ref int level_after)
+        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
         {
             level_after++;
         }
 
-        public override Inst Convert(Converter converter, State state)
+        public override Inst Convert(CampyConverter converter, State state)
         {
             Value value = new Value(LLVM.ConstReal(LLVM.DoubleType(), _arg));
             state._stack.Push(value);
@@ -1120,7 +1120,7 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(Converter converter, ref int level_after)
+        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
         {
             object method = this.Operand;
             if (method as Mono.Cecil.MethodReference == null)
@@ -1143,7 +1143,7 @@ namespace Campy.Compiler
             level_after = level_after + xret - xargs;
         }
 
-        public override Inst Convert(Converter converter, State state)
+        public override Inst Convert(CampyConverter converter, State state)
         {
             // Successor is fallthrough.
             object method = this.Operand;
@@ -1162,8 +1162,8 @@ namespace Campy.Compiler
             {
                 var g = this.Block._graph;
                 CFG.Vertex v = node;
-                Converter c = converter;
-                if (v.IsEntry && Converter.MethodName(v.ExpectedCalleeSignature) == mr.FullName &&
+                CampyConverter c = converter;
+                if (v.IsEntry && CampyConverter.MethodName(v.ExpectedCalleeSignature) == mr.FullName &&
                     c.IsFullyInstantiatedNode(v))
                     return true;
                 else return false;
@@ -1203,12 +1203,12 @@ namespace Campy.Compiler
                 var as_name = mr.Module.Assembly.Name;
 
                 // Find the specific function called.
-                var xx = Converter.built_in_functions.Where(t => t.Key.Contains(demangled_name) || demangled_name.Contains(t.Key));
+                var xx = CampyConverter.built_in_functions.Where(t => t.Key.Contains(demangled_name) || demangled_name.Contains(t.Key));
                 var first_kv_pair = xx.FirstOrDefault();
                 ValueRef fv = first_kv_pair.Value;
                 var t_fun = LLVM.TypeOf(fv);
                 var t_fun_con = LLVM.GetTypeContext(t_fun);
-                var context = LLVM.GetModuleContext(Converter.global_llvm_module);
+                var context = LLVM.GetModuleContext(CampyConverter.global_llvm_module);
 
                 Runtime.BclNativeMethod mat = null;
                 foreach (Runtime.BclNativeMethod ci in Runtime.BclNativeMethods)
@@ -1367,12 +1367,12 @@ namespace Campy.Compiler
                 int xret = (the_entry.HasScalarReturnValue || the_entry.HasStructReturnValue) ? 1 : 0;
                 int xargs = the_entry.NumberOfArguments;
 
-                var name = Converter.MethodName(mr);
+                var name = CampyConverter.MethodName(mr);
                 BuilderRef bu = this.Builder;
                 ValueRef fv = the_entry.MethodValueRef;
                 var t_fun = LLVM.TypeOf(fv);
                 var t_fun_con = LLVM.GetTypeContext(t_fun);
-                var context = LLVM.GetModuleContext(Converter.global_llvm_module);
+                var context = LLVM.GetModuleContext(CampyConverter.global_llvm_module);
                 if (t_fun_con != context) throw new Exception("not equal");
                 //LLVM.VerifyFunction(fv, VerifierFailureAction.PrintMessageAction);
 
@@ -1505,36 +1505,36 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(Converter converter, ref int level_after)
+        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
         {
             level_after++;
         }
 
-        public override Inst Convert(Converter converter, State state)
+        public override Inst Convert(CampyConverter converter, State state)
         {
             var bb = this.Block;
             var mn = bb.ExpectedCalleeSignature.FullName;
             if (mn == "System.Int32 Campy.Index::op_Implicit(Campy.Index)")
             {
                 //threadId
-                var tidx = Converter.built_in_functions["llvm.nvvm.read.ptx.sreg.tid.x"];
-                var tidy = Converter.built_in_functions["llvm.nvvm.read.ptx.sreg.tid.y"];
-                var tidz = Converter.built_in_functions["llvm.nvvm.read.ptx.sreg.tid.z"];
+                var tidx = CampyConverter.built_in_functions["llvm.nvvm.read.ptx.sreg.tid.x"];
+                var tidy = CampyConverter.built_in_functions["llvm.nvvm.read.ptx.sreg.tid.y"];
+                var tidz = CampyConverter.built_in_functions["llvm.nvvm.read.ptx.sreg.tid.z"];
 
                 //blockIdx
-                var ctaidx = Converter.built_in_functions["llvm.nvvm.read.ptx.sreg.ctaid.x"];
-                var ctaidy = Converter.built_in_functions["llvm.nvvm.read.ptx.sreg.ctaid.y"];
-                var ctaidz = Converter.built_in_functions["llvm.nvvm.read.ptx.sreg.ctaid.z"];
+                var ctaidx = CampyConverter.built_in_functions["llvm.nvvm.read.ptx.sreg.ctaid.x"];
+                var ctaidy = CampyConverter.built_in_functions["llvm.nvvm.read.ptx.sreg.ctaid.y"];
+                var ctaidz = CampyConverter.built_in_functions["llvm.nvvm.read.ptx.sreg.ctaid.z"];
 
                 //blockDim
-                var ntidx = Converter.built_in_functions["llvm.nvvm.read.ptx.sreg.ntid.x"];
-                var ntidy = Converter.built_in_functions["llvm.nvvm.read.ptx.sreg.ntid.y"];
-                var ntidz = Converter.built_in_functions["llvm.nvvm.read.ptx.sreg.ntid.z"];
+                var ntidx = CampyConverter.built_in_functions["llvm.nvvm.read.ptx.sreg.ntid.x"];
+                var ntidy = CampyConverter.built_in_functions["llvm.nvvm.read.ptx.sreg.ntid.y"];
+                var ntidz = CampyConverter.built_in_functions["llvm.nvvm.read.ptx.sreg.ntid.z"];
 
                 //gridDim
-                var nctaidx = Converter.built_in_functions["llvm.nvvm.read.ptx.sreg.nctaid.x"];
-                var nctaidy = Converter.built_in_functions["llvm.nvvm.read.ptx.sreg.nctaid.y"];
-                var nctaidz = Converter.built_in_functions["llvm.nvvm.read.ptx.sreg.nctaid.z"];
+                var nctaidx = CampyConverter.built_in_functions["llvm.nvvm.read.ptx.sreg.nctaid.x"];
+                var nctaidy = CampyConverter.built_in_functions["llvm.nvvm.read.ptx.sreg.nctaid.y"];
+                var nctaidz = CampyConverter.built_in_functions["llvm.nvvm.read.ptx.sreg.nctaid.z"];
 
                 var v_tidx = LLVM.BuildCall(bb.Builder, tidx, new ValueRef[] { }, "tidx");
                 var v_tidy = LLVM.BuildCall(bb.Builder, tidy, new ValueRef[] { }, "tidy");
@@ -1590,12 +1590,12 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(Converter converter, ref int level_after)
+        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
         {
             level_after--;
         }
 
-        public override Inst Convert(Converter converter, State state)
+        public override Inst Convert(CampyConverter converter, State state)
         {
             Value v = state._stack.Pop();
             state._locals[_arg] = v;
@@ -1610,7 +1610,7 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(Converter converter, ref int level_after)
+        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
         {
             level_after -= 1;
         }
@@ -1648,7 +1648,7 @@ namespace Campy.Compiler
         public virtual PredicateType Predicate { get; set; }
         public virtual bool IsSigned { get; set; }
 
-        public override Inst Convert(Converter converter, State state)
+        public override Inst Convert(CampyConverter converter, State state)
         {
             Value v2 = state._stack.Pop();
             Value v1 = state._stack.Pop();
@@ -1704,7 +1704,7 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(Converter converter, ref int level_after)
+        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
         {
             level_after -= 2;
         }
@@ -1752,7 +1752,7 @@ namespace Campy.Compiler
         public virtual PredicateType Predicate { get; set; }
         public virtual bool IsSigned { get; set; }
 
-        public override Inst Convert(Converter converter, State state)
+        public override Inst Convert(CampyConverter converter, State state)
         {
             Value v2 = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -1923,12 +1923,12 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(Converter converter, ref int level_after)
+        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
         {
             // No change in stack level.
         }
 
-        public override Inst Convert(Converter converter, State state)
+        public override Inst Convert(CampyConverter converter, State state)
         {
             Value s = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -1982,12 +1982,12 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(Converter converter, ref int level_after)
+        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
         {
             level_after--;
         }
 
-        public override Inst Convert(Converter converter, State state)
+        public override Inst Convert(CampyConverter converter, State state)
         {
             Value i = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -2058,12 +2058,12 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(Converter converter, ref int level_after)
+        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
         {
             level_after = level_after - 3;
         }
 
-        public override Inst Convert(Converter converter, State state)
+        public override Inst Convert(CampyConverter converter, State state)
         {
             Value v = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -2130,12 +2130,12 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(Converter converter, ref int level_after)
+        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
         {
             level_after--;
         }
 
-        public override Inst Convert(Converter converter, State state)
+        public override Inst Convert(CampyConverter converter, State state)
         {
             Value i = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -2175,12 +2175,12 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(Converter converter, ref int level_after)
+        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
         {
             // Stack level remains unchanged through instruction.
         }
 
-        public override Inst Convert(Converter converter, State state)
+        public override Inst Convert(CampyConverter converter, State state)
         {
             {
                 Value v = state._stack.Pop();
@@ -2390,12 +2390,12 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(Converter converter, ref int level_after)
+        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
         {
             level_after = level_after - 2;
         }
 
-        public override Inst Convert(Converter converter, State state)
+        public override Inst Convert(CampyConverter converter, State state)
         {
             {
                 Value v = state._stack.Pop();
@@ -2578,12 +2578,12 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(Converter converter, ref int level_after)
+        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
         {
             // No change in depth of stack.
         }
 
-        public override Inst Convert(Converter converter, State state)
+        public override Inst Convert(CampyConverter converter, State state)
         {
             Value v = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -2641,12 +2641,12 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(Converter converter, ref int level_after)
+        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
         {
             level_after -= 2;
         }
 
-        public override Inst Convert(Converter converter, State state)
+        public override Inst Convert(CampyConverter converter, State state)
         {
             Value v = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -2952,12 +2952,12 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(Converter converter, ref int level_after)
+        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
         {
             // No change.
         }
 
-        public override Inst Convert(Converter converter, State state)
+        public override Inst Convert(CampyConverter converter, State state)
         {
             var edge = Block._graph.SuccessorEdges(Block).ToList()[0];
             var s = edge.To;
@@ -2973,12 +2973,12 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(Converter converter, ref int level_after)
+        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
         {
             // No change.
         }
 
-        public override Inst Convert(Converter converter, State state)
+        public override Inst Convert(CampyConverter converter, State state)
         {
             var edge = Block._graph.SuccessorEdges(Block).ToList()[0];
             var s = edge.To;
@@ -2994,12 +2994,12 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(Converter converter, ref int level_after)
+        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
         {
             level_after--;
         }
 
-        public override Inst Convert(Converter converter, State state)
+        public override Inst Convert(CampyConverter converter, State state)
         {
             object operand = this.Operand;
             Instruction instruction = operand as Instruction;
@@ -3045,12 +3045,12 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(Converter converter, ref int level_after)
+        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
         {
             level_after--;
         }
 
-        public override Inst Convert(Converter converter, State state)
+        public override Inst Convert(CampyConverter converter, State state)
         {
             object operand = this.Operand;
             Instruction instruction = operand as Instruction;
@@ -3088,12 +3088,12 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(Converter converter, ref int level_after)
+        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
         {
             level_after--;
         }
 
-        public override Inst Convert(Converter converter, State state)
+        public override Inst Convert(CampyConverter converter, State state)
         {
             object operand = this.Operand;
             Instruction instruction = operand as Instruction;
@@ -3131,12 +3131,12 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(Converter converter, ref int level_after)
+        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
         {
             level_after--;
         }
 
-        public override Inst Convert(Converter converter, State state)
+        public override Inst Convert(CampyConverter converter, State state)
         {
             object operand = this.Operand;
             Instruction instruction = operand as Instruction;
@@ -3601,12 +3601,12 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(Converter converter, ref int level_after)
+        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
         {
             level_after++;
         }
 
-        public override Inst Convert(Converter converter, State state)
+        public override Inst Convert(CampyConverter converter, State state)
         {
             var rhs = state._stack.Pop();
             state._stack.Push(rhs);
@@ -3623,7 +3623,7 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(Converter converter, ref int level_after)
+        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
         {
             level_after--;
         }
@@ -3644,7 +3644,7 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(Converter converter, ref int level_after)
+        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
         {
             level_after -= 3;
         }
@@ -3657,7 +3657,7 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(Converter converter, ref int level_after)
+        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
         {
             level_after--;
         }
@@ -4188,7 +4188,7 @@ namespace Campy.Compiler
             _arg = arg;
         }
 
-        public override void ComputeStackLevel(Converter converter, ref int level_after)
+        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
         {
             level_after++;
         }
@@ -4330,7 +4330,7 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(Converter converter, ref int level_after)
+        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
         {
             level_after++;
         }
@@ -4441,12 +4441,12 @@ namespace Campy.Compiler
         }
 
         // For array implementation, see https://www.codeproject.com/Articles/3467/Arrays-UNDOCUMENTED
-        public override void ComputeStackLevel(Converter converter, ref int level_after)
+        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
         {
             // No effect change in stack size.
         }
 
-        public override Inst Convert(Converter converter, State state)
+        public override Inst Convert(CampyConverter converter, State state)
         {
             Value v = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -4565,7 +4565,7 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(Converter converter, ref int level_after)
+        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
         {
             level_after++;
         }
@@ -4586,7 +4586,7 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(Converter converter, ref int level_after)
+        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
         {
             level_after++;
         }
@@ -4599,7 +4599,7 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(Converter converter, ref int level_after)
+        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
         {
             level_after++;
         }
@@ -4612,12 +4612,12 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(Converter converter, ref int level_after)
+        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
         {
             level_after++;
         }
 
-        public override Inst Convert(Converter converter, State state)
+        public override Inst Convert(CampyConverter converter, State state)
         {
             // Call SystemString_FromCharPtrASCII and push new string object on the stack.
             // _Z29SystemString_FromCharPtrASCIIPc
@@ -4659,7 +4659,7 @@ namespace Campy.Compiler
         {
         }
 
-    public override void ComputeStackLevel(Converter converter, ref int level_after)
+    public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
     {
         level_after++;
     }
@@ -4736,12 +4736,12 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(Converter converter, ref int level_after)
+        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
         {
             // No change in stack depth.
         }
 
-        public override Inst Convert(Converter converter, State state)
+        public override Inst Convert(CampyConverter converter, State state)
         {
             var rhs = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -4771,7 +4771,7 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(Converter converter, ref int level_after)
+        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
         {
         // Successor is fallthrough.
             int args = 0;
@@ -4811,7 +4811,7 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(Converter converter, ref int level_after)
+        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
         {
             // Stack level for new obj depends on the initializer called. Get that information.
 
@@ -4827,14 +4827,14 @@ namespace Campy.Compiler
 
             CFG graph = (CFG)this.Block._graph;
 
-            var name = Converter.MethodName(method);
+            var name = CampyConverter.MethodName(method);
             CFG.Vertex the_entry = this.Block._graph.Vertices.Where(node
                 =>
             {
                 var g = this.Block._graph;
                 CFG.Vertex v = node;
-                Converter c = converter;
-                if (v.IsEntry && Converter.MethodName(v.ExpectedCalleeSignature) == name && c.IsFullyInstantiatedNode(v))
+                CampyConverter c = converter;
+                if (v.IsEntry && CampyConverter.MethodName(v.ExpectedCalleeSignature) == name && c.IsFullyInstantiatedNode(v))
                     return true;
                 else return false;
             }).ToList().FirstOrDefault();
@@ -4869,7 +4869,7 @@ namespace Campy.Compiler
             level_after = level_after + 1 /* creating new obj on stack */ - args;
         }
 
-        public override Inst Convert(Converter converter, State state)
+        public override Inst Convert(CampyConverter converter, State state)
         {
             // The JIT of a call instructure requires a little explanation. The operand
             // for the instruction is a MethodReference, which is a C# method of some type.
@@ -4892,14 +4892,14 @@ namespace Campy.Compiler
             // Note, if there is no block, then it's a native C call.
             var inst = this;
             CFG graph = (CFG)this.Block._graph;
-            var name = Converter.MethodName(method);
+            var name = CampyConverter.MethodName(method);
             CFG.Vertex the_entry = this.Block._graph.Vertices.Where(node
                 =>
             {
                 var g = inst.Block._graph;
                 CFG.Vertex v = node;
-                Converter c = converter;
-                if (v.IsEntry && Converter.MethodName(v.ExpectedCalleeSignature) == name && c.IsFullyInstantiatedNode(v))
+                CampyConverter c = converter;
+                if (v.IsEntry && CampyConverter.MethodName(v.ExpectedCalleeSignature) == name && c.IsFullyInstantiatedNode(v))
                     return true;
                 else return false;
             }).ToList().FirstOrDefault();
@@ -4954,7 +4954,7 @@ namespace Campy.Compiler
                 ValueRef fv = fffv._valueref;
                 var t_fun = LLVM.TypeOf(fv);
                 var t_fun_con = LLVM.GetTypeContext(t_fun);
-                var context = LLVM.GetModuleContext(Converter.global_llvm_module);
+                var context = LLVM.GetModuleContext(CampyConverter.global_llvm_module);
 
                 {
                     ValueRef[] args = new ValueRef[3];
@@ -5034,6 +5034,9 @@ namespace Campy.Compiler
             }
 
             {
+                // Call meta data on GPU and get type.
+                IntPtr meta_data_type = Runtime.GetMetaDataType(type);
+
                 // Allocate an object of the correct type, then call the constructor. Note,
                 // allocation must call the GPU BCL native code, but the constructor is in CLI,
                 // which we have discovered as corresponding to "the_entry".
@@ -5072,7 +5075,7 @@ namespace Campy.Compiler
                     ValueRef fv = the_entry.MethodValueRef;
                     var t_fun = LLVM.TypeOf(fv);
                     var t_fun_con = LLVM.GetTypeContext(t_fun);
-                    var context = LLVM.GetModuleContext(Converter.global_llvm_module);
+                    var context = LLVM.GetModuleContext(CampyConverter.global_llvm_module);
                     if (t_fun_con != context) throw new Exception("not equal");
 
                     // Set up args, type casting if required.
@@ -5128,12 +5131,12 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(Converter converter, ref int level_after)
+        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
         {
             // No change.
         }
 
-        public override Inst Convert(Converter converter, State state)
+        public override Inst Convert(CampyConverter converter, State state)
         {
             return Next;
         }
@@ -5162,7 +5165,7 @@ namespace Campy.Compiler
         {
         }
 
-    public override void ComputeStackLevel(Converter converter, ref int level_after)
+    public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
     {
         level_after--;
     }
@@ -5215,7 +5218,7 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(Converter converter, ref int level_after)
+        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
         {
             // There are really two different stacks here:
             // one for the called method, and the other for the caller of the method.
@@ -5241,7 +5244,7 @@ namespace Campy.Compiler
             }
         }
 
-        public override Inst Convert(Converter converter, State state)
+        public override Inst Convert(CampyConverter converter, State state)
         {
             // There are really two different stacks here:
             // one for the called method, and the other for the caller of the method.
@@ -5289,12 +5292,12 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(Converter converter, ref int level_after)
+        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
         {
             level_after--;
         }
 
-        public override Inst Convert(Converter converter, State state)
+        public override Inst Convert(CampyConverter converter, State state)
         {
             var rhs = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -5321,12 +5324,12 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(Converter converter, ref int level_after)
+        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
         {
             level_after--;
         }
 
-        public override Inst Convert(Converter converter, State state)
+        public override Inst Convert(CampyConverter converter, State state)
         {
             var rhs = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -5353,7 +5356,7 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(Converter converter, ref int level_after)
+        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
         {
             level_after--;
         }
@@ -5366,12 +5369,12 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(Converter converter, ref int level_after)
+        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
         {
             level_after++;
         }
 
-        public override Inst Convert(Converter converter, State state)
+        public override Inst Convert(CampyConverter converter, State state)
         {
             object operand = this.Operand;
             System.Type t = operand.GetType();
@@ -5630,7 +5633,7 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(Converter converter, ref int level_after)
+        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
         {
             level_after -= 2;
         }
@@ -5643,7 +5646,7 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(Converter converter, ref int level_after)
+        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
         {
             level_after--;
         }
@@ -5680,7 +5683,7 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(Converter converter, ref int level_after)
+        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
         {
             level_after--;
         }
@@ -5701,12 +5704,12 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(Converter converter, ref int level_after)
+        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
         {
             level_after--;
         }
 
-        public override Inst Convert(Converter converter, State state)
+        public override Inst Convert(CampyConverter converter, State state)
         {
             var rhs = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))

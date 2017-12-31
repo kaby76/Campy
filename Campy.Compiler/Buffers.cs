@@ -1171,7 +1171,7 @@
                 // third parameter to cuMemHostAlloc that is used for the type of memory allocation.
                 var size = bytes;
                 var res = Cuda.cuMemHostAlloc(out IntPtr pointer, (uint)size, (uint)Cuda.CU_MEMHOSTALLOC_DEVICEMAP);
-                Converter.CheckCudaError(res);
+                CudaHelpers.CheckCudaError(res);
                 return pointer;
             }
 
@@ -1193,7 +1193,7 @@
                 var res = Cuda.cuMemAllocManaged(out IntPtr pointer, (uint)size, (uint)Swigged.Cuda.CUmemAttach_flags.CU_MEM_ATTACH_GLOBAL);
                 if (Campy.Utils.Options.IsOn("memory_trace"))
                     System.Console.WriteLine("Cu Alloc (" + bytes + " bytes) " + pointer);
-                Converter.CheckCudaError(res);
+                Utils.CudaHelpers.CheckCudaError(res);
                 return pointer;
             }
 
