@@ -48,7 +48,7 @@
       <HintPath>..\packages\Mono.Cecil.0.10.0-beta7\lib\net40\Mono.Cecil.Rocks.dll</HintPath>
     </Reference>
     <Reference Include="swigged.cuda, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\swigged.cuda.9.0.176.3\lib\netstandard1.1\swigged.cuda.dll</HintPath>
+      <HintPath>..\packages\swigged.cuda.9.1.85.2\lib\net47\swigged.cuda.dll</HintPath>
     </Reference>
     <Reference Include="swigged.llvm, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\swigged.llvm.5.0.3\lib\netstandard1.5\swigged.llvm.dll</HintPath>
@@ -106,9 +106,9 @@
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\swigged.llvm.5.0.3\build\swigged.llvm.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\swigged.llvm.5.0.3\build\swigged.llvm.targets'))" />
     <Error Condition="!Exists('..\packages\NETStandard.Library.2.0.0\build\netstandard2.0\NETStandard.Library.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\NETStandard.Library.2.0.0\build\netstandard2.0\NETStandard.Library.targets'))" />
-    <Error Condition="!Exists('..\packages\swigged.cuda.9.0.176.3\build\swigged.cuda.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\swigged.cuda.9.0.176.3\build\swigged.cuda.targets'))" />
+    <Error Condition="!Exists('..\packages\swigged.cuda.9.1.85.2\build\swigged.cuda.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\swigged.cuda.9.1.85.2\build\swigged.cuda.targets'))" />
   </Target>
   <Import Project="..\packages\swigged.llvm.5.0.3\build\swigged.llvm.targets" Condition="Exists('..\packages\swigged.llvm.5.0.3\build\swigged.llvm.targets')" />
   <Import Project="..\packages\NETStandard.Library.2.0.0\build\netstandard2.0\NETStandard.Library.targets" Condition="Exists('..\packages\NETStandard.Library.2.0.0\build\netstandard2.0\NETStandard.Library.targets')" />
-  <Import Project="..\packages\swigged.cuda.9.0.176.3\build\swigged.cuda.targets" Condition="Exists('..\packages\swigged.cuda.9.0.176.3\build\swigged.cuda.targets')" />
+  <Import Project="..\packages\swigged.cuda.9.1.85.2\build\swigged.cuda.targets" Condition="Exists('..\packages\swigged.cuda.9.1.85.2\build\swigged.cuda.targets')" />
 </Project>
