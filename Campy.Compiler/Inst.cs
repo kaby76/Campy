@@ -5034,23 +5034,42 @@ namespace Campy.Compiler
             }
 
             {
-                // Call meta data on GPU and get type.
-                IntPtr meta_data_type = Runtime.GetMetaDataType(type);
-
-                // Allocate an object of the correct type, then call the constructor. Note,
-                // allocation must call the GPU BCL native code, but the constructor is in CLI,
-                // which we have discovered as corresponding to "the_entry".
-                // obj = Heap_AllocType(pConstructorDef->pParentType);
-                // To do this, we must have the type defined in the meta for the BCL!!!
-                // To do that, we have to define up front the classes used in this code to the BCL.
-                // The BCL is extended to construct types for this kernel!
+                {
+                    // Make sure assembly of type is loaded onto GPU.
+                    Runtime.LoadAssemblyOfTypeOntoGpu(type);
+                }
 
                 {
-                    // Create object via Heap_Alloc, e.g.,
-                    // (tSystemString*)Heap_Alloc(types[TYPE_SYSTEM_STRING]);
-                    ValueRef[] args = new ValueRef[2];
-                    args[0] = LLVM.ConstInt(LLVM.Int32Type(), 0, false);
-                    var call = default(ValueRef);// LLVM.BuildCall(Builder, fv, args, name);
+                    // Allocate an object of the correct type, then call the constructor. Note,
+                    // allocation must call the GPU BCL native code, but in the following code,
+                    // the constructor is in CLI, which we have discovered as corresponding to "the_entry".
+                    // obj = Heap_AllocType(pConstructorDef->pParentType);
+                    // To do this, we must have the type defined in the meta for the BCL!!!
+                    // To do that, we have to define up front the classes used in this code to the BCL.
+                    // The BCL is extended to construct types for this kernel!
+                    // (call void* _Z14Bcl_Heap_AllocPcS_S_(STRING assemblyName, STRING nameSpace, STRING name);)
+                    var xx1 = Runtime.BclNativeMethods.ToList();
+                    var xx2 = Runtime.PtxFunctions.ToList();
+
+                    var xx = xx2
+                        .Where(t =>
+                        {
+                            return t._mangled_name == "_Z14Bcl_Heap_AllocPcS_S_";
+                        });
+                    var xxx = xx.ToList();
+                    Runtime.PtxFunction first_kv_pair = xx.FirstOrDefault();
+                    if (first_kv_pair == null)
+                        throw new Exception("Yikes.");
+
+                    ValueRef fv2 = first_kv_pair._valueref;
+                    ValueRef[] args = new ValueRef[3];
+                    string type_name = type.Resolve().Name;
+                    string type_namespace = type.Resolve().Namespace;
+                    string type_assembly = type.Resolve().Module.Name;
+                    args[2] = LLVM.ConstString(type_name, (uint)type_name.Count(), false);
+                    args[1] = LLVM.ConstString(type_namespace, (uint)type_namespace.Count(), false);
+                    args[0] = LLVM.ConstString(type_assembly, (uint)type_assembly.Count(), false);
+                    var call = LLVM.BuildCall(Builder, fv2, args, name);
                     state._stack.Push(new Value(call));
                     if (Campy.Utils.Options.IsOn("jit_trace"))
                         System.Console.WriteLine(call);

@@ -303,6 +303,22 @@ namespace Campy.Compiler
                         CampyConverter.built_in_functions.Add(_mangled_name, decl);
                         this._valueref = decl;
                     }
+                    else if (suffix == "PcS_S_")
+                    {
+                        var decl = LLVM.AddFunction(
+                                CampyConverter.global_llvm_module,
+                                _mangled_name,
+                                LLVM.FunctionType(
+                                    LLVM.PointerType(LLVM.VoidType(),0),
+                                    new TypeRef[]
+                                    {
+                                        LLVM.PointerType(LLVM.Int8Type(), 0),
+                                        LLVM.PointerType(LLVM.Int8Type(), 0),
+                                        LLVM.PointerType(LLVM.Int8Type(), 0)
+                                    }, false));
+                        CampyConverter.built_in_functions.Add(_mangled_name, decl);
+                        this._valueref = decl;
+                    }
                     else;
 
                 }
@@ -433,46 +449,241 @@ namespace Campy.Compiler
         public static IntPtr GetMetaDataType(Mono.Cecil.TypeReference type)
         {
             IntPtr result = IntPtr.Zero;
-            // Get meta data from type from the GPU, as that is where it resides.
+            CUresult res = CUresult.CUDA_SUCCESS;
 
+            // Get meta data from type from the GPU, as that is where it resides.
+            // tMetaData* pTypeMetaData;
+            // BCL_CLIFile_GetMetaDataForAssembly("ConsoleApp1.exe", &pTypeMetaDatanew FileStream();
+
+            // Set up the type's assembly in file system.
+            String assembly_location = Path.GetFullPath(type.Resolve().Module.FullyQualifiedName);
+            string assem = Path.GetFileName(assembly_location);
+            string full_path_assem = assembly_location;
+            Stream stream = new FileStream(full_path_assem, FileMode.Open, FileAccess.Read, FileShare.Read);
+            var corlib_bytes_handle_len = stream.Length;
+            var corlib_bytes = new byte[corlib_bytes_handle_len];
+            stream.Read(corlib_bytes, 0, (int)corlib_bytes_handle_len);
+            var corlib_bytes_handle = GCHandle.Alloc(corlib_bytes, GCHandleType.Pinned);
+            var corlib_bytes_intptr = corlib_bytes_handle.AddrOfPinnedObject();
+            stream.Close();
+            stream.Dispose();
+
+            unsafe
+            {
+                // Set up parameters.
+                int count = 4;
+                IntPtr parm1; // Name of assembly.
+                IntPtr parm2; // Contents
+                IntPtr parm3; // Length
+                IntPtr parm4; // result
+
+                var ptr = Marshal.StringToHGlobalAnsi(assem);
+                Buffers buffers = new Buffers();
+                IntPtr pointer1 = buffers.New(assem.Length + 1);
+                Buffers.Cp(pointer1, ptr, assem.Length + 1);
+                IntPtr[] x1 = new IntPtr[] { pointer1 };
+                GCHandle handle1 = GCHandle.Alloc(x1, GCHandleType.Pinned);
+                parm1 = handle1.AddrOfPinnedObject();
+
+                IntPtr pointer2 = buffers.New((int)corlib_bytes_handle_len);
+                Buffers.Cp(pointer2, corlib_bytes_intptr, (int)corlib_bytes_handle_len);
+                IntPtr[] x2 = new IntPtr[] { pointer2 };
+                GCHandle handle2 = GCHandle.Alloc(x2, GCHandleType.Pinned);
+                parm2 = handle2.AddrOfPinnedObject();
+
+                IntPtr[] x3 = new IntPtr[] { new IntPtr(corlib_bytes_handle_len) };
+                GCHandle handle3 = GCHandle.Alloc(x3, GCHandleType.Pinned);
+                parm3 = handle3.AddrOfPinnedObject();
+
+                var pointer4 = buffers.New(sizeof(long));
+                IntPtr[] x4 = new IntPtr[] { pointer4 };
+                GCHandle handle4 = GCHandle.Alloc(x4, GCHandleType.Pinned);
+                parm4 = handle4.AddrOfPinnedObject();
+
+                IntPtr[] kp = new IntPtr[] { parm1, parm2, parm3, parm4 };
+
+                CUmodule module = Runtime.RuntimeModule;
+                CUfunction _Z16Bcl_Gfs_add_filePcS_yPi = Runtime._Z16Bcl_Gfs_add_filePcS_yPi(module);
+                Campy.Utils.CudaHelpers.MakeLinearTiling(1,
+                    out Campy.Utils.CudaHelpers.dim3 tile_size,
+                    out Campy.Utils.CudaHelpers.dim3 tiles);
+                fixed (IntPtr* kernelParams = kp)
+                {
+                    res = Cuda.cuLaunchKernel(
+                        _Z16Bcl_Gfs_add_filePcS_yPi,
+                        tiles.x, tiles.y, tiles.z, // grid has one block.
+                        tile_size.x, tile_size.y, tile_size.z, // n threads.
+                        0, // no shared memory
+                        default(CUstream),
+                        (IntPtr)kernelParams,
+                        (IntPtr)IntPtr.Zero
+                    );
+                }
+                Utils.CudaHelpers.CheckCudaError(res);
+                res = Cuda.cuCtxSynchronize(); // Make sure it's copied back to host.
+                Utils.CudaHelpers.CheckCudaError(res);
+            }
+
+            unsafe
+            {
+                // Set up parameters.
+                int count = 1;
+                IntPtr parm1; // Name of assembly.
+
+                var ptr = Marshal.StringToHGlobalAnsi(assem);
+                Buffers buffers = new Buffers();
+                IntPtr pointer1 = buffers.New(assem.Length + 1);
+                Buffers.Cp(pointer1, ptr, assem.Length + 1);
+                IntPtr[] x1 = new IntPtr[] { pointer1 };
+                GCHandle handle1 = GCHandle.Alloc(x1, GCHandleType.Pinned);
+                parm1 = handle1.AddrOfPinnedObject();
+
+                IntPtr[] kp = new IntPtr[] { parm1 };
+
+                CUmodule module = Runtime.RuntimeModule;
+                CUfunction _Z34BCL_CLIFile_GetMetaDataForAssemblyPc = Runtime._Z34BCL_CLIFile_GetMetaDataForAssemblyPc(module);
+                Campy.Utils.CudaHelpers.MakeLinearTiling(1,
+                    out Campy.Utils.CudaHelpers.dim3 tile_size,
+                    out Campy.Utils.CudaHelpers.dim3 tiles);
+                fixed (IntPtr* kernelParams = kp)
+                {
+                    res = Cuda.cuLaunchKernel(
+                        _Z34BCL_CLIFile_GetMetaDataForAssemblyPc,
+                        tiles.x, tiles.y, tiles.z, // grid has one block.
+                        tile_size.x, tile_size.y, tile_size.z, // n threads.
+                        0, // no shared memory
+                        default(CUstream),
+                        (IntPtr)kernelParams,
+                        (IntPtr)IntPtr.Zero
+                    );
+                }
+                Utils.CudaHelpers.CheckCudaError(res);
+                res = Cuda.cuCtxSynchronize(); // Make sure it's copied back to host.
+                Utils.CudaHelpers.CheckCudaError(res);
+            }
 
             return result;
         }
 
-        public static void InitializeRuntime()
+        public static void LoadAssemblyOfTypeOntoGpu(Mono.Cecil.TypeReference type)
         {
-            //CUjit_option[] op = new CUjit_option[0];
-            //var res = Cuda.cuLinkCreate_v2(0, op, IntPtr.Zero, out CUlinkState linkState);
-            //CheckCudaError(res);
-            //var assembly = Assembly.GetAssembly(this.GetType());
-            //var resource_names = assembly.GetManifestResourceNames();
-            //foreach (var resource_name in resource_names)
-            //{
-            //    using (Stream stream = assembly.GetManifestResourceStream(resource_name))
-            //    using (StreamReader reader = new StreamReader(stream))
-            //    {
-            //        string gpu_bcl_ptx = reader.ReadToEnd();
-            //        IntPtr ptr2 = Marshal.StringToHGlobalAnsi(gpu_bcl_ptx);
-            //        res = Cuda.cuLinkAddData_v2(linkState, CUjitInputType.CU_JIT_INPUT_PTX, ptr2, (uint)gpu_bcl_ptx.Length, "", 0, op, IntPtr.Zero);
-            //        CheckCudaError(res);
-            //    }
-            //}
-
-            //IntPtr image;
-            //res = Cuda.cuLinkComplete(linkState, out image, out ulong sz);
-            //CheckCudaError(res);
-            //res = Cuda.cuModuleLoadDataEx(out CUmodule module, image, 0, op, IntPtr.Zero);
-            //CheckCudaError(res);
-
             CUresult res = CUresult.CUDA_SUCCESS;
-            //res = Cuda.cuDeviceGet(out int device, 0);
-            //CheckCudaError(res);
-            //res = Cuda.cuDeviceGetPCIBusId(out string pciBusId, 100, device);
-            //CheckCudaError(res);
-            //res = Cuda.cuDeviceGetName(out string name, 100, device);
-            //CheckCudaError(res);
-            //// Create a link image.
-            //CUlinkState linkState;
+
+            // Get meta data from type from the GPU, as that is where it resides.
+            // tMetaData* pTypeMetaData;
+            // BCL_CLIFile_GetMetaDataForAssembly("ConsoleApp1.exe", &pTypeMetaDatanew FileStream();
+
+            // Set up the type's assembly in file system.
+            String assembly_location = Path.GetFullPath(type.Resolve().Module.FullyQualifiedName);
+            string assem = Path.GetFileName(assembly_location);
+            string full_path_assem = assembly_location;
+            Stream stream = new FileStream(full_path_assem, FileMode.Open, FileAccess.Read, FileShare.Read);
+            var corlib_bytes_handle_len = stream.Length;
+            var corlib_bytes = new byte[corlib_bytes_handle_len];
+            stream.Read(corlib_bytes, 0, (int)corlib_bytes_handle_len);
+            var corlib_bytes_handle = GCHandle.Alloc(corlib_bytes, GCHandleType.Pinned);
+            var corlib_bytes_intptr = corlib_bytes_handle.AddrOfPinnedObject();
+            stream.Close();
+            stream.Dispose();
+
+            unsafe
+            {
+                // Set up parameters.
+                int count = 4;
+                IntPtr parm1; // Name of assembly.
+                IntPtr parm2; // Contents
+                IntPtr parm3; // Length
+                IntPtr parm4; // result
+
+                var ptr = Marshal.StringToHGlobalAnsi(assem);
+                Buffers buffers = new Buffers();
+                IntPtr pointer1 = buffers.New(assem.Length + 1);
+                Buffers.Cp(pointer1, ptr, assem.Length + 1);
+                IntPtr[] x1 = new IntPtr[] { pointer1 };
+                GCHandle handle1 = GCHandle.Alloc(x1, GCHandleType.Pinned);
+                parm1 = handle1.AddrOfPinnedObject();
+
+                IntPtr pointer2 = buffers.New((int)corlib_bytes_handle_len);
+                Buffers.Cp(pointer2, corlib_bytes_intptr, (int)corlib_bytes_handle_len);
+                IntPtr[] x2 = new IntPtr[] { pointer2 };
+                GCHandle handle2 = GCHandle.Alloc(x2, GCHandleType.Pinned);
+                parm2 = handle2.AddrOfPinnedObject();
+
+                IntPtr[] x3 = new IntPtr[] { new IntPtr(corlib_bytes_handle_len) };
+                GCHandle handle3 = GCHandle.Alloc(x3, GCHandleType.Pinned);
+                parm3 = handle3.AddrOfPinnedObject();
+
+                var pointer4 = buffers.New(sizeof(long));
+                IntPtr[] x4 = new IntPtr[] { pointer4 };
+                GCHandle handle4 = GCHandle.Alloc(x4, GCHandleType.Pinned);
+                parm4 = handle4.AddrOfPinnedObject();
+
+                IntPtr[] kp = new IntPtr[] { parm1, parm2, parm3, parm4 };
+
+                CUmodule module = Runtime.RuntimeModule;
+                CUfunction _Z16Bcl_Gfs_add_filePcS_yPi = Runtime._Z16Bcl_Gfs_add_filePcS_yPi(module);
+                Campy.Utils.CudaHelpers.MakeLinearTiling(1,
+                    out Campy.Utils.CudaHelpers.dim3 tile_size,
+                    out Campy.Utils.CudaHelpers.dim3 tiles);
+                fixed (IntPtr* kernelParams = kp)
+                {
+                    res = Cuda.cuLaunchKernel(
+                        _Z16Bcl_Gfs_add_filePcS_yPi,
+                        tiles.x, tiles.y, tiles.z, // grid has one block.
+                        tile_size.x, tile_size.y, tile_size.z, // n threads.
+                        0, // no shared memory
+                        default(CUstream),
+                        (IntPtr)kernelParams,
+                        (IntPtr)IntPtr.Zero
+                    );
+                }
+                Utils.CudaHelpers.CheckCudaError(res);
+                res = Cuda.cuCtxSynchronize(); // Make sure it's copied back to host.
+                Utils.CudaHelpers.CheckCudaError(res);
+            }
+
+            unsafe
+            {
+                // Set up parameters.
+                int count = 1;
+                IntPtr parm1; // Name of assembly.
+
+                var ptr = Marshal.StringToHGlobalAnsi(assem);
+                Buffers buffers = new Buffers();
+                IntPtr pointer1 = buffers.New(assem.Length + 1);
+                Buffers.Cp(pointer1, ptr, assem.Length + 1);
+                IntPtr[] x1 = new IntPtr[] { pointer1 };
+                GCHandle handle1 = GCHandle.Alloc(x1, GCHandleType.Pinned);
+                parm1 = handle1.AddrOfPinnedObject();
+
+                IntPtr[] kp = new IntPtr[] { parm1 };
+
+                CUmodule module = Runtime.RuntimeModule;
+                CUfunction _Z34BCL_CLIFile_GetMetaDataForAssemblyPc = Runtime._Z34BCL_CLIFile_GetMetaDataForAssemblyPc(module);
+                Campy.Utils.CudaHelpers.MakeLinearTiling(1,
+                    out Campy.Utils.CudaHelpers.dim3 tile_size,
+                    out Campy.Utils.CudaHelpers.dim3 tiles);
+                fixed (IntPtr* kernelParams = kp)
+                {
+                    res = Cuda.cuLaunchKernel(
+                        _Z34BCL_CLIFile_GetMetaDataForAssemblyPc,
+                        tiles.x, tiles.y, tiles.z, // grid has one block.
+                        tile_size.x, tile_size.y, tile_size.z, // n threads.
+                        0, // no shared memory
+                        default(CUstream),
+                        (IntPtr)kernelParams,
+                        (IntPtr)IntPtr.Zero
+                    );
+                }
+                Utils.CudaHelpers.CheckCudaError(res);
+                res = Cuda.cuCtxSynchronize(); // Make sure it's copied back to host.
+                Utils.CudaHelpers.CheckCudaError(res);
+            }
+        }
+
+        public static void LoadBclCode()
+        {
+            CUresult res = CUresult.CUDA_SUCCESS;
 
             uint num_ops_link = 5;
             var op_link = new CUjit_option[num_ops_link];
@@ -507,11 +718,10 @@ namespace Campy.Compiler
             var op_values_link_intptr = op_values_link_handle.AddrOfPinnedObject();
             res = Cuda.cuLinkCreate_v2(num_ops_link, op_link, op_values_link_intptr, out CUlinkState linkState);
             CudaHelpers.CheckCudaError(res);
-            //linkState = outLinkState;
 
-            // Add in all of the GPU BCL runtime required.
-            var assembly = Assembly.GetAssembly(new Runtime().GetType());
-            var resource_names = assembly.GetManifestResourceNames();
+            // Go to a standard directory, for now hardwired....
+            var dir = @"C:\Users\kenne\Documents\Campy2\Campy.Runtime\Native\x64\Debug";
+            var resource_names = Directory.GetFiles(dir);
             uint num_ops = 0;
             var op = new CUjit_option[num_ops];
             var op_values = new ulong[num_ops];
@@ -519,17 +729,22 @@ namespace Campy.Compiler
             var op_values_intptr = op_values_handle.AddrOfPinnedObject();
             foreach (var resource_name in resource_names)
             {
-                if (!resource_name.Contains(".ptx")) continue;
-                using (Stream stream = assembly.GetManifestResourceStream(resource_name))
-                using (StreamReader reader = new StreamReader(stream))
-                {
-                    string gpu_bcl_ptx = reader.ReadToEnd();
-                    //gpu_bcl_ptx = gpu_bcl_ptx.Replace("\r", "");
-                    int len = gpu_bcl_ptx.Count();
-                    IntPtr gpu_bcl_ptx_intptr = Marshal.StringToHGlobalAnsi(gpu_bcl_ptx);
+                var last_index_of = resource_name.LastIndexOf('.');
+                if (last_index_of < 0) continue;
+                if (resource_name.Contains("device-link")) continue;
+                if (resource_name.Substring(last_index_of) != ".obj") continue;
 
-                    res = Cuda.cuLinkAddData_v2(linkState, CUjitInputType.CU_JIT_INPUT_PTX,
-                        gpu_bcl_ptx_intptr, (uint)len,
+                using (Stream stream = new FileStream(resource_name, FileMode.Open))
+                {
+                    var len = stream.Length;
+                    var gpu_bcl_obj = new byte[len];
+                    stream.Read(gpu_bcl_obj, 0, (int)len);
+
+                    var gpu_bcl_obj_handle = GCHandle.Alloc(gpu_bcl_obj, GCHandleType.Pinned);
+                    var gpu_bcl_obj_intptr = gpu_bcl_obj_handle.AddrOfPinnedObject();
+
+                    res = Cuda.cuLinkAddData_v2(linkState, CUjitInputType.CU_JIT_INPUT_OBJECT,
+                        gpu_bcl_obj_intptr, (uint)len,
                         "", num_ops, op, op_values_intptr);
                     {
                         string info = Marshal.PtrToStringAnsi(info_log_buffer_intptr);
@@ -537,7 +752,7 @@ namespace Campy.Compiler
                         string error = Marshal.PtrToStringAnsi(error_log_buffer_intptr);
                         System.Console.WriteLine(error);
                     }
-                    CudaHelpers.CheckCudaError(res);
+                    Utils.CudaHelpers.CheckCudaError(res);
                 }
             }
 
@@ -551,16 +766,10 @@ namespace Campy.Compiler
                 System.Console.WriteLine(error);
             }
             CudaHelpers.CheckCudaError(res);
-            //res = Cuda.cuModuleLoadDataEx(out CUmodule module, image, 0, op, IntPtr.Zero);
-            //CheckCudaError(res);
-
-
-            //IntPtr image;
-            //res = Cuda.cuLinkComplete(linkState, out image, out ulong sz);
-            //CheckCudaError(res);
 
             RuntimeCubinImage = image;
             RuntimeCubinImageSize = sz;
+            Runtime.RuntimeModule = Runtime.InitializeModule(Runtime.RuntimeCubinImage);
         }
 
         public static IntPtr RuntimeCubinImage
@@ -579,28 +788,6 @@ namespace Campy.Compiler
             var op = new CUjit_option[num_ops];
             ulong[] op_values = new ulong[num_ops];
 
-            //int size = 1024;
-            //op[0] = CUjit_option.CU_JIT_INFO_LOG_BUFFER_SIZE_BYTES;
-            //op_values[0] = (ulong)size;
-
-            //op[1] = CUjit_option.CU_JIT_INFO_LOG_BUFFER;
-            //byte[] info_log_buffer = new byte[size];
-            //var info_log_buffer_handle = GCHandle.Alloc(info_log_buffer, GCHandleType.Pinned);
-            //var info_log_buffer_intptr = info_log_buffer_handle.AddrOfPinnedObject();
-            //op_values[1] = (ulong)info_log_buffer_intptr;
-
-            //op[2] = CUjit_option.CU_JIT_ERROR_LOG_BUFFER_SIZE_BYTES;
-            //op_values[2] = (ulong)size;
-
-            //op[3] = CUjit_option.CU_JIT_ERROR_LOG_BUFFER;
-            //byte[] error_log_buffer = new byte[size];
-            //var error_log_buffer_handle = GCHandle.Alloc(error_log_buffer, GCHandleType.Pinned);
-            //var error_log_buffer_intptr = error_log_buffer_handle.AddrOfPinnedObject();
-            //op_values[3] = (ulong)error_log_buffer_intptr;
-
-            //op[4] = CUjit_option.CU_JIT_LOG_VERBOSE;
-            //op_values[4] = (ulong)1;
-
             var op_values_link_handle = GCHandle.Alloc(op_values, GCHandleType.Pinned);
             var op_values_link_intptr = op_values_link_handle.AddrOfPinnedObject();
 
@@ -614,18 +801,41 @@ namespace Campy.Compiler
             get; set;
         }
 
-        public static CUfunction MetaDataInit(CUmodule module)
+        public static CUfunction _Z15Initialize_BCL1v(CUmodule module)
         {
-            CudaHelpers.CheckCudaError(Cuda.cuModuleGetFunction(out CUfunction function, module, "_Z13MetaData_Initv"));
+            CudaHelpers.CheckCudaError(Cuda.cuModuleGetFunction(out CUfunction function, module, "_Z15Initialize_BCL1v"));
             return function;
         }
 
-        public static CUfunction TypeInit(CUmodule module)
+        public static CUfunction _Z15Initialize_BCL2v(CUmodule module)
         {
-            CudaHelpers.CheckCudaError(Cuda.cuModuleGetFunction(out CUfunction function, module, "_Z9Type_Initv"));
+            CudaHelpers.CheckCudaError(Cuda.cuModuleGetFunction(out CUfunction function, module, "_Z15Initialize_BCL2v"));
             return function;
         }
 
+        public static CUfunction _Z12Bcl_Gfs_initv(CUmodule module)
+        {
+            CudaHelpers.CheckCudaError(Cuda.cuModuleGetFunction(out CUfunction function, module, "_Z12Bcl_Gfs_initv"));
+            return function;
+        }
+
+        public static CUfunction _Z16Bcl_Gfs_add_filePcS_yPi(CUmodule module)
+        {
+            CudaHelpers.CheckCudaError(Cuda.cuModuleGetFunction(out CUfunction function, module, "_Z16Bcl_Gfs_add_filePcS_yPi"));
+            return function;
+        }
+
+        public static CUfunction _Z14Bcl_Heap_AllocPcS_S_(CUmodule module)
+        {
+            CudaHelpers.CheckCudaError(Cuda.cuModuleGetFunction(out CUfunction function, module, "_Z14Bcl_Heap_AllocPcS_S_"));
+            return function;
+        }
+
+        public static CUfunction _Z34BCL_CLIFile_GetMetaDataForAssemblyPc(CUmodule module)
+        {
+            CudaHelpers.CheckCudaError(Cuda.cuModuleGetFunction(out CUfunction function, module, "_Z34BCL_CLIFile_GetMetaDataForAssemblyPc"));
+            return function;
+        }
     }
 }
 

@@ -1,10 +1,14 @@
 #include "Compat.h"
-#include <stdio.h>
-#include <stdarg.h>
+#include "Sys.h"
+#include "MetaData.h"
+#include "JIT.h"
+#include "Type.h"
+#include "Finalizer.h"
+#include "System.Net.Sockets.Socket.h"
 #include "Gprintf.h"
+#include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
-
 
 __device__  void gpuexit(int _Code) {}
 
@@ -81,3 +85,32 @@ __device__ void* Gmalloc(
 //}
 
 
+__global__
+void Initialize_BCL1()
+{
+	//JIT_Execute_Init();
+	MetaData_Init();
+	//Heap_Init();
+	//Finalizer_Init();
+	//Socket_Init();
+}
+
+__global__
+void Initialize_BCL2()
+{
+	//JIT_Execute_Init();
+	//MetaData_Init();
+	Type_Init();
+	Heap_Init();
+	Finalizer_Init();
+	//Socket_Init();
+}
+
+
+__device__
+void* Bcl_Heap_Alloc(STRING assemblyName, STRING nameSpace, STRING name)
+{
+	tMD_TypeDef* type_def = MetaData_GetTypeDefFromFullName(assemblyName, nameSpace, name);
+	void * result = Heap_AllocType(type_def);
+	return result;
+}

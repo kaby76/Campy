@@ -31,8 +31,14 @@ __device__ static size_t* lengths;
 __device__ static boolean init;
 __device__ static int initial_size;
 
+__global__ void Bcl_Gfs_init()
+{
+	Gfs_init();
+}
+
 __device__ void Gfs_init()
 {
+	printf("Gfs_init in\n");
 	initial_size = 10;
 	names = (char**)malloc(initial_size * sizeof(char*));
 	memset(names, 0, initial_size * sizeof(char*));
@@ -41,10 +47,17 @@ __device__ void Gfs_init()
 	lengths = (size_t*)malloc(initial_size * sizeof(size_t));
 	memset(lengths, 0, initial_size * sizeof(size_t));
 	init = 1;
+	printf("Gfs_init out\n");
+}
+
+__global__ void Bcl_Gfs_add_file(char * name, char * file, size_t length, int * result)
+{
+	Gfs_add_file(name, file, length, result);
 }
 
 __device__ void Gfs_add_file(char * name, char * file, size_t length, int * result)
 {
+	printf("name %s\n", name);
 	if (init == 0) Gfs_init();
 	char ** ptr_name = names;
 	char ** ptr_file = files;
@@ -53,10 +66,14 @@ __device__ void Gfs_add_file(char * name, char * file, size_t length, int * resu
 	{
 		if (*ptr_name == NULL)
 		{
+			printf("name slot null, adding\n");
 			*ptr_name = Gstrdup(name);
 			*ptr_file = (char *)malloc(length);
 			memcpy(*ptr_file, file, length);
+			printf("copy\n");
 			*ptr_length = length;
+			printf("len %d\n", length);
+			printf("returning %d\n", i);
 			*result = i;
 			return;
 		}
@@ -68,6 +85,11 @@ __device__ void Gfs_add_file(char * name, char * file, size_t length, int * resu
 		}
 	}
 	*result = -1;
+}
+
+__global__ void Bcl_Gfs_remove_file(char * name, int * result)
+{
+	Gfs_remove_file(name, result);
 }
 
 __device__ void Gfs_remove_file(char * name, int * result)
@@ -99,6 +121,11 @@ __device__ void Gfs_remove_file(char * name, int * result)
 	*result = -1;
 }
 
+__global__ void Bcl_Gfs_open_file(char * name, int * result)
+{
+	Gfs_open_file(name, result);
+}
+
 __device__ void Gfs_open_file(char * name, int * result)
 {
 	if (init == 0) Gfs_init();
@@ -122,16 +149,31 @@ __device__ void Gfs_open_file(char * name, int * result)
 	*result = -1;
 }
 
+__global__ void Bcl_Gfs_close_file(int file, int * result)
+{
+	Gfs_close_file(file, result);
+}
+
 __device__ void Gfs_close_file(int file, int * result)
 {
 	if (init == 0) Gfs_init();
 	*result = 0;
 }
 
+__global__ void Bcl_Gfs_read(int file, char ** result)
+{
+	Gfs_read(file, result);
+}
+
 __device__ void Gfs_read(int file, char ** result)
 {
 	if (init == 0) Gfs_init();
 	*result = files[file];
+}
+
+__global__ void Bcl_Gfs_length(int file, size_t * result)
+{
+	Gfs_length(file, result);
 }
 
 __device__ void Gfs_length(int file, size_t * result)

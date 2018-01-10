@@ -97,7 +97,7 @@
       <AdditionalCompilerOptions>
       </AdditionalCompilerOptions>
       <Keep>true</Keep>
-      <GPUDebugInfo>false</GPUDebugInfo>
+      <GPUDebugInfo>true</GPUDebugInfo>
       <CodeGeneration>compute_35,sm_35</CodeGeneration>
       <InterleaveSourceInPTX>true</InterleaveSourceInPTX>
       <GenerateLineInfo>true</GenerateLineInfo>

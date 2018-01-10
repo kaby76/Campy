@@ -7,7 +7,7 @@
 //
 
 .version 6.0
-.target sm_35
+.target sm_35, debug
 .address_size 64
 
 	// .weak	cudaMalloc
@@ -21,21 +21,57 @@
 	.param .b64 malloc_param_0
 )
 ;
+.func  (.param .b64 func_retval0) memcpy
+(
+	.param .b64 memcpy_param_0,
+	.param .b64 memcpy_param_1,
+	.param .b64 memcpy_param_2
+)
+;
+.func  (.param .b64 func_retval0) memset
+(
+	.param .b64 memset_param_0,
+	.param .b32 memset_param_1,
+	.param .b64 memset_param_2
+)
+;
 
 .weak .func  (.param .b32 func_retval0) cudaMalloc(
 	.param .b64 cudaMalloc_param_0,
 	.param .b64 cudaMalloc_param_1
 )
 {
-	.reg .b32 	%r<2>;
+	.local .align 8 .b8 	__local_depot0[8];
+	.reg .b64 	%SP;
+	.reg .b64 	%SPL;
+	.reg .b32 	%r<3>;
+	.reg .b64 	%rd<6>;
 
 
+	.loc 2 75 1
+func_begin0:
+	.loc	2 0 0
+
+	.loc 2 75 1
+
+	mov.u64 	%rd5, __local_depot0;
+	cvta.local.u64 	%SP, %rd5;
+	ld.param.u64 	%rd1, [cudaMalloc_param_0];
+	ld.param.u64 	%rd2, [cudaMalloc_param_1];
+	mov.u64 	%rd3, %rd1;
+	st.u64 	[%SP+0], %rd3;
+	mov.b64 	%rd4, %rd2;
 	mov.u32 	%r1, 30;
-	st.param.b32	[func_retval0+0], %r1;
+func_exec_begin0:
 
 //c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:77   return cudaErrorUnknown;
-	.loc 2 77 3
+	.loc	2 77 3
+tmp0:
+	mov.b32 	%r2, %r1;
+	st.param.b32	[func_retval0+0], %r2;
 	ret;
+tmp1:
+func_end0:
 }
 
 	// .weak	cudaFuncGetAttributes
@@ -44,15 +80,37 @@
 	.param .b64 cudaFuncGetAttributes_param_1
 )
 {
-	.reg .b32 	%r<2>;
+	.local .align 8 .b8 	__local_depot1[8];
+	.reg .b64 	%SP;
+	.reg .b64 	%SPL;
+	.reg .b32 	%r<3>;
+	.reg .b64 	%rd<6>;
 
 
+	.loc 2 80 1
+func_begin1:
+	.loc	2 0 0
+
+	.loc 2 80 1
+
+	mov.u64 	%rd5, __local_depot1;
+	cvta.local.u64 	%SP, %rd5;
+	ld.param.u64 	%rd1, [cudaFuncGetAttributes_param_0];
+	ld.param.u64 	%rd2, [cudaFuncGetAttributes_param_1];
+	mov.u64 	%rd3, %rd1;
+	st.u64 	[%SP+0], %rd3;
+	mov.u64 	%rd4, %rd2;
 	mov.u32 	%r1, 30;
-	st.param.b32	[func_retval0+0], %r1;
+func_exec_begin1:
 
 //c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:82   return cudaErrorUnknown;
-	.loc 2 82 3
+	.loc	2 82 3
+tmp2:
+	mov.b32 	%r2, %r1;
+	st.param.b32	[func_retval0+0], %r2;
 	ret;
+tmp3:
+func_end1:
 }
 
 	// .weak	cudaDeviceGetAttribute
@@ -62,15 +120,33 @@
 	.param .b32 cudaDeviceGetAttribute_param_2
 )
 {
-	.reg .b32 	%r<2>;
+	.reg .b32 	%r<7>;
+	.reg .b64 	%rd<3>;
 
 
-	mov.u32 	%r1, 30;
-	st.param.b32	[func_retval0+0], %r1;
+	.loc 2 85 1
+func_begin2:
+	.loc	2 0 0
+
+	.loc 2 85 1
+
+	ld.param.u64 	%rd1, [cudaDeviceGetAttribute_param_0];
+	ld.param.u32 	%r1, [cudaDeviceGetAttribute_param_1];
+	ld.param.u32 	%r2, [cudaDeviceGetAttribute_param_2];
+	mov.u64 	%rd2, %rd1;
+	mov.b32 	%r3, %r1;
+	mov.b32 	%r4, %r2;
+	mov.u32 	%r5, 30;
+func_exec_begin2:
 
 //c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:87   return cudaErrorUnknown;
-	.loc 2 87 3
+	.loc	2 87 3
+tmp4:
+	mov.b32 	%r6, %r5;
+	st.param.b32	[func_retval0+0], %r6;
 	ret;
+tmp5:
+func_end2:
 }
 
 	// .weak	cudaGetDevice
@@ -78,15 +154,29 @@
 	.param .b64 cudaGetDevice_param_0
 )
 {
-	.reg .b32 	%r<2>;
+	.reg .b32 	%r<3>;
+	.reg .b64 	%rd<3>;
 
 
+	.loc 2 90 1
+func_begin3:
+	.loc	2 0 0
+
+	.loc 2 90 1
+
+	ld.param.u64 	%rd1, [cudaGetDevice_param_0];
+	mov.u64 	%rd2, %rd1;
 	mov.u32 	%r1, 30;
-	st.param.b32	[func_retval0+0], %r1;
+func_exec_begin3:
 
 //c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:92   return cudaErrorUnknown;
-	.loc 2 92 3
+	.loc	2 92 3
+tmp6:
+	mov.b32 	%r2, %r1;
+	st.param.b32	[func_retval0+0], %r2;
 	ret;
+tmp7:
+func_end3:
 }
 
 	// .weak	cudaOccupancyMaxActiveBlocksPerMultiprocessor
@@ -97,15 +187,35 @@
 	.param .b64 cudaOccupancyMaxActiveBlocksPerMultiprocessor_param_3
 )
 {
-	.reg .b32 	%r<2>;
+	.reg .b32 	%r<5>;
+	.reg .b64 	%rd<7>;
 
 
-	mov.u32 	%r1, 30;
-	st.param.b32	[func_retval0+0], %r1;
+	.loc 2 95 1
+func_begin4:
+	.loc	2 0 0
+
+	.loc 2 95 1
+
+	ld.param.u64 	%rd1, [cudaOccupancyMaxActiveBlocksPerMultiprocessor_param_0];
+	ld.param.u64 	%rd2, [cudaOccupancyMaxActiveBlocksPerMultiprocessor_param_1];
+	ld.param.u32 	%r1, [cudaOccupancyMaxActiveBlocksPerMultiprocessor_param_2];
+	ld.param.u64 	%rd3, [cudaOccupancyMaxActiveBlocksPerMultiprocessor_param_3];
+	mov.u64 	%rd4, %rd1;
+	mov.u64 	%rd5, %rd2;
+	mov.b32 	%r2, %r1;
+	mov.b64 	%rd6, %rd3;
+	mov.u32 	%r3, 30;
+func_exec_begin4:
 
 //c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:97   return cudaErrorUnknown;
-	.loc 2 97 3
+	.loc	2 97 3
+tmp8:
+	mov.b32 	%r4, %r3;
+	st.param.b32	[func_retval0+0], %r4;
 	ret;
+tmp9:
+func_end4:
 }
 
 	// .weak	cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags
@@ -117,15 +227,37 @@
 	.param .b32 cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags_param_4
 )
 {
-	.reg .b32 	%r<2>;
+	.reg .b32 	%r<7>;
+	.reg .b64 	%rd<7>;
 
 
-	mov.u32 	%r1, 30;
-	st.param.b32	[func_retval0+0], %r1;
+	.loc 2 100 1
+func_begin5:
+	.loc	2 0 0
+
+	.loc 2 100 1
+
+	ld.param.u64 	%rd1, [cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags_param_0];
+	ld.param.u64 	%rd2, [cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags_param_1];
+	ld.param.u32 	%r1, [cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags_param_2];
+	ld.param.u64 	%rd3, [cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags_param_3];
+	ld.param.u32 	%r2, [cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags_param_4];
+	mov.u64 	%rd4, %rd1;
+	mov.u64 	%rd5, %rd2;
+	mov.b32 	%r3, %r1;
+	mov.b64 	%rd6, %rd3;
+	mov.b32 	%r4, %r2;
+	mov.u32 	%r5, 30;
+func_exec_begin5:
 
 //c:\program files\nvidia gpu computing toolkit\cuda\v9.0\include\cuda_device_runtime_api.h:102   return cudaErrorUnknown;
-	.loc 2 102 3
+	.loc	2 102 3
+tmp10:
+	mov.b32 	%r6, %r5;
+	st.param.b32	[func_retval0+0], %r6;
 	ret;
+tmp11:
+func_end5:
 }
 
 	// .globl	_Z3RVAv
@@ -133,13 +265,27 @@
 
 )
 {
-	.reg .b64 	%rd<4>;
+	.local .align 8 .b8 	__local_depot6[8];
+	.reg .b64 	%SP;
+	.reg .b64 	%SPL;
+	.reg .b32 	%r<2>;
+	.reg .b64 	%rd<7>;
 
 
+	.loc 1 26 1
+func_begin6:
+	.loc	1 0 0
+
+	.loc 1 26 1
+
+	mov.u64 	%rd6, __local_depot6;
+	cvta.local.u64 	%SP, %rd6;
 	mov.u64 	%rd1, 8;
+func_exec_begin6:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.c:28 	pRet = TMALLOC(tRVA);
-	.loc 1 28 16
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/RVA.c:28 	pRet = TMALLOC(tRVA);
+	.loc	1 28 16
+tmp12:
 	// Callseq Start 0
 	{
 	.reg .b32 temp_param_reg;
@@ -156,23 +302,43 @@
 	
 	//{
 	}// Callseq End 0
-	mov.u64 	%rd3, 0;
+	mov.u32 	%r1, 0;
+tmp13:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.c:29 	memset(pRet, 0, sizeof(tRVA));
-	.loc 1 29 2
-	st.u8 	[%rd2+7], %rd3;
-	st.u8 	[%rd2+6], %rd3;
-	st.u8 	[%rd2+5], %rd3;
-	st.u8 	[%rd2+4], %rd3;
-	st.u8 	[%rd2+3], %rd3;
-	st.u8 	[%rd2+2], %rd3;
-	st.u8 	[%rd2+1], %rd3;
-	st.u8 	[%rd2], %rd3;
-	st.param.b64	[func_retval0+0], %rd2;
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/RVA.c:29 	memset(pRet, 0, sizeof(tRVA));
+	.loc	1 29 2
+	// Callseq Start 1
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b64 param0;
+	st.param.b64	[param0+0], %rd2;
+	.param .b32 param1;
+	st.param.b32	[param1+0], %r1;
+	.param .b64 param2;
+	st.param.b64	[param2+0], %rd1;
+	.param .b64 retval0;
+	call.uni (retval0), 
+	memset, 
+	(
+	param0, 
+	param1, 
+	param2
+	);
+	ld.param.b64	%rd3, [retval0+0];
+	
+	//{
+	}// Callseq End 1
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.c:30 	return pRet;
-	.loc 1 30 2
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/RVA.c:30 	return pRet;
+	.loc	1 30 2
+	mov.u64 	%rd4, %rd2;
+	st.u64 	[%SP+0], %rd4;
+	ld.u64 	%rd5, [%SP+0];
+	st.param.b64	[func_retval0+0], %rd5;
 	ret;
+tmp14:
+func_end6:
 }
 
 	// .globl	_Z10RVA_CreateP5tRVA_PvS1_
@@ -182,25 +348,37 @@
 	.param .b64 _Z10RVA_CreateP5tRVA_PvS1__param_2
 )
 {
-	.reg .pred 	%p<8>;
-	.reg .b16 	%rs<4>;
-	.reg .b32 	%r<7>;
-	.reg .b64 	%rd<33>;
+	.local .align 8 .b8 	__local_depot7[8];
+	.reg .b64 	%SP;
+	.reg .b64 	%SPL;
+	.reg .pred 	%p<5>;
+	.reg .b32 	%r<15>;
+	.reg .b64 	%rd<21>;
 
 
-	ld.param.u64 	%rd16, [_Z10RVA_CreateP5tRVA_PvS1__param_0];
-	ld.param.u64 	%rd17, [_Z10RVA_CreateP5tRVA_PvS1__param_1];
-	ld.param.u64 	%rd18, [_Z10RVA_CreateP5tRVA_PvS1__param_2];
-	mov.u64 	%rd20, 24;
+	.loc 1 33 1
+func_begin7:
+	.loc	1 0 0
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.c:38 	pRet = TMALLOC(tRVA_Item);
-	.loc 1 38 21
-	// Callseq Start 1
+	.loc 1 33 1
+
+	mov.u64 	%rd20, __local_depot7;
+	cvta.local.u64 	%SP, %rd20;
+	ld.param.u64 	%rd2, [_Z10RVA_CreateP5tRVA_PvS1__param_0];
+	ld.param.u64 	%rd3, [_Z10RVA_CreateP5tRVA_PvS1__param_1];
+	ld.param.u64 	%rd4, [_Z10RVA_CreateP5tRVA_PvS1__param_2];
+	mov.u64 	%rd5, 24;
+func_exec_begin7:
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/RVA.c:38 	pRet = TMALLOC(tRVA_Item);
+	.loc	1 38 21
+tmp15:
+	// Callseq Start 2
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
 	.param .b64 param0;
-	st.param.b64	[param0+0], %rd20;
+	st.param.b64	[param0+0], %rd5;
 	.param .b64 retval0;
 	call.uni (retval0), 
 	_Z7Gmallocy, 
@@ -210,128 +388,195 @@
 	ld.param.b64	%rd1, [retval0+0];
 	
 	//{
-	}// Callseq End 1
-	mov.u64 	%rd30, 0;
-	mov.pred 	%p1, 0;
-	@%p1 bra 	BB7_2;
+	}// Callseq End 2
+	mov.u32 	%r5, 0;
+tmp16:
 
-BB7_1:
-	add.s64 	%rd21, %rd1, %rd30;
-	mov.u16 	%rs1, 0;
-	st.u8 	[%rd21], %rs1;
-	add.s64 	%rd30, %rd30, 1;
-	setp.lt.u64	%p2, %rd30, 24;
-	@%p2 bra 	BB7_1;
-
-BB7_2:
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.c:40 	pRet->baseAddress = *(unsigned int*)&((char*)pSectionHeader)[12];
-	.loc 1 40 2
-	ld.u32 	%r2, [%rd18+12];
-	st.u32 	[%rd1], %r2;
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.c:41 	pRet->size = *(unsigned int*)&((char*)pSectionHeader)[8];
-	.loc 1 41 2
-	ld.u32 	%r3, [%rd18+8];
-	st.u32 	[%rd1+4], %r3;
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.c:42 	pRet->pData = malloc(pRet->size);
-	.loc 1 42 2
-	cvt.u64.u32	%rd23, %r3;
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.c:42 	pRet->pData = malloc(pRet->size);
-	.loc 1 42 16
-	// Callseq Start 2
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/RVA.c:39 	memset(pRet, 0, sizeof(tRVA_Item));
+	.loc	1 39 2
+	// Callseq Start 3
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
 	.param .b64 param0;
-	st.param.b64	[param0+0], %rd23;
+	st.param.b64	[param0+0], %rd1;
+	.param .b32 param1;
+	st.param.b32	[param1+0], %r5;
+	.param .b64 param2;
+	st.param.b64	[param2+0], %rd5;
+	.param .b64 retval0;
+	call.uni (retval0), 
+	memset, 
+	(
+	param0, 
+	param1, 
+	param2
+	);
+	ld.param.b64	%rd6, [retval0+0];
+	
+	//{
+	}// Callseq End 3
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/RVA.c:40 	pRet->baseAddress = *(unsigned int*)&((char*)pSectionHeader)[12];
+	.loc	1 40 2
+	ld.u32 	%r6, [%rd4+12];
+	st.u32 	[%rd1], %r6;
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/RVA.c:41 	pRet->size = *(unsigned int*)&((char*)pSectionHeader)[8];
+	.loc	1 41 2
+	ld.u32 	%r7, [%rd4+8];
+	st.u32 	[%rd1+4], %r7;
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/RVA.c:42 	pRet->pData = malloc(pRet->size);
+	.loc	1 42 2
+	ld.u32 	%r8, [%rd1+4];
+	cvt.u64.u32	%rd7, %r8;
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/RVA.c:42 	pRet->pData = malloc(pRet->size);
+	.loc	1 42 16
+	// Callseq Start 4
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b64 param0;
+	st.param.b64	[param0+0], %rd7;
 	.param .b64 retval0;
 	call.uni (retval0), 
 	malloc, 
 	(
 	param0
 	);
-	ld.param.b64	%rd7, [retval0+0];
+	ld.param.b64	%rd8, [retval0+0];
 	
 	//{
-	}// Callseq End 2
-	st.u64 	[%rd1+8], %rd7;
+	}// Callseq End 4
+	st.u64 	[%rd1+8], %rd8;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.c:43 	memset(pRet->pData, 0, pRet->size);
-	.loc 1 43 2
-	ld.u32 	%rd8, [%rd1+4];
-	mov.u64 	%rd31, 0;
-	setp.eq.s64	%p3, %rd8, 0;
-	@%p3 bra 	BB7_4;
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/RVA.c:43 	memset(pRet->pData, 0, pRet->size);
+	.loc	1 43 2
+	ld.u64 	%rd9, [%rd1+8];
+	ld.u32 	%r9, [%rd1+4];
+	cvt.u64.u32	%rd10, %r9;
+	// Callseq Start 5
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b64 param0;
+	st.param.b64	[param0+0], %rd9;
+	.param .b32 param1;
+	st.param.b32	[param1+0], %r5;
+	.param .b64 param2;
+	st.param.b64	[param2+0], %rd10;
+	.param .b64 retval0;
+	call.uni (retval0), 
+	memset, 
+	(
+	param0, 
+	param1, 
+	param2
+	);
+	ld.param.b64	%rd11, [retval0+0];
+	
+	//{
+	}// Callseq End 5
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/RVA.c:44 	pRet->pNext = pThis->pFirstRVA;
+	.loc	1 44 2
+	ld.u64 	%rd12, [%rd2];
+	st.u64 	[%rd1+16], %rd12;
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/RVA.c:45 	pThis->pFirstRVA = pRet;
+	.loc	1 45 2
+	st.u64 	[%rd2], %rd1;
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/RVA.c:47 	rawOfs = *(unsigned int*)&((char*)pSectionHeader)[20];
+	.loc	1 47 2
+	ld.u32 	%r10, [%rd4+20];
+	mov.b32 	%r1, %r10;
+tmp17:
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/RVA.c:48 	rawSize = *(unsigned int*)&((char*)pSectionHeader)[16];
+	.loc	1 48 2
+	ld.u32 	%r11, [%rd4+16];
+	mov.b32 	%r2, %r11;
+tmp18:
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/RVA.c:49 	if (rawOfs > 0) {
+	.loc	1 49 2
+	setp.gt.u32	%p1, %r1, 0;
+	not.pred 	%p2, %p1;
+	@%p2 bra 	BB7_4;
+	bra.uni 	BB7_1;
+
+BB7_1:
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/RVA.c:50 		if (rawSize > pRet->size) {
+	.loc	1 50 3
+tmp19:
+	ld.u32 	%r12, [%rd1+4];
+	setp.gt.u32	%p3, %r2, %r12;
+	not.pred 	%p4, %p3;
+	mov.u32 	%r14, %r2;
+tmp20:
+	@%p4 bra 	BB7_3;
+	bra.uni 	BB7_2;
+
+BB7_2:
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/RVA.c:51 			rawSize = pRet->size;
+	.loc	1 51 4
+tmp21:
+	ld.u32 	%r13, [%rd1+4];
+	mov.b32 	%r3, %r13;
+tmp22:
+	mov.u32 	%r14, %r3;
+tmp23:
 
 BB7_3:
-	add.s64 	%rd24, %rd7, %rd31;
-	mov.u16 	%rs2, 0;
-	st.u8 	[%rd24], %rs2;
-	add.s64 	%rd31, %rd31, 1;
-	setp.lt.u64	%p4, %rd31, %rd8;
-	@%p4 bra 	BB7_3;
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/RVA.c:53 		memcpy(pRet->pData, ((char*)pFile)+rawOfs, rawSize);
+	.loc	1 53 3
+	mov.u32 	%r4, %r14;
+tmp24:
+	ld.u64 	%rd13, [%rd1+8];
+	cvt.u64.u32	%rd14, %r1;
+	add.s64 	%rd15, %rd3, %rd14;
+	cvt.u64.u32	%rd16, %r4;
+	// Callseq Start 6
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b64 param0;
+	st.param.b64	[param0+0], %rd13;
+	.param .b64 param1;
+	st.param.b64	[param1+0], %rd15;
+	.param .b64 param2;
+	st.param.b64	[param2+0], %rd16;
+	.param .b64 retval0;
+	call.uni (retval0), 
+	memcpy, 
+	(
+	param0, 
+	param1, 
+	param2
+	);
+	ld.param.b64	%rd17, [retval0+0];
+	
+	//{
+	}// Callseq End 6
+tmp25:
 
 BB7_4:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.c:44 	pRet->pNext = pThis->pFirstRVA;
-	.loc 1 44 2
-	ld.u64 	%rd25, [%rd16];
-	st.u64 	[%rd1+16], %rd25;
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.c:45 	pThis->pFirstRVA = pRet;
-	.loc 1 45 2
-	st.u64 	[%rd16], %rd1;
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.c:47 	rawOfs = *(unsigned int*)&((char*)pSectionHeader)[20];
-	.loc 1 47 2
-	ld.u32 	%r1, [%rd18+20];
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.c:49 	if (rawOfs > 0) {
-	.loc 1 49 2
-	setp.eq.s32	%p5, %r1, 0;
-	@%p5 bra 	BB7_7;
-
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.c:53 		memcpy(pRet->pData, ((char*)pFile)+rawOfs, rawSize);
-	.loc 1 53 3
-	cvt.u64.u32	%rd27, %r1;
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.c:50 		if (rawSize > pRet->size) {
-	.loc 1 50 3
-	ld.u32 	%r4, [%rd1+4];
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.c:48 	rawSize = *(unsigned int*)&((char*)pSectionHeader)[16];
-	.loc 1 48 2
-	ld.u32 	%r5, [%rd18+16];
-	min.u32 	%r6, %r4, %r5;
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.c:53 		memcpy(pRet->pData, ((char*)pFile)+rawOfs, rawSize);
-	.loc 1 53 3
-	ld.u64 	%rd11, [%rd1+8];
-	cvt.u64.u32	%rd12, %r6;
-	add.s64 	%rd13, %rd17, %rd27;
-	mov.u64 	%rd32, 0;
-	setp.eq.s32	%p6, %r6, 0;
-	@%p6 bra 	BB7_7;
-
-BB7_6:
-	add.s64 	%rd28, %rd13, %rd32;
-	ld.u8 	%rs3, [%rd28];
-	add.s64 	%rd29, %rd11, %rd32;
-	st.u8 	[%rd29], %rs3;
-	add.s64 	%rd32, %rd32, 1;
-	setp.lt.u64	%p7, %rd32, %rd12;
-	@%p7 bra 	BB7_6;
-
-BB7_7:
-	st.param.b64	[func_retval0+0], %rd1;
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.c:56 	return pRet;
-	.loc 1 56 2
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/RVA.c:56 	return pRet;
+	.loc	1 56 2
+	mov.u64 	%rd18, %rd1;
+	st.u64 	[%SP+0], %rd18;
+	ld.u64 	%rd19, [%SP+0];
+	st.param.b64	[func_retval0+0], %rd19;
 	ret;
+tmp26:
+func_end7:
 }
 
 	// .globl	_Z12RVA_FindDataP5tRVA_j
@@ -340,85 +585,9046 @@ BB7_7:
 	.param .b32 _Z12RVA_FindDataP5tRVA_j_param_1
 )
 {
-	.reg .pred 	%p<6>;
-	.reg .b32 	%r<7>;
-	.reg .b64 	%rd<17>;
+	.local .align 8 .b8 	__local_depot8[8];
+	.reg .b64 	%SP;
+	.reg .b64 	%SPL;
+	.reg .pred 	%p<12>;
+	.reg .b32 	%r<8>;
+	.reg .b64 	%rd<23>;
 
 
-	ld.param.u64 	%rd8, [_Z12RVA_FindDataP5tRVA_j_param_0];
-	ld.param.u32 	%r2, [_Z12RVA_FindDataP5tRVA_j_param_1];
+	.loc 1 59 1
+func_begin8:
+	.loc	1 0 0
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.c:62 	if (rva == 0) {
-	.loc 1 62 2
-	setp.eq.s32	%p1, %r2, 0;
-	mov.u64 	%rd16, 0;
+	.loc 1 59 1
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.c:62 	if (rva == 0) {
-	.loc 1 62 2
-	@%p1 bra 	BB8_6;
+	mov.u64 	%rd22, __local_depot8;
+	cvta.local.u64 	%SP, %rd22;
+	ld.param.u64 	%rd5, [_Z12RVA_FindDataP5tRVA_j_param_0];
+	ld.param.u32 	%r1, [_Z12RVA_FindDataP5tRVA_j_param_1];
+tmp27:
+func_exec_begin8:
 
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/RVA.c:62 	if (rva == 0) {
+	.loc	1 62 2
+	setp.eq.s32	%p3, %r1, 0;
+	not.pred 	%p4, %p3;
+	@%p4 bra 	BB8_2;
+	bra.uni 	BB8_1;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.c:66 	pRVA = pThis->pFirstRVA;
-	.loc 1 66 2
-	ld.u64 	%rd15, [%rd8];
+BB8_1:
+	mov.u64 	%rd20, 0;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.c:67 	while (pRVA != NULL) {
-	.loc 1 67 2
-	setp.eq.s64	%p2, %rd15, 0;
-	@%p2 bra 	BB8_6;
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/RVA.c:63 		return NULL;
+	.loc	1 63 3
+tmp28:
+	mov.u64 	%rd1, %rd20;
+	mov.u64 	%rd21, %rd1;
+	bra.uni 	BB8_10;
+tmp29:
 
 BB8_2:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.c:68 		if (rva >= pRVA->baseAddress && rva < pRVA->baseAddress+pRVA->size) {
-	.loc 1 68 3
-	ld.u64 	%rd4, [%rd15];
-	cvt.u32.u64	%r1, %rd4;
-	setp.gt.u32	%p3, %r1, %r2;
-	@%p3 bra 	BB8_5;
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/RVA.c:66 	pRVA = pThis->pFirstRVA;
+	.loc	1 66 2
+	ld.u64 	%rd6, [%rd5];
+	mov.u64 	%rd7, %rd6;
+	st.u64 	[%SP+0], %rd7;
 
-	shr.u64 	%rd11, %rd4, 32;
-	cvt.u32.u64	%r3, %rd11;
+BB8_3:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.c:68 		if (rva >= pRVA->baseAddress && rva < pRVA->baseAddress+pRVA->size) {
-	.loc 1 68 3
-	add.s32 	%r4, %r3, %r1;
-	setp.le.u32	%p4, %r4, %r2;
-	@%p4 bra 	BB8_5;
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/RVA.c:67 	while (pRVA != NULL) {
+	.loc	1 67 2
+	ld.u64 	%rd8, [%SP+0];
+	setp.ne.s64	%p5, %rd8, 0;
+	not.pred 	%p6, %p5;
+	@%p6 bra 	BB8_9;
 	bra.uni 	BB8_4;
-
-BB8_5:
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.c:71 		pRVA = pRVA->pNext;
-	.loc 1 71 3
-	ld.u64 	%rd15, [%rd15+16];
-
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.c:67 	while (pRVA != NULL) {
-	.loc 1 67 2
-	setp.ne.s64	%p5, %rd15, 0;
-	@%p5 bra 	BB8_2;
-	bra.uni 	BB8_6;
 
 BB8_4:
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.c:68 		if (rva >= pRVA->baseAddress && rva < pRVA->baseAddress+pRVA->size) {
-	.loc 1 68 3
-	ld.u32 	%r5, [%rd15];
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/RVA.c:68 		if (rva >= pRVA->baseAddress && rva < pRVA->baseAddress+pRVA->size) {
+	.loc	1 68 3
+tmp30:
+	ld.u64 	%rd10, [%SP+0];
+	ld.u32 	%r2, [%rd10];
+	setp.ge.u32	%p8, %r1, %r2;
+	mov.pred 	%p7, 0;
+	not.pred 	%p9, %p8;
+	mov.pred 	%p11, %p7;
+	@%p9 bra 	BB8_6;
+	bra.uni 	BB8_5;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.c:69 			return (char*)(pRVA->pData) + (rva - pRVA->baseAddress);
-	.loc 1 69 4
-	sub.s32 	%r6, %r2, %r5;
-	cvt.u64.u32	%rd12, %r6;
-	ld.u64 	%rd13, [%rd15+8];
-	add.s64 	%rd16, %rd13, %rd12;
+BB8_5:
+	ld.u64 	%rd11, [%SP+0];
+	ld.u32 	%r3, [%rd11];
+	ld.u64 	%rd12, [%SP+0];
+	ld.u32 	%r4, [%rd12+4];
+	add.s32 	%r5, %r3, %r4;
+	setp.lt.u32	%p1, %r1, %r5;
+	mov.pred 	%p11, %p1;
 
 BB8_6:
-	st.param.b64	[func_retval0+0], %rd16;
+	mov.pred 	%p2, %p11;
+	not.pred 	%p10, %p2;
+	@%p10 bra 	BB8_8;
+	bra.uni 	BB8_7;
 
-//C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.c:73 	return NULL;
-	.loc 1 73 2
+BB8_7:
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/RVA.c:69 			return (char*)(pRVA->pData) + (rva - pRVA->baseAddress);
+	.loc	1 69 4
+tmp31:
+	ld.u64 	%rd16, [%SP+0];
+	ld.u64 	%rd17, [%rd16+8];
+	ld.u64 	%rd18, [%SP+0];
+	ld.u32 	%r6, [%rd18];
+	sub.s32 	%r7, %r1, %r6;
+	cvt.u64.u32	%rd19, %r7;
+	add.s64 	%rd2, %rd17, %rd19;
+	mov.u64 	%rd21, %rd2;
+	bra.uni 	BB8_10;
+tmp32:
+
+BB8_8:
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/RVA.c:71 		pRVA = pRVA->pNext;
+	.loc	1 71 3
+	ld.u64 	%rd13, [%SP+0];
+	ld.u64 	%rd14, [%rd13+16];
+	mov.u64 	%rd15, %rd14;
+	st.u64 	[%SP+0], %rd15;
+	bra.uni 	BB8_3;
+tmp33:
+
+BB8_9:
+	mov.u64 	%rd9, 0;
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/RVA.c:73 	return NULL;
+	.loc	1 73 2
+	mov.u64 	%rd3, %rd9;
+	mov.u64 	%rd21, %rd3;
+
+BB8_10:
+	mov.u64 	%rd4, %rd21;
+	st.param.b64	[func_retval0+0], %rd4;
+	ret;
+tmp34:
+func_end8:
+}
+
+.func  (.param .b64 func_retval0) memcpy(
+	.param .b64 memcpy_param_0,
+	.param .b64 memcpy_param_1,
+	.param .b64 memcpy_param_2
+)
+{
+	.reg .pred 	%p<4>;
+	.reg .b16 	%rs<2>;
+	.reg .b64 	%rd<15>;
+
+
+	ld.param.u64 	%rd6, [memcpy_param_0];
+	ld.param.u64 	%rd7, [memcpy_param_1];
+	ld.param.u64 	%rd8, [memcpy_param_2];
+	mov.u64 	%rd1, %rd6;
+	mov.u64 	%rd2, %rd7;
+	mov.b64 	%rd3, %rd8;
+	setp.gt.u64	%p1, %rd3, 0;
+	mov.u64 	%rd9, 0;
+	not.pred 	%p2, %p1;
+	mov.u64 	%rd14, %rd9;
+	@%p2 bra 	BB9_2;
+	bra.uni 	BB9_1;
+
+BB9_1:
+	mov.u64 	%rd4, %rd14;
+	add.s64 	%rd10, %rd2, %rd4;
+	ld.u8 	%rs1, [%rd10];
+	add.s64 	%rd11, %rd1, %rd4;
+	st.u8 	[%rd11], %rs1;
+	add.s64 	%rd5, %rd4, 1;
+	setp.lt.u64	%p3, %rd5, %rd3;
+	mov.u64 	%rd14, %rd5;
+	@%p3 bra 	BB9_1;
+	bra.uni 	BB9_2;
+
+BB9_2:
+	mov.u64 	%rd12, %rd1;
+	mov.u64 	%rd13, %rd12;
+	st.param.b64	[func_retval0+0], %rd13;
 	ret;
 }
 
-	.file	1 "C:/Users/kenne/Documents/Campy/Campy.Runtime/Native/RVA.c", 1511871630, 2386
-	.file	2 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v9.0\\include\\cuda_device_runtime_api.h", 1504359958, 14836
+.func  (.param .b64 func_retval0) memset(
+	.param .b64 memset_param_0,
+	.param .b32 memset_param_1,
+	.param .b64 memset_param_2
+)
+{
+	.reg .pred 	%p<4>;
+	.reg .b16 	%rs<2>;
+	.reg .b32 	%r<3>;
+	.reg .b64 	%rd<12>;
 
+
+	ld.param.u64 	%rd5, [memset_param_0];
+	ld.param.u32 	%r1, [memset_param_1];
+	ld.param.u64 	%rd6, [memset_param_2];
+	mov.u64 	%rd1, %rd5;
+	mov.b32 	%r2, %r1;
+	mov.b64 	%rd2, %rd6;
+	cvt.u16.u32	%rs1, %r2;
+	setp.gt.u64	%p1, %rd2, 0;
+	mov.u64 	%rd7, 0;
+	not.pred 	%p2, %p1;
+	mov.u64 	%rd11, %rd7;
+	@%p2 bra 	BB10_2;
+	bra.uni 	BB10_1;
+
+BB10_1:
+	mov.u64 	%rd3, %rd11;
+	add.s64 	%rd8, %rd1, %rd3;
+	st.u8 	[%rd8], %rs1;
+	add.s64 	%rd4, %rd3, 1;
+	setp.lt.u64	%p3, %rd4, %rd2;
+	mov.u64 	%rd11, %rd4;
+	@%p3 bra 	BB10_1;
+	bra.uni 	BB10_2;
+
+BB10_2:
+	mov.u64 	%rd9, %rd1;
+	mov.u64 	%rd10, %rd9;
+	st.param.b64	[func_retval0+0], %rd10;
+	ret;
+}
+
+	.file	1 "C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/RVA.c", 1513259529, 2386
+	.file	2 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v9.0\\include\\cuda_device_runtime_api.h", 1504359958, 14836
+	.file	3 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\RVA.h", 1513259529, 1603
+	.file	4 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v9.0\\include\\driver_types.h", 1504359957, 76651
+
+.section .debug_info {
+ .b32 8166
+ .b8 2
+ .b8 0
+ .b32 .debug_abbrev
+ .b8 8
+ .b8 1
+
+ .b8 108
+ .b8 103
+ .b8 101
+ .b8 110
+ .b8 102
+ .b8 101
+ .b8 58
+ .b8 32
+ .b8 69
+ .b8 68
+ .b8 71
+ .b8 32
+ .b8 52
+ .b8 46
+ .b8 49
+ .b8 50
+
+ .b8 0
+ .b8 4
+ .b8 67
+ .b8 58
+ .b8 47
+ .b8 85
+ .b8 115
+ .b8 101
+ .b8 114
+ .b8 115
+ .b8 47
+ .b8 107
+ .b8 101
+ .b8 110
+ .b8 110
+ .b8 101
+ .b8 47
+ .b8 68
+ .b8 111
+ .b8 99
+ .b8 117
+ .b8 109
+ .b8 101
+ .b8 110
+ .b8 116
+ .b8 115
+ .b8 47
+ .b8 67
+ .b8 97
+ .b8 109
+ .b8 112
+ .b8 121
+ .b8 50
+ .b8 47
+ .b8 67
+ .b8 97
+ .b8 109
+ .b8 112
+ .b8 121
+ .b8 46
+ .b8 82
+ .b8 117
+ .b8 110
+ .b8 116
+ .b8 105
+ .b8 109
+ .b8 101
+ .b8 47
+ .b8 78
+ .b8 97
+ .b8 116
+ .b8 105
+ .b8 118
+ .b8 101
+ .b8 47
+ .b8 82
+ .b8 86
+ .b8 65
+ .b8 46
+ .b8 99
+
+ .b8 0
+ .b64 0
+ .b32 .debug_line
+ .b8 67
+ .b8 58
+ .b8 92
+ .b8 85
+ .b8 115
+ .b8 101
+ .b8 114
+ .b8 115
+ .b8 92
+ .b8 107
+ .b8 101
+ .b8 110
+ .b8 110
+ .b8 101
+ .b8 92
+ .b8 68
+ .b8 111
+ .b8 99
+ .b8 117
+ .b8 109
+ .b8 101
+ .b8 110
+ .b8 116
+ .b8 115
+ .b8 92
+ .b8 67
+ .b8 97
+ .b8 109
+ .b8 112
+ .b8 121
+ .b8 50
+ .b8 92
+ .b8 67
+ .b8 97
+ .b8 109
+ .b8 112
+ .b8 121
+ .b8 46
+ .b8 82
+ .b8 117
+ .b8 110
+ .b8 116
+ .b8 105
+ .b8 109
+ .b8 101
+ .b8 92
+ .b8 78
+ .b8 97
+ .b8 116
+ .b8 105
+ .b8 118
+ .b8 101
+
+ .b8 0
+ .b8 2
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 77
+ .b8 97
+ .b8 108
+ .b8 108
+ .b8 111
+ .b8 99
+
+ .b8 0
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 77
+ .b8 97
+ .b8 108
+ .b8 108
+ .b8 111
+ .b8 99
+
+ .b8 0
+ .b32 2
+ .b32 75
+ .b32 260
+ .b8 1
+ .b64 func_begin0
+ .b64 func_end0
+ .b8 1
+ .b8 156
+ .b8 3
+
+ .b8 112
+
+ .b8 0
+ .b32 2
+ .b32 75
+ .b32 8140
+ .b8 11
+ .b8 3
+ .b64 __local_depot0
+ .b8 35
+ .b8 0
+
+ .b8 6
+ .b8 3
+
+ .b8 115
+
+ .b8 0
+ .b32 2
+ .b32 75
+ .b32 7751
+ .b8 6
+ .b8 144
+ .b8 180
+ .b8 200
+ .b8 201
+ .b8 171
+ .b8 2
+ .b8 2
+ .b8 0
+ .b8 4
+
+ .b32 277
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 95
+ .b8 116
+
+ .b8 0
+ .b8 5
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+
+ .b8 0
+ .b32 4
+ .b32 2
+ .b32 171
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 83
+ .b8 117
+ .b8 99
+ .b8 99
+ .b8 101
+ .b8 115
+ .b8 115
+
+ .b8 0
+ .b8 0
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 77
+ .b8 105
+ .b8 115
+ .b8 115
+ .b8 105
+ .b8 110
+ .b8 103
+ .b8 67
+ .b8 111
+ .b8 110
+ .b8 102
+ .b8 105
+ .b8 103
+ .b8 117
+ .b8 114
+ .b8 97
+ .b8 116
+ .b8 105
+ .b8 111
+ .b8 110
+
+ .b8 0
+ .b8 1
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 77
+ .b8 101
+ .b8 109
+ .b8 111
+ .b8 114
+ .b8 121
+ .b8 65
+ .b8 108
+ .b8 108
+ .b8 111
+ .b8 99
+ .b8 97
+ .b8 116
+ .b8 105
+ .b8 111
+ .b8 110
+
+ .b8 0
+ .b8 2
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 73
+ .b8 110
+ .b8 105
+ .b8 116
+ .b8 105
+ .b8 97
+ .b8 108
+ .b8 105
+ .b8 122
+ .b8 97
+ .b8 116
+ .b8 105
+ .b8 111
+ .b8 110
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+
+ .b8 0
+ .b8 3
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 76
+ .b8 97
+ .b8 117
+ .b8 110
+ .b8 99
+ .b8 104
+ .b8 70
+ .b8 97
+ .b8 105
+ .b8 108
+ .b8 117
+ .b8 114
+ .b8 101
+
+ .b8 0
+ .b8 4
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 80
+ .b8 114
+ .b8 105
+ .b8 111
+ .b8 114
+ .b8 76
+ .b8 97
+ .b8 117
+ .b8 110
+ .b8 99
+ .b8 104
+ .b8 70
+ .b8 97
+ .b8 105
+ .b8 108
+ .b8 117
+ .b8 114
+ .b8 101
+
+ .b8 0
+ .b8 5
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 76
+ .b8 97
+ .b8 117
+ .b8 110
+ .b8 99
+ .b8 104
+ .b8 84
+ .b8 105
+ .b8 109
+ .b8 101
+ .b8 111
+ .b8 117
+ .b8 116
+
+ .b8 0
+ .b8 6
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 76
+ .b8 97
+ .b8 117
+ .b8 110
+ .b8 99
+ .b8 104
+ .b8 79
+ .b8 117
+ .b8 116
+ .b8 79
+ .b8 102
+ .b8 82
+ .b8 101
+ .b8 115
+ .b8 111
+ .b8 117
+ .b8 114
+ .b8 99
+ .b8 101
+ .b8 115
+
+ .b8 0
+ .b8 7
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 73
+ .b8 110
+ .b8 118
+ .b8 97
+ .b8 108
+ .b8 105
+ .b8 100
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 105
+ .b8 99
+ .b8 101
+ .b8 70
+ .b8 117
+ .b8 110
+ .b8 99
+ .b8 116
+ .b8 105
+ .b8 111
+ .b8 110
+
+ .b8 0
+ .b8 8
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 73
+ .b8 110
+ .b8 118
+ .b8 97
+ .b8 108
+ .b8 105
+ .b8 100
+ .b8 67
+ .b8 111
+ .b8 110
+ .b8 102
+ .b8 105
+ .b8 103
+ .b8 117
+ .b8 114
+ .b8 97
+ .b8 116
+ .b8 105
+ .b8 111
+ .b8 110
+
+ .b8 0
+ .b8 9
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 73
+ .b8 110
+ .b8 118
+ .b8 97
+ .b8 108
+ .b8 105
+ .b8 100
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 105
+ .b8 99
+ .b8 101
+
+ .b8 0
+ .b8 10
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 73
+ .b8 110
+ .b8 118
+ .b8 97
+ .b8 108
+ .b8 105
+ .b8 100
+ .b8 86
+ .b8 97
+ .b8 108
+ .b8 117
+ .b8 101
+
+ .b8 0
+ .b8 11
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 73
+ .b8 110
+ .b8 118
+ .b8 97
+ .b8 108
+ .b8 105
+ .b8 100
+ .b8 80
+ .b8 105
+ .b8 116
+ .b8 99
+ .b8 104
+ .b8 86
+ .b8 97
+ .b8 108
+ .b8 117
+ .b8 101
+
+ .b8 0
+ .b8 12
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 73
+ .b8 110
+ .b8 118
+ .b8 97
+ .b8 108
+ .b8 105
+ .b8 100
+ .b8 83
+ .b8 121
+ .b8 109
+ .b8 98
+ .b8 111
+ .b8 108
+
+ .b8 0
+ .b8 13
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 77
+ .b8 97
+ .b8 112
+ .b8 66
+ .b8 117
+ .b8 102
+ .b8 102
+ .b8 101
+ .b8 114
+ .b8 79
+ .b8 98
+ .b8 106
+ .b8 101
+ .b8 99
+ .b8 116
+ .b8 70
+ .b8 97
+ .b8 105
+ .b8 108
+ .b8 101
+ .b8 100
+
+ .b8 0
+ .b8 14
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 85
+ .b8 110
+ .b8 109
+ .b8 97
+ .b8 112
+ .b8 66
+ .b8 117
+ .b8 102
+ .b8 102
+ .b8 101
+ .b8 114
+ .b8 79
+ .b8 98
+ .b8 106
+ .b8 101
+ .b8 99
+ .b8 116
+ .b8 70
+ .b8 97
+ .b8 105
+ .b8 108
+ .b8 101
+ .b8 100
+
+ .b8 0
+ .b8 15
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 73
+ .b8 110
+ .b8 118
+ .b8 97
+ .b8 108
+ .b8 105
+ .b8 100
+ .b8 72
+ .b8 111
+ .b8 115
+ .b8 116
+ .b8 80
+ .b8 111
+ .b8 105
+ .b8 110
+ .b8 116
+ .b8 101
+ .b8 114
+
+ .b8 0
+ .b8 16
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 73
+ .b8 110
+ .b8 118
+ .b8 97
+ .b8 108
+ .b8 105
+ .b8 100
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 105
+ .b8 99
+ .b8 101
+ .b8 80
+ .b8 111
+ .b8 105
+ .b8 110
+ .b8 116
+ .b8 101
+ .b8 114
+
+ .b8 0
+ .b8 17
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 73
+ .b8 110
+ .b8 118
+ .b8 97
+ .b8 108
+ .b8 105
+ .b8 100
+ .b8 84
+ .b8 101
+ .b8 120
+ .b8 116
+ .b8 117
+ .b8 114
+ .b8 101
+
+ .b8 0
+ .b8 18
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 73
+ .b8 110
+ .b8 118
+ .b8 97
+ .b8 108
+ .b8 105
+ .b8 100
+ .b8 84
+ .b8 101
+ .b8 120
+ .b8 116
+ .b8 117
+ .b8 114
+ .b8 101
+ .b8 66
+ .b8 105
+ .b8 110
+ .b8 100
+ .b8 105
+ .b8 110
+ .b8 103
+
+ .b8 0
+ .b8 19
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 73
+ .b8 110
+ .b8 118
+ .b8 97
+ .b8 108
+ .b8 105
+ .b8 100
+ .b8 67
+ .b8 104
+ .b8 97
+ .b8 110
+ .b8 110
+ .b8 101
+ .b8 108
+ .b8 68
+ .b8 101
+ .b8 115
+ .b8 99
+ .b8 114
+ .b8 105
+ .b8 112
+ .b8 116
+ .b8 111
+ .b8 114
+
+ .b8 0
+ .b8 20
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 73
+ .b8 110
+ .b8 118
+ .b8 97
+ .b8 108
+ .b8 105
+ .b8 100
+ .b8 77
+ .b8 101
+ .b8 109
+ .b8 99
+ .b8 112
+ .b8 121
+ .b8 68
+ .b8 105
+ .b8 114
+ .b8 101
+ .b8 99
+ .b8 116
+ .b8 105
+ .b8 111
+ .b8 110
+
+ .b8 0
+ .b8 21
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 65
+ .b8 100
+ .b8 100
+ .b8 114
+ .b8 101
+ .b8 115
+ .b8 115
+ .b8 79
+ .b8 102
+ .b8 67
+ .b8 111
+ .b8 110
+ .b8 115
+ .b8 116
+ .b8 97
+ .b8 110
+ .b8 116
+
+ .b8 0
+ .b8 22
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 84
+ .b8 101
+ .b8 120
+ .b8 116
+ .b8 117
+ .b8 114
+ .b8 101
+ .b8 70
+ .b8 101
+ .b8 116
+ .b8 99
+ .b8 104
+ .b8 70
+ .b8 97
+ .b8 105
+ .b8 108
+ .b8 101
+ .b8 100
+
+ .b8 0
+ .b8 23
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 84
+ .b8 101
+ .b8 120
+ .b8 116
+ .b8 117
+ .b8 114
+ .b8 101
+ .b8 78
+ .b8 111
+ .b8 116
+ .b8 66
+ .b8 111
+ .b8 117
+ .b8 110
+ .b8 100
+
+ .b8 0
+ .b8 24
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 83
+ .b8 121
+ .b8 110
+ .b8 99
+ .b8 104
+ .b8 114
+ .b8 111
+ .b8 110
+ .b8 105
+ .b8 122
+ .b8 97
+ .b8 116
+ .b8 105
+ .b8 111
+ .b8 110
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+
+ .b8 0
+ .b8 25
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 73
+ .b8 110
+ .b8 118
+ .b8 97
+ .b8 108
+ .b8 105
+ .b8 100
+ .b8 70
+ .b8 105
+ .b8 108
+ .b8 116
+ .b8 101
+ .b8 114
+ .b8 83
+ .b8 101
+ .b8 116
+ .b8 116
+ .b8 105
+ .b8 110
+ .b8 103
+
+ .b8 0
+ .b8 26
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 73
+ .b8 110
+ .b8 118
+ .b8 97
+ .b8 108
+ .b8 105
+ .b8 100
+ .b8 78
+ .b8 111
+ .b8 114
+ .b8 109
+ .b8 83
+ .b8 101
+ .b8 116
+ .b8 116
+ .b8 105
+ .b8 110
+ .b8 103
+
+ .b8 0
+ .b8 27
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 77
+ .b8 105
+ .b8 120
+ .b8 101
+ .b8 100
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 105
+ .b8 99
+ .b8 101
+ .b8 69
+ .b8 120
+ .b8 101
+ .b8 99
+ .b8 117
+ .b8 116
+ .b8 105
+ .b8 111
+ .b8 110
+
+ .b8 0
+ .b8 28
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 67
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 114
+ .b8 116
+ .b8 85
+ .b8 110
+ .b8 108
+ .b8 111
+ .b8 97
+ .b8 100
+ .b8 105
+ .b8 110
+ .b8 103
+
+ .b8 0
+ .b8 29
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 85
+ .b8 110
+ .b8 107
+ .b8 110
+ .b8 111
+ .b8 119
+ .b8 110
+
+ .b8 0
+ .b8 30
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 78
+ .b8 111
+ .b8 116
+ .b8 89
+ .b8 101
+ .b8 116
+ .b8 73
+ .b8 109
+ .b8 112
+ .b8 108
+ .b8 101
+ .b8 109
+ .b8 101
+ .b8 110
+ .b8 116
+ .b8 101
+ .b8 100
+
+ .b8 0
+ .b8 31
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 77
+ .b8 101
+ .b8 109
+ .b8 111
+ .b8 114
+ .b8 121
+ .b8 86
+ .b8 97
+ .b8 108
+ .b8 117
+ .b8 101
+ .b8 84
+ .b8 111
+ .b8 111
+ .b8 76
+ .b8 97
+ .b8 114
+ .b8 103
+ .b8 101
+
+ .b8 0
+ .b8 32
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 73
+ .b8 110
+ .b8 118
+ .b8 97
+ .b8 108
+ .b8 105
+ .b8 100
+ .b8 82
+ .b8 101
+ .b8 115
+ .b8 111
+ .b8 117
+ .b8 114
+ .b8 99
+ .b8 101
+ .b8 72
+ .b8 97
+ .b8 110
+ .b8 100
+ .b8 108
+ .b8 101
+
+ .b8 0
+ .b8 33
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 78
+ .b8 111
+ .b8 116
+ .b8 82
+ .b8 101
+ .b8 97
+ .b8 100
+ .b8 121
+
+ .b8 0
+ .b8 34
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 73
+ .b8 110
+ .b8 115
+ .b8 117
+ .b8 102
+ .b8 102
+ .b8 105
+ .b8 99
+ .b8 105
+ .b8 101
+ .b8 110
+ .b8 116
+ .b8 68
+ .b8 114
+ .b8 105
+ .b8 118
+ .b8 101
+ .b8 114
+
+ .b8 0
+ .b8 35
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 83
+ .b8 101
+ .b8 116
+ .b8 79
+ .b8 110
+ .b8 65
+ .b8 99
+ .b8 116
+ .b8 105
+ .b8 118
+ .b8 101
+ .b8 80
+ .b8 114
+ .b8 111
+ .b8 99
+ .b8 101
+ .b8 115
+ .b8 115
+
+ .b8 0
+ .b8 36
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 73
+ .b8 110
+ .b8 118
+ .b8 97
+ .b8 108
+ .b8 105
+ .b8 100
+ .b8 83
+ .b8 117
+ .b8 114
+ .b8 102
+ .b8 97
+ .b8 99
+ .b8 101
+
+ .b8 0
+ .b8 37
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 78
+ .b8 111
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 105
+ .b8 99
+ .b8 101
+
+ .b8 0
+ .b8 38
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 69
+ .b8 67
+ .b8 67
+ .b8 85
+ .b8 110
+ .b8 99
+ .b8 111
+ .b8 114
+ .b8 114
+ .b8 101
+ .b8 99
+ .b8 116
+ .b8 97
+ .b8 98
+ .b8 108
+ .b8 101
+
+ .b8 0
+ .b8 39
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 83
+ .b8 104
+ .b8 97
+ .b8 114
+ .b8 101
+ .b8 100
+ .b8 79
+ .b8 98
+ .b8 106
+ .b8 101
+ .b8 99
+ .b8 116
+ .b8 83
+ .b8 121
+ .b8 109
+ .b8 98
+ .b8 111
+ .b8 108
+ .b8 78
+ .b8 111
+ .b8 116
+ .b8 70
+ .b8 111
+ .b8 117
+ .b8 110
+ .b8 100
+
+ .b8 0
+ .b8 40
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 83
+ .b8 104
+ .b8 97
+ .b8 114
+ .b8 101
+ .b8 100
+ .b8 79
+ .b8 98
+ .b8 106
+ .b8 101
+ .b8 99
+ .b8 116
+ .b8 73
+ .b8 110
+ .b8 105
+ .b8 116
+ .b8 70
+ .b8 97
+ .b8 105
+ .b8 108
+ .b8 101
+ .b8 100
+
+ .b8 0
+ .b8 41
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 85
+ .b8 110
+ .b8 115
+ .b8 117
+ .b8 112
+ .b8 112
+ .b8 111
+ .b8 114
+ .b8 116
+ .b8 101
+ .b8 100
+ .b8 76
+ .b8 105
+ .b8 109
+ .b8 105
+ .b8 116
+
+ .b8 0
+ .b8 42
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 68
+ .b8 117
+ .b8 112
+ .b8 108
+ .b8 105
+ .b8 99
+ .b8 97
+ .b8 116
+ .b8 101
+ .b8 86
+ .b8 97
+ .b8 114
+ .b8 105
+ .b8 97
+ .b8 98
+ .b8 108
+ .b8 101
+ .b8 78
+ .b8 97
+ .b8 109
+ .b8 101
+
+ .b8 0
+ .b8 43
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 68
+ .b8 117
+ .b8 112
+ .b8 108
+ .b8 105
+ .b8 99
+ .b8 97
+ .b8 116
+ .b8 101
+ .b8 84
+ .b8 101
+ .b8 120
+ .b8 116
+ .b8 117
+ .b8 114
+ .b8 101
+ .b8 78
+ .b8 97
+ .b8 109
+ .b8 101
+
+ .b8 0
+ .b8 44
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 68
+ .b8 117
+ .b8 112
+ .b8 108
+ .b8 105
+ .b8 99
+ .b8 97
+ .b8 116
+ .b8 101
+ .b8 83
+ .b8 117
+ .b8 114
+ .b8 102
+ .b8 97
+ .b8 99
+ .b8 101
+ .b8 78
+ .b8 97
+ .b8 109
+ .b8 101
+
+ .b8 0
+ .b8 45
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 105
+ .b8 99
+ .b8 101
+ .b8 115
+ .b8 85
+ .b8 110
+ .b8 97
+ .b8 118
+ .b8 97
+ .b8 105
+ .b8 108
+ .b8 97
+ .b8 98
+ .b8 108
+ .b8 101
+
+ .b8 0
+ .b8 46
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 73
+ .b8 110
+ .b8 118
+ .b8 97
+ .b8 108
+ .b8 105
+ .b8 100
+ .b8 75
+ .b8 101
+ .b8 114
+ .b8 110
+ .b8 101
+ .b8 108
+ .b8 73
+ .b8 109
+ .b8 97
+ .b8 103
+ .b8 101
+
+ .b8 0
+ .b8 47
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 78
+ .b8 111
+ .b8 75
+ .b8 101
+ .b8 114
+ .b8 110
+ .b8 101
+ .b8 108
+ .b8 73
+ .b8 109
+ .b8 97
+ .b8 103
+ .b8 101
+ .b8 70
+ .b8 111
+ .b8 114
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 105
+ .b8 99
+ .b8 101
+
+ .b8 0
+ .b8 48
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 73
+ .b8 110
+ .b8 99
+ .b8 111
+ .b8 109
+ .b8 112
+ .b8 97
+ .b8 116
+ .b8 105
+ .b8 98
+ .b8 108
+ .b8 101
+ .b8 68
+ .b8 114
+ .b8 105
+ .b8 118
+ .b8 101
+ .b8 114
+ .b8 67
+ .b8 111
+ .b8 110
+ .b8 116
+ .b8 101
+ .b8 120
+ .b8 116
+
+ .b8 0
+ .b8 49
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 80
+ .b8 101
+ .b8 101
+ .b8 114
+ .b8 65
+ .b8 99
+ .b8 99
+ .b8 101
+ .b8 115
+ .b8 115
+ .b8 65
+ .b8 108
+ .b8 114
+ .b8 101
+ .b8 97
+ .b8 100
+ .b8 121
+ .b8 69
+ .b8 110
+ .b8 97
+ .b8 98
+ .b8 108
+ .b8 101
+ .b8 100
+
+ .b8 0
+ .b8 50
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 80
+ .b8 101
+ .b8 101
+ .b8 114
+ .b8 65
+ .b8 99
+ .b8 99
+ .b8 101
+ .b8 115
+ .b8 115
+ .b8 78
+ .b8 111
+ .b8 116
+ .b8 69
+ .b8 110
+ .b8 97
+ .b8 98
+ .b8 108
+ .b8 101
+ .b8 100
+
+ .b8 0
+ .b8 51
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 105
+ .b8 99
+ .b8 101
+ .b8 65
+ .b8 108
+ .b8 114
+ .b8 101
+ .b8 97
+ .b8 100
+ .b8 121
+ .b8 73
+ .b8 110
+ .b8 85
+ .b8 115
+ .b8 101
+
+ .b8 0
+ .b8 54
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 80
+ .b8 114
+ .b8 111
+ .b8 102
+ .b8 105
+ .b8 108
+ .b8 101
+ .b8 114
+ .b8 68
+ .b8 105
+ .b8 115
+ .b8 97
+ .b8 98
+ .b8 108
+ .b8 101
+ .b8 100
+
+ .b8 0
+ .b8 55
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 80
+ .b8 114
+ .b8 111
+ .b8 102
+ .b8 105
+ .b8 108
+ .b8 101
+ .b8 114
+ .b8 78
+ .b8 111
+ .b8 116
+ .b8 73
+ .b8 110
+ .b8 105
+ .b8 116
+ .b8 105
+ .b8 97
+ .b8 108
+ .b8 105
+ .b8 122
+ .b8 101
+ .b8 100
+
+ .b8 0
+ .b8 56
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 80
+ .b8 114
+ .b8 111
+ .b8 102
+ .b8 105
+ .b8 108
+ .b8 101
+ .b8 114
+ .b8 65
+ .b8 108
+ .b8 114
+ .b8 101
+ .b8 97
+ .b8 100
+ .b8 121
+ .b8 83
+ .b8 116
+ .b8 97
+ .b8 114
+ .b8 116
+ .b8 101
+ .b8 100
+
+ .b8 0
+ .b8 57
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 80
+ .b8 114
+ .b8 111
+ .b8 102
+ .b8 105
+ .b8 108
+ .b8 101
+ .b8 114
+ .b8 65
+ .b8 108
+ .b8 114
+ .b8 101
+ .b8 97
+ .b8 100
+ .b8 121
+ .b8 83
+ .b8 116
+ .b8 111
+ .b8 112
+ .b8 112
+ .b8 101
+ .b8 100
+
+ .b8 0
+ .b8 58
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 65
+ .b8 115
+ .b8 115
+ .b8 101
+ .b8 114
+ .b8 116
+
+ .b8 0
+ .b8 59
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 84
+ .b8 111
+ .b8 111
+ .b8 77
+ .b8 97
+ .b8 110
+ .b8 121
+ .b8 80
+ .b8 101
+ .b8 101
+ .b8 114
+ .b8 115
+
+ .b8 0
+ .b8 60
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 72
+ .b8 111
+ .b8 115
+ .b8 116
+ .b8 77
+ .b8 101
+ .b8 109
+ .b8 111
+ .b8 114
+ .b8 121
+ .b8 65
+ .b8 108
+ .b8 114
+ .b8 101
+ .b8 97
+ .b8 100
+ .b8 121
+ .b8 82
+ .b8 101
+ .b8 103
+ .b8 105
+ .b8 115
+ .b8 116
+ .b8 101
+ .b8 114
+ .b8 101
+ .b8 100
+
+ .b8 0
+ .b8 61
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 72
+ .b8 111
+ .b8 115
+ .b8 116
+ .b8 77
+ .b8 101
+ .b8 109
+ .b8 111
+ .b8 114
+ .b8 121
+ .b8 78
+ .b8 111
+ .b8 116
+ .b8 82
+ .b8 101
+ .b8 103
+ .b8 105
+ .b8 115
+ .b8 116
+ .b8 101
+ .b8 114
+ .b8 101
+ .b8 100
+
+ .b8 0
+ .b8 62
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 79
+ .b8 112
+ .b8 101
+ .b8 114
+ .b8 97
+ .b8 116
+ .b8 105
+ .b8 110
+ .b8 103
+ .b8 83
+ .b8 121
+ .b8 115
+ .b8 116
+ .b8 101
+ .b8 109
+
+ .b8 0
+ .b8 63
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 80
+ .b8 101
+ .b8 101
+ .b8 114
+ .b8 65
+ .b8 99
+ .b8 99
+ .b8 101
+ .b8 115
+ .b8 115
+ .b8 85
+ .b8 110
+ .b8 115
+ .b8 117
+ .b8 112
+ .b8 112
+ .b8 111
+ .b8 114
+ .b8 116
+ .b8 101
+ .b8 100
+
+ .b8 0
+ .b8 192
+ .b8 0
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 76
+ .b8 97
+ .b8 117
+ .b8 110
+ .b8 99
+ .b8 104
+ .b8 77
+ .b8 97
+ .b8 120
+ .b8 68
+ .b8 101
+ .b8 112
+ .b8 116
+ .b8 104
+ .b8 69
+ .b8 120
+ .b8 99
+ .b8 101
+ .b8 101
+ .b8 100
+ .b8 101
+ .b8 100
+
+ .b8 0
+ .b8 193
+ .b8 0
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 76
+ .b8 97
+ .b8 117
+ .b8 110
+ .b8 99
+ .b8 104
+ .b8 70
+ .b8 105
+ .b8 108
+ .b8 101
+ .b8 83
+ .b8 99
+ .b8 111
+ .b8 112
+ .b8 101
+ .b8 100
+ .b8 84
+ .b8 101
+ .b8 120
+
+ .b8 0
+ .b8 194
+ .b8 0
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 76
+ .b8 97
+ .b8 117
+ .b8 110
+ .b8 99
+ .b8 104
+ .b8 70
+ .b8 105
+ .b8 108
+ .b8 101
+ .b8 83
+ .b8 99
+ .b8 111
+ .b8 112
+ .b8 101
+ .b8 100
+ .b8 83
+ .b8 117
+ .b8 114
+ .b8 102
+
+ .b8 0
+ .b8 195
+ .b8 0
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 83
+ .b8 121
+ .b8 110
+ .b8 99
+ .b8 68
+ .b8 101
+ .b8 112
+ .b8 116
+ .b8 104
+ .b8 69
+ .b8 120
+ .b8 99
+ .b8 101
+ .b8 101
+ .b8 100
+ .b8 101
+ .b8 100
+
+ .b8 0
+ .b8 196
+ .b8 0
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 76
+ .b8 97
+ .b8 117
+ .b8 110
+ .b8 99
+ .b8 104
+ .b8 80
+ .b8 101
+ .b8 110
+ .b8 100
+ .b8 105
+ .b8 110
+ .b8 103
+ .b8 67
+ .b8 111
+ .b8 117
+ .b8 110
+ .b8 116
+ .b8 69
+ .b8 120
+ .b8 99
+ .b8 101
+ .b8 101
+ .b8 100
+ .b8 101
+ .b8 100
+
+ .b8 0
+ .b8 197
+ .b8 0
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 78
+ .b8 111
+ .b8 116
+ .b8 80
+ .b8 101
+ .b8 114
+ .b8 109
+ .b8 105
+ .b8 116
+ .b8 116
+ .b8 101
+ .b8 100
+
+ .b8 0
+ .b8 198
+ .b8 0
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 78
+ .b8 111
+ .b8 116
+ .b8 83
+ .b8 117
+ .b8 112
+ .b8 112
+ .b8 111
+ .b8 114
+ .b8 116
+ .b8 101
+ .b8 100
+
+ .b8 0
+ .b8 199
+ .b8 0
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 72
+ .b8 97
+ .b8 114
+ .b8 100
+ .b8 119
+ .b8 97
+ .b8 114
+ .b8 101
+ .b8 83
+ .b8 116
+ .b8 97
+ .b8 99
+ .b8 107
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+
+ .b8 0
+ .b8 200
+ .b8 0
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 73
+ .b8 108
+ .b8 108
+ .b8 101
+ .b8 103
+ .b8 97
+ .b8 108
+ .b8 73
+ .b8 110
+ .b8 115
+ .b8 116
+ .b8 114
+ .b8 117
+ .b8 99
+ .b8 116
+ .b8 105
+ .b8 111
+ .b8 110
+
+ .b8 0
+ .b8 201
+ .b8 0
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 77
+ .b8 105
+ .b8 115
+ .b8 97
+ .b8 108
+ .b8 105
+ .b8 103
+ .b8 110
+ .b8 101
+ .b8 100
+ .b8 65
+ .b8 100
+ .b8 100
+ .b8 114
+ .b8 101
+ .b8 115
+ .b8 115
+
+ .b8 0
+ .b8 202
+ .b8 0
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 73
+ .b8 110
+ .b8 118
+ .b8 97
+ .b8 108
+ .b8 105
+ .b8 100
+ .b8 65
+ .b8 100
+ .b8 100
+ .b8 114
+ .b8 101
+ .b8 115
+ .b8 115
+ .b8 83
+ .b8 112
+ .b8 97
+ .b8 99
+ .b8 101
+
+ .b8 0
+ .b8 203
+ .b8 0
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 73
+ .b8 110
+ .b8 118
+ .b8 97
+ .b8 108
+ .b8 105
+ .b8 100
+ .b8 80
+ .b8 99
+
+ .b8 0
+ .b8 204
+ .b8 0
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 73
+ .b8 108
+ .b8 108
+ .b8 101
+ .b8 103
+ .b8 97
+ .b8 108
+ .b8 65
+ .b8 100
+ .b8 100
+ .b8 114
+ .b8 101
+ .b8 115
+ .b8 115
+
+ .b8 0
+ .b8 205
+ .b8 0
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 73
+ .b8 110
+ .b8 118
+ .b8 97
+ .b8 108
+ .b8 105
+ .b8 100
+ .b8 80
+ .b8 116
+ .b8 120
+
+ .b8 0
+ .b8 206
+ .b8 0
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 73
+ .b8 110
+ .b8 118
+ .b8 97
+ .b8 108
+ .b8 105
+ .b8 100
+ .b8 71
+ .b8 114
+ .b8 97
+ .b8 112
+ .b8 104
+ .b8 105
+ .b8 99
+ .b8 115
+ .b8 67
+ .b8 111
+ .b8 110
+ .b8 116
+ .b8 101
+ .b8 120
+ .b8 116
+
+ .b8 0
+ .b8 207
+ .b8 0
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 78
+ .b8 118
+ .b8 108
+ .b8 105
+ .b8 110
+ .b8 107
+ .b8 85
+ .b8 110
+ .b8 99
+ .b8 111
+ .b8 114
+ .b8 114
+ .b8 101
+ .b8 99
+ .b8 116
+ .b8 97
+ .b8 98
+ .b8 108
+ .b8 101
+
+ .b8 0
+ .b8 208
+ .b8 0
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 74
+ .b8 105
+ .b8 116
+ .b8 67
+ .b8 111
+ .b8 109
+ .b8 112
+ .b8 105
+ .b8 108
+ .b8 101
+ .b8 114
+ .b8 78
+ .b8 111
+ .b8 116
+ .b8 70
+ .b8 111
+ .b8 117
+ .b8 110
+ .b8 100
+
+ .b8 0
+ .b8 209
+ .b8 0
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 67
+ .b8 111
+ .b8 111
+ .b8 112
+ .b8 101
+ .b8 114
+ .b8 97
+ .b8 116
+ .b8 105
+ .b8 118
+ .b8 101
+ .b8 76
+ .b8 97
+ .b8 117
+ .b8 110
+ .b8 99
+ .b8 104
+ .b8 84
+ .b8 111
+ .b8 111
+ .b8 76
+ .b8 97
+ .b8 114
+ .b8 103
+ .b8 101
+
+ .b8 0
+ .b8 210
+ .b8 0
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 83
+ .b8 116
+ .b8 97
+ .b8 114
+ .b8 116
+ .b8 117
+ .b8 112
+ .b8 70
+ .b8 97
+ .b8 105
+ .b8 108
+ .b8 117
+ .b8 114
+ .b8 101
+
+ .b8 0
+ .b8 255
+ .b8 0
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 69
+ .b8 114
+ .b8 114
+ .b8 111
+ .b8 114
+ .b8 65
+ .b8 112
+ .b8 105
+ .b8 70
+ .b8 97
+ .b8 105
+ .b8 108
+ .b8 117
+ .b8 114
+ .b8 101
+ .b8 66
+ .b8 97
+ .b8 115
+ .b8 101
+
+ .b8 0
+ .b8 144
+ .b8 206
+ .b8 0
+
+ .b8 0
+ .b8 2
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 70
+ .b8 117
+ .b8 110
+ .b8 99
+ .b8 71
+ .b8 101
+ .b8 116
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 105
+ .b8 98
+ .b8 117
+ .b8 116
+ .b8 101
+ .b8 115
+
+ .b8 0
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 70
+ .b8 117
+ .b8 110
+ .b8 99
+ .b8 71
+ .b8 101
+ .b8 116
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 105
+ .b8 98
+ .b8 117
+ .b8 116
+ .b8 101
+ .b8 115
+
+ .b8 0
+ .b32 2
+ .b32 80
+ .b32 260
+ .b8 1
+ .b64 func_begin1
+ .b64 func_end1
+ .b8 1
+ .b8 156
+ .b8 3
+
+ .b8 112
+
+ .b8 0
+ .b32 2
+ .b32 80
+ .b32 8146
+ .b8 11
+ .b8 3
+ .b64 __local_depot1
+ .b8 35
+ .b8 0
+
+ .b8 6
+ .b8 3
+
+ .b8 99
+
+ .b8 0
+ .b32 2
+ .b32 80
+ .b32 8152
+ .b8 6
+ .b8 144
+ .b8 180
+ .b8 200
+ .b8 201
+ .b8 171
+ .b8 2
+ .b8 2
+ .b8 0
+ .b8 2
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 105
+ .b8 99
+ .b8 101
+ .b8 71
+ .b8 101
+ .b8 116
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 105
+ .b8 98
+ .b8 117
+ .b8 116
+ .b8 101
+
+ .b8 0
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 105
+ .b8 99
+ .b8 101
+ .b8 71
+ .b8 101
+ .b8 116
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 105
+ .b8 98
+ .b8 117
+ .b8 116
+ .b8 101
+
+ .b8 0
+ .b32 2
+ .b32 85
+ .b32 260
+ .b8 1
+ .b64 func_begin2
+ .b64 func_end2
+ .b8 1
+ .b8 156
+ .b8 3
+
+ .b8 118
+ .b8 97
+ .b8 108
+ .b8 117
+ .b8 101
+
+ .b8 0
+ .b32 2
+ .b32 85
+ .b32 8163
+ .b8 6
+ .b8 144
+ .b8 178
+ .b8 200
+ .b8 201
+ .b8 171
+ .b8 2
+ .b8 2
+ .b8 3
+
+ .b8 97
+ .b8 116
+ .b8 116
+ .b8 114
+
+ .b8 0
+ .b32 2
+ .b32 85
+ .b32 4483
+ .b8 5
+ .b8 144
+ .b8 179
+ .b8 228
+ .b8 149
+ .b8 1
+ .b8 2
+ .b8 3
+
+ .b8 100
+ .b8 101
+ .b8 118
+ .b8 105
+ .b8 99
+ .b8 101
+
+ .b8 0
+ .b32 2
+ .b32 85
+ .b32 8130
+ .b8 5
+ .b8 144
+ .b8 180
+ .b8 228
+ .b8 149
+ .b8 1
+ .b8 2
+ .b8 0
+ .b8 2
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 71
+ .b8 101
+ .b8 116
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 105
+ .b8 99
+ .b8 101
+
+ .b8 0
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 71
+ .b8 101
+ .b8 116
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 105
+ .b8 99
+ .b8 101
+
+ .b8 0
+ .b32 2
+ .b32 90
+ .b32 260
+ .b8 1
+ .b64 func_begin3
+ .b64 func_end3
+ .b8 1
+ .b8 156
+ .b8 3
+
+ .b8 100
+ .b8 101
+ .b8 118
+ .b8 105
+ .b8 99
+ .b8 101
+
+ .b8 0
+ .b32 2
+ .b32 90
+ .b32 8163
+ .b8 6
+ .b8 144
+ .b8 178
+ .b8 200
+ .b8 201
+ .b8 171
+ .b8 2
+ .b8 2
+ .b8 0
+ .b8 2
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 79
+ .b8 99
+ .b8 99
+ .b8 117
+ .b8 112
+ .b8 97
+ .b8 110
+ .b8 99
+ .b8 121
+ .b8 77
+ .b8 97
+ .b8 120
+ .b8 65
+ .b8 99
+ .b8 116
+ .b8 105
+ .b8 118
+ .b8 101
+ .b8 66
+ .b8 108
+ .b8 111
+ .b8 99
+ .b8 107
+ .b8 115
+ .b8 80
+ .b8 101
+ .b8 114
+ .b8 77
+ .b8 117
+ .b8 108
+ .b8 116
+ .b8 105
+ .b8 112
+ .b8 114
+ .b8 111
+ .b8 99
+ .b8 101
+ .b8 115
+ .b8 115
+ .b8 111
+ .b8 114
+
+ .b8 0
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 79
+ .b8 99
+ .b8 99
+ .b8 117
+ .b8 112
+ .b8 97
+ .b8 110
+ .b8 99
+ .b8 121
+ .b8 77
+ .b8 97
+ .b8 120
+ .b8 65
+ .b8 99
+ .b8 116
+ .b8 105
+ .b8 118
+ .b8 101
+ .b8 66
+ .b8 108
+ .b8 111
+ .b8 99
+ .b8 107
+ .b8 115
+ .b8 80
+ .b8 101
+ .b8 114
+ .b8 77
+ .b8 117
+ .b8 108
+ .b8 116
+ .b8 105
+ .b8 112
+ .b8 114
+ .b8 111
+ .b8 99
+ .b8 101
+ .b8 115
+ .b8 115
+ .b8 111
+ .b8 114
+
+ .b8 0
+ .b32 2
+ .b32 95
+ .b32 260
+ .b8 1
+ .b64 func_begin4
+ .b64 func_end4
+ .b8 1
+ .b8 156
+ .b8 3
+
+ .b8 110
+ .b8 117
+ .b8 109
+ .b8 66
+ .b8 108
+ .b8 111
+ .b8 99
+ .b8 107
+ .b8 115
+
+ .b8 0
+ .b32 2
+ .b32 95
+ .b32 8163
+ .b8 6
+ .b8 144
+ .b8 180
+ .b8 200
+ .b8 201
+ .b8 171
+ .b8 2
+ .b8 2
+ .b8 3
+
+ .b8 102
+ .b8 117
+ .b8 110
+ .b8 99
+
+ .b8 0
+ .b32 2
+ .b32 95
+ .b32 8152
+ .b8 6
+ .b8 144
+ .b8 181
+ .b8 200
+ .b8 201
+ .b8 171
+ .b8 2
+ .b8 2
+ .b8 3
+
+ .b8 98
+ .b8 108
+ .b8 111
+ .b8 99
+ .b8 107
+ .b8 83
+ .b8 105
+ .b8 122
+ .b8 101
+
+ .b8 0
+ .b32 2
+ .b32 95
+ .b32 8130
+ .b8 5
+ .b8 144
+ .b8 178
+ .b8 228
+ .b8 149
+ .b8 1
+ .b8 2
+ .b8 3
+
+ .b8 100
+ .b8 121
+ .b8 110
+ .b8 97
+ .b8 109
+ .b8 105
+ .b8 99
+ .b8 83
+ .b8 109
+ .b8 101
+ .b8 109
+ .b8 83
+ .b8 105
+ .b8 122
+ .b8 101
+
+ .b8 0
+ .b32 2
+ .b32 95
+ .b32 7751
+ .b8 6
+ .b8 144
+ .b8 182
+ .b8 200
+ .b8 201
+ .b8 171
+ .b8 2
+ .b8 2
+ .b8 0
+ .b8 2
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 79
+ .b8 99
+ .b8 99
+ .b8 117
+ .b8 112
+ .b8 97
+ .b8 110
+ .b8 99
+ .b8 121
+ .b8 77
+ .b8 97
+ .b8 120
+ .b8 65
+ .b8 99
+ .b8 116
+ .b8 105
+ .b8 118
+ .b8 101
+ .b8 66
+ .b8 108
+ .b8 111
+ .b8 99
+ .b8 107
+ .b8 115
+ .b8 80
+ .b8 101
+ .b8 114
+ .b8 77
+ .b8 117
+ .b8 108
+ .b8 116
+ .b8 105
+ .b8 112
+ .b8 114
+ .b8 111
+ .b8 99
+ .b8 101
+ .b8 115
+ .b8 115
+ .b8 111
+ .b8 114
+ .b8 87
+ .b8 105
+ .b8 116
+ .b8 104
+ .b8 70
+ .b8 108
+ .b8 97
+ .b8 103
+ .b8 115
+
+ .b8 0
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 79
+ .b8 99
+ .b8 99
+ .b8 117
+ .b8 112
+ .b8 97
+ .b8 110
+ .b8 99
+ .b8 121
+ .b8 77
+ .b8 97
+ .b8 120
+ .b8 65
+ .b8 99
+ .b8 116
+ .b8 105
+ .b8 118
+ .b8 101
+ .b8 66
+ .b8 108
+ .b8 111
+ .b8 99
+ .b8 107
+ .b8 115
+ .b8 80
+ .b8 101
+ .b8 114
+ .b8 77
+ .b8 117
+ .b8 108
+ .b8 116
+ .b8 105
+ .b8 112
+ .b8 114
+ .b8 111
+ .b8 99
+ .b8 101
+ .b8 115
+ .b8 115
+ .b8 111
+ .b8 114
+ .b8 87
+ .b8 105
+ .b8 116
+ .b8 104
+ .b8 70
+ .b8 108
+ .b8 97
+ .b8 103
+ .b8 115
+
+ .b8 0
+ .b32 2
+ .b32 100
+ .b32 260
+ .b8 1
+ .b64 func_begin5
+ .b64 func_end5
+ .b8 1
+ .b8 156
+ .b8 3
+
+ .b8 110
+ .b8 117
+ .b8 109
+ .b8 66
+ .b8 108
+ .b8 111
+ .b8 99
+ .b8 107
+ .b8 115
+
+ .b8 0
+ .b32 2
+ .b32 100
+ .b32 8163
+ .b8 6
+ .b8 144
+ .b8 180
+ .b8 200
+ .b8 201
+ .b8 171
+ .b8 2
+ .b8 2
+ .b8 3
+
+ .b8 102
+ .b8 117
+ .b8 110
+ .b8 99
+
+ .b8 0
+ .b32 2
+ .b32 100
+ .b32 8152
+ .b8 6
+ .b8 144
+ .b8 181
+ .b8 200
+ .b8 201
+ .b8 171
+ .b8 2
+ .b8 2
+ .b8 3
+
+ .b8 98
+ .b8 108
+ .b8 111
+ .b8 99
+ .b8 107
+ .b8 83
+ .b8 105
+ .b8 122
+ .b8 101
+
+ .b8 0
+ .b32 2
+ .b32 100
+ .b32 8130
+ .b8 5
+ .b8 144
+ .b8 179
+ .b8 228
+ .b8 149
+ .b8 1
+ .b8 2
+ .b8 3
+
+ .b8 100
+ .b8 121
+ .b8 110
+ .b8 97
+ .b8 109
+ .b8 105
+ .b8 99
+ .b8 83
+ .b8 109
+ .b8 101
+ .b8 109
+ .b8 83
+ .b8 105
+ .b8 122
+ .b8 101
+
+ .b8 0
+ .b32 2
+ .b32 100
+ .b32 7751
+ .b8 6
+ .b8 144
+ .b8 182
+ .b8 200
+ .b8 201
+ .b8 171
+ .b8 2
+ .b8 2
+ .b8 3
+
+ .b8 102
+ .b8 108
+ .b8 97
+ .b8 103
+ .b8 115
+
+ .b8 0
+ .b32 2
+ .b32 100
+ .b32 3996
+ .b8 5
+ .b8 144
+ .b8 180
+ .b8 228
+ .b8 149
+ .b8 1
+ .b8 2
+ .b8 0
+ .b8 2
+
+ .b8 95
+ .b8 90
+ .b8 51
+ .b8 82
+ .b8 86
+ .b8 65
+ .b8 118
+
+ .b8 0
+ .b8 95
+ .b8 90
+ .b8 51
+ .b8 82
+ .b8 86
+ .b8 65
+ .b8 118
+
+ .b8 0
+ .b32 1
+ .b32 26
+ .b32 3800
+ .b8 1
+ .b64 func_begin6
+ .b64 func_end6
+ .b8 1
+ .b8 156
+ .b8 7
+
+ .b64 tmp12
+ .b64 tmp14
+ .b8 8
+
+ .b8 112
+ .b8 82
+ .b8 101
+ .b8 116
+
+ .b8 0
+ .b32 1
+ .b32 27
+ .b32 3800
+ .b8 6
+ .b8 144
+ .b8 178
+ .b8 200
+ .b8 201
+ .b8 171
+ .b8 2
+ .b8 2
+ .b8 0
+ .b8 0
+ .b8 9
+
+ .b32 3806
+ .b8 12
+ .b8 4
+
+ .b32 3816
+ .b8 116
+ .b8 82
+ .b8 86
+ .b8 65
+
+ .b8 0
+ .b8 10
+
+ .b8 116
+ .b8 82
+ .b8 86
+ .b8 65
+ .b8 95
+
+ .b8 0
+ .b32 8
+ .b32 3
+ .b32 35
+ .b8 11
+
+ .b8 112
+ .b8 70
+ .b8 105
+ .b8 114
+ .b8 115
+ .b8 116
+ .b8 82
+ .b8 86
+ .b8 65
+
+ .b8 0
+ .b32 3861
+ .b32 3
+ .b32 36
+ .b8 0
+
+ .b8 1
+ .b8 0
+ .b8 9
+
+ .b32 3867
+ .b8 12
+ .b8 4
+
+ .b32 3882
+ .b8 116
+ .b8 82
+ .b8 86
+ .b8 65
+ .b8 95
+ .b8 73
+ .b8 116
+ .b8 101
+ .b8 109
+
+ .b8 0
+ .b8 10
+
+ .b8 116
+ .b8 82
+ .b8 86
+ .b8 65
+ .b8 95
+ .b8 73
+ .b8 116
+ .b8 101
+ .b8 109
+ .b8 95
+
+ .b8 0
+ .b32 24
+ .b32 3
+ .b32 26
+ .b8 11
+
+ .b8 98
+ .b8 97
+ .b8 115
+ .b8 101
+ .b8 65
+ .b8 100
+ .b8 100
+ .b8 114
+ .b8 101
+ .b8 115
+ .b8 115
+
+ .b8 0
+ .b32 3996
+ .b32 3
+ .b32 27
+ .b8 0
+
+ .b8 1
+ .b8 11
+
+ .b8 115
+ .b8 105
+ .b8 122
+ .b8 101
+
+ .b8 0
+ .b32 3996
+ .b32 3
+ .b32 28
+ .b8 4
+
+ .b8 1
+ .b8 11
+
+ .b8 112
+ .b8 68
+ .b8 97
+ .b8 116
+ .b8 97
+
+ .b8 0
+ .b32 4015
+ .b32 3
+ .b32 29
+ .b8 8
+
+ .b8 1
+ .b8 11
+
+ .b8 112
+ .b8 78
+ .b8 101
+ .b8 120
+ .b8 116
+
+ .b8 0
+ .b32 3861
+ .b32 3
+ .b32 31
+ .b8 16
+
+ .b8 1
+ .b8 0
+ .b8 12
+
+ .b8 117
+ .b8 110
+ .b8 115
+ .b8 105
+ .b8 103
+ .b8 110
+ .b8 101
+ .b8 100
+ .b8 32
+ .b8 105
+ .b8 110
+ .b8 116
+
+ .b8 0
+ .b8 7
+ .b32 4
+ .b8 9
+
+ .b32 4021
+ .b8 12
+ .b8 13
+
+ .b8 118
+ .b8 111
+ .b8 105
+ .b8 100
+
+ .b8 0
+ .b8 2
+
+ .b8 95
+ .b8 90
+ .b8 49
+ .b8 48
+ .b8 82
+ .b8 86
+ .b8 65
+ .b8 95
+ .b8 67
+ .b8 114
+ .b8 101
+ .b8 97
+ .b8 116
+ .b8 101
+ .b8 80
+ .b8 53
+ .b8 116
+ .b8 82
+ .b8 86
+ .b8 65
+ .b8 95
+ .b8 80
+ .b8 118
+ .b8 83
+ .b8 49
+ .b8 95
+
+ .b8 0
+ .b8 95
+ .b8 90
+ .b8 49
+ .b8 48
+ .b8 82
+ .b8 86
+ .b8 65
+ .b8 95
+ .b8 67
+ .b8 114
+ .b8 101
+ .b8 97
+ .b8 116
+ .b8 101
+ .b8 80
+ .b8 53
+ .b8 116
+ .b8 82
+ .b8 86
+ .b8 65
+ .b8 95
+ .b8 80
+ .b8 118
+ .b8 83
+ .b8 49
+ .b8 95
+
+ .b8 0
+ .b32 1
+ .b32 33
+ .b32 3861
+ .b8 1
+ .b64 func_begin7
+ .b64 func_end7
+ .b8 1
+ .b8 156
+ .b8 3
+
+ .b8 112
+ .b8 84
+ .b8 104
+ .b8 105
+ .b8 115
+
+ .b8 0
+ .b32 1
+ .b32 33
+ .b32 3800
+ .b8 6
+ .b8 144
+ .b8 178
+ .b8 200
+ .b8 201
+ .b8 171
+ .b8 2
+ .b8 2
+ .b8 3
+
+ .b8 112
+ .b8 70
+ .b8 105
+ .b8 108
+ .b8 101
+
+ .b8 0
+ .b32 1
+ .b32 33
+ .b32 4015
+ .b8 6
+ .b8 144
+ .b8 179
+ .b8 200
+ .b8 201
+ .b8 171
+ .b8 2
+ .b8 2
+ .b8 3
+
+ .b8 112
+ .b8 83
+ .b8 101
+ .b8 99
+ .b8 116
+ .b8 105
+ .b8 111
+ .b8 110
+ .b8 72
+ .b8 101
+ .b8 97
+ .b8 100
+ .b8 101
+ .b8 114
+
+ .b8 0
+ .b32 1
+ .b32 33
+ .b32 4015
+ .b8 6
+ .b8 144
+ .b8 180
+ .b8 200
+ .b8 201
+ .b8 171
+ .b8 2
+ .b8 2
+ .b8 7
+
+ .b64 tmp15
+ .b64 tmp26
+ .b8 8
+
+ .b8 112
+ .b8 82
+ .b8 101
+ .b8 116
+
+ .b8 0
+ .b32 1
+ .b32 34
+ .b32 3861
+ .b8 6
+ .b8 144
+ .b8 177
+ .b8 200
+ .b8 201
+ .b8 171
+ .b8 2
+ .b8 2
+ .b8 8
+
+ .b8 114
+ .b8 97
+ .b8 119
+ .b8 79
+ .b8 102
+ .b8 115
+
+ .b8 0
+ .b32 1
+ .b32 35
+ .b32 3996
+ .b8 5
+ .b8 144
+ .b8 177
+ .b8 228
+ .b8 149
+ .b8 1
+ .b8 2
+ .b8 14
+
+ .b8 114
+ .b8 97
+ .b8 119
+ .b8 83
+ .b8 105
+ .b8 122
+ .b8 101
+
+ .b8 0
+ .b32 1
+ .b32 36
+ .b32 3996
+ .b32 .debug_loc
+ .b8 0
+ .b8 0
+ .b8 2
+
+ .b8 95
+ .b8 90
+ .b8 49
+ .b8 50
+ .b8 82
+ .b8 86
+ .b8 65
+ .b8 95
+ .b8 70
+ .b8 105
+ .b8 110
+ .b8 100
+ .b8 68
+ .b8 97
+ .b8 116
+ .b8 97
+ .b8 80
+ .b8 53
+ .b8 116
+ .b8 82
+ .b8 86
+ .b8 65
+ .b8 95
+ .b8 106
+
+ .b8 0
+ .b8 95
+ .b8 90
+ .b8 49
+ .b8 50
+ .b8 82
+ .b8 86
+ .b8 65
+ .b8 95
+ .b8 70
+ .b8 105
+ .b8 110
+ .b8 100
+ .b8 68
+ .b8 97
+ .b8 116
+ .b8 97
+ .b8 80
+ .b8 53
+ .b8 116
+ .b8 82
+ .b8 86
+ .b8 65
+ .b8 95
+ .b8 106
+
+ .b8 0
+ .b32 1
+ .b32 59
+ .b32 4015
+ .b8 1
+ .b64 func_begin8
+ .b64 func_end8
+ .b8 1
+ .b8 156
+ .b8 3
+
+ .b8 112
+ .b8 84
+ .b8 104
+ .b8 105
+ .b8 115
+
+ .b8 0
+ .b32 1
+ .b32 59
+ .b32 3800
+ .b8 6
+ .b8 144
+ .b8 181
+ .b8 200
+ .b8 201
+ .b8 171
+ .b8 2
+ .b8 2
+ .b8 3
+
+ .b8 114
+ .b8 118
+ .b8 97
+
+ .b8 0
+ .b32 1
+ .b32 59
+ .b32 3996
+ .b8 5
+ .b8 144
+ .b8 177
+ .b8 228
+ .b8 149
+ .b8 1
+ .b8 2
+ .b8 7
+
+ .b64 tmp27
+ .b64 tmp34
+ .b8 8
+
+ .b8 112
+ .b8 82
+ .b8 86
+ .b8 65
+
+ .b8 0
+ .b32 1
+ .b32 60
+ .b32 3861
+ .b8 11
+ .b8 3
+ .b64 __local_depot8
+ .b8 35
+ .b8 0
+
+ .b8 6
+ .b8 0
+ .b8 0
+ .b8 5
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 105
+ .b8 99
+ .b8 101
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+
+ .b8 0
+ .b32 4
+ .b32 2
+ .b32 1266
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 77
+ .b8 97
+ .b8 120
+ .b8 84
+ .b8 104
+ .b8 114
+ .b8 101
+ .b8 97
+ .b8 100
+ .b8 115
+ .b8 80
+ .b8 101
+ .b8 114
+ .b8 66
+ .b8 108
+ .b8 111
+ .b8 99
+ .b8 107
+
+ .b8 0
+ .b8 1
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 77
+ .b8 97
+ .b8 120
+ .b8 66
+ .b8 108
+ .b8 111
+ .b8 99
+ .b8 107
+ .b8 68
+ .b8 105
+ .b8 109
+ .b8 88
+
+ .b8 0
+ .b8 2
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 77
+ .b8 97
+ .b8 120
+ .b8 66
+ .b8 108
+ .b8 111
+ .b8 99
+ .b8 107
+ .b8 68
+ .b8 105
+ .b8 109
+ .b8 89
+
+ .b8 0
+ .b8 3
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 77
+ .b8 97
+ .b8 120
+ .b8 66
+ .b8 108
+ .b8 111
+ .b8 99
+ .b8 107
+ .b8 68
+ .b8 105
+ .b8 109
+ .b8 90
+
+ .b8 0
+ .b8 4
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 77
+ .b8 97
+ .b8 120
+ .b8 71
+ .b8 114
+ .b8 105
+ .b8 100
+ .b8 68
+ .b8 105
+ .b8 109
+ .b8 88
+
+ .b8 0
+ .b8 5
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 77
+ .b8 97
+ .b8 120
+ .b8 71
+ .b8 114
+ .b8 105
+ .b8 100
+ .b8 68
+ .b8 105
+ .b8 109
+ .b8 89
+
+ .b8 0
+ .b8 6
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 77
+ .b8 97
+ .b8 120
+ .b8 71
+ .b8 114
+ .b8 105
+ .b8 100
+ .b8 68
+ .b8 105
+ .b8 109
+ .b8 90
+
+ .b8 0
+ .b8 7
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 77
+ .b8 97
+ .b8 120
+ .b8 83
+ .b8 104
+ .b8 97
+ .b8 114
+ .b8 101
+ .b8 100
+ .b8 77
+ .b8 101
+ .b8 109
+ .b8 111
+ .b8 114
+ .b8 121
+ .b8 80
+ .b8 101
+ .b8 114
+ .b8 66
+ .b8 108
+ .b8 111
+ .b8 99
+ .b8 107
+
+ .b8 0
+ .b8 8
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 84
+ .b8 111
+ .b8 116
+ .b8 97
+ .b8 108
+ .b8 67
+ .b8 111
+ .b8 110
+ .b8 115
+ .b8 116
+ .b8 97
+ .b8 110
+ .b8 116
+ .b8 77
+ .b8 101
+ .b8 109
+ .b8 111
+ .b8 114
+ .b8 121
+
+ .b8 0
+ .b8 9
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 87
+ .b8 97
+ .b8 114
+ .b8 112
+ .b8 83
+ .b8 105
+ .b8 122
+ .b8 101
+
+ .b8 0
+ .b8 10
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 77
+ .b8 97
+ .b8 120
+ .b8 80
+ .b8 105
+ .b8 116
+ .b8 99
+ .b8 104
+
+ .b8 0
+ .b8 11
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 77
+ .b8 97
+ .b8 120
+ .b8 82
+ .b8 101
+ .b8 103
+ .b8 105
+ .b8 115
+ .b8 116
+ .b8 101
+ .b8 114
+ .b8 115
+ .b8 80
+ .b8 101
+ .b8 114
+ .b8 66
+ .b8 108
+ .b8 111
+ .b8 99
+ .b8 107
+
+ .b8 0
+ .b8 12
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 67
+ .b8 108
+ .b8 111
+ .b8 99
+ .b8 107
+ .b8 82
+ .b8 97
+ .b8 116
+ .b8 101
+
+ .b8 0
+ .b8 13
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 84
+ .b8 101
+ .b8 120
+ .b8 116
+ .b8 117
+ .b8 114
+ .b8 101
+ .b8 65
+ .b8 108
+ .b8 105
+ .b8 103
+ .b8 110
+ .b8 109
+ .b8 101
+ .b8 110
+ .b8 116
+
+ .b8 0
+ .b8 14
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 71
+ .b8 112
+ .b8 117
+ .b8 79
+ .b8 118
+ .b8 101
+ .b8 114
+ .b8 108
+ .b8 97
+ .b8 112
+
+ .b8 0
+ .b8 15
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 77
+ .b8 117
+ .b8 108
+ .b8 116
+ .b8 105
+ .b8 80
+ .b8 114
+ .b8 111
+ .b8 99
+ .b8 101
+ .b8 115
+ .b8 115
+ .b8 111
+ .b8 114
+ .b8 67
+ .b8 111
+ .b8 117
+ .b8 110
+ .b8 116
+
+ .b8 0
+ .b8 16
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 75
+ .b8 101
+ .b8 114
+ .b8 110
+ .b8 101
+ .b8 108
+ .b8 69
+ .b8 120
+ .b8 101
+ .b8 99
+ .b8 84
+ .b8 105
+ .b8 109
+ .b8 101
+ .b8 111
+ .b8 117
+ .b8 116
+
+ .b8 0
+ .b8 17
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 73
+ .b8 110
+ .b8 116
+ .b8 101
+ .b8 103
+ .b8 114
+ .b8 97
+ .b8 116
+ .b8 101
+ .b8 100
+
+ .b8 0
+ .b8 18
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 67
+ .b8 97
+ .b8 110
+ .b8 77
+ .b8 97
+ .b8 112
+ .b8 72
+ .b8 111
+ .b8 115
+ .b8 116
+ .b8 77
+ .b8 101
+ .b8 109
+ .b8 111
+ .b8 114
+ .b8 121
+
+ .b8 0
+ .b8 19
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 67
+ .b8 111
+ .b8 109
+ .b8 112
+ .b8 117
+ .b8 116
+ .b8 101
+ .b8 77
+ .b8 111
+ .b8 100
+ .b8 101
+
+ .b8 0
+ .b8 20
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 77
+ .b8 97
+ .b8 120
+ .b8 84
+ .b8 101
+ .b8 120
+ .b8 116
+ .b8 117
+ .b8 114
+ .b8 101
+ .b8 49
+ .b8 68
+ .b8 87
+ .b8 105
+ .b8 100
+ .b8 116
+ .b8 104
+
+ .b8 0
+ .b8 21
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 77
+ .b8 97
+ .b8 120
+ .b8 84
+ .b8 101
+ .b8 120
+ .b8 116
+ .b8 117
+ .b8 114
+ .b8 101
+ .b8 50
+ .b8 68
+ .b8 87
+ .b8 105
+ .b8 100
+ .b8 116
+ .b8 104
+
+ .b8 0
+ .b8 22
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 77
+ .b8 97
+ .b8 120
+ .b8 84
+ .b8 101
+ .b8 120
+ .b8 116
+ .b8 117
+ .b8 114
+ .b8 101
+ .b8 50
+ .b8 68
+ .b8 72
+ .b8 101
+ .b8 105
+ .b8 103
+ .b8 104
+ .b8 116
+
+ .b8 0
+ .b8 23
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 77
+ .b8 97
+ .b8 120
+ .b8 84
+ .b8 101
+ .b8 120
+ .b8 116
+ .b8 117
+ .b8 114
+ .b8 101
+ .b8 51
+ .b8 68
+ .b8 87
+ .b8 105
+ .b8 100
+ .b8 116
+ .b8 104
+
+ .b8 0
+ .b8 24
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 77
+ .b8 97
+ .b8 120
+ .b8 84
+ .b8 101
+ .b8 120
+ .b8 116
+ .b8 117
+ .b8 114
+ .b8 101
+ .b8 51
+ .b8 68
+ .b8 72
+ .b8 101
+ .b8 105
+ .b8 103
+ .b8 104
+ .b8 116
+
+ .b8 0
+ .b8 25
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 77
+ .b8 97
+ .b8 120
+ .b8 84
+ .b8 101
+ .b8 120
+ .b8 116
+ .b8 117
+ .b8 114
+ .b8 101
+ .b8 51
+ .b8 68
+ .b8 68
+ .b8 101
+ .b8 112
+ .b8 116
+ .b8 104
+
+ .b8 0
+ .b8 26
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 77
+ .b8 97
+ .b8 120
+ .b8 84
+ .b8 101
+ .b8 120
+ .b8 116
+ .b8 117
+ .b8 114
+ .b8 101
+ .b8 50
+ .b8 68
+ .b8 76
+ .b8 97
+ .b8 121
+ .b8 101
+ .b8 114
+ .b8 101
+ .b8 100
+ .b8 87
+ .b8 105
+ .b8 100
+ .b8 116
+ .b8 104
+
+ .b8 0
+ .b8 27
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 77
+ .b8 97
+ .b8 120
+ .b8 84
+ .b8 101
+ .b8 120
+ .b8 116
+ .b8 117
+ .b8 114
+ .b8 101
+ .b8 50
+ .b8 68
+ .b8 76
+ .b8 97
+ .b8 121
+ .b8 101
+ .b8 114
+ .b8 101
+ .b8 100
+ .b8 72
+ .b8 101
+ .b8 105
+ .b8 103
+ .b8 104
+ .b8 116
+
+ .b8 0
+ .b8 28
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 77
+ .b8 97
+ .b8 120
+ .b8 84
+ .b8 101
+ .b8 120
+ .b8 116
+ .b8 117
+ .b8 114
+ .b8 101
+ .b8 50
+ .b8 68
+ .b8 76
+ .b8 97
+ .b8 121
+ .b8 101
+ .b8 114
+ .b8 101
+ .b8 100
+ .b8 76
+ .b8 97
+ .b8 121
+ .b8 101
+ .b8 114
+ .b8 115
+
+ .b8 0
+ .b8 29
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 83
+ .b8 117
+ .b8 114
+ .b8 102
+ .b8 97
+ .b8 99
+ .b8 101
+ .b8 65
+ .b8 108
+ .b8 105
+ .b8 103
+ .b8 110
+ .b8 109
+ .b8 101
+ .b8 110
+ .b8 116
+
+ .b8 0
+ .b8 30
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 67
+ .b8 111
+ .b8 110
+ .b8 99
+ .b8 117
+ .b8 114
+ .b8 114
+ .b8 101
+ .b8 110
+ .b8 116
+ .b8 75
+ .b8 101
+ .b8 114
+ .b8 110
+ .b8 101
+ .b8 108
+ .b8 115
+
+ .b8 0
+ .b8 31
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 69
+ .b8 99
+ .b8 99
+ .b8 69
+ .b8 110
+ .b8 97
+ .b8 98
+ .b8 108
+ .b8 101
+ .b8 100
+
+ .b8 0
+ .b8 32
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 80
+ .b8 99
+ .b8 105
+ .b8 66
+ .b8 117
+ .b8 115
+ .b8 73
+ .b8 100
+
+ .b8 0
+ .b8 33
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 80
+ .b8 99
+ .b8 105
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 105
+ .b8 99
+ .b8 101
+ .b8 73
+ .b8 100
+
+ .b8 0
+ .b8 34
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 84
+ .b8 99
+ .b8 99
+ .b8 68
+ .b8 114
+ .b8 105
+ .b8 118
+ .b8 101
+ .b8 114
+
+ .b8 0
+ .b8 35
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 77
+ .b8 101
+ .b8 109
+ .b8 111
+ .b8 114
+ .b8 121
+ .b8 67
+ .b8 108
+ .b8 111
+ .b8 99
+ .b8 107
+ .b8 82
+ .b8 97
+ .b8 116
+ .b8 101
+
+ .b8 0
+ .b8 36
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 71
+ .b8 108
+ .b8 111
+ .b8 98
+ .b8 97
+ .b8 108
+ .b8 77
+ .b8 101
+ .b8 109
+ .b8 111
+ .b8 114
+ .b8 121
+ .b8 66
+ .b8 117
+ .b8 115
+ .b8 87
+ .b8 105
+ .b8 100
+ .b8 116
+ .b8 104
+
+ .b8 0
+ .b8 37
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 76
+ .b8 50
+ .b8 67
+ .b8 97
+ .b8 99
+ .b8 104
+ .b8 101
+ .b8 83
+ .b8 105
+ .b8 122
+ .b8 101
+
+ .b8 0
+ .b8 38
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 77
+ .b8 97
+ .b8 120
+ .b8 84
+ .b8 104
+ .b8 114
+ .b8 101
+ .b8 97
+ .b8 100
+ .b8 115
+ .b8 80
+ .b8 101
+ .b8 114
+ .b8 77
+ .b8 117
+ .b8 108
+ .b8 116
+ .b8 105
+ .b8 80
+ .b8 114
+ .b8 111
+ .b8 99
+ .b8 101
+ .b8 115
+ .b8 115
+ .b8 111
+ .b8 114
+
+ .b8 0
+ .b8 39
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 65
+ .b8 115
+ .b8 121
+ .b8 110
+ .b8 99
+ .b8 69
+ .b8 110
+ .b8 103
+ .b8 105
+ .b8 110
+ .b8 101
+ .b8 67
+ .b8 111
+ .b8 117
+ .b8 110
+ .b8 116
+
+ .b8 0
+ .b8 40
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 85
+ .b8 110
+ .b8 105
+ .b8 102
+ .b8 105
+ .b8 101
+ .b8 100
+ .b8 65
+ .b8 100
+ .b8 100
+ .b8 114
+ .b8 101
+ .b8 115
+ .b8 115
+ .b8 105
+ .b8 110
+ .b8 103
+
+ .b8 0
+ .b8 41
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 77
+ .b8 97
+ .b8 120
+ .b8 84
+ .b8 101
+ .b8 120
+ .b8 116
+ .b8 117
+ .b8 114
+ .b8 101
+ .b8 49
+ .b8 68
+ .b8 76
+ .b8 97
+ .b8 121
+ .b8 101
+ .b8 114
+ .b8 101
+ .b8 100
+ .b8 87
+ .b8 105
+ .b8 100
+ .b8 116
+ .b8 104
+
+ .b8 0
+ .b8 42
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 77
+ .b8 97
+ .b8 120
+ .b8 84
+ .b8 101
+ .b8 120
+ .b8 116
+ .b8 117
+ .b8 114
+ .b8 101
+ .b8 49
+ .b8 68
+ .b8 76
+ .b8 97
+ .b8 121
+ .b8 101
+ .b8 114
+ .b8 101
+ .b8 100
+ .b8 76
+ .b8 97
+ .b8 121
+ .b8 101
+ .b8 114
+ .b8 115
+
+ .b8 0
+ .b8 43
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 77
+ .b8 97
+ .b8 120
+ .b8 84
+ .b8 101
+ .b8 120
+ .b8 116
+ .b8 117
+ .b8 114
+ .b8 101
+ .b8 50
+ .b8 68
+ .b8 71
+ .b8 97
+ .b8 116
+ .b8 104
+ .b8 101
+ .b8 114
+ .b8 87
+ .b8 105
+ .b8 100
+ .b8 116
+ .b8 104
+
+ .b8 0
+ .b8 45
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 77
+ .b8 97
+ .b8 120
+ .b8 84
+ .b8 101
+ .b8 120
+ .b8 116
+ .b8 117
+ .b8 114
+ .b8 101
+ .b8 50
+ .b8 68
+ .b8 71
+ .b8 97
+ .b8 116
+ .b8 104
+ .b8 101
+ .b8 114
+ .b8 72
+ .b8 101
+ .b8 105
+ .b8 103
+ .b8 104
+ .b8 116
+
+ .b8 0
+ .b8 46
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 77
+ .b8 97
+ .b8 120
+ .b8 84
+ .b8 101
+ .b8 120
+ .b8 116
+ .b8 117
+ .b8 114
+ .b8 101
+ .b8 51
+ .b8 68
+ .b8 87
+ .b8 105
+ .b8 100
+ .b8 116
+ .b8 104
+ .b8 65
+ .b8 108
+ .b8 116
+
+ .b8 0
+ .b8 47
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 77
+ .b8 97
+ .b8 120
+ .b8 84
+ .b8 101
+ .b8 120
+ .b8 116
+ .b8 117
+ .b8 114
+ .b8 101
+ .b8 51
+ .b8 68
+ .b8 72
+ .b8 101
+ .b8 105
+ .b8 103
+ .b8 104
+ .b8 116
+ .b8 65
+ .b8 108
+ .b8 116
+
+ .b8 0
+ .b8 48
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 77
+ .b8 97
+ .b8 120
+ .b8 84
+ .b8 101
+ .b8 120
+ .b8 116
+ .b8 117
+ .b8 114
+ .b8 101
+ .b8 51
+ .b8 68
+ .b8 68
+ .b8 101
+ .b8 112
+ .b8 116
+ .b8 104
+ .b8 65
+ .b8 108
+ .b8 116
+
+ .b8 0
+ .b8 49
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 80
+ .b8 99
+ .b8 105
+ .b8 68
+ .b8 111
+ .b8 109
+ .b8 97
+ .b8 105
+ .b8 110
+ .b8 73
+ .b8 100
+
+ .b8 0
+ .b8 50
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 84
+ .b8 101
+ .b8 120
+ .b8 116
+ .b8 117
+ .b8 114
+ .b8 101
+ .b8 80
+ .b8 105
+ .b8 116
+ .b8 99
+ .b8 104
+ .b8 65
+ .b8 108
+ .b8 105
+ .b8 103
+ .b8 110
+ .b8 109
+ .b8 101
+ .b8 110
+ .b8 116
+
+ .b8 0
+ .b8 51
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 77
+ .b8 97
+ .b8 120
+ .b8 84
+ .b8 101
+ .b8 120
+ .b8 116
+ .b8 117
+ .b8 114
+ .b8 101
+ .b8 67
+ .b8 117
+ .b8 98
+ .b8 101
+ .b8 109
+ .b8 97
+ .b8 112
+ .b8 87
+ .b8 105
+ .b8 100
+ .b8 116
+ .b8 104
+
+ .b8 0
+ .b8 52
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 77
+ .b8 97
+ .b8 120
+ .b8 84
+ .b8 101
+ .b8 120
+ .b8 116
+ .b8 117
+ .b8 114
+ .b8 101
+ .b8 67
+ .b8 117
+ .b8 98
+ .b8 101
+ .b8 109
+ .b8 97
+ .b8 112
+ .b8 76
+ .b8 97
+ .b8 121
+ .b8 101
+ .b8 114
+ .b8 101
+ .b8 100
+ .b8 87
+ .b8 105
+ .b8 100
+ .b8 116
+ .b8 104
+
+ .b8 0
+ .b8 53
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 77
+ .b8 97
+ .b8 120
+ .b8 84
+ .b8 101
+ .b8 120
+ .b8 116
+ .b8 117
+ .b8 114
+ .b8 101
+ .b8 67
+ .b8 117
+ .b8 98
+ .b8 101
+ .b8 109
+ .b8 97
+ .b8 112
+ .b8 76
+ .b8 97
+ .b8 121
+ .b8 101
+ .b8 114
+ .b8 101
+ .b8 100
+ .b8 76
+ .b8 97
+ .b8 121
+ .b8 101
+ .b8 114
+ .b8 115
+
+ .b8 0
+ .b8 54
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 77
+ .b8 97
+ .b8 120
+ .b8 83
+ .b8 117
+ .b8 114
+ .b8 102
+ .b8 97
+ .b8 99
+ .b8 101
+ .b8 49
+ .b8 68
+ .b8 87
+ .b8 105
+ .b8 100
+ .b8 116
+ .b8 104
+
+ .b8 0
+ .b8 55
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 77
+ .b8 97
+ .b8 120
+ .b8 83
+ .b8 117
+ .b8 114
+ .b8 102
+ .b8 97
+ .b8 99
+ .b8 101
+ .b8 50
+ .b8 68
+ .b8 87
+ .b8 105
+ .b8 100
+ .b8 116
+ .b8 104
+
+ .b8 0
+ .b8 56
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 77
+ .b8 97
+ .b8 120
+ .b8 83
+ .b8 117
+ .b8 114
+ .b8 102
+ .b8 97
+ .b8 99
+ .b8 101
+ .b8 50
+ .b8 68
+ .b8 72
+ .b8 101
+ .b8 105
+ .b8 103
+ .b8 104
+ .b8 116
+
+ .b8 0
+ .b8 57
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 77
+ .b8 97
+ .b8 120
+ .b8 83
+ .b8 117
+ .b8 114
+ .b8 102
+ .b8 97
+ .b8 99
+ .b8 101
+ .b8 51
+ .b8 68
+ .b8 87
+ .b8 105
+ .b8 100
+ .b8 116
+ .b8 104
+
+ .b8 0
+ .b8 58
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 77
+ .b8 97
+ .b8 120
+ .b8 83
+ .b8 117
+ .b8 114
+ .b8 102
+ .b8 97
+ .b8 99
+ .b8 101
+ .b8 51
+ .b8 68
+ .b8 72
+ .b8 101
+ .b8 105
+ .b8 103
+ .b8 104
+ .b8 116
+
+ .b8 0
+ .b8 59
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 77
+ .b8 97
+ .b8 120
+ .b8 83
+ .b8 117
+ .b8 114
+ .b8 102
+ .b8 97
+ .b8 99
+ .b8 101
+ .b8 51
+ .b8 68
+ .b8 68
+ .b8 101
+ .b8 112
+ .b8 116
+ .b8 104
+
+ .b8 0
+ .b8 60
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 77
+ .b8 97
+ .b8 120
+ .b8 83
+ .b8 117
+ .b8 114
+ .b8 102
+ .b8 97
+ .b8 99
+ .b8 101
+ .b8 49
+ .b8 68
+ .b8 76
+ .b8 97
+ .b8 121
+ .b8 101
+ .b8 114
+ .b8 101
+ .b8 100
+ .b8 87
+ .b8 105
+ .b8 100
+ .b8 116
+ .b8 104
+
+ .b8 0
+ .b8 61
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 77
+ .b8 97
+ .b8 120
+ .b8 83
+ .b8 117
+ .b8 114
+ .b8 102
+ .b8 97
+ .b8 99
+ .b8 101
+ .b8 49
+ .b8 68
+ .b8 76
+ .b8 97
+ .b8 121
+ .b8 101
+ .b8 114
+ .b8 101
+ .b8 100
+ .b8 76
+ .b8 97
+ .b8 121
+ .b8 101
+ .b8 114
+ .b8 115
+
+ .b8 0
+ .b8 62
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 77
+ .b8 97
+ .b8 120
+ .b8 83
+ .b8 117
+ .b8 114
+ .b8 102
+ .b8 97
+ .b8 99
+ .b8 101
+ .b8 50
+ .b8 68
+ .b8 76
+ .b8 97
+ .b8 121
+ .b8 101
+ .b8 114
+ .b8 101
+ .b8 100
+ .b8 87
+ .b8 105
+ .b8 100
+ .b8 116
+ .b8 104
+
+ .b8 0
+ .b8 63
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 77
+ .b8 97
+ .b8 120
+ .b8 83
+ .b8 117
+ .b8 114
+ .b8 102
+ .b8 97
+ .b8 99
+ .b8 101
+ .b8 50
+ .b8 68
+ .b8 76
+ .b8 97
+ .b8 121
+ .b8 101
+ .b8 114
+ .b8 101
+ .b8 100
+ .b8 72
+ .b8 101
+ .b8 105
+ .b8 103
+ .b8 104
+ .b8 116
+
+ .b8 0
+ .b8 192
+ .b8 0
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 77
+ .b8 97
+ .b8 120
+ .b8 83
+ .b8 117
+ .b8 114
+ .b8 102
+ .b8 97
+ .b8 99
+ .b8 101
+ .b8 50
+ .b8 68
+ .b8 76
+ .b8 97
+ .b8 121
+ .b8 101
+ .b8 114
+ .b8 101
+ .b8 100
+ .b8 76
+ .b8 97
+ .b8 121
+ .b8 101
+ .b8 114
+ .b8 115
+
+ .b8 0
+ .b8 193
+ .b8 0
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 77
+ .b8 97
+ .b8 120
+ .b8 83
+ .b8 117
+ .b8 114
+ .b8 102
+ .b8 97
+ .b8 99
+ .b8 101
+ .b8 67
+ .b8 117
+ .b8 98
+ .b8 101
+ .b8 109
+ .b8 97
+ .b8 112
+ .b8 87
+ .b8 105
+ .b8 100
+ .b8 116
+ .b8 104
+
+ .b8 0
+ .b8 194
+ .b8 0
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 77
+ .b8 97
+ .b8 120
+ .b8 83
+ .b8 117
+ .b8 114
+ .b8 102
+ .b8 97
+ .b8 99
+ .b8 101
+ .b8 67
+ .b8 117
+ .b8 98
+ .b8 101
+ .b8 109
+ .b8 97
+ .b8 112
+ .b8 76
+ .b8 97
+ .b8 121
+ .b8 101
+ .b8 114
+ .b8 101
+ .b8 100
+ .b8 87
+ .b8 105
+ .b8 100
+ .b8 116
+ .b8 104
+
+ .b8 0
+ .b8 195
+ .b8 0
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 77
+ .b8 97
+ .b8 120
+ .b8 83
+ .b8 117
+ .b8 114
+ .b8 102
+ .b8 97
+ .b8 99
+ .b8 101
+ .b8 67
+ .b8 117
+ .b8 98
+ .b8 101
+ .b8 109
+ .b8 97
+ .b8 112
+ .b8 76
+ .b8 97
+ .b8 121
+ .b8 101
+ .b8 114
+ .b8 101
+ .b8 100
+ .b8 76
+ .b8 97
+ .b8 121
+ .b8 101
+ .b8 114
+ .b8 115
+
+ .b8 0
+ .b8 196
+ .b8 0
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 77
+ .b8 97
+ .b8 120
+ .b8 84
+ .b8 101
+ .b8 120
+ .b8 116
+ .b8 117
+ .b8 114
+ .b8 101
+ .b8 49
+ .b8 68
+ .b8 76
+ .b8 105
+ .b8 110
+ .b8 101
+ .b8 97
+ .b8 114
+ .b8 87
+ .b8 105
+ .b8 100
+ .b8 116
+ .b8 104
+
+ .b8 0
+ .b8 197
+ .b8 0
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 77
+ .b8 97
+ .b8 120
+ .b8 84
+ .b8 101
+ .b8 120
+ .b8 116
+ .b8 117
+ .b8 114
+ .b8 101
+ .b8 50
+ .b8 68
+ .b8 76
+ .b8 105
+ .b8 110
+ .b8 101
+ .b8 97
+ .b8 114
+ .b8 87
+ .b8 105
+ .b8 100
+ .b8 116
+ .b8 104
+
+ .b8 0
+ .b8 198
+ .b8 0
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 77
+ .b8 97
+ .b8 120
+ .b8 84
+ .b8 101
+ .b8 120
+ .b8 116
+ .b8 117
+ .b8 114
+ .b8 101
+ .b8 50
+ .b8 68
+ .b8 76
+ .b8 105
+ .b8 110
+ .b8 101
+ .b8 97
+ .b8 114
+ .b8 72
+ .b8 101
+ .b8 105
+ .b8 103
+ .b8 104
+ .b8 116
+
+ .b8 0
+ .b8 199
+ .b8 0
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 77
+ .b8 97
+ .b8 120
+ .b8 84
+ .b8 101
+ .b8 120
+ .b8 116
+ .b8 117
+ .b8 114
+ .b8 101
+ .b8 50
+ .b8 68
+ .b8 76
+ .b8 105
+ .b8 110
+ .b8 101
+ .b8 97
+ .b8 114
+ .b8 80
+ .b8 105
+ .b8 116
+ .b8 99
+ .b8 104
+
+ .b8 0
+ .b8 200
+ .b8 0
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 77
+ .b8 97
+ .b8 120
+ .b8 84
+ .b8 101
+ .b8 120
+ .b8 116
+ .b8 117
+ .b8 114
+ .b8 101
+ .b8 50
+ .b8 68
+ .b8 77
+ .b8 105
+ .b8 112
+ .b8 109
+ .b8 97
+ .b8 112
+ .b8 112
+ .b8 101
+ .b8 100
+ .b8 87
+ .b8 105
+ .b8 100
+ .b8 116
+ .b8 104
+
+ .b8 0
+ .b8 201
+ .b8 0
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 77
+ .b8 97
+ .b8 120
+ .b8 84
+ .b8 101
+ .b8 120
+ .b8 116
+ .b8 117
+ .b8 114
+ .b8 101
+ .b8 50
+ .b8 68
+ .b8 77
+ .b8 105
+ .b8 112
+ .b8 109
+ .b8 97
+ .b8 112
+ .b8 112
+ .b8 101
+ .b8 100
+ .b8 72
+ .b8 101
+ .b8 105
+ .b8 103
+ .b8 104
+ .b8 116
+
+ .b8 0
+ .b8 202
+ .b8 0
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 67
+ .b8 111
+ .b8 109
+ .b8 112
+ .b8 117
+ .b8 116
+ .b8 101
+ .b8 67
+ .b8 97
+ .b8 112
+ .b8 97
+ .b8 98
+ .b8 105
+ .b8 108
+ .b8 105
+ .b8 116
+ .b8 121
+ .b8 77
+ .b8 97
+ .b8 106
+ .b8 111
+ .b8 114
+
+ .b8 0
+ .b8 203
+ .b8 0
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 67
+ .b8 111
+ .b8 109
+ .b8 112
+ .b8 117
+ .b8 116
+ .b8 101
+ .b8 67
+ .b8 97
+ .b8 112
+ .b8 97
+ .b8 98
+ .b8 105
+ .b8 108
+ .b8 105
+ .b8 116
+ .b8 121
+ .b8 77
+ .b8 105
+ .b8 110
+ .b8 111
+ .b8 114
+
+ .b8 0
+ .b8 204
+ .b8 0
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 77
+ .b8 97
+ .b8 120
+ .b8 84
+ .b8 101
+ .b8 120
+ .b8 116
+ .b8 117
+ .b8 114
+ .b8 101
+ .b8 49
+ .b8 68
+ .b8 77
+ .b8 105
+ .b8 112
+ .b8 109
+ .b8 97
+ .b8 112
+ .b8 112
+ .b8 101
+ .b8 100
+ .b8 87
+ .b8 105
+ .b8 100
+ .b8 116
+ .b8 104
+
+ .b8 0
+ .b8 205
+ .b8 0
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 83
+ .b8 116
+ .b8 114
+ .b8 101
+ .b8 97
+ .b8 109
+ .b8 80
+ .b8 114
+ .b8 105
+ .b8 111
+ .b8 114
+ .b8 105
+ .b8 116
+ .b8 105
+ .b8 101
+ .b8 115
+ .b8 83
+ .b8 117
+ .b8 112
+ .b8 112
+ .b8 111
+ .b8 114
+ .b8 116
+ .b8 101
+ .b8 100
+
+ .b8 0
+ .b8 206
+ .b8 0
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 71
+ .b8 108
+ .b8 111
+ .b8 98
+ .b8 97
+ .b8 108
+ .b8 76
+ .b8 49
+ .b8 67
+ .b8 97
+ .b8 99
+ .b8 104
+ .b8 101
+ .b8 83
+ .b8 117
+ .b8 112
+ .b8 112
+ .b8 111
+ .b8 114
+ .b8 116
+ .b8 101
+ .b8 100
+
+ .b8 0
+ .b8 207
+ .b8 0
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 76
+ .b8 111
+ .b8 99
+ .b8 97
+ .b8 108
+ .b8 76
+ .b8 49
+ .b8 67
+ .b8 97
+ .b8 99
+ .b8 104
+ .b8 101
+ .b8 83
+ .b8 117
+ .b8 112
+ .b8 112
+ .b8 111
+ .b8 114
+ .b8 116
+ .b8 101
+ .b8 100
+
+ .b8 0
+ .b8 208
+ .b8 0
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 77
+ .b8 97
+ .b8 120
+ .b8 83
+ .b8 104
+ .b8 97
+ .b8 114
+ .b8 101
+ .b8 100
+ .b8 77
+ .b8 101
+ .b8 109
+ .b8 111
+ .b8 114
+ .b8 121
+ .b8 80
+ .b8 101
+ .b8 114
+ .b8 77
+ .b8 117
+ .b8 108
+ .b8 116
+ .b8 105
+ .b8 112
+ .b8 114
+ .b8 111
+ .b8 99
+ .b8 101
+ .b8 115
+ .b8 115
+ .b8 111
+ .b8 114
+
+ .b8 0
+ .b8 209
+ .b8 0
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 77
+ .b8 97
+ .b8 120
+ .b8 82
+ .b8 101
+ .b8 103
+ .b8 105
+ .b8 115
+ .b8 116
+ .b8 101
+ .b8 114
+ .b8 115
+ .b8 80
+ .b8 101
+ .b8 114
+ .b8 77
+ .b8 117
+ .b8 108
+ .b8 116
+ .b8 105
+ .b8 112
+ .b8 114
+ .b8 111
+ .b8 99
+ .b8 101
+ .b8 115
+ .b8 115
+ .b8 111
+ .b8 114
+
+ .b8 0
+ .b8 210
+ .b8 0
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 77
+ .b8 97
+ .b8 110
+ .b8 97
+ .b8 103
+ .b8 101
+ .b8 100
+ .b8 77
+ .b8 101
+ .b8 109
+ .b8 111
+ .b8 114
+ .b8 121
+
+ .b8 0
+ .b8 211
+ .b8 0
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 73
+ .b8 115
+ .b8 77
+ .b8 117
+ .b8 108
+ .b8 116
+ .b8 105
+ .b8 71
+ .b8 112
+ .b8 117
+ .b8 66
+ .b8 111
+ .b8 97
+ .b8 114
+ .b8 100
+
+ .b8 0
+ .b8 212
+ .b8 0
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 77
+ .b8 117
+ .b8 108
+ .b8 116
+ .b8 105
+ .b8 71
+ .b8 112
+ .b8 117
+ .b8 66
+ .b8 111
+ .b8 97
+ .b8 114
+ .b8 100
+ .b8 71
+ .b8 114
+ .b8 111
+ .b8 117
+ .b8 112
+ .b8 73
+ .b8 68
+
+ .b8 0
+ .b8 213
+ .b8 0
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 72
+ .b8 111
+ .b8 115
+ .b8 116
+ .b8 78
+ .b8 97
+ .b8 116
+ .b8 105
+ .b8 118
+ .b8 101
+ .b8 65
+ .b8 116
+ .b8 111
+ .b8 109
+ .b8 105
+ .b8 99
+ .b8 83
+ .b8 117
+ .b8 112
+ .b8 112
+ .b8 111
+ .b8 114
+ .b8 116
+ .b8 101
+ .b8 100
+
+ .b8 0
+ .b8 214
+ .b8 0
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 83
+ .b8 105
+ .b8 110
+ .b8 103
+ .b8 108
+ .b8 101
+ .b8 84
+ .b8 111
+ .b8 68
+ .b8 111
+ .b8 117
+ .b8 98
+ .b8 108
+ .b8 101
+ .b8 80
+ .b8 114
+ .b8 101
+ .b8 99
+ .b8 105
+ .b8 115
+ .b8 105
+ .b8 111
+ .b8 110
+ .b8 80
+ .b8 101
+ .b8 114
+ .b8 102
+ .b8 82
+ .b8 97
+ .b8 116
+ .b8 105
+ .b8 111
+
+ .b8 0
+ .b8 215
+ .b8 0
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 80
+ .b8 97
+ .b8 103
+ .b8 101
+ .b8 97
+ .b8 98
+ .b8 108
+ .b8 101
+ .b8 77
+ .b8 101
+ .b8 109
+ .b8 111
+ .b8 114
+ .b8 121
+ .b8 65
+ .b8 99
+ .b8 99
+ .b8 101
+ .b8 115
+ .b8 115
+
+ .b8 0
+ .b8 216
+ .b8 0
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 67
+ .b8 111
+ .b8 110
+ .b8 99
+ .b8 117
+ .b8 114
+ .b8 114
+ .b8 101
+ .b8 110
+ .b8 116
+ .b8 77
+ .b8 97
+ .b8 110
+ .b8 97
+ .b8 103
+ .b8 101
+ .b8 100
+ .b8 65
+ .b8 99
+ .b8 99
+ .b8 101
+ .b8 115
+ .b8 115
+
+ .b8 0
+ .b8 217
+ .b8 0
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 67
+ .b8 111
+ .b8 109
+ .b8 112
+ .b8 117
+ .b8 116
+ .b8 101
+ .b8 80
+ .b8 114
+ .b8 101
+ .b8 101
+ .b8 109
+ .b8 112
+ .b8 116
+ .b8 105
+ .b8 111
+ .b8 110
+ .b8 83
+ .b8 117
+ .b8 112
+ .b8 112
+ .b8 111
+ .b8 114
+ .b8 116
+ .b8 101
+ .b8 100
+
+ .b8 0
+ .b8 218
+ .b8 0
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 67
+ .b8 97
+ .b8 110
+ .b8 85
+ .b8 115
+ .b8 101
+ .b8 72
+ .b8 111
+ .b8 115
+ .b8 116
+ .b8 80
+ .b8 111
+ .b8 105
+ .b8 110
+ .b8 116
+ .b8 101
+ .b8 114
+ .b8 70
+ .b8 111
+ .b8 114
+ .b8 82
+ .b8 101
+ .b8 103
+ .b8 105
+ .b8 115
+ .b8 116
+ .b8 101
+ .b8 114
+ .b8 101
+ .b8 100
+ .b8 77
+ .b8 101
+ .b8 109
+
+ .b8 0
+ .b8 219
+ .b8 0
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 82
+ .b8 101
+ .b8 115
+ .b8 101
+ .b8 114
+ .b8 118
+ .b8 101
+ .b8 100
+ .b8 57
+ .b8 50
+
+ .b8 0
+ .b8 220
+ .b8 0
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 82
+ .b8 101
+ .b8 115
+ .b8 101
+ .b8 114
+ .b8 118
+ .b8 101
+ .b8 100
+ .b8 57
+ .b8 51
+
+ .b8 0
+ .b8 221
+ .b8 0
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 82
+ .b8 101
+ .b8 115
+ .b8 101
+ .b8 114
+ .b8 118
+ .b8 101
+ .b8 100
+ .b8 57
+ .b8 52
+
+ .b8 0
+ .b8 222
+ .b8 0
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 67
+ .b8 111
+ .b8 111
+ .b8 112
+ .b8 101
+ .b8 114
+ .b8 97
+ .b8 116
+ .b8 105
+ .b8 118
+ .b8 101
+ .b8 76
+ .b8 97
+ .b8 117
+ .b8 110
+ .b8 99
+ .b8 104
+
+ .b8 0
+ .b8 223
+ .b8 0
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 67
+ .b8 111
+ .b8 111
+ .b8 112
+ .b8 101
+ .b8 114
+ .b8 97
+ .b8 116
+ .b8 105
+ .b8 118
+ .b8 101
+ .b8 77
+ .b8 117
+ .b8 108
+ .b8 116
+ .b8 105
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 105
+ .b8 99
+ .b8 101
+ .b8 76
+ .b8 97
+ .b8 117
+ .b8 110
+ .b8 99
+ .b8 104
+
+ .b8 0
+ .b8 224
+ .b8 0
+
+ .b8 6
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 77
+ .b8 97
+ .b8 120
+ .b8 83
+ .b8 104
+ .b8 97
+ .b8 114
+ .b8 101
+ .b8 100
+ .b8 77
+ .b8 101
+ .b8 109
+ .b8 111
+ .b8 114
+ .b8 121
+ .b8 80
+ .b8 101
+ .b8 114
+ .b8 66
+ .b8 108
+ .b8 111
+ .b8 99
+ .b8 107
+ .b8 79
+ .b8 112
+ .b8 116
+ .b8 105
+ .b8 110
+
+ .b8 0
+ .b8 225
+ .b8 0
+
+ .b8 0
+ .b8 4
+
+ .b32 7763
+ .b8 115
+ .b8 105
+ .b8 122
+ .b8 101
+ .b8 95
+ .b8 116
+
+ .b8 0
+ .b8 12
+
+ .b8 117
+ .b8 110
+ .b8 115
+ .b8 105
+ .b8 103
+ .b8 110
+ .b8 101
+ .b8 100
+ .b8 32
+ .b8 108
+ .b8 111
+ .b8 110
+ .b8 103
+ .b8 32
+ .b8 108
+ .b8 111
+ .b8 110
+ .b8 103
+
+ .b8 0
+ .b8 7
+ .b32 8
+ .b8 10
+
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 70
+ .b8 117
+ .b8 110
+ .b8 99
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 105
+ .b8 98
+ .b8 117
+ .b8 116
+ .b8 101
+ .b8 115
+
+ .b8 0
+ .b32 56
+ .b32 4
+ .b32 1099
+ .b8 11
+
+ .b8 115
+ .b8 104
+ .b8 97
+ .b8 114
+ .b8 101
+ .b8 100
+ .b8 83
+ .b8 105
+ .b8 122
+ .b8 101
+ .b8 66
+ .b8 121
+ .b8 116
+ .b8 101
+ .b8 115
+
+ .b8 0
+ .b32 7751
+ .b32 4
+ .b32 1106
+ .b8 0
+
+ .b8 1
+ .b8 11
+
+ .b8 99
+ .b8 111
+ .b8 110
+ .b8 115
+ .b8 116
+ .b8 83
+ .b8 105
+ .b8 122
+ .b8 101
+ .b8 66
+ .b8 121
+ .b8 116
+ .b8 101
+ .b8 115
+
+ .b8 0
+ .b32 7751
+ .b32 4
+ .b32 1112
+ .b8 8
+
+ .b8 1
+ .b8 11
+
+ .b8 108
+ .b8 111
+ .b8 99
+ .b8 97
+ .b8 108
+ .b8 83
+ .b8 105
+ .b8 122
+ .b8 101
+ .b8 66
+ .b8 121
+ .b8 116
+ .b8 101
+ .b8 115
+
+ .b8 0
+ .b32 7751
+ .b32 4
+ .b32 1117
+ .b8 16
+
+ .b8 1
+ .b8 11
+
+ .b8 109
+ .b8 97
+ .b8 120
+ .b8 84
+ .b8 104
+ .b8 114
+ .b8 101
+ .b8 97
+ .b8 100
+ .b8 115
+ .b8 80
+ .b8 101
+ .b8 114
+ .b8 66
+ .b8 108
+ .b8 111
+ .b8 99
+ .b8 107
+
+ .b8 0
+ .b32 8130
+ .b32 4
+ .b32 1124
+ .b8 24
+
+ .b8 1
+ .b8 11
+
+ .b8 110
+ .b8 117
+ .b8 109
+ .b8 82
+ .b8 101
+ .b8 103
+ .b8 115
+
+ .b8 0
+ .b32 8130
+ .b32 4
+ .b32 1129
+ .b8 28
+
+ .b8 1
+ .b8 11
+
+ .b8 112
+ .b8 116
+ .b8 120
+ .b8 86
+ .b8 101
+ .b8 114
+ .b8 115
+ .b8 105
+ .b8 111
+ .b8 110
+
+ .b8 0
+ .b32 8130
+ .b32 4
+ .b32 1136
+ .b8 32
+
+ .b8 1
+ .b8 11
+
+ .b8 98
+ .b8 105
+ .b8 110
+ .b8 97
+ .b8 114
+ .b8 121
+ .b8 86
+ .b8 101
+ .b8 114
+ .b8 115
+ .b8 105
+ .b8 111
+ .b8 110
+
+ .b8 0
+ .b32 8130
+ .b32 4
+ .b32 1143
+ .b8 36
+
+ .b8 1
+ .b8 11
+
+ .b8 99
+ .b8 97
+ .b8 99
+ .b8 104
+ .b8 101
+ .b8 77
+ .b8 111
+ .b8 100
+ .b8 101
+ .b8 67
+ .b8 65
+
+ .b8 0
+ .b32 8130
+ .b32 4
+ .b32 1149
+ .b8 40
+
+ .b8 1
+ .b8 11
+
+ .b8 109
+ .b8 97
+ .b8 120
+ .b8 68
+ .b8 121
+ .b8 110
+ .b8 97
+ .b8 109
+ .b8 105
+ .b8 99
+ .b8 83
+ .b8 104
+ .b8 97
+ .b8 114
+ .b8 101
+ .b8 100
+ .b8 83
+ .b8 105
+ .b8 122
+ .b8 101
+ .b8 66
+ .b8 121
+ .b8 116
+ .b8 101
+ .b8 115
+
+ .b8 0
+ .b32 8130
+ .b32 4
+ .b32 1156
+ .b8 44
+
+ .b8 1
+ .b8 11
+
+ .b8 112
+ .b8 114
+ .b8 101
+ .b8 102
+ .b8 101
+ .b8 114
+ .b8 114
+ .b8 101
+ .b8 100
+ .b8 83
+ .b8 104
+ .b8 109
+ .b8 101
+ .b8 109
+ .b8 67
+ .b8 97
+ .b8 114
+ .b8 118
+ .b8 101
+ .b8 111
+ .b8 117
+ .b8 116
+
+ .b8 0
+ .b32 8130
+ .b32 4
+ .b32 1163
+ .b8 48
+
+ .b8 1
+ .b8 0
+ .b8 12
+
+ .b8 105
+ .b8 110
+ .b8 116
+
+ .b8 0
+ .b8 5
+ .b32 4
+ .b8 9
+
+ .b32 4015
+ .b8 12
+ .b8 9
+
+ .b32 7788
+ .b8 12
+ .b8 9
+
+ .b32 8158
+ .b8 12
+ .b8 15
+
+ .b32 4021
+ .b8 9
+
+ .b32 8130
+ .b8 12
+ .b8 0
+}
+.section .debug_abbrev {
+ .b8 1
+
+ .b8 17
+
+ .b8 1
+
+ .b8 37
+
+ .b8 8
+
+ .b8 19
+
+ .b8 11
+
+ .b8 3
+
+ .b8 8
+
+ .b8 17
+
+ .b8 1
+
+ .b8 16
+
+ .b8 6
+
+ .b8 27
+
+ .b8 8
+
+ .b8 0
+
+ .b8 0
+
+ .b8 2
+
+ .b8 46
+
+ .b8 1
+
+ .b8 135
+ .b8 64
+
+ .b8 8
+
+ .b8 3
+
+ .b8 8
+
+ .b8 58
+
+ .b8 6
+
+ .b8 59
+
+ .b8 6
+
+ .b8 73
+
+ .b8 19
+
+ .b8 63
+
+ .b8 12
+
+ .b8 17
+
+ .b8 1
+
+ .b8 18
+
+ .b8 1
+
+ .b8 64
+
+ .b8 10
+
+ .b8 0
+
+ .b8 0
+
+ .b8 3
+
+ .b8 5
+
+ .b8 0
+
+ .b8 3
+
+ .b8 8
+
+ .b8 58
+
+ .b8 6
+
+ .b8 59
+
+ .b8 6
+
+ .b8 73
+
+ .b8 19
+
+ .b8 2
+
+ .b8 10
+
+ .b8 51
+
+ .b8 11
+
+ .b8 0
+
+ .b8 0
+
+ .b8 4
+
+ .b8 22
+
+ .b8 0
+
+ .b8 73
+
+ .b8 19
+
+ .b8 3
+
+ .b8 8
+
+ .b8 0
+
+ .b8 0
+
+ .b8 5
+
+ .b8 4
+
+ .b8 1
+
+ .b8 3
+
+ .b8 8
+
+ .b8 11
+
+ .b8 6
+
+ .b8 58
+
+ .b8 6
+
+ .b8 59
+
+ .b8 6
+
+ .b8 0
+
+ .b8 0
+
+ .b8 6
+
+ .b8 40
+
+ .b8 0
+
+ .b8 3
+
+ .b8 8
+
+ .b8 28
+
+ .b8 13
+
+ .b8 0
+
+ .b8 0
+
+ .b8 7
+
+ .b8 11
+
+ .b8 1
+
+ .b8 17
+
+ .b8 1
+
+ .b8 18
+
+ .b8 1
+
+ .b8 0
+
+ .b8 0
+
+ .b8 8
+
+ .b8 52
+
+ .b8 0
+
+ .b8 3
+
+ .b8 8
+
+ .b8 58
+
+ .b8 6
+
+ .b8 59
+
+ .b8 6
+
+ .b8 73
+
+ .b8 19
+
+ .b8 2
+
+ .b8 10
+
+ .b8 51
+
+ .b8 11
+
+ .b8 0
+
+ .b8 0
+
+ .b8 9
+
+ .b8 15
+
+ .b8 0
+
+ .b8 73
+
+ .b8 19
+
+ .b8 51
+
+ .b8 11
+
+ .b8 0
+
+ .b8 0
+
+ .b8 10
+
+ .b8 19
+
+ .b8 1
+
+ .b8 3
+
+ .b8 8
+
+ .b8 11
+
+ .b8 6
+
+ .b8 58
+
+ .b8 6
+
+ .b8 59
+
+ .b8 6
+
+ .b8 0
+
+ .b8 0
+
+ .b8 11
+
+ .b8 13
+
+ .b8 0
+
+ .b8 3
+
+ .b8 8
+
+ .b8 73
+
+ .b8 19
+
+ .b8 58
+
+ .b8 6
+
+ .b8 59
+
+ .b8 6
+
+ .b8 56
+
+ .b8 15
+
+ .b8 50
+
+ .b8 11
+
+ .b8 0
+
+ .b8 0
+
+ .b8 12
+
+ .b8 36
+
+ .b8 0
+
+ .b8 3
+
+ .b8 8
+
+ .b8 62
+
+ .b8 11
+
+ .b8 11
+
+ .b8 6
+
+ .b8 0
+
+ .b8 0
+
+ .b8 13
+
+ .b8 59
+
+ .b8 0
+
+ .b8 3
+
+ .b8 8
+
+ .b8 0
+
+ .b8 0
+
+ .b8 14
+
+ .b8 52
+
+ .b8 0
+
+ .b8 3
+
+ .b8 8
+
+ .b8 58
+
+ .b8 6
+
+ .b8 59
+
+ .b8 6
+
+ .b8 73
+
+ .b8 19
+
+ .b8 2
+
+ .b8 6
+
+ .b8 0
+
+ .b8 0
+
+ .b8 15
+
+ .b8 38
+
+ .b8 0
+
+ .b8 73
+
+ .b8 19
+
+ .b8 0
+
+ .b8 0
+
+ .b8 0
+
+}
+.section .debug_loc {
+ .b64 tmp18
+ .b64 tmp20
+ .b8 5
+ .b8 0
+ .b8 144
+ .b8 178
+ .b8 228
+ .b8 149
+ .b8 1
+ .b64 tmp20
+ .b64 tmp22
+ .b8 6
+ .b8 0
+ .b8 144
+ .b8 180
+ .b8 226
+ .b8 200
+ .b8 171
+ .b8 2
+ .b64 tmp22
+ .b64 tmp23
+ .b8 5
+ .b8 0
+ .b8 144
+ .b8 179
+ .b8 228
+ .b8 149
+ .b8 1
+ .b64 tmp23
+ .b64 tmp24
+ .b8 6
+ .b8 0
+ .b8 144
+ .b8 180
+ .b8 226
+ .b8 200
+ .b8 171
+ .b8 2
+ .b64 tmp24
+ .b64 func_end7
+ .b8 5
+ .b8 0
+ .b8 144
+ .b8 180
+ .b8 228
+ .b8 149
+ .b8 1
+ .b64 0
+ .b64 0
+}
+.section .debug_ranges {
+}
+.section .debug_pubnames {
+ .b32 281
+ .b8 2
+ .b8 0
+ .b32 .debug_info
+ .b32 8166
+ .b32 2790
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 70
+ .b8 117
+ .b8 110
+ .b8 99
+ .b8 71
+ .b8 101
+ .b8 116
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 105
+ .b8 98
+ .b8 117
+ .b8 116
+ .b8 101
+ .b8 115
+ .b8 0
+
+ .b32 2918
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 105
+ .b8 99
+ .b8 101
+ .b8 71
+ .b8 101
+ .b8 116
+ .b8 65
+ .b8 116
+ .b8 116
+ .b8 114
+ .b8 105
+ .b8 98
+ .b8 117
+ .b8 116
+ .b8 101
+ .b8 0
+
+ .b32 4027
+ .b8 95
+ .b8 90
+ .b8 49
+ .b8 48
+ .b8 82
+ .b8 86
+ .b8 65
+ .b8 95
+ .b8 67
+ .b8 114
+ .b8 101
+ .b8 97
+ .b8 116
+ .b8 101
+ .b8 80
+ .b8 53
+ .b8 116
+ .b8 82
+ .b8 86
+ .b8 65
+ .b8 95
+ .b8 80
+ .b8 118
+ .b8 83
+ .b8 49
+ .b8 95
+ .b8 0
+
+ .b32 3165
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 79
+ .b8 99
+ .b8 99
+ .b8 117
+ .b8 112
+ .b8 97
+ .b8 110
+ .b8 99
+ .b8 121
+ .b8 77
+ .b8 97
+ .b8 120
+ .b8 65
+ .b8 99
+ .b8 116
+ .b8 105
+ .b8 118
+ .b8 101
+ .b8 66
+ .b8 108
+ .b8 111
+ .b8 99
+ .b8 107
+ .b8 115
+ .b8 80
+ .b8 101
+ .b8 114
+ .b8 77
+ .b8 117
+ .b8 108
+ .b8 116
+ .b8 105
+ .b8 112
+ .b8 114
+ .b8 111
+ .b8 99
+ .b8 101
+ .b8 115
+ .b8 115
+ .b8 111
+ .b8 114
+ .b8 0
+
+ .b32 154
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 77
+ .b8 97
+ .b8 108
+ .b8 108
+ .b8 111
+ .b8 99
+ .b8 0
+
+ .b32 4300
+ .b8 95
+ .b8 90
+ .b8 49
+ .b8 50
+ .b8 82
+ .b8 86
+ .b8 65
+ .b8 95
+ .b8 70
+ .b8 105
+ .b8 110
+ .b8 100
+ .b8 68
+ .b8 97
+ .b8 116
+ .b8 97
+ .b8 80
+ .b8 53
+ .b8 116
+ .b8 82
+ .b8 86
+ .b8 65
+ .b8 95
+ .b8 106
+ .b8 0
+
+ .b32 3707
+ .b8 95
+ .b8 90
+ .b8 51
+ .b8 82
+ .b8 86
+ .b8 65
+ .b8 118
+ .b8 0
+
+ .b32 3076
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 71
+ .b8 101
+ .b8 116
+ .b8 68
+ .b8 101
+ .b8 118
+ .b8 105
+ .b8 99
+ .b8 101
+ .b8 0
+
+ .b32 3414
+ .b8 99
+ .b8 117
+ .b8 100
+ .b8 97
+ .b8 79
+ .b8 99
+ .b8 99
+ .b8 117
+ .b8 112
+ .b8 97
+ .b8 110
+ .b8 99
+ .b8 121
+ .b8 77
+ .b8 97
+ .b8 120
+ .b8 65
+ .b8 99
+ .b8 116
+ .b8 105
+ .b8 118
+ .b8 101
+ .b8 66
+ .b8 108
+ .b8 111
+ .b8 99
+ .b8 107
+ .b8 115
+ .b8 80
+ .b8 101
+ .b8 114
+ .b8 77
+ .b8 117
+ .b8 108
+ .b8 116
+ .b8 105
+ .b8 112
+ .b8 114
+ .b8 111
+ .b8 99
+ .b8 101
+ .b8 115
+ .b8 115
+ .b8 111
+ .b8 114
+ .b8 87
+ .b8 105
+ .b8 116
+ .b8 104
+ .b8 70
+ .b8 108
+ .b8 97
+ .b8 103
+ .b8 115
+ .b8 0
+
+ .b32 0
+}

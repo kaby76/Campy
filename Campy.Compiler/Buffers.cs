@@ -1215,7 +1215,7 @@
                 new IntPtr(Buffers.SizeOf(typeof(T)) * newElementCount))).ToPointer();
         }
 
-        public void Cp(IntPtr destPtr, IntPtr srcPtr, int size)
+        public static void Cp(IntPtr destPtr, IntPtr srcPtr, int size)
         {
             unsafe
             {
@@ -1230,12 +1230,12 @@
             }
         }
 
-        public unsafe void Cp(byte* dest, byte* src, int size)
+        public static unsafe void Cp(byte* dest, byte* src, int size)
         {
             for (int i = 0; i < size; i++) dest[i] = src[i];
         }
 
-        public void Cp(IntPtr destPtr, object src)
+        public static void Cp(IntPtr destPtr, object src)
         {
             unsafe
             {
@@ -1243,7 +1243,7 @@
             }
         }
 
-        public unsafe void Cp(void* destPtr, object src)
+        public static unsafe void Cp(void* destPtr, object src)
         {
             Marshal.StructureToPtr(src, (IntPtr)destPtr, false);
         }

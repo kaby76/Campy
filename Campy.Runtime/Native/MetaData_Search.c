@@ -175,23 +175,18 @@ __device__ tMetaData* MetaData_GetResolutionScopeMetaData(tMetaData *pMetaData, 
 
 __device__ tMD_TypeDef* MetaData_GetTypeDefFromName(tMetaData *pMetaData, STRING nameSpace, STRING name, tMD_TypeDef *pInNestedClass) {
 	U32 i;
-	printf("In MetaData_GetTypeDefFromName\n");
 	for (i=1; i<=pMetaData->tables.numRows[MD_TABLE_TYPEDEF]; i++) {
 		tMD_TypeDef *pTypeDef;
 
 		pTypeDef = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_TYPEDEF, i));
 		
-		printf("In MetaData_GetTypeDefFromName2 %s\n", name);
-		printf("In MetaData_GetTypeDefFromName3 %s\n", pTypeDef->name);
-		printf("In MetaData_GetTypeDefFromName4 %s\n", pTypeDef->nameSpace);
-
 		if (pInNestedClass == pTypeDef->pNestedIn &&
 			Gstrcmp(name, pTypeDef->name) == 0 &&
 			(pInNestedClass != NULL || Gstrcmp(nameSpace, pTypeDef->nameSpace) == 0)) {
 			return pTypeDef;
 		}
 	}
-
+	printf("crash\n");
 	Crash("MetaData_GetTypeDefFromName(): Cannot find type %s.%s", nameSpace, name);
 	FAKE_RETURN;
 	return NULL;
@@ -199,9 +194,6 @@ __device__ tMD_TypeDef* MetaData_GetTypeDefFromName(tMetaData *pMetaData, STRING
 
 __device__ tMD_TypeDef* MetaData_GetTypeDefFromFullName(STRING assemblyName, STRING nameSpace, STRING name) {
 	tMetaData *pTypeMetaData;
-	Gprintf("hi6\n");
-	Gprintf(assemblyName);
-	Gprintf("hi7\n");
 
 	pTypeMetaData = CLIFile_GetMetaDataForAssembly(assemblyName);
 
@@ -209,11 +201,15 @@ __device__ tMD_TypeDef* MetaData_GetTypeDefFromFullName(STRING assemblyName, STR
 	return MetaData_GetTypeDefFromName(pTypeMetaData, nameSpace, name, NULL);
 }
 
+__global__
+void Bcl_MetaData_GetTypeDefFromDefRefOrSpec(tMetaData *pMetaData, IDX_TABLE token, tMD_TypeDef **ppClassTypeArgs, tMD_TypeDef **ppMethodTypeArgs, tMD_TypeDef** result)
+{
+	*result = MetaData_GetTypeDefFromDefRefOrSpec(pMetaData, token, ppClassTypeArgs, ppMethodTypeArgs);
+}
+
 __device__ tMD_TypeDef* MetaData_GetTypeDefFromDefRefOrSpec(tMetaData *pMetaData, IDX_TABLE token, tMD_TypeDef **ppClassTypeArgs, tMD_TypeDef **ppMethodTypeArgs) {
 	void *pTableEntry;
-	printf("In MetaData_GetTypeDefFromDefRefOrSpec\n");
 	pTableEntry = MetaData_GetTableRow(pMetaData, token);
-	printf("MetaData_GetTypeDefFromDefRefOrSpec %lld\n", (unsigned long long)pTableEntry);
 	if (pTableEntry == NULL) {
 		return NULL;
 	}

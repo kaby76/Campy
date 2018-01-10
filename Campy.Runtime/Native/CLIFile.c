@@ -47,10 +47,16 @@ struct tFilesLoaded_ {
 // Keep track of all the files currently loaded
 __device__ static tFilesLoaded *pFilesLoaded = NULL;
 
+__global__ void BCL_CLIFile_GetMetaDataForAssembly(char * fileName)
+{
+	tMetaData* result;
+	result = CLIFile_GetMetaDataForAssembly(fileName);
+}
+
 __device__ tMetaData* CLIFile_GetMetaDataForAssembly(char * fileName) {
 	tFilesLoaded *pFiles;
 	char * pAssemblyName;
-	char assemblyName[50];
+	char assemblyName[250];
 	Gstrcpy(assemblyName, fileName);
 	char * r = Gstrstr(assemblyName, ".exe");
 	if (r > 0) *r = 0;
