@@ -4629,16 +4629,12 @@ namespace Campy.Compiler
                 var operand = Operand;
                 string str = (string)operand;
 
-                ValueRef llvm_cstr = LLVM.ConstString(str, (uint)str.Length, false);
+                var llvm_cstr_t = LLVM.BuildGlobalString(Builder, str, "");
+                var llvm_cstr = LLVM.BuildBitCast(Builder, llvm_cstr_t, LLVM.PointerType(LLVM.Int8Type(), 0), "");
                 args[0] = llvm_cstr;
                 string name = "_Z29SystemString_FromCharPtrASCIIPc";
-
                 var list = Runtime.BclNativeMethods.ToList();
-                foreach (var l in list) System.Console.WriteLine("l = " + l._native_name);
-
                 var list2 = Runtime.PtxFunctions.ToList();
-                foreach (var l in list2) System.Console.WriteLine("l = " + l);
-
                 var f = list2.Where(t => t._mangled_name == name).First();
                 ValueRef fv = f._valueref;
                 var call = LLVM.BuildCall(Builder, fv, args, name);
