@@ -734,7 +734,7 @@ namespace Campy.Compiler
                 if (resource_name.Contains("device-link")) continue;
                 if (resource_name.Substring(last_index_of) != ".obj") continue;
 
-                using (Stream stream = new FileStream(resource_name, FileMode.Open))
+                using (Stream stream = new FileStream(resource_name, FileMode.Open, FileAccess.Read, FileShare.Read))
                 {
                     var len = stream.Length;
                     var gpu_bcl_obj = new byte[len];
@@ -799,6 +799,19 @@ namespace Campy.Compiler
         public static CUmodule RuntimeModule
         {
             get; set;
+        }
+
+        public static TypeReference FindBCLType(System.Type type)
+        {
+            TypeReference result = null;
+            string yopath = @"C:\Users\kenne\Documents\Campy2\Campy.Runtime\Corlib\bin\Debug\netstandard1.3\corlib.dll";
+            Mono.Cecil.ModuleDefinition md = Mono.Cecil.ModuleDefinition.ReadModule(yopath);
+            foreach (var bcl_type in md.GetTypes())
+            {
+                if (bcl_type.FullName == type.FullName)
+                    return bcl_type;
+            }
+            return result;
         }
 
         public static CUfunction _Z15Initialize_BCL1v(CUmodule module)

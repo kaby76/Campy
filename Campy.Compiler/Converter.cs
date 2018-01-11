@@ -1926,9 +1926,12 @@ namespace Campy.Compiler
             uint num_ops = 0;
             foreach (var resource_name in resource_names)
             {
-                if (!resource_name.Contains(".obj")) continue;
+                var last_index_of = resource_name.LastIndexOf('.');
+                if (last_index_of < 0) continue;
+                if (resource_name.Contains("device-link")) continue;
+                if (resource_name.Substring(last_index_of) != ".obj") continue;
 
-                using (Stream stream = new FileStream(dir + @"\" + resource_name, FileMode.Open))
+                using (Stream stream = new FileStream(resource_name, FileMode.Open, FileAccess.Read, FileShare.Read))
                 {
                     var len = stream.Length;
                     var gpu_bcl_obj = new byte[len];
