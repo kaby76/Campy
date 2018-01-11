@@ -5039,6 +5039,8 @@ namespace Campy.Compiler
                     Runtime.LoadAssemblyOfTypeOntoGpu(type);
                 }
 
+                ValueRef new_obj;
+
                 {
                     // Allocate an object of the correct type, then call the constructor. Note,
                     // allocation must call the GPU BCL native code, but in the following code,
@@ -5066,29 +5068,33 @@ namespace Campy.Compiler
                     string type_name = type.Resolve().Name;
                     string type_namespace = type.Resolve().Namespace;
                     string type_assembly = type.Resolve().Module.Name;
-                    args[2] = LLVM.ConstString(type_name, (uint)type_name.Count(), false);
-                    args[1] = LLVM.ConstString(type_namespace, (uint)type_namespace.Count(), false);
-                    args[0] = LLVM.ConstString(type_assembly, (uint)type_assembly.Count(), false);
+
+                    var p0 = LLVM.BuildGlobalString(Builder, type_assembly, "");
+                    var p1 = LLVM.BuildGlobalString(Builder, type_namespace, "");
+                    var p2 = LLVM.BuildGlobalString(Builder, type_name, "");
+                    System.Console.WriteLine(new Value(p0));
+
+                    var pp0 = LLVM.BuildBitCast(Builder, p0, LLVM.PointerType(LLVM.Int8Type(), 0), "");
+                    var pp1 = LLVM.BuildBitCast(Builder, p1, LLVM.PointerType(LLVM.Int8Type(), 0), "");
+                    var pp2 = LLVM.BuildBitCast(Builder, p2, LLVM.PointerType(LLVM.Int8Type(), 0), "");
+                    System.Console.WriteLine(new Value(pp0));
+
+                    args[0] = pp0;
+                    args[1] = pp1;
+                    args[2] = pp2;
                     var call = LLVM.BuildCall(Builder, fv2, args, name);
-                    state._stack.Push(new Value(call));
+
+                    new_obj = LLVM.BuildBitCast(Builder,
+                        call,
+                        llvm_type, "");
+
                     if (Campy.Utils.Options.IsOn("jit_trace"))
-                        System.Console.WriteLine(call);
+                        System.Console.WriteLine(new Value(new_obj));
                 }
 
                 {
                     int nargs = the_entry.NumberOfArguments;
                     int ret = the_entry.HasScalarReturnValue ? 1 : 0;
-
-                    // First, create a struct.
-                    var entry = this.Block.Entry.BasicBlock;
-                    var beginning = LLVM.GetFirstInstruction(entry);
-                    LLVM.PositionBuilderBefore(Builder, beginning);
-                    var new_obj =
-                        LLVM.BuildAlloca(Builder, llvm_type,
-                            ""); // Allocates struct on stack, but returns a pointer to struct.
-                    LLVM.PositionBuilderAtEnd(Builder, this.Block.BasicBlock);
-                    if (Campy.Utils.Options.IsOn("jit_trace"))
-                        System.Console.WriteLine(new Value(new_obj));
 
                     BuilderRef bu = this.Builder;
                     ValueRef fv = the_entry.MethodValueRef;
@@ -5123,11 +5129,7 @@ namespace Campy.Compiler
                     if (Campy.Utils.Options.IsOn("jit_trace"))
                         System.Console.WriteLine(new Value(call));
 
-                    var load = LLVM.BuildLoad(Builder, new_obj, "");
-                    if (Campy.Utils.Options.IsOn("jit_trace"))
-                        System.Console.WriteLine(new Value(load));
-
-                    state._stack.Push(new Value(load));
+                    state._stack.Push(new Value(new_obj));
 
                     return Next;
                 }
