@@ -326,6 +326,14 @@
             // For arrays, structs, and classes, elements and fields must
             // align 64-bit (or bigger) data on 64-bit boundaries.
             // We also assume the type has been converted to blittable.
+            //if (type.FullName == "System.String")
+            //{
+            //    string str = (string)obj;
+            //    var bytes = 0;
+            //    bytes = 4 + str.Length * SizeOf(typeof(UInt16));
+            //    return bytes;
+            //}
+            //else
             if (type.IsArray)
             {
                 throw new Exception("Cannot determine size of array without data.");
@@ -530,13 +538,14 @@
                 {
                     System.Type f = from.GetType();
                     System.Type tr = blittable_type;
-                    byte* ip = (byte*) to_buffer;
-                    var v = 2 /* size of char is 2 bytes */ * ((string) from).Length;
-                    GCHandle handle = GCHandle.Alloc(from, GCHandleType.Pinned);
-                    IntPtr pointer = handle.AddrOfPinnedObject();
-                    byte* ip_from = (byte*) pointer;
-                    Cp(ip, v);
-                    Cp(ip + 4, ip_from, v);
+                    int* ip = (int*) to_buffer;
+                    string s = (string)from;
+                    int v = s.Length;
+                    *ip = v;
+                    ++ip;
+                    short* sp = (short*)ip;
+                    for (int i = 0; i < v; ++i)
+                        *sp++ = (short)s[i];
                     return;
                 }
 
@@ -1051,7 +1060,36 @@
                 }
                 //sdfg
                 var from_element_value = from.GetValue(index);
-                if (orig_element_type.IsArray || orig_element_type.IsClass)
+                if (orig_element_type.FullName == "System.String")
+                {
+                    if (from_element_value != null)
+                    {
+                        int size_element = 4 + 2 * ((string)from_element_value).Length;
+                        if (_allocated_objects.ContainsKey(from_element_value))
+                        {
+                            IntPtr gp = _allocated_objects[from_element_value];
+                            DeepCopyToImplementation(gp, ip);
+                        }
+                        else
+                        {
+                            IntPtr gp = New(size_element);
+                            DeepCopyToImplementation(from_element_value, gp);
+                            DeepCopyToImplementation(gp, ip);
+                        }
+                        ip = (byte*)((long)ip
+                                     + Buffers.Padding((long)ip, Buffers.Alignment(typeof(IntPtr)))
+                                     + Buffers.SizeOf(typeof(IntPtr)));
+                    }
+                    else
+                    {
+                        from_element_value = IntPtr.Zero;
+                        DeepCopyToImplementation(from_element_value, ip);
+                        ip = (byte*)((long)ip
+                                     + Buffers.Padding((long)ip, Buffers.Alignment(typeof(IntPtr)))
+                                     + Buffers.SizeOf(typeof(IntPtr)));
+                    }
+                }
+                else if (orig_element_type.IsArray || orig_element_type.IsClass)
                 {
                     if (from_element_value != null)
                     {

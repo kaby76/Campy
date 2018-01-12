@@ -95,9 +95,22 @@ __device__ tAsyncCall* System_String_ctor_StringIntInt(PTR pThis_, PTR pParams, 
 	tSystemString *pThis, *pStr;
 	U32 startIndex, length;
 
-	pStr = ((tSystemString**)pParams)[0];
-	startIndex = ((U64*)pParams)[1];
-	length = ((U64*)pParams)[2];
+	void **p = (void**)pParams;
+
+	void * p0 = *p;
+	pStr = (tSystemString*)p0;
+	printf("%lx\n", p);
+	p++;
+	printf("%lx\n", p);
+
+	void * p1 = *p;
+	printf("%lx\n", p);
+	startIndex = (U64)p1;
+	printf("%lx\n", p);
+	p++;
+	void * p2 = *p;
+	printf("%lx\n", p);
+	length = (U64)p2;
 
 	pThis = CreateStringHeapObj(length);
 	memcpy(pThis->chars, &pStr->chars[startIndex], length << 1);

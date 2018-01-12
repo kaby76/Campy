@@ -4643,12 +4643,12 @@ namespace Campy.Compiler
                 Mono.Cecil.TypeReference tr = Runtime.FindBCLType(typeof(System.String));
                 var llvm_type = tr.ToTypeRef();
 
-                // Convert to pointer.
+                // Convert to pointer to pointer of string.
                 var cast = LLVM.BuildIntToPtr(Builder, call, llvm_type, "");
-                state._stack.Push(new Value(cast));
-
                 if (Campy.Utils.Options.IsOn("jit_trace"))
                     System.Console.WriteLine(new Value(cast));
+
+                state._stack.Push(new Value(cast));
             }
 
             return Next;
@@ -4973,18 +4973,17 @@ namespace Campy.Compiler
                     var beginning = LLVM.GetFirstInstruction(entry);
                     LLVM.PositionBuilderBefore(Builder, beginning);
                     var parameter_type = LLVM.ArrayType(
-                        LLVM.Int8Type(),
-                        (uint)method.Parameters.Count * 8);
+                        LLVM.Int64Type(),
+                        (uint)method.Parameters.Count);
                     var param_buffer = LLVM.BuildAlloca(Builder,
                         parameter_type, "");
                     LLVM.SetAlignment(param_buffer, 64);
                     LLVM.PositionBuilderAtEnd(Builder, this.Block.BasicBlock);
-                    int offset = 0;
                     for (int i = method.Parameters.Count - 1; i >= 0; i--)
                     {
                         Value p = state._stack.Pop();
 
-                        ValueRef[] index = new ValueRef[1] {LLVM.ConstInt(LLVM.Int32Type(), (ulong) offset, true)};
+                        ValueRef[] index = new ValueRef[1] {LLVM.ConstInt(LLVM.Int32Type(), (ulong)i, true)};
 
                         var gep = LLVM.BuildGEP(Builder, param_buffer, index, "");
 
@@ -5000,9 +4999,13 @@ namespace Campy.Compiler
 
                     // Set up return. For now, always allocate buffer.
                     // Note function return is type of third parameter.
-                    var native_return_type = first_kv_pair._returnType.ToTypeRef();
+                    var native_return_type2 = first_kv_pair._returnType.ToTypeRef();
+
+                    var native_return_type = LLVM.ArrayType(
+                       LLVM.Int64Type(),
+                       (uint)1);
                     var native_return_buffer = LLVM.BuildAlloca(Builder,
-                        LLVM.PointerType(LLVM.VoidType(), 0), "");
+                        native_return_type, "");
                     LLVM.SetAlignment(native_return_buffer, 64);
                     LLVM.PositionBuilderAtEnd(Builder, this.Block.BasicBlock);
 
@@ -5023,17 +5026,17 @@ namespace Campy.Compiler
                         System.Console.WriteLine(new Value(call));
 
                     // There is always a return from a newobj instruction.
-                    //var load = LLVM.BuildLoad(Builder, native_return_buffer, "");
+                    var ptr_cast = LLVM.BuildBitCast(Builder,
+                        native_return_buffer,
+                        LLVM.PointerType(llvm_type, 0), "");
+
+                    var load = LLVM.BuildLoad(Builder, ptr_cast, "");
 
                     // Cast the damn object into the right type.
-                    Value ptr_cast = new Value(LLVM.BuildBitCast(Builder,
-                        native_return_buffer,
-                        llvm_type, ""));
-
-                    state._stack.Push(ptr_cast);
+                    state._stack.Push(new Value(load));
 
                     if (Campy.Utils.Options.IsOn("jit_trace"))
-                        System.Console.WriteLine(ptr_cast);
+                        System.Console.WriteLine(new Value(load));
                 }
 
                 return Next;

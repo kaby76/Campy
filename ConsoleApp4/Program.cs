@@ -33,11 +33,11 @@ namespace ConsoleApp4
             //int n = 4;
 
             string[] data = new string[] { "hihihihi", "there" };
+            int[] results = new int[2];
             int n2 = data.Length;
             Campy.Parallel.For(n2, i =>
             {
-                data[i] = "hitherewhatup";
-                data[i] = data[i].Substring(0, 3);
+                results[i] = data[i].Length;
             });
 
            // FFTC.FFT_Test();
