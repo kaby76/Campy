@@ -39,11 +39,18 @@ struct tSystemString_ {
 	U16 chars[0];
 };
 
+extern __device__ int CorLibDone;
+
 // length in characters, not bytes
 static __device__ tSystemString* CreateStringHeapObj(U32 len) {
 	tSystemString *pSystemString;
 	U32 totalSize;
 	
+	//KED
+	printf("%d\n", CorLibDone);
+	//KED
+
+
 	totalSize = sizeof(tSystemString) + (len << 1);
 	pSystemString = (tSystemString*)Heap_Alloc(types[TYPE_SYSTEM_STRING], totalSize);
 	pSystemString->length = len;
@@ -89,8 +96,8 @@ __device__ tAsyncCall* System_String_ctor_StringIntInt(PTR pThis_, PTR pParams, 
 	U32 startIndex, length;
 
 	pStr = ((tSystemString**)pParams)[0];
-	startIndex = ((U32*)pParams)[1];
-	length = ((U32*)pParams)[2];
+	startIndex = ((U64*)pParams)[1];
+	length = ((U64*)pParams)[2];
 
 	pThis = CreateStringHeapObj(length);
 	memcpy(pThis->chars, &pStr->chars[startIndex], length << 1);

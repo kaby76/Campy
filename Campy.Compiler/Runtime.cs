@@ -683,6 +683,11 @@ namespace Campy.Compiler
 
         public static void LoadBclCode()
         {
+            return;
+            Utils.CudaHelpers.CheckCudaError(Cuda.cuCtxGetLimit(out ulong pvalue, CUlimit.CU_LIMIT_STACK_SIZE));
+            Utils.CudaHelpers.CheckCudaError(Cuda.cuCtxSetLimit(CUlimit.CU_LIMIT_STACK_SIZE, (uint)pvalue * 25));
+            System.Console.WriteLine("Stack size " + pvalue);
+
             CUresult res = CUresult.CUDA_SUCCESS;
 
             uint num_ops_link = 5;

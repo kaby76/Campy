@@ -36,6 +36,7 @@ namespace ConsoleApp4
             int n2 = data.Length;
             Campy.Parallel.For(n2, i =>
             {
+                data[i] = "hitherewhatup";
                 data[i] = data[i].Substring(0, 3);
             });
 

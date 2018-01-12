@@ -5040,11 +5040,6 @@ namespace Campy.Compiler
             }
 
             {
-                {
-                    // Make sure assembly of type is loaded onto GPU.
-                    Runtime.LoadAssemblyOfTypeOntoGpu(type);
-                }
-
                 ValueRef new_obj;
 
                 {
