@@ -60,6 +60,7 @@ namespace Campy
 
         private static void For(AcceleratorView view, int inclusive_start, int exclusive_end, KernelType kernel)
         {
+            CampyConverter.InitCuda();
 
             GCHandle handle1 = default(GCHandle);
             GCHandle handle2 = default(GCHandle);
@@ -207,6 +208,7 @@ namespace Campy
         }
         private static void For(AcceleratorView view, Extent extent, KernelType kernel)
         {
+            CampyConverter.InitCuda();
 
             GCHandle handle1 = default(GCHandle);
             GCHandle handle2 = default(GCHandle);

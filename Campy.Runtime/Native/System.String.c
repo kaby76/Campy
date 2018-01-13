@@ -306,10 +306,13 @@ __device__ tAsyncCall* System_String_InternalReplace(PTR pThis_, PTR pParams, PT
 
 __device__ tAsyncCall* System_String_InternalIndexOf(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tSystemString *pThis = (tSystemString*)pThis_;
-	U16 value = ((U16*)pParams)[0];
-	I32 startIndex = ((I32*)pParams)[1];
-	I32 count = ((I32*)pParams)[2];
-	U32 forwards = ((U32*)pParams)[3];
+
+	void ** p0 = (void**)pParams;
+
+	U16 value = *(U16*)p0++;
+	I32 startIndex = *(I32*)p0++;
+	I32 count = *(I32*)p0++;
+	U32 forwards = *(U32*)p0;
 
 	I32 lastIndex;
 	I32 inc;

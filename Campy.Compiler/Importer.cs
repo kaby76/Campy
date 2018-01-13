@@ -636,7 +636,7 @@ namespace Campy.Compiler
                         // Find in Campy.Runtime.
 
                         string yopath =
-                            @"C:\Users\Kenne\Documents\Campy\Campy.Runtime\Corlib\bin\Debug\netstandard1.3\corlib.dll";
+                            @"C:\Users\Kenne\Documents\Campy2\Campy.Runtime\Corlib\bin\Debug\netstandard1.3\corlib.dll";
                         Mono.Cecil.ModuleDefinition md = Mono.Cecil.ModuleDefinition.ReadModule(yopath);
                         var sub = mr_dt.SubstituteMonoTypeReference(md);
                         foreach (var meth in sub.Methods)

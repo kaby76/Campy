@@ -582,7 +582,6 @@ namespace Campy.Compiler
 
             Runtime.Initialize();
 
-            InitCuda();
         }
 
         private void InitializeBCLRewrites()
@@ -590,7 +589,7 @@ namespace Campy.Compiler
 
         }
 
-        private void InitCuda()
+        public static void InitCuda()
         {
             var res = CUresult.CUDA_SUCCESS;
 

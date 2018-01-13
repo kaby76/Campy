@@ -1213,7 +1213,7 @@ namespace Campy.Compiler
                 Runtime.BclNativeMethod mat = null;
                 foreach (Runtime.BclNativeMethod ci in Runtime.BclNativeMethods)
                 {
-                    if (ci._short_name == full_name)
+                    if (ci._full_name == full_name)
                     {
                         mat = ci;
                         break;
@@ -4885,16 +4885,14 @@ namespace Campy.Compiler
             // create native structures that C# references.
 
             // Get some basic information about the instruction, method, and type of object to create.
+            var inst = this;
             object operand = this.Operand;
             MethodReference method = operand as MethodReference;
+            CFG graph = (CFG)this.Block._graph;
             TypeReference type = method.DeclaringType;
             if (type == null)
                 throw new Exception("Cannot get type of object/value for newobj instruction.");
-
-            // Find the entry block corresponding to the method called in this instruction.
-            // Note, if there is no block, then it's a native C call.
-            var inst = this;
-            CFG graph = (CFG)this.Block._graph;
+            bool is_type_value_type = type.IsValueType;
             var name = CampyConverter.MethodName(method);
             CFG.Vertex the_entry = this.Block._graph.Vertices.Where(node
                 =>
@@ -4906,12 +4904,76 @@ namespace Campy.Compiler
                     return true;
                 else return false;
             }).ToList().FirstOrDefault();
-
-            // JIT type into LLVM.
             var llvm_type = type.ToTypeRef();
             var td = type.Resolve();
 
-            if (the_entry == null)
+            // There four basic cases for newobj:
+            // 1) type is a value type
+            //   The object must be allocated on the stack, and the contrustor called with a pointer to that.
+            //   a) the_entry is null, which means the constructor is a C function.
+            //   b) the_entry is NOT null, which means the constructor is further CIL code.
+            // 2) type is a reference_type.
+            //   The object will be allocated on the heap, but done according to a convention of DNA.
+            //   b) the_entry is null, which means the constructor is a C function, and it performs the allocation.
+            //   c) the_entry is NOT null, which means we must allocate the object, then call the constructor, which is further CIL code.
+            if (is_type_value_type && the_entry == null)
+            {
+
+            }
+            else if (is_type_value_type && the_entry != null)
+            {
+                int nargs = the_entry.NumberOfArguments;
+                int ret = the_entry.HasScalarReturnValue ? 1 : 0;
+
+                // First, create a struct.
+                var entry = this.Block.Entry.BasicBlock;
+                var beginning = LLVM.GetFirstInstruction(entry);
+                LLVM.PositionBuilderBefore(Builder, beginning);
+                var new_obj = LLVM.BuildAlloca(Builder, llvm_type, ""); // Allocates struct on stack, but returns a pointer to struct.
+                LLVM.PositionBuilderAtEnd(Builder, this.Block.BasicBlock);
+                if (Campy.Utils.Options.IsOn("jit_trace"))
+                    System.Console.WriteLine(new Value(new_obj));
+
+                BuilderRef bu = this.Builder;
+                ValueRef fv = the_entry.MethodValueRef;
+                var t_fun = LLVM.TypeOf(fv);
+                var t_fun_con = LLVM.GetTypeContext(t_fun);
+                var context = LLVM.GetModuleContext(CampyConverter.global_llvm_module);
+                if (t_fun_con != context) throw new Exception("not equal");
+
+                // Set up args, type casting if required.
+                ValueRef[] args = new ValueRef[nargs];
+                for (int k = nargs - 1; k >= 1; --k)
+                {
+                    Value v = state._stack.Pop();
+                    ValueRef par = LLVM.GetParam(fv, (uint)k);
+                    ValueRef value = v.V;
+                    if (LLVM.TypeOf(value) != LLVM.TypeOf(par))
+                    {
+                        if (LLVM.GetTypeKind(LLVM.TypeOf(par)) == TypeKind.PointerTypeKind)
+                        {
+                            value = LLVM.BuildPointerCast(Builder, value, LLVM.TypeOf(par), "");
+                        }
+                        else
+                        {
+                            value = LLVM.BuildBitCast(Builder, value, LLVM.TypeOf(par), "");
+                        }
+                    }
+                    args[k] = value;
+                }
+                args[0] = new_obj;
+
+                var call = LLVM.BuildCall(Builder, fv, args, "");
+                if (Campy.Utils.Options.IsOn("jit_trace"))
+                    System.Console.WriteLine(new Value(call));
+
+                var load = LLVM.BuildLoad(Builder, new_obj, "");
+                if (Campy.Utils.Options.IsOn("jit_trace"))
+                    System.Console.WriteLine(new Value(load));
+
+                state._stack.Push(new Value(load));
+            }
+            else if (!is_type_value_type && the_entry == null)
             {
                 // As noted in JIT_execute.c code of BCL:
                 // "All internal constructors MUST allocate their own 'this' objects"
@@ -4983,7 +5045,7 @@ namespace Campy.Compiler
                     {
                         Value p = state._stack.Pop();
 
-                        ValueRef[] index = new ValueRef[1] {LLVM.ConstInt(LLVM.Int32Type(), (ulong)i, true)};
+                        ValueRef[] index = new ValueRef[1] { LLVM.ConstInt(LLVM.Int32Type(), (ulong)i, true) };
 
                         var gep = LLVM.BuildGEP(Builder, param_buffer, index, "");
 
@@ -5038,10 +5100,8 @@ namespace Campy.Compiler
                     if (Campy.Utils.Options.IsOn("jit_trace"))
                         System.Console.WriteLine(new Value(load));
                 }
-
-                return Next;
             }
-
+            else if (!is_type_value_type && the_entry != null)
             {
                 ValueRef new_obj;
 
@@ -5135,9 +5195,10 @@ namespace Campy.Compiler
 
                     state._stack.Push(new Value(new_obj));
 
-                    return Next;
                 }
             }
+
+            return Next;
         }
     }
 

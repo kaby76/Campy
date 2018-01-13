@@ -30,17 +30,20 @@ namespace ConsoleApp4
         {
             StartDebugging();
 
-            //int n = 4;
 
-            string[] data = new string[] { "hihihihi", "there" };
-            int[] results = new int[2];
-            int n2 = data.Length;
-            Campy.Parallel.For(n2, i =>
-            {
-                results[i] = data[i].Length;
-            });
+            FFTC.FFT_Test();
 
-           // FFTC.FFT_Test();
+
+            //string[] data = new string[] { "xxxxxihihihi", "there" };
+            //int[] results = new int[2];
+            //int n2 = data.Length;
+            //Campy.Parallel.For(n2, i =>
+            //{
+            //    results[i] = data[i].IndexOf('h', 1, 2);
+            //    results[i] = data[i].IndexOf('h', 1, 2);
+            //});
+
+            // FFTC.FFT_Test();
         }
     }
 
@@ -152,7 +155,15 @@ namespace ConsoleApp4
             var copy = input.ToArray();
 
             FFTGPU(input);
+
+            var cpu = new Stopwatch();
+            cpu.Reset();
+            cpu.Start();
             FFT(copy);
+            cpu.Stop();
+            var cpu_elapse = cpu.Elapsed;
+            System.Console.WriteLine("cpu          " + cpu_elapse);
+
 
             for (int i = 0; i < input.Length; ++i)
             {
