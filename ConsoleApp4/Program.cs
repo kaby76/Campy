@@ -31,17 +31,16 @@ namespace ConsoleApp4
             StartDebugging();
 
 
-            FFTC.FFT_Test();
+            //FFTC.FFT_Test();
 
 
-            //string[] data = new string[] { "xxxxxihihihi", "there" };
-            //int[] results = new int[2];
-            //int n2 = data.Length;
-            //Campy.Parallel.For(n2, i =>
-            //{
-            //    results[i] = data[i].IndexOf('h', 1, 2);
-            //    results[i] = data[i].IndexOf('h', 1, 2);
-            //});
+            string[] data = new string[] { "xxxxxihihihi", "there" };
+            int[] results = new int[2];
+            int n2 = data.Length;
+            Campy.Parallel.For(n2, i =>
+            {
+                results[i] = data[i].IndexOf('h');
+            });
 
             // FFTC.FFT_Test();
         }

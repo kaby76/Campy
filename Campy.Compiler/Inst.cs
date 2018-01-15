@@ -1233,30 +1233,20 @@ namespace Campy.Compiler
                     var entry = this.Block.Entry.BasicBlock;
                     var beginning = LLVM.GetFirstInstruction(entry);
                     LLVM.PositionBuilderBefore(Builder, beginning);
-                    var parameter_type = LLVM.ArrayType(
-                        LLVM.Int8Type(),
-                        (uint)mr.Parameters.Count * 8);
-                    var param_buffer = LLVM.BuildAlloca(Builder,
-                        parameter_type, "");
+                    var parameter_type = LLVM.ArrayType(LLVM.Int64Type(), (uint)mr.Parameters.Count);
+                    var param_buffer = LLVM.BuildAlloca(Builder, parameter_type, "");
                     LLVM.SetAlignment(param_buffer, 64);
                     LLVM.PositionBuilderAtEnd(Builder, this.Block.BasicBlock);
-                    int offset = 0;
+		    var base_of_parameters = LLVM.BuildPointerCast(Builder, param_buffer,
+			    LLVM.PointerType(LLVM.Int64Type(), 0), "");
                     for (int i = mr.Parameters.Count - 1; i >= 0; i--)
                     {
                         Value p = state._stack.Pop();
-
-                        ValueRef[] index = new ValueRef[1] { LLVM.ConstInt(LLVM.Int32Type(), (ulong)offset, true) };
-                        
+                        ValueRef[] index = new ValueRef[1] { LLVM.ConstInt(LLVM.Int32Type(), (ulong)i, true) };
                         var gep = LLVM.BuildGEP(Builder, param_buffer, index, "");
-
-                        ValueRef v = LLVM.BuildPointerCast(Builder,
-                            gep,
-                            LLVM.PointerType(LLVM.TypeOf(p.V), 0),
-                            "");
-
-                        ValueRef store = LLVM.BuildStore(Builder,
-                            p.V,
-                            v);
+			var add = LLVM.BuildInBoundsGEP(Builder, base_of_parameters, index, "");
+			ValueRef v = LLVM.BuildPointerCast(Builder, add, LLVM.PointerType(LLVM.TypeOf(p.V), 0), "");
+			ValueRef store = LLVM.BuildStore(Builder, p.V, v);
                     }
 
                     if (HasThis)
@@ -5037,26 +5027,18 @@ namespace Campy.Compiler
                     var parameter_type = LLVM.ArrayType(
                         LLVM.Int64Type(),
                         (uint)method.Parameters.Count);
-                    var param_buffer = LLVM.BuildAlloca(Builder,
-                        parameter_type, "");
+                    var param_buffer = LLVM.BuildAlloca(Builder, parameter_type, "");
                     LLVM.SetAlignment(param_buffer, 64);
-                    LLVM.PositionBuilderAtEnd(Builder, this.Block.BasicBlock);
+                    var base_of_parameters = LLVM.BuildPointerCast(Builder, param_buffer,
+                        LLVM.PointerType(LLVM.Int64Type(), 0), "");
+
                     for (int i = method.Parameters.Count - 1; i >= 0; i--)
                     {
                         Value p = state._stack.Pop();
-
                         ValueRef[] index = new ValueRef[1] { LLVM.ConstInt(LLVM.Int32Type(), (ulong)i, true) };
-
-                        var gep = LLVM.BuildGEP(Builder, param_buffer, index, "");
-
-                        ValueRef v = LLVM.BuildPointerCast(Builder,
-                            gep,
-                            LLVM.PointerType(LLVM.TypeOf(p.V), 0),
-                            "");
-
-                        ValueRef store = LLVM.BuildStore(Builder,
-                            p.V,
-                            v);
+                        var add = LLVM.BuildInBoundsGEP(Builder, base_of_parameters, index, "");
+                        ValueRef v = LLVM.BuildPointerCast(Builder, add, LLVM.PointerType(LLVM.TypeOf(p.V), 0), "");
+                        ValueRef store = LLVM.BuildStore(Builder, p.V, v);
                     }
 
                     // Set up return. For now, always allocate buffer.

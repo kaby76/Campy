@@ -423,7 +423,8 @@ namespace System {
 			return this.IndexOf(value, startIndex, this.length - startIndex, true);
 		}
 
-		public int IndexOf(char value, int startIndex, int count) {
+		public int IndexOf(char value, int startIndex, int count)
+		{
 			return this.IndexOf(value, startIndex, count, true);
 		}
 
