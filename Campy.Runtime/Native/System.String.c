@@ -46,11 +46,6 @@ static __device__ tSystemString* CreateStringHeapObj(U32 len) {
 	tSystemString *pSystemString;
 	U32 totalSize;
 	
-	//KED
-	printf("%d\n", CorLibDone);
-	//KED
-
-
 	totalSize = sizeof(tSystemString) + (len << 1);
 	pSystemString = (tSystemString*)Heap_Alloc(types[TYPE_SYSTEM_STRING], totalSize);
 	pSystemString->length = len;
@@ -59,11 +54,11 @@ static __device__ tSystemString* CreateStringHeapObj(U32 len) {
 
 __device__ tAsyncCall* System_String_ctor_CharInt32(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tSystemString *pSystemString;
-	CHAR2 c;
-	U32 i, len;
+	U32 i;
 
-	c = (CHAR2)(((U32*)pParams)[0]);
-	len = ((U32*)pParams)[1];
+	void **p = (void**)pParams;
+	CHAR2 c = *(CHAR2*)p++;
+	U32 len = *(U32*)p++;
 	pSystemString = CreateStringHeapObj(len);
 	for (i=0; i<len; i++) {
 		pSystemString->chars[i] = c;
@@ -75,13 +70,12 @@ __device__ tAsyncCall* System_String_ctor_CharInt32(PTR pThis_, PTR pParams, PTR
 
 __device__ tAsyncCall* System_String_ctor_CharAIntInt(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tSystemString *pSystemString;
-	HEAP_PTR charArray;
 	PTR charElements;
-	U32 startIndex, length;
 
-	charArray = ((HEAP_PTR*)pParams)[0];
-	startIndex = ((U32*)pParams)[1];  // KED == I DON'T THINK THIS IS CORRECT! THIS ASSUMES HEAP_PTR IS 32-BITS!
-	length = ((U32*)pParams)[2];
+	void** p = (void**)pParams;
+	HEAP_PTR charArray = *(HEAP_PTR*)p++;
+	U32 startIndex = *(U32*)p++;
+	U32 length = *(U32*)p++;
 
 	charElements = SystemArray_GetElements(charArray);
 	pSystemString = CreateStringHeapObj(length);
@@ -96,21 +90,9 @@ __device__ tAsyncCall* System_String_ctor_StringIntInt(PTR pThis_, PTR pParams, 
 	U32 startIndex, length;
 
 	void **p = (void**)pParams;
-
-	void * p0 = *p;
-	pStr = (tSystemString*)p0;
-	printf("%lx\n", p);
-	p++;
-	printf("%lx\n", p);
-
-	void * p1 = *p;
-	printf("%lx\n", p);
-	startIndex = (U64)p1;
-	printf("%lx\n", p);
-	p++;
-	void * p2 = *p;
-	printf("%lx\n", p);
-	length = (U64)p2;
+	pStr = *(tSystemString**)p++;
+	startIndex = *(U32*)p++;
+	length = *(U32*)p++;
 
 	pThis = CreateStringHeapObj(length);
 	memcpy(pThis->chars, &pStr->chars[startIndex], length << 1);
@@ -123,7 +105,8 @@ __device__ tAsyncCall* System_String_get_Chars(PTR pThis_, PTR pParams, PTR pRet
 	tSystemString *pThis = (tSystemString*)pThis_;
 	U32 index;
 
-	index = *(U32*)pParams;
+	void **p = (void**)pParams;
+	index = *(U32*)p++;
 	*(U32*)pReturnValue = pThis->chars[index];
 
 	return NULL;
@@ -132,8 +115,9 @@ __device__ tAsyncCall* System_String_get_Chars(PTR pThis_, PTR pParams, PTR pRet
 __device__ tAsyncCall* System_String_InternalConcat(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tSystemString *s0, *s1, *ret;
 
-	s0 = (tSystemString*)(((HEAP_PTR*)pParams)[0]);
-	s1 = (tSystemString*)(((HEAP_PTR*)pParams)[1]);
+	void **p = (void**)pParams;
+	s0 = *(tSystemString**)p++;
+	s1 = *(tSystemString**)p++;
 	ret = CreateStringHeapObj(s0->length + s1->length);
 	memcpy(ret->chars, s0->chars, s0->length << 1);
 	memcpy(&ret->chars[s0->length], s1->chars, s1->length << 1);
@@ -152,8 +136,9 @@ __device__ tAsyncCall* System_String_InternalTrim(PTR pThis_, PTR pParams, PTR p
 	tSystemString *pRet;
 	U16 c;
 
-	pWhiteChars = ((HEAP_PTR*)pParams)[0];
-	trimType = ((U32*)pParams)[1];
+	void **p = (void**)pParams;
+	pWhiteChars = *(HEAP_PTR*)p++;
+	trimType = *(U32*)p++;
 	pCheckChars = (U16*)SystemArray_GetElements(pWhiteChars);
 	checkCharsLen = SystemArray_GetLength(pWhiteChars);
 
@@ -207,8 +192,9 @@ __device__ tAsyncCall* System_String_Equals(PTR pThis_, PTR pParams, PTR pReturn
 	tSystemString *a, *b;
 	U32 ret;
 
-	a = ((tSystemString**)pParams)[0];
-	b = ((tSystemString**)pParams)[1];
+	void **p = (void**)pParams;
+	a = *(tSystemString**)p++;
+	b = *(tSystemString**)p++;
 
 	if (a == b) {
 		ret = 1;
@@ -244,8 +230,10 @@ __device__ tAsyncCall* System_String_GetHashCode(PTR pThis_, PTR pParams, PTR pR
 
 __device__ tAsyncCall* System_String_InternalReplace(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tSystemString *pThis = (tSystemString*)pThis_;
-	tSystemString *pOld = ((tSystemString**)pParams)[0];
-	tSystemString *pNew = ((tSystemString**)pParams)[1];
+
+	void **p = (void**)pParams;
+	tSystemString *pOld = *(tSystemString**)p++;
+	tSystemString *pNew = *(tSystemString**)p++;
 	tSystemString *pResult;
 	U32 thisLen, oldLen, newLen;
 	U16 *pThisChar0, *pOldChar0, *pNewChar0, *pResultChar0;
@@ -306,13 +294,11 @@ __device__ tAsyncCall* System_String_InternalReplace(PTR pThis_, PTR pParams, PT
 
 __device__ tAsyncCall* System_String_InternalIndexOf(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tSystemString *pThis = (tSystemString*)pThis_;
-
-	void ** p0 = (void**)pParams;
-
-	U16 value = *(U16*)p0++;
-	I32 startIndex = *(I32*)p0++;
-	I32 count = *(I32*)p0++;
-	U32 forwards = *(U32*)p0;
+	void ** p = (void**)pParams;
+	U16 value = *(U16*)p++;
+	I32 startIndex = *(I32*)p++;
+	I32 count = *(I32*)p++;
+	U32 forwards = *(U32*)p;
 
 	I32 lastIndex;
 	I32 inc;
@@ -339,10 +325,12 @@ __device__ tAsyncCall* System_String_InternalIndexOf(PTR pThis_, PTR pParams, PT
 
 __device__ tAsyncCall* System_String_InternalIndexOfAny(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tSystemString *pThis = (tSystemString*)pThis_;
-	HEAP_PTR valueArray = ((HEAP_PTR*)pParams)[0];
-	I32 startIndex = ((I32*)pParams)[1];
-	I32 count = ((I32*)pParams)[2];
-	U32 forwards = ((U32*)pParams)[3];
+
+	void **p = (void**)pParams;
+	HEAP_PTR valueArray = *(HEAP_PTR*)p++;
+	I32 startIndex = *(I32*)p++;
+	I32 count = *(I32*)p++;
+	U32 forwards = *(U32*)p++;
 
 	PTR valueChars = SystemArray_GetElements(valueArray);
 	U32 numValueChars = SystemArray_GetLength(valueArray);
