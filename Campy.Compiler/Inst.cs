@@ -1277,7 +1277,7 @@ namespace Campy.Compiler
                     args[1] = pp;
                     args[2] = pr;
 
-                    var call = LLVM.BuildCall(Builder, fv, args, name);
+                    var call = LLVM.BuildCall(Builder, fv, args, "");
 
                     if (ret)
                     {
@@ -1414,7 +1414,7 @@ namespace Campy.Compiler
                         }
                         args[k] = value;
                     }
-                    var call = LLVM.BuildCall(Builder, fv, args, "i" + instruction_id++);
+                    var call = LLVM.BuildCall(Builder, fv, args, "");
                     if (Campy.Utils.Options.IsOn("jit_trace"))
                         System.Console.WriteLine(call.ToString());
                     // Push the return on the stack. Note, it's not the call, but the new obj dereferenced.
@@ -1446,7 +1446,7 @@ namespace Campy.Compiler
                         }
                         args[k] = value;
                     }
-                    var call = LLVM.BuildCall(Builder, fv, args, name);
+                    var call = LLVM.BuildCall(Builder, fv, args, "");
                     state._stack.Push(new Value(call));
                     if (Campy.Utils.Options.IsOn("jit_trace"))
                         System.Console.WriteLine(call.ToString());
@@ -1477,7 +1477,7 @@ namespace Campy.Compiler
                         }
                         args[k] = value;
                     }
-                    var call = LLVM.BuildCall(Builder, fv, args, "i" + instruction_id++);
+                    var call = LLVM.BuildCall(Builder, fv, args, "");
                     if (Campy.Utils.Options.IsOn("jit_trace"))
                         System.Console.WriteLine(call.ToString());
                 }
@@ -4631,7 +4631,7 @@ namespace Campy.Compiler
                 var list2 = Runtime.PtxFunctions.ToList();
                 var f = list2.Where(t => t._mangled_name == name).First();
                 ValueRef fv = f._valueref;
-                var call = LLVM.BuildCall(Builder, fv, args, name);
+                var call = LLVM.BuildCall(Builder, fv, args, "");
 
                 // Find type of System.String in BCL.
                 Mono.Cecil.TypeReference tr = Runtime.FindBCLType(typeof(System.String));
@@ -4957,7 +4957,7 @@ namespace Campy.Compiler
                 }
                 args[0] = new_obj;
 
-                var call = LLVM.BuildCall(Builder, fv, args, "i" + instruction_id++);
+                var call = LLVM.BuildCall(Builder, fv, args, "");
                 if (Campy.Utils.Options.IsOn("jit_trace"))
                     System.Console.WriteLine(new Value(call));
 
@@ -5183,7 +5183,7 @@ namespace Campy.Compiler
                     }
                     args[0] = new_obj;
 
-                    var call = LLVM.BuildCall(Builder, fv, args, "i" + instruction_id++);
+                    var call = LLVM.BuildCall(Builder, fv, args, "");
                     if (Campy.Utils.Options.IsOn("jit_trace"))
                         System.Console.WriteLine(new Value(call));
 
