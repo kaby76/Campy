@@ -1234,11 +1234,11 @@ namespace Campy.Compiler
                     // unfortunately, reminates of the DNA runtime I decided to use.
                     var entry = this.Block.Entry.BasicBlock;
                     var beginning = LLVM.GetFirstInstruction(entry);
-                    LLVM.PositionBuilderBefore(Builder, beginning);
+                    //LLVM.PositionBuilderBefore(Builder, beginning);
                     var parameter_type = LLVM.ArrayType(LLVM.Int64Type(), (uint)mr.Parameters.Count);
                     var param_buffer = LLVM.BuildAlloca(Builder, parameter_type, "i" + instruction_id++);
                     LLVM.SetAlignment(param_buffer, 64);
-                    LLVM.PositionBuilderAtEnd(Builder, this.Block.BasicBlock);
+                    //LLVM.PositionBuilderAtEnd(Builder, this.Block.BasicBlock);
 		    var base_of_parameters = LLVM.BuildPointerCast(Builder, param_buffer,
 			    LLVM.PointerType(LLVM.Int64Type(), 0), "i" + instruction_id++);
                     for (int i = mr.Parameters.Count - 1; i >= 0; i--)
@@ -1263,7 +1263,7 @@ namespace Campy.Compiler
                     var return_type = mat._returnType.ToTypeRef();
                     var return_buffer = LLVM.BuildAlloca(Builder, return_type, "i" + instruction_id++);
                     LLVM.SetAlignment(return_buffer, 64);
-                    LLVM.PositionBuilderAtEnd(Builder, this.Block.BasicBlock);
+                    //LLVM.PositionBuilderAtEnd(Builder, this.Block.BasicBlock);
 
                     // Set up call.
                     var pt = LLVM.BuildPointerCast(Builder, t.V,
@@ -1382,12 +1382,12 @@ namespace Campy.Compiler
 
                     var entry = this.Block.Entry.BasicBlock;
                     var beginning = LLVM.GetFirstInstruction(entry);
-                    LLVM.PositionBuilderBefore(Builder, beginning);
+                    //LLVM.PositionBuilderBefore(Builder, beginning);
 
                     var new_obj =
                         LLVM.BuildAlloca(Builder, alloc_type,
                             "i" + instruction_id++); // Allocates struct on stack, but returns a pointer to struct.
-                    LLVM.PositionBuilderAtEnd(Builder, this.Block.BasicBlock);
+                    //LLVM.PositionBuilderAtEnd(Builder, this.Block.BasicBlock);
                     if (Campy.Utils.Options.IsOn("jit_trace"))
                         System.Console.WriteLine(new Value(new_obj));
                     args[0] = new_obj;
@@ -4922,9 +4922,9 @@ namespace Campy.Compiler
                 // First, create a struct.
                 var entry = this.Block.Entry.BasicBlock;
                 var beginning = LLVM.GetFirstInstruction(entry);
-                LLVM.PositionBuilderBefore(Builder, beginning);
+                //LLVM.PositionBuilderBefore(Builder, beginning);
                 var new_obj = LLVM.BuildAlloca(Builder, llvm_type, "i" + instruction_id++); // Allocates struct on stack, but returns a pointer to struct.
-                LLVM.PositionBuilderAtEnd(Builder, this.Block.BasicBlock);
+                //LLVM.PositionBuilderAtEnd(Builder, this.Block.BasicBlock);
                 if (Campy.Utils.Options.IsOn("jit_trace"))
                     System.Console.WriteLine(new Value(new_obj));
 
@@ -5027,7 +5027,7 @@ namespace Campy.Compiler
                     // unfortunately, reminates of the DNA runtime I decided to use.
                     var entry = this.Block.Entry.BasicBlock;
                     var beginning = LLVM.GetFirstInstruction(entry);
-                    LLVM.PositionBuilderBefore(Builder, beginning);
+                    //LLVM.PositionBuilderBefore(Builder, beginning);
                     var parameter_type = LLVM.ArrayType(
                         LLVM.Int64Type(),
                         (uint)method.Parameters.Count);
@@ -5063,7 +5063,7 @@ namespace Campy.Compiler
                     var native_return_buffer = LLVM.BuildAlloca(Builder,
                         native_return_type, "i" + instruction_id++);
                     LLVM.SetAlignment(native_return_buffer, 64);
-                    LLVM.PositionBuilderAtEnd(Builder, this.Block.BasicBlock);
+                    //LLVM.PositionBuilderAtEnd(Builder, this.Block.BasicBlock);
 
                     // Set up call.
                     var pt = LLVM.BuildPointerCast(Builder, t.V,
