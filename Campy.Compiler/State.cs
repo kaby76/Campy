@@ -184,7 +184,7 @@ namespace Campy.Compiler
                         var entry = bb.Entry.BasicBlock;
                         //var beginning = LLVM.GetFirstInstruction(entry);
                         //LLVM.PositionBuilderBefore(basic_block.Builder, beginning);
-                        var new_obj = LLVM.BuildAlloca(bb.Builder, type.IntermediateType, ""); // Allocates struct on stack, but returns a pointer to struct.
+                        var new_obj = LLVM.BuildAlloca(bb.Builder, type.IntermediateType, "i" + Inst.instruction_id++); // Allocates struct on stack, but returns a pointer to struct.
                         LLVM.PositionBuilderAtEnd(bb.Builder, bb.BasicBlock);
                         value = new Value(new_obj);
                     }
@@ -252,7 +252,7 @@ namespace Campy.Compiler
                     var value = p_llvm_node.StateOut._stack[i];
                     var v = value.V;
                     TypeRef tr = LLVM.TypeOf(v);
-                    ValueRef res = LLVM.BuildPhi(bb.Builder, tr, "");
+                    ValueRef res = LLVM.BuildPhi(bb.Builder, tr, "i" + Inst.instruction_id++);
                     _phi.Add(res);
                     _stack[i] = new Value(res);
                 }

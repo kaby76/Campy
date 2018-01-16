@@ -25,7 +25,7 @@ namespace Campy.Compiler
         public override string ToString() { return Instruction.ToString(); }
         public Mono.Cecil.Cil.OpCode OpCode { get { return Instruction.OpCode; } }
         public object Operand { get { return Instruction.Operand; } }
-
+        public static int instruction_id = 1;
 
         // Required for LLVM conversion.
         public BuilderRef Builder { get { return Block.Builder; } }
@@ -755,7 +755,7 @@ namespace Campy.Compiler
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(CharPtrTy);
 
-            Value BasePtrCast = new Value(LLVM.BuildBitCast(Builder, BasePtr.V, CharPtrTy.IntermediateType, ""));
+            Value BasePtrCast = new Value(LLVM.BuildBitCast(Builder, BasePtr.V, CharPtrTy.IntermediateType, "i"+instruction_id++));
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(BasePtrCast);
 
@@ -796,9 +796,9 @@ namespace Campy.Compiler
             // For now we "flatten" to byte offsets.
             Type CharPtrTy = new Type(Type.getInt8PtrTy(
                 LLVM.GetModuleContext(CampyConverter.global_llvm_module), BasePtr.T.getPointerAddressSpace()));
-            Value BasePtrCast = new Value(LLVM.BuildBitCast(Builder, BasePtr.V, CharPtrTy.IntermediateType, ""));
-            Value NegOffset = new Value(LLVM.BuildNeg(Builder, Offset.V, ""));
-            Value ResultPtr = new Value(LLVM.BuildGEP(Builder, BasePtrCast.V, new ValueRef[] { NegOffset.V }, ""));
+            Value BasePtrCast = new Value(LLVM.BuildBitCast(Builder, BasePtr.V, CharPtrTy.IntermediateType, "i" + instruction_id++));
+            Value NegOffset = new Value(LLVM.BuildNeg(Builder, Offset.V, "i" + instruction_id++));
+            Value ResultPtr = new Value(LLVM.BuildGEP(Builder, BasePtrCast.V, new ValueRef[] { NegOffset.V }, "i" + instruction_id++));
             return ResultPtr;
         }
 
@@ -815,15 +815,15 @@ namespace Campy.Compiler
             }
             else if (SourceTy.isIntegerTy() && Ty.isIntegerTy())
             {
-                Result = new Value(LLVM.BuildIntCast(Builder, Node.V, Ty.IntermediateType, ""));//SourceIsSigned);
+                Result = new Value(LLVM.BuildIntCast(Builder, Node.V, Ty.IntermediateType, "i" + instruction_id++));//SourceIsSigned);
             }
             else if (SourceTy.isFloatingPointTy() && Ty.isFloatingPointTy())
             {
-                Result = new Value(LLVM.BuildFPCast(Builder, Node.V, Ty.IntermediateType, ""));
+                Result = new Value(LLVM.BuildFPCast(Builder, Node.V, Ty.IntermediateType, "i" + instruction_id++));
             }
             else if (SourceTy.isPointerTy() && Ty.isIntegerTy())
             {
-                Result = new Value(LLVM.BuildPtrToInt(Builder, Node.V, Ty.IntermediateType, ""));
+                Result = new Value(LLVM.BuildPtrToInt(Builder, Node.V, Ty.IntermediateType, "i" + instruction_id++));
             }
             else
             {
@@ -945,7 +945,7 @@ namespace Campy.Compiler
                     // if the divisor is zero
                     if (UseExplicitZeroDivideChecks)
                     {
-                        Value IsZero = new Value(LLVM.BuildIsNull(Builder, Arg2.V, ""));
+                        Value IsZero = new Value(LLVM.BuildIsNull(Builder, Arg2.V, "i" + instruction_id++));
                         //genConditionalThrow(IsZero, CORINFO_HELP_THROWDIVZERO, "ThrowDivideByZero");
                     }
                     else
@@ -956,7 +956,7 @@ namespace Campy.Compiler
                     }
                 }
 
-                Result = new Value(LLVM.BuildBinOp(Builder, OpI.Opcode, Arg1.V, Arg2.V, ""));
+                Result = new Value(LLVM.BuildBinOp(Builder, OpI.Opcode, Arg1.V, Arg2.V, "i"+instruction_id++));
             }
 
             if (ResultType != ArithType)
@@ -964,8 +964,10 @@ namespace Campy.Compiler
                 Debug.Assert(ResultType.isPointerTy());
                 Debug.Assert(ArithType.isIntegerTy());
 
-                Result = new Value(LLVM.BuildIntToPtr(Builder, Result.V, ResultType.IntermediateType, ""));
+                Result = new Value(LLVM.BuildIntToPtr(Builder, Result.V, ResultType.IntermediateType, "i" + instruction_id++));
             }
+            if (Campy.Utils.Options.IsOn("jit_trace"))
+                System.Console.WriteLine(Result);
 
             return Result;
         }
@@ -1234,19 +1236,21 @@ namespace Campy.Compiler
                     var beginning = LLVM.GetFirstInstruction(entry);
                     LLVM.PositionBuilderBefore(Builder, beginning);
                     var parameter_type = LLVM.ArrayType(LLVM.Int64Type(), (uint)mr.Parameters.Count);
-                    var param_buffer = LLVM.BuildAlloca(Builder, parameter_type, "");
+                    var param_buffer = LLVM.BuildAlloca(Builder, parameter_type, "i" + instruction_id++);
                     LLVM.SetAlignment(param_buffer, 64);
                     LLVM.PositionBuilderAtEnd(Builder, this.Block.BasicBlock);
 		    var base_of_parameters = LLVM.BuildPointerCast(Builder, param_buffer,
-			    LLVM.PointerType(LLVM.Int64Type(), 0), "");
+			    LLVM.PointerType(LLVM.Int64Type(), 0), "i" + instruction_id++);
                     for (int i = mr.Parameters.Count - 1; i >= 0; i--)
                     {
                         Value p = state._stack.Pop();
                         ValueRef[] index = new ValueRef[1] { LLVM.ConstInt(LLVM.Int32Type(), (ulong)i, true) };
-                        var gep = LLVM.BuildGEP(Builder, param_buffer, index, "");
-			var add = LLVM.BuildInBoundsGEP(Builder, base_of_parameters, index, "");
-			ValueRef v = LLVM.BuildPointerCast(Builder, add, LLVM.PointerType(LLVM.TypeOf(p.V), 0), "");
-			ValueRef store = LLVM.BuildStore(Builder, p.V, v);
+                        var gep = LLVM.BuildGEP(Builder, param_buffer, index, "i" + instruction_id++);
+			            var add = LLVM.BuildInBoundsGEP(Builder, base_of_parameters, index, "i" + instruction_id++);
+			            ValueRef v = LLVM.BuildPointerCast(Builder, add, LLVM.PointerType(LLVM.TypeOf(p.V), 0), "i" + instruction_id++);
+			            ValueRef store = LLVM.BuildStore(Builder, p.V, v);
+                        if (Campy.Utils.Options.IsOn("jit_trace"))
+                            System.Console.WriteLine(new Value(store));
                     }
 
                     if (HasThis)
@@ -1257,17 +1261,17 @@ namespace Campy.Compiler
                     // Set up return. For now, always allocate buffer.
                     // Note function return is type of third parameter.
                     var return_type = mat._returnType.ToTypeRef();
-                    var return_buffer = LLVM.BuildAlloca(Builder, return_type, "");
+                    var return_buffer = LLVM.BuildAlloca(Builder, return_type, "i" + instruction_id++);
                     LLVM.SetAlignment(return_buffer, 64);
                     LLVM.PositionBuilderAtEnd(Builder, this.Block.BasicBlock);
 
                     // Set up call.
                     var pt = LLVM.BuildPointerCast(Builder, t.V,
-                        LLVM.PointerType(LLVM.VoidType(), 0), "");
+                        LLVM.PointerType(LLVM.VoidType(), 0), "i" + instruction_id++);
                     var pp = LLVM.BuildPointerCast(Builder, param_buffer,
-                        LLVM.PointerType(LLVM.VoidType(), 0), "");
+                        LLVM.PointerType(LLVM.VoidType(), 0), "i" + instruction_id++);
                     var pr = LLVM.BuildPointerCast(Builder, return_buffer,
-                        LLVM.PointerType(LLVM.VoidType(), 0), "");
+                        LLVM.PointerType(LLVM.VoidType(), 0), "i" + instruction_id++);
 
                     args[0] = pt;
                     args[1] = pp;
@@ -1277,7 +1281,7 @@ namespace Campy.Compiler
 
                     if (ret)
                     {
-                        var load = LLVM.BuildLoad(Builder, return_buffer, "");
+                        var load = LLVM.BuildLoad(Builder, return_buffer, "i" + instruction_id++);
                         state._stack.Push(new Value(load));
                     }
 
@@ -1382,7 +1386,7 @@ namespace Campy.Compiler
 
                     var new_obj =
                         LLVM.BuildAlloca(Builder, alloc_type,
-                            ""); // Allocates struct on stack, but returns a pointer to struct.
+                            "i" + instruction_id++); // Allocates struct on stack, but returns a pointer to struct.
                     LLVM.PositionBuilderAtEnd(Builder, this.Block.BasicBlock);
                     if (Campy.Utils.Options.IsOn("jit_trace"))
                         System.Console.WriteLine(new Value(new_obj));
@@ -1397,11 +1401,11 @@ namespace Campy.Compiler
                             if (LLVM.GetTypeKind(LLVM.TypeOf(par)) == TypeKind.StructTypeKind
                                 && LLVM.GetTypeKind(LLVM.TypeOf(value)) == TypeKind.PointerTypeKind)
                             {
-                                value = LLVM.BuildLoad(Builder, value, "");
+                                value = LLVM.BuildLoad(Builder, value, "i" + instruction_id++);
                             }
                             else if (LLVM.GetTypeKind(LLVM.TypeOf(par)) == TypeKind.PointerTypeKind)
                             {
-                                value = LLVM.BuildPointerCast(Builder, value, LLVM.TypeOf(par), "");
+                                value = LLVM.BuildPointerCast(Builder, value, LLVM.TypeOf(par), "i" + instruction_id++);
                             }
                             else
                             {
@@ -1410,11 +1414,11 @@ namespace Campy.Compiler
                         }
                         args[k] = value;
                     }
-                    var call = LLVM.BuildCall(Builder, fv, args, "");
+                    var call = LLVM.BuildCall(Builder, fv, args, "i" + instruction_id++);
                     if (Campy.Utils.Options.IsOn("jit_trace"))
                         System.Console.WriteLine(call.ToString());
                     // Push the return on the stack. Note, it's not the call, but the new obj dereferenced.
-                    var dereferenced_return_value = LLVM.BuildLoad(Builder, new_obj, "");
+                    var dereferenced_return_value = LLVM.BuildLoad(Builder, new_obj, "i" + instruction_id++);
                     state._stack.Push(new Value(dereferenced_return_value));
                 }
                 else if (the_entry.HasScalarReturnValue)
@@ -1429,15 +1433,15 @@ namespace Campy.Compiler
                             if (LLVM.GetTypeKind(LLVM.TypeOf(par)) == TypeKind.StructTypeKind
                                 && LLVM.GetTypeKind(LLVM.TypeOf(value)) == TypeKind.PointerTypeKind)
                             {
-                                value = LLVM.BuildLoad(Builder, value, "");
+                                value = LLVM.BuildLoad(Builder, value, "i" + instruction_id++);
                             }
                             else if (LLVM.GetTypeKind(LLVM.TypeOf(par)) == TypeKind.PointerTypeKind)
                             {
-                                value = LLVM.BuildPointerCast(Builder, value, LLVM.TypeOf(par), "");
+                                value = LLVM.BuildPointerCast(Builder, value, LLVM.TypeOf(par), "i" + instruction_id++);
                             }
                             else
                             {
-                                value = LLVM.BuildBitCast(Builder, value, LLVM.TypeOf(par), "");
+                                value = LLVM.BuildBitCast(Builder, value, LLVM.TypeOf(par), "i" + instruction_id++);
                             }
                         }
                         args[k] = value;
@@ -1460,20 +1464,20 @@ namespace Campy.Compiler
                             if (LLVM.GetTypeKind(LLVM.TypeOf(par)) == TypeKind.StructTypeKind
                                 && LLVM.GetTypeKind(LLVM.TypeOf(value)) == TypeKind.PointerTypeKind)
                             {
-                                value = LLVM.BuildLoad(Builder, value, "");
+                                value = LLVM.BuildLoad(Builder, value, "i" + instruction_id++);
                             }
                             else if (LLVM.GetTypeKind(LLVM.TypeOf(par)) == TypeKind.PointerTypeKind)
                             {
-                                value = LLVM.BuildPointerCast(Builder, value, LLVM.TypeOf(par), "");
+                                value = LLVM.BuildPointerCast(Builder, value, LLVM.TypeOf(par), "i" + instruction_id++);
                             }
                             else
                             {
-                                value = LLVM.BuildBitCast(Builder, value, LLVM.TypeOf(par), "");
+                                value = LLVM.BuildBitCast(Builder, value, LLVM.TypeOf(par), "i" + instruction_id++);
                             }
                         }
                         args[k] = value;
                     }
-                    var call = LLVM.BuildCall(Builder, fv, args, "");
+                    var call = LLVM.BuildCall(Builder, fv, args, "i" + instruction_id++);
                     if (Campy.Utils.Options.IsOn("jit_trace"))
                         System.Console.WriteLine(call.ToString());
                 }
@@ -1541,20 +1545,20 @@ namespace Campy.Compiler
 
                 var t1 = v_tidx;
 
-                var t2 = LLVM.BuildMul(bb.Builder, v_ntidx, v_ctaidx, "");
+                var t2 = LLVM.BuildMul(bb.Builder, v_ntidx, v_ctaidx, "i" + instruction_id++);
 
-                var t3 = LLVM.BuildMul(bb.Builder, v_ntidx, v_nctaidx, "");
-                t3 = LLVM.BuildMul(bb.Builder, t3, v_ntidy, "");
-                t3 = LLVM.BuildMul(bb.Builder, t3, v_ctaidy, "");
+                var t3 = LLVM.BuildMul(bb.Builder, v_ntidx, v_nctaidx, "i" + instruction_id++);
+                t3 = LLVM.BuildMul(bb.Builder, t3, v_ntidy, "i" + instruction_id++);
+                t3 = LLVM.BuildMul(bb.Builder, t3, v_ctaidy, "i" + instruction_id++);
 
-                var t4 = LLVM.BuildMul(bb.Builder, v_ntidx, v_nctaidx, "");
-                t4 = LLVM.BuildMul(bb.Builder, t4, v_tidy, "");
+                var t4 = LLVM.BuildMul(bb.Builder, v_ntidx, v_nctaidx, "i" + instruction_id++);
+                t4 = LLVM.BuildMul(bb.Builder, t4, v_tidy, "i" + instruction_id++);
 
-                var sum = LLVM.BuildAdd(bb.Builder, t1, t2, "");
-                sum = LLVM.BuildAdd(bb.Builder, sum, t3, "");
-                sum = LLVM.BuildAdd(bb.Builder, sum, t4, "");
+                var sum = LLVM.BuildAdd(bb.Builder, t1, t2, "i" + instruction_id++);
+                sum = LLVM.BuildAdd(bb.Builder, sum, t3, "i" + instruction_id++);
+                sum = LLVM.BuildAdd(bb.Builder, sum, t4, "i" + instruction_id++);
                 sum = LLVM.BuildAdd(bb.Builder, sum, LLVM.ConstInt(LLVM.Int32Type(),
-                    (ulong)converter._start_index, false), "");
+                    (ulong)converter._start_index, false), "i" + instruction_id++);
 
                 if (Campy.Utils.Options.IsOn("jit_trace"))
                     System.Console.WriteLine("load " + new Value(sum));
@@ -1653,7 +1657,7 @@ namespace Campy.Compiler
                 if (IsSigned) op = _int_pred[(int)Predicate];
                 else op = _uint_pred[(int)Predicate];
 
-                cmp = LLVM.BuildICmp(Builder, op, v1.V, v2.V, "");
+                cmp = LLVM.BuildICmp(Builder, op, v1.V, v2.V, "i" + instruction_id++);
                 if (Next == null) return null;
                 var t = Next.GetType();
                 if (t == typeof(i_brfalse))
@@ -1763,7 +1767,7 @@ namespace Campy.Compiler
                 if (IsSigned) op = _int_pred[(int)Predicate];
                 else op = _uint_pred[(int)Predicate];
 
-                cmp = LLVM.BuildICmp(Builder, op, v1.V, v2.V, "");
+                cmp = LLVM.BuildICmp(Builder, op, v1.V, v2.V, "i" + instruction_id++);
 
                 var edge1 = Block._graph.SuccessorEdges(Block).ToList()[0];
                 var edge2 = Block._graph.SuccessorEdges(Block).ToList()[1];
@@ -1791,7 +1795,7 @@ namespace Campy.Compiler
                 if (IsSigned) op = _real_pred[(int)Predicate];
                 else op = _real_pred[(int)Predicate];
 
-                cmp = LLVM.BuildFCmp(Builder, op, v1.V, v2.V, "");
+                cmp = LLVM.BuildFCmp(Builder, op, v1.V, v2.V, "i" + instruction_id++);
 
                 var edge1 = Block._graph.SuccessorEdges(Block).ToList()[0];
                 var edge2 = Block._graph.SuccessorEdges(Block).ToList()[1];
@@ -1847,38 +1851,38 @@ namespace Campy.Compiler
                 if (ext)
                     return new Value(
                         _dst.is_unsigned
-                        ? LLVM.BuildZExt(Builder, src.V, dtype, "")
-                        : LLVM.BuildSExt(Builder, src.V, dtype, ""));
+                        ? LLVM.BuildZExt(Builder, src.V, dtype, "i" + instruction_id++)
+                        : LLVM.BuildSExt(Builder, src.V, dtype, "i" + instruction_id++));
 
                 if (dtype == LLVM.DoubleType() && stype == LLVM.FloatType())
-                    return new Value(LLVM.BuildFPExt(Builder, src.V, dtype, ""));
+                    return new Value(LLVM.BuildFPExt(Builder, src.V, dtype, "i" + instruction_id++));
 
                 /* Trunc */
                 if (stype == LLVM.Int64Type()
                     && (dtype == LLVM.Int32Type() || dtype == LLVM.Int16Type() || dtype == LLVM.Int8Type()))
-                    return new Value(LLVM.BuildTrunc(Builder, src.V, dtype, ""));
+                    return new Value(LLVM.BuildTrunc(Builder, src.V, dtype, "i" + instruction_id++));
                 if (stype == LLVM.Int32Type()
                     && (dtype == LLVM.Int16Type() || dtype == LLVM.Int8Type()))
-                    return new Value(LLVM.BuildTrunc(Builder, src.V, dtype, ""));
+                    return new Value(LLVM.BuildTrunc(Builder, src.V, dtype, "i" + instruction_id++));
                 if (stype == LLVM.Int16Type()
                     && dtype == LLVM.Int8Type())
-                    return new Value(LLVM.BuildTrunc(Builder, src.V, dtype, ""));
+                    return new Value(LLVM.BuildTrunc(Builder, src.V, dtype, "i" + instruction_id++));
                 if (stype == LLVM.DoubleType()
                     && dtype == LLVM.FloatType())
-                    return new Value(LLVM.BuildFPTrunc(Builder, src.V, dtype, ""));
+                    return new Value(LLVM.BuildFPTrunc(Builder, src.V, dtype, "i" + instruction_id++));
 
                 if (stype == LLVM.Int64Type()
                     && (dtype == LLVM.FloatType()))
-                    return new Value(LLVM.BuildSIToFP(Builder, src.V, dtype, ""));
+                    return new Value(LLVM.BuildSIToFP(Builder, src.V, dtype, "i" + instruction_id++));
                 if (stype == LLVM.Int32Type()
                     && (dtype == LLVM.FloatType()))
-                    return new Value(LLVM.BuildSIToFP(Builder, src.V, dtype, ""));
+                    return new Value(LLVM.BuildSIToFP(Builder, src.V, dtype, "i" + instruction_id++));
                 if (stype == LLVM.Int64Type()
                     && (dtype == LLVM.DoubleType()))
-                    return new Value(LLVM.BuildSIToFP(Builder, src.V, dtype, ""));
+                    return new Value(LLVM.BuildSIToFP(Builder, src.V, dtype, "i" + instruction_id++));
                 if (stype == LLVM.Int32Type()
                     && (dtype == LLVM.DoubleType()))
-                    return new Value(LLVM.BuildSIToFP(Builder, src.V, dtype, ""));
+                    return new Value(LLVM.BuildSIToFP(Builder, src.V, dtype, "i" + instruction_id++));
 
                 //if (LLVM.GetTypeKind(stype) == LLVM.PointerTypeKind && LLVM.GetTypeKind(dtype) == LLVMPointerTypeKind)
                 //    return LLVM.BuildBitCast(Builder, src, dtype, "");
@@ -1988,29 +1992,29 @@ namespace Campy.Compiler
                 System.Console.WriteLine(a.ToString());
 
             var load = a.V;
-            load = LLVM.BuildLoad(Builder, load, "");
+            load = LLVM.BuildLoad(Builder, load, "i" + instruction_id++);
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(new Value(load));
 
             // Load array base.
-            ValueRef extract_value = LLVM.BuildExtractValue(Builder, load, 0, "");
+            ValueRef extract_value = LLVM.BuildExtractValue(Builder, load, 0, "i" + instruction_id++);
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(new Value(extract_value));
 
             // Now add in index to pointer.
             ValueRef[] indexes = new ValueRef[1];
             indexes[0] = i.V;
-            ValueRef gep = LLVM.BuildInBoundsGEP(Builder, extract_value, indexes, "");
+            ValueRef gep = LLVM.BuildInBoundsGEP(Builder, extract_value, indexes, "i" + instruction_id++);
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(new Value(gep));
 
-            load = LLVM.BuildLoad(Builder, gep, "");
+            load = LLVM.BuildLoad(Builder, gep, "i" + instruction_id++);
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(new Value(load));
 
             if (_dst != null &&_dst.IntermediateType != LLVM.TypeOf(load))
             {
-                load = LLVM.BuildIntCast(Builder, load, _dst.IntermediateType, "");
+                load = LLVM.BuildIntCast(Builder, load, _dst.IntermediateType, "i" + instruction_id++);
                 if (Campy.Utils.Options.IsOn("jit_trace"))
                     System.Console.WriteLine(new Value(load));
             }
@@ -2022,7 +2026,7 @@ namespace Campy.Compiler
                 // Use LLVM type and set stack type.
                 if (t_v == LLVM.Int8Type() || t_v == LLVM.Int16Type())
                 {
-                    load = LLVM.BuildIntCast(Builder, load, LLVM.Int32Type(), "");
+                    load = LLVM.BuildIntCast(Builder, load, LLVM.Int32Type(), "i" + instruction_id++);
                     if (Campy.Utils.Options.IsOn("jit_trace"))
                         System.Console.WriteLine(new Value(load));
                 }
@@ -2068,25 +2072,25 @@ namespace Campy.Compiler
                 System.Console.WriteLine(a.ToString());
 
             var load = a.V;
-            load = LLVM.BuildLoad(Builder, load, "");
+            load = LLVM.BuildLoad(Builder, load, "i" + instruction_id++);
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(new Value(load));
 
-            ValueRef extract_value = LLVM.BuildExtractValue(Builder, load, 0, "");
+            ValueRef extract_value = LLVM.BuildExtractValue(Builder, load, 0, "i" + instruction_id++);
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(new Value(extract_value));
 
             // Now add in index to pointer.
             ValueRef[] indexes = new ValueRef[1];
             indexes[0] = i.V;
-            ValueRef gep = LLVM.BuildInBoundsGEP(Builder, extract_value, indexes, "");
+            ValueRef gep = LLVM.BuildInBoundsGEP(Builder, extract_value, indexes, "i" + instruction_id++);
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(new Value(gep));
 
             var value = v.V;
             if (_dst != null && _dst.VerificationType.ToTypeRef() != v.T.IntermediateType)
             {
-                value = LLVM.BuildIntCast(Builder, value, _dst.VerificationType.ToTypeRef(), "");
+                value = LLVM.BuildIntCast(Builder, value, _dst.VerificationType.ToTypeRef(), "i" + instruction_id++);
                 if (Campy.Utils.Options.IsOn("jit_trace"))
                     System.Console.WriteLine(new Value(value));
             }
@@ -2097,7 +2101,7 @@ namespace Campy.Compiler
                 var t_e = LLVM.GetElementType(t_d);
                 if (t_v != t_e && LLVM.GetTypeKind(t_e) != TypeKind.StructTypeKind)
                 {
-                    value = LLVM.BuildIntCast(Builder, value, t_e, "");
+                    value = LLVM.BuildIntCast(Builder, value, t_e, "i" + instruction_id++);
                     if (Campy.Utils.Options.IsOn("jit_trace"))
                         System.Console.WriteLine(new Value(value));
                 }
@@ -2136,19 +2140,19 @@ namespace Campy.Compiler
                 System.Console.WriteLine(a.ToString());
 
             var load = a.V;
-            load = LLVM.BuildLoad(Builder, load, "");
+            load = LLVM.BuildLoad(Builder, load, "i" + instruction_id++);
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(new Value(load));
 
             // Load array base.
-            ValueRef extract_value = LLVM.BuildExtractValue(Builder, load, 0, "");
+            ValueRef extract_value = LLVM.BuildExtractValue(Builder, load, 0, "i" + instruction_id++);
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(new Value(extract_value));
 
             // Now add in index to pointer.
             ValueRef[] indexes = new ValueRef[1];
             indexes[0] = i.V;
-            ValueRef gep = LLVM.BuildInBoundsGEP(Builder, extract_value, indexes, "");
+            ValueRef gep = LLVM.BuildInBoundsGEP(Builder, extract_value, indexes, "i" + instruction_id++);
             var result = new Value(gep);
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(result);
@@ -2244,11 +2248,11 @@ namespace Campy.Compiler
                     if (Campy.Utils.Options.IsOn("jit_trace"))
                         System.Console.WriteLine(LLVM.PrintTypeToString(tt));
 
-                    var addr = LLVM.BuildStructGEP(Builder, v.V, offset, "");
+                    var addr = LLVM.BuildStructGEP(Builder, v.V, offset, "i" + instruction_id++);
                     if (Campy.Utils.Options.IsOn("jit_trace"))
                         System.Console.WriteLine(new Value(addr));
 
-                    var load = LLVM.BuildLoad(Builder, addr, "");
+                    var load = LLVM.BuildLoad(Builder, addr, "i" + instruction_id++);
                     if (Campy.Utils.Options.IsOn("jit_trace"))
                         System.Console.WriteLine(new Value(load));
 
@@ -2340,7 +2344,7 @@ namespace Campy.Compiler
                     if (Campy.Utils.Options.IsOn("jit_trace"))
                         System.Console.WriteLine(LLVM.PrintTypeToString(tt));
 
-                    var load = LLVM.BuildExtractValue(Builder, v.V, offset, "");
+                    var load = LLVM.BuildExtractValue(Builder, v.V, offset, "i" + instruction_id++);
                     if (Campy.Utils.Options.IsOn("jit_trace"))
                         System.Console.WriteLine(new Value(load));
 
@@ -2360,7 +2364,7 @@ namespace Campy.Compiler
                         var mono_field_type = field.FieldType;
                         TypeRef type = mono_field_type.ToTypeRef(Block.OpsFromOriginal);
                         load = LLVM.BuildBitCast(Builder,
-                            load, type, "");
+                            load, type, "i" + instruction_id++);
                         if (Campy.Utils.Options.IsOn("jit_trace"))
                             System.Console.WriteLine(new Value(load));
                     }
@@ -2451,7 +2455,7 @@ namespace Campy.Compiler
                         offset++;
                     }
 
-                    var addr = LLVM.BuildStructGEP(Builder, o.V, offset, "");
+                    var addr = LLVM.BuildStructGEP(Builder, o.V, offset, "i" + instruction_id++);
                     if (Campy.Utils.Options.IsOn("jit_trace"))
                         System.Console.WriteLine(new Value(addr));
 
@@ -2459,7 +2463,7 @@ namespace Campy.Compiler
                     // This is because I had to avoid recursive data types in classes
                     // as LLVM cannot handle these at all. So, all pointer types
                     // were defined as void* in the LLVM field.
-                    var load = LLVM.BuildLoad(Builder, addr, "");
+                    var load = LLVM.BuildLoad(Builder, addr, "i" + instruction_id++);
 
                     var load_value = new Value(load);
                     bool isPtrLoad = load_value.T.isPointerTy();
@@ -2527,7 +2531,7 @@ namespace Campy.Compiler
                         offset++;
                     }
 
-                    var value = LLVM.BuildExtractValue(Builder, o.V, offset, "");
+                    var value = LLVM.BuildExtractValue(Builder, o.V, offset, "i" + instruction_id++);
                     if (Campy.Utils.Options.IsOn("jit_trace"))
                         System.Console.WriteLine(new Value(value));
 
@@ -2538,7 +2542,7 @@ namespace Campy.Compiler
                         var mono_field_type = field.FieldType;
                         TypeRef type = mono_field_type.ToTypeRef(Block.OpsFromOriginal);
                         value = LLVM.BuildBitCast(Builder,
-                            value, type, "");
+                            value, type, "i" + instruction_id++);
                         if (Campy.Utils.Options.IsOn("jit_trace"))
                             System.Console.WriteLine(new Value(value));
                     }
@@ -2583,17 +2587,17 @@ namespace Campy.Compiler
             TypeKind kind = LLVM.GetTypeKind(tr);
 
             ValueRef[] indexes = new ValueRef[0];
-            ValueRef gep = LLVM.BuildInBoundsGEP(Builder, v.V, indexes, "");
+            ValueRef gep = LLVM.BuildInBoundsGEP(Builder, v.V, indexes, "i" + instruction_id++);
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(new Value(gep).ToString());
 
-            var load = LLVM.BuildLoad(Builder, gep, "");
+            var load = LLVM.BuildLoad(Builder, gep, "i" + instruction_id++);
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine("load = " + new Value(load).ToString());
 
             if (_dst != null && _dst.IntermediateType != LLVM.TypeOf(load))
             {
-                load = LLVM.BuildIntCast(Builder, load, _dst.IntermediateType, "");
+                load = LLVM.BuildIntCast(Builder, load, _dst.IntermediateType, "i" + instruction_id++);
                 if (Campy.Utils.Options.IsOn("jit_trace"))
                     System.Console.WriteLine(new Value(load));
             }
@@ -2605,7 +2609,7 @@ namespace Campy.Compiler
                 // Use LLVM type and set stack type.
                 if (t_v == LLVM.Int8Type() || t_v == LLVM.Int16Type())
                 {
-                    load = LLVM.BuildIntCast(Builder, load, LLVM.Int32Type(), "");
+                    load = LLVM.BuildIntCast(Builder, load, LLVM.Int32Type(), "i" + instruction_id++);
                     if (Campy.Utils.Options.IsOn("jit_trace"))
                         System.Console.WriteLine(new Value(load));
                 }
@@ -2647,13 +2651,13 @@ namespace Campy.Compiler
                 System.Console.WriteLine(a);
 
             ValueRef[] indexes = new ValueRef[0];
-            ValueRef gep = LLVM.BuildInBoundsGEP(Builder, a.V, indexes, "");
+            ValueRef gep = LLVM.BuildInBoundsGEP(Builder, a.V, indexes, "i" + instruction_id++);
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(new Value(gep));
 
             // Cast long into a pointer of the given dst type.
             var ptr = LLVM.BuildPointerCast(Builder, gep,
-                LLVM.PointerType(_dst.VerificationType.ToTypeRef(), 0), "");
+                LLVM.PointerType(_dst.VerificationType.ToTypeRef(), 0), "i" + instruction_id++);
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(new Value(ptr));
 
@@ -2661,7 +2665,7 @@ namespace Campy.Compiler
             var value = v.V;
             if (_dst != null && _dst.VerificationType.ToTypeRef() != v.T.IntermediateType)
             {
-                value = LLVM.BuildIntCast(Builder, value, _dst.VerificationType.ToTypeRef(), "");
+                value = LLVM.BuildIntCast(Builder, value, _dst.VerificationType.ToTypeRef(), "i" + instruction_id++);
                 if (Campy.Utils.Options.IsOn("jit_trace"))
                     System.Console.WriteLine(new Value(value));
             }
@@ -2672,7 +2676,7 @@ namespace Campy.Compiler
                 var t_e = LLVM.GetElementType(t_d);
                 if (t_v != t_e)
                 {
-                    value = LLVM.BuildIntCast(Builder, value, t_e, "");
+                    value = LLVM.BuildIntCast(Builder, value, t_e, "i" + instruction_id++);
                     if (Campy.Utils.Options.IsOn("jit_trace"))
                         System.Console.WriteLine(new Value(value));
                 }
@@ -3000,7 +3004,7 @@ namespace Campy.Compiler
             var s2 = edge2.To;
             // We need to compare the value popped with 0/1.
             var v2 = LLVM.ConstInt(LLVM.Int32Type(), 1, false);
-            var v3 = LLVM.BuildICmp(Builder, IntPredicate.IntEQ, v.V, v2, "");
+            var v3 = LLVM.BuildICmp(Builder, IntPredicate.IntEQ, v.V, v2, "i" + instruction_id++);
 
             // Now, in order to select the correct branch, we need to know what
             // edge represents the "true" branch. During construction, there is
@@ -3051,7 +3055,7 @@ namespace Campy.Compiler
             var s2 = edge2.To;
             // We need to compare the value popped with 0/1.
             var v2 = LLVM.ConstInt(LLVM.Int32Type(), 1, false);
-            var v3 = LLVM.BuildICmp(Builder, IntPredicate.IntEQ, v.V, v2, "");
+            var v3 = LLVM.BuildICmp(Builder, IntPredicate.IntEQ, v.V, v2, "i" + instruction_id++);
 
             // Now, in order to select the correct branch, we need to know what
             // edge represents the "true" branch. During construction, there is
@@ -3094,7 +3098,7 @@ namespace Campy.Compiler
             var s2 = edge2.To;
             // We need to compare the value popped with 0/1.
             var v2 = LLVM.ConstInt(LLVM.Int32Type(), 1, false);
-            var v3 = LLVM.BuildICmp(Builder, IntPredicate.IntEQ, v.V, v2, "");
+            var v3 = LLVM.BuildICmp(Builder, IntPredicate.IntEQ, v.V, v2, "i" + instruction_id++);
 
             // Now, in order to select the correct branch, we need to know what
             // edge represents the "true" branch. During construction, there is
@@ -3137,7 +3141,7 @@ namespace Campy.Compiler
             var s2 = edge2.To;
             // We need to compare the value popped with 0/1.
             var v2 = LLVM.ConstInt(LLVM.Int32Type(), 1, false);
-            var v3 = LLVM.BuildICmp(Builder, IntPredicate.IntEQ, v.V, v2, "");
+            var v3 = LLVM.BuildICmp(Builder, IntPredicate.IntEQ, v.V, v2, "i" + instruction_id++);
 
             // Now, in order to select the correct branch, we need to know what
             // edge represents the "true" branch. During construction, there is
@@ -4443,7 +4447,7 @@ namespace Campy.Compiler
                 System.Console.WriteLine(v);
 
             var load = v.V;
-            load = LLVM.BuildLoad(Builder, load, "");
+            load = LLVM.BuildLoad(Builder, load, "i" + instruction_id++);
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(new Value(load));
 
@@ -4451,11 +4455,11 @@ namespace Campy.Compiler
             // is only used for 1d arrays.
 
             // Load len.
-            load = LLVM.BuildExtractValue(Builder, load, 2, "");
+            load = LLVM.BuildExtractValue(Builder, load, 2, "i" + instruction_id++);
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(new Value(load));
 
-            load = LLVM.BuildTrunc(Builder, load, LLVM.Int32Type(), "");
+            load = LLVM.BuildTrunc(Builder, load, LLVM.Int32Type(), "i" + instruction_id++);
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(new Value(load));
 
@@ -4619,8 +4623,8 @@ namespace Campy.Compiler
                 var operand = Operand;
                 string str = (string)operand;
 
-                var llvm_cstr_t = LLVM.BuildGlobalString(Builder, str, "");
-                var llvm_cstr = LLVM.BuildBitCast(Builder, llvm_cstr_t, LLVM.PointerType(LLVM.Int8Type(), 0), "");
+                var llvm_cstr_t = LLVM.BuildGlobalString(Builder, str, "i" + instruction_id++);
+                var llvm_cstr = LLVM.BuildBitCast(Builder, llvm_cstr_t, LLVM.PointerType(LLVM.Int8Type(), 0), "i" + instruction_id++);
                 args[0] = llvm_cstr;
                 string name = "_Z29SystemString_FromCharPtrASCIIPc";
                 var list = Runtime.BclNativeMethods.ToList();
@@ -4634,7 +4638,7 @@ namespace Campy.Compiler
                 var llvm_type = tr.ToTypeRef();
 
                 // Convert to pointer to pointer of string.
-                var cast = LLVM.BuildIntToPtr(Builder, call, llvm_type, "");
+                var cast = LLVM.BuildIntToPtr(Builder, call, llvm_type, "i" + instruction_id++);
                 if (Campy.Utils.Options.IsOn("jit_trace"))
                     System.Console.WriteLine(new Value(cast));
 
@@ -4744,9 +4748,9 @@ namespace Campy.Compiler
             var kindof = LLVM.GetTypeKind(@typeof);
             ValueRef neg;
             if (kindof == TypeKind.DoubleTypeKind || kindof == TypeKind.FloatTypeKind)
-                neg = LLVM.BuildFNeg(Builder, rhs.V, "");
+                neg = LLVM.BuildFNeg(Builder, rhs.V, "i" + instruction_id++);
             else
-                neg = LLVM.BuildNeg(Builder, rhs.V, "");
+                neg = LLVM.BuildNeg(Builder, rhs.V, "i" + instruction_id++);
 
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(new Value(neg));
@@ -4919,7 +4923,7 @@ namespace Campy.Compiler
                 var entry = this.Block.Entry.BasicBlock;
                 var beginning = LLVM.GetFirstInstruction(entry);
                 LLVM.PositionBuilderBefore(Builder, beginning);
-                var new_obj = LLVM.BuildAlloca(Builder, llvm_type, ""); // Allocates struct on stack, but returns a pointer to struct.
+                var new_obj = LLVM.BuildAlloca(Builder, llvm_type, "i" + instruction_id++); // Allocates struct on stack, but returns a pointer to struct.
                 LLVM.PositionBuilderAtEnd(Builder, this.Block.BasicBlock);
                 if (Campy.Utils.Options.IsOn("jit_trace"))
                     System.Console.WriteLine(new Value(new_obj));
@@ -4942,22 +4946,22 @@ namespace Campy.Compiler
                     {
                         if (LLVM.GetTypeKind(LLVM.TypeOf(par)) == TypeKind.PointerTypeKind)
                         {
-                            value = LLVM.BuildPointerCast(Builder, value, LLVM.TypeOf(par), "");
+                            value = LLVM.BuildPointerCast(Builder, value, LLVM.TypeOf(par), "i" + instruction_id++);
                         }
                         else
                         {
-                            value = LLVM.BuildBitCast(Builder, value, LLVM.TypeOf(par), "");
+                            value = LLVM.BuildBitCast(Builder, value, LLVM.TypeOf(par), "i" + instruction_id++);
                         }
                     }
                     args[k] = value;
                 }
                 args[0] = new_obj;
 
-                var call = LLVM.BuildCall(Builder, fv, args, "");
+                var call = LLVM.BuildCall(Builder, fv, args, "i" + instruction_id++);
                 if (Campy.Utils.Options.IsOn("jit_trace"))
                     System.Console.WriteLine(new Value(call));
 
-                var load = LLVM.BuildLoad(Builder, new_obj, "");
+                var load = LLVM.BuildLoad(Builder, new_obj, "i" + instruction_id++);
                 if (Campy.Utils.Options.IsOn("jit_trace"))
                     System.Console.WriteLine(new Value(load));
 
@@ -5027,18 +5031,26 @@ namespace Campy.Compiler
                     var parameter_type = LLVM.ArrayType(
                         LLVM.Int64Type(),
                         (uint)method.Parameters.Count);
-                    var param_buffer = LLVM.BuildAlloca(Builder, parameter_type, "");
+                    var param_buffer = LLVM.BuildAlloca(Builder, parameter_type, "i"+instruction_id++);
                     LLVM.SetAlignment(param_buffer, 64);
                     var base_of_parameters = LLVM.BuildPointerCast(Builder, param_buffer,
-                        LLVM.PointerType(LLVM.Int64Type(), 0), "");
+                        LLVM.PointerType(LLVM.Int64Type(), 0), "i" + instruction_id++);
 
                     for (int i = method.Parameters.Count - 1; i >= 0; i--)
                     {
                         Value p = state._stack.Pop();
+                        if (Campy.Utils.Options.IsOn("jit_trace"))
+                            System.Console.WriteLine(p);
                         ValueRef[] index = new ValueRef[1] { LLVM.ConstInt(LLVM.Int32Type(), (ulong)i, true) };
-                        var add = LLVM.BuildInBoundsGEP(Builder, base_of_parameters, index, "");
-                        ValueRef v = LLVM.BuildPointerCast(Builder, add, LLVM.PointerType(LLVM.TypeOf(p.V), 0), "");
+                        var add = LLVM.BuildInBoundsGEP(Builder, base_of_parameters, index, "i" + instruction_id++);
+                        if (Campy.Utils.Options.IsOn("jit_trace"))
+                            System.Console.WriteLine(new Value(add));
+                        ValueRef v = LLVM.BuildPointerCast(Builder, add, LLVM.PointerType(LLVM.TypeOf(p.V), 0), "i" + instruction_id++);
+                        if (Campy.Utils.Options.IsOn("jit_trace"))
+                            System.Console.WriteLine(new Value(v));
                         ValueRef store = LLVM.BuildStore(Builder, p.V, v);
+                        if (Campy.Utils.Options.IsOn("jit_trace"))
+                            System.Console.WriteLine(new Value(store));
                     }
 
                     // Set up return. For now, always allocate buffer.
@@ -5049,17 +5061,17 @@ namespace Campy.Compiler
                        LLVM.Int64Type(),
                        (uint)1);
                     var native_return_buffer = LLVM.BuildAlloca(Builder,
-                        native_return_type, "");
+                        native_return_type, "i" + instruction_id++);
                     LLVM.SetAlignment(native_return_buffer, 64);
                     LLVM.PositionBuilderAtEnd(Builder, this.Block.BasicBlock);
 
                     // Set up call.
                     var pt = LLVM.BuildPointerCast(Builder, t.V,
-                        LLVM.PointerType(LLVM.VoidType(), 0), "");
+                        LLVM.PointerType(LLVM.VoidType(), 0), "i" + instruction_id++);
                     var pp = LLVM.BuildPointerCast(Builder, param_buffer,
-                        LLVM.PointerType(LLVM.VoidType(), 0), "");
+                        LLVM.PointerType(LLVM.VoidType(), 0), "i" + instruction_id++);
                     var pr = LLVM.BuildPointerCast(Builder, native_return_buffer,
-                        LLVM.PointerType(LLVM.VoidType(), 0), "");
+                        LLVM.PointerType(LLVM.VoidType(), 0), "i" + instruction_id++);
 
                     args[0] = pt;
                     args[1] = pp;
@@ -5072,9 +5084,9 @@ namespace Campy.Compiler
                     // There is always a return from a newobj instruction.
                     var ptr_cast = LLVM.BuildBitCast(Builder,
                         native_return_buffer,
-                        LLVM.PointerType(llvm_type, 0), "");
+                        LLVM.PointerType(llvm_type, 0), "i" + instruction_id++);
 
-                    var load = LLVM.BuildLoad(Builder, ptr_cast, "");
+                    var load = LLVM.BuildLoad(Builder, ptr_cast, "i" + instruction_id++);
 
                     // Cast the damn object into the right type.
                     state._stack.Push(new Value(load));
@@ -5115,14 +5127,14 @@ namespace Campy.Compiler
                     string type_namespace = type.Resolve().Namespace;
                     string type_assembly = type.Resolve().Module.Name;
 
-                    var p0 = LLVM.BuildGlobalString(Builder, type_assembly, "");
-                    var p1 = LLVM.BuildGlobalString(Builder, type_namespace, "");
-                    var p2 = LLVM.BuildGlobalString(Builder, type_name, "");
+                    var p0 = LLVM.BuildGlobalString(Builder, type_assembly, "i" + instruction_id++);
+                    var p1 = LLVM.BuildGlobalString(Builder, type_namespace, "i" + instruction_id++);
+                    var p2 = LLVM.BuildGlobalString(Builder, type_name, "i" + instruction_id++);
                     System.Console.WriteLine(new Value(p0));
 
-                    var pp0 = LLVM.BuildBitCast(Builder, p0, LLVM.PointerType(LLVM.Int8Type(), 0), "");
-                    var pp1 = LLVM.BuildBitCast(Builder, p1, LLVM.PointerType(LLVM.Int8Type(), 0), "");
-                    var pp2 = LLVM.BuildBitCast(Builder, p2, LLVM.PointerType(LLVM.Int8Type(), 0), "");
+                    var pp0 = LLVM.BuildBitCast(Builder, p0, LLVM.PointerType(LLVM.Int8Type(), 0), "i" + instruction_id++);
+                    var pp1 = LLVM.BuildBitCast(Builder, p1, LLVM.PointerType(LLVM.Int8Type(), 0), "i" + instruction_id++);
+                    var pp2 = LLVM.BuildBitCast(Builder, p2, LLVM.PointerType(LLVM.Int8Type(), 0), "i" + instruction_id++);
                     System.Console.WriteLine(new Value(pp0));
 
                     args[0] = pp0;
@@ -5132,7 +5144,7 @@ namespace Campy.Compiler
 
                     new_obj = LLVM.BuildBitCast(Builder,
                         call,
-                        llvm_type, "");
+                        llvm_type, "i" + instruction_id++);
 
                     if (Campy.Utils.Options.IsOn("jit_trace"))
                         System.Console.WriteLine(new Value(new_obj));
@@ -5160,18 +5172,18 @@ namespace Campy.Compiler
                         {
                             if (LLVM.GetTypeKind(LLVM.TypeOf(par)) == TypeKind.PointerTypeKind)
                             {
-                                value = LLVM.BuildPointerCast(Builder, value, LLVM.TypeOf(par), "");
+                                value = LLVM.BuildPointerCast(Builder, value, LLVM.TypeOf(par), "i" + instruction_id++);
                             }
                             else
                             {
-                                value = LLVM.BuildBitCast(Builder, value, LLVM.TypeOf(par), "");
+                                value = LLVM.BuildBitCast(Builder, value, LLVM.TypeOf(par), "i" + instruction_id++);
                             }
                         }
                         args[k] = value;
                     }
                     args[0] = new_obj;
 
-                    var call = LLVM.BuildCall(Builder, fv, args, "");
+                    var call = LLVM.BuildCall(Builder, fv, args, "i" + instruction_id++);
                     if (Campy.Utils.Options.IsOn("jit_trace"))
                         System.Console.WriteLine(new Value(call));
 
@@ -5339,6 +5351,8 @@ namespace Campy.Compiler
                 var v = state._stack.Pop();
                 var p = state._struct_ret[0];
                 var store = LLVM.BuildStore(Builder, v.V, p.V);
+                if (Campy.Utils.Options.IsOn("jit_trace"))
+                    System.Console.WriteLine(new Value(store));
                 var i = LLVM.BuildRetVoid(Builder);
             }
             return Next;
@@ -5375,7 +5389,7 @@ namespace Campy.Compiler
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(lhs);
 
-            var result = LLVM.BuildShl(Builder, lhs.V, rhs.V, "");
+            var result = LLVM.BuildShl(Builder, lhs.V, rhs.V, "i" + instruction_id++);
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(new Value(result));
 
@@ -5407,7 +5421,7 @@ namespace Campy.Compiler
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(lhs);
 
-            var result = LLVM.BuildAShr(Builder, lhs.V, rhs.V, "");
+            var result = LLVM.BuildAShr(Builder, lhs.V, rhs.V, "i" + instruction_id++);
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(new Value(result));
 

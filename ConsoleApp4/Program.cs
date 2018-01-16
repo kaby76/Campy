@@ -35,11 +35,11 @@ namespace ConsoleApp4
 
 
             string[] data = new string[] { "xxxxxihihihi", "there" };
-            int[] results = new int[2];
+            string[] results = new string[2];
             int n2 = data.Length;
             Campy.Parallel.For(n2, i =>
             {
-                results[i] = data[i].IndexOf('h');
+                results[i] = data[i].Substring(3);
             });
 
             // FFTC.FFT_Test();
