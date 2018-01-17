@@ -297,8 +297,8 @@ __device__ tAsyncCall* System_Net_Sockets_Internal_Receive(PTR pThis_, PTR pPara
 	//pState->count = 0;
 	//ok = Receive_Check(pThis_, pParams, pReturnValue, pAsync);
 	//if (ok) {
-	//	free(pState);
-	//	free(pAsync);
+	//	Gfree(pState);
+	//	Gfree(pAsync);
 	//	return NULL;
 	//} else {
 	//	return pAsync;
@@ -362,8 +362,8 @@ __device__ tAsyncCall* System_Net_Sockets_Internal_Send(PTR pThis_, PTR pParams,
 	//pState->count = 0;
 	//ok = Send_Check(pThis_, pParams, pReturnValue, pAsync);
 	//if (ok) {
-	//	free(pState);
-	//	free(pAsync);
+	//	Gfree(pState);
+	//	Gfree(pAsync);
 	//	return NULL;
 	//} else {
 	//	return pAsync;

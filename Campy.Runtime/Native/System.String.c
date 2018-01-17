@@ -90,14 +90,31 @@ __device__ tAsyncCall* System_String_ctor_StringIntInt(PTR pThis_, PTR pParams, 
 	U32 startIndex, length;
 
 	void **p = (void**)pParams;
-	pStr = *(tSystemString**)p++;
+	printf("%llx\n", p);
+	pStr = *(tSystemString**)p;
+	printf("%llx\n", pStr);
+	void * ppp = *p;
+	printf("%llx\n", ppp);
+
+
+	p++;
 	startIndex = *(U32*)p++;
 	length = *(U32*)p++;
 
 	pThis = CreateStringHeapObj(length);
 	memcpy(pThis->chars, &pStr->chars[startIndex], length << 1);
-	*(HEAP_PTR*)pReturnValue = (HEAP_PTR)pThis;
 
+	printf("start = %d\n", startIndex);
+	printf("len = %d\n", length);
+	unsigned char * pc = (unsigned char *)&pThis->chars;
+	for (int i = 0; i < length << 1; ++i)
+	{
+		unsigned char c = *pc++;
+		printf("c[%d] = %x\n", i, c);
+	}
+	*(HEAP_PTR*)pReturnValue = (HEAP_PTR)pThis;
+	printf("ptr returned = %llx\n", pThis);
+	printf("length = %x\n", pThis->length);
 	return NULL;
 }
 

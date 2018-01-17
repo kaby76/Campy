@@ -40,11 +40,11 @@ __device__ void Gfs_init()
 {
 	printf("Gfs_init in\n");
 	initial_size = 10;
-	names = (char**)malloc(initial_size * sizeof(char*));
+	names = (char**)Gmalloc(initial_size * sizeof(char*));
 	memset(names, 0, initial_size * sizeof(char*));
-	files = (char**)malloc(initial_size * sizeof(char*));
+	files = (char**)Gmalloc(initial_size * sizeof(char*));
 	memset(files, 0, initial_size * sizeof(char*));
-	lengths = (size_t*)malloc(initial_size * sizeof(size_t));
+	lengths = (size_t*)Gmalloc(initial_size * sizeof(size_t));
 	memset(lengths, 0, initial_size * sizeof(size_t));
 	init = 1;
 	printf("Gfs_init out\n");
@@ -68,7 +68,7 @@ __device__ void Gfs_add_file(char * name, char * file, size_t length, int * resu
 		{
 			printf("name slot null, adding\n");
 			*ptr_name = Gstrdup(name);
-			*ptr_file = (char *)malloc(length);
+			*ptr_file = (char *)Gmalloc(length);
 			memcpy(*ptr_file, file, length);
 			printf("copy\n");
 			*ptr_length = length;
@@ -103,9 +103,9 @@ __device__ void Gfs_remove_file(char * name, int * result)
 	{
 		if (*ptr_name != NULL && Gstrcmp(*ptr_name, name) == 0)
 		{
-			free(*ptr_name);
+			Gfree(*ptr_name);
 			*ptr_name = NULL;
-			free(*ptr_file);
+			Gfree(*ptr_file);
 			*ptr_file = NULL;
 			*ptr_length = 0;
 			*result = i;

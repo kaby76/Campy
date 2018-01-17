@@ -527,7 +527,7 @@ __device__ sizeret_t Gvasprintf(char **ptr, P_CONST char *format, va_list ap) {
 	ret = Gvsnprintf((char*)NULL, 0, format, ap);
 	if (ret + 1 <= 1) return ret; /* pts: bit of old unsigned trick... */
 
-	if (NULLP == (*ptr = (char *)malloc(ret + 1))) return (sizeret_t)-1;
+	if (NULLP == (*ptr = (char *)Gmalloc(ret + 1))) return (sizeret_t)-1;
 	ret = Gvsnprintf(*ptr, ret + 1, format, ap);
 
 	return ret;

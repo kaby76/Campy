@@ -805,7 +805,19 @@
 
                 if (t_type.FullName.Equals("System.String"))
                 {
-                    to = (System.String)null;
+                    // For now, assume data exists on GPU. Perform memcpy using CUDA.
+                    unsafe
+                    {
+                        int * block = stackalloc int[1];
+                        IntPtr intptr = new IntPtr(block);
+                        var res = Cuda.cuMemcpyDtoH_v2(intptr, from, sizeof(int));
+                        int len = *block;
+                        short * block2 = stackalloc short[len + 1];
+                        var intptr2 = new IntPtr(block2);
+                        Cuda.cuMemcpyDtoH_v2(intptr2, from + sizeof(int), (uint)len * sizeof(short));
+                        block2[len] = 0;
+                        to = new string((char*)intptr2);
+                    }
                     return;
                 }
 

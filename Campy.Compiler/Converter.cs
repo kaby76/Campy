@@ -1855,16 +1855,61 @@ namespace Campy.Compiler
             Utils.CudaHelpers.CheckCudaError(Cuda.cuCtxSetLimit(CUlimit.CU_LIMIT_STACK_SIZE, (uint)pvalue * 25));
             System.Console.WriteLine("Stack size " + pvalue);
 
-
             // Load code for BCL.
             //Runtime.LoadBclCode();
             Runtime.RuntimeModule = module;
 
-            // Set up a file system for GPU.
-            CUfunction _Z12Bcl_Gfs_initv = Runtime._Z12Bcl_Gfs_initv(module);
             Campy.Utils.CudaHelpers.MakeLinearTiling(1,
                 out Campy.Utils.CudaHelpers.dim3 tile_size,
                 out Campy.Utils.CudaHelpers.dim3 tiles);
+
+            // Set up malloc, required for everything else.
+            unsafe
+            {
+                Buffers buffers = new Buffers();
+                int the_size = 536870912;
+                IntPtr b = buffers.New(the_size);
+                int max_threads = 16;
+
+                // Set up parameters.
+                int count = 3;
+                IntPtr parm1;
+                IntPtr parm2;
+                IntPtr parm3;
+                IntPtr[] x1 = new IntPtr[] { b };
+                GCHandle handle1 = GCHandle.Alloc(x1, GCHandleType.Pinned);
+                parm1 = handle1.AddrOfPinnedObject();
+
+                IntPtr[] x2 = new IntPtr[] { new IntPtr(the_size) };
+                GCHandle handle2 = GCHandle.Alloc(x2, GCHandleType.Pinned);
+                parm2 = handle2.AddrOfPinnedObject();
+
+                IntPtr[] x3 = new IntPtr[] { new IntPtr(max_threads) };
+                GCHandle handle3 = GCHandle.Alloc(x3, GCHandleType.Pinned);
+                parm3 = handle3.AddrOfPinnedObject();
+
+                IntPtr[] kp = new IntPtr[] { parm1, parm2, parm3 };
+
+                CUfunction _Z15Initialize_BCL0Pvyi = Runtime._Z15Initialize_BCL0Pvyi(module);
+                fixed (IntPtr* kernelParams = kp)
+                {
+                    res = Cuda.cuLaunchKernel(
+                        _Z15Initialize_BCL0Pvyi,
+                        tiles.x, tiles.y, tiles.z, // grid has one block.
+                        tile_size.x, tile_size.y, tile_size.z, // n threads.
+                        0, // no shared memory
+                        default(CUstream),
+                        (IntPtr)kernelParams,
+                        (IntPtr)IntPtr.Zero
+                    );
+                }
+                Utils.CudaHelpers.CheckCudaError(res);
+                res = Cuda.cuCtxSynchronize(); // Make sure it's copied back to host.
+                Utils.CudaHelpers.CheckCudaError(res);
+            }
+
+            // Set up a file system for GPU.
+            CUfunction _Z12Bcl_Gfs_initv = Runtime._Z12Bcl_Gfs_initv(module);
             res = Cuda.cuLaunchKernel(
                 _Z12Bcl_Gfs_initv,
                 tiles.x, tiles.y, tiles.z, // grid has one block.

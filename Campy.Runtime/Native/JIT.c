@@ -61,8 +61,8 @@ struct tTypeStack_ {
 	U32 maxBytes; // The max size of the stack in bytes
 };
 
-#define InitOps(ops_, initialCapacity) ops_.capacity = initialCapacity; ops_.ofs = 0; ops_.p = malloc((initialCapacity) * sizeof(I32));
-#define DeleteOps(ops_) free(ops_.p)
+#define InitOps(ops_, initialCapacity) ops_.capacity = initialCapacity; ops_.ofs = 0; ops_.p = Gmalloc((initialCapacity) * sizeof(I32));
+#define DeleteOps(ops_) Gfree(ops_.p)
 
 // Turn this into a MACRO at some point?
 __device__ static U32 Translate(U32 op, U32 getDynamic) {
@@ -202,7 +202,7 @@ static U32 GenCombined(tOps *pOps, tOps *pIsDynamic, U32 startOfs, U32 count, U3
 	// Add length of GoNext code
 	memSize += goNextSize;
 
-	pCombined = malloc(memSize);
+	pCombined = Gmalloc(memSize);
 	*ppMem = pCombined;
 	combinedMemSize += memSize;
 	*pCombinedSize = memSize;
@@ -1582,17 +1582,17 @@ __device__ static U32* JITit(tMD_MethodDef *pMethodDef, U8 *pCIL, U32 codeSize, 
 //	// This is the largest number of bytes needed by all objects/value-types on the stack,
 //	pJITted->maxStack = typeStack.maxBytes;
 //
-//	free(typeStack.ppTypes);
+//	Gfree(typeStack.ppTypes);
 //
 //	for (i=0; i<codeSize; i++) {
 //		if (ppTypeStacks[i] != NULL) {
-//			free(ppTypeStacks[i]->ppTypes);
+//			Gfree(ppTypeStacks[i]->ppTypes);
 //		}
 //	}
-//	free(ppTypeStacks);
+//	Gfree(ppTypeStacks);
 //
 //	DeleteOps(branchOffsets);
-//	free(pJITOffsets);
+//	Gfree(pJITOffsets);
 //
 //	// Copy ops to some memory of exactly the correct size. To not waste memory.
 //	u32Value = ops.ofs * sizeof(U32);
@@ -1712,7 +1712,7 @@ __device__ void JIT_Prepare(tMD_MethodDef *pMethodDef, U32 genCombinedOpcodes) {
 			//pJITted->pExceptionHeaders = (tExceptionHeader*)(pMethodHeader + 4);
 			exSize = numClauses * sizeof(tExceptionHeader);
 			pJITted->pExceptionHeaders =
-				(tExceptionHeader*)(genCombinedOpcodes?malloc(exSize):mallocForever(exSize));
+				(tExceptionHeader*)(genCombinedOpcodes?Gmalloc(exSize):mallocForever(exSize));
 			memcpy(pJITted->pExceptionHeaders, pMethodHeader + 4, exSize);
 		} else {
 			// Thin header
@@ -1724,7 +1724,7 @@ __device__ void JIT_Prepare(tMD_MethodDef *pMethodDef, U32 genCombinedOpcodes) {
 			pMethodHeader += 4;
 			//pExHeaders = pJITted->pExceptionHeaders = (tExceptionHeader*)mallocForever(numClauses * sizeof(tExceptionHeader));
 			pExHeaders = pJITted->pExceptionHeaders =
-				(tExceptionHeader*)(genCombinedOpcodes?malloc(exSize):mallocForever(exSize));
+				(tExceptionHeader*)(genCombinedOpcodes?Gmalloc(exSize):mallocForever(exSize));
 			for (i=0; i<numClauses; i++) {
 				pExHeaders[i].flags = ((U16*)pMethodHeader)[0];
 				pExHeaders[i].tryStart = ((U16*)pMethodHeader)[1];
@@ -1762,7 +1762,7 @@ __device__ void JIT_Prepare(tMD_MethodDef *pMethodDef, U32 genCombinedOpcodes) {
 		sig = MetaData_GetBlob(pStandAloneSig->signature, &sigLength);
 		MetaData_DecodeSigEntry(&sig); // Always 0x07
 		numLocals = MetaData_DecodeSigEntry(&sig);
-		pLocals = (tParameter*)malloc(numLocals * sizeof(tParameter));
+		pLocals = (tParameter*)Gmalloc(numLocals * sizeof(tParameter));
 		totalSize = 0;
 		for (i=0; i<numLocals; i++) {
 			tMD_TypeDef *pTypeDef;
@@ -1780,5 +1780,5 @@ __device__ void JIT_Prepare(tMD_MethodDef *pMethodDef, U32 genCombinedOpcodes) {
 	// JIT the CIL code
 	pJITted->pOps = JITit(pMethodDef, pCIL, codeSize, pLocals, pJITted, genCombinedOpcodes);
 
-	free(pLocals);
+	Gfree(pLocals);
 }

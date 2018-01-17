@@ -98,7 +98,7 @@ __device__ static tMD_MethodDef* FindMethodInType(tMD_TypeDef *pTypeDef, STRING 
 		char *pMsg;
 		tMD_TypeDef *pParamTypeDef;
 
-		pMsg = (char*)malloc(2048);
+		pMsg = (char*)Gmalloc(2048);
 		*pMsg = 0;
 		sig = MetaData_GetBlob(sigBlob, &i);
 		entry = MetaData_DecodeSigEntry(&sig);

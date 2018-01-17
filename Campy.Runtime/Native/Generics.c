@@ -50,7 +50,7 @@ __device__ tMD_TypeDef* Generics_GetGenericTypeFromSig
 	MetaData_Fill_TypeDef(pCoreType, ppCallingClassTypeArgs, ppCallingMethodTypeArgs); //NULL, NULL);
 
 	numTypeArgs = MetaData_DecodeSigEntry(pSig);
-	ppTypeArgs = (tMD_TypeDef**)malloc(numTypeArgs * sizeof(tMD_TypeDef*));
+	ppTypeArgs = (tMD_TypeDef**)Gmalloc(numTypeArgs * sizeof(tMD_TypeDef*));
 	for (i=0; i<numTypeArgs; i++) {
 		ppTypeArgs[i] = Type_GetTypeFromSig(pMetaData, pSig, ppCallingClassTypeArgs, ppCallingMethodTypeArgs);
 		if (ppTypeArgs[i] != NULL) {
@@ -59,7 +59,7 @@ __device__ tMD_TypeDef* Generics_GetGenericTypeFromSig
 	}
 
 	pRet = Generics_GetGenericTypeFromCoreType(pCoreType, numTypeArgs, ppTypeArgs);
-	free(ppTypeArgs);
+	Gfree(ppTypeArgs);
 	return pRet;
 }
 
@@ -174,7 +174,7 @@ __device__ tMD_MethodDef* Generics_GetMethodDefFromSpec
 	sig = MetaData_GetBlob(pMethodSpec->instantiation, NULL);
 	MetaData_DecodeSigEntry(&sig); // always 0x0a
 	argCount = MetaData_DecodeSigEntry(&sig);
-	ppTypeArgs = (tMD_TypeDef**)malloc(argCount * sizeof(tMD_TypeDef*));
+	ppTypeArgs = (tMD_TypeDef**)Gmalloc(argCount * sizeof(tMD_TypeDef*));
 
 	for (i=0; i<argCount; i++) {
 		tMD_TypeDef *pArgType;
@@ -184,7 +184,7 @@ __device__ tMD_MethodDef* Generics_GetMethodDefFromSpec
 	}
 
 	pMethod = Generics_GetMethodDefFromCoreMethod(pCoreMethod, pCoreMethod->pParentType, argCount, ppTypeArgs);
-	free(ppTypeArgs);
+	Gfree(ppTypeArgs);
 
 	return pMethod;
 }

@@ -265,7 +265,7 @@ __device__ tAsyncCall* System_IO_FileInternal_GetFileSystemEntries(PTR pThis_, P
 //	retArray = SystemArray_NewVector(types[TYPE_SYSTEM_ARRAY_STRING], tempStoreOfs);
 //	arrayElements = SystemArray_GetElements(retArray);
 //	memcpy(arrayElements, pTempStore, tempStoreOfs * sizeof(void*));
-//	free(pTempStore);
+//	Gfree(pTempStore);
 //	*(HEAP_PTR*)pReturnValue = retArray;
 //	// Make the strings deletable again
 //	for (i=0; i<tempStoreOfs; i++) {

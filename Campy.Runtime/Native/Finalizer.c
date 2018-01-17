@@ -28,7 +28,7 @@ __device__ static int toFinalizeOfs, toFinalizeCapacity;
 
 __device__ void Finalizer_Init() {
 	toFinalizeCapacity = 4;
-	ppToFinalize = (HEAP_PTR*)malloc(toFinalizeCapacity * sizeof(void*));
+	ppToFinalize = (HEAP_PTR*)Gmalloc(toFinalizeCapacity * sizeof(void*));
 	toFinalizeOfs = 0;
 }
 

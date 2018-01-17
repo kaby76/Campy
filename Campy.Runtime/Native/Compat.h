@@ -101,7 +101,7 @@ __device__  void gpuexit(int _Code);
 
 __device__ size_t Gstrlen(
 	char const* _Str
-);
+	);
 
 __device__ int Gsprintf(
 	char*       const _Buffer,
@@ -111,10 +111,15 @@ __device__ int Gsprintf(
 __device__ void* __cdecl Grealloc(
 	void*  _Block,
 	size_t _Size
-);
+	);
+
 __device__ void* Gmalloc(
 	size_t _Size
-);
+	);
+
+__device__ void Gfree(
+	void*  _Block
+	);
 
 #endif
 

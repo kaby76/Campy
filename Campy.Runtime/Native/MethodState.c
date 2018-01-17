@@ -86,14 +86,14 @@ static void AddCall(tMD_MethodDef *pMethod) {
 static void DeleteCombinedJIT(tMD_MethodDef *pMethod) {
 	tCombinedOpcodesMem *pCOM;
 	tJITted *pJIT = pMethod->pJITtedCombined;
-	free(pJIT->pExceptionHeaders);
-	free(pJIT->pOps);
+	Gfree(pJIT->pExceptionHeaders);
+	Gfree(pJIT->pOps);
 	pCOM = pJIT->pCombinedOpcodesMem;
 	while (pCOM != NULL) {
 		tCombinedOpcodesMem *pT = pCOM;
-		free(pCOM->pMem);
+		Gfree(pCOM->pMem);
 		pCOM = pCOM->pNext;
-		free(pT);
+		Gfree(pT);
 	}
 }
 
@@ -229,7 +229,7 @@ void MethodState_Delete(tThread *pThread, tMethodState **ppMethodState) {
 	}
 
 	if (pThis->pDelegateParams != NULL) {
-		free(pThis->pDelegateParams);
+		Gfree(pThis->pDelegateParams);
 	}
 
 	// Note that the way the stack free funtion works means that only the 1st allocated chunk

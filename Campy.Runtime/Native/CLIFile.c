@@ -125,7 +125,7 @@ __device__ static void* LoadFileFromDisk(char *pFileName)
 	//	if (pData != NULL) {
 	//		int r = read(f, pData, len);
 	//		if (r != len) {
-	//			free(pData);
+	//			Gfree(pData);
 	//			pData = NULL;
 	//		}
 	//	}

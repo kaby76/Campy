@@ -9,6 +9,8 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
+#include <cuda.h>
+
 
 __device__  void gpuexit(int _Code) {}
 
@@ -22,35 +24,121 @@ __device__ size_t Gstrlen(
     return r;
 }
 
-//__device__ int  gpumemcmp(
-//	void const* _Buf1,
-//	void const* _Buf2,
-//	size_t      _Size
-//)
-//{
-//	unsigned char u1, u2;
-//	unsigned char * s1 = (unsigned char *)_Buf1;
-//	unsigned char * s2 = (unsigned char *)_Buf2;
-//	for (; _Size--; s1++, s1++) {
-//		u1 = *s1;
-//		u2 = *s2;
-//		if (u1 != u2) {
-//			return (u1 - u2);
-//		}
-//	}
-//	return 0;
-//}
 
-//__device__ void* __cdecl gpumemcpy(
-//	void* _Dst,
-//	void const* _Src,
-//	size_t      _Size
-//)
-//{
-//	return memcpy(_Dst, _Src, _Size);
-//}
+// No good way to do mutex.
+// https://devtalk.nvidia.com/default/topic/1014009/try-to-use-lock-and-unlock-in-cuda/?offset=1
+// For now, per-thread heaps.
+// Based on http://arjunsreedharan.org/post/148675821737/write-a-simple-memory-allocator
 
 
+__device__ void * global_memory_heap;
+
+struct header_t {
+	struct header_t *next;
+	struct header_t *prev;
+	size_t size;
+	unsigned is_free;
+};
+
+__device__ struct header_t* head;
+
+__global__
+void Initialize_BCL0(void * g, size_t size, int count)
+{
+	head = (struct header_t*)g;
+	int size_for_headers = sizeof(struct header_t) * count;
+	unsigned char * ptr = ((unsigned char *)head) + size_for_headers;
+	long long s = (long long) ptr;
+	long long e = s + size;
+	int overhead = 16777216;
+	int remainder = size - size_for_headers - overhead;
+	int per_thread_remainder = size / (count - 1);
+	per_thread_remainder = per_thread_remainder >> 3;
+	per_thread_remainder = per_thread_remainder << 3;
+	for (int c = 0; c < count; ++c)
+	{
+		struct header_t * start = &head[c];
+		struct header_t * h = (struct header_t*)ptr;
+		{
+			long long hs = (long long)h;
+			int diff = hs - s;
+			if (diff >= size)
+			{
+				printf("out of bounds\n");
+			}
+		}
+		int siz;
+		if (c == 0)
+			siz = overhead;
+		else
+			siz = per_thread_remainder;
+		start->is_free = 0;
+		start->next = h;
+		start->prev = NULL;
+		start->size = 0;
+		int alloc_siz = siz - sizeof(struct header_t);
+		h->next = NULL;
+		h->prev = start;
+		h->is_free = 1;
+		h->size = alloc_siz;
+		ptr += siz;
+	}
+	printf("done\n");
+}
+
+__device__ struct header_t *get_free_block(size_t size)
+{
+	int blockId = blockIdx.x + blockIdx.y * gridDim.x
+		+ gridDim.x * gridDim.y * blockIdx.z;
+	int threadId = blockId * (blockDim.x * blockDim.y * blockDim.z)
+		+ (threadIdx.z * (blockDim.x * blockDim.y))
+		+ (threadIdx.y * blockDim.x) + threadIdx.x;
+
+	struct header_t *curr = &head[threadId];
+	while (curr) {
+		if (curr->is_free && curr->size >= size)
+			return curr;
+		curr = curr->next;
+	}
+	return NULL;
+}
+
+__device__ int roundUp(int numToRound, int multiple)
+{
+	return ((numToRound + multiple - 1) / multiple) * multiple;
+}
+
+__device__ void * simple_malloc(size_t size)
+{
+	size_t total_size;
+	void *block;
+	struct header_t *header;
+	if (!size)
+		return NULL;
+	size = roundUp(size, 8);
+	header = get_free_block(size);
+	if (header)
+	{
+		printf("header = %llx\n", header);
+		// split block if big enough.
+		if (header->size > (size + sizeof(struct header_t)))
+		{
+			int original_size = header->size;
+			int skip = size + sizeof(struct header_t);
+			unsigned char * ptr = ((unsigned char *)header) + skip;
+			struct header_t * new_free = (struct header_t *)ptr;
+			new_free->is_free = 1;
+			new_free->size = original_size - skip;
+			new_free->prev = header->prev;
+			new_free->next = header->next;
+			if (new_free->prev != NULL) new_free->prev->next = new_free;
+			header->size = size;
+		}
+		header->is_free = 0;
+		return (void*)(header + 1);
+	}
+	return NULL;
+}
 
 
 __device__ void* __cdecl Grealloc(
@@ -58,9 +146,9 @@ __device__ void* __cdecl Grealloc(
 	size_t _Size
 )
 {
-	void * result = malloc(_Size);
+	void * result = simple_malloc(_Size);
 	memcpy(result, _Block, _Size);
-	free(_Block);
+	Gfree(_Block);
     return result;
 }
 
@@ -69,20 +157,15 @@ __device__ void* Gmalloc(
 	size_t _Size
 )
 {
-	void * result = malloc(_Size);
-    return result;
+	void * result = simple_malloc(_Size);
+	return result;
 }
 
-
-
-//__device__ void* Gmemset(
-//	void*  _Dst,
-//	int    _Val,
-//	size_t _Size
-//)
-//{
-//	return memset(_Dst, _Val, _Size);
-//}
+__device__ void Gfree(
+	void*  _Block
+	)
+{
+}
 
 
 __global__

@@ -1227,7 +1227,7 @@ __device__ static void* LoadSingleTable(tMetaData *pThis, tRVA *pRVA, int tableI
 	// Stuff fields described by pDef into appropriate table type. All types defined in MetaData.h
 
 	// Allocate memory for destination table
-	pRet = malloc(numRows * rowLen);
+	pRet = Gmalloc(numRows * rowLen);
 	pThis->tables.data[tableID] = pRet;
 	pDest = (char*) pRet;
 

@@ -112,7 +112,7 @@ __device__ fnPInvoke PInvoke_GetFunction(tMetaData *pMetaData, tMD_ImplMap *pImp
 __device__ static void* ConvertStringToANSI(HEAP_PTR pHeapEntry) {
 	U32 strLen, i;
 	STRING2 str = SystemString_GetString(pHeapEntry, &strLen);
-	unsigned char *pAnsi = (unsigned char*)malloc(strLen+1);
+	unsigned char *pAnsi = (unsigned char*)Gmalloc(strLen+1);
 	for (i=0; i<strLen; i++) {
 		pAnsi[i] = (unsigned char)str[i];
 	}
@@ -124,7 +124,7 @@ __device__ static void* ConvertStringToANSI(HEAP_PTR pHeapEntry) {
 __device__ static void* ConvertStringToUnicode(HEAP_PTR pHeapEntry) {
 	U32 strLen;
 	STRING2 str = SystemString_GetString(pHeapEntry, &strLen);
-	unsigned short *pUnicode = (unsigned short*)malloc((strLen+1) << 1);
+	unsigned short *pUnicode = (unsigned short*)Gmalloc((strLen+1) << 1);
 	memcpy(pUnicode, str, strLen << 1);
 	pUnicode[strLen] = 0;
 	return pUnicode;
@@ -263,7 +263,7 @@ __device__ U32 PInvoke_Call(tJITCallPInvoke *pCall, PTR pParams, PTR pReturnValu
 	}
 	
 	for (i=0; i<_tempMemOfs; i++) {
-		free(_pTempMem[i]);
+		Gfree(_pTempMem[i]);
 	}
 
 	if (pReturnType == NULL) {

@@ -39,7 +39,7 @@ tRVA_Item* RVA_Create(tRVA *pThis, void *pFile, void *pSectionHeader) {
 	memset(pRet, 0, sizeof(tRVA_Item));
 	pRet->baseAddress = *(unsigned int*)&((char*)pSectionHeader)[12];
 	pRet->size = *(unsigned int*)&((char*)pSectionHeader)[8];
-	pRet->pData = malloc(pRet->size);
+	pRet->pData = Gmalloc(pRet->size);
 	memset(pRet->pData, 0, pRet->size);
 	pRet->pNext = pThis->pFirstRVA;
 	pThis->pFirstRVA = pRet;
