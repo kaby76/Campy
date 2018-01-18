@@ -40,11 +40,11 @@ struct tCLIFile_ {
 };
 
 // static methods
-__device__ tMetaData* CLIFile_GetMetaDataForAssembly(char *pAssemblyName);
-__device__ void CLIFile_GetHeapRoots(tHeapRoots *pHeapRoots);
+function_space_specifier tMetaData* CLIFile_GetMetaDataForAssembly(char *pAssemblyName);
+function_space_specifier void CLIFile_GetHeapRoots(tHeapRoots *pHeapRoots);
 
 // instance methods
-__device__ tCLIFile* CLIFile_Load(char *pFileName);
-__device__ I32 CLIFile_Execute(tCLIFile *pThis, int argc, char **argp);
+function_space_specifier tCLIFile* CLIFile_Load(char *pFileName);
+function_space_specifier I32 CLIFile_Execute(tCLIFile *pThis, int argc, char **argp);
 
 #endif

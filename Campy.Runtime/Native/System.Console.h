@@ -23,8 +23,8 @@
 
 #include "Types.h"
 
-__device__ tAsyncCall* System_Console_Write(PTR pThis_, PTR pParams, PTR pReturnValue);
-__device__ tAsyncCall* System_Console_Internal_ReadKey(PTR pThis_, PTR pParams, PTR pReturnValue);
-__device__ tAsyncCall* System_Console_Internal_KeyAvailable(PTR pThis_, PTR pParams, PTR pReturnValue);
+function_space_specifier tAsyncCall* System_Console_Write(PTR pThis_, PTR pParams, PTR pReturnValue);
+function_space_specifier tAsyncCall* System_Console_Internal_ReadKey(PTR pThis_, PTR pParams, PTR pReturnValue);
+function_space_specifier tAsyncCall* System_Console_Internal_KeyAvailable(PTR pThis_, PTR pParams, PTR pReturnValue);
 
 #endif

@@ -24,10 +24,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-__device__ void Gfs_init();
-__device__ void Gfs_add_file(char * name, char * file, size_t length, int * result);
-__device__ void Gfs_remove_file(char * name, int * result);
-__device__ void Gfs_open_file(char * name, int * result);
-__device__ void Gfs_close_file(int file, int * result);
-__device__ void Gfs_read(int file, char ** result);
-__device__ void Gfs_length(int file, size_t * result);
+function_space_specifier void Gfs_init();
+function_space_specifier void Gfs_add_file(char * name, char * file, size_t length, int * result);
+function_space_specifier void Gfs_remove_file(char * name, int * result);
+function_space_specifier void Gfs_open_file(char * name, int * result);
+function_space_specifier void Gfs_close_file(int file, int * result);
+function_space_specifier void Gfs_read(int file, char ** result);
+function_space_specifier void Gfs_length(int file, size_t * result);

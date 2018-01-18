@@ -28,14 +28,14 @@
 #include "Delegate.h"
 #include "Thread.h"
 
-__device__ tAsyncCall* System_Threading_Thread_ctor(PTR pThis_, PTR pParams, PTR pReturnValue) {
+function_space_specifier tAsyncCall* System_Threading_Thread_ctor(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tThread *pThread = Thread();
 	pThread->startDelegate = ((PTR*)pParams)[0];
 	*(HEAP_PTR*)pReturnValue = (HEAP_PTR)pThread;
 	return NULL;
 }
 
-__device__ tAsyncCall* System_Threading_Thread_ctorParam(PTR pThis_, PTR pParams, PTR pReturnValue) {
+function_space_specifier tAsyncCall* System_Threading_Thread_ctorParam(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tThread *pThread = Thread();
 	pThread->startDelegate = ((PTR*)pParams)[0];
 	*(HEAP_PTR*)pReturnValue = (HEAP_PTR)pThread;
@@ -43,7 +43,7 @@ __device__ tAsyncCall* System_Threading_Thread_ctorParam(PTR pThis_, PTR pParams
 	return NULL;
 }
 
-__device__ tAsyncCall* System_Threading_Thread_Start(PTR pThis_, PTR pParams, PTR pReturnValue) {
+function_space_specifier tAsyncCall* System_Threading_Thread_Start(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tThread *pThread = (tThread*)pThis_;
 	tMD_MethodDef *pStartMethod;
 	HEAP_PTR pStartObj;
@@ -71,7 +71,7 @@ __device__ tAsyncCall* System_Threading_Thread_Start(PTR pThis_, PTR pParams, PT
 	return NULL;
 }
 
-__device__ tAsyncCall* System_Threading_Thread_Sleep(PTR pThis_, PTR pParams, PTR pReturnValue) {
+function_space_specifier tAsyncCall* System_Threading_Thread_Sleep(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tAsyncCall *pAsync = TMALLOC(tAsyncCall);
 	memset(pAsync, 0, sizeof(tAsyncCall));
 
@@ -80,7 +80,7 @@ __device__ tAsyncCall* System_Threading_Thread_Sleep(PTR pThis_, PTR pParams, PT
 	return pAsync;
 }
 
-__device__ tAsyncCall* System_Threading_Thread_get_CurrentThread(PTR pThis_, PTR pParams, PTR pReturnValue) {
+function_space_specifier tAsyncCall* System_Threading_Thread_get_CurrentThread(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tThread *pThread = Thread_GetCurrent();
 	*(HEAP_PTR*)pReturnValue = (HEAP_PTR)pThread;
 

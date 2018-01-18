@@ -23,7 +23,9 @@
 
 #if defined(CUDA)
 #include <cuda.h>
+#define function_space_specifier __device__
 #else
+#define function_space_specifier __device__
 #define __device__
 #define __global__
 #endif
@@ -97,27 +99,27 @@
 #define TMALLOCFOREVER(t) (t*)mallocForever(sizeof(t))
 
 
-__device__  void gpuexit(int _Code);
+function_space_specifier  void gpuexit(int _Code);
 
-__device__ size_t Gstrlen(
+function_space_specifier size_t Gstrlen(
 	char const* _Str
 	);
 
-__device__ int Gsprintf(
+function_space_specifier int Gsprintf(
 	char*       const _Buffer,
 	char const* const _Format,
 	...);
 
-__device__ void* __cdecl Grealloc(
+function_space_specifier void* __cdecl Grealloc(
 	void*  _Block,
 	size_t _Size
 	);
 
-__device__ void* Gmalloc(
+function_space_specifier void* Gmalloc(
 	size_t _Size
 	);
 
-__device__ void Gfree(
+function_space_specifier void Gfree(
 	void*  _Block
 	);
 

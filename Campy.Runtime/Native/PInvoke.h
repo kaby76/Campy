@@ -26,7 +26,7 @@
 
 typedef void* fnPInvoke;
 
-__device__ fnPInvoke PInvoke_GetFunction(tMetaData *pMetaData, tMD_ImplMap *pImplMap);
-__device__ U32 PInvoke_Call(tJITCallPInvoke *pCall, PTR pParams, PTR pReturnValue);
+function_space_specifier fnPInvoke PInvoke_GetFunction(tMetaData *pMetaData, tMD_ImplMap *pImplMap);
+function_space_specifier U32 PInvoke_Call(tJITCallPInvoke *pCall, PTR pParams, PTR pReturnValue);
 
 #endif

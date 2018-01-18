@@ -37,7 +37,7 @@ struct tSystemArray_ {
 };
 
 // Must return a boxed version of value-types
-__device__ tAsyncCall* System_Array_Internal_GetValue(PTR pThis_, PTR pParams, PTR pReturnValue) {
+function_space_specifier tAsyncCall* System_Array_Internal_GetValue(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tSystemArray *pArray = (tSystemArray*)pThis_;
 	tMD_TypeDef *pArrayType;
 	U32 index, elementSize;
@@ -77,7 +77,7 @@ __device__ tAsyncCall* System_Array_Internal_GetValue(PTR pThis_, PTR pParams, P
 }
 
 // Value-types will be boxed
-__device__ tAsyncCall* System_Array_Internal_SetValue(PTR pThis_, PTR pParams, PTR pReturnValue) {
+function_space_specifier tAsyncCall* System_Array_Internal_SetValue(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tSystemArray *pArray = (tSystemArray*)pThis_;
 	tMD_TypeDef *pArrayType, *pObjType;
 	U32 index, elementSize;
@@ -132,7 +132,7 @@ __device__ tAsyncCall* System_Array_Internal_SetValue(PTR pThis_, PTR pParams, P
 	return NULL;
 }
 
-__device__ tAsyncCall* System_Array_Clear(PTR pThis_, PTR pParams, PTR pReturnValue) {
+function_space_specifier tAsyncCall* System_Array_Clear(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tSystemArray *pArray;
 	U32 index, length, elementSize;
 	tMD_TypeDef *pArrayType;
@@ -147,7 +147,7 @@ __device__ tAsyncCall* System_Array_Clear(PTR pThis_, PTR pParams, PTR pReturnVa
 	return NULL;
 }
 
-__device__ tAsyncCall* System_Array_Internal_Copy(PTR pThis_, PTR pParams, PTR pReturnValue) {
+function_space_specifier tAsyncCall* System_Array_Internal_Copy(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tSystemArray *pSrc, *pDst;
 	tMD_TypeDef *pSrcType, *pDstType, *pSrcElementType;
 
@@ -187,7 +187,7 @@ __device__ tAsyncCall* System_Array_Internal_Copy(PTR pThis_, PTR pParams, PTR p
 	return NULL;
 }
 
-__device__ tAsyncCall* System_Array_Resize(PTR pThis_, PTR pParams, PTR pReturnValue) {
+function_space_specifier tAsyncCall* System_Array_Resize(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	HEAP_PTR* ppArray_, pHeap;
 	tSystemArray *pOldArray, *pNewArray;
 	U32 newSize, oldSize;
@@ -214,7 +214,7 @@ __device__ tAsyncCall* System_Array_Resize(PTR pThis_, PTR pParams, PTR pReturnV
 	return NULL;
 }
 
-__device__ tAsyncCall* System_Array_Reverse(PTR pThis_, PTR pParams, PTR pReturnValue) {
+function_space_specifier tAsyncCall* System_Array_Reverse(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tSystemArray *pArray;
 	U32 index, length, elementSize, i, dec;
 	tMD_TypeDef *pArrayType;
@@ -243,7 +243,7 @@ __device__ tAsyncCall* System_Array_Reverse(PTR pThis_, PTR pParams, PTR pReturn
 	return NULL;
 }
 
-__device__ HEAP_PTR SystemArray_NewVector(tMD_TypeDef *pArrayTypeDef, U32 length) {
+function_space_specifier HEAP_PTR SystemArray_NewVector(tMD_TypeDef *pArrayTypeDef, U32 length) {
 	U32 heapSize;
 	tSystemArray *pArray;
 
@@ -253,7 +253,7 @@ __device__ HEAP_PTR SystemArray_NewVector(tMD_TypeDef *pArrayTypeDef, U32 length
 	return (HEAP_PTR)pArray;
 }
 
-__device__ void SystemArray_StoreElement(HEAP_PTR pThis_, U32 index, PTR value) {
+function_space_specifier void SystemArray_StoreElement(HEAP_PTR pThis_, U32 index, PTR value) {
 	tSystemArray *pArray = (tSystemArray*)pThis_;
 	tMD_TypeDef *pArrayTypeDef;
 	U32 elemSize;
@@ -284,7 +284,7 @@ __device__ void SystemArray_StoreElement(HEAP_PTR pThis_, U32 index, PTR value) 
 	}
 }
 
-__device__ void SystemArray_LoadElement(HEAP_PTR pThis_, U32 index, PTR value) {
+function_space_specifier void SystemArray_LoadElement(HEAP_PTR pThis_, U32 index, PTR value) {
 	tSystemArray *pArray = (tSystemArray*)pThis_;
 	tMD_TypeDef *pArrayTypeDef;
 	U32 elemSize;
@@ -307,7 +307,7 @@ __device__ void SystemArray_LoadElement(HEAP_PTR pThis_, U32 index, PTR value) {
 	}
 }
 
-__device__ PTR SystemArray_LoadElementAddress(HEAP_PTR pThis_, U32 index) {
+function_space_specifier PTR SystemArray_LoadElementAddress(HEAP_PTR pThis_, U32 index) {
 	tSystemArray *pArray = (tSystemArray*)pThis_;
 	tMD_TypeDef *pArrayTypeDef;
 
@@ -322,6 +322,6 @@ __device__ PTR SystemArray_LoadElementAddress(HEAP_PTR pThis_, U32 index) {
 	return pArray->elements + pArrayTypeDef->pArrayElementType->arrayElementSize * index;
 }
 
-__device__ U32 SystemArray_GetNumBytes(HEAP_PTR pThis_, tMD_TypeDef *pElementType) {
+function_space_specifier U32 SystemArray_GetNumBytes(HEAP_PTR pThis_, tMD_TypeDef *pElementType) {
 	return (((tSystemArray*)pThis_)->length * pElementType->arrayElementSize) + sizeof(tSystemArray);
 }

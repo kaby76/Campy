@@ -85,29 +85,22 @@ struct tHeapEntry_ {
 #define GET_HEAPENTRY(heapObj) ((tHeapEntry*)(heapObj - sizeof(tHeapEntry)))
 
 // Forward ref
-__device__
-static void RemoveWeakRefTarget(tHeapEntry *pHeapEntry, U32 removeLongRefs);
+function_space_specifier static void RemoveWeakRefTarget(tHeapEntry *pHeapEntry, U32 removeLongRefs);
 
-__device__
-static tHeapEntry *pHeapTreeRoot;
+function_space_specifier static tHeapEntry *pHeapTreeRoot;
 
-__device__
-static tHeapEntry *nil;
+function_space_specifier static tHeapEntry *nil;
 
 #define MAX_TREE_DEPTH 40
 
 // The total heap memory currently allocated
-__device__
-static U32 trackHeapSize;
+function_space_specifier static U32 trackHeapSize;
 // The max heap size allowed before a garbage collection is triggered
-__device__
-static U32 heapSizeMax;
+function_space_specifier static U32 heapSizeMax;
 // The number of allocated memory nodes
-__device__
-static U32 numNodes = 0;
+function_space_specifier static U32 numNodes = 0;
 // The number of collections done
-__device__
-static U32 numCollections = 0;
+function_space_specifier static U32 numCollections = 0;
 
 #ifdef DIAG_GC
 // Track how much time GC's are taking
@@ -117,7 +110,7 @@ U64 gcTotalTime = 0;
 #define MIN_HEAP_SIZE 50000
 #define MAX_HEAP_EXCESS 200000
 
-__device__ void Heap_Init() {
+function_space_specifier void Heap_Init() {
 	// Initialise vars
 	trackHeapSize = 0;
 	heapSizeMax = MIN_HEAP_SIZE;
@@ -133,7 +126,7 @@ __device__ void Heap_Init() {
 // This works by returning the size of the type, unless the type is an array or a string,
 // which are the only two types that can have variable sizes
 
-static __device__ U32 GetSize(tHeapEntry *pHeapEntry) {
+static function_space_specifier U32 GetSize(tHeapEntry *pHeapEntry) {
 	tMD_TypeDef *pType = pHeapEntry->pTypeDef;
 	if (pType == types[TYPE_SYSTEM_STRING]) {
 		// If it's a string, return the string length in bytes
@@ -147,8 +140,7 @@ static __device__ U32 GetSize(tHeapEntry *pHeapEntry) {
 	return pType->instanceMemSize;
 }
 
-__device__
-static tHeapEntry* TreeSkew(tHeapEntry *pRoot) {
+function_space_specifier static tHeapEntry* TreeSkew(tHeapEntry *pRoot) {
 	if (pRoot->pLink[0]->level == pRoot->level && pRoot->level != 0) {
 		tHeapEntry *pSave = pRoot->pLink[0];
 		pRoot->pLink[0] = pSave->pLink[1];
@@ -158,8 +150,7 @@ static tHeapEntry* TreeSkew(tHeapEntry *pRoot) {
 	return pRoot;
 }
 
-__device__
-static tHeapEntry* TreeSplit(tHeapEntry *pRoot) {
+function_space_specifier static tHeapEntry* TreeSplit(tHeapEntry *pRoot) {
 	if (pRoot->pLink[1]->pLink[1]->level == pRoot->level && pRoot->level != 0) {
 		tHeapEntry *pSave = pRoot->pLink[1];
 		pRoot->pLink[1] = pSave->pLink[0];
@@ -170,7 +161,7 @@ static tHeapEntry* TreeSplit(tHeapEntry *pRoot) {
 	return pRoot;
 }
 
-__device__ static tHeapEntry* TreeInsert(tHeapEntry *pRoot, tHeapEntry *pEntry) {
+function_space_specifier static tHeapEntry* TreeInsert(tHeapEntry *pRoot, tHeapEntry *pEntry) {
 	if (pRoot == nil) {
 		pRoot = pEntry;
 		pRoot->level = 1;
@@ -211,7 +202,7 @@ __device__ static tHeapEntry* TreeInsert(tHeapEntry *pRoot, tHeapEntry *pEntry) 
 	return pRoot;
 }
 
-__device__ static tHeapEntry* TreeRemove(tHeapEntry *pRoot, tHeapEntry *pDelete) {
+function_space_specifier static tHeapEntry* TreeRemove(tHeapEntry *pRoot, tHeapEntry *pDelete) {
 	if (pRoot != nil) {
 		if (pRoot == pDelete) {
 			if (pRoot->pLink[0] != nil && pRoot->pLink[1] != nil) {
@@ -262,7 +253,7 @@ __device__ static tHeapEntry* TreeRemove(tHeapEntry *pRoot, tHeapEntry *pDelete)
 	return pRoot;
 }
 
-__device__ static void GarbageCollect() {
+function_space_specifier static void GarbageCollect() {
 	tHeapRoots heapRoots;
 	tHeapEntry *pNode;
 	tHeapEntry *pUp[MAX_TREE_DEPTH * 2];
@@ -428,23 +419,23 @@ __device__ static void GarbageCollect() {
 #endif
 }
 
-__device__ void Heap_UnmarkFinalizer(HEAP_PTR heapPtr) {
+function_space_specifier void Heap_UnmarkFinalizer(HEAP_PTR heapPtr) {
 	((tHeapEntry*)(heapPtr - sizeof(tHeapEntry)))->needToFinalize = 0;
 }
 
-__device__ void Heap_GarbageCollect() {
+function_space_specifier void Heap_GarbageCollect() {
 	GarbageCollect();
 }
 
-__device__ U32 Heap_NumCollections() {
+function_space_specifier U32 Heap_NumCollections() {
 	return numCollections;
 }
 
-__device__ U32 Heap_GetTotalMemory() {
+function_space_specifier U32 Heap_GetTotalMemory() {
 	return trackHeapSize;
 }
 
-__device__ void Heap_SetRoots(tHeapRoots *pHeapRoots, void *pRoots, U32 sizeInBytes) {
+function_space_specifier void Heap_SetRoots(tHeapRoots *pHeapRoots, void *pRoots, U32 sizeInBytes) {
 	tHeapRootEntry *pRootEntry;
 
 	Assert((sizeInBytes & 0x3) == 0);
@@ -457,8 +448,7 @@ __device__ void Heap_SetRoots(tHeapRoots *pHeapRoots, void *pRoots, U32 sizeInBy
 	pRootEntry->pMem = (void **)pRoots;
 }
 
-__device__
-HEAP_PTR Heap_Alloc(tMD_TypeDef *pTypeDef, U32 size) {
+function_space_specifier HEAP_PTR Heap_Alloc(tMD_TypeDef *pTypeDef, U32 size) {
 	tHeapEntry *pHeapEntry;
 	U32 totalSize;
 
@@ -491,27 +481,27 @@ HEAP_PTR Heap_Alloc(tMD_TypeDef *pTypeDef, U32 size) {
 	return pHeapEntry->memory;
 }
 
-__device__ HEAP_PTR Heap_AllocType(tMD_TypeDef *pTypeDef) {
+function_space_specifier HEAP_PTR Heap_AllocType(tMD_TypeDef *pTypeDef) {
 	//printf("Heap_AllocType('%s')\n", pTypeDef->name);
 	return Heap_Alloc(pTypeDef, pTypeDef->instanceMemSize);
 }
 
-__device__ tMD_TypeDef* Heap_GetType(HEAP_PTR heapEntry) {
+function_space_specifier tMD_TypeDef* Heap_GetType(HEAP_PTR heapEntry) {
 	tHeapEntry *pHeapEntry = GET_HEAPENTRY(heapEntry);
 	return pHeapEntry->pTypeDef;
 }
 
-__device__ void Heap_MakeUndeletable(HEAP_PTR heapEntry) {
+function_space_specifier void Heap_MakeUndeletable(HEAP_PTR heapEntry) {
 	tHeapEntry *pHeapEntry = GET_HEAPENTRY(heapEntry);
 	pHeapEntry->marked = 0xff;
 }
 
-__device__ void Heap_MakeDeletable(HEAP_PTR heapEntry) {
+function_space_specifier void Heap_MakeDeletable(HEAP_PTR heapEntry) {
 	tHeapEntry *pHeapEntry = GET_HEAPENTRY(heapEntry);
 	pHeapEntry->marked = 0;
 }
 
-__device__ HEAP_PTR Heap_Box(tMD_TypeDef *pType, PTR pMem) {
+function_space_specifier HEAP_PTR Heap_Box(tMD_TypeDef *pType, PTR pMem) {
 	HEAP_PTR boxed;
 
 	boxed = Heap_AllocType(pType);
@@ -520,7 +510,7 @@ __device__ HEAP_PTR Heap_Box(tMD_TypeDef *pType, PTR pMem) {
 	return boxed;
 }
 
-__device__ HEAP_PTR Heap_Clone(HEAP_PTR obj) {
+function_space_specifier HEAP_PTR Heap_Clone(HEAP_PTR obj) {
 	tHeapEntry *pObj = GET_HEAPENTRY(obj);
 	HEAP_PTR clone;
 	U32 size = GetSize(pObj);
@@ -531,7 +521,7 @@ __device__ HEAP_PTR Heap_Clone(HEAP_PTR obj) {
 	return clone;
 }
 
-__device__ static tSync* EnsureSync(tHeapEntry *pHeapEntry) {
+function_space_specifier static tSync* EnsureSync(tHeapEntry *pHeapEntry) {
 	if (pHeapEntry->pSync == NULL) {
 		tSync *pSync = TMALLOC(tSync);
 		memset(pSync, 0, sizeof(tSync));
@@ -540,7 +530,7 @@ __device__ static tSync* EnsureSync(tHeapEntry *pHeapEntry) {
 	return pHeapEntry->pSync;
 }
 
-__device__ static void DeleteSync(tHeapEntry *pHeapEntry) {
+function_space_specifier static void DeleteSync(tHeapEntry *pHeapEntry) {
 	if (pHeapEntry->pSync != NULL) {
 		if (pHeapEntry->pSync->count == 0 && pHeapEntry->pSync->weakRef == NULL) {
 			Gfree(pHeapEntry->pSync);
@@ -551,7 +541,7 @@ __device__ static void DeleteSync(tHeapEntry *pHeapEntry) {
 
 // Return 1 if lock succesfully got
 // Return 0 if couldn't get the lock this time
-__device__ U32 Heap_SyncTryEnter(HEAP_PTR obj) {
+function_space_specifier U32 Heap_SyncTryEnter(HEAP_PTR obj) {
 	tHeapEntry *pHeapEntry = GET_HEAPENTRY(obj);
 	tThread *pThread = Thread_GetCurrent();
 	tSync *pSync;
@@ -571,7 +561,7 @@ __device__ U32 Heap_SyncTryEnter(HEAP_PTR obj) {
 
 // Returns 1 if all is OK
 // Returns 0 if the wrong thread is releasing the sync, or if no thread hold the sync
-__device__ U32 Heap_SyncExit(HEAP_PTR obj) {
+function_space_specifier U32 Heap_SyncExit(HEAP_PTR obj) {
 	tHeapEntry *pHeapEntry = GET_HEAPENTRY(obj);
 	tThread *pThread = Thread_GetCurrent();
 	if (pHeapEntry->pSync == NULL) {
@@ -586,12 +576,12 @@ __device__ U32 Heap_SyncExit(HEAP_PTR obj) {
 	return 1;
 }
 
-__device__ static void RemoveWeakRefTarget(tHeapEntry *pTarget, U32 removeLongRefs) {
+function_space_specifier static void RemoveWeakRefTarget(tHeapEntry *pTarget, U32 removeLongRefs) {
 	SystemWeakReference_TargetGone(&pTarget->pSync->weakRef, removeLongRefs);
 }
 
 // Returns the previous first weak-ref in target targetted by weakref
-__device__ HEAP_PTR Heap_SetWeakRefTarget(HEAP_PTR target, HEAP_PTR weakRef) {
+function_space_specifier HEAP_PTR Heap_SetWeakRefTarget(HEAP_PTR target, HEAP_PTR weakRef) {
 	tHeapEntry *pTarget = GET_HEAPENTRY(target);
 	tSync *pSync;
 	HEAP_PTR prevWeakRef;
@@ -602,12 +592,12 @@ __device__ HEAP_PTR Heap_SetWeakRefTarget(HEAP_PTR target, HEAP_PTR weakRef) {
 	return prevWeakRef;
 }
 
-__device__ HEAP_PTR* Heap_GetWeakRefAddress(HEAP_PTR target) {
+function_space_specifier HEAP_PTR* Heap_GetWeakRefAddress(HEAP_PTR target) {
 	tHeapEntry *pTarget = GET_HEAPENTRY(target);
 	return &pTarget->pSync->weakRef;
 }
 
-__device__ void Heap_RemovedWeakRefTarget(HEAP_PTR target) {
+function_space_specifier void Heap_RemovedWeakRefTarget(HEAP_PTR target) {
 	tHeapEntry *pTarget = GET_HEAPENTRY(target);
 	DeleteSync(pTarget);
 }

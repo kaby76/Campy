@@ -31,7 +31,7 @@
 #include "System.Char.CaseConversion.h"
 
 #define UC_INDEX_LEN (sizeof(UC_Index) / 4)
-__device__ tAsyncCall* System_Char_GetUnicodeCategory(PTR pThis_, PTR pParams, PTR pReturnValue) {
+function_space_specifier tAsyncCall* System_Char_GetUnicodeCategory(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	U32 paramCodePoint = ((U32*)pParams)[0];
 	// Do a binary search on the UC_Index array
 	U32 curOfs = UC_INDEX_LEN / 2;
@@ -67,7 +67,7 @@ __device__ tAsyncCall* System_Char_GetUnicodeCategory(PTR pThis_, PTR pParams, P
 }
 
 // Return -1 if not found
-__device__ static I32 SearchCaseArray(unsigned short *pCaseArray, unsigned short find) {
+function_space_specifier static I32 SearchCaseArray(unsigned short *pCaseArray, unsigned short find) {
 	U32 lower = 0;
 	U32 upper = sizeof(UC_CaseUpper) / 2;
 	U32 curOfs = sizeof(UC_CaseUpper) / 4;
@@ -99,7 +99,7 @@ __device__ static I32 SearchCaseArray(unsigned short *pCaseArray, unsigned short
 	}
 }
 
-__device__ tAsyncCall* System_Char_ToLowerInvariant(PTR pThis_, PTR pParams, PTR pReturnValue) {
+function_space_specifier tAsyncCall* System_Char_ToLowerInvariant(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	U32 paramCodePoint = ((U32*)pParams)[0];
 	I32 pos;
 
@@ -109,7 +109,7 @@ __device__ tAsyncCall* System_Char_ToLowerInvariant(PTR pThis_, PTR pParams, PTR
 	return NULL;
 }
 
-__device__ tAsyncCall* System_Char_ToUpperInvariant(PTR pThis_, PTR pParams, PTR pReturnValue) {
+function_space_specifier tAsyncCall* System_Char_ToUpperInvariant(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	U32 paramCodePoint = ((U32*)pParams)[0];
 	I32 pos;
 

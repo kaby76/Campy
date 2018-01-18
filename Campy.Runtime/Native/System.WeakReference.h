@@ -24,9 +24,9 @@
 #include "MetaData.h"
 #include "Types.h"
 
-__device__ tAsyncCall* System_WeakReference_get_Target(PTR pThis_, PTR pParams, PTR pReturnValue);
-__device__ tAsyncCall* System_WeakReference_set_Target(PTR pThis_, PTR pParams, PTR pReturnValue);
+function_space_specifier tAsyncCall* System_WeakReference_get_Target(PTR pThis_, PTR pParams, PTR pReturnValue);
+function_space_specifier tAsyncCall* System_WeakReference_set_Target(PTR pThis_, PTR pParams, PTR pReturnValue);
 
-__device__ void SystemWeakReference_TargetGone(HEAP_PTR *ppWeakRef_, U32 removeLongRefs);
+function_space_specifier void SystemWeakReference_TargetGone(HEAP_PTR *ppWeakRef_, U32 removeLongRefs);
 
 #endif

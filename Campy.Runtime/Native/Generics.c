@@ -29,7 +29,7 @@
 #include "EvalStack.h"
 #include "Gstring.h"
 
-__device__ void Generic_GetHeapRoots(tHeapRoots *pHeapRoots, tMD_TypeDef *pTypeDef) {
+function_space_specifier void Generic_GetHeapRoots(tHeapRoots *pHeapRoots, tMD_TypeDef *pTypeDef) {
 	tGenericInstance *pInst = pTypeDef->pGenericInstances;
 	while (pInst != NULL) {
 		tMD_TypeDef *pTypeDef = pInst->pInstanceTypeDef;
@@ -40,7 +40,7 @@ __device__ void Generic_GetHeapRoots(tHeapRoots *pHeapRoots, tMD_TypeDef *pTypeD
 	}
 }
 
-__device__ tMD_TypeDef* Generics_GetGenericTypeFromSig
+function_space_specifier tMD_TypeDef* Generics_GetGenericTypeFromSig
 	(tMetaData *pMetaData, SIG *pSig, tMD_TypeDef **ppCallingClassTypeArgs, tMD_TypeDef **ppCallingMethodTypeArgs) {
 	tMD_TypeDef *pCoreType, *pRet;
 	U32 numTypeArgs, i;
@@ -65,7 +65,7 @@ __device__ tMD_TypeDef* Generics_GetGenericTypeFromSig
 
 // TODO: This is not the most efficient way of doing this, as it has to search through all the
 // entries in the GenericParams table for all lookups. This can be improved.
-__device__ static tMD_GenericParam* FindGenericParam(tMD_TypeDef *pCoreType, U32 typeArgIndex) {
+function_space_specifier static tMD_GenericParam* FindGenericParam(tMD_TypeDef *pCoreType, U32 typeArgIndex) {
 	tMD_GenericParam *pGenericParam;
 	U32 i;
 
@@ -79,7 +79,7 @@ __device__ static tMD_GenericParam* FindGenericParam(tMD_TypeDef *pCoreType, U32
 	return NULL;
 }
 
-__device__ tMD_TypeDef* Generics_GetGenericTypeFromCoreType(tMD_TypeDef *pCoreType, U32 numTypeArgs, tMD_TypeDef **ppTypeArgs) {
+function_space_specifier tMD_TypeDef* Generics_GetGenericTypeFromCoreType(tMD_TypeDef *pCoreType, U32 numTypeArgs, tMD_TypeDef **ppTypeArgs) {
 	tGenericInstance *pInst;
 	tMD_TypeDef *pTypeDef;
 	U32 i;
@@ -160,7 +160,7 @@ __device__ tMD_TypeDef* Generics_GetGenericTypeFromCoreType(tMD_TypeDef *pCoreTy
 	return pTypeDef;
 }
 
-__device__ tMD_MethodDef* Generics_GetMethodDefFromSpec
+function_space_specifier tMD_MethodDef* Generics_GetMethodDefFromSpec
 	(tMD_MethodSpec *pMethodSpec, tMD_TypeDef **ppCallingClassTypeArgs, tMD_TypeDef **ppCallingMethodTypeArgs) {
 
 	tMD_MethodDef *pCoreMethod, *pMethod;
@@ -189,7 +189,7 @@ __device__ tMD_MethodDef* Generics_GetMethodDefFromSpec
 	return pMethod;
 }
 
-__device__ tMD_MethodDef* Generics_GetMethodDefFromCoreMethod
+function_space_specifier tMD_MethodDef* Generics_GetMethodDefFromCoreMethod
 	(tMD_MethodDef *pCoreMethod, tMD_TypeDef *pParentType, U32 numTypeArgs, tMD_TypeDef **ppTypeArgs) {
 
 	tGenericMethodInstance *pInst;

@@ -21,6 +21,6 @@
 #ifndef __SYSTEM_NET_DNS
 #define __SYSTEM_NET_DNS
 
-__device__ tAsyncCall* System_Net_Dns_Internal_GetHostEnt(PTR pThis_, PTR pParams, PTR pReturnValue);
+function_space_specifier tAsyncCall* System_Net_Dns_Internal_GetHostEnt(PTR pThis_, PTR pParams, PTR pReturnValue);
 
 #endif

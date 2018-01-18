@@ -24,10 +24,10 @@
 #include "MetaData.h"
 #include "Types.h"
 
-__device__ fnInternalCall Map_Delegate(tMD_MethodDef *pMethod);
+function_space_specifier fnInternalCall Map_Delegate(tMD_MethodDef *pMethod);
 
-__device__ tMD_MethodDef* Delegate_GetMethod(void *pThis_);
-__device__ tMD_MethodDef* Delegate_GetMethodAndStore(void *pThis_, HEAP_PTR *pTargetObj, void **ppNextDelegate);
+function_space_specifier tMD_MethodDef* Delegate_GetMethod(void *pThis_);
+function_space_specifier tMD_MethodDef* Delegate_GetMethodAndStore(void *pThis_, HEAP_PTR *pTargetObj, void **ppNextDelegate);
 
 
 #endif

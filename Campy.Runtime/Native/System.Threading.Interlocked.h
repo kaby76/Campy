@@ -21,10 +21,10 @@
 #ifndef __SYSTEM_THREADING_INTERLOCKED_H
 #define __SYSTEM_THREADING_INTERLOCKED_H
 
-__device__ tAsyncCall* System_Threading_Interlocked_CompareExchange_Int32(PTR pThis_, PTR pParams, PTR pReturnValue);
-__device__ tAsyncCall* System_Threading_Interlocked_Increment_Int32(PTR pThis_, PTR pParams, PTR pReturnValue);
-__device__ tAsyncCall* System_Threading_Interlocked_Decrement_Int32(PTR pThis_, PTR pParams, PTR pReturnValue);
-__device__ tAsyncCall* System_Threading_Interlocked_Add_Int32(PTR pThis_, PTR pParams, PTR pReturnValue);
-__device__ tAsyncCall* System_Threading_Interlocked_Exchange_Int32(PTR pThis_, PTR pParams, PTR pReturnValue);
+function_space_specifier tAsyncCall* System_Threading_Interlocked_CompareExchange_Int32(PTR pThis_, PTR pParams, PTR pReturnValue);
+function_space_specifier tAsyncCall* System_Threading_Interlocked_Increment_Int32(PTR pThis_, PTR pParams, PTR pReturnValue);
+function_space_specifier tAsyncCall* System_Threading_Interlocked_Decrement_Int32(PTR pThis_, PTR pParams, PTR pReturnValue);
+function_space_specifier tAsyncCall* System_Threading_Interlocked_Add_Int32(PTR pThis_, PTR pParams, PTR pReturnValue);
+function_space_specifier tAsyncCall* System_Threading_Interlocked_Exchange_Int32(PTR pThis_, PTR pParams, PTR pReturnValue);
 
 #endif

@@ -24,8 +24,8 @@
 #include "MetaData.h"
 #include "Types.h"
 
-__device__ tAsyncCall* System_Environment_get_TickCount(PTR pThis_, PTR pParams, PTR pReturnValue);
-__device__ tAsyncCall* System_Environment_GetOSVersionString(PTR pThis_, PTR pParams, PTR pReturnValue);
-__device__ tAsyncCall* System_Environment_get_Platform(PTR pThis_, PTR pParams, PTR pReturnValue);
+function_space_specifier tAsyncCall* System_Environment_get_TickCount(PTR pThis_, PTR pParams, PTR pReturnValue);
+function_space_specifier tAsyncCall* System_Environment_GetOSVersionString(PTR pThis_, PTR pParams, PTR pReturnValue);
+function_space_specifier tAsyncCall* System_Environment_get_Platform(PTR pThis_, PTR pParams, PTR pReturnValue);
 
 #endif

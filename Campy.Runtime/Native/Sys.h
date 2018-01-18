@@ -40,19 +40,19 @@ void* mallocTrace(int s, char *pFile, int line);
 
 #include "MetaData.h"
 
-__device__ void Crash(const char *pMsg, ...);
+function_space_specifier void Crash(const char *pMsg, ...);
 
-extern __device__ U32 logLevel;
-__device__ void log_f(U32 level, const char *pMsg, ...);
+extern function_space_specifier U32 logLevel;
+function_space_specifier void log_f(U32 level, const char *pMsg, ...);
 
-__device__ char* Sys_GetMethodDesc(tMD_MethodDef *pMethod);
+function_space_specifier char* Sys_GetMethodDesc(tMD_MethodDef *pMethod);
 
-__device__ void* mallocForever(U32 size);
+function_space_specifier void* mallocForever(U32 size);
 
-__device__ U64 msTime();
+function_space_specifier U64 msTime();
 #if defined(DIAG_METHOD_CALLS) || defined(DIAG_OPCODE_TIMES) || defined(DIAG_GC) || defined(DIAG_TOTAL_TIME)
-__device__ U64 microTime();
+function_space_specifier U64 microTime();
 #endif
-__device__ void SleepMS(U32 ms);
+function_space_specifier void SleepMS(U32 ms);
 
 #endif

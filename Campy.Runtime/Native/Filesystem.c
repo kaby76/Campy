@@ -25,18 +25,18 @@
 #include "Gstring.h"
 #include "Filesystem.h"
 
-__device__ static char** names;
-__device__ static char** files;
-__device__ static size_t* lengths;
-__device__ static boolean init;
-__device__ static int initial_size;
+function_space_specifier static char** names;
+function_space_specifier static char** files;
+function_space_specifier static size_t* lengths;
+function_space_specifier static boolean init;
+function_space_specifier static int initial_size;
 
 __global__ void Bcl_Gfs_init()
 {
 	Gfs_init();
 }
 
-__device__ void Gfs_init()
+function_space_specifier void Gfs_init()
 {
 	printf("Gfs_init in\n");
 	initial_size = 10;
@@ -55,7 +55,7 @@ __global__ void Bcl_Gfs_add_file(char * name, char * file, size_t length, int * 
 	Gfs_add_file(name, file, length, result);
 }
 
-__device__ void Gfs_add_file(char * name, char * file, size_t length, int * result)
+function_space_specifier void Gfs_add_file(char * name, char * file, size_t length, int * result)
 {
 	printf("name %s\n", name);
 	if (init == 0) Gfs_init();
@@ -92,7 +92,7 @@ __global__ void Bcl_Gfs_remove_file(char * name, int * result)
 	Gfs_remove_file(name, result);
 }
 
-__device__ void Gfs_remove_file(char * name, int * result)
+function_space_specifier void Gfs_remove_file(char * name, int * result)
 {
 	// Delete a pseudo file system for the meta system to work,
 	if (init == 0) Gfs_init();
@@ -126,7 +126,7 @@ __global__ void Bcl_Gfs_open_file(char * name, int * result)
 	Gfs_open_file(name, result);
 }
 
-__device__ void Gfs_open_file(char * name, int * result)
+function_space_specifier void Gfs_open_file(char * name, int * result)
 {
 	if (init == 0) Gfs_init();
 	char ** ptr_name = names;
@@ -154,7 +154,7 @@ __global__ void Bcl_Gfs_close_file(int file, int * result)
 	Gfs_close_file(file, result);
 }
 
-__device__ void Gfs_close_file(int file, int * result)
+function_space_specifier void Gfs_close_file(int file, int * result)
 {
 	if (init == 0) Gfs_init();
 	*result = 0;
@@ -165,7 +165,7 @@ __global__ void Bcl_Gfs_read(int file, char ** result)
 	Gfs_read(file, result);
 }
 
-__device__ void Gfs_read(int file, char ** result)
+function_space_specifier void Gfs_read(int file, char ** result)
 {
 	if (init == 0) Gfs_init();
 	*result = files[file];
@@ -176,7 +176,7 @@ __global__ void Bcl_Gfs_length(int file, size_t * result)
 	Gfs_length(file, result);
 }
 
-__device__ void Gfs_length(int file, size_t * result)
+function_space_specifier void Gfs_length(int file, size_t * result)
 {
 	if (init == 0) Gfs_init();
 	*result = lengths[file];

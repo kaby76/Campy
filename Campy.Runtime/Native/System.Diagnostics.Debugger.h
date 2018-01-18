@@ -23,6 +23,6 @@
 
 #include "Types.h"
 
-__device__ tAsyncCall* System_Diagnostics_Debugger_Break(PTR pThis_, PTR pParams, PTR pReturnValue);
+function_space_specifier tAsyncCall* System_Diagnostics_Debugger_Break(PTR pThis_, PTR pParams, PTR pReturnValue);
 
 #endif

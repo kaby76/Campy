@@ -23,16 +23,16 @@
 
 #include "Finalizer.h"
 
-__device__ static HEAP_PTR *ppToFinalize;
-__device__ static int toFinalizeOfs, toFinalizeCapacity;
+function_space_specifier static HEAP_PTR *ppToFinalize;
+function_space_specifier static int toFinalizeOfs, toFinalizeCapacity;
 
-__device__ void Finalizer_Init() {
+function_space_specifier void Finalizer_Init() {
 	toFinalizeCapacity = 4;
 	ppToFinalize = (HEAP_PTR*)Gmalloc(toFinalizeCapacity * sizeof(void*));
 	toFinalizeOfs = 0;
 }
 
-__device__ void AddFinalizer(HEAP_PTR ptr) {
+function_space_specifier void AddFinalizer(HEAP_PTR ptr) {
 	if (toFinalizeOfs >= toFinalizeCapacity) {
 		toFinalizeCapacity <<= 1;
 		ppToFinalize = (HEAP_PTR*)Grealloc(ppToFinalize, toFinalizeCapacity * sizeof(void*));
@@ -40,7 +40,7 @@ __device__ void AddFinalizer(HEAP_PTR ptr) {
 	ppToFinalize[toFinalizeOfs++] = ptr;
 }
 
-__device__ HEAP_PTR GetNextFinalizer() {
+function_space_specifier HEAP_PTR GetNextFinalizer() {
 	if (toFinalizeOfs == 0) {
 		return NULL;
 	}

@@ -24,9 +24,9 @@
 #include "Types.h"
 #include "MetaData.h"
 
-__device__ tAsyncCall* System_Object_Equals(PTR pThis_, PTR pParams, PTR pReturnValue);
-__device__ tAsyncCall* System_Object_Clone(PTR pThis_, PTR pParams, PTR pReturnValue);
-__device__ tAsyncCall* System_Object_GetHashCode(PTR pThis_, PTR pParams, PTR pReturnValue);
-__device__ tAsyncCall* System_Object_GetType(PTR pThis_, PTR pParams, PTR pReturnValue);
+function_space_specifier tAsyncCall* System_Object_Equals(PTR pThis_, PTR pParams, PTR pReturnValue);
+function_space_specifier tAsyncCall* System_Object_Clone(PTR pThis_, PTR pParams, PTR pReturnValue);
+function_space_specifier tAsyncCall* System_Object_GetHashCode(PTR pThis_, PTR pParams, PTR pReturnValue);
+function_space_specifier tAsyncCall* System_Object_GetType(PTR pThis_, PTR pParams, PTR pReturnValue);
 
 #endif

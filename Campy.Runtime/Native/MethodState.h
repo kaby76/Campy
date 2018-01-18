@@ -64,8 +64,8 @@ struct tMethodState_ {
 };
 
 //void MethodState_Init();
-__device__ tMethodState* MethodState_Direct(tThread *pThread, tMD_MethodDef *pMethod, tMethodState *pCaller, U32 isInternalNewObjCall);
-__device__ tMethodState* MethodState(tThread *pThread, tMetaData *pMetaData, IDX_TABLE methodToken, tMethodState *pCaller);
-__device__ void MethodState_Delete(tThread *pThread, tMethodState **ppMethodState);
+function_space_specifier tMethodState* MethodState_Direct(tThread *pThread, tMD_MethodDef *pMethod, tMethodState *pCaller, U32 isInternalNewObjCall);
+function_space_specifier tMethodState* MethodState(tThread *pThread, tMetaData *pMetaData, IDX_TABLE methodToken, tMethodState *pCaller);
+function_space_specifier void MethodState_Delete(tThread *pThread, tMethodState **ppMethodState);
 
 #endif

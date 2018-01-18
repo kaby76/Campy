@@ -39,8 +39,8 @@
 
 // Global array which stores the absolute addresses of the start and end of all JIT code
 // fragment machine code.
-__device__ tJITCodeInfo jitCodeInfo[JIT_OPCODE_MAXNUM];
-__device__ tJITCodeInfo jitCodeGoNext;
+function_space_specifier tJITCodeInfo jitCodeInfo[JIT_OPCODE_MAXNUM];
+function_space_specifier tJITCodeInfo jitCodeGoNext;
 
 // Get the next op-code
 #define GET_OP() *(pCurOp++)
@@ -127,7 +127,7 @@ __device__ tJITCodeInfo jitCodeGoNext;
 #define THROW(exType) heapPtr = Heap_AllocType(exType); goto throwHeapPtr
 
 // Note: newObj is only set if a constructor is being called
-__device__ static void CreateParameters(PTR pParamsLocals, tMD_MethodDef *pCallMethod, PTR *ppCurEvalStack, HEAP_PTR newObj) {
+function_space_specifier static void CreateParameters(PTR pParamsLocals, tMD_MethodDef *pCallMethod, PTR *ppCurEvalStack, HEAP_PTR newObj) {
 	U32 ofs;
 
 	if (newObj != NULL) {
@@ -142,7 +142,7 @@ __device__ static void CreateParameters(PTR pParamsLocals, tMD_MethodDef *pCallM
 	Gmemcpy(pParamsLocals + ofs, *ppCurEvalStack, pCallMethod->parameterStackSize - ofs);
 }
 
-__device__ static tMethodState* RunFinalizer(tThread *pThread) {
+function_space_specifier static tMethodState* RunFinalizer(tThread *pThread) {
 	HEAP_PTR heapPtr = GetNextFinalizer();
 	if (heapPtr != NULL) {
 		// There is a pending finalizer, so create a MethodState for it and put it as next-to-run on the stack
@@ -224,7 +224,7 @@ U32 opcodeNumUses[JIT_OPCODE_MAXNUM];
 
 #define RUN_FINALIZER() {tMethodState *pMS = RunFinalizer(pThread);if(pMS) {CHANGE_METHOD_STATE(pMS);}}
 
-__device__ U32 JIT_Execute(tThread *pThread, U32 numInst) {
+function_space_specifier U32 JIT_Execute(tThread *pThread, U32 numInst) {
 //	tJITted *pJIT;
 //	tMethodState *pCurrentMethodState;
 //	PTR pParamsLocals;

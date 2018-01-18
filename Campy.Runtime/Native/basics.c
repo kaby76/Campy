@@ -12,9 +12,9 @@
 #include <cuda.h>
 
 
-__device__  void gpuexit(int _Code) {}
+function_space_specifier  void gpuexit(int _Code) {}
 
-__device__ size_t Gstrlen(
+function_space_specifier size_t Gstrlen(
 	char const* _Str
 )
 {
@@ -31,7 +31,7 @@ __device__ size_t Gstrlen(
 // Based on http://arjunsreedharan.org/post/148675821737/write-a-simple-memory-allocator
 
 
-__device__ void * global_memory_heap;
+function_space_specifier void * global_memory_heap;
 
 struct header_t {
 	struct header_t *next;
@@ -40,7 +40,7 @@ struct header_t {
 	unsigned is_free;
 };
 
-__device__ struct header_t* head;
+function_space_specifier struct header_t* head;
 
 __global__
 void Initialize_BCL0(void * g, size_t size, int count)
@@ -86,7 +86,7 @@ void Initialize_BCL0(void * g, size_t size, int count)
 	printf("done\n");
 }
 
-__device__ struct header_t *get_free_block(size_t size)
+function_space_specifier struct header_t *get_free_block(size_t size)
 {
 	int blockId = blockIdx.x + blockIdx.y * gridDim.x
 		+ gridDim.x * gridDim.y * blockIdx.z;
@@ -103,12 +103,12 @@ __device__ struct header_t *get_free_block(size_t size)
 	return NULL;
 }
 
-__device__ int roundUp(int numToRound, int multiple)
+function_space_specifier int roundUp(int numToRound, int multiple)
 {
 	return ((numToRound + multiple - 1) / multiple) * multiple;
 }
 
-__device__ void * simple_malloc(size_t size)
+function_space_specifier void * simple_malloc(size_t size)
 {
 	size_t total_size;
 	void *block;
@@ -141,7 +141,7 @@ __device__ void * simple_malloc(size_t size)
 }
 
 
-__device__ void* __cdecl Grealloc(
+function_space_specifier void* __cdecl Grealloc(
 	void*  _Block,
 	size_t _Size
 )
@@ -153,7 +153,7 @@ __device__ void* __cdecl Grealloc(
 }
 
 
-__device__ void* Gmalloc(
+function_space_specifier void* Gmalloc(
 	size_t _Size
 )
 {
@@ -161,7 +161,7 @@ __device__ void* Gmalloc(
 	return result;
 }
 
-__device__ void Gfree(
+function_space_specifier void Gfree(
 	void*  _Block
 	)
 {
@@ -190,8 +190,7 @@ void Initialize_BCL2()
 }
 
 
-__device__
-void* Bcl_Heap_Alloc(STRING assemblyName, STRING nameSpace, STRING name)
+function_space_specifier void* Bcl_Heap_Alloc(STRING assemblyName, STRING nameSpace, STRING name)
 {
 	tMD_TypeDef* type_def = MetaData_GetTypeDefFromFullName(assemblyName, nameSpace, name);
 	void * result = Heap_AllocType(type_def);

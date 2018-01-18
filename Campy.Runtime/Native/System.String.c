@@ -39,10 +39,10 @@ struct tSystemString_ {
 	U16 chars[0];
 };
 
-extern __device__ int CorLibDone;
+extern function_space_specifier int CorLibDone;
 
 // length in characters, not bytes
-static __device__ tSystemString* CreateStringHeapObj(U32 len) {
+static function_space_specifier tSystemString* CreateStringHeapObj(U32 len) {
 	tSystemString *pSystemString;
 	U32 totalSize;
 	
@@ -52,7 +52,7 @@ static __device__ tSystemString* CreateStringHeapObj(U32 len) {
 	return pSystemString;
 }
 
-__device__ tAsyncCall* System_String_ctor_CharInt32(PTR pThis_, PTR pParams, PTR pReturnValue) {
+function_space_specifier tAsyncCall* System_String_ctor_CharInt32(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tSystemString *pSystemString;
 	U32 i;
 
@@ -68,7 +68,7 @@ __device__ tAsyncCall* System_String_ctor_CharInt32(PTR pThis_, PTR pParams, PTR
 	return NULL;
 }
 
-__device__ tAsyncCall* System_String_ctor_CharAIntInt(PTR pThis_, PTR pParams, PTR pReturnValue) {
+function_space_specifier tAsyncCall* System_String_ctor_CharAIntInt(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tSystemString *pSystemString;
 	PTR charElements;
 
@@ -85,7 +85,7 @@ __device__ tAsyncCall* System_String_ctor_CharAIntInt(PTR pThis_, PTR pParams, P
 	return NULL;
 }
 
-__device__ tAsyncCall* System_String_ctor_StringIntInt(PTR pThis_, PTR pParams, PTR pReturnValue) {
+function_space_specifier tAsyncCall* System_String_ctor_StringIntInt(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tSystemString *pThis, *pStr;
 	U32 startIndex, length;
 
@@ -118,7 +118,7 @@ __device__ tAsyncCall* System_String_ctor_StringIntInt(PTR pThis_, PTR pParams, 
 	return NULL;
 }
 
-__device__ tAsyncCall* System_String_get_Chars(PTR pThis_, PTR pParams, PTR pReturnValue) {
+function_space_specifier tAsyncCall* System_String_get_Chars(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tSystemString *pThis = (tSystemString*)pThis_;
 	U32 index;
 
@@ -129,7 +129,7 @@ __device__ tAsyncCall* System_String_get_Chars(PTR pThis_, PTR pParams, PTR pRet
 	return NULL;
 }
 
-__device__ tAsyncCall* System_String_InternalConcat(PTR pThis_, PTR pParams, PTR pReturnValue) {
+function_space_specifier tAsyncCall* System_String_InternalConcat(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tSystemString *s0, *s1, *ret;
 
 	void **p = (void**)pParams;
@@ -143,7 +143,7 @@ __device__ tAsyncCall* System_String_InternalConcat(PTR pThis_, PTR pParams, PTR
 	return NULL;
 }
 
-__device__ tAsyncCall* System_String_InternalTrim(PTR pThis_, PTR pParams, PTR pReturnValue) {
+function_space_specifier tAsyncCall* System_String_InternalTrim(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tSystemString *pThis = (tSystemString*)pThis_;
 	HEAP_PTR pWhiteChars;
 	U32 trimType, i, j, checkCharsLen;
@@ -205,7 +205,7 @@ __device__ tAsyncCall* System_String_InternalTrim(PTR pThis_, PTR pParams, PTR p
 	return NULL;
 }
 
-__device__ tAsyncCall* System_String_Equals(PTR pThis_, PTR pParams, PTR pReturnValue) {
+function_space_specifier tAsyncCall* System_String_Equals(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tSystemString *a, *b;
 	U32 ret;
 
@@ -225,7 +225,7 @@ __device__ tAsyncCall* System_String_Equals(PTR pThis_, PTR pParams, PTR pReturn
 	return NULL;
 }
 
-__device__ tAsyncCall* System_String_GetHashCode(PTR pThis_, PTR pParams, PTR pReturnValue) {
+function_space_specifier tAsyncCall* System_String_GetHashCode(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tSystemString *pThis = (tSystemString*)pThis_;
 	U16 *pChar, *pEnd;
 	I32 hash;
@@ -245,7 +245,7 @@ __device__ tAsyncCall* System_String_GetHashCode(PTR pThis_, PTR pParams, PTR pR
 	return NULL;
 }
 
-__device__ tAsyncCall* System_String_InternalReplace(PTR pThis_, PTR pParams, PTR pReturnValue) {
+function_space_specifier tAsyncCall* System_String_InternalReplace(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tSystemString *pThis = (tSystemString*)pThis_;
 
 	void **p = (void**)pParams;
@@ -309,7 +309,7 @@ __device__ tAsyncCall* System_String_InternalReplace(PTR pThis_, PTR pParams, PT
 	return NULL;
 }
 
-__device__ tAsyncCall* System_String_InternalIndexOf(PTR pThis_, PTR pParams, PTR pReturnValue) {
+function_space_specifier tAsyncCall* System_String_InternalIndexOf(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tSystemString *pThis = (tSystemString*)pThis_;
 	void ** p = (void**)pParams;
 	U16 value = *(U16*)p++;
@@ -340,7 +340,7 @@ __device__ tAsyncCall* System_String_InternalIndexOf(PTR pThis_, PTR pParams, PT
 	return NULL;
 }
 
-__device__ tAsyncCall* System_String_InternalIndexOfAny(PTR pThis_, PTR pParams, PTR pReturnValue) {
+function_space_specifier tAsyncCall* System_String_InternalIndexOfAny(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tSystemString *pThis = (tSystemString*)pThis_;
 
 	void **p = (void**)pParams;
@@ -378,7 +378,7 @@ __device__ tAsyncCall* System_String_InternalIndexOfAny(PTR pThis_, PTR pParams,
 	return NULL;
 }
 
-__device__ HEAP_PTR SystemString_FromUserStrings(tMetaData *pMetaData, IDX_USERSTRINGS index) {
+function_space_specifier HEAP_PTR SystemString_FromUserStrings(tMetaData *pMetaData, IDX_USERSTRINGS index) {
 	unsigned int stringLen;
 	STRING2 string;
 	tSystemString *pSystemString;
@@ -390,7 +390,7 @@ __device__ HEAP_PTR SystemString_FromUserStrings(tMetaData *pMetaData, IDX_USERS
 	return (HEAP_PTR)pSystemString;
 }
 
-__device__ HEAP_PTR SystemString_FromCharPtrASCII(char *pStr) {
+function_space_specifier HEAP_PTR SystemString_FromCharPtrASCII(char *pStr) {
 	int stringLen, i;
 	tSystemString *pSystemString;
 
@@ -402,7 +402,7 @@ __device__ HEAP_PTR SystemString_FromCharPtrASCII(char *pStr) {
 	return (HEAP_PTR)pSystemString;
 }
 
-__device__ HEAP_PTR SystemString_FromCharPtrUTF16(U16 *pStr) {
+function_space_specifier HEAP_PTR SystemString_FromCharPtrUTF16(U16 *pStr) {
 	tSystemString *pSystemString;
 	int strLen = 0;
 
@@ -414,7 +414,7 @@ __device__ HEAP_PTR SystemString_FromCharPtrUTF16(U16 *pStr) {
 	return (HEAP_PTR)pSystemString;
 }
 
-__device__ STRING2 SystemString_GetString(HEAP_PTR pThis_, U32 *pLength) {
+function_space_specifier STRING2 SystemString_GetString(HEAP_PTR pThis_, U32 *pLength) {
 	tSystemString *pThis = (tSystemString*)pThis_;
 
 	if (pLength != NULL) {
@@ -423,6 +423,6 @@ __device__ STRING2 SystemString_GetString(HEAP_PTR pThis_, U32 *pLength) {
 	return pThis->chars;
 }
 
-__device__ U32 SystemString_GetNumBytes(HEAP_PTR pThis_) {
+function_space_specifier U32 SystemString_GetNumBytes(HEAP_PTR pThis_) {
 	return (((tSystemString*)pThis_)->length << 1) + sizeof(tSystemString);
 }

@@ -24,6 +24,6 @@
 #include "MetaData.h"
 #include "Types.h"
 
-__device__ tAsyncCall* System_ValueType_GetFields(PTR pThis_, PTR pParams, PTR pReturnValue);
+function_space_specifier tAsyncCall* System_ValueType_GetFields(PTR pThis_, PTR pParams, PTR pReturnValue);
 
 #endif

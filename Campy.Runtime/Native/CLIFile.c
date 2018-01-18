@@ -45,7 +45,7 @@ struct tFilesLoaded_ {
 };
 
 // Keep track of all the files currently loaded
-__device__ static tFilesLoaded *pFilesLoaded = NULL;
+function_space_specifier static tFilesLoaded *pFilesLoaded = NULL;
 
 __global__ void BCL_CLIFile_GetMetaDataForAssembly(char * fileName)
 {
@@ -53,7 +53,7 @@ __global__ void BCL_CLIFile_GetMetaDataForAssembly(char * fileName)
 	result = CLIFile_GetMetaDataForAssembly(fileName);
 }
 
-__device__ tMetaData* CLIFile_GetMetaDataForAssembly(char * fileName) {
+function_space_specifier tMetaData* CLIFile_GetMetaDataForAssembly(char * fileName) {
 	tFilesLoaded *pFiles;
 	char * pAssemblyName;
 	char assemblyName[250];
@@ -105,9 +105,9 @@ __device__ tMetaData* CLIFile_GetMetaDataForAssembly(char * fileName) {
 	}
 }
 
-__device__ unsigned char Gdata[];
+function_space_specifier unsigned char Gdata[];
 
-__device__ static void* LoadFileFromDisk(char *pFileName)
+function_space_specifier static void* LoadFileFromDisk(char *pFileName)
 {
 	char *pData = NULL;
 	// Crashes! Gprintf("File name = %s\n", pFileName);
@@ -135,7 +135,7 @@ __device__ static void* LoadFileFromDisk(char *pFileName)
 	return pData;
 }
 
-__device__ static tCLIFile* LoadPEFile(void *pData) {
+function_space_specifier static tCLIFile* LoadPEFile(void *pData) {
 
 	tCLIFile *pRet = TMALLOC(tCLIFile);
 	memset(pRet, 0, sizeof(tCLIFile));
@@ -286,7 +286,7 @@ __device__ static tCLIFile* LoadPEFile(void *pData) {
 	return pRet;
 }
 
-__device__ tCLIFile* CLIFile_Load(char *pFileName) {
+function_space_specifier tCLIFile* CLIFile_Load(char *pFileName) {
 	void *pRawFile;
 	tCLIFile *pRet;
 	tFilesLoaded *pNewFile;
@@ -313,7 +313,7 @@ __device__ tCLIFile* CLIFile_Load(char *pFileName) {
 	return pRet;
 }
 
-__device__ I32 CLIFile_Execute(tCLIFile *pThis, int argc, char **argp) {
+function_space_specifier I32 CLIFile_Execute(tCLIFile *pThis, int argc, char **argp) {
 	//tThread *pThread;
 	//HEAP_PTR args;
 	//int i;
@@ -337,7 +337,7 @@ __device__ I32 CLIFile_Execute(tCLIFile *pThis, int argc, char **argp) {
 	return 0;
 }
 
-__device__ void CLIFile_GetHeapRoots(tHeapRoots *pHeapRoots) {
+function_space_specifier void CLIFile_GetHeapRoots(tHeapRoots *pHeapRoots) {
 	//tFilesLoaded *pFile;
 
 	//pFile = pFilesLoaded;

@@ -63,7 +63,7 @@ struct tInternalCall_ {
 	U8 parameterTypes[MAX_PARAMS];
 };
 
-__device__ static tInternalCall internalCalls[] = {
+function_space_specifier static tInternalCall internalCalls[] = {
 	{"System", "Object", "Equals", System_Object_Equals, TYPE_SYSTEM_BOOLEAN, 1, {TYPE_SYSTEM_OBJECT}},
 	{NULL,      NULL,    "Clone", System_Object_Clone, TYPE_SYSTEM_OBJECT, 1, {TYPE_SYSTEM_OBJECT}},
 	{NULL,      NULL,    "GetHashCode", System_Object_GetHashCode, TYPE_SYSTEM_INT32, 0},
@@ -173,7 +173,7 @@ __device__ static tInternalCall internalCalls[] = {
 	{NULL, NULL, NULL, NULL}
 };
 
-__device__ fnInternalCall InternalCall_Map(tMD_MethodDef *pMethod) {
+function_space_specifier fnInternalCall InternalCall_Map(tMD_MethodDef *pMethod) {
 	tInternalCall *pCall;
 	STRING curNameSpace = NULL;
 	STRING curType = NULL;

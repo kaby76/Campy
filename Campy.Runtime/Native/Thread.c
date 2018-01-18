@@ -27,10 +27,10 @@
 #include "Heap.h"
 #include "Type.h"
 
-static __device__ tThread *pAllThreads = NULL;
-static __device__ tThread *pCurrentThread;
+static function_space_specifier tThread *pAllThreads = NULL;
+static function_space_specifier tThread *pCurrentThread;
 
-__device__ tThread* Thread() {
+function_space_specifier tThread* Thread() {
 	static U32 threadID = 0;
 	tThread *pThis;
 
@@ -63,7 +63,7 @@ __device__ tThread* Thread() {
 	return pThis;
 }
 
-__device__ void* Thread_StackAlloc(tThread *pThread, U32 size) {
+function_space_specifier void* Thread_StackAlloc(tThread *pThread, U32 size) {
 	tThreadStack *pStack = pThread->pThreadStack;
 	void *pAddr = pStack->memory + pStack->ofs;
 #if _DEBUG
@@ -83,7 +83,7 @@ __device__ void* Thread_StackAlloc(tThread *pThread, U32 size) {
 	return pAddr;
 }
 
-__device__ void Thread_StackFree(tThread *pThread, void *pAddr) {
+function_space_specifier void Thread_StackFree(tThread *pThread, void *pAddr) {
 	tThreadStack *pStack = pThread->pThreadStack;
 #if _DEBUG
 	pAddr = ((U32*)pAddr) - 1;
@@ -92,7 +92,7 @@ __device__ void Thread_StackFree(tThread *pThread, void *pAddr) {
 	pStack->ofs = (U32)(((unsigned char*)pAddr) - pStack->memory);
 }
 
-__device__ void Thread_SetEntryPoint(tThread *pThis, tMetaData *pMetaData, IDX_TABLE entryPointToken, PTR params, U32 paramBytes) {
+function_space_specifier void Thread_SetEntryPoint(tThread *pThis, tMetaData *pMetaData, IDX_TABLE entryPointToken, PTR params, U32 paramBytes) {
 	// Set up the initial MethodState
 	pThis->pCurrentMethodState = MethodState(pThis, pMetaData, entryPointToken, NULL);
 	// Insert initial parameters (if any)
@@ -101,7 +101,7 @@ __device__ void Thread_SetEntryPoint(tThread *pThis, tMetaData *pMetaData, IDX_T
 	}
 }
 
-static __device__ void Thread_Delete(tThread *pThis) {
+static function_space_specifier void Thread_Delete(tThread *pThis) {
 	tThreadStack *pStack = pThis->pThreadStack;
 	while (pStack != NULL) {
 		tThreadStack *pNextStack = pStack->pNext;
@@ -111,7 +111,7 @@ static __device__ void Thread_Delete(tThread *pThis) {
 	Heap_MakeDeletable((HEAP_PTR)pThis);
 }
 
-__device__ I32 Thread_Execute() {
+function_space_specifier I32 Thread_Execute() {
 	tThread *pThread, *pPrevThread;
 	U32 status;
 
@@ -238,11 +238,11 @@ __device__ I32 Thread_Execute() {
 
 }
 
-__device__ tThread* Thread_GetCurrent() {
+function_space_specifier tThread* Thread_GetCurrent() {
 	return pCurrentThread;
 }
 
-__device__ void Thread_GetHeapRoots(tHeapRoots *pHeapRoots) {
+function_space_specifier void Thread_GetHeapRoots(tHeapRoots *pHeapRoots) {
 	tThread *pThread;
 
 	pThread = pAllThreads;

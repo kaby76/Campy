@@ -24,10 +24,10 @@
 #include "MetaData.h"
 #include "Types.h"
 
-__device__ tAsyncCall* System_Threading_Thread_ctor(PTR pThis_, PTR pParams, PTR pReturnValue);
-__device__ tAsyncCall* System_Threading_Thread_ctorParam(PTR pThis_, PTR pParams, PTR pReturnValue);
-__device__ tAsyncCall* System_Threading_Thread_Start(PTR pThis_, PTR pParams, PTR pReturnValue);
-__device__ tAsyncCall* System_Threading_Thread_Sleep(PTR pThis_, PTR pParams, PTR pReturnValue);
-__device__ tAsyncCall* System_Threading_Thread_get_CurrentThread(PTR pThis_, PTR pParams, PTR pReturnValue);
+function_space_specifier tAsyncCall* System_Threading_Thread_ctor(PTR pThis_, PTR pParams, PTR pReturnValue);
+function_space_specifier tAsyncCall* System_Threading_Thread_ctorParam(PTR pThis_, PTR pParams, PTR pReturnValue);
+function_space_specifier tAsyncCall* System_Threading_Thread_Start(PTR pThis_, PTR pParams, PTR pReturnValue);
+function_space_specifier tAsyncCall* System_Threading_Thread_Sleep(PTR pThis_, PTR pParams, PTR pReturnValue);
+function_space_specifier tAsyncCall* System_Threading_Thread_get_CurrentThread(PTR pThis_, PTR pParams, PTR pReturnValue);
 
 #endif

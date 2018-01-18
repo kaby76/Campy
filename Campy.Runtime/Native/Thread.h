@@ -98,13 +98,13 @@ struct tThread_ {
 #define THREADSTATE_STOPPED			0x0010
 #define THREADSTATE_SUSPENDED		0x0040
 
-__device__ tThread* Thread();
-__device__ void Thread_SetEntryPoint(tThread *pThis, tMetaData *pMetaData, IDX_TABLE entryPointToken, PTR params, U32 paramBytes);
-__device__ I32 Thread_Execute();
-__device__ tThread* Thread_GetCurrent();
-__device__ void* Thread_StackAlloc(tThread *pThread, U32 size);
-__device__ void Thread_StackFree(tThread *pThread, void *pAddr);
+function_space_specifier tThread* Thread();
+function_space_specifier void Thread_SetEntryPoint(tThread *pThis, tMetaData *pMetaData, IDX_TABLE entryPointToken, PTR params, U32 paramBytes);
+function_space_specifier I32 Thread_Execute();
+function_space_specifier tThread* Thread_GetCurrent();
+function_space_specifier void* Thread_StackAlloc(tThread *pThread, U32 size);
+function_space_specifier void Thread_StackFree(tThread *pThread, void *pAddr);
 
-__device__ void Thread_GetHeapRoots(tHeapRoots *pHeapRoots);
+function_space_specifier void Thread_GetHeapRoots(tHeapRoots *pHeapRoots);
 
 #endif

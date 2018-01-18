@@ -23,8 +23,8 @@
 
 #include "Types.h"
 
-__device__ tAsyncCall* System_Char_GetUnicodeCategory(PTR pThis_, PTR pParams, PTR pReturnValue);
-__device__ tAsyncCall* System_Char_ToLowerInvariant(PTR pThis_, PTR pParams, PTR pReturnValue);
-__device__ tAsyncCall* System_Char_ToUpperInvariant(PTR pThis_, PTR pParams, PTR pReturnValue);
+function_space_specifier tAsyncCall* System_Char_GetUnicodeCategory(PTR pThis_, PTR pParams, PTR pReturnValue);
+function_space_specifier tAsyncCall* System_Char_ToLowerInvariant(PTR pThis_, PTR pParams, PTR pReturnValue);
+function_space_specifier tAsyncCall* System_Char_ToUpperInvariant(PTR pThis_, PTR pParams, PTR pReturnValue);
 
 #endif

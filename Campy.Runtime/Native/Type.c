@@ -44,11 +44,11 @@ struct tArrayTypeDefs_ {
 	tArrayTypeDefs *pNext;
 };
 
-__device__ static tArrayTypeDefs *pArrays;
+function_space_specifier static tArrayTypeDefs *pArrays;
 
 #define GENERICARRAYMETHODS_NUM 13
-__device__ static U8 genericArrayMethodsInited = 0;
-__device__ static tMD_MethodDef *ppGenericArrayMethods[GENERICARRAYMETHODS_NUM];
+function_space_specifier static U8 genericArrayMethodsInited = 0;
+function_space_specifier static tMD_MethodDef *ppGenericArrayMethods[GENERICARRAYMETHODS_NUM];
 
 #define GENERICARRAYMETHODS_Internal_GetGenericEnumerator 0
 #define GENERICARRAYMETHODS_get_Length 1
@@ -63,7 +63,7 @@ __device__ static tMD_MethodDef *ppGenericArrayMethods[GENERICARRAYMETHODS_NUM];
 #define GENERICARRAYMETHODS_Internal_GenericRemoveAt 10
 #define GENERICARRAYMETHODS_Internal_GenericGetItem 11
 #define GENERICARRAYMETHODS_Internal_GenericSetItem 12
-__device__ static char *pGenericArrayMethodsInit[GENERICARRAYMETHODS_NUM] = {
+function_space_specifier static char *pGenericArrayMethodsInit[GENERICARRAYMETHODS_NUM] = {
 	"Internal_GetGenericEnumerator",
 	"get_Length",
 	"Internal_GenericIsReadOnly",
@@ -79,7 +79,7 @@ __device__ static char *pGenericArrayMethodsInit[GENERICARRAYMETHODS_NUM] = {
 	"Internal_GenericSetItem",
 };
 
-__device__ static void GetMethodDefs() {
+function_space_specifier static void GetMethodDefs() {
 	IDX_TABLE token, last;
 	tMetaData *pMetaData;
 
@@ -104,7 +104,7 @@ __device__ static void GetMethodDefs() {
 	genericArrayMethodsInited = 1;
 }
 
-__device__ static void CreateNewArrayType(tMD_TypeDef *pNewArrayType, tMD_TypeDef *pElementType, tMD_TypeDef **ppClassTypeArgs, tMD_TypeDef **ppMethodTypeArgs) {
+function_space_specifier static void CreateNewArrayType(tMD_TypeDef *pNewArrayType, tMD_TypeDef *pElementType, tMD_TypeDef **ppClassTypeArgs, tMD_TypeDef **ppMethodTypeArgs) {
 	MetaData_Fill_TypeDef(types[TYPE_SYSTEM_ARRAY_NO_TYPE], NULL, NULL);
 
 	memcpy(pNewArrayType, types[TYPE_SYSTEM_ARRAY_NO_TYPE], sizeof(tMD_TypeDef));
@@ -168,7 +168,7 @@ __device__ static void CreateNewArrayType(tMD_TypeDef *pNewArrayType, tMD_TypeDe
 }
 
 // Returns a TypeDef for an array to the given element type
-__device__ tMD_TypeDef* Type_GetArrayTypeDef(tMD_TypeDef *pElementType, tMD_TypeDef **ppClassTypeArgs, tMD_TypeDef **ppMethodTypeArgs) {
+function_space_specifier tMD_TypeDef* Type_GetArrayTypeDef(tMD_TypeDef *pElementType, tMD_TypeDef **ppClassTypeArgs, tMD_TypeDef **ppMethodTypeArgs) {
 	tArrayTypeDefs *pIterArrays;
 
 	if (pElementType == NULL) {
@@ -196,7 +196,7 @@ __device__ tMD_TypeDef* Type_GetArrayTypeDef(tMD_TypeDef *pElementType, tMD_Type
 	return pIterArrays->pArrayType;
 }
 
-__device__ U32 Type_IsValueType(tMD_TypeDef *pTypeDef) {
+function_space_specifier U32 Type_IsValueType(tMD_TypeDef *pTypeDef) {
 	// If this type is an interface, then return 0
 	if (TYPE_ISINTERFACE(pTypeDef)) {
 		return 0;
@@ -220,7 +220,7 @@ __device__ U32 Type_IsValueType(tMD_TypeDef *pTypeDef) {
 // Also get the size of a field from the signature
 // This is needed to avoid recursive sizing of types like System.Boolean,
 // that has a field of type System.Boolean
-__device__ tMD_TypeDef* Type_GetTypeFromSig(tMetaData *pMetaData, SIG *pSig, tMD_TypeDef **ppClassTypeArgs, tMD_TypeDef **ppMethodTypeArgs) {
+function_space_specifier tMD_TypeDef* Type_GetTypeFromSig(tMetaData *pMetaData, SIG *pSig, tMD_TypeDef **ppClassTypeArgs, tMD_TypeDef **ppMethodTypeArgs) {
 	U32 entry;
 
 	entry = MetaData_DecodeSigEntry(pSig);
@@ -337,9 +337,9 @@ __device__ tMD_TypeDef* Type_GetTypeFromSig(tMetaData *pMetaData, SIG *pSig, tMD
 	return 0;
 }
 
-__device__ tMD_TypeDef **types;
+function_space_specifier tMD_TypeDef **types;
 
-__device__ static U32 numInitTypes;
+function_space_specifier static U32 numInitTypes;
 
 typedef struct tTypeInit_ tTypeInit;
 struct tTypeInit_ {
@@ -352,21 +352,14 @@ struct tTypeInit_ {
 	U8 instanceMemSize;
 };
 
-__device__
-static char mscorlib[] = "corlib.dll";
-__device__
-static char System[] = "System";
-__device__
-static char SystemCollectionsGeneric[] = "System.Collections.Generic";
-__device__
-static char SystemThreading[] = "System.Threading";
-__device__
-static char SystemIO[] = "System.IO";
-__device__
-static char SystemGlobalization[] = "System.Globalization";
+function_space_specifier static char mscorlib[] = "corlib.dll";
+function_space_specifier static char System[] = "System";
+function_space_specifier static char SystemCollectionsGeneric[] = "System.Collections.Generic";
+function_space_specifier static char SystemThreading[] = "System.Threading";
+function_space_specifier static char SystemIO[] = "System.IO";
+function_space_specifier static char SystemGlobalization[] = "System.Globalization";
 
-__device__
-static tTypeInit typeInit[] = {
+function_space_specifier static tTypeInit typeInit[] = {
 	{ mscorlib, System, "Object", EVALSTACK_O,		4, 4, 0 },
 	{ mscorlib, System, "Array", EVALSTACK_O,		4, 4, 0 },
 	{ mscorlib, System, "Void", EVALSTACK_O,			4, 4, 0 },
@@ -421,11 +414,9 @@ static tTypeInit typeInit[] = {
 //	{ mscorlib, System, "Object", EVALSTACK_O,		4, 4, 0 },
 //};
 
-__device__
-int CorLibDone = 0;
+function_space_specifier int CorLibDone = 0;
 
-__device__
-void Type_Init() {
+function_space_specifier void Type_Init() {
 	U32 i;
 	// Build all the types needed by the interpreter.
 	numInitTypes = sizeof(typeInit) / sizeof(typeInit[0]);
@@ -454,8 +445,7 @@ void Type_Init() {
 	CorLibDone = 1;
 }
 
-__device__
-U32 Type_IsMethod(tMD_MethodDef *pMethod, STRING name, tMD_TypeDef *pReturnType, U32 numParams, U8 *pParamTypeIndexs) {
+function_space_specifier U32 Type_IsMethod(tMD_MethodDef *pMethod, STRING name, tMD_TypeDef *pReturnType, U32 numParams, U8 *pParamTypeIndexs) {
 	SIG sig;
 	U32 sigLen, numSigParams, i, nameLen;
 
@@ -506,8 +496,7 @@ endBad:
 	return 0;
 }
 
-__device__
-U32 Type_IsDerivedFromOrSame(tMD_TypeDef *pBaseType, tMD_TypeDef *pTestType) {
+function_space_specifier U32 Type_IsDerivedFromOrSame(tMD_TypeDef *pBaseType, tMD_TypeDef *pTestType) {
 	while (pTestType != NULL) {
 		if (pTestType == pBaseType) {
 			return 1;
@@ -518,8 +507,7 @@ U32 Type_IsDerivedFromOrSame(tMD_TypeDef *pBaseType, tMD_TypeDef *pTestType) {
 	return 0;
 }
 
-__device__
-U32 Type_IsImplemented(tMD_TypeDef *pInterface, tMD_TypeDef *pTestType) {
+function_space_specifier U32 Type_IsImplemented(tMD_TypeDef *pInterface, tMD_TypeDef *pTestType) {
 	U32 i;
 
 	for (i=0; i<pTestType->numInterfaces; i++) {
@@ -530,15 +518,13 @@ U32 Type_IsImplemented(tMD_TypeDef *pInterface, tMD_TypeDef *pTestType) {
 	return 0;
 }
 
-__device__
-U32 Type_IsAssignableFrom(tMD_TypeDef *pToType, tMD_TypeDef *pFromType) {
+function_space_specifier U32 Type_IsAssignableFrom(tMD_TypeDef *pToType, tMD_TypeDef *pFromType) {
 	return
 		Type_IsDerivedFromOrSame(pToType, pFromType) ||
 		(TYPE_ISINTERFACE(pToType) && Type_IsImplemented(pToType, pFromType));
 }
 
-__device__
-HEAP_PTR Type_GetTypeObject(tMD_TypeDef *pTypeDef) {
+function_space_specifier HEAP_PTR Type_GetTypeObject(tMD_TypeDef *pTypeDef) {
 	if (pTypeDef->typeObject == NULL) {
 		pTypeDef->typeObject = RuntimeType_New(pTypeDef);
 	}

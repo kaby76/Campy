@@ -24,6 +24,6 @@
 #include "Types.h"
 #include "MetaData.h"
 
-__device__ fnInternalCall InternalCall_Map(tMD_MethodDef *pMethod);
+function_space_specifier fnInternalCall InternalCall_Map(tMD_MethodDef *pMethod);
 
 #endif

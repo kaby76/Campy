@@ -27,7 +27,7 @@
 #include "EvalStack.h"
 #include "Gstring.h"
 
-__device__ void MetaData_Fill_FieldDef(tMD_TypeDef *pParentType, tMD_FieldDef *pFieldDef, U32 memOffset, tMD_TypeDef **ppClassTypeArgs) {
+function_space_specifier void MetaData_Fill_FieldDef(tMD_TypeDef *pParentType, tMD_FieldDef *pFieldDef, U32 memOffset, tMD_TypeDef **ppClassTypeArgs) {
 	U32 sigLength;
 	PTR sig;
 	tMetaData *pMetaData;
@@ -80,7 +80,7 @@ __device__ void MetaData_Fill_FieldDef(tMD_TypeDef *pParentType, tMD_FieldDef *p
 	}
 }
 
-__device__ void MetaData_Fill_MethodDef(tMD_TypeDef *pParentType, tMD_MethodDef *pMethodDef, tMD_TypeDef **ppClassTypeArgs, tMD_TypeDef **ppMethodTypeArgs) {
+function_space_specifier void MetaData_Fill_MethodDef(tMD_TypeDef *pParentType, tMD_MethodDef *pMethodDef, tMD_TypeDef **ppClassTypeArgs, tMD_TypeDef **ppMethodTypeArgs) {
 	SIG sig;
 	U32 i, entry, totalSize;
 
@@ -144,7 +144,7 @@ __device__ void MetaData_Fill_MethodDef(tMD_TypeDef *pParentType, tMD_MethodDef 
 // This is to get the correct vTable offset for the method.
 // This must search the MethodImpl table to see if the default inheritence rules are being overridden.
 // Return NULL if this method does not override anything.
-__device__ static tMD_MethodDef* FindVirtualOverriddenMethod(tMD_TypeDef *pTypeDef, tMD_MethodDef *pMethodDef) {
+function_space_specifier static tMD_MethodDef* FindVirtualOverriddenMethod(tMD_TypeDef *pTypeDef, tMD_MethodDef *pMethodDef) {
 	U32 i;
 
 	do {
@@ -181,7 +181,7 @@ __device__ static tMD_MethodDef* FindVirtualOverriddenMethod(tMD_TypeDef *pTypeD
 	return NULL;
 }
 
-__device__ void MetaData_Fill_TypeDef_(tMD_TypeDef *pTypeDef, tMD_TypeDef **ppClassTypeArgs, tMD_TypeDef **ppMethodTypeArgs) {
+function_space_specifier void MetaData_Fill_TypeDef_(tMD_TypeDef *pTypeDef, tMD_TypeDef **ppClassTypeArgs, tMD_TypeDef **ppMethodTypeArgs) {
 	IDX_TABLE firstIdx, lastIdx, token;
 	U32 instanceMemSize, staticMemSize, virtualOfs, i, j;
 	tMetaData *pMetaData;

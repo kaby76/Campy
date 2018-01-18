@@ -24,22 +24,22 @@
 #include "MetaData.h"
 #include "Types.h"
 
-__device__ tAsyncCall* System_String_ctor_CharInt32(PTR pThis_, PTR pParams, PTR pReturnValue);
-__device__ tAsyncCall* System_String_ctor_CharAIntInt(PTR pThis_, PTR pParams, PTR pReturnValue);
-__device__ tAsyncCall* System_String_ctor_StringIntInt(PTR pThis_, PTR pParams, PTR pReturnValue);
-__device__ tAsyncCall* System_String_get_Chars(PTR pThis_, PTR pParams, PTR pReturnValue);
-__device__ tAsyncCall* System_String_InternalConcat(PTR pThis_, PTR pParams, PTR pReturnValue);
-__device__ tAsyncCall* System_String_InternalTrim(PTR pThis_, PTR pParams, PTR pReturnValue);
-__device__ tAsyncCall* System_String_Equals(PTR pThis_, PTR pParams, PTR pReturnValue);
-__device__ tAsyncCall* System_String_GetHashCode(PTR pThis_, PTR pParams, PTR pReturnValue);
-__device__ tAsyncCall* System_String_InternalReplace(PTR pThis_, PTR pParams, PTR pReturnValue);
-__device__ tAsyncCall* System_String_InternalIndexOf(PTR pThis_, PTR pParams, PTR pReturnValue);
-__device__ tAsyncCall* System_String_InternalIndexOfAny(PTR pThis_, PTR pParams, PTR pReturnValue);
+function_space_specifier tAsyncCall* System_String_ctor_CharInt32(PTR pThis_, PTR pParams, PTR pReturnValue);
+function_space_specifier tAsyncCall* System_String_ctor_CharAIntInt(PTR pThis_, PTR pParams, PTR pReturnValue);
+function_space_specifier tAsyncCall* System_String_ctor_StringIntInt(PTR pThis_, PTR pParams, PTR pReturnValue);
+function_space_specifier tAsyncCall* System_String_get_Chars(PTR pThis_, PTR pParams, PTR pReturnValue);
+function_space_specifier tAsyncCall* System_String_InternalConcat(PTR pThis_, PTR pParams, PTR pReturnValue);
+function_space_specifier tAsyncCall* System_String_InternalTrim(PTR pThis_, PTR pParams, PTR pReturnValue);
+function_space_specifier tAsyncCall* System_String_Equals(PTR pThis_, PTR pParams, PTR pReturnValue);
+function_space_specifier tAsyncCall* System_String_GetHashCode(PTR pThis_, PTR pParams, PTR pReturnValue);
+function_space_specifier tAsyncCall* System_String_InternalReplace(PTR pThis_, PTR pParams, PTR pReturnValue);
+function_space_specifier tAsyncCall* System_String_InternalIndexOf(PTR pThis_, PTR pParams, PTR pReturnValue);
+function_space_specifier tAsyncCall* System_String_InternalIndexOfAny(PTR pThis_, PTR pParams, PTR pReturnValue);
 
-__device__ HEAP_PTR SystemString_FromUserStrings(tMetaData *pMetaData, IDX_USERSTRINGS index);
-__device__ HEAP_PTR SystemString_FromCharPtrASCII(char *pStr);
-__device__ HEAP_PTR SystemString_FromCharPtrUTF16(U16 *pStr);
-__device__ STRING2 SystemString_GetString(HEAP_PTR pThis_, U32 *pLength);
-__device__ U32 SystemString_GetNumBytes(HEAP_PTR pThis_);
+function_space_specifier HEAP_PTR SystemString_FromUserStrings(tMetaData *pMetaData, IDX_USERSTRINGS index);
+function_space_specifier HEAP_PTR SystemString_FromCharPtrASCII(char *pStr);
+function_space_specifier HEAP_PTR SystemString_FromCharPtrUTF16(U16 *pStr);
+function_space_specifier STRING2 SystemString_GetString(HEAP_PTR pThis_, U32 *pLength);
+function_space_specifier U32 SystemString_GetNumBytes(HEAP_PTR pThis_);
 
 #endif

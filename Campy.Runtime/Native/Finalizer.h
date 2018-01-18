@@ -21,9 +21,9 @@
 #if !defined (__FINALIZER_H)
 #define __FINALIZER_H
 
-__device__ void Finalizer_Init();
+function_space_specifier void Finalizer_Init();
 
-__device__ void AddFinalizer(PTR ptr);
-__device__ HEAP_PTR GetNextFinalizer();
+function_space_specifier void AddFinalizer(PTR ptr);
+function_space_specifier HEAP_PTR GetNextFinalizer();
 
 #endif

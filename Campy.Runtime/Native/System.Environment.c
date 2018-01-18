@@ -29,7 +29,7 @@
 
 #include <time.h>
 
-__device__ tAsyncCall* System_Environment_get_TickCount(PTR pThis_, PTR pParams, PTR pReturnValue) {
+function_space_specifier tAsyncCall* System_Environment_get_TickCount(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	//I32 t;
 	//
 	//t = (I32)msTime();
@@ -38,7 +38,7 @@ __device__ tAsyncCall* System_Environment_get_TickCount(PTR pThis_, PTR pParams,
 	return NULL;
 }
 
-__device__ tAsyncCall* System_Environment_GetOSVersionString(PTR pThis_, PTR pParams, PTR pReturnValue) {
+function_space_specifier tAsyncCall* System_Environment_GetOSVersionString(PTR pThis_, PTR pParams, PTR pReturnValue) {
 //	static HEAP_PTR versionString = NULL;
 //	if (versionString == NULL) {
 //		char ver[64];
@@ -57,7 +57,7 @@ __device__ tAsyncCall* System_Environment_GetOSVersionString(PTR pThis_, PTR pPa
 	return NULL;
 }
 
-__device__ tAsyncCall* System_Environment_get_Platform(PTR pThis_, PTR pParams, PTR pReturnValue) {
+function_space_specifier tAsyncCall* System_Environment_get_Platform(PTR pThis_, PTR pParams, PTR pReturnValue) {
 //#ifdef WIN32
 //	OSVERSIONINFO osVer;
 //	osVer.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);

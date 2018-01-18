@@ -24,9 +24,9 @@
 #include "MetaData.h"
 #include "Types.h"
 
-__device__ tAsyncCall* System_GC_Collect(PTR pThis_, PTR pParams, PTR pReturnValue);
-__device__ tAsyncCall* System_GC_Internal_CollectionCount(PTR pThis_, PTR pParams, PTR pReturnValue);
-__device__ tAsyncCall* System_GC_GetTotalMemory(PTR pThis_, PTR pParams, PTR pReturnValue);
-__device__ tAsyncCall* System_GC_SuppressFinalize(PTR pThis_, PTR pParams, PTR pReturnValue);
+function_space_specifier tAsyncCall* System_GC_Collect(PTR pThis_, PTR pParams, PTR pReturnValue);
+function_space_specifier tAsyncCall* System_GC_Internal_CollectionCount(PTR pThis_, PTR pParams, PTR pReturnValue);
+function_space_specifier tAsyncCall* System_GC_GetTotalMemory(PTR pThis_, PTR pParams, PTR pReturnValue);
+function_space_specifier tAsyncCall* System_GC_SuppressFinalize(PTR pThis_, PTR pParams, PTR pReturnValue);
 
 #endif

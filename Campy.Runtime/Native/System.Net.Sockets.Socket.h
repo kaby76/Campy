@@ -21,15 +21,15 @@
 #if !defined(__SYSTEM_NET_SOCKETS_SOCKET_H)
 #define __SYSTEM_NET_SOCKETS_SOCKET_H
 
-__device__ void Socket_Init();
+function_space_specifier void Socket_Init();
 
-__device__ tAsyncCall* System_Net_Sockets_Internal_CreateSocket(PTR pThis_, PTR pParams, PTR pReturnValue);
-__device__ tAsyncCall* System_Net_Sockets_Internal_Bind(PTR pThis_, PTR pParams, PTR pReturnValue);
-__device__ tAsyncCall* System_Net_Sockets_Internal_Close(PTR pThis_, PTR pParams, PTR pReturnValue);
-__device__ tAsyncCall* System_Net_Sockets_Internal_Listen(PTR pThis_, PTR pParams, PTR pReturnValue);
-__device__ tAsyncCall* System_Net_Sockets_Internal_Accept(PTR pThis_, PTR pParams, PTR pReturnValue);
-__device__ tAsyncCall* System_Net_Sockets_Internal_Connect(PTR pThis_, PTR pParams, PTR pReturnValue);
-__device__ tAsyncCall* System_Net_Sockets_Internal_Receive(PTR pThis_, PTR pParams, PTR pReturnValue);
-__device__ tAsyncCall* System_Net_Sockets_Internal_Send(PTR pThis_, PTR pParams, PTR pReturnValue);
+function_space_specifier tAsyncCall* System_Net_Sockets_Internal_CreateSocket(PTR pThis_, PTR pParams, PTR pReturnValue);
+function_space_specifier tAsyncCall* System_Net_Sockets_Internal_Bind(PTR pThis_, PTR pParams, PTR pReturnValue);
+function_space_specifier tAsyncCall* System_Net_Sockets_Internal_Close(PTR pThis_, PTR pParams, PTR pReturnValue);
+function_space_specifier tAsyncCall* System_Net_Sockets_Internal_Listen(PTR pThis_, PTR pParams, PTR pReturnValue);
+function_space_specifier tAsyncCall* System_Net_Sockets_Internal_Accept(PTR pThis_, PTR pParams, PTR pReturnValue);
+function_space_specifier tAsyncCall* System_Net_Sockets_Internal_Connect(PTR pThis_, PTR pParams, PTR pReturnValue);
+function_space_specifier tAsyncCall* System_Net_Sockets_Internal_Receive(PTR pThis_, PTR pParams, PTR pReturnValue);
+function_space_specifier tAsyncCall* System_Net_Sockets_Internal_Send(PTR pThis_, PTR pParams, PTR pReturnValue);
 
 #endif

@@ -30,13 +30,13 @@
 #include "System.Array.h"
 #include "System.String.h"
 
-__device__ tAsyncCall* System_Enum_Internal_GetValue(PTR pThis_, PTR pParams, PTR pReturnValue) {
+function_space_specifier tAsyncCall* System_Enum_Internal_GetValue(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	*(U32*)pReturnValue = *(U32*)pThis_;
 
 	return NULL;
 }
 
-__device__ tAsyncCall* System_Enum_Internal_GetInfo(PTR pThis_, PTR pParams, PTR pReturnValue) {
+function_space_specifier tAsyncCall* System_Enum_Internal_GetInfo(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tMD_TypeDef *pEnumType = RuntimeType_DeRef((PTR)((tMD_TypeDef**)pParams)[0]);
 	U32 i, retIndex;
 	HEAP_PTR names, values;

@@ -32,7 +32,7 @@
 #include <crt/host_defines.h>
 #endif
 
-__device__ unsigned int MetaData_DecodeSigEntry(SIG *pSig) {
+function_space_specifier unsigned int MetaData_DecodeSigEntry(SIG *pSig) {
 	unsigned char a,b,c,d;
 	a = *((unsigned char*)*pSig)++;
 	if ((a & 0x80) == 0) {
@@ -55,44 +55,44 @@ __device__ unsigned int MetaData_DecodeSigEntry(SIG *pSig) {
 	return ((int)(a & 0x1f)) << 24 | ((int)b) << 16 | ((int)c) << 8 | d;
 }
 
-__device__ IDX_TABLE MetaData_DecodeSigEntryToken(SIG *pSig) {
+function_space_specifier IDX_TABLE MetaData_DecodeSigEntryToken(SIG *pSig) {
 	static U8 tableID[4] = {MD_TABLE_TYPEDEF, MD_TABLE_TYPEREF, MD_TABLE_TYPESPEC, 0};
 
 	U32 entry = MetaData_DecodeSigEntry(pSig);
 	return MAKE_TABLE_INDEX(tableID[entry & 0x3], entry >> 2);
 }
 
-__device__ tMetaData* MetaData() {
+function_space_specifier tMetaData* MetaData() {
 	tMetaData *pRet = TMALLOC(tMetaData);
 	memset(pRet, 0, sizeof(tMetaData));
 	return pRet;
 }
 
-__device__ void MetaData_LoadStrings(tMetaData *pThis, void *pStream, unsigned int streamLen) {
+function_space_specifier void MetaData_LoadStrings(tMetaData *pThis, void *pStream, unsigned int streamLen) {
 	pThis->strings.pStart = (unsigned char*)pStream;
 
 	log_f(1, "Loaded strings\n");
 }
 
-__device__ unsigned int MetaData_DecodeHeapEntryLength(unsigned char **ppHeapEntry) {
+function_space_specifier unsigned int MetaData_DecodeHeapEntryLength(unsigned char **ppHeapEntry) {
 	return MetaData_DecodeSigEntry((SIG*)ppHeapEntry);
 }
 
-__device__ void MetaData_LoadBlobs(tMetaData *pThis, void *pStream, unsigned int streamLen) {
+function_space_specifier void MetaData_LoadBlobs(tMetaData *pThis, void *pStream, unsigned int streamLen) {
 	pThis->blobs.pStart = (unsigned char*)pStream;
 
 	log_f(1, "Loaded blobs\n");
 
 }
 
-__device__ void MetaData_LoadUserStrings(tMetaData *pThis, void *pStream, unsigned int streamLen) {
+function_space_specifier void MetaData_LoadUserStrings(tMetaData *pThis, void *pStream, unsigned int streamLen) {
 	pThis->userStrings.pStart = (unsigned char*)pStream;
 
 	log_f(1, "Loaded User Strings\n");
 
 }
 
-__device__ void MetaData_LoadGUIDs(tMetaData *pThis, void *pStream, unsigned int streamLen) {
+function_space_specifier void MetaData_LoadGUIDs(tMetaData *pThis, void *pStream, unsigned int streamLen) {
 	pThis->GUIDs.numGUIDs = streamLen / 16;
 
 	// This is stored -16 because numbering starts from 1. This means that a simple indexing calculation
@@ -140,7 +140,7 @@ Destination:
 	s: 16-bit value
 	c: 8-bit value
 */
-__device__ static const char* tableDefs[] = {
+function_space_specifier static const char* tableDefs[] = {
 	// 0x00
 	"sxS*G*GxGx",
 	// 0x01
@@ -243,7 +243,7 @@ __device__ static const char* tableDefs[] = {
 // Coded indexes use this lookup table.
 // Note that the extra 'z' characters are important!
 // (Because of how the lookup works each string must be a power of 2 in length)
-__device__ static const char* codedTags[] = {
+function_space_specifier static const char* codedTags[] = {
 	// TypeDefOrRef
 	"\x02\x01\x1Bz",
 	// HasConstant
@@ -272,20 +272,20 @@ __device__ static const char* codedTags[] = {
 	"\x02\x06",
 };
 
-__device__ static unsigned char codedTagBits[] = {
+function_space_specifier static unsigned char codedTagBits[] = {
 	2, 2, 5, 1, 2, 3, 1, 1, 1, 2, 3, 2, 1
 };
 
-__device__ static unsigned int tableRowSize[MAX_TABLES];
+function_space_specifier static unsigned int tableRowSize[MAX_TABLES];
 
-__device__ void MetaData_Init() {
+function_space_specifier void MetaData_Init() {
 	U32 i;
 	for (i=0; i<MAX_TABLES; i++) {
 		tableRowSize[i] = 0;
 	}
 }
 
-__device__ unsigned int GetU16(unsigned char *pSource) {
+function_space_specifier unsigned int GetU16(unsigned char *pSource) {
 	unsigned char a, b;
 
 	a = pSource[0];
@@ -294,7 +294,7 @@ __device__ unsigned int GetU16(unsigned char *pSource) {
 	| (((unsigned int)b) << 8);
 }
 
-__device__ unsigned int GetU32(unsigned char *pSource) {
+function_space_specifier unsigned int GetU32(unsigned char *pSource) {
 	unsigned char a, b, c, d;
 
 	a = pSource[0];
@@ -307,7 +307,7 @@ __device__ unsigned int GetU32(unsigned char *pSource) {
 	| (((unsigned int)d) << 24);
 }
 
-__device__ unsigned long long GetU64(unsigned char *pSource) {
+function_space_specifier unsigned long long GetU64(unsigned char *pSource) {
 	unsigned char a, b, c, d, e, f, g, h;
 
 	a = pSource[0];
@@ -328,7 +328,7 @@ __device__ unsigned long long GetU64(unsigned char *pSource) {
 		| (((unsigned long long)h) << 56);
 }
 
-__device__ unsigned int CodedIndex(tMetaData *pThis, unsigned char x, unsigned char **ppSource)
+function_space_specifier unsigned int CodedIndex(tMetaData *pThis, unsigned char x, unsigned char **ppSource)
 {
 	unsigned int v;
 	unsigned char * pSource = (unsigned char *)*ppSource;
@@ -356,7 +356,7 @@ __device__ unsigned int CodedIndex(tMetaData *pThis, unsigned char x, unsigned c
 	return v;
 }
 
-__device__ unsigned int Coded2Index(tMetaData *pThis, int d, unsigned char **ppSource)
+function_space_specifier unsigned int Coded2Index(tMetaData *pThis, int d, unsigned char **ppSource)
 {
 	unsigned int v;
 	unsigned char * pSource = (unsigned char *)*ppSource;
@@ -378,7 +378,7 @@ __device__ unsigned int Coded2Index(tMetaData *pThis, int d, unsigned char **ppS
 }
 
 // Reads metadata tables into structs in a platform-independent way.
-__device__ void ModuleTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest)
+function_space_specifier void ModuleTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest)
 {
 	// 0x00
 	// original "sxS*G*GxGx",
@@ -408,7 +408,7 @@ __device__ void ModuleTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **
 	*ppSource = pSource;
 }
 
-__device__ void TypeRefTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest)
+function_space_specifier void TypeRefTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest)
 {
 	// 0x01
 	// original "x*;*S*S*",
@@ -433,7 +433,7 @@ __device__ void TypeRefTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char *
 	*ppSource = pSource;
 }
 
-__device__ void TypeDefTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
+function_space_specifier void TypeDefTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
 {
 	// 0x02
 	// original "x*m*i*S*S*0*\x04*\x06*xclcxcxcx*x*x*x*x*x*x*x*x*x*x*I*x*x*x*x*x*x*x*x*x*x*x*x*",
@@ -510,7 +510,7 @@ __device__ void TypeDefTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char *
 	*ppSource = pSource;
 }
 
-__device__ void FieldPtrTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
+function_space_specifier void FieldPtrTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
 {
 	tMD_TypeDef * p = (tMD_TypeDef*)pDest;
 	memset(p, 0, sizeof(tMD_TypeDef));
@@ -520,7 +520,7 @@ __device__ void FieldPtrTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char 
 	*ppSource = pSource;
 }
 
-__device__ void FieldDefTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
+function_space_specifier void FieldDefTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
 {
 	// "x*m*ssxsS*B*x*x*x*x*I*x*",
 
@@ -551,7 +551,7 @@ __device__ void FieldDefTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char 
 	*ppSource = pSource;
 }
 
-__device__ void MethodDefTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
+function_space_specifier void MethodDefTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
 {
 	// 	"x*m*^*ssssS*B*\x08*x*x*x*x*x*x*I*x*x*x*"
 
@@ -591,7 +591,7 @@ __device__ void MethodDefTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char
 	*ppSource = pSource;
 }
 
-__device__ void ParamTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
+function_space_specifier void ParamTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
 {
 	// 0x08
 	// "ssssS*",
@@ -619,7 +619,7 @@ __device__ void ParamTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **p
 	*ppSource = pSource;
 }
 
-__device__ void InterfaceImplTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
+function_space_specifier void InterfaceImplTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
 {
 	// Table 0x09 - InterfaceImpl
 	// "\x02*0*",
@@ -636,7 +636,7 @@ __device__ void InterfaceImplTableReader(tMetaData *pThis, tRVA *pRVA, unsigned 
 	*ppSource = pSource;
 }
 
-__device__ void MemberRefTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
+function_space_specifier void MemberRefTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
 {
 	// Table 0x0A - MemberRef
 	// "x*5*S*B*",
@@ -663,7 +663,7 @@ __device__ void MemberRefTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char
 	*ppSource = pSource;
 }
 
-__device__ void ConstantTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
+function_space_specifier void ConstantTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
 {
 	// Table 0x0B - Constant
 	// "ccccxs1*B*",
@@ -690,7 +690,7 @@ __device__ void ConstantTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char 
 	*ppSource = pSource;
 }
 
-__device__ void CustomAttributeTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
+function_space_specifier void CustomAttributeTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
 {
 	// Table 0x0C - CustomAttribute
 	// "2*:*B*",
@@ -714,7 +714,7 @@ __device__ void CustomAttributeTableReader(tMetaData *pThis, tRVA *pRVA, unsigne
 	*ppSource = pSource;
 }
 
-__device__ void DeclSecurityTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
+function_space_specifier void DeclSecurityTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
 {
 	// Table 0x0E - DeclSecurity
 	// "ssxs4*B*",
@@ -739,7 +739,7 @@ __device__ void DeclSecurityTableReader(tMetaData *pThis, tRVA *pRVA, unsigned c
 	*ppSource = pSource;
 }
 
-__device__ void ClassLayoutTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
+function_space_specifier void ClassLayoutTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
 {
 	// Table 0x0F - ClassLayout
 	// "ssxsi*\x02*",
@@ -760,7 +760,7 @@ __device__ void ClassLayoutTableReader(tMetaData *pThis, tRVA *pRVA, unsigned ch
 	*ppSource = pSource;
 }
 
-__device__ void StandAloneSigTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
+function_space_specifier void StandAloneSigTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
 {
 	// Table 0x11 - StandAloneSig
 	// "B*",
@@ -780,7 +780,7 @@ __device__ void StandAloneSigTableReader(tMetaData *pThis, tRVA *pRVA, unsigned 
 	*ppSource = pSource;
 }
 
-__device__ void EventMapTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
+function_space_specifier void EventMapTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
 {
 	// Table 0x12 - EventMap
 	// "\x02*\x14*",
@@ -797,7 +797,7 @@ __device__ void EventMapTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char 
 	*ppSource = pSource;
 }
 
-__device__ void EventTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
+function_space_specifier void EventTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
 {
 	// Table 0x14 - Event
 	// "ssxsS*0*",
@@ -822,7 +822,7 @@ __device__ void EventTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **p
 	*ppSource = pSource;
 }
 
-__device__ void PropertyMapTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
+function_space_specifier void PropertyMapTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
 {
 	// Table 0x15 - PropertyMap
 	// "\x02*\x17*",
@@ -839,7 +839,7 @@ __device__ void PropertyMapTableReader(tMetaData *pThis, tRVA *pRVA, unsigned ch
 	*ppSource = pSource;
 }
 
-__device__ void PropertyTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
+function_space_specifier void PropertyTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
 {
 	// Table 0x17 - Property
 	// "ssxsS*B*",
@@ -865,7 +865,7 @@ __device__ void PropertyTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char 
 	*ppSource = pSource;
 }
 
-__device__ void MethodSemanticsTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
+function_space_specifier void MethodSemanticsTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
 {
 	// Table 0x18 - MethodSemantics
 	// "ssxs\06*6*",
@@ -891,7 +891,7 @@ __device__ void MethodSemanticsTableReader(tMetaData *pThis, tRVA *pRVA, unsigne
 	*ppSource = pSource;
 }
 
-__device__ void MethodImplTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
+function_space_specifier void MethodImplTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
 {
 	// Table 0x19 - MethodImpl
 	// 	"\x02*7*7*"
@@ -910,7 +910,7 @@ __device__ void MethodImplTableReader(tMetaData *pThis, tRVA *pRVA, unsigned cha
 	*ppSource = pSource;
 }
 
-__device__ void ModuleRefTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
+function_space_specifier void ModuleRefTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
 {
 	// Table 0x1a - ModuleRef
 	// 	"S*"
@@ -928,7 +928,7 @@ __device__ void ModuleRefTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char
 	*ppSource = pSource;
 }
 
-__device__ void TypeSpecTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
+function_space_specifier void TypeSpecTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
 {
 	// Table 0x1B - TypeSpec
 	// 	"x*m*B*"
@@ -948,7 +948,7 @@ __device__ void TypeSpecTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char 
 	*ppSource = pSource;
 }
 
-__device__ void ImplMapTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
+function_space_specifier void ImplMapTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
 {
 	// Table 0x1c - ImplMap
 	// 	"ssxs8*S*\x1a*"
@@ -973,7 +973,7 @@ __device__ void ImplMapTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char *
 	*ppSource = pSource;
 }
 
-__device__ void FieldRVATableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
+function_space_specifier void FieldRVATableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
 {
 	// Table 0x1D - FieldRVA
 	// "^*\x04*"
@@ -992,7 +992,7 @@ __device__ void FieldRVATableReader(tMetaData *pThis, tRVA *pRVA, unsigned char 
 	*ppSource = pSource;
 }
 
-__device__ void AssemblyTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
+function_space_specifier void AssemblyTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
 {
 	// Table 0x20 - Assembly
 	// "i4s2s2s2s2i4B8S8S8"
@@ -1037,7 +1037,7 @@ __device__ void AssemblyTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char 
 	*ppSource = pSource;
 }
 
-__device__ void AssemblyRefTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
+function_space_specifier void AssemblyRefTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
 {
 	// Table 0x23 - AssemblyRef
 	// "s2s2s2s2i4B8S8S8B8"
@@ -1083,7 +1083,7 @@ __device__ void AssemblyRefTableReader(tMetaData *pThis, tRVA *pRVA, unsigned ch
 	*ppSource = pSource;
 }
 
-__device__ void NestedClassTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
+function_space_specifier void NestedClassTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
 {
 	// Table 0x29 - NestedClass
 	// "\x02*\x02*",
@@ -1100,7 +1100,7 @@ __device__ void NestedClassTableReader(tMetaData *pThis, tRVA *pRVA, unsigned ch
 	*ppSource = pSource;
 }
 
-__device__ void GenericParamTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
+function_space_specifier void GenericParamTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
 {
 	// Table 0x2A - Generic param
 	// "s2s2<4S8"
@@ -1126,7 +1126,7 @@ __device__ void GenericParamTableReader(tMetaData *pThis, tRVA *pRVA, unsigned c
 	*ppSource = pSource;
 }
 
-__device__ void MethodSpecTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
+function_space_specifier void MethodSpecTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
 {
 	// Table 0x2B - MethodSpec
 	// "x8m874B8"
@@ -1148,7 +1148,7 @@ __device__ void MethodSpecTableReader(tMetaData *pThis, tRVA *pRVA, unsigned cha
 	*ppSource = pSource;
 }
 
-__device__ void GenericParamConstraintTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
+function_space_specifier void GenericParamConstraintTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
 {
 	// Table 0x2C - GenericParamConstraint
 	// "\x2a*0*"
@@ -1168,7 +1168,7 @@ __device__ void GenericParamConstraintTableReader(tMetaData *pThis, tRVA *pRVA, 
 
 
 // Loads a single table, returns pointer to table in memory.
-__device__ static void* LoadSingleTable(tMetaData *pThis, tRVA *pRVA, int tableID, void **ppTable) {
+function_space_specifier static void* LoadSingleTable(tMetaData *pThis, tRVA *pRVA, int tableID, void **ppTable) {
 	int numRows = pThis->tables.numRows[tableID];
 	int rowLen = 0; // Number of bytes taken by each row in memory.
 	int row;
@@ -1393,7 +1393,7 @@ __device__ static void* LoadSingleTable(tMetaData *pThis, tRVA *pRVA, int tableI
 	return pRet;
 }
 
-__device__ void MetaData_LoadTables(tMetaData *pThis, tRVA *pRVA, unsigned char *pStream, unsigned int streamLen) {
+function_space_specifier void MetaData_LoadTables(tMetaData *pThis, tRVA *pRVA, unsigned char *pStream, unsigned int streamLen) {
 	U64 valid, j;
 	unsigned char c;
 	int i, k, numTables;
@@ -1468,7 +1468,7 @@ printf("i = %d\n", i);
 	printf("tables done.\n");
 }
 
-__device__ PTR MetaData_GetBlob(BLOB_ blob, U32 *pBlobLength) {
+function_space_specifier PTR MetaData_GetBlob(BLOB_ blob, U32 *pBlobLength) {
 	unsigned int len = MetaData_DecodeHeapEntryLength(&blob);
 	if (pBlobLength != NULL) {
 		*pBlobLength = len;
@@ -1477,7 +1477,7 @@ __device__ PTR MetaData_GetBlob(BLOB_ blob, U32 *pBlobLength) {
 }
 
 // Returns length in bytes, not characters
-__device__ STRING2 MetaData_GetUserString(tMetaData *pThis, IDX_USERSTRINGS index, unsigned int *pStringLength) {
+function_space_specifier STRING2 MetaData_GetUserString(tMetaData *pThis, IDX_USERSTRINGS index, unsigned int *pStringLength) {
 	unsigned char *pString = pThis->userStrings.pStart + (index & 0x00ffffff);
 	unsigned int len = MetaData_DecodeHeapEntryLength(&pString);
 	if (pStringLength != NULL) {
@@ -1487,7 +1487,7 @@ __device__ STRING2 MetaData_GetUserString(tMetaData *pThis, IDX_USERSTRINGS inde
 	return (STRING2)pString;
 }
 
-__device__ void* MetaData_GetTableRow(tMetaData *pThis, IDX_TABLE index) {
+function_space_specifier void* MetaData_GetTableRow(tMetaData *pThis, IDX_TABLE index) {
 	char *pData;
 	
 	if (TABLE_OFS(index) == 0) {
@@ -1502,7 +1502,7 @@ __device__ void* MetaData_GetTableRow(tMetaData *pThis, IDX_TABLE index) {
 	return result;
 }
 
-__device__ void MetaData_GetConstant(tMetaData *pThis, IDX_TABLE idx, PTR pResultMem) {
+function_space_specifier void MetaData_GetConstant(tMetaData *pThis, IDX_TABLE idx, PTR pResultMem) {
 	tMD_Constant *pConst = 0;
 
 	switch (TABLE_ID(idx)) {
@@ -1527,7 +1527,7 @@ __device__ void MetaData_GetConstant(tMetaData *pThis, IDX_TABLE idx, PTR pResul
 
 }
 
-__device__ void MetaData_GetHeapRoots(tHeapRoots *pHeapRoots, tMetaData *pMetaData) {
+function_space_specifier void MetaData_GetHeapRoots(tHeapRoots *pHeapRoots, tMetaData *pMetaData) {
 	U32 i, top;
 	// Go through all types, getting their static variables.
 

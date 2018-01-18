@@ -21,6 +21,6 @@
 #if !defined(__SYSTEM_DATETIME_H)
 #define __SYSTEM_DATETIME_H
 
-__device__ tAsyncCall* System_DateTime_InternalUtcNow(PTR pThis_, PTR pParams, PTR pReturnValue);
+function_space_specifier tAsyncCall* System_DateTime_InternalUtcNow(PTR pThis_, PTR pParams, PTR pReturnValue);
 
 #endif

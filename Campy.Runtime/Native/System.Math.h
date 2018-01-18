@@ -23,10 +23,10 @@
 
 #include "Types.h"
 
-__device__ tAsyncCall* System_Math_Sin(PTR pThis_, PTR pParams, PTR pReturnValue);
-__device__ tAsyncCall* System_Math_Cos(PTR pThis_, PTR pParams, PTR pReturnValue);
-__device__ tAsyncCall* System_Math_Tan(PTR pThis_, PTR pParams, PTR pReturnValue);
-__device__ tAsyncCall* System_Math_Pow(PTR pThis_, PTR pParams, PTR pReturnValue);
-__device__ tAsyncCall* System_Math_Sqrt(PTR pThis_, PTR pParams, PTR pReturnValue);
+function_space_specifier tAsyncCall* System_Math_Sin(PTR pThis_, PTR pParams, PTR pReturnValue);
+function_space_specifier tAsyncCall* System_Math_Cos(PTR pThis_, PTR pParams, PTR pReturnValue);
+function_space_specifier tAsyncCall* System_Math_Tan(PTR pThis_, PTR pParams, PTR pReturnValue);
+function_space_specifier tAsyncCall* System_Math_Pow(PTR pThis_, PTR pParams, PTR pReturnValue);
+function_space_specifier tAsyncCall* System_Math_Sqrt(PTR pThis_, PTR pParams, PTR pReturnValue);
 
 #endif

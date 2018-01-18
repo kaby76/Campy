@@ -42,27 +42,27 @@ struct tHeapRoots_ {
 	tHeapRootEntry *pHeapEntries;
 };
 
-__device__ void Heap_Init();
-__device__ void Heap_SetRoots(tHeapRoots *pHeapRoots, void *pRoots, U32 sizeInBytes);
-__device__ void Heap_UnmarkFinalizer(HEAP_PTR heapPtr);
-__device__ void Heap_GarbageCollect();
-__device__ U32 Heap_NumCollections();
-__device__ U32 Heap_GetTotalMemory();
+function_space_specifier void Heap_Init();
+function_space_specifier void Heap_SetRoots(tHeapRoots *pHeapRoots, void *pRoots, U32 sizeInBytes);
+function_space_specifier void Heap_UnmarkFinalizer(HEAP_PTR heapPtr);
+function_space_specifier void Heap_GarbageCollect();
+function_space_specifier U32 Heap_NumCollections();
+function_space_specifier U32 Heap_GetTotalMemory();
 
-__device__ HEAP_PTR Heap_Alloc(tMD_TypeDef *pTypeDef, U32 size);
-__device__ HEAP_PTR Heap_AllocType(tMD_TypeDef *pTypeDef);
-__device__ void Heap_MakeUndeletable(HEAP_PTR heapEntry);
-__device__ void Heap_MakeDeletable(HEAP_PTR heapEntry);
+function_space_specifier HEAP_PTR Heap_Alloc(tMD_TypeDef *pTypeDef, U32 size);
+function_space_specifier HEAP_PTR Heap_AllocType(tMD_TypeDef *pTypeDef);
+function_space_specifier void Heap_MakeUndeletable(HEAP_PTR heapEntry);
+function_space_specifier void Heap_MakeDeletable(HEAP_PTR heapEntry);
 
-__device__ tMD_TypeDef* Heap_GetType(HEAP_PTR heapEntry);
+function_space_specifier tMD_TypeDef* Heap_GetType(HEAP_PTR heapEntry);
 
-__device__ HEAP_PTR Heap_Box(tMD_TypeDef *pType, PTR pMem);
-__device__ HEAP_PTR Heap_Clone(HEAP_PTR obj);
+function_space_specifier HEAP_PTR Heap_Box(tMD_TypeDef *pType, PTR pMem);
+function_space_specifier HEAP_PTR Heap_Clone(HEAP_PTR obj);
 
-__device__ U32 Heap_SyncTryEnter(HEAP_PTR obj);
-__device__ U32 Heap_SyncExit(HEAP_PTR obj);
+function_space_specifier U32 Heap_SyncTryEnter(HEAP_PTR obj);
+function_space_specifier U32 Heap_SyncExit(HEAP_PTR obj);
 
-__device__ HEAP_PTR Heap_SetWeakRefTarget(HEAP_PTR target, HEAP_PTR weakRef);
-__device__ HEAP_PTR* Heap_GetWeakRefAddress(HEAP_PTR target);
-__device__ void Heap_RemovedWeakRefTarget(HEAP_PTR target);
+function_space_specifier HEAP_PTR Heap_SetWeakRefTarget(HEAP_PTR target, HEAP_PTR weakRef);
+function_space_specifier HEAP_PTR* Heap_GetWeakRefAddress(HEAP_PTR target);
+function_space_specifier void Heap_RemovedWeakRefTarget(HEAP_PTR target);
 #endif

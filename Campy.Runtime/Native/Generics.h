@@ -54,12 +54,12 @@ struct tGenericMethodInstance_ {
 	tMD_TypeDef *pTypeArgs[0];
 };
 
-__device__ void Generic_GetHeapRoots(tHeapRoots *pHeapRoots, tMD_TypeDef *pTypeDef);
+function_space_specifier void Generic_GetHeapRoots(tHeapRoots *pHeapRoots, tMD_TypeDef *pTypeDef);
 
-__device__ tMD_TypeDef* Generics_GetGenericTypeFromSig(tMetaData *pMetaData, SIG *pSig, tMD_TypeDef **ppClassTypeArgs, tMD_TypeDef **ppCallingMethodTypeArgs);
-__device__ tMD_TypeDef* Generics_GetGenericTypeFromCoreType(tMD_TypeDef *pCoreType, U32 numArgs, tMD_TypeDef **ppTypeArgs);//, tMD_TypeDef **ppClassTypeArgs, tMD_TypeDef **ppMethodTypeArgs);
+function_space_specifier tMD_TypeDef* Generics_GetGenericTypeFromSig(tMetaData *pMetaData, SIG *pSig, tMD_TypeDef **ppClassTypeArgs, tMD_TypeDef **ppCallingMethodTypeArgs);
+function_space_specifier tMD_TypeDef* Generics_GetGenericTypeFromCoreType(tMD_TypeDef *pCoreType, U32 numArgs, tMD_TypeDef **ppTypeArgs);//, tMD_TypeDef **ppClassTypeArgs, tMD_TypeDef **ppMethodTypeArgs);
 
-__device__ tMD_MethodDef* Generics_GetMethodDefFromSpec(tMD_MethodSpec *pMethodSpec, tMD_TypeDef **ppCallingClassTypeArgs, tMD_TypeDef **ppCallingMethodTypeArgs);
-__device__ tMD_MethodDef* Generics_GetMethodDefFromCoreMethod(tMD_MethodDef *pCoreMethod, tMD_TypeDef *pParentType, U32 numMethodTypeArgs, tMD_TypeDef **ppMethodTypeArgs);
+function_space_specifier tMD_MethodDef* Generics_GetMethodDefFromSpec(tMD_MethodSpec *pMethodSpec, tMD_TypeDef **ppCallingClassTypeArgs, tMD_TypeDef **ppCallingMethodTypeArgs);
+function_space_specifier tMD_MethodDef* Generics_GetMethodDefFromCoreMethod(tMD_MethodDef *pCoreMethod, tMD_TypeDef *pParentType, U32 numMethodTypeArgs, tMD_TypeDef **ppMethodTypeArgs);
 
 #endif

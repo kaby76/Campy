@@ -30,18 +30,18 @@ struct tRuntimeType_ {
 	tMD_TypeDef *pTypeDef;
 };
 
-__device__ tAsyncCall* System_RuntimeType_get_Name(PTR pThis_, PTR pParams, PTR pReturnValue);
-__device__ tAsyncCall* System_RuntimeType_get_Namespace(PTR pThis_, PTR pParams, PTR pReturnValue);
-__device__ tAsyncCall* System_RuntimeType_GetNestingParentType(PTR pThis_, PTR pParams, PTR pReturnValue);
-__device__ tAsyncCall* System_RuntimeType_get_BaseType(PTR pThis_, PTR pParams, PTR pReturnValue);
-__device__ tAsyncCall* System_RuntimeType_get_IsEnum(PTR pThis_, PTR pParams, PTR pReturnValue);
-__device__ tAsyncCall* System_RuntimeType_get_IsGenericType(PTR pThis_, PTR pParams, PTR pReturnValue);
-__device__ tAsyncCall* System_RuntimeType_Internal_GetGenericTypeDefinition(PTR pThis_, PTR pParams, PTR pReturnValue);
-__device__ tAsyncCall* System_RuntimeType_GetGenericArguments(PTR pThis_, PTR pParams, PTR pReturnValue);
+function_space_specifier tAsyncCall* System_RuntimeType_get_Name(PTR pThis_, PTR pParams, PTR pReturnValue);
+function_space_specifier tAsyncCall* System_RuntimeType_get_Namespace(PTR pThis_, PTR pParams, PTR pReturnValue);
+function_space_specifier tAsyncCall* System_RuntimeType_GetNestingParentType(PTR pThis_, PTR pParams, PTR pReturnValue);
+function_space_specifier tAsyncCall* System_RuntimeType_get_BaseType(PTR pThis_, PTR pParams, PTR pReturnValue);
+function_space_specifier tAsyncCall* System_RuntimeType_get_IsEnum(PTR pThis_, PTR pParams, PTR pReturnValue);
+function_space_specifier tAsyncCall* System_RuntimeType_get_IsGenericType(PTR pThis_, PTR pParams, PTR pReturnValue);
+function_space_specifier tAsyncCall* System_RuntimeType_Internal_GetGenericTypeDefinition(PTR pThis_, PTR pParams, PTR pReturnValue);
+function_space_specifier tAsyncCall* System_RuntimeType_GetGenericArguments(PTR pThis_, PTR pParams, PTR pReturnValue);
 
 // Create a new heap object which is the RuntimeType object for the given type.
-__device__ HEAP_PTR RuntimeType_New(tMD_TypeDef *pTypeDef);
+function_space_specifier HEAP_PTR RuntimeType_New(tMD_TypeDef *pTypeDef);
 // De-ref a runtime type pointer
-__device__ tMD_TypeDef* RuntimeType_DeRef(PTR type);
+function_space_specifier tMD_TypeDef* RuntimeType_DeRef(PTR type);
 
 #endif

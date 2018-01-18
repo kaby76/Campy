@@ -26,7 +26,7 @@
 #include "Type.h"
 #include "Types.h"
 
-__device__ static U32 Internal_TryEntry_Check(PTR pThis_, PTR pParams, PTR pReturnValue, tAsyncCall *pAsync) {
+function_space_specifier static U32 Internal_TryEntry_Check(PTR pThis_, PTR pParams, PTR pReturnValue, tAsyncCall *pAsync) {
 	HEAP_PTR pObj = ((HEAP_PTR*)pParams)[0];
 	I32 timeout = ((I32*)pParams)[1];
 	U32 ret = Heap_SyncTryEnter(pObj);
@@ -60,7 +60,7 @@ __device__ static U32 Internal_TryEntry_Check(PTR pThis_, PTR pParams, PTR pRetu
 	return 0;
 }
 
-__device__ tAsyncCall* System_Threading_Monitor_Internal_TryEnter(PTR pThis_, PTR pParams, PTR pReturnValue) {
+function_space_specifier tAsyncCall* System_Threading_Monitor_Internal_TryEnter(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	U32 ok = Internal_TryEntry_Check(pThis_, pParams, pReturnValue, NULL);
 	tAsyncCall *pAsync;
 	if (ok) {
@@ -76,7 +76,7 @@ __device__ tAsyncCall* System_Threading_Monitor_Internal_TryEnter(PTR pThis_, PT
 	return pAsync;
 }
 
-__device__ tAsyncCall* System_Threading_Monitor_Internal_Exit(PTR pThis_, PTR pParams, PTR pReturnValue) {
+function_space_specifier tAsyncCall* System_Threading_Monitor_Internal_Exit(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	HEAP_PTR pObj = ((HEAP_PTR*)pParams)[0];
 	Heap_SyncExit(pObj);
 	return ASYNC_LOCK_EXIT;

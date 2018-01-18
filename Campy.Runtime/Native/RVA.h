@@ -36,8 +36,8 @@ struct tRVA_ {
 	tRVA_Item *pFirstRVA;
 };
 
-__device__ tRVA* RVA();
-__device__ tRVA_Item* RVA_Create(tRVA *pThis, void *pFile, void *pSectionHeader);
-__device__ void* RVA_FindData(tRVA *pThis, unsigned int rva);
+function_space_specifier tRVA* RVA();
+function_space_specifier tRVA_Item* RVA_Create(tRVA *pThis, void *pFile, void *pSectionHeader);
+function_space_specifier void* RVA_FindData(tRVA *pThis, unsigned int rva);
 
 #endif

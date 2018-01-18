@@ -29,7 +29,7 @@
 #include "Gprintf.h"
 #include <stdio.h>
 
-__device__ U32 MetaData_CompareNameAndSig(STRING name, BLOB_ sigBlob, tMetaData *pSigMetaData, tMD_TypeDef **ppSigClassTypeArgs, tMD_TypeDef **ppSigMethodTypeArgs, tMD_MethodDef *pMethod, tMD_TypeDef **ppMethodClassTypeArgs, tMD_TypeDef **ppMethodMethodTypeArgs) {
+function_space_specifier U32 MetaData_CompareNameAndSig(STRING name, BLOB_ sigBlob, tMetaData *pSigMetaData, tMD_TypeDef **ppSigClassTypeArgs, tMD_TypeDef **ppSigMethodTypeArgs, tMD_MethodDef *pMethod, tMD_TypeDef **ppMethodClassTypeArgs, tMD_TypeDef **ppMethodMethodTypeArgs) {
 	if (Gstrcmp(name, pMethod->name) == 0) {
 		SIG sig, thisSig;
 		U32 e, thisE, paramCount, i;
@@ -78,7 +78,7 @@ __device__ U32 MetaData_CompareNameAndSig(STRING name, BLOB_ sigBlob, tMetaData 
 	return 0;
 }
 
-__device__ static tMD_MethodDef* FindMethodInType(tMD_TypeDef *pTypeDef, STRING name, tMetaData *pSigMetaData, BLOB_ sigBlob, tMD_TypeDef **ppClassTypeArgs, tMD_TypeDef **ppMethodTypeArgs) {
+function_space_specifier static tMD_MethodDef* FindMethodInType(tMD_TypeDef *pTypeDef, STRING name, tMetaData *pSigMetaData, BLOB_ sigBlob, tMD_TypeDef **ppClassTypeArgs, tMD_TypeDef **ppMethodTypeArgs) {
 	U32 i;
 	tMD_TypeDef *pLookInType = pTypeDef;
 
@@ -132,7 +132,7 @@ __device__ static tMD_MethodDef* FindMethodInType(tMD_TypeDef *pTypeDef, STRING 
 	return NULL;
 }
 
-__device__ static tMD_FieldDef* FindFieldInType(tMD_TypeDef *pTypeDef, STRING name) {
+function_space_specifier static tMD_FieldDef* FindFieldInType(tMD_TypeDef *pTypeDef, STRING name) {
 	U32 i;
 
 	MetaData_Fill_TypeDef(pTypeDef, NULL, NULL);
@@ -148,7 +148,7 @@ __device__ static tMD_FieldDef* FindFieldInType(tMD_TypeDef *pTypeDef, STRING na
 	return NULL;
 }
 
-__device__ tMetaData* MetaData_GetResolutionScopeMetaData(tMetaData *pMetaData, IDX_TABLE resolutionScopeToken, tMD_TypeDef **ppInNestedType) {
+function_space_specifier tMetaData* MetaData_GetResolutionScopeMetaData(tMetaData *pMetaData, IDX_TABLE resolutionScopeToken, tMD_TypeDef **ppInNestedType) {
 	switch (TABLE_ID(resolutionScopeToken)) {
 		case MD_TABLE_ASSEMBLYREF:
 			{
@@ -173,7 +173,7 @@ __device__ tMetaData* MetaData_GetResolutionScopeMetaData(tMetaData *pMetaData, 
 	return NULL;
 }
 
-__device__ tMD_TypeDef* MetaData_GetTypeDefFromName(tMetaData *pMetaData, STRING nameSpace, STRING name, tMD_TypeDef *pInNestedClass) {
+function_space_specifier tMD_TypeDef* MetaData_GetTypeDefFromName(tMetaData *pMetaData, STRING nameSpace, STRING name, tMD_TypeDef *pInNestedClass) {
 	U32 i;
 	for (i=1; i<=pMetaData->tables.numRows[MD_TABLE_TYPEDEF]; i++) {
 		tMD_TypeDef *pTypeDef;
@@ -192,7 +192,7 @@ __device__ tMD_TypeDef* MetaData_GetTypeDefFromName(tMetaData *pMetaData, STRING
 	return NULL;
 }
 
-__device__ tMD_TypeDef* MetaData_GetTypeDefFromFullName(STRING assemblyName, STRING nameSpace, STRING name) {
+function_space_specifier tMD_TypeDef* MetaData_GetTypeDefFromFullName(STRING assemblyName, STRING nameSpace, STRING name) {
 	tMetaData *pTypeMetaData;
 
 	pTypeMetaData = CLIFile_GetMetaDataForAssembly(assemblyName);
@@ -207,7 +207,7 @@ void Bcl_MetaData_GetTypeDefFromDefRefOrSpec(tMetaData *pMetaData, IDX_TABLE tok
 	*result = MetaData_GetTypeDefFromDefRefOrSpec(pMetaData, token, ppClassTypeArgs, ppMethodTypeArgs);
 }
 
-__device__ tMD_TypeDef* MetaData_GetTypeDefFromDefRefOrSpec(tMetaData *pMetaData, IDX_TABLE token, tMD_TypeDef **ppClassTypeArgs, tMD_TypeDef **ppMethodTypeArgs) {
+function_space_specifier tMD_TypeDef* MetaData_GetTypeDefFromDefRefOrSpec(tMetaData *pMetaData, IDX_TABLE token, tMD_TypeDef **ppClassTypeArgs, tMD_TypeDef **ppMethodTypeArgs) {
 	void *pTableEntry;
 	pTableEntry = MetaData_GetTableRow(pMetaData, token);
 	if (pTableEntry == NULL) {
@@ -256,7 +256,7 @@ __device__ tMD_TypeDef* MetaData_GetTypeDefFromDefRefOrSpec(tMetaData *pMetaData
 	return NULL;
 }
 
-__device__ tMD_TypeDef* MetaData_GetTypeDefFromMethodDef(tMD_MethodDef *pMethodDef) {
+function_space_specifier tMD_TypeDef* MetaData_GetTypeDefFromMethodDef(tMD_MethodDef *pMethodDef) {
 	tMetaData *pMetaData;
 	U32 i;
 
@@ -275,7 +275,7 @@ __device__ tMD_TypeDef* MetaData_GetTypeDefFromMethodDef(tMD_MethodDef *pMethodD
 	return NULL;
 }
 
-__device__ tMD_TypeDef* MetaData_GetTypeDefFromFieldDef(tMD_FieldDef *pFieldDef) {
+function_space_specifier tMD_TypeDef* MetaData_GetTypeDefFromFieldDef(tMD_FieldDef *pFieldDef) {
 	tMetaData *pMetaData;
 	U32 i;
 
@@ -294,7 +294,7 @@ __device__ tMD_TypeDef* MetaData_GetTypeDefFromFieldDef(tMD_FieldDef *pFieldDef)
 	return NULL;
 }
 
-__device__ tMD_MethodDef* MetaData_GetMethodDefFromDefRefOrSpec(tMetaData *pMetaData, IDX_TABLE token, tMD_TypeDef **ppClassTypeArgs, tMD_TypeDef **ppMethodTypeArgs) {
+function_space_specifier tMD_MethodDef* MetaData_GetMethodDefFromDefRefOrSpec(tMetaData *pMetaData, IDX_TABLE token, tMD_TypeDef **ppClassTypeArgs, tMD_TypeDef **ppMethodTypeArgs) {
 	void *pTableEntry;
 
 	pTableEntry = MetaData_GetTableRow(pMetaData, token);
@@ -349,7 +349,7 @@ __device__ tMD_MethodDef* MetaData_GetMethodDefFromDefRefOrSpec(tMetaData *pMeta
 	return NULL;
 }
 
-__device__ tMD_FieldDef* MetaData_GetFieldDefFromDefOrRef(tMetaData *pMetaData, IDX_TABLE token, tMD_TypeDef **ppClassTypeArgs, tMD_TypeDef **ppMethodTypeArgs) {
+function_space_specifier tMD_FieldDef* MetaData_GetFieldDefFromDefOrRef(tMetaData *pMetaData, IDX_TABLE token, tMD_TypeDef **ppClassTypeArgs, tMD_TypeDef **ppMethodTypeArgs) {
 	void *pTableEntry;
 
 	pTableEntry = MetaData_GetTableRow(pMetaData, token);
@@ -400,7 +400,7 @@ __device__ tMD_FieldDef* MetaData_GetFieldDefFromDefOrRef(tMetaData *pMetaData, 
 // 1 - tMD_MethodDef
 // 2 - tMD_FieldDef
 // (These link up with the JIT_LOADTOKEN_* opcodes)
-__device__ PTR MetaData_GetTypeMethodField(tMetaData *pMetaData, IDX_TABLE token, U32 *pObjectType, tMD_TypeDef **ppClassTypeArgs, tMD_TypeDef **ppMethodTypeArgs) {
+function_space_specifier PTR MetaData_GetTypeMethodField(tMetaData *pMetaData, IDX_TABLE token, U32 *pObjectType, tMD_TypeDef **ppClassTypeArgs, tMD_TypeDef **ppMethodTypeArgs) {
 	switch (TABLE_ID(token)) {
 		case MD_TABLE_TYPEDEF:
 		case MD_TABLE_TYPEREF:
@@ -465,7 +465,7 @@ field:
 	return NULL;
 }
 
-__device__ tMD_ImplMap* MetaData_GetImplMap(tMetaData *pMetaData, IDX_TABLE memberForwardedToken) {
+function_space_specifier tMD_ImplMap* MetaData_GetImplMap(tMetaData *pMetaData, IDX_TABLE memberForwardedToken) {
 	U32 i;
 
 	for (i=pMetaData->tables.numRows[MD_TABLE_IMPLMAP]; i >= 1; i--) {
@@ -480,7 +480,7 @@ __device__ tMD_ImplMap* MetaData_GetImplMap(tMetaData *pMetaData, IDX_TABLE memb
 	return NULL;
 }
 
-__device__ STRING MetaData_GetModuleRefName(tMetaData *pMetaData, IDX_TABLE memberRefToken) {
+function_space_specifier STRING MetaData_GetModuleRefName(tMetaData *pMetaData, IDX_TABLE memberRefToken) {
 	tMD_ModuleRef *pModRef = (tMD_ModuleRef*)MetaData_GetTableRow(pMetaData, memberRefToken);
 	return pModRef->name;
 }

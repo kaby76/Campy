@@ -107,15 +107,15 @@ typedef struct tJITCodeInfo_ {
 
 #include "JIT_OpCodes.h"
 
-extern __device__ tJITCodeInfo jitCodeInfo[JIT_OPCODE_MAXNUM];
-extern __device__ tJITCodeInfo jitCodeGoNext;
+extern function_space_specifier tJITCodeInfo jitCodeInfo[JIT_OPCODE_MAXNUM];
+extern function_space_specifier tJITCodeInfo jitCodeGoNext;
 
-__device__ void JIT_Execute_Init();
+function_space_specifier void JIT_Execute_Init();
 
 //void JIT_Prepare(tMD_MethodDef *pMethodDef);
-__device__ void JIT_Prepare(tMD_MethodDef *pMethodDef, U32 genCombinedOpcodes);
+function_space_specifier void JIT_Prepare(tMD_MethodDef *pMethodDef, U32 genCombinedOpcodes);
 
-__device__ U32 JIT_Execute(tThread *pThread, U32 numInst);
+function_space_specifier U32 JIT_Execute(tThread *pThread, U32 numInst);
 
 #ifdef DIAG_OPCODE_TIMES
 #include "JIT_OpCodes.h"
@@ -124,7 +124,7 @@ extern __device__ U64 opcodeTimes[JIT_OPCODE_MAXNUM];
 
 #ifdef DIAG_OPCODE_USE
 #include "JIT_OpCodes.h"
-extern __device__ U32 opcodeNumUses[JIT_OPCODE_MAXNUM];
+extern function_space_specifier U32 opcodeNumUses[JIT_OPCODE_MAXNUM];
 #endif
 
 #endif

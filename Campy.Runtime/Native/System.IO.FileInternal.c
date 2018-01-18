@@ -42,7 +42,7 @@
 
 #define FILEATTRIBUTES_DIRECTORY 0x00010
 
-__device__ tAsyncCall* System_IO_FileInternal_Open(PTR pThis_, PTR pParams, PTR pReturnValue) {
+function_space_specifier tAsyncCall* System_IO_FileInternal_Open(PTR pThis_, PTR pParams, PTR pReturnValue) {
 //	U32 filenameLen;
 //	STRING2 filename2;
 //	U32 mode, access, share;
@@ -85,7 +85,7 @@ __device__ tAsyncCall* System_IO_FileInternal_Open(PTR pThis_, PTR pParams, PTR 
 	return NULL;
 }
 
-__device__ tAsyncCall* System_IO_FileInternal_Read(PTR pThis_, PTR pParams, PTR pReturnValue) {
+function_space_specifier tAsyncCall* System_IO_FileInternal_Read(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	//U32 f;
 	//HEAP_PTR dst;
 	//U32 startOfs, count;
@@ -110,7 +110,7 @@ __device__ tAsyncCall* System_IO_FileInternal_Read(PTR pThis_, PTR pParams, PTR 
 	return NULL;
 }
 
-__device__ tAsyncCall* System_IO_FileInternal_Close(PTR pThis_, PTR pParams, PTR pReturnValue) {
+function_space_specifier tAsyncCall* System_IO_FileInternal_Close(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	//U32 f;
 	//U32 *pError;
 
@@ -124,7 +124,7 @@ __device__ tAsyncCall* System_IO_FileInternal_Close(PTR pThis_, PTR pParams, PTR
 	return NULL;
 }
 
-__device__ tAsyncCall* System_IO_FileInternal_GetCurrentDirectory(PTR pThis_, PTR pParams, PTR pReturnValue) {
+function_space_specifier tAsyncCall* System_IO_FileInternal_GetCurrentDirectory(PTR pThis_, PTR pParams, PTR pReturnValue) {
 //	U32 *pError = ((U32**)pParams)[0];
 //	HEAP_PTR curDir;
 //#ifdef WIN32
@@ -162,7 +162,7 @@ static U32 Attrs(unsigned char *pPath, U32 *pError) {
 }
 #endif
 
-__device__ tAsyncCall* System_IO_FileInternal_GetFileAttributes(PTR pThis_, PTR pParams, PTR pReturnValue) {
+function_space_specifier tAsyncCall* System_IO_FileInternal_GetFileAttributes(PTR pThis_, PTR pParams, PTR pReturnValue) {
 //	HEAP_PTR pathHeapPtr = ((HEAP_PTR*)pParams)[0];
 //	U32 *pError = ((U32**)pParams)[1];
 //	U32 pathLen;
@@ -190,7 +190,7 @@ __device__ tAsyncCall* System_IO_FileInternal_GetFileAttributes(PTR pThis_, PTR 
 	return NULL;
 }
 
-__device__ tAsyncCall* System_IO_FileInternal_GetFileSystemEntries(PTR pThis_, PTR pParams, PTR pReturnValue) {
+function_space_specifier tAsyncCall* System_IO_FileInternal_GetFileSystemEntries(PTR pThis_, PTR pParams, PTR pReturnValue) {
 //	//HEAP_PTR pathHP = ((HEAP_PTR*)pParams)[0];
 //	HEAP_PTR pathPatternHP = ((HEAP_PTR*)pParams)[1];
 //	U32 attrs = ((U32*)pParams)[2];
