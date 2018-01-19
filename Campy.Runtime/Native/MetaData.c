@@ -140,7 +140,7 @@ Destination:
 	s: 16-bit value
 	c: 8-bit value
 */
-function_space_specifier static const char* tableDefs[] = {
+__device__ static const char* tableDefs[] = {
 	// 0x00
 	"sxS*G*GxGx",
 	// 0x01
@@ -243,7 +243,7 @@ function_space_specifier static const char* tableDefs[] = {
 // Coded indexes use this lookup table.
 // Note that the extra 'z' characters are important!
 // (Because of how the lookup works each string must be a power of 2 in length)
-function_space_specifier static const char* codedTags[] = {
+__device__ static const char* codedTags[] = {
 	// TypeDefOrRef
 	"\x02\x01\x1Bz",
 	// HasConstant
@@ -272,16 +272,16 @@ function_space_specifier static const char* codedTags[] = {
 	"\x02\x06",
 };
 
-function_space_specifier static unsigned char codedTagBits[] = {
+__device__ static unsigned char codedTagBits[] = {
 	2, 2, 5, 1, 2, 3, 1, 1, 1, 2, 3, 2, 1
 };
 
-function_space_specifier static unsigned int tableRowSize[MAX_TABLES];
+// function_space_specifier static unsigned int tableRowSize[MAX_TABLES];
 
 function_space_specifier void MetaData_Init() {
 	U32 i;
 	for (i=0; i<MAX_TABLES; i++) {
-		tableRowSize[i] = 0;
+		_bcl_->tableRowSize[i] = 0;
 	}
 }
 
@@ -1222,7 +1222,7 @@ function_space_specifier static void* LoadSingleTable(tMetaData *pThis, tRVA *pR
 		case MD_TABLE_METHODSPEC: rowLen = sizeof(tMD_MethodSpec); break;
 		case MD_TABLE_GENERICPARAMCONSTRAINT: rowLen = sizeof(tMD_GenericParamConstraint); break;
 	}
-	tableRowSize[tableID] = rowLen;
+	_bcl_->tableRowSize[tableID] = rowLen;
 	
 	// Stuff fields described by pDef into appropriate table type. All types defined in MetaData.h
 
@@ -1497,7 +1497,7 @@ function_space_specifier void* MetaData_GetTableRow(tMetaData *pThis, IDX_TABLE 
 	void * d = pThis->tables.data[table_id];
 	pData = (char*)pThis->tables.data[TABLE_ID(index)];
 	// Table indexes start at one, hence the -1 here.
-	int size = tableRowSize[TABLE_ID(index)];
+	int size = _bcl_->tableRowSize[TABLE_ID(index)];
 	char * result = pData + (TABLE_OFS(index) - 1) * size;
 	return result;
 }

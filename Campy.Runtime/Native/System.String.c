@@ -39,7 +39,7 @@ struct tSystemString_ {
 	U16 chars[0];
 };
 
-extern function_space_specifier int CorLibDone;
+//extern function_space_specifier int CorLibDone;
 
 // length in characters, not bytes
 static function_space_specifier tSystemString* CreateStringHeapObj(U32 len) {
@@ -47,7 +47,7 @@ static function_space_specifier tSystemString* CreateStringHeapObj(U32 len) {
 	U32 totalSize;
 	
 	totalSize = sizeof(tSystemString) + (len << 1);
-	pSystemString = (tSystemString*)Heap_Alloc(types[TYPE_SYSTEM_STRING], totalSize);
+	pSystemString = (tSystemString*)Heap_Alloc(_bcl_->types[TYPE_SYSTEM_STRING], totalSize);
 	pSystemString->length = len;
 	return pSystemString;
 }

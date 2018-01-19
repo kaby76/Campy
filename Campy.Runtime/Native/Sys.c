@@ -51,37 +51,37 @@ function_space_specifier void Crash(const char *pMsg, ...) {
 //	gpuexit(1);
 }
 
-function_space_specifier U32 logLevel = 0;
+//function_space_specifier U32 logLevel = 0;
 
 function_space_specifier void log_f(U32 level, const char *pMsg, ...) {
 	va_list va;
-	if (logLevel >= level) {
+	if (_bcl_->logLevel >= level) {
 		va_start(va, pMsg);
 		//Gvprintf(pMsg, va);
 		va_end(va);
 	}
 }
 
-function_space_specifier static char methodName[2048];
+//function_space_specifier static char methodName[2048];
 function_space_specifier char* Sys_GetMethodDesc(tMD_MethodDef *pMethod) {
 	U32 i;
 
-	Gsprintf(methodName, "%s.%s.%s(", pMethod->pParentType->nameSpace, pMethod->pParentType->name, pMethod->name);
+	Gsprintf(_bcl_->methodName, "%s.%s.%s(", pMethod->pParentType->nameSpace, pMethod->pParentType->name, pMethod->name);
 	for (i=METHOD_ISSTATIC(pMethod)?0:1; i<pMethod->numberOfParameters; i++) {
 		if (i > (U32)(METHOD_ISSTATIC(pMethod)?0:1)) {
-			Gsprintf(Gstrchr(methodName, 0), ",");
+			Gsprintf(Gstrchr(_bcl_->methodName, 0), ",");
 		}
-		Gsprintf(Gstrchr(methodName, 0), pMethod->pParams[i].pTypeDef->name);
+		Gsprintf(Gstrchr(_bcl_->methodName, 0), pMethod->pParams[i].pTypeDef->name);
 	}
-	Gsprintf(Gstrchr(methodName, 0), ")");
-	return methodName;
+	Gsprintf(Gstrchr(_bcl_->methodName, 0), ")");
+	return _bcl_->methodName;
 }
 
-function_space_specifier static U32 mallocForeverSize = 0;
+// function_space_specifier static U32 mallocForeverSize = 0;
 // malloc() some memory that will never need to be resized or freed.
 function_space_specifier void* mallocForever(U32 size) {
-	mallocForeverSize += size;
-log_f(3, "--- mallocForever: TotalSize %d\n", mallocForeverSize);
+	_bcl_->mallocForeverSize += size;
+log_f(3, "--- mallocForever: TotalSize %d\n", _bcl_->mallocForeverSize);
 	return Gmalloc(size);
 }
 

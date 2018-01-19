@@ -55,7 +55,8 @@
 
 
 
-extern function_space_specifier tMD_TypeDef **types;
+//extern function_space_specifier tMD_TypeDef **types;
+
 #define TYPE_SYSTEM_OBJECT 0
 #define TYPE_SYSTEM_ARRAY_NO_TYPE 1
 #define TYPE_SYSTEM_VOID 2

@@ -18,7 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "Compat.h"
+#include "_bcl_.h"
 #include "Sys.h"
 
 #include "JIT.h"
@@ -69,13 +69,13 @@ function_space_specifier static U32 Translate(U32 op, U32 getDynamic) {
 	if (op >= JIT_OPCODE_MAXNUM) {
 		Crash("Illegal opcode: %d", op);
 	}
-	if (jitCodeInfo[op].pEnd == NULL) {
+	if (_bcl_->jitCodeInfo[op].pEnd == NULL) {
 		Crash("Opcode not available: 0x%08x", op);
 	}
 	if (getDynamic) {
-		return (U32)jitCodeInfo[op].isDynamic;
+		return (U32)_bcl_->jitCodeInfo[op].isDynamic;
 	} else {
-		return (U32)jitCodeInfo[op].pStart;
+		return (U32)_bcl_->jitCodeInfo[op].pStart;
 	}
 }
 

@@ -33,7 +33,7 @@
 function_space_specifier HEAP_PTR RuntimeType_New(tMD_TypeDef *pTypeDef) {
 	tRuntimeType *pRuntimeType;
 
-	pRuntimeType = (tRuntimeType*)Heap_AllocType(types[TYPE_SYSTEM_RUNTIMETYPE]);
+	pRuntimeType = (tRuntimeType*)Heap_AllocType(_bcl_->types[TYPE_SYSTEM_RUNTIMETYPE]);
 	Heap_MakeUndeletable((HEAP_PTR)pRuntimeType);
 	pRuntimeType->pTypeDef = pTypeDef;
 
@@ -90,7 +90,7 @@ function_space_specifier tAsyncCall* System_RuntimeType_get_BaseType(PTR pThis_,
 function_space_specifier tAsyncCall* System_RuntimeType_get_IsEnum(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tMD_TypeDef *pType = ((tRuntimeType*)pThis_)->pTypeDef;
 
-	U32 isEnum = pType->pParent == types[TYPE_SYSTEM_ENUM];
+	U32 isEnum = pType->pParent == _bcl_->types[TYPE_SYSTEM_ENUM];
 	*(U32*)pReturnValue = isEnum;
 
 	return NULL;
@@ -134,7 +134,7 @@ function_space_specifier tAsyncCall* System_RuntimeType_GetGenericArguments(PTR 
 		}
 	}
 
-	ret = SystemArray_NewVector(types[TYPE_SYSTEM_ARRAY_TYPE], argCount);
+	ret = SystemArray_NewVector(_bcl_->types[TYPE_SYSTEM_ARRAY_TYPE], argCount);
 	// Allocate to return value straight away, so it cannot be GCed
 	*(HEAP_PTR*)pReturnValue = ret;
 

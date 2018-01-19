@@ -42,7 +42,8 @@ void* mallocTrace(int s, char *pFile, int line);
 
 function_space_specifier void Crash(const char *pMsg, ...);
 
-extern function_space_specifier U32 logLevel;
+//extern function_space_specifier U32 logLevel;
+
 function_space_specifier void log_f(U32 level, const char *pMsg, ...);
 
 function_space_specifier char* Sys_GetMethodDesc(tMD_MethodDef *pMethod);

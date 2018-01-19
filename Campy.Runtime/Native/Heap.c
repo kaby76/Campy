@@ -87,20 +87,20 @@ struct tHeapEntry_ {
 // Forward ref
 function_space_specifier static void RemoveWeakRefTarget(tHeapEntry *pHeapEntry, U32 removeLongRefs);
 
-function_space_specifier static tHeapEntry *pHeapTreeRoot;
+// function_space_specifier static tHeapEntry *pHeapTreeRoot;
 
-function_space_specifier static tHeapEntry *nil;
+// function_space_specifier static tHeapEntry *nil;
 
 #define MAX_TREE_DEPTH 40
 
 // The total heap memory currently allocated
-function_space_specifier static U32 trackHeapSize;
+// function_space_specifier static U32 trackHeapSize;
 // The max heap size allowed before a garbage collection is triggered
-function_space_specifier static U32 heapSizeMax;
+// function_space_specifier static U32 heapSizeMax;
 // The number of allocated memory nodes
-function_space_specifier static U32 numNodes = 0;
+// function_space_specifier static U32 numNodes = 0;
 // The number of collections done
-function_space_specifier static U32 numCollections = 0;
+// function_space_specifier static U32 numCollections = 0;
 
 #ifdef DIAG_GC
 // Track how much time GC's are taking
@@ -112,14 +112,14 @@ U64 gcTotalTime = 0;
 
 function_space_specifier void Heap_Init() {
 	// Initialise vars
-	trackHeapSize = 0;
-	heapSizeMax = MIN_HEAP_SIZE;
+	_bcl_->trackHeapSize = 0;
+	_bcl_->heapSizeMax = MIN_HEAP_SIZE;
 	// Create nil node - for leaf termination
-	nil = TMALLOCFOREVER(tHeapEntry);
-	memset(nil, 0, sizeof(tHeapEntry));
-	nil->pLink[0] = nil->pLink[1] = nil;
+	_bcl_->nil = TMALLOCFOREVER(tHeapEntry);
+	memset(_bcl_->nil, 0, sizeof(tHeapEntry));
+	_bcl_->nil->pLink[0] = _bcl_->nil->pLink[1] = _bcl_->nil;
 	// Set the heap tree as empty
-	pHeapTreeRoot = nil;
+	_bcl_->pHeapTreeRoot = _bcl_->nil;
 }
 
 // Get the size of a heap entry, NOT including the header
@@ -128,7 +128,7 @@ function_space_specifier void Heap_Init() {
 
 static function_space_specifier U32 GetSize(tHeapEntry *pHeapEntry) {
 	tMD_TypeDef *pType = pHeapEntry->pTypeDef;
-	if (pType == types[TYPE_SYSTEM_STRING]) {
+	if (pType == _bcl_->types[TYPE_SYSTEM_STRING]) {
 		// If it's a string, return the string length in bytes
 		return SystemString_GetNumBytes((HEAP_PTR)(pHeapEntry + 1));
 	}
@@ -162,20 +162,20 @@ function_space_specifier static tHeapEntry* TreeSplit(tHeapEntry *pRoot) {
 }
 
 function_space_specifier static tHeapEntry* TreeInsert(tHeapEntry *pRoot, tHeapEntry *pEntry) {
-	if (pRoot == nil) {
+	if (pRoot == _bcl_->nil) {
 		pRoot = pEntry;
 		pRoot->level = 1;
-		pRoot->pLink[0] = pRoot->pLink[1] = nil;
+		pRoot->pLink[0] = pRoot->pLink[1] = _bcl_->nil;
 		pRoot->marked = 0;
 	} else {
-		tHeapEntry *pNode = pHeapTreeRoot;
+		tHeapEntry *pNode = _bcl_->pHeapTreeRoot;
 		tHeapEntry *pUp[MAX_TREE_DEPTH];
 		I32 top = 0, dir;
 		// Find leaf position to insert into tree. This first step is unbalanced
 		for (;;) {
 			pUp[top++] = pNode;
 			dir = pNode < pEntry; // 0 for left, 1 for right
-			if (pNode->pLink[dir] == nil) {
+			if (pNode->pLink[dir] == _bcl_->nil) {
 				break;
 			}
 			pNode = pNode->pLink[dir];
@@ -183,7 +183,7 @@ function_space_specifier static tHeapEntry* TreeInsert(tHeapEntry *pRoot, tHeapE
 		// Create new node
 		pNode->pLink[dir] = pEntry;
 		pEntry->level = 1;
-		pEntry->pLink[0] = pEntry->pLink[1] = nil;
+		pEntry->pLink[0] = pEntry->pLink[1] = _bcl_->nil;
 		pEntry->marked = 0;
 		// Balance the tree
 		while (--top >= 0) {
@@ -203,13 +203,13 @@ function_space_specifier static tHeapEntry* TreeInsert(tHeapEntry *pRoot, tHeapE
 }
 
 function_space_specifier static tHeapEntry* TreeRemove(tHeapEntry *pRoot, tHeapEntry *pDelete) {
-	if (pRoot != nil) {
+	if (pRoot != _bcl_->nil) {
 		if (pRoot == pDelete) {
-			if (pRoot->pLink[0] != nil && pRoot->pLink[1] != nil) {
+			if (pRoot->pLink[0] != _bcl_->nil && pRoot->pLink[1] != _bcl_->nil) {
 				tHeapEntry *pL0;
 				U8 l;
 				tHeapEntry *pHeir = pRoot->pLink[0], **ppHeirLink = &pHeir->pLink[0];
-				while (pHeir->pLink[1] != nil) {
+				while (pHeir->pLink[1] != _bcl_->nil) {
 					ppHeirLink = &pHeir->pLink[1];
 					pHeir = pHeir->pLink[1];
 				}
@@ -223,7 +223,7 @@ function_space_specifier static tHeapEntry* TreeRemove(tHeapEntry *pRoot, tHeapE
 				// Send root to replace heir
 				*ppHeirLink = pRoot;
 				pRoot->pLink[0] = pL0;
-				pRoot->pLink[1] = nil;
+				pRoot->pLink[1] = _bcl_->nil;
 				pRoot->level = l;
 				// Set correct return value
 				pL0 = pRoot;
@@ -231,7 +231,7 @@ function_space_specifier static tHeapEntry* TreeRemove(tHeapEntry *pRoot, tHeapE
 				// Delete the node that's been sent down
 				pRoot->pLink[0] = TreeRemove(pRoot->pLink[0], pL0);
 			} else {
-				pRoot = pRoot->pLink[pRoot->pLink[0] == nil];
+				pRoot = pRoot->pLink[pRoot->pLink[0] == _bcl_->nil];
 			}
 		} else {
 			I32 dir = pRoot < pDelete;
@@ -259,13 +259,13 @@ function_space_specifier static void GarbageCollect() {
 	tHeapEntry *pUp[MAX_TREE_DEPTH * 2];
 	I32 top;
 	tHeapEntry *pToDelete = NULL;
-	U32 orgHeapSize = trackHeapSize;
-	U32 orgNumNodes = numNodes;
+	U32 orgHeapSize = _bcl_->trackHeapSize;
+	U32 orgNumNodes = _bcl_->numNodes;
 #ifdef DIAG_GC
 	U64 startTime;
 #endif
 
-	numCollections++;
+	_bcl_->numCollections++;
 
 #ifdef DIAG_GC
 	startTime = microTime();
@@ -304,8 +304,8 @@ function_space_specifier static void GarbageCollect() {
 			// Note that the 2nd memory address comparison MUST be >, not >= as might be expected,
 			// to allow for a zero-sized memory to be detected (and not garbage collected) properly.
 			// E.g. The object class has zero memory.
-			pNode = pHeapTreeRoot;
-			while (pNode != nil) {
+			pNode = _bcl_->pHeapTreeRoot;
+			while (pNode != _bcl_->nil) {
 				if (pMemRef < (void*)pNode) {
 					pNode = pNode->pLink[0];
 				} else if ((char*)pMemRef > ((char*)pNode) + GetSize(pNode) + sizeof(tHeapEntry)) {
@@ -325,13 +325,13 @@ function_space_specifier static void GarbageCollect() {
 							pType->stackType == EVALSTACK_VALUETYPE ||
 							pType->stackType == EVALSTACK_PTR) {
 
-							if (pType != types[TYPE_SYSTEM_STRING] &&
+							if (pType != _bcl_->types[TYPE_SYSTEM_STRING] &&
 								(!TYPE_ISARRAY(pType) ||
 								pType->pArrayElementType->stackType == EVALSTACK_O ||
 								pType->pArrayElementType->stackType == EVALSTACK_VALUETYPE ||
 								pType->pArrayElementType->stackType == EVALSTACK_PTR)) {
 
-								if (pType != types[TYPE_SYSTEM_WEAKREFERENCE]) {
+								if (pType != _bcl_->types[TYPE_SYSTEM_WEAKREFERENCE]) {
 									Heap_SetRoots(&heapRoots,pNode->memory, GetSize(pNode));
 									moreRootsAdded = 1;
 								}
@@ -351,7 +351,7 @@ function_space_specifier static void GarbageCollect() {
 
 	// Sweep phase
 	// Traverse nodes
-	pUp[0] = pHeapTreeRoot;
+	pUp[0] = _bcl_->pHeapTreeRoot;
 	top = 1;
 	while (top != 0) {
 		// Get this node
@@ -389,10 +389,10 @@ function_space_specifier static void GarbageCollect() {
 			}
 		}
 		// Get next node(s)
-		if (pNode->pLink[1] != nil) {
+		if (pNode->pLink[1] != _bcl_->nil) {
 			pUp[top++] = pNode->pLink[1];
 		}
-		if (pNode->pLink[0] != nil) {
+		if (pNode->pLink[0] != _bcl_->nil) {
 			pUp[top++] = pNode->pLink[0];
 		}
 	}
@@ -401,9 +401,9 @@ function_space_specifier static void GarbageCollect() {
 	while (pToDelete != NULL) {
 		tHeapEntry *pThis = pToDelete;
 		pToDelete = (tHeapEntry*)(pToDelete->pSync);
-		pHeapTreeRoot = TreeRemove(pHeapTreeRoot, pThis);
-		numNodes--;
-		trackHeapSize -= GetSize(pThis) + sizeof(tHeapEntry);
+		_bcl_->pHeapTreeRoot = TreeRemove(_bcl_->pHeapTreeRoot, pThis);
+		_bcl_->numNodes--;
+		_bcl_->trackHeapSize -= GetSize(pThis) + sizeof(tHeapEntry);
 		Gfree(pThis);
 	}
 
@@ -412,7 +412,7 @@ function_space_specifier static void GarbageCollect() {
 #endif
 
 	log_f(1, "--- GARBAGE --- [Size: %d -> %d] [Nodes: %d -> %d]\n",
-		orgHeapSize, trackHeapSize, orgNumNodes, numNodes);
+		orgHeapSize, _bcl_->trackHeapSize, orgNumNodes, _bcl_->numNodes);
 
 #ifdef DIAG_GC
 	log_f(1, "GC time = %d ms\n", gcTotalTime / 1000);
@@ -428,11 +428,11 @@ function_space_specifier void Heap_GarbageCollect() {
 }
 
 function_space_specifier U32 Heap_NumCollections() {
-	return numCollections;
+	return _bcl_->numCollections;
 }
 
 function_space_specifier U32 Heap_GetTotalMemory() {
-	return trackHeapSize;
+	return _bcl_->trackHeapSize;
 }
 
 function_space_specifier void Heap_SetRoots(tHeapRoots *pHeapRoots, void *pRoots, U32 sizeInBytes) {
@@ -455,16 +455,16 @@ function_space_specifier HEAP_PTR Heap_Alloc(tMD_TypeDef *pTypeDef, U32 size) {
 	totalSize = sizeof(tHeapEntry) + size;
 
 	// Trigger garbage collection if required.
-	if (trackHeapSize >= heapSizeMax) {
+	if (_bcl_->trackHeapSize >= _bcl_->heapSizeMax) {
 		GarbageCollect();
-		heapSizeMax = (trackHeapSize + totalSize) << 1;
-		if (heapSizeMax < trackHeapSize + totalSize + MIN_HEAP_SIZE) {
+		_bcl_->heapSizeMax = (_bcl_->trackHeapSize + totalSize) << 1;
+		if (_bcl_->heapSizeMax < _bcl_->trackHeapSize + totalSize + MIN_HEAP_SIZE) {
 			// Make sure there is always MIN_HEAP_SIZE available to allocate on the heap
-			heapSizeMax = trackHeapSize + totalSize + MIN_HEAP_SIZE;
+			_bcl_->heapSizeMax = _bcl_->trackHeapSize + totalSize + MIN_HEAP_SIZE;
 		}
-		if (heapSizeMax > trackHeapSize + totalSize + MAX_HEAP_EXCESS) {
+		if (_bcl_->heapSizeMax > _bcl_->trackHeapSize + totalSize + MAX_HEAP_EXCESS) {
 			// Make sure there is never more that MAX_HEAP_EXCESS space on the heap
-			heapSizeMax = trackHeapSize + totalSize + MAX_HEAP_EXCESS;
+			_bcl_->heapSizeMax = _bcl_->trackHeapSize + totalSize + MAX_HEAP_EXCESS;
 		}
 	}
 
@@ -473,10 +473,10 @@ function_space_specifier HEAP_PTR Heap_Alloc(tMD_TypeDef *pTypeDef, U32 size) {
 	pHeapEntry->pSync = NULL;
 	pHeapEntry->needToFinalize = (pTypeDef->pFinalizer != NULL);
 	memset(pHeapEntry->memory, 0, size);
-	trackHeapSize += totalSize;
+	_bcl_->trackHeapSize += totalSize;
 
-	pHeapTreeRoot = TreeInsert(pHeapTreeRoot, pHeapEntry);
-	numNodes++;
+	_bcl_->pHeapTreeRoot = TreeInsert(_bcl_->pHeapTreeRoot, pHeapEntry);
+	_bcl_->numNodes++;
 
 	return pHeapEntry->memory;
 }

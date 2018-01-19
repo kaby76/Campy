@@ -24,6 +24,7 @@
 #if defined(CUDA)
 #include <cuda.h>
 #define function_space_specifier __device__
+//#define function_space_specifier __device__ __host__
 #else
 #define function_space_specifier __device__
 #define __device__

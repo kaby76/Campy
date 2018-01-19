@@ -162,6 +162,9 @@
     <ClInclude Include="Gprintf.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="_BCL_.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="basics.c">

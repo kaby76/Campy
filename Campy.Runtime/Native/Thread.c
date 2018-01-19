@@ -27,8 +27,8 @@
 #include "Heap.h"
 #include "Type.h"
 
-static function_space_specifier tThread *pAllThreads = NULL;
-static function_space_specifier tThread *pCurrentThread;
+//static function_space_specifier tThread *pAllThreads = NULL;
+//static function_space_specifier tThread *pCurrentThread;
 
 function_space_specifier tThread* Thread() {
 	static U32 threadID = 0;
@@ -36,7 +36,7 @@ function_space_specifier tThread* Thread() {
 
 	// Create thread and initial method state. This is allocated on the managed heap, and
 	// mark as undeletable. When the thread exits, it was marked as deletable.
-	pThis = (tThread*)Heap_AllocType(types[TYPE_SYSTEM_THREADING_THREAD]);
+	pThis = (tThread*)Heap_AllocType(_bcl_->types[TYPE_SYSTEM_THREADING_THREAD]);
 	Heap_MakeUndeletable((HEAP_PTR)pThis);
 	pThis->threadID = ++threadID;
 	pThis->pCurrentMethodState = NULL;
@@ -57,8 +57,8 @@ function_space_specifier tThread* Thread() {
 	pThis->pThreadStack->pNext = NULL;
 
 	// Add to list of all thread
-	pThis->pNextThread = pAllThreads;
-	pAllThreads = pThis;
+	pThis->pNextThread = _bcl_->pAllThreads;
+	_bcl_->pAllThreads = pThis;
 
 	return pThis;
 }
@@ -115,11 +115,11 @@ function_space_specifier I32 Thread_Execute() {
 	tThread *pThread, *pPrevThread;
 	U32 status;
 
-	pThread = pAllThreads;
+	pThread = _bcl_->pAllThreads;
 	// Set the initial thread to the RUNNING state.
 	pThread->state = THREADSTATE_RUNNING;
 	// Set the initial CurrentThread
-	pCurrentThread = pThread;
+	_bcl_->pCurrentThread = pThread;
 
 	for (;;) {
 		U32 minSleepTime = 0xffffffff;
@@ -134,7 +134,7 @@ function_space_specifier I32 Thread_Execute() {
 			// Remove the current thread from the running threads list.
 			// Note that this list may have changed since before the call to JIT_Execute().
 			{
-				tThread **ppThread = &pAllThreads;
+				tThread **ppThread = &_bcl_->pAllThreads;
 				while (*ppThread != pThread) {
 					ppThread = &((*ppThread)->pNextThread);
 				}
@@ -145,7 +145,7 @@ function_space_specifier I32 Thread_Execute() {
 			// If there are no more threads left running, then exit application (by returning)
 			// Threads that are unstarted or background do not stop the exit
 			{
-				tThread *pThread = pAllThreads;
+				tThread *pThread = _bcl_->pAllThreads;
 				U32 canExit = 1;
 				while (pThread != NULL) {
 					if ((!(pThread->state & THREADSTATE_BACKGROUND)) && ((pThread->state & (~THREADSTATE_BACKGROUND)) != THREADSTATE_UNSTARTED)) {
@@ -158,7 +158,7 @@ function_space_specifier I32 Thread_Execute() {
 					return threadExitValue;
 				}
 			}
-			pThread = pAllThreads; // This is not really correct, but it'll work for the time being
+			pThread = _bcl_->pAllThreads; // This is not really correct, but it'll work for the time being
 			break;
 		case THREAD_STATUS_RUNNING:
 		case THREAD_STATUS_LOCK_EXIT:
@@ -175,10 +175,10 @@ function_space_specifier I32 Thread_Execute() {
 		for (;;) {
 			pThread = pThread->pNextThread;
 			if (pThread == NULL) {
-				pThread = pAllThreads;
+				pThread = _bcl_->pAllThreads;
 			}
 			// Set the CurrentThread correctly
-			pCurrentThread = pThread;
+			_bcl_->pCurrentThread = pThread;
 			if ((pThread->state & (~THREADSTATE_BACKGROUND)) != 0) {
 				// Thread is not running
 				continue;
@@ -239,13 +239,13 @@ function_space_specifier I32 Thread_Execute() {
 }
 
 function_space_specifier tThread* Thread_GetCurrent() {
-	return pCurrentThread;
+	return _bcl_->pCurrentThread;
 }
 
 function_space_specifier void Thread_GetHeapRoots(tHeapRoots *pHeapRoots) {
 	tThread *pThread;
 
-	pThread = pAllThreads;
+	pThread = _bcl_->pAllThreads;
 	while (pThread != NULL) {
 		tMethodState *pMethodState;
 

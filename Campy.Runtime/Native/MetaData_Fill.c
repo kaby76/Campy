@@ -113,7 +113,7 @@ function_space_specifier void MetaData_Fill_MethodDef(tMD_TypeDef *pParentType, 
 		if (pParentType->isValueType) {
 			// If this is a value-type then the 'this' pointer is actually an IntPtr to the value-type's location
 			pMethodDef->pParams->size = 4;
-			pMethodDef->pParams->pTypeDef = types[TYPE_SYSTEM_INTPTR];
+			pMethodDef->pParams->pTypeDef = _bcl_->types[TYPE_SYSTEM_INTPTR];
 		} else {
 			pMethodDef->pParams->size = 4;
 			pMethodDef->pParams->pTypeDef = pParentType;
@@ -473,7 +473,7 @@ function_space_specifier void MetaData_Fill_TypeDef_(tMD_TypeDef *pTypeDef, tMD_
 		}
 
 		// If this is an enum type, then pretend its stack type is its underlying type
-		if (pTypeDef->pParent == types[TYPE_SYSTEM_ENUM]) {
+		if (pTypeDef->pParent == _bcl_->types[TYPE_SYSTEM_ENUM]) {
 			pTypeDef->stackType = EVALSTACK_INT32;
 		}
 	}

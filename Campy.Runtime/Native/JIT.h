@@ -24,6 +24,7 @@
 typedef struct tJITted_ tJITted;
 typedef struct tExceptionHeader_ tExceptionHeader;
 
+#include "_BCL_.h"
 #include "Types.h"
 
 #ifdef GEN_COMBINED_OPCODES
@@ -98,17 +99,19 @@ struct tJITCallPInvoke_ {
 	tMD_ImplMap *pImplMap;
 };
 
-typedef struct tJITCodeInfo_ {
+struct tJITCodeInfo_ {
 	// The beginning and end of the actual native code to run the JIT opcode.
 	void *pStart;
 	void *pEnd;
 	U32 isDynamic;
-} tJITCodeInfo;
+};
+
+typedef struct tJITCodeInfo_ tJITCodeInfo;
 
 #include "JIT_OpCodes.h"
 
-extern function_space_specifier tJITCodeInfo jitCodeInfo[JIT_OPCODE_MAXNUM];
-extern function_space_specifier tJITCodeInfo jitCodeGoNext;
+//extern function_space_specifier tJITCodeInfo jitCodeInfo[JIT_OPCODE_MAXNUM];
+//extern function_space_specifier tJITCodeInfo jitCodeGoNext;
 
 function_space_specifier void JIT_Execute_Init();
 

@@ -23,26 +23,26 @@
 
 #include "Finalizer.h"
 
-function_space_specifier static HEAP_PTR *ppToFinalize;
-function_space_specifier static int toFinalizeOfs, toFinalizeCapacity;
+//function_space_specifier static HEAP_PTR *ppToFinalize;
+//function_space_specifier static int toFinalizeOfs, toFinalizeCapacity;
 
 function_space_specifier void Finalizer_Init() {
-	toFinalizeCapacity = 4;
-	ppToFinalize = (HEAP_PTR*)Gmalloc(toFinalizeCapacity * sizeof(void*));
-	toFinalizeOfs = 0;
+	_bcl_->toFinalizeCapacity = 4;
+	_bcl_->ppToFinalize = (HEAP_PTR*)Gmalloc(_bcl_->toFinalizeCapacity * sizeof(void*));
+	_bcl_->toFinalizeOfs = 0;
 }
 
 function_space_specifier void AddFinalizer(HEAP_PTR ptr) {
-	if (toFinalizeOfs >= toFinalizeCapacity) {
-		toFinalizeCapacity <<= 1;
-		ppToFinalize = (HEAP_PTR*)Grealloc(ppToFinalize, toFinalizeCapacity * sizeof(void*));
+	if (_bcl_->toFinalizeOfs >= _bcl_->toFinalizeCapacity) {
+		_bcl_->toFinalizeCapacity <<= 1;
+		_bcl_->ppToFinalize = (HEAP_PTR*)Grealloc(_bcl_->ppToFinalize, _bcl_->toFinalizeCapacity * sizeof(void*));
 	}
-	ppToFinalize[toFinalizeOfs++] = ptr;
+	_bcl_->ppToFinalize[_bcl_->toFinalizeOfs++] = ptr;
 }
 
 function_space_specifier HEAP_PTR GetNextFinalizer() {
-	if (toFinalizeOfs == 0) {
+	if (_bcl_->toFinalizeOfs == 0) {
 		return NULL;
 	}
-	return ppToFinalize[--toFinalizeOfs];
+	return _bcl_->ppToFinalize[--_bcl_->toFinalizeOfs];
 }

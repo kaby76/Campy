@@ -52,7 +52,7 @@ function_space_specifier tAsyncCall* System_Array_Internal_GetValue(PTR pThis_, 
 	if (pElementType->isValueType) {
 		// If it's a value-type, then box it
 		HEAP_PTR boxedValue;
-		if (pElementType->pGenericDefinition == types[TYPE_SYSTEM_NULLABLE]) {
+		if (pElementType->pGenericDefinition == _bcl_->types[TYPE_SYSTEM_NULLABLE]) {
 			// Nullable type, so box specially
 			if (*(U32*)pElement) {
 				// Nullable has value
@@ -91,7 +91,7 @@ function_space_specifier tAsyncCall* System_Array_Internal_SetValue(PTR pThis_, 
 	pElementType = pArrayType->pArrayElementType;
 	// Check to see if the Type is ok to put in the array
 	if (!(Type_IsAssignableFrom(pElementType, pObjType) ||
-		(pElementType->pGenericDefinition == types[TYPE_SYSTEM_NULLABLE] &&
+		(pElementType->pGenericDefinition == _bcl_->types[TYPE_SYSTEM_NULLABLE] &&
 		pElementType->ppClassTypeArgs[0] == pObjType))) {
 		// Can't be done
 		*(U32*)pReturnValue = 0;
@@ -111,7 +111,7 @@ function_space_specifier tAsyncCall* System_Array_Internal_SetValue(PTR pThis_, 
 	elementSize = pElementType->arrayElementSize;
 	pElement = pArray->elements + elementSize * index;
 	if (pElementType->isValueType) {
-		if (pElementType->pGenericDefinition == types[TYPE_SYSTEM_NULLABLE]) {
+		if (pElementType->pGenericDefinition == _bcl_->types[TYPE_SYSTEM_NULLABLE]) {
 			// Nullable type, so treat specially
 			if (obj == NULL) {
 				memset(pElement, 0, elementSize);

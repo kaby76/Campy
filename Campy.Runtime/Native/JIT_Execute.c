@@ -39,8 +39,8 @@
 
 // Global array which stores the absolute addresses of the start and end of all JIT code
 // fragment machine code.
-function_space_specifier tJITCodeInfo jitCodeInfo[JIT_OPCODE_MAXNUM];
-function_space_specifier tJITCodeInfo jitCodeGoNext;
+// function_space_specifier tJITCodeInfo jitCodeInfo[JIT_OPCODE_MAXNUM];
+// function_space_specifier tJITCodeInfo jitCodeGoNext;
 
 // Get the next op-code
 #define GET_OP() *(pCurOp++)

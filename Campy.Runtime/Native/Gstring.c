@@ -15,7 +15,7 @@
 *    reentrant and should be faster). Use only strsep() in new code, please.
 */
 
-#include "Compat.h"
+#include "_bcl_.h"
 #include "Gstring.h"
 
 /**
@@ -59,7 +59,7 @@ function_space_specifier int Gstrcasecmp(const char *s1, const char *s2)
 	return Gstrncasecmp(s1, s2, (size_t)-1);
 }
 
-function_space_specifier char * ___strtok;
+// function_space_specifier char * ___strtok;
 
 #ifndef __HAVE_ARCH_STRCPY
 /**
@@ -349,19 +349,19 @@ function_space_specifier char * Gstrtok(char * s, const char * ct)
 {
 	char *sbegin, *send;
 
-	sbegin = s ? s : ___strtok;
+	sbegin = s ? s : _bcl_->___strtok;
 	if (!sbegin) {
 		return NULL;
 	}
 	sbegin += Gstrspn(sbegin, ct);
 	if (*sbegin == '\0') {
-		___strtok = NULL;
+		_bcl_->___strtok = NULL;
 		return(NULL);
 	}
 	send = Gstrpbrk(sbegin, ct);
 	if (send && *send != '\0')
 		*send++ = '\0';
-	___strtok = send;
+	_bcl_->___strtok = send;
 	return (sbegin);
 }
 #endif

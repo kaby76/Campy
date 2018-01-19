@@ -1,4 +1,5 @@
-#include "Compat.h"
+
+#include "_bcl_.h"
 #include "Sys.h"
 #include "MetaData.h"
 #include "JIT.h"
@@ -11,6 +12,8 @@
 #include <string.h>
 #include <cuda.h>
 
+
+__device__ _BCL_t * _bcl_;
 
 function_space_specifier  void gpuexit(int _Code) {}
 
@@ -31,7 +34,7 @@ function_space_specifier size_t Gstrlen(
 // Based on http://arjunsreedharan.org/post/148675821737/write-a-simple-memory-allocator
 
 
-function_space_specifier void * global_memory_heap;
+//function_space_specifier void * global_memory_heap;
 
 struct header_t {
 	struct header_t *next;
@@ -40,14 +43,14 @@ struct header_t {
 	unsigned is_free;
 };
 
-function_space_specifier struct header_t* head;
+//function_space_specifier struct header_t* head;
 
 __global__
 void Initialize_BCL0(void * g, size_t size, int count)
 {
-	head = (struct header_t*)g;
+	_bcl_->head = (struct header_t*)g;
 	int size_for_headers = sizeof(struct header_t) * count;
-	unsigned char * ptr = ((unsigned char *)head) + size_for_headers;
+	unsigned char * ptr = ((unsigned char *)_bcl_->head) + size_for_headers;
 	long long s = (long long) ptr;
 	long long e = s + size;
 	int overhead = 16777216;
@@ -57,7 +60,7 @@ void Initialize_BCL0(void * g, size_t size, int count)
 	per_thread_remainder = per_thread_remainder << 3;
 	for (int c = 0; c < count; ++c)
 	{
-		struct header_t * start = &head[c];
+		struct header_t * start = &_bcl_->head[c];
 		struct header_t * h = (struct header_t*)ptr;
 		{
 			long long hs = (long long)h;
@@ -94,7 +97,7 @@ function_space_specifier struct header_t *get_free_block(size_t size)
 		+ (threadIdx.z * (blockDim.x * blockDim.y))
 		+ (threadIdx.y * blockDim.x) + threadIdx.x;
 
-	struct header_t *curr = &head[threadId];
+	struct header_t *curr = &_bcl_->head[threadId];
 	while (curr) {
 		if (curr->is_free && curr->size >= size)
 			return curr;

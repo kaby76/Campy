@@ -39,7 +39,7 @@ struct tLoadedLib_ {
 	tLoadedLib *pNext;
 };
 
-function_space_specifier static tLoadedLib *pLoadedLibs = NULL;
+//function_space_specifier static tLoadedLib *pLoadedLibs = NULL;
 
 function_space_specifier static tLoadedLib* GetLib(STRING name) {
 //	// See if it's already loaded
@@ -177,9 +177,9 @@ function_space_specifier U32 PInvoke_Call(tJITCallPInvoke *pCall, PTR pParams, P
 	double dRet;
 
 	if (pReturnType != NULL) {
-		if (pReturnType == types[TYPE_SYSTEM_SINGLE]) {
+		if (pReturnType == _bcl_->types[TYPE_SYSTEM_SINGLE]) {
 			funcParams = SINGLE;
-		} else if (pReturnType == types[TYPE_SYSTEM_DOUBLE]) {
+		} else if (pReturnType == _bcl_->types[TYPE_SYSTEM_DOUBLE]) {
 			funcParams = DOUBLE;
 		}
 	}
@@ -194,7 +194,7 @@ function_space_specifier U32 PInvoke_Call(tJITCallPInvoke *pCall, PTR pParams, P
 			_args[_argOfs] = *(U32*)(pParams + paramOfs);
 			_argOfs++;
 			paramOfs += 4;
-		} else if (pParamType == types[TYPE_SYSTEM_STRING]) {
+		} else if (pParamType == _bcl_->types[TYPE_SYSTEM_STRING]) {
 			// Allocate a temp bit of memory for the string that's been converted.
 			void *pString;
 			if (IMPLMAP_ISCHARSET_ANSI(pImplMap) || IMPLMAP_ISCHARSET_AUTO(pImplMap) || IMPLMAP_ISCHARSET_NOTSPEC(pImplMap)) {
@@ -209,17 +209,17 @@ function_space_specifier U32 PInvoke_Call(tJITCallPInvoke *pCall, PTR pParams, P
 			_args[_argOfs] = (U32)pString;
 			_argOfs++;
 			paramOfs += 4;
-		} else if (pParamType == types[TYPE_SYSTEM_INTPTR]) {
+		} else if (pParamType == _bcl_->types[TYPE_SYSTEM_INTPTR]) {
 			// Only works for 32-bit
 			_args[_argOfs] = *(U32*)(pParams + paramOfs);
 			_argOfs++;
 			paramOfs += 4;
-		} else if (pParamType == types[TYPE_SYSTEM_SINGLE]) {
+		} else if (pParamType == _bcl_->types[TYPE_SYSTEM_SINGLE]) {
 			_argsd[_argdOfs] = *(float*)(pParams + paramOfs);
 			_argdOfs++;
 			paramOfs += 4;
 			paramType = SINGLE;
-		} else if (pParamType == types[TYPE_SYSTEM_DOUBLE]) {
+		} else if (pParamType == _bcl_->types[TYPE_SYSTEM_DOUBLE]) {
 			_argsd[_argdOfs] = *(double*)(pParams + paramOfs);
 			_argdOfs++;
 			paramOfs += 8;
@@ -273,7 +273,7 @@ function_space_specifier U32 PInvoke_Call(tJITCallPInvoke *pCall, PTR pParams, P
 		*(U32*)pReturnValue = (U32)u64Ret;
 		return 4;
 	}
-	if (pReturnType == types[TYPE_SYSTEM_STRING]) {
+	if (pReturnType == _bcl_->types[TYPE_SYSTEM_STRING]) {
 		if (IMPLMAP_ISCHARSET_ANSI(pImplMap) || IMPLMAP_ISCHARSET_AUTO(pImplMap) || IMPLMAP_ISCHARSET_NOTSPEC(pImplMap)) {
 			*(HEAP_PTR*)pReturnValue = SystemString_FromCharPtrASCII((char*)u64Ret);
 		} else if (IMPLMAP_ISCHARSET_UNICODE(pImplMap)) {
@@ -283,15 +283,15 @@ function_space_specifier U32 PInvoke_Call(tJITCallPInvoke *pCall, PTR pParams, P
 		}
 		return sizeof(void*);
 	}
-	if (pReturnType == types[TYPE_SYSTEM_INTPTR]) {
+	if (pReturnType == _bcl_->types[TYPE_SYSTEM_INTPTR]) {
 		*(void**)pReturnValue = (void*)(U32)u64Ret;
 		return sizeof(void*);
 	}
-	if (pReturnType == types[TYPE_SYSTEM_SINGLE]) {
+	if (pReturnType == _bcl_->types[TYPE_SYSTEM_SINGLE]) {
 		*(double*)pReturnValue = (double)fRet;
 		return 8;
 	}
-	if (pReturnType == types[TYPE_SYSTEM_DOUBLE]) {
+	if (pReturnType == _bcl_->types[TYPE_SYSTEM_DOUBLE]) {
 		*(double*)pReturnValue = dRet;
 		return 8;
 	}

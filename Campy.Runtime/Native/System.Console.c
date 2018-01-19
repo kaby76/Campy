@@ -54,10 +54,11 @@ function_space_specifier tAsyncCall* System_Console_Write(PTR pThis_, PTR pParam
 	return NULL;
 }
 
-function_space_specifier static U32 nextKeybC = 0xffffffff;
+//function_space_specifier static U32 nextKeybC = 0xffffffff;
+
 function_space_specifier static U32 Internal_ReadKey_Check(PTR pThis_, PTR pParams, PTR pReturnValue, tAsyncCall *pAsync) {
 //	if (nextKeybC != 0xffffffff) {
-//		*(U32*)pReturnValue = nextKeybC;
+//		*(U32*)pReturnValue = _bcl_->nextKeybC;
 //		nextKeybC = 0xffffffff;
 //		return 1;
 //	} else {
@@ -112,7 +113,7 @@ function_space_specifier tAsyncCall* System_Console_Internal_KeyAvailable(PTR pT
 
 	isKey = Internal_ReadKey_Check(NULL, NULL, (PTR)&c, NULL);
 	if (isKey) {
-		nextKeybC = c;
+		_bcl_->nextKeybC = c;
 		*(U32*)pReturnValue = 1;
 	} else {
 		*(U32*)pReturnValue = 0;

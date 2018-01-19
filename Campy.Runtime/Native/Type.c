@@ -44,11 +44,11 @@ struct tArrayTypeDefs_ {
 	tArrayTypeDefs *pNext;
 };
 
-function_space_specifier static tArrayTypeDefs *pArrays;
+//function_space_specifier static tArrayTypeDefs *pArrays;
 
 #define GENERICARRAYMETHODS_NUM 13
-function_space_specifier static U8 genericArrayMethodsInited = 0;
-function_space_specifier static tMD_MethodDef *ppGenericArrayMethods[GENERICARRAYMETHODS_NUM];
+//function_space_specifier static U8 genericArrayMethodsInited = 0;
+//function_space_specifier static tMD_MethodDef *ppGenericArrayMethods[GENERICARRAYMETHODS_NUM];
 
 #define GENERICARRAYMETHODS_Internal_GetGenericEnumerator 0
 #define GENERICARRAYMETHODS_get_Length 1
@@ -63,7 +63,7 @@ function_space_specifier static tMD_MethodDef *ppGenericArrayMethods[GENERICARRA
 #define GENERICARRAYMETHODS_Internal_GenericRemoveAt 10
 #define GENERICARRAYMETHODS_Internal_GenericGetItem 11
 #define GENERICARRAYMETHODS_Internal_GenericSetItem 12
-function_space_specifier static char *pGenericArrayMethodsInit[GENERICARRAYMETHODS_NUM] = {
+__device__ static char *pGenericArrayMethodsInit[GENERICARRAYMETHODS_NUM] = {
 	"Internal_GetGenericEnumerator",
 	"get_Length",
 	"Internal_GenericIsReadOnly",
@@ -83,11 +83,11 @@ function_space_specifier static void GetMethodDefs() {
 	IDX_TABLE token, last;
 	tMetaData *pMetaData;
 
-	pMetaData = types[TYPE_SYSTEM_ARRAY_NO_TYPE]->pMetaData;
-	last = types[TYPE_SYSTEM_ARRAY_NO_TYPE]->isLast?
+	pMetaData = _bcl_->types[TYPE_SYSTEM_ARRAY_NO_TYPE]->pMetaData;
+	last = _bcl_->types[TYPE_SYSTEM_ARRAY_NO_TYPE]->isLast?
 		MAKE_TABLE_INDEX(MD_TABLE_METHODDEF, pMetaData->tables.numRows[MD_TABLE_METHODDEF]):
-		(types[TYPE_SYSTEM_ARRAY_NO_TYPE][1].methodList - 1);
-	token = types[TYPE_SYSTEM_ARRAY_NO_TYPE]->methodList;
+		(_bcl_->types[TYPE_SYSTEM_ARRAY_NO_TYPE][1].methodList - 1);
+	token = _bcl_->types[TYPE_SYSTEM_ARRAY_NO_TYPE]->methodList;
 	for (; token <= last; token++) {
 		tMD_MethodDef *pMethod;
 		U32 i;
@@ -95,19 +95,19 @@ function_space_specifier static void GetMethodDefs() {
 		pMethod = (tMD_MethodDef*)MetaData_GetTableRow(pMetaData, token);
 		for (i=0; i<GENERICARRAYMETHODS_NUM; i++) {
 			if (Gstrcmp((const char*)pMethod->name, pGenericArrayMethodsInit[i]) == 0) {
-				ppGenericArrayMethods[i] = pMethod;
+				_bcl_->ppGenericArrayMethods[i] = pMethod;
 				break;
 			}
 		}
 
 	}
-	genericArrayMethodsInited = 1;
+	_bcl_->genericArrayMethodsInited = 1;
 }
 
 function_space_specifier static void CreateNewArrayType(tMD_TypeDef *pNewArrayType, tMD_TypeDef *pElementType, tMD_TypeDef **ppClassTypeArgs, tMD_TypeDef **ppMethodTypeArgs) {
-	MetaData_Fill_TypeDef(types[TYPE_SYSTEM_ARRAY_NO_TYPE], NULL, NULL);
+	MetaData_Fill_TypeDef(_bcl_->types[TYPE_SYSTEM_ARRAY_NO_TYPE], NULL, NULL);
 
-	memcpy(pNewArrayType, types[TYPE_SYSTEM_ARRAY_NO_TYPE], sizeof(tMD_TypeDef));
+	memcpy(pNewArrayType, _bcl_->types[TYPE_SYSTEM_ARRAY_NO_TYPE], sizeof(tMD_TypeDef));
 	pNewArrayType->pArrayElementType = pElementType;
 	pNewArrayType->isFilled = 1;
 
@@ -118,7 +118,7 @@ function_space_specifier static void CreateNewArrayType(tMD_TypeDef *pNewArrayTy
 		tMD_MethodDef *pMethod;
 		U32 orgNumInterfaces;
 
-		if (genericArrayMethodsInited == 0) {
+		if (_bcl_->genericArrayMethodsInited == 0) {
 			GetMethodDefs();
 		}
 
@@ -130,38 +130,38 @@ function_space_specifier static void CreateNewArrayType(tMD_TypeDef *pNewArrayTy
 
 		// Get the IEnumerable<T> interface
 		pInterfaceMap = &pAllIMs[orgNumInterfaces + 0];
-		pInterfaceT = Generics_GetGenericTypeFromCoreType(types[TYPE_SYSTEM_COLLECTIONS_GENERIC_IENUMERABLE_T], 1, &pElementType);
+		pInterfaceT = Generics_GetGenericTypeFromCoreType(_bcl_->types[TYPE_SYSTEM_COLLECTIONS_GENERIC_IENUMERABLE_T], 1, &pElementType);
 		pInterfaceMap->pInterface = pInterfaceT;
 		pInterfaceMap->pVTableLookup = NULL;
 		pInterfaceMap->ppMethodVLookup = (tMD_MethodDef **) mallocForever(pInterfaceT->numVirtualMethods * sizeof(tMD_MethodDef*));
-		pMethod = Generics_GetMethodDefFromCoreMethod(ppGenericArrayMethods[GENERICARRAYMETHODS_Internal_GetGenericEnumerator], pNewArrayType, 1, &pElementType);
+		pMethod = Generics_GetMethodDefFromCoreMethod(_bcl_->ppGenericArrayMethods[GENERICARRAYMETHODS_Internal_GetGenericEnumerator], pNewArrayType, 1, &pElementType);
 		pInterfaceMap->ppMethodVLookup[0] = pMethod;
 
 		// Get the ICollection<T> interface
 		pInterfaceMap = &pAllIMs[orgNumInterfaces + 1];
-		pInterfaceT = Generics_GetGenericTypeFromCoreType(types[TYPE_SYSTEM_COLLECTIONS_GENERIC_ICOLLECTION_T], 1, &pElementType);
+		pInterfaceT = Generics_GetGenericTypeFromCoreType(_bcl_->types[TYPE_SYSTEM_COLLECTIONS_GENERIC_ICOLLECTION_T], 1, &pElementType);
 		pInterfaceMap->pInterface = pInterfaceT;
 		pInterfaceMap->pVTableLookup = NULL;
 		pInterfaceMap->ppMethodVLookup = (tMD_MethodDef **) mallocForever(pInterfaceT->numVirtualMethods * sizeof(tMD_MethodDef*));
-		pInterfaceMap->ppMethodVLookup[0] = ppGenericArrayMethods[GENERICARRAYMETHODS_get_Length];
-		pInterfaceMap->ppMethodVLookup[1] = ppGenericArrayMethods[GENERICARRAYMETHODS_get_IsReadOnly];
-		pInterfaceMap->ppMethodVLookup[2] = Generics_GetMethodDefFromCoreMethod(ppGenericArrayMethods[GENERICARRAYMETHODS_Internal_GenericAdd], pNewArrayType, 1, &pElementType);
-		pInterfaceMap->ppMethodVLookup[3] = ppGenericArrayMethods[GENERICARRAYMETHODS_Internal_GenericClear];
-		pInterfaceMap->ppMethodVLookup[4] = Generics_GetMethodDefFromCoreMethod(ppGenericArrayMethods[GENERICARRAYMETHODS_Internal_GenericContains], pNewArrayType, 1, &pElementType);
-		pInterfaceMap->ppMethodVLookup[5] = Generics_GetMethodDefFromCoreMethod(ppGenericArrayMethods[GENERICARRAYMETHODS_Internal_GenericCopyTo], pNewArrayType, 1, &pElementType);
-		pInterfaceMap->ppMethodVLookup[6] = Generics_GetMethodDefFromCoreMethod(ppGenericArrayMethods[GENERICARRAYMETHODS_Internal_GenericRemove], pNewArrayType, 1, &pElementType);
+		pInterfaceMap->ppMethodVLookup[0] = _bcl_->ppGenericArrayMethods[GENERICARRAYMETHODS_get_Length];
+		pInterfaceMap->ppMethodVLookup[1] = _bcl_->ppGenericArrayMethods[GENERICARRAYMETHODS_get_IsReadOnly];
+		pInterfaceMap->ppMethodVLookup[2] = Generics_GetMethodDefFromCoreMethod(_bcl_->ppGenericArrayMethods[GENERICARRAYMETHODS_Internal_GenericAdd], pNewArrayType, 1, &pElementType);
+		pInterfaceMap->ppMethodVLookup[3] = _bcl_->ppGenericArrayMethods[GENERICARRAYMETHODS_Internal_GenericClear];
+		pInterfaceMap->ppMethodVLookup[4] = Generics_GetMethodDefFromCoreMethod(_bcl_->ppGenericArrayMethods[GENERICARRAYMETHODS_Internal_GenericContains], pNewArrayType, 1, &pElementType);
+		pInterfaceMap->ppMethodVLookup[5] = Generics_GetMethodDefFromCoreMethod(_bcl_->ppGenericArrayMethods[GENERICARRAYMETHODS_Internal_GenericCopyTo], pNewArrayType, 1, &pElementType);
+		pInterfaceMap->ppMethodVLookup[6] = Generics_GetMethodDefFromCoreMethod(_bcl_->ppGenericArrayMethods[GENERICARRAYMETHODS_Internal_GenericRemove], pNewArrayType, 1, &pElementType);
 
 		// Get the IList<T> interface
 		pInterfaceMap = &pAllIMs[orgNumInterfaces + 2];
-		pInterfaceT = Generics_GetGenericTypeFromCoreType(types[TYPE_SYSTEM_COLLECTIONS_GENERIC_ILIST_T], 1, &pElementType); //, ppClassTypeArgs, ppMethodTypeArgs);
+		pInterfaceT = Generics_GetGenericTypeFromCoreType(_bcl_->types[TYPE_SYSTEM_COLLECTIONS_GENERIC_ILIST_T], 1, &pElementType); //, ppClassTypeArgs, ppMethodTypeArgs);
 		pInterfaceMap->pInterface = pInterfaceT;
 		pInterfaceMap->pVTableLookup = NULL;
 		pInterfaceMap->ppMethodVLookup = (tMD_MethodDef **) mallocForever(pInterfaceT->numVirtualMethods * sizeof(tMD_MethodDef*));
-		pInterfaceMap->ppMethodVLookup[0] = Generics_GetMethodDefFromCoreMethod(ppGenericArrayMethods[GENERICARRAYMETHODS_Internal_GenericIndexOf], pNewArrayType, 1, &pElementType);
-		pInterfaceMap->ppMethodVLookup[1] = Generics_GetMethodDefFromCoreMethod(ppGenericArrayMethods[GENERICARRAYMETHODS_Internal_GenericInsert], pNewArrayType, 1, &pElementType);
-		pInterfaceMap->ppMethodVLookup[2] = ppGenericArrayMethods[GENERICARRAYMETHODS_Internal_GenericRemoveAt];
-		pInterfaceMap->ppMethodVLookup[3] = Generics_GetMethodDefFromCoreMethod(ppGenericArrayMethods[GENERICARRAYMETHODS_Internal_GenericGetItem], pNewArrayType, 1, &pElementType);
-		pInterfaceMap->ppMethodVLookup[4] = Generics_GetMethodDefFromCoreMethod(ppGenericArrayMethods[GENERICARRAYMETHODS_Internal_GenericSetItem], pNewArrayType, 1, &pElementType);
+		pInterfaceMap->ppMethodVLookup[0] = Generics_GetMethodDefFromCoreMethod(_bcl_->ppGenericArrayMethods[GENERICARRAYMETHODS_Internal_GenericIndexOf], pNewArrayType, 1, &pElementType);
+		pInterfaceMap->ppMethodVLookup[1] = Generics_GetMethodDefFromCoreMethod(_bcl_->ppGenericArrayMethods[GENERICARRAYMETHODS_Internal_GenericInsert], pNewArrayType, 1, &pElementType);
+		pInterfaceMap->ppMethodVLookup[2] = _bcl_->ppGenericArrayMethods[GENERICARRAYMETHODS_Internal_GenericRemoveAt];
+		pInterfaceMap->ppMethodVLookup[3] = Generics_GetMethodDefFromCoreMethod(_bcl_->ppGenericArrayMethods[GENERICARRAYMETHODS_Internal_GenericGetItem], pNewArrayType, 1, &pElementType);
+		pInterfaceMap->ppMethodVLookup[4] = Generics_GetMethodDefFromCoreMethod(_bcl_->ppGenericArrayMethods[GENERICARRAYMETHODS_Internal_GenericSetItem], pNewArrayType, 1, &pElementType);
 	}
 
 	log_f(2, "Array: Array[%s.%s]\n", pElementType->nameSpace, pElementType->name);
@@ -172,10 +172,10 @@ function_space_specifier tMD_TypeDef* Type_GetArrayTypeDef(tMD_TypeDef *pElement
 	tArrayTypeDefs *pIterArrays;
 
 	if (pElementType == NULL) {
-		return types[TYPE_SYSTEM_ARRAY_NO_TYPE];
+		return _bcl_->types[TYPE_SYSTEM_ARRAY_NO_TYPE];
 	}
 
-	pIterArrays = pArrays;
+	pIterArrays = _bcl_->pArrays;
 	while (pIterArrays != NULL) {
 		if (pIterArrays->pElementType == pElementType) {
 			return pIterArrays->pArrayType;
@@ -187,8 +187,8 @@ function_space_specifier tMD_TypeDef* Type_GetArrayTypeDef(tMD_TypeDef *pElement
 	// (otherwise it can get stuck in an infinite loop)
 	pIterArrays = TMALLOCFOREVER(tArrayTypeDefs);
 	pIterArrays->pElementType = pElementType;
-	pIterArrays->pNext = pArrays;
-	pArrays = pIterArrays;
+	pIterArrays->pNext = _bcl_->pArrays;
+	_bcl_->pArrays = pIterArrays;
 	pIterArrays->pArrayType = TMALLOC(tMD_TypeDef);
 	Gmemset(pIterArrays->pArrayType, 0, sizeof(tMD_TypeDef));
 
@@ -229,46 +229,46 @@ function_space_specifier tMD_TypeDef* Type_GetTypeFromSig(tMetaData *pMetaData, 
 			return NULL;
 
 		case ELEMENT_TYPE_BOOLEAN:
-			return types[TYPE_SYSTEM_BOOLEAN];
+			return _bcl_->types[TYPE_SYSTEM_BOOLEAN];
 
 		case ELEMENT_TYPE_CHAR:
-			return types[TYPE_SYSTEM_CHAR];
+			return _bcl_->types[TYPE_SYSTEM_CHAR];
 
 		case ELEMENT_TYPE_I1:
-			return types[TYPE_SYSTEM_SBYTE];
+			return _bcl_->types[TYPE_SYSTEM_SBYTE];
 
 		case ELEMENT_TYPE_U1:
-			return types[TYPE_SYSTEM_BYTE];
+			return _bcl_->types[TYPE_SYSTEM_BYTE];
 
 		case ELEMENT_TYPE_I2:
-			return types[TYPE_SYSTEM_INT16];
+			return _bcl_->types[TYPE_SYSTEM_INT16];
 
 		case ELEMENT_TYPE_U2:
-			return types[TYPE_SYSTEM_UINT16];
+			return _bcl_->types[TYPE_SYSTEM_UINT16];
 
 		case ELEMENT_TYPE_I4:
-			return types[TYPE_SYSTEM_INT32];
+			return _bcl_->types[TYPE_SYSTEM_INT32];
 
 		case ELEMENT_TYPE_I8:
-			return types[TYPE_SYSTEM_INT64];
+			return _bcl_->types[TYPE_SYSTEM_INT64];
 
 		case ELEMENT_TYPE_U8:
-			return types[TYPE_SYSTEM_UINT64];
+			return _bcl_->types[TYPE_SYSTEM_UINT64];
 
 		case ELEMENT_TYPE_U4:
-			return types[TYPE_SYSTEM_UINT32];
+			return _bcl_->types[TYPE_SYSTEM_UINT32];
 
 		case ELEMENT_TYPE_R4:
-			return types[TYPE_SYSTEM_SINGLE];
+			return _bcl_->types[TYPE_SYSTEM_SINGLE];
 
 		case ELEMENT_TYPE_R8:
-			return types[TYPE_SYSTEM_DOUBLE];
+			return _bcl_->types[TYPE_SYSTEM_DOUBLE];
 
 		case ELEMENT_TYPE_STRING:
-			return types[TYPE_SYSTEM_STRING];
+			return _bcl_->types[TYPE_SYSTEM_STRING];
 
 		case ELEMENT_TYPE_PTR:
-			return types[TYPE_SYSTEM_UINTPTR];
+			return _bcl_->types[TYPE_SYSTEM_UINTPTR];
 
 		case ELEMENT_TYPE_BYREF:
 			{
@@ -279,7 +279,7 @@ function_space_specifier tMD_TypeDef* Type_GetTypeFromSig(tMetaData *pMetaData, 
 			}
 			// fall-through
 		case ELEMENT_TYPE_INTPTR:
-			return types[TYPE_SYSTEM_INTPTR];
+			return _bcl_->types[TYPE_SYSTEM_INTPTR];
 
 		case ELEMENT_TYPE_VALUETYPE:
 		case ELEMENT_TYPE_CLASS:
@@ -308,10 +308,10 @@ function_space_specifier tMD_TypeDef* Type_GetTypeFromSig(tMetaData *pMetaData, 
 		//	return types[TYPE_SYSTEM_INTPTR];
 
 		case ELEMENT_TYPE_UINTPTR:
-			return types[TYPE_SYSTEM_UINTPTR];
+			return _bcl_->types[TYPE_SYSTEM_UINTPTR];
 
 		case ELEMENT_TYPE_OBJECT:
-			return types[TYPE_SYSTEM_OBJECT];
+			return _bcl_->types[TYPE_SYSTEM_OBJECT];
 
 		case ELEMENT_TYPE_SZARRAY:
 			{
@@ -337,9 +337,9 @@ function_space_specifier tMD_TypeDef* Type_GetTypeFromSig(tMetaData *pMetaData, 
 	return 0;
 }
 
-function_space_specifier tMD_TypeDef **types;
+//function_space_specifier tMD_TypeDef **types;
 
-function_space_specifier static U32 numInitTypes;
+//function_space_specifier static U32 numInitTypes;
 
 typedef struct tTypeInit_ tTypeInit;
 struct tTypeInit_ {
@@ -352,14 +352,14 @@ struct tTypeInit_ {
 	U8 instanceMemSize;
 };
 
-function_space_specifier static char mscorlib[] = "corlib.dll";
-function_space_specifier static char System[] = "System";
-function_space_specifier static char SystemCollectionsGeneric[] = "System.Collections.Generic";
-function_space_specifier static char SystemThreading[] = "System.Threading";
-function_space_specifier static char SystemIO[] = "System.IO";
-function_space_specifier static char SystemGlobalization[] = "System.Globalization";
+__device__ static char mscorlib[] = "corlib.dll";
+__device__ static char System[] = "System";
+__device__ static char SystemCollectionsGeneric[] = "System.Collections.Generic";
+__device__ static char SystemThreading[] = "System.Threading";
+__device__ static char SystemIO[] = "System.IO";
+__device__ static char SystemGlobalization[] = "System.Globalization";
 
-function_space_specifier static tTypeInit typeInit[] = {
+__device__ static tTypeInit typeInit[] = {
 	{ mscorlib, System, "Object", EVALSTACK_O,		4, 4, 0 },
 	{ mscorlib, System, "Array", EVALSTACK_O,		4, 4, 0 },
 	{ mscorlib, System, "Void", EVALSTACK_O,			4, 4, 0 },
@@ -414,35 +414,35 @@ function_space_specifier static tTypeInit typeInit[] = {
 //	{ mscorlib, System, "Object", EVALSTACK_O,		4, 4, 0 },
 //};
 
-function_space_specifier int CorLibDone = 0;
+//function_space_specifier int CorLibDone = 0;
 
 function_space_specifier void Type_Init() {
 	U32 i;
 	// Build all the types needed by the interpreter.
-	numInitTypes = sizeof(typeInit) / sizeof(typeInit[0]);
-	types = (tMD_TypeDef**)mallocForever(numInitTypes * sizeof(tMD_TypeDef*));
-	for (i=0; i<numInitTypes; i++) {
+	_bcl_->numInitTypes = sizeof(typeInit) / sizeof(typeInit[0]);
+	_bcl_->types = (tMD_TypeDef**)mallocForever(_bcl_->numInitTypes * sizeof(tMD_TypeDef*));
+	for (i=0; i<_bcl_->numInitTypes; i++) {
 		if (typeInit[i].assemblyName != NULL) {
 			// Normal type initialisation
-			types[i] = MetaData_GetTypeDefFromFullName((STRING)typeInit[i].assemblyName, (STRING)typeInit[i].nameSpace, (STRING)typeInit[i].name);
+			_bcl_->types[i] = MetaData_GetTypeDefFromFullName((STRING)typeInit[i].assemblyName, (STRING)typeInit[i].nameSpace, (STRING)typeInit[i].name);
 			
 			// For the pre-defined system types, fill in the well-known memory sizes
-			types[i]->stackType = typeInit[i].stackType;
-			types[i]->stackSize = typeInit[i].stackSize;
-			types[i]->arrayElementSize = typeInit[i].arrayElementSize;
-			types[i]->instanceMemSize = typeInit[i].instanceMemSize;
+			_bcl_->types[i]->stackType = typeInit[i].stackType;
+			_bcl_->types[i]->stackSize = typeInit[i].stackSize;
+			_bcl_->types[i]->arrayElementSize = typeInit[i].arrayElementSize;
+			_bcl_->types[i]->instanceMemSize = typeInit[i].instanceMemSize;
 		}
 	}
 
-	for (i=0; i<numInitTypes; i++) {
+	for (i=0; i<_bcl_->numInitTypes; i++) {
 		if (typeInit[i].assemblyName != NULL) {
-			MetaData_Fill_TypeDef(types[i], NULL, NULL);
+			MetaData_Fill_TypeDef(_bcl_->types[i], NULL, NULL);
 		} else {
 			// Special initialisation for arrays of particular types.
-			types[i] = Type_GetArrayTypeDef(types[(U32)(typeInit[i].name)], NULL, NULL);
+			_bcl_->types[i] = Type_GetArrayTypeDef(_bcl_->types[(U32)(typeInit[i].name)], NULL, NULL);
 		}
 	}
-	CorLibDone = 1;
+	_bcl_->CorLibDone = 1;
 }
 
 function_space_specifier U32 Type_IsMethod(tMD_MethodDef *pMethod, STRING name, tMD_TypeDef *pReturnType, U32 numParams, U8 *pParamTypeIndexs) {
@@ -472,7 +472,7 @@ function_space_specifier U32 Type_IsMethod(tMD_MethodDef *pMethod, STRING name, 
 		return 0;
 	}
 
-	if (pReturnType == types[TYPE_SYSTEM_VOID]) {
+	if (pReturnType == _bcl_->types[TYPE_SYSTEM_VOID]) {
 		pReturnType = NULL;
 	}
 
@@ -480,9 +480,9 @@ function_space_specifier U32 Type_IsMethod(tMD_MethodDef *pMethod, STRING name, 
 		tMD_TypeDef *pSigType, *pParamType;
 
 		pSigType = Type_GetTypeFromSig(pMethod->pMetaData, &sig, NULL, NULL);
-		pParamType = (i == 0)?pReturnType:types[pParamTypeIndexs[i-1]];
+		pParamType = (i == 0)?pReturnType:_bcl_->types[pParamTypeIndexs[i-1]];
 
-		if (pSigType != NULL && TYPE_ISARRAY(pSigType) && pParamType == types[TYPE_SYSTEM_ARRAY_NO_TYPE]) {
+		if (pSigType != NULL && TYPE_ISARRAY(pSigType) && pParamType == _bcl_->types[TYPE_SYSTEM_ARRAY_NO_TYPE]) {
 			// It's ok...
 		} else {
 			if (pSigType != pParamType) {

@@ -18,9 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "Compat.h"
+#include "_bcl_.h"
 #include "Sys.h"
-
 #include "CLIFile.h"
 #include "RVA.h"
 #include "MetaData.h"
@@ -45,7 +44,7 @@ struct tFilesLoaded_ {
 };
 
 // Keep track of all the files currently loaded
-function_space_specifier static tFilesLoaded *pFilesLoaded = NULL;
+//function_space_specifier static tFilesLoaded *pFilesLoaded = NULL;
 
 __global__ void BCL_CLIFile_GetMetaDataForAssembly(char * fileName)
 {
@@ -72,7 +71,7 @@ function_space_specifier tMetaData* CLIFile_GetMetaDataForAssembly(char * fileNa
 	Gprintf("looking at pfiles.\n");
 
 	// Look in already-loaded files first
-	pFiles = pFilesLoaded;
+	pFiles = _bcl_->pFilesLoaded;
 	while (pFiles != NULL) {
 		Gprintf("pFiles not null.\n");
 		tCLIFile *pCLIFile;
@@ -105,7 +104,7 @@ function_space_specifier tMetaData* CLIFile_GetMetaDataForAssembly(char * fileNa
 	}
 }
 
-function_space_specifier unsigned char Gdata[];
+// function_space_specifier unsigned char Gdata[];
 
 function_space_specifier static void* LoadFileFromDisk(char *pFileName)
 {
@@ -307,8 +306,8 @@ function_space_specifier tCLIFile* CLIFile_Load(char *pFileName) {
 	// Record that we've loaded this file
 	pNewFile = TMALLOCFOREVER(tFilesLoaded);
 	pNewFile->pCLIFile = pRet;
-	pNewFile->pNext = pFilesLoaded;
-	pFilesLoaded = pNewFile;
+	pNewFile->pNext = _bcl_->pFilesLoaded;
+	_bcl_->pFilesLoaded = pNewFile;
 
 	return pRet;
 }

@@ -100,7 +100,6 @@
       <GPUDebugInfo>true</GPUDebugInfo>
       <CodeGeneration>compute_35,sm_35</CodeGeneration>
       <InterleaveSourceInPTX>true</InterleaveSourceInPTX>
-      <GenerateLineInfo>true</GenerateLineInfo>
       <Defines>CUDA</Defines>
     </CudaCompile>
     <CudaLink>
@@ -187,6 +186,7 @@
     <ClInclude Include="Thread.h" />
     <ClInclude Include="Type.h" />
     <ClInclude Include="Types.h" />
+    <ClInclude Include="_BCL_.h" />
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="basics.c" />

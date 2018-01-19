@@ -63,7 +63,7 @@ struct tInternalCall_ {
 	U8 parameterTypes[MAX_PARAMS];
 };
 
-function_space_specifier static tInternalCall internalCalls[] = {
+__device__ static tInternalCall internalCalls[] = {
 	{"System", "Object", "Equals", System_Object_Equals, TYPE_SYSTEM_BOOLEAN, 1, {TYPE_SYSTEM_OBJECT}},
 	{NULL,      NULL,    "Clone", System_Object_Clone, TYPE_SYSTEM_OBJECT, 1, {TYPE_SYSTEM_OBJECT}},
 	{NULL,      NULL,    "GetHashCode", System_Object_GetHashCode, TYPE_SYSTEM_INT32, 0},
@@ -178,7 +178,7 @@ function_space_specifier fnInternalCall InternalCall_Map(tMD_MethodDef *pMethod)
 	STRING curNameSpace = NULL;
 	STRING curType = NULL;
 
-	if (pMethod->pParentType->pParent == types[TYPE_SYSTEM_MULTICASTDELEGATE]) {
+	if (pMethod->pParentType->pParent == _bcl_->types[TYPE_SYSTEM_MULTICASTDELEGATE]) {
 		// Special case to handle delegates
 		fnInternalCall fn = Map_Delegate(pMethod);
 		if (fn != NULL) {
@@ -195,7 +195,7 @@ function_space_specifier fnInternalCall InternalCall_Map(tMD_MethodDef *pMethod)
 			}
 			if (Gstrcmp(pMethod->pParentType->nameSpace, curNameSpace) == 0) {
 				if (Gstrcmp(pMethod->pParentType->name, curType) == 0) {
-					if (Type_IsMethod(pMethod, pCall->method, types[pCall->returnType], pCall->numParameters, pCall->parameterTypes)) {
+					if (Type_IsMethod(pMethod, pCall->method, _bcl_->types[pCall->returnType], pCall->numParameters, pCall->parameterTypes)) {
 						return pCall->fn;
 					}
 				}

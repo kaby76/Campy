@@ -18,9 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "Compat.h"
+#include "_bcl_.h"
 #include "Sys.h"
-
 #include "Delegate.h"
 #include "MetaData.h"
 #include "Heap.h"

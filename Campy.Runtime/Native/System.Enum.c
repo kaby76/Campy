@@ -18,7 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "Compat.h"
+#include "_bcl_.h"
 #include "Sys.h"
 
 #include "System.Enum.h"
@@ -42,8 +42,8 @@ function_space_specifier tAsyncCall* System_Enum_Internal_GetInfo(PTR pThis_, PT
 	HEAP_PTR names, values;
 
 	// An enum type always has just one non-literal field, with all other fields being the values.
-	names = SystemArray_NewVector(types[TYPE_SYSTEM_ARRAY_STRING], pEnumType->numFields - 1);
-	values = SystemArray_NewVector(types[TYPE_SYSTEM_ARRAY_INT32], pEnumType->numFields - 1);
+	names = SystemArray_NewVector(_bcl_->types[TYPE_SYSTEM_ARRAY_STRING], pEnumType->numFields - 1);
+	values = SystemArray_NewVector(_bcl_->types[TYPE_SYSTEM_ARRAY_INT32], pEnumType->numFields - 1);
 	
 	for (i=0, retIndex=0; i<pEnumType->numFields; i++) {
 		tMD_FieldDef *pField = pEnumType->ppFields[i];
