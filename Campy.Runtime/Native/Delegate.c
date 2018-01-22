@@ -62,8 +62,9 @@ function_space_specifier static tAsyncCall* ctor(PTR pThis_, PTR pParams, PTR pR
 	// marked as 'InternalMethod' - it is marked as 'runtime'
 	tDelegate *pThis = (tDelegate*)pThis_;
 
-	pThis->targetObj = ((HEAP_PTR*)pParams)[0];
-	pThis->pTargetMethod = ((tMD_MethodDef**)pParams)[1];
+	void **p = (void**)pParams;
+	pThis->targetObj = *(HEAP_PTR*)p++;
+	pThis->pTargetMethod = *(tMD_MethodDef**)p++;
 	pThis->pNext = NULL;
 
 	return NULL;

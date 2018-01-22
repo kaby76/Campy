@@ -37,7 +37,7 @@ function_space_specifier tAsyncCall* System_Enum_Internal_GetValue(PTR pThis_, P
 }
 
 function_space_specifier tAsyncCall* System_Enum_Internal_GetInfo(PTR pThis_, PTR pParams, PTR pReturnValue) {
-	tMD_TypeDef *pEnumType = RuntimeType_DeRef((PTR)((tMD_TypeDef**)pParams)[0]);
+	tMD_TypeDef *pEnumType = RuntimeType_DeRef((PTR)(*(tMD_TypeDef**)pParams));
 	U32 i, retIndex;
 	HEAP_PTR names, values;
 

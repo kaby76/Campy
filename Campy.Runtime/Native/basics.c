@@ -10,10 +10,8 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
-#include <cuda.h>
 
-
-__device__ _BCL_t * _bcl_;
+__device__ struct _BCL_t * _bcl_;
 
 function_space_specifier  void gpuexit(int _Code) {}
 
@@ -91,11 +89,15 @@ void Initialize_BCL0(void * g, size_t size, int count)
 
 function_space_specifier struct header_t *get_free_block(size_t size)
 {
+#ifdef CUDA
 	int blockId = blockIdx.x + blockIdx.y * gridDim.x
 		+ gridDim.x * gridDim.y * blockIdx.z;
 	int threadId = blockId * (blockDim.x * blockDim.y * blockDim.z)
 		+ (threadIdx.z * (blockDim.x * blockDim.y))
 		+ (threadIdx.y * blockDim.x) + threadIdx.x;
+#else
+	int threadId = 0;
+#endif
 
 	struct header_t *curr = &_bcl_->head[threadId];
 	while (curr) {

@@ -86,7 +86,8 @@ function_space_specifier tAsyncCall* System_Array_Internal_SetValue(PTR pThis_, 
 	PTR pElement;
 
 	pArrayType = Heap_GetType(pThis_);
-	obj = ((HEAP_PTR*)pParams)[0];
+	void **p = (void**)pParams;
+	obj = *(HEAP_PTR*)p++;
 	pObjType = Heap_GetType(obj);
 	pElementType = pArrayType->pArrayElementType;
 	// Check to see if the Type is ok to put in the array
@@ -98,7 +99,7 @@ function_space_specifier tAsyncCall* System_Array_Internal_SetValue(PTR pThis_, 
 		return NULL;
 	}
 
-	index = ((U32*)pParams)[1];
+	index = *(U32*)p++;
 
 #if defined(WIN32) && defined(_DEBUG)
 	// Do a bounds-check
@@ -137,9 +138,10 @@ function_space_specifier tAsyncCall* System_Array_Clear(PTR pThis_, PTR pParams,
 	U32 index, length, elementSize;
 	tMD_TypeDef *pArrayType;
 
-	pArray = ((tSystemArray**)pParams)[0];
-	index = ((U32*)pParams)[1];
-	length = ((U32*)pParams)[2];
+	void **p = (void**)pParams;
+	pArray = *(tSystemArray**)p++;
+	index = *(U32*)p++;
+	length = *(U32*)p++;
 	pArrayType = Heap_GetType((HEAP_PTR)pArray);
 	elementSize = pArrayType->pArrayElementType->arrayElementSize;
 	memset(pArray->elements + index * elementSize, 0, length * elementSize);
@@ -150,9 +152,14 @@ function_space_specifier tAsyncCall* System_Array_Clear(PTR pThis_, PTR pParams,
 function_space_specifier tAsyncCall* System_Array_Internal_Copy(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tSystemArray *pSrc, *pDst;
 	tMD_TypeDef *pSrcType, *pDstType, *pSrcElementType;
+	U32 srcIndex, dstIndex, length, elementSize;
 
-	pSrc = ((tSystemArray**)pParams)[0];
-	pDst = ((tSystemArray**)pParams)[2];
+	void ** p = (void**)pParams;
+	pSrc = *(tSystemArray**)p++;
+	srcIndex = *(U32*)p++;
+	pDst = *(tSystemArray**)p++;
+	dstIndex = *(U32*)p++;
+	length = *(U32*)p++;
 	
 	// Check if we can do a fast-copy with these two arrays
 	pSrcType = Heap_GetType((HEAP_PTR)pSrc);
@@ -160,11 +167,6 @@ function_space_specifier tAsyncCall* System_Array_Internal_Copy(PTR pThis_, PTR 
 	pSrcElementType = pSrcType->pArrayElementType;
 	if (Type_IsAssignableFrom(pDstType->pArrayElementType, pSrcElementType)) {
 		// Can do fast-copy
-		U32 srcIndex, dstIndex, length, elementSize;
-
-		srcIndex = ((U32*)pParams)[1];
-		dstIndex = ((U32*)pParams)[3];
-		length = ((U32*)pParams)[4];
 
 #if defined(WIN32) && defined(_DEBUG)
 		// Do bounds check
@@ -193,8 +195,9 @@ function_space_specifier tAsyncCall* System_Array_Resize(PTR pThis_, PTR pParams
 	U32 newSize, oldSize;
 	tMD_TypeDef *pArrayTypeDef;
 
-	ppArray_ = ((HEAP_PTR**)pParams)[0];
-	newSize = ((U32*)pParams)[1];
+	void ** p = (void**)pParams;
+	ppArray_ = *(HEAP_PTR**)p++;
+	newSize = *(U32*)p++;
 
 	pOldArray = (tSystemArray*)*ppArray_;
 	oldSize = pOldArray->length;

@@ -36,7 +36,7 @@ void* mallocTrace(int s, char *pFile, int line);
 
 #define FAKE_RETURN gpuexit(101)
 
-#define INTERNALCALL_PARAM(ofs, type) *(type*)(pParams + ofs)
+#define INTERNALCALL_PARAM(ofs, type) *(type*)(((void**)pParams) + ofs)
 
 #include "MetaData.h"
 

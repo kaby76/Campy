@@ -102,179 +102,7 @@ function_space_specifier void MetaData_LoadGUIDs(tMetaData *pThis, void *pStream
 	log_f(1, "Read %d GUIDs\n", pThis->GUIDs.numGUIDs);
 }
 
-/*
-Format of definition strings:
-Always 2 characters to togther. 1st character defines source, 2nd defines destination.
-Sources:
-	c: 8-bit value
-	s: 16-bit short
-	i: 32-bit int
-	S: Index into string heap
-	G: Index into GUID heap
-	B: Index into BLOB heap
-	0: Coded index: TypeDefOrRef
-	1: Coded index: HasConstant
-	2: Coded index: HasCustomAttribute
-	3: Coded index: HasFieldMarshall
-	4: Coded index: HasDeclSecurity
-	5: Coded index: MemberRefParent
-	6: Coded index: HasSemantics
-	7: Coded index: MethodDefOrRef
-	8: Coded index: MemberForwarded
-	9: Coded index: Implementation
-	:: Coded index: CustomAttributeType
-	;: Coded index: ResolutionScope
-	<: Coded index: TypeOrMethodDef
-	\x00 - \x2c: Simple indexes into the respective table
-	^: RVA: Convert to pointer
-	x: Nothing, use 0
-	m: This metadata pointer
-	l: (lower case L) Boolean, is this the last entry in this table?
-	I: The original table index for this table item
-Destination:
-	x: nowhere, ignore
-	*: 32-bit index into relevant heap;
-		Or coded index - MSB = which table, other 3 bytes = table index
-		Or 32-bit int
-		Or pointer (also RVA)
-	s: 16-bit value
-	c: 8-bit value
-*/
-__device__ static const char* tableDefs[] = {
-	// 0x00
-	"sxS*G*GxGx",
-	// 0x01
-	"x*;*S*S*",
-	// 0x02
-	"x*m*i*S*S*0*\x04*\x06*xclcxcxcx*x*x*x*x*x*x*x*x*x*x*I*x*x*x*x*x*x*x*x*x*x*x*x*",
-	// 0x03
-	NULL,
-	// 0x04
-	"x*m*ssxsS*B*x*x*x*x*I*x*",
-	// 0x05
-	NULL,
-	// 0x06
-	"x*m*^*ssssS*B*\x08*x*x*x*x*x*x*I*x*x*x*"
-#ifdef GEN_COMBINED_OPCODES
-	"x*x*x*x*x*x*"
-#endif
-#ifdef DIAG_METHOD_CALLS
-	"x*x*x*"
-#endif
-	,
-	// 0x07
-	NULL,
-	// 0x08
-	"ssssS*",
-	// 0x09
-	"\x02*0*",
-	// 0x0A
-	"x*5*S*B*",
-	// 0x0B
-	"ccccxs1*B*",
-	// 0x0C
-	"2*:*B*",
-	// 0x0D
-	NULL,
-	// 0x0E
-	"ssxs4*B*",
-	// 0x0F
-	"ssxsi*\x02*",
-	// 0x10
-	NULL,
-	// 0x11
-	"B*",
-	// 0x12
-	"\x02*\x14*",
-	// 0x13
-	NULL,
-	// 0x14
-	"ssxsS*0*",
-	// 0x15
-	"\x02*\x17*",
-	// 0x16
-	NULL,
-	// 0x17
-	"ssxsS*B*",
-	// 0x18
-	"ssxs\06*6*",
-	// 0x19
-	"\x02*7*7*",
-	// 0x1A
-	"S*",
-	// 0x1B
-	"x*m*B*",
-	// 0x1C
-	"ssxs8*S*\x1a*",
-	// 0x1D
-	"^*\x04*",
-	// 0x1E
-	NULL,
-	// 0x1F
-	NULL,
-	// 0x20
-	"i*ssssssssi*B*S*S*",
-	// 0x21
-	NULL,
-	// 0x22
-	NULL,
-	// 0x23
-	"ssssssssi*B*S*S*B*",
-	// 0x24
-	NULL,
-	// 0x25
-	NULL,
-	// 0x26
-	NULL,
-	// 0x27
-	NULL,
-	// 0x28
-	NULL,
-	// 0x29
-	"\x02*\x02*",
-	// 0x2A
-	"ssss<*S*",
-	// 0x2B
-	"x*m*7*B*",
-	// 0x2C
-	"\x2a*0*",
-};
 
-// Coded indexes use this lookup table.
-// Note that the extra 'z' characters are important!
-// (Because of how the lookup works each string must be a power of 2 in length)
-__device__ static const char* codedTags[] = {
-	// TypeDefOrRef
-	"\x02\x01\x1Bz",
-	// HasConstant
-	"\x04\x08\x17z",
-	// HasCustomAttribute
-	"\x06\x04\x01\x02\x08\x09\x0A\x00\x0E\x17\x14\x11\x1A\x1B\x20\x23\x26\x27\x28zzzzzzzzzzzzz",
-	// HasFieldMarshall
-	"\x04\x08",
-	// HasDeclSecurity
-	"\x02\x06\x20z",
-	// MemberRefParent
-	"z\x01\x1A\x06\x1Bzzz",
-	// HasSemantics
-	"\x14\x17",
-	// MethodDefOrRef
-	"\x06\x0A",
-	// MemberForwarded
-	"\x04\x06",
-	// Implementation
-	"\x26\x23\x27z",
-	// CustomAttributeType
-	"zz\x06\x0Azzzz",
-	// ResolutionScope
-	"\x00\x1A\x23\x01",
-	// TypeOrMethodDef
-	"\x02\x06",
-};
-
-__device__ static unsigned char codedTagBits[] = {
-	2, 2, 5, 1, 2, 3, 1, 1, 1, 2, 3, 2, 1
-};
 
 // function_space_specifier static unsigned int tableRowSize[MAX_TABLES];
 
@@ -333,6 +161,37 @@ function_space_specifier unsigned int CodedIndex(tMetaData *pThis, unsigned char
 	unsigned int v;
 	unsigned char * pSource = (unsigned char *)*ppSource;
 	int ofs = x - '0';
+	char* codedTags[] = {
+		// TypeDefOrRef
+		"\x02\x01\x1Bz",
+		// HasConstant
+		"\x04\x08\x17z",
+		// HasCustomAttribute
+		"\x06\x04\x01\x02\x08\x09\x0A\x00\x0E\x17\x14\x11\x1A\x1B\x20\x23\x26\x27\x28zzzzzzzzzzzzz",
+		// HasFieldMarshall
+		"\x04\x08",
+		// HasDeclSecurity
+		"\x02\x06\x20z",
+		// MemberRefParent
+		"z\x01\x1A\x06\x1Bzzz",
+		// HasSemantics
+		"\x14\x17",
+		// MethodDefOrRef
+		"\x06\x0A",
+		// MemberForwarded
+		"\x04\x06",
+		// Implementation
+		"\x26\x23\x27z",
+		// CustomAttributeType
+		"zz\x06\x0Azzzz",
+		// ResolutionScope
+		"\x00\x1A\x23\x01",
+		// TypeOrMethodDef
+		"\x02\x06",
+	};
+	unsigned char codedTagBits[] = {
+		2, 2, 5, 1, 2, 3, 1, 1, 1, 2, 3, 2, 1
+	};
 	const char* pCoding = codedTags[ofs];
 	int tagBits = codedTagBits[ofs];
 	unsigned char tag = *pSource & ((1 << tagBits) - 1);
@@ -1172,8 +1031,6 @@ function_space_specifier static void* LoadSingleTable(tMetaData *pThis, tRVA *pR
 	int numRows = pThis->tables.numRows[tableID];
 	int rowLen = 0; // Number of bytes taken by each row in memory.
 	int row;
-	const char *pDef = tableDefs[tableID];
-	int defLen = (int)Gstrlen(pDef);
 	void *pRet;
 	unsigned char *pSource = (unsigned char*)*ppTable;
 	char *pDest;
@@ -1185,7 +1042,6 @@ function_space_specifier static void* LoadSingleTable(tMetaData *pThis, tRVA *pR
 	// Get destination size based on type.
 	// Calculate the destination row size from table definition, if it hasn't already been calculated
 	int newRowLen = 0;
-	int numFields = defLen / 2;
 
 	printf("TableID %x\n", tableID);
 
@@ -1428,6 +1284,37 @@ function_space_specifier void MetaData_LoadTables(tMetaData *pThis, tRVA *pRVA, 
 	}
 
 	printf("Num tables %d\n", numTables);
+	char* codedTags[] = {
+		// TypeDefOrRef
+		"\x02\x01\x1Bz",
+		// HasConstant
+		"\x04\x08\x17z",
+		// HasCustomAttribute
+		"\x06\x04\x01\x02\x08\x09\x0A\x00\x0E\x17\x14\x11\x1A\x1B\x20\x23\x26\x27\x28zzzzzzzzzzzzz",
+		// HasFieldMarshall
+		"\x04\x08",
+		// HasDeclSecurity
+		"\x02\x06\x20z",
+		// MemberRefParent
+		"z\x01\x1A\x06\x1Bzzz",
+		// HasSemantics
+		"\x14\x17",
+		// MethodDefOrRef
+		"\x06\x0A",
+		// MemberForwarded
+		"\x04\x06",
+		// Implementation
+		"\x26\x23\x27z",
+		// CustomAttributeType
+		"zz\x06\x0Azzzz",
+		// ResolutionScope
+		"\x00\x1A\x23\x01",
+		// TypeOrMethodDef
+		"\x02\x06",
+	};
+	unsigned char codedTagBits[] = {
+		2, 2, 5, 1, 2, 3, 1, 1, 1, 2, 3, 2, 1
+	};
 
 	// Determine if each coded index lookup type needs to use 16 or 32 bit indexes
 	for (i=0; i<13; i++) {
@@ -1458,10 +1345,6 @@ function_space_specifier void MetaData_LoadTables(tMetaData *pThis, tRVA *pRVA, 
 		if (pThis->tables.numRows[i] > 0) {
 
 printf("i = %d\n", i);
-			if (i*4 >= sizeof(tableDefs) || tableDefs[i] == NULL) {
-				printf("No table definition for MetaData table 0x%02x\n", i);
-				gpuexit(1);
-			}
 			pThis->tables.data[i] = LoadSingleTable(pThis, pRVA, i, &pTable);
 		}
 	}

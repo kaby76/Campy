@@ -122,7 +122,7 @@ function_space_specifier U32 JIT_Execute(tThread *pThread, U32 numInst);
 
 #ifdef DIAG_OPCODE_TIMES
 #include "JIT_OpCodes.h"
-extern __device__ U64 opcodeTimes[JIT_OPCODE_MAXNUM];
+extern U64 opcodeTimes[JIT_OPCODE_MAXNUM];
 #endif
 
 #ifdef DIAG_OPCODE_USE

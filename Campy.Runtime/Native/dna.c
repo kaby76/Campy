@@ -18,7 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "Compat.h"
+#include "_bcl_.h"
 #include "Sys.h"
 
 #include "CLIFile.h"
@@ -62,7 +62,7 @@ int main4(int argc, char **argp) {
 					case 0:
 						goto doneArgs;
 					case 'v':
-						logLevel++;
+						_bcl_->logLevel++;
 						break;
 					default:
 						Crash("Invalid argument: -%c", argp[i][1]);

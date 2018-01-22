@@ -17,7 +17,7 @@ struct tThread_;
 struct _BCL_t {
 	void * global_memory_heap;
 	struct header_t * head;
-	tFilesLoaded_ * pFilesLoaded;
+	struct tFilesLoaded_ * pFilesLoaded;
 	unsigned char * Gdata;
 
 	// Filesystem
@@ -35,22 +35,22 @@ struct _BCL_t {
 	char * ___strtok;
 
 	// Heap
-	tHeapEntry_ *pHeapTreeRoot;
-	tHeapEntry_ *nil;
+	struct tHeapEntry_ *pHeapTreeRoot;
+	struct tHeapEntry_ *nil;
 	U32 trackHeapSize;
 	U32 heapSizeMax;
 	U32 numNodes;
 	U32 numCollections;
 
 	// JIT_Execute
-	tJITCodeInfo_ * jitCodeInfo;
-	tJITCodeInfo_ * jitCodeGoNext;
+	struct tJITCodeInfo_ * jitCodeInfo;
+	struct tJITCodeInfo_ * jitCodeGoNext;
 
 	// MetaData
 	unsigned int * tableRowSize;
 
 	// Pinvoke
-	tLoadedLib_ *pLoadedLibs;
+	struct tLoadedLib_ *pLoadedLibs;
 
 	// Sys
 	U32 logLevel;
@@ -58,21 +58,21 @@ struct _BCL_t {
 	U32 mallocForeverSize;
 
 	// Type
-	tArrayTypeDefs_ *pArrays;
-	U8 genericArrayMethodsInited = 0;
-	tMD_MethodDef_ ** ppGenericArrayMethods;
-	tMD_TypeDef_ **types;
+	struct tArrayTypeDefs_ *pArrays;
+	U8 genericArrayMethodsInited;
+	struct tMD_MethodDef_ ** ppGenericArrayMethods;
+	struct tMD_TypeDef_ **types;
 	U32 numInitTypes;
 
 	// System.Console
 	U32 nextKeybC;
 
 	// Thread
-	tThread_ *pAllThreads;
-	tThread_ *pCurrentThread;
+	struct tThread_ *pAllThreads;
+	struct tThread_ *pCurrentThread;
 
 	// Type
 	int CorLibDone;
 };
 
-extern __device__ _BCL_t * _bcl_;
+extern __device__ struct _BCL_t * _bcl_;

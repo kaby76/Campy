@@ -8,15 +8,31 @@
 #include <fcntl.h>
 #include "CLIFile.h"
 
-extern unsigned char Gdata[];
-
 int main()
 {
 	{
 		int result;
-		Gfs_add_file("corlib.dll", Gdata,
-			/* see corlib.c file, number of lines with 50 bytes per line plus last partial line */
-			5345 * 50 + 14, &result);
+		FILE *file;
+		file = fopen("C:\\Users\\kenne\\Documents\\Campy2\\Campy.Runtime\\Corlib\\bin\\Debug\\net20\\corlib.dll", "rb");
+		if (!file)
+		{
+			printf("Unable to open file!");
+			return 1;
+		}
+		fseek(file, 0, SEEK_END);
+		int fileLen = ftell(file);
+		fseek(file, 0, SEEK_SET);
+		char * buffer = (char *)malloc(fileLen + 1);
+		if (!buffer)
+		{
+			fprintf(stderr, "Memory error!");
+			fclose(file);
+			return;
+		}
+		fread(buffer, fileLen, 1, file);
+		fclose(file);
+
+		Gfs_add_file("corlib.dll", buffer, fileLen, &result);
 	}
 	{
 		int result;
