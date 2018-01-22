@@ -46,7 +46,6 @@ struct tArrayTypeDefs_ {
 
 //function_space_specifier static tArrayTypeDefs *pArrays;
 
-#define GENERICARRAYMETHODS_NUM 13
 //function_space_specifier static U8 genericArrayMethodsInited = 0;
 //function_space_specifier static tMD_MethodDef *ppGenericArrayMethods[GENERICARRAYMETHODS_NUM];
 

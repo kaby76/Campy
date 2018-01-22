@@ -24,11 +24,19 @@
 #if defined(CUDA)
 #include <cuda.h>
 #define function_space_specifier __device__
-//#define function_space_specifier __device__ __host__
+#define gpu_space_specifier __device__
+#define gpu_entry_space_specifier __device__
+#define host_space_specifier __host__
+
 #else
 #define function_space_specifier __device__
+#define gpu_space_specifier __device__
+#define gpu_entry_space_specifier __device__
+#define host_space_specifier __host__
+
 #define __device__
 #define __global__
+#define __host__
 #endif
 
 #include <stdio.h>

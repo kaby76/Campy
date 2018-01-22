@@ -10,6 +10,10 @@
 
 int main()
 {
+	void * g = malloc(0x10000000);
+	struct _BCL_t * pbcl;
+	Initialize_BCL_Globals(g, 0x100000000, 1, &pbcl);
+	
 	{
 		int result;
 		FILE *file;

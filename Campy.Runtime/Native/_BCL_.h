@@ -15,10 +15,13 @@ struct tMD_MethodDef_;
 struct tThread_;
 
 struct _BCL_t {
+	
+	// Basics.
 	void * global_memory_heap;
 	struct header_t * head;
+
+	// CLIFile.
 	struct tFilesLoaded_ * pFilesLoaded;
-	unsigned char * Gdata;
 
 	// Filesystem
 	char** names;
@@ -29,7 +32,8 @@ struct _BCL_t {
 
 	// Finalizer
 	HEAP_PTR *ppToFinalize;
-	int toFinalizeOfs, toFinalizeCapacity;
+	int toFinalizeOfs;
+	int toFinalizeCapacity;
 
 	// Gstring
 	char * ___strtok;
@@ -75,4 +79,5 @@ struct _BCL_t {
 	int CorLibDone;
 };
 
-extern __device__ struct _BCL_t * _bcl_;
+extern gpu_space_specifier struct _BCL_t * _bcl_;
+gpu_space_specifier void Initialize_BCL_Globals(void * g, size_t size, int count, struct _BCL_t ** pbcl);

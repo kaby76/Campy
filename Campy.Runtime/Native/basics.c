@@ -11,7 +11,94 @@
 #include <stdlib.h>
 #include <string.h>
 
-__device__ struct _BCL_t * _bcl_;
+gpu_space_specifier struct _BCL_t * _bcl_;
+function_space_specifier void Initialize_BCL0(void * g, size_t size, int count);
+
+gpu_space_specifier void Initialize_BCL_Globals(void * g, size_t size, int count, struct _BCL_t ** pbcl)
+{
+	// basics/memory allocation.
+	struct _BCL_t * bcl = (struct _BCL_t*)g;
+	*pbcl = bcl;
+	_bcl_ = bcl;
+	memset(bcl, 0, sizeof(struct _BCL_t));
+	_bcl_->global_memory_heap = NULL;
+	_bcl_->head = NULL;
+
+	// Init memory allocation.
+	Initialize_BCL0(g, size, count);
+
+	// CLIFile.
+	bcl->pFilesLoaded = NULL;
+
+	// Filesystem.
+	bcl->names = NULL;
+	bcl->files = NULL;
+	bcl->lengths = NULL;
+	bcl->init = 0;
+	bcl->initial_size = 0;
+
+	// Finalizer
+	bcl->ppToFinalize = NULL;
+	bcl->toFinalizeOfs = 0;
+	bcl->toFinalizeCapacity = 0;
+
+	// Gstring
+	bcl->___strtok = NULL;
+
+	// Heap
+	bcl->pHeapTreeRoot = NULL;
+	bcl->nil = NULL;
+	bcl->trackHeapSize = 0;
+	bcl->heapSizeMax = 0;
+	bcl->numNodes = 0;
+	bcl->numCollections = 0;
+
+	// JIT_Execute
+	bcl->jitCodeInfo = (struct tJITCodeInfo_ *) malloc(JIT_OPCODE_MAXNUM * sizeof(struct tJITCodeInfo_));
+	memset(bcl->jitCodeInfo, 0, JIT_OPCODE_MAXNUM * sizeof(struct tJITCodeInfo_));
+	bcl->jitCodeGoNext = (struct tJITCodeInfo_ *) malloc(1 * sizeof(struct tJITCodeInfo_));
+	memset(bcl->jitCodeGoNext, 0, 1 * sizeof(struct tJITCodeInfo_));
+
+	// MetaData
+	bcl->tableRowSize = (unsigned int *) malloc(MAX_TABLES * sizeof(unsigned int));
+
+	// Pinvoke
+	bcl->pLoadedLibs = NULL;
+
+	// Sys
+	bcl->logLevel = 0;
+	bcl->methodName = (char *)malloc(2048 * sizeof(char));
+	bcl->mallocForeverSize = 0;
+
+	// Type
+	bcl->pArrays = NULL;
+	bcl->genericArrayMethodsInited = 0;
+	struct tMD_MethodDef_ ** ppGenericArrayMethods;
+	bcl->ppGenericArrayMethods = (struct tMD_MethodDef_ **)malloc(GENERICARRAYMETHODS_NUM * sizeof(struct tMD_MethodDef_ *));
+	bcl->types = NULL;
+	bcl->numInitTypes = 0;
+
+	// System.Console
+	bcl->nextKeybC = 0xffffffff;
+
+	// Thread
+	bcl->pAllThreads = NULL;
+	bcl->pCurrentThread = NULL;
+
+	// Type
+	bcl->CorLibDone = 0;
+}
+
+gpu_space_specifier void Set_BCL_Globals(struct _BCL_t * bcl)
+{
+	_bcl_ = bcl;
+}
+
+gpu_space_specifier void Get_BCL_Globals(struct _BCL_t ** bcl)
+{
+	*bcl = _bcl_;
+}
+
 
 function_space_specifier  void gpuexit(int _Code) {}
 
@@ -32,8 +119,6 @@ function_space_specifier size_t Gstrlen(
 // Based on http://arjunsreedharan.org/post/148675821737/write-a-simple-memory-allocator
 
 
-//function_space_specifier void * global_memory_heap;
-
 struct header_t {
 	struct header_t *next;
 	struct header_t *prev;
@@ -41,19 +126,28 @@ struct header_t {
 	unsigned is_free;
 };
 
-//function_space_specifier struct header_t* head;
 
-__global__
-void Initialize_BCL0(void * g, size_t size, int count)
+function_space_specifier void Initialize_BCL0(void * g, size_t size, int count)
 {
-	_bcl_->head = (struct header_t*)g;
+	// Initialize memory allocation / malloc. Nothing can be done until this is done.
+	// Layout
+	//
+	//  ==================================
+	//  0                         bcl
+	//  0x1000                    headers
+	//  0x1000+size_for_headers   ptr
+	//  ==================================
+	int size_for_bcl = 0x1000;
+	_bcl_->head = (struct header_t*)(size_for_bcl + (unsigned char*)g);
 	int size_for_headers = sizeof(struct header_t) * count;
-	unsigned char * ptr = ((unsigned char *)_bcl_->head) + size_for_headers;
+	unsigned char * ptr = size_for_bcl + size_for_headers + (unsigned char *)_bcl_->head;
+	int overhead_for_first = 16777216;
 	long long s = (long long) ptr;
 	long long e = s + size;
-	int overhead = 16777216;
-	int remainder = size - size_for_headers - overhead;
-	int per_thread_remainder = size / (count - 1);
+
+	int remainder = size - size_for_bcl - size_for_headers - overhead_for_first;
+	int per_thread_remainder = remainder / count;
+
 	per_thread_remainder = per_thread_remainder >> 3;
 	per_thread_remainder = per_thread_remainder << 3;
 	for (int c = 0; c < count; ++c)
@@ -70,7 +164,7 @@ void Initialize_BCL0(void * g, size_t size, int count)
 		}
 		int siz;
 		if (c == 0)
-			siz = overhead;
+			siz = overhead_for_first;
 		else
 			siz = per_thread_remainder;
 		start->is_free = 0;
@@ -84,7 +178,8 @@ void Initialize_BCL0(void * g, size_t size, int count)
 		h->size = alloc_siz;
 		ptr += siz;
 	}
-	printf("done\n");
+	printf("Initialized memory allocation/malloc\n");
+
 }
 
 function_space_specifier struct header_t *get_free_block(size_t size)

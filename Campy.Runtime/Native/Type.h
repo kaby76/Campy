@@ -24,6 +24,8 @@
 #include "MetaData.h"
 #include "Types.h"
 
+#define GENERICARRAYMETHODS_NUM 13
+
 #define ELEMENT_TYPE_VOID		0x01
 #define ELEMENT_TYPE_BOOLEAN	0x02
 #define ELEMENT_TYPE_CHAR		0x03
