@@ -23,23 +23,26 @@
 
 #if defined(CUDA)
 #include <cuda.h>
-#define function_space_specifier __device__
+
 #define gpu_space_specifier __device__
-#define gpu_entry_space_specifier __device__
 #define host_space_specifier __host__
 #define global_space_specifier __global__
+
+#define function_space_specifier gpu_space_specifier host_space_specifier
 
 
 #else
-#define function_space_specifier __device__
+
 #define gpu_space_specifier __device__
-#define gpu_entry_space_specifier __device__
 #define host_space_specifier __host__
 #define global_space_specifier __global__
+
+#define function_space_specifier gpu_space_specifier host_space_specifier
 
 #define __device__
 #define __global__
 #define __host__
+
 #endif
 
 #include <stdio.h>
@@ -134,6 +137,12 @@ function_space_specifier void* Gmalloc(
 function_space_specifier void Gfree(
 	void*  _Block
 	);
+
+
+// Macro to help dereference parameters that are passed into an internal system
+// call. pParams is assumed to be an array of void*, with each element type casted
+// to/from the type desired. The old pParams[i] mechanism does not work.
+#define INTERNALSYSTEMCALL_PARAM(pParams, ofs, type) *(type*)(((void**)pParams) + ofs)
 
 #endif
 

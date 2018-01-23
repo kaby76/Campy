@@ -184,7 +184,7 @@ function_space_specifier void Initialize_BCL0(void * g, size_t size, int count)
 
 function_space_specifier struct header_t *get_free_block(size_t size)
 {
-#ifdef CUDA
+#ifdef  __CUDA_ARCH__
 	int blockId = blockIdx.x + blockIdx.y * gridDim.x
 		+ gridDim.x * gridDim.y * blockIdx.z;
 	int threadId = blockId * (blockDim.x * blockDim.y * blockDim.z)
@@ -240,11 +240,7 @@ function_space_specifier void * simple_malloc(size_t size)
 	return NULL;
 }
 
-
-function_space_specifier void* __cdecl Grealloc(
-	void*  _Block,
-	size_t _Size
-)
+function_space_specifier void* __cdecl Grealloc(void*  _Block, size_t _Size)
 {
 	void * result = simple_malloc(_Size);
 	memcpy(result, _Block, _Size);
@@ -252,43 +248,27 @@ function_space_specifier void* __cdecl Grealloc(
     return result;
 }
 
-
-function_space_specifier void* Gmalloc(
-	size_t _Size
-)
+function_space_specifier void* Gmalloc(size_t _Size)
 {
 	void * result = simple_malloc(_Size);
 	return result;
 }
 
-function_space_specifier void Gfree(
-	void*  _Block
-	)
+function_space_specifier void Gfree(void*  _Block)
 {
 }
 
-
-__global__
-void Initialize_BCL1()
+global_space_specifier void Initialize_BCL1()
 {
-	//JIT_Execute_Init();
 	MetaData_Init();
-	//Heap_Init();
-	//Finalizer_Init();
-	//Socket_Init();
 }
 
-__global__
-void Initialize_BCL2()
+global_space_specifier void Initialize_BCL2()
 {
-	//JIT_Execute_Init();
-	//MetaData_Init();
 	Type_Init();
 	Heap_Init();
 	Finalizer_Init();
-	//Socket_Init();
 }
-
 
 function_space_specifier void* Bcl_Heap_Alloc(STRING assemblyName, STRING nameSpace, STRING name)
 {
