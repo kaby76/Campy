@@ -1876,6 +1876,7 @@ namespace Campy.Compiler
                 IntPtr parm1;
                 IntPtr parm2;
                 IntPtr parm3;
+                IntPtr parm4;
                 IntPtr[] x1 = new IntPtr[] { b };
                 GCHandle handle1 = GCHandle.Alloc(x1, GCHandleType.Pinned);
                 parm1 = handle1.AddrOfPinnedObject();
@@ -1888,13 +1889,18 @@ namespace Campy.Compiler
                 GCHandle handle3 = GCHandle.Alloc(x3, GCHandleType.Pinned);
                 parm3 = handle3.AddrOfPinnedObject();
 
-                IntPtr[] kp = new IntPtr[] { parm1, parm2, parm3 };
+                IntPtr b2 = buffers.New(sizeof(int*));
+                IntPtr[] x4 = new IntPtr[] { b2 };
+                GCHandle handle4 = GCHandle.Alloc(x4, GCHandleType.Pinned);
+                parm4 = handle4.AddrOfPinnedObject();
 
-                CUfunction _Z15Initialize_BCL0Pvyi = Runtime._Z15Initialize_BCL0Pvyi(module);
+                IntPtr[] kp = new IntPtr[] { parm1, parm2, parm3, parm4 };
+
+                CUfunction _Z22Initialize_BCL_GlobalsPvyiPP6_BCL_t = Runtime._Z22Initialize_BCL_GlobalsPvyiPP6_BCL_t(module);
                 fixed (IntPtr* kernelParams = kp)
                 {
                     res = Cuda.cuLaunchKernel(
-                        _Z15Initialize_BCL0Pvyi,
+                        _Z22Initialize_BCL_GlobalsPvyiPP6_BCL_t,
                         tiles.x, tiles.y, tiles.z, // grid has one block.
                         tile_size.x, tile_size.y, tile_size.z, // n threads.
                         0, // no shared memory

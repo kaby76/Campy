@@ -819,9 +819,9 @@ namespace Campy.Compiler
             return result;
         }
 
-        public static CUfunction _Z15Initialize_BCL0Pvyi(CUmodule module)
+        public static CUfunction _Z22Initialize_BCL_GlobalsPvyiPP6_BCL_t(CUmodule module)
         {
-            CudaHelpers.CheckCudaError(Cuda.cuModuleGetFunction(out CUfunction function, module, "_Z15Initialize_BCL0Pvyi"));
+            CudaHelpers.CheckCudaError(Cuda.cuModuleGetFunction(out CUfunction function, module, "_Z22Initialize_BCL_GlobalsPvyiPP6_BCL_t"));
             return function;
         }
 

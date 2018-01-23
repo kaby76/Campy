@@ -27,12 +27,15 @@
 #define gpu_space_specifier __device__
 #define gpu_entry_space_specifier __device__
 #define host_space_specifier __host__
+#define global_space_specifier __global__
+
 
 #else
 #define function_space_specifier __device__
 #define gpu_space_specifier __device__
 #define gpu_entry_space_specifier __device__
 #define host_space_specifier __host__
+#define global_space_specifier __global__
 
 #define __device__
 #define __global__

@@ -14,7 +14,7 @@
 gpu_space_specifier struct _BCL_t * _bcl_;
 function_space_specifier void Initialize_BCL0(void * g, size_t size, int count);
 
-gpu_space_specifier void Initialize_BCL_Globals(void * g, size_t size, int count, struct _BCL_t ** pbcl)
+global_space_specifier void Initialize_BCL_Globals(void * g, size_t size, int count, struct _BCL_t ** pbcl)
 {
 	// basics/memory allocation.
 	struct _BCL_t * bcl = (struct _BCL_t*)g;
