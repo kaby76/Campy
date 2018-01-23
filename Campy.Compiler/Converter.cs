@@ -1850,182 +1850,9 @@ namespace Campy.Compiler
             Utils.CudaHelpers.CheckCudaError(res);
 
             CUmodule module = Runtime.InitializeModule(image);
-
-            Utils.CudaHelpers.CheckCudaError(Cuda.cuCtxGetLimit(out ulong pvalue, CUlimit.CU_LIMIT_STACK_SIZE));
-            Utils.CudaHelpers.CheckCudaError(Cuda.cuCtxSetLimit(CUlimit.CU_LIMIT_STACK_SIZE, (uint)pvalue * 25));
-            System.Console.WriteLine("Stack size " + pvalue);
-
-            // Load code for BCL.
-            //Runtime.LoadBclCode();
             Runtime.RuntimeModule = module;
 
-            Campy.Utils.CudaHelpers.MakeLinearTiling(1,
-                out Campy.Utils.CudaHelpers.dim3 tile_size,
-                out Campy.Utils.CudaHelpers.dim3 tiles);
-
-            // Set up malloc, required for everything else.
-            unsafe
-            {
-                Buffers buffers = new Buffers();
-                int the_size = 536870912;
-                IntPtr b = buffers.New(the_size);
-                int max_threads = 16;
-
-                // Set up parameters.
-                int count = 3;
-                IntPtr parm1;
-                IntPtr parm2;
-                IntPtr parm3;
-                IntPtr parm4;
-                IntPtr[] x1 = new IntPtr[] { b };
-                GCHandle handle1 = GCHandle.Alloc(x1, GCHandleType.Pinned);
-                parm1 = handle1.AddrOfPinnedObject();
-
-                IntPtr[] x2 = new IntPtr[] { new IntPtr(the_size) };
-                GCHandle handle2 = GCHandle.Alloc(x2, GCHandleType.Pinned);
-                parm2 = handle2.AddrOfPinnedObject();
-
-                IntPtr[] x3 = new IntPtr[] { new IntPtr(max_threads) };
-                GCHandle handle3 = GCHandle.Alloc(x3, GCHandleType.Pinned);
-                parm3 = handle3.AddrOfPinnedObject();
-
-                IntPtr b2 = buffers.New(sizeof(int*));
-                IntPtr[] x4 = new IntPtr[] { b2 };
-                GCHandle handle4 = GCHandle.Alloc(x4, GCHandleType.Pinned);
-                parm4 = handle4.AddrOfPinnedObject();
-
-                IntPtr[] kp = new IntPtr[] { parm1, parm2, parm3, parm4 };
-
-                CUfunction _Z22Initialize_BCL_GlobalsPvyiPP6_BCL_t = Runtime._Z22Initialize_BCL_GlobalsPvyiPP6_BCL_t(module);
-                fixed (IntPtr* kernelParams = kp)
-                {
-                    res = Cuda.cuLaunchKernel(
-                        _Z22Initialize_BCL_GlobalsPvyiPP6_BCL_t,
-                        tiles.x, tiles.y, tiles.z, // grid has one block.
-                        tile_size.x, tile_size.y, tile_size.z, // n threads.
-                        0, // no shared memory
-                        default(CUstream),
-                        (IntPtr)kernelParams,
-                        (IntPtr)IntPtr.Zero
-                    );
-                }
-                Utils.CudaHelpers.CheckCudaError(res);
-                res = Cuda.cuCtxSynchronize(); // Make sure it's copied back to host.
-                Utils.CudaHelpers.CheckCudaError(res);
-            }
-
-            // Set up a file system for GPU.
-            CUfunction _Z12Bcl_Gfs_initv = Runtime._Z12Bcl_Gfs_initv(module);
-            res = Cuda.cuLaunchKernel(
-                _Z12Bcl_Gfs_initv,
-                tiles.x, tiles.y, tiles.z, // grid has one block.
-                tile_size.x, tile_size.y, tile_size.z, // n threads.
-                0, // no shared memory
-                default(CUstream),
-                (IntPtr)IntPtr.Zero,
-                (IntPtr)IntPtr.Zero
-            );
-            Utils.CudaHelpers.CheckCudaError(res);
-            res = Cuda.cuCtxSynchronize(); // Make sure it's copied back to host.
-            Utils.CudaHelpers.CheckCudaError(res);
-
-            unsafe
-            {
-                // Set up corlib.dll in file system.
-                string assem = "corlib.dll";
-                string full_path_assem = @"c:\Users\kenne\Documents\Campy2\Campy.Runtime\Corlib\bin\Debug\net20\corlib.dll";
-                Stream stream = new FileStream(full_path_assem, FileMode.Open, FileAccess.Read, FileShare.Read);
-                var corlib_bytes_handle_len = stream.Length;
-                var corlib_bytes = new byte[corlib_bytes_handle_len];
-                stream.Read(corlib_bytes, 0, (int)corlib_bytes_handle_len);
-                var corlib_bytes_handle = GCHandle.Alloc(corlib_bytes, GCHandleType.Pinned);
-                var corlib_bytes_intptr = corlib_bytes_handle.AddrOfPinnedObject();
-                stream.Close();
-                stream.Dispose();
-
-                // Set up parameters.
-                int count = 4;
-                IntPtr parm1; // Name of assembly.
-                IntPtr parm2; // Contents
-                IntPtr parm3; // Length
-                IntPtr parm4; // result
-
-                var ptrx = Marshal.StringToHGlobalAnsi(assem);
-                Buffers buffers = new Buffers();
-                IntPtr pointer1 = buffers.New(assem.Length + 1);
-                Buffers.Cp(pointer1, ptrx, assem.Length + 1);
-                IntPtr[] x1 = new IntPtr[] { pointer1 };
-                GCHandle handle1 = GCHandle.Alloc(x1, GCHandleType.Pinned);
-                parm1 = handle1.AddrOfPinnedObject();
-
-                parm2 = corlib_bytes_intptr;
-                IntPtr pointer2 = buffers.New((int)corlib_bytes_handle_len);
-                Buffers.Cp(pointer2, corlib_bytes_intptr, (int)corlib_bytes_handle_len);
-                IntPtr[] x2 = new IntPtr[] { pointer2 };
-                GCHandle handle2 = GCHandle.Alloc(x2, GCHandleType.Pinned);
-                parm2 = handle2.AddrOfPinnedObject();
-
-                IntPtr[] x3 = new IntPtr[] { new IntPtr(corlib_bytes_handle_len) };
-                GCHandle handle3 = GCHandle.Alloc(x3, GCHandleType.Pinned);
-                parm3 = handle3.AddrOfPinnedObject();
-
-                var pointer4 = buffers.New(sizeof(long));
-                IntPtr[] x4 = new IntPtr[] { pointer4 };
-                GCHandle handle4 = GCHandle.Alloc(x4, GCHandleType.Pinned);
-                parm4 = handle4.AddrOfPinnedObject();
-
-                IntPtr[] kp = new IntPtr[] { parm1, parm2, parm3, parm4 };
-
-                CUfunction _Z16Bcl_Gfs_add_filePcS_yPi = Runtime._Z16Bcl_Gfs_add_filePcS_yPi(module);
-                fixed (IntPtr* kernelParams = kp)
-                {
-                    res = Cuda.cuLaunchKernel(
-                        _Z16Bcl_Gfs_add_filePcS_yPi,
-                        tiles.x, tiles.y, tiles.z, // grid has one block.
-                        tile_size.x, tile_size.y, tile_size.z, // n threads.
-                        0, // no shared memory
-                        default(CUstream),
-                        (IntPtr)kernelParams,
-                        (IntPtr)IntPtr.Zero
-                    );
-                }
-                Utils.CudaHelpers.CheckCudaError(res);
-                res = Cuda.cuCtxSynchronize(); // Make sure it's copied back to host.
-                Utils.CudaHelpers.CheckCudaError(res);
-            }
-
-            CUfunction _Z15Initialize_BCL1v = Runtime._Z15Initialize_BCL1v(module);
-            res = Cuda.cuLaunchKernel(
-                _Z15Initialize_BCL1v,
-                tiles.x, tiles.y, tiles.z, // grid has one block.
-                tile_size.x, tile_size.y, tile_size.z, // n threads.
-                0, // no shared memory
-                default(CUstream),
-                (IntPtr)IntPtr.Zero,
-                (IntPtr)IntPtr.Zero
-            );
-            Utils.CudaHelpers.CheckCudaError(res);
-            res = Cuda.cuCtxSynchronize(); // Make sure it's copied back to host.
-            Utils.CudaHelpers.CheckCudaError(res);
-
-            CUfunction _Z15Initialize_BCL2v = Runtime._Z15Initialize_BCL2v(module);
-            res = Cuda.cuLaunchKernel(
-                _Z15Initialize_BCL2v,
-                tiles.x, tiles.y, tiles.z, // grid has one block.
-                tile_size.x, tile_size.y, tile_size.z, // n threads.
-                0, // no shared memory
-                default(CUstream),
-                (IntPtr)IntPtr.Zero,
-                (IntPtr)IntPtr.Zero
-            );
-            Utils.CudaHelpers.CheckCudaError(res);
-            res = Cuda.cuCtxSynchronize(); // Make sure it's copied back to host.
-            Utils.CudaHelpers.CheckCudaError(res);
-
-            // Now reset the stack size.
-            Utils.CudaHelpers.CheckCudaError(Cuda.cuCtxSetLimit(CUlimit.CU_LIMIT_STACK_SIZE, (uint)pvalue));
-
-
+            InitBCL(module);
 
             //res = Cuda.cuModuleLoadData(out CUmodule cuModule, ptr);
             //CheckCudaError(res);
@@ -2035,6 +1862,329 @@ namespace Campy.Compiler
             return helloWorld;
         }
 
+        private bool done_init = false;
+
+        public void InitBCL(CUmodule mod)
+        {
+            if (!done_init)
+            {
+                CUresult res;
+
+                // Add in all of the GPU BCL runtime required.
+                uint num_ops_link = 5;
+                var op_link = new CUjit_option[num_ops_link];
+                ulong[] op_values_link = new ulong[num_ops_link];
+
+                int size = 1024 * 100;
+                op_link[0] = CUjit_option.CU_JIT_INFO_LOG_BUFFER_SIZE_BYTES;
+                op_values_link[0] = (ulong) size;
+
+                op_link[1] = CUjit_option.CU_JIT_INFO_LOG_BUFFER;
+                byte[] info_log_buffer = new byte[size];
+                var info_log_buffer_handle = GCHandle.Alloc(info_log_buffer, GCHandleType.Pinned);
+                var info_log_buffer_intptr = info_log_buffer_handle.AddrOfPinnedObject();
+                op_values_link[1] = (ulong) info_log_buffer_intptr;
+
+                op_link[2] = CUjit_option.CU_JIT_ERROR_LOG_BUFFER_SIZE_BYTES;
+                op_values_link[2] = (ulong) size;
+
+                op_link[3] = CUjit_option.CU_JIT_ERROR_LOG_BUFFER;
+                byte[] error_log_buffer = new byte[size];
+                var error_log_buffer_handle = GCHandle.Alloc(error_log_buffer, GCHandleType.Pinned);
+                var error_log_buffer_intptr = error_log_buffer_handle.AddrOfPinnedObject();
+                op_values_link[3] = (ulong) error_log_buffer_intptr;
+
+                op_link[4] = CUjit_option.CU_JIT_LOG_VERBOSE;
+                op_values_link[4] = (ulong) 1;
+
+                //op_link[5] = CUjit_option.CU_JIT_TARGET;
+                //op_values_link[5] = (ulong)CUjit_target.CU_TARGET_COMPUTE_35;
+
+                var op_values_link_handle = GCHandle.Alloc(op_values_link, GCHandleType.Pinned);
+                var op_values_link_intptr = op_values_link_handle.AddrOfPinnedObject();
+                res = Cuda.cuLinkCreate_v2(num_ops_link, op_link, op_values_link_intptr, out CUlinkState linkState);
+                Utils.CudaHelpers.CheckCudaError(res);
+
+                CUjit_option[] op = new CUjit_option[0];
+                ulong[] op_values = new ulong[0];
+                var op_values_handle = GCHandle.Alloc(op_values, GCHandleType.Pinned);
+                var op_values_intptr = op_values_handle.AddrOfPinnedObject();
+
+                // Go to a standard directory, for now hardwired....
+                var dir = @"C:\Users\kenne\Documents\Campy2\Campy.Runtime\Native\x64\Debug";
+                var resource_names = Directory.GetFiles(dir);
+                uint num_ops = 0;
+                foreach (var resource_name in resource_names)
+                {
+                    var last_index_of = resource_name.LastIndexOf('.');
+                    if (last_index_of < 0) continue;
+                    if (resource_name.Contains("device-link")) continue;
+                    if (resource_name.Substring(last_index_of) != ".obj") continue;
+
+                    using (Stream stream =
+                        new FileStream(resource_name, FileMode.Open, FileAccess.Read, FileShare.Read))
+                    {
+                        var len = stream.Length;
+                        var gpu_bcl_obj = new byte[len];
+                        stream.Read(gpu_bcl_obj, 0, (int) len);
+
+                        var gpu_bcl_obj_handle = GCHandle.Alloc(gpu_bcl_obj, GCHandleType.Pinned);
+                        var gpu_bcl_obj_intptr = gpu_bcl_obj_handle.AddrOfPinnedObject();
+
+                        res = Cuda.cuLinkAddData_v2(linkState, CUjitInputType.CU_JIT_INPUT_OBJECT,
+                            gpu_bcl_obj_intptr, (uint) len,
+                            "", num_ops, op, op_values_intptr);
+                        {
+                            string info = Marshal.PtrToStringAnsi(info_log_buffer_intptr);
+                            System.Console.WriteLine(info);
+                            string error = Marshal.PtrToStringAnsi(error_log_buffer_intptr);
+                            System.Console.WriteLine(error);
+                        }
+                        Utils.CudaHelpers.CheckCudaError(res);
+                    }
+                }
+
+                {
+                    string info = Marshal.PtrToStringAnsi(info_log_buffer_intptr);
+                    System.Console.WriteLine(info);
+                    string error = Marshal.PtrToStringAnsi(error_log_buffer_intptr);
+                    System.Console.WriteLine(error);
+                }
+                Utils.CudaHelpers.CheckCudaError(res);
+
+                IntPtr image;
+                res = Cuda.cuLinkComplete(linkState, out image, out ulong sz);
+                {
+                    string info = Marshal.PtrToStringAnsi(info_log_buffer_intptr);
+                    System.Console.WriteLine(info);
+                    string error = Marshal.PtrToStringAnsi(error_log_buffer_intptr);
+                    System.Console.WriteLine(error);
+                }
+                Utils.CudaHelpers.CheckCudaError(res);
+
+                CUmodule module = Runtime.InitializeModule(image);
+
+                // Initialize BCL.
+                Utils.CudaHelpers.CheckCudaError(Cuda.cuCtxGetLimit(out ulong pvalue, CUlimit.CU_LIMIT_STACK_SIZE));
+                Utils.CudaHelpers.CheckCudaError(Cuda.cuCtxSetLimit(CUlimit.CU_LIMIT_STACK_SIZE, (uint) pvalue * 25));
+                System.Console.WriteLine("Stack size " + pvalue);
+
+                Campy.Utils.CudaHelpers.MakeLinearTiling(1,
+                    out Campy.Utils.CudaHelpers.dim3 tile_size,
+                    out Campy.Utils.CudaHelpers.dim3 tiles);
+
+                // Set up malloc, required for everything else.
+                unsafe
+                {
+                    Buffers buffers = new Buffers();
+                    int the_size = 536870912;
+                    IntPtr b = buffers.New(the_size);
+                    Runtime.BclPtr = b;
+                    int max_threads = 16;
+
+                    // Set up parameters.
+                    int count = 3;
+                    IntPtr parm1;
+                    IntPtr parm2;
+                    IntPtr parm3;
+                    IntPtr parm4;
+                    IntPtr[] x1 = new IntPtr[] {b};
+                    GCHandle handle1 = GCHandle.Alloc(x1, GCHandleType.Pinned);
+                    parm1 = handle1.AddrOfPinnedObject();
+
+                    IntPtr[] x2 = new IntPtr[] {new IntPtr(the_size)};
+                    GCHandle handle2 = GCHandle.Alloc(x2, GCHandleType.Pinned);
+                    parm2 = handle2.AddrOfPinnedObject();
+
+                    IntPtr[] x3 = new IntPtr[] {new IntPtr(max_threads)};
+                    GCHandle handle3 = GCHandle.Alloc(x3, GCHandleType.Pinned);
+                    parm3 = handle3.AddrOfPinnedObject();
+
+                    IntPtr b2 = buffers.New(sizeof(int*));
+                    IntPtr[] x4 = new IntPtr[] {b2};
+                    GCHandle handle4 = GCHandle.Alloc(x4, GCHandleType.Pinned);
+                    parm4 = handle4.AddrOfPinnedObject();
+
+                    IntPtr[] kp = new IntPtr[] {parm1, parm2, parm3, parm4};
+
+                    CUfunction _Z22Initialize_BCL_GlobalsPvyiPP6_BCL_t =
+                        Runtime._Z22Initialize_BCL_GlobalsPvyiPP6_BCL_t(module);
+                    fixed (IntPtr* kernelParams = kp)
+                    {
+                        res = Cuda.cuLaunchKernel(
+                            _Z22Initialize_BCL_GlobalsPvyiPP6_BCL_t,
+                            tiles.x, tiles.y, tiles.z, // grid has one block.
+                            tile_size.x, tile_size.y, tile_size.z, // n threads.
+                            0, // no shared memory
+                            default(CUstream),
+                            (IntPtr) kernelParams,
+                            (IntPtr) IntPtr.Zero
+                        );
+                    }
+
+                    Utils.CudaHelpers.CheckCudaError(res);
+                    res = Cuda.cuCtxSynchronize(); // Make sure it's copied back to host.
+                    Utils.CudaHelpers.CheckCudaError(res);
+                }
+
+                // Set up a file system for GPU.
+                CUfunction _Z12Bcl_Gfs_initv = Runtime._Z12Bcl_Gfs_initv(module);
+                res = Cuda.cuLaunchKernel(
+                    _Z12Bcl_Gfs_initv,
+                    tiles.x, tiles.y, tiles.z, // grid has one block.
+                    tile_size.x, tile_size.y, tile_size.z, // n threads.
+                    0, // no shared memory
+                    default(CUstream),
+                    (IntPtr) IntPtr.Zero,
+                    (IntPtr) IntPtr.Zero
+                );
+                Utils.CudaHelpers.CheckCudaError(res);
+                res = Cuda.cuCtxSynchronize(); // Make sure it's copied back to host.
+                Utils.CudaHelpers.CheckCudaError(res);
+
+                unsafe
+                {
+                    // Set up corlib.dll in file system.
+                    string assem = "corlib.dll";
+                    string full_path_assem =
+                        @"c:\Users\kenne\Documents\Campy2\Campy.Runtime\Corlib\bin\Debug\net20\corlib.dll";
+                    Stream stream = new FileStream(full_path_assem, FileMode.Open, FileAccess.Read, FileShare.Read);
+                    var corlib_bytes_handle_len = stream.Length;
+                    var corlib_bytes = new byte[corlib_bytes_handle_len];
+                    stream.Read(corlib_bytes, 0, (int) corlib_bytes_handle_len);
+                    var corlib_bytes_handle = GCHandle.Alloc(corlib_bytes, GCHandleType.Pinned);
+                    var corlib_bytes_intptr = corlib_bytes_handle.AddrOfPinnedObject();
+                    stream.Close();
+                    stream.Dispose();
+
+                    // Set up parameters.
+                    int count = 4;
+                    IntPtr parm1; // Name of assembly.
+                    IntPtr parm2; // Contents
+                    IntPtr parm3; // Length
+                    IntPtr parm4; // result
+
+                    var ptrx = Marshal.StringToHGlobalAnsi(assem);
+                    Buffers buffers = new Buffers();
+                    IntPtr pointer1 = buffers.New(assem.Length + 1);
+                    Buffers.Cp(pointer1, ptrx, assem.Length + 1);
+                    IntPtr[] x1 = new IntPtr[] {pointer1};
+                    GCHandle handle1 = GCHandle.Alloc(x1, GCHandleType.Pinned);
+                    parm1 = handle1.AddrOfPinnedObject();
+
+                    parm2 = corlib_bytes_intptr;
+                    IntPtr pointer2 = buffers.New((int) corlib_bytes_handle_len);
+                    Buffers.Cp(pointer2, corlib_bytes_intptr, (int) corlib_bytes_handle_len);
+                    IntPtr[] x2 = new IntPtr[] {pointer2};
+                    GCHandle handle2 = GCHandle.Alloc(x2, GCHandleType.Pinned);
+                    parm2 = handle2.AddrOfPinnedObject();
+
+                    IntPtr[] x3 = new IntPtr[] {new IntPtr(corlib_bytes_handle_len)};
+                    GCHandle handle3 = GCHandle.Alloc(x3, GCHandleType.Pinned);
+                    parm3 = handle3.AddrOfPinnedObject();
+
+                    var pointer4 = buffers.New(sizeof(long));
+                    IntPtr[] x4 = new IntPtr[] {pointer4};
+                    GCHandle handle4 = GCHandle.Alloc(x4, GCHandleType.Pinned);
+                    parm4 = handle4.AddrOfPinnedObject();
+
+                    IntPtr[] kp = new IntPtr[] {parm1, parm2, parm3, parm4};
+
+                    CUfunction _Z16Bcl_Gfs_add_filePcS_yPi = Runtime._Z16Bcl_Gfs_add_filePcS_yPi(module);
+                    fixed (IntPtr* kernelParams = kp)
+                    {
+                        res = Cuda.cuLaunchKernel(
+                            _Z16Bcl_Gfs_add_filePcS_yPi,
+                            tiles.x, tiles.y, tiles.z, // grid has one block.
+                            tile_size.x, tile_size.y, tile_size.z, // n threads.
+                            0, // no shared memory
+                            default(CUstream),
+                            (IntPtr) kernelParams,
+                            (IntPtr) IntPtr.Zero
+                        );
+                    }
+
+                    Utils.CudaHelpers.CheckCudaError(res);
+                    res = Cuda.cuCtxSynchronize(); // Make sure it's copied back to host.
+                    Utils.CudaHelpers.CheckCudaError(res);
+                }
+
+                CUfunction _Z15Initialize_BCL1v = Runtime._Z15Initialize_BCL1v(module);
+                res = Cuda.cuLaunchKernel(
+                    _Z15Initialize_BCL1v,
+                    tiles.x, tiles.y, tiles.z, // grid has one block.
+                    tile_size.x, tile_size.y, tile_size.z, // n threads.
+                    0, // no shared memory
+                    default(CUstream),
+                    (IntPtr) IntPtr.Zero,
+                    (IntPtr) IntPtr.Zero
+                );
+                Utils.CudaHelpers.CheckCudaError(res);
+                res = Cuda.cuCtxSynchronize(); // Make sure it's copied back to host.
+                Utils.CudaHelpers.CheckCudaError(res);
+
+                CUfunction _Z15Initialize_BCL2v = Runtime._Z15Initialize_BCL2v(module);
+                res = Cuda.cuLaunchKernel(
+                    _Z15Initialize_BCL2v,
+                    tiles.x, tiles.y, tiles.z, // grid has one block.
+                    tile_size.x, tile_size.y, tile_size.z, // n threads.
+                    0, // no shared memory
+                    default(CUstream),
+                    (IntPtr) IntPtr.Zero,
+                    (IntPtr) IntPtr.Zero
+                );
+                Utils.CudaHelpers.CheckCudaError(res);
+                res = Cuda.cuCtxSynchronize(); // Make sure it's copied back to host.
+                Utils.CudaHelpers.CheckCudaError(res);
+
+                // Now reset the stack size.
+                Utils.CudaHelpers.CheckCudaError(Cuda.cuCtxSetLimit(CUlimit.CU_LIMIT_STACK_SIZE, (uint) pvalue));
+
+                done_init = true;
+            }
+
+            {
+                CUresult res;
+
+                // Instead of full initialization, just set pointer to BCL globals area.
+                Campy.Utils.CudaHelpers.MakeLinearTiling(1,
+                    out Campy.Utils.CudaHelpers.dim3 tile_size,
+                    out Campy.Utils.CudaHelpers.dim3 tiles);
+
+                // Set up pointer to bcl.
+                unsafe
+                {
+                    // Set up parameters.
+                    int count = 1;
+                    IntPtr parm1;
+                    IntPtr[] x1 = new IntPtr[] { Runtime.BclPtr };
+                    GCHandle handle1 = GCHandle.Alloc(x1, GCHandleType.Pinned);
+                    parm1 = handle1.AddrOfPinnedObject();
+
+                    IntPtr[] kp = new IntPtr[] { parm1 };
+
+                    CUfunction _Z15Set_BCL_GlobalsP6_BCL_t = Runtime._Z15Set_BCL_GlobalsP6_BCL_t(mod);
+                    fixed (IntPtr* kernelParams = kp)
+                    {
+                        res = Cuda.cuLaunchKernel(
+                            _Z15Set_BCL_GlobalsP6_BCL_t,
+                            tiles.x, tiles.y, tiles.z, // grid has one block.
+                            tile_size.x, tile_size.y, tile_size.z, // n threads.
+                            0, // no shared memory
+                            default(CUstream),
+                            (IntPtr)kernelParams,
+                            (IntPtr)IntPtr.Zero
+                        );
+                    }
+
+                    Utils.CudaHelpers.CheckCudaError(res);
+                    res = Cuda.cuCtxSynchronize(); // Make sure it's copied back to host.
+                    Utils.CudaHelpers.CheckCudaError(res);
+                }
+
+            }
+
+        }
 
         public static string GetStringTypeOf(ValueRef v)
         {
@@ -2080,47 +2230,6 @@ namespace Campy.Compiler
                 System.Console.WriteLine();
             }
         }
-
-	private static string System_String_get_Chars = @"
-//
-// Generated by NVIDIA NVVM Compiler
-//
-// Compiler Build ID: CL-22781540
-// Cuda compilation tools, release 9.0, V9.0.176
-// Based on LLVM 3.4svn
-//
-
-.version 6.0
-.target sm_30
-.address_size 64
-
-	// .globl	_Z23System_String_get_CharsPhS_S_
-.visible .func  (.param .b64 func_retval0) System_String_get_Chars(
-	.param .b64 _Z23System_String_get_CharsPhS_S__param_0,
-	.param .b64 _Z23System_String_get_CharsPhS_S__param_1,
-	.param .b64 _Z23System_String_get_CharsPhS_S__param_2
-)
-{
-	.reg .b32 	%r<3>;
-	.reg .b64 	%rd<7>;
-
-
-	ld.param.u64 	%rd1, [_Z23System_String_get_CharsPhS_S__param_0];
-	ld.param.u64 	%rd2, [_Z23System_String_get_CharsPhS_S__param_1];
-	ld.param.u64 	%rd3, [_Z23System_String_get_CharsPhS_S__param_2];
-	ld.u32 	%r1, [%rd2];
-	mul.wide.u32 	%rd4, %r1, 2;
-	add.s64 	%rd5, %rd1, %rd4;
-	ld.u16 	%r2, [%rd5+4];
-	st.u32 	[%rd3], %r2;
-	mov.u64 	%rd6, 0;
-	st.param.b64	[func_retval0+0], %rd6;
-	ret;
-}
-
-
-
-			";
 
     }
 }

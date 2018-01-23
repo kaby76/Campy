@@ -42,6 +42,11 @@ namespace ConsoleApp4
                 results[i] = data[i].Substring(3);
             });
 
+            Campy.Parallel.For(n2, i =>
+            {
+                results[i] = data[i].Substring(3);
+            });
+
             // FFTC.FFT_Test();
         }
     }

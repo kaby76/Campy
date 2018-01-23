@@ -89,7 +89,7 @@ global_space_specifier void Initialize_BCL_Globals(void * g, size_t size, int co
 	bcl->CorLibDone = 0;
 }
 
-gpu_space_specifier void Set_BCL_Globals(struct _BCL_t * bcl)
+global_space_specifier void Set_BCL_Globals(struct _BCL_t * bcl)
 {
 	_bcl_ = bcl;
 }
