@@ -22,7 +22,6 @@ namespace Campy
 
         private Parallel()
         {
-            Swigged.LLVM.Helper.Adjust.Path();
             _importer = new Importer();
             _graph = _importer.Cfg;
             _converter = new Campy.Compiler.CampyConverter(_graph);
