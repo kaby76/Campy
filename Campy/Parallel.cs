@@ -20,6 +20,15 @@ namespace Campy
         private Importer _importer;
         private CampyConverter _converter;
 
+        struct managed_info
+        {
+            public IntPtr ptr;
+            public Buffers buffer;
+            public KernelType kernel;
+        }
+
+        private static Stack<managed_info> stuff = new Stack<managed_info>();
+
         private Parallel()
         {
             _importer = new Importer();
@@ -43,6 +52,23 @@ namespace Campy
         {
             AcceleratorView view = Accelerator.GetAutoSelectionView();
             For(view, new Extent(number_of_threads), kernel);
+        }
+
+        public static void Managed(ManagedMemoryBlock block)
+        {
+            block();
+            
+            var stopwatch_deep_copy_back = new Stopwatch();
+            stopwatch_deep_copy_back.Reset();
+            stopwatch_deep_copy_back.Start();
+            while (stuff.Count > 0)
+            {
+                var i = stuff.Pop();
+                i.buffer.DeepCopyFromImplementation(i.ptr, out object to, i.kernel.Target.GetType());
+            }
+            stopwatch_deep_copy_back.Stop();
+            var elapse_deep_copy_back = stopwatch_deep_copy_back.Elapsed;
+            System.Console.WriteLine("deep copy out " + elapse_deep_copy_back);
         }
 
         //public static void For(int inclusive_start, int exclusive_end, KernelType kernel)
@@ -205,12 +231,29 @@ namespace Campy
                 handle2.Free();
             }
         }
+
         private static void For(AcceleratorView view, Extent extent, KernelType kernel)
         {
             CampyConverter.InitCuda();
 
             GCHandle handle1 = default(GCHandle);
             GCHandle handle2 = default(GCHandle);
+
+            bool managed = false;
+            StackTrace st = new StackTrace(true);
+            for (int i = 0; i < st.FrameCount; i++)
+            {
+                // Note that high up the call stack, there is only
+                // one stack frame.
+                StackFrame sf = st.GetFrame(i);
+                MethodBase met = sf.GetMethod();
+                string nae = met.Name;
+                if (nae.Contains("Managed"))
+                {
+                    managed = true;
+                    break;
+                }
+            }
 
             try
             {
@@ -383,21 +426,32 @@ namespace Campy
                     stopwatch_call_kernel.Stop();
                     var elapse_call_kernel = stopwatch_call_kernel.Elapsed;
 
-                    var stopwatch_deep_copy_back = new Stopwatch();
-                    stopwatch_deep_copy_back.Reset();
-                    stopwatch_deep_copy_back.Start();
-
-                    buffer.DeepCopyFromImplementation(ptr, out object to, kernel.Target.GetType());
-
-                    stopwatch_deep_copy_back.Stop();
-                    var elapse_deep_copy_back = stopwatch_deep_copy_back.Elapsed;
-
                     System.Console.WriteLine("discovery     " + elapse_discovery);
                     System.Console.WriteLine("compiler      " + elapse_compiler);
                     System.Console.WriteLine("cuda compile  " + elapse_cuda_compile);
                     System.Console.WriteLine("deep copy in  " + elapse_deep_copy_to);
                     System.Console.WriteLine("cuda kernel   " + elapse_call_kernel);
-                    System.Console.WriteLine("deep copy out " + elapse_deep_copy_back);
+
+                    if (!managed)
+                    {
+                        var stopwatch_deep_copy_back = new Stopwatch();
+                        stopwatch_deep_copy_back.Reset();
+                        stopwatch_deep_copy_back.Start();
+
+                        buffer.DeepCopyFromImplementation(ptr, out object to, kernel.Target.GetType());
+
+                        stopwatch_deep_copy_back.Stop();
+                        var elapse_deep_copy_back = stopwatch_deep_copy_back.Elapsed;
+                        System.Console.WriteLine("deep copy out " + elapse_deep_copy_back);
+                    }
+                    else
+                    {
+                        managed_info mi = new managed_info();
+                        mi.buffer = buffer;
+                        mi.kernel = kernel;
+                        mi.ptr = ptr;
+                        stuff.Push(mi);
+                    }
                 }
             }
             catch (Exception e)
@@ -412,6 +466,34 @@ namespace Campy
             }
         }
 
+        private static void Finish(Buffers buffer, KernelType kernel, IntPtr ptr)
+        {
+            try
+            {
+                unsafe
+                {
+                    var stopwatch_deep_copy_back = new Stopwatch();
+                    stopwatch_deep_copy_back.Reset();
+                    stopwatch_deep_copy_back.Start();
+
+                    buffer.DeepCopyFromImplementation(ptr, out object to, kernel.Target.GetType());
+
+                    stopwatch_deep_copy_back.Stop();
+                    var elapse_deep_copy_back = stopwatch_deep_copy_back.Elapsed;
+
+                    System.Console.WriteLine("deep copy out " + elapse_deep_copy_back);
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw e;
+            }
+            finally
+            {
+            }
+
+        }
         private static void For(TiledExtent extent, KernelTiledType kernel)
         {
             AcceleratorView view = Accelerator.GetAutoSelectionView();
