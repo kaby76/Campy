@@ -19,21 +19,14 @@ namespace Campy
         private CFG _graph;
         private Importer _importer;
         private CampyConverter _converter;
-
-        struct managed_info
-        {
-            public IntPtr ptr;
-            public Buffers buffer;
-            public KernelType kernel;
-        }
-
-        private static Stack<managed_info> stuff = new Stack<managed_info>();
+        private Buffers Buffer { get; }
 
         private Parallel()
         {
             _importer = new Importer();
             _graph = _importer.Cfg;
             _converter = new Campy.Compiler.CampyConverter(_graph);
+            Buffer = new Buffers();
             //InitCuda();
             // var ok = GC.TryStartNoGCRegion(200000000);
         }
@@ -54,6 +47,14 @@ namespace Campy
             For(view, new Extent(number_of_threads), kernel);
         }
 
+        public static void Delay()
+        {
+        }
+
+        public static void Synch()
+        {
+        }
+
         public static void Managed(ManagedMemoryBlock block)
         {
             block();
@@ -61,11 +62,9 @@ namespace Campy
             var stopwatch_deep_copy_back = new Stopwatch();
             stopwatch_deep_copy_back.Reset();
             stopwatch_deep_copy_back.Start();
-            while (stuff.Count > 0)
-            {
-                var i = stuff.Pop();
-                i.buffer.DeepCopyFromImplementation(i.ptr, out object to, i.kernel.Target.GetType());
-            }
+
+            // Copy back all referenced.
+
             stopwatch_deep_copy_back.Stop();
             var elapse_deep_copy_back = stopwatch_deep_copy_back.Elapsed;
             System.Console.WriteLine("deep copy out " + elapse_deep_copy_back);
@@ -239,21 +238,21 @@ namespace Campy
             GCHandle handle1 = default(GCHandle);
             GCHandle handle2 = default(GCHandle);
 
-            bool managed = false;
-            StackTrace st = new StackTrace(true);
-            for (int i = 0; i < st.FrameCount; i++)
-            {
-                // Note that high up the call stack, there is only
-                // one stack frame.
-                StackFrame sf = st.GetFrame(i);
-                MethodBase met = sf.GetMethod();
-                string nae = met.Name;
-                if (nae.Contains("Managed"))
-                {
-                    managed = true;
-                    break;
-                }
-            }
+            //bool managed = false;
+            //StackTrace st = new StackTrace(true);
+            //for (int i = 0; i < st.FrameCount; i++)
+            //{
+            //    // Note that high up the call stack, there is only
+            //    // one stack frame.
+            //    StackFrame sf = st.GetFrame(i);
+            //    MethodBase met = sf.GetMethod();
+            //    string nae = met.Name;
+            //    if (nae.Contains("Managed"))
+            //    {
+            //        managed = true;
+            //        break;
+            //    }
+            //}
 
             try
             {
@@ -350,7 +349,7 @@ namespace Campy
                     var elapse_cuda_compile = stopwatch_cuda_compile.Elapsed;
 
                     Index index = new Index(extent);
-                    Buffers buffer = new Buffers();
+                    Buffers buffer = Singleton().Buffer;
 
                     var stopwatch_deep_copy_to = new Stopwatch();
                     stopwatch_deep_copy_to.Reset();
@@ -368,10 +367,7 @@ namespace Campy
 
                     if (bb.HasThis)
                     {
-                        Type type = kernel.Target.GetType();
-                        Type btype = buffer.CreateImplementationType(type);
-                        ptr = buffer.New(Buffers.SizeOf(btype));
-                        buffer.DeepCopyToImplementation(kernel.Target, ptr);
+                        ptr = buffer.AddDataStructure(kernel.Target);
                         parm1[0] = ptr;
                     }
 
@@ -432,25 +428,16 @@ namespace Campy
                     System.Console.WriteLine("deep copy in  " + elapse_deep_copy_to);
                     System.Console.WriteLine("cuda kernel   " + elapse_call_kernel);
 
-                    if (!managed)
                     {
                         var stopwatch_deep_copy_back = new Stopwatch();
                         stopwatch_deep_copy_back.Reset();
                         stopwatch_deep_copy_back.Start();
 
-                        buffer.DeepCopyFromImplementation(ptr, out object to, kernel.Target.GetType());
-
+                        buffer.SynchDataStructures();
+                        
                         stopwatch_deep_copy_back.Stop();
                         var elapse_deep_copy_back = stopwatch_deep_copy_back.Elapsed;
                         System.Console.WriteLine("deep copy out " + elapse_deep_copy_back);
-                    }
-                    else
-                    {
-                        managed_info mi = new managed_info();
-                        mi.buffer = buffer;
-                        mi.kernel = kernel;
-                        mi.ptr = ptr;
-                        stuff.Push(mi);
                     }
                 }
             }

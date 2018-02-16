@@ -138,13 +138,20 @@ namespace Campy.Compiler
 
         private ModuleDefinition LoadAssembly(String assembly_file_name)
         {
-            String full_name = System.IO.Path.GetFullPath(assembly_file_name);
-            foreach (ModuleDefinition md in this._loaded_modules)
-                if (md.FullyQualifiedName.Equals(full_name))
-                    return md;
-            string p = Path.GetDirectoryName(full_name);
+            // Microsoft keeps screwing and changing the code that finds assemblies all the damn time.
+            // Get the type of Importer. Assume that it's in the same directory as everything else.
+            // Set that path for the god damn resolver.
+            var this_type = this.GetType();
+            var this_type_assembly = this_type.Assembly;
+            string codeBase = this_type_assembly.CodeBase;
+            UriBuilder uri = new UriBuilder(codeBase);
+            string path = Uri.UnescapeDataString(uri.Path);
+            var fucking_directory_path = Path.GetDirectoryName(path);
+            var full_frigging_path_of_assembly_file = fucking_directory_path + "\\" + assembly_file_name;
             var resolver = new DefaultAssemblyResolver();
-            resolver.AddSearchDirectory(p);
+            resolver.AddSearchDirectory(fucking_directory_path);
+            if (File.Exists(full_frigging_path_of_assembly_file))
+                assembly_file_name = full_frigging_path_of_assembly_file;
             ModuleDefinition module = ModuleDefinition.ReadModule(assembly_file_name, new ReaderParameters { AssemblyResolver = resolver });
             _loaded_modules.Add(module);
             return module;
