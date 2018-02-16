@@ -48,9 +48,10 @@
 
         }
 
-        public void Delay()
+        public bool Delay
         {
-            _delay = true;
+            get;
+            set;
         }
 
 

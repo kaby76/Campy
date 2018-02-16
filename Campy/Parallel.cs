@@ -49,10 +49,13 @@ namespace Campy
 
         public static void Delay()
         {
+            Singleton().Buffer.Delay = true;
         }
 
         public static void Synch()
         {
+            Singleton().Buffer.Delay = false;
+            Singleton().Buffer.SynchDataStructures();
         }
 
         public static void Managed(ManagedMemoryBlock block)
@@ -433,7 +436,8 @@ namespace Campy
                         stopwatch_deep_copy_back.Reset();
                         stopwatch_deep_copy_back.Start();
 
-                        buffer.SynchDataStructures();
+                        if (!buffer.Delay)
+                            buffer.SynchDataStructures();
                         
                         stopwatch_deep_copy_back.Stop();
                         var elapse_deep_copy_back = stopwatch_deep_copy_back.Elapsed;

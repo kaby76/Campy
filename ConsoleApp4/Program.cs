@@ -86,128 +86,87 @@ namespace ConsoleApp4
             }
         }
 
-        public class FFTC
+        public class Reduction
         {
-            /* Performs a Bit Reversal Algorithm on a postive integer 
-             * for given number of bits
-             * e.g. 011 with 3 bits is reversed to 110
-             */
-            public static int BitReverse(int n, int bits)
+            public static void ReductionUsingArrays()
             {
-                int reversedN = n;
-                int count = bits - 1;
-
-                n >>= 1;
-                while (n > 0)
+                int n = Bithacks.Power2(10);
+                int result_gpu = 0;
+                int result_cpu = 0;
                 {
-                    reversedN = (reversedN << 1) | (n & 1);
-                    count--;
-                    n >>= 1;
-                }
-
-                return ((reversedN << count) & ((1 << bits) - 1));
-            }
-
-            /* Uses Cooley-Tukey iterative in-place algorithm with radix-2 DIT case
-             * assumes no of points provided are a power of 2 */
-            public static void FFT(Complex[] buffer)
-            {
-
-                int bits = (int)Math.Log(buffer.Length, 2);
-                for (int j = 1; j < buffer.Length / 2; j++)
-                {
-                    int swapPos = BitReverse(j, bits);
-                    var temp = buffer[j];
-                    buffer[j] = buffer[swapPos];
-                    buffer[swapPos] = temp;
-                }
-
-                for (int N = 2; N <= buffer.Length; N <<= 1)
-                {
-                    for (int i = 0; i < buffer.Length; i += N)
+                    Parallel.Delay();
+                    int[] data = new int[n];
+                    Campy.Parallel.For(n, idx => data[idx] = 1);
+                    for (int level = 1; level <= Bithacks.Log2(n); level++)
                     {
-                        for (int k = 0; k < N / 2; k++)
+                        int step = Bithacks.Power2(level);
+                        Campy.Parallel.For(new Extent(n / step), idx =>
                         {
-                            int evenIndex = i + k;
-                            int oddIndex = i + k + (N / 2);
-                            var even = buffer[evenIndex];
-                            var odd = buffer[oddIndex];
-
-                            double term = -2 * Math.PI * k / (double)N;
-                            Complex exp = new Complex(Math.Cos(term), Math.Sin(term)) * odd;
-
-                            buffer[evenIndex] = even + exp;
-                            buffer[oddIndex] = even - exp;
+                            var i = step * idx;
+                            data[i] = data[i] + data[i + step / 2];
+                        });
+                    }
+                    Parallel.Synch();
+                    result_gpu = data[0];
+                }
+                {
+                    int[] data = new int[n];
+                    for (int idx = 0; idx < n; ++idx) data[idx] = 1;
+                    for (int level = 1; level <= Bithacks.Log2(n); level++)
+                    {
+                        int step = Bithacks.Power2(level);
+                        for (int idx = 0; idx < n / step; idx++)
+                        {
+                            var i = step * idx;
+                            data[i] = data[i] + data[i + step / 2];
                         }
                     }
+                    result_cpu = data[0];
                 }
+                if (result_gpu != result_cpu) throw new Exception();
             }
 
-            public static void FFTGPU(Complex[] buffer)
+            public static void ReductionUsingLists()
             {
-                int bits = (int)Math.Log(buffer.Length, 2);
-
-                Campy.Parallel.For(buffer.Length / 2 - 1, k =>
+                Parallel.Delay();
+                int n = Bithacks.Power2(10);
+                float result_gpu = 0;
+                float result_cpu = 0;
                 {
-                    int j = k + 1;
-                    int swapPos = BitReverse(j, bits);
-                    var temp = buffer[j];
-                    buffer[j] = buffer[swapPos];
-                    buffer[swapPos] = temp;
-                });
-
-                for (int N = 2; N <= buffer.Length; N <<= 1)
-                {
-                    int step = N / 2;
-                    int bstep = N;
-                    Campy.Parallel.For(buffer.Length / 2, d =>
+                    List<float> data = Enumerable.Range(0, n).Select(i => ((float)i) / 10).ToList();
+                    for (int level = 1; level <= Bithacks.Log2(n); level++)
                     {
-                        var k = d % step;
-                        var i = N * (d / step);
-                        var t = d % step + N * (d / step);
-                        int evenIndex = t;
-                        int oddIndex = t + step;
-
-                        var even = buffer[evenIndex];
-                        var odd = buffer[oddIndex];
-
-                        double term = -2 * Math.PI * k / (double)N;
-                        Complex exp = new Complex(Math.Cos(term), Math.Sin(term)) * odd;
-
-                        buffer[evenIndex] = even + exp;
-                        buffer[oddIndex] = even - exp;
-                    });
+                        int step = Bithacks.Power2(level);
+                        for (int idx = 0; idx < n / step; idx++)
+                        {
+                            var i = step * idx;
+                            data[i] = data[i] + data[i + step / 2];
+                        }
+                    }
+                    result_cpu = data[0];
                 }
-            }
-
-            public static bool ApproxEqual(double a, double b)
-            {
-                if (b > a)
-                    return (b - a) < 0.01;
-                else
-                    return (a - b) < 0.01;
-            }
-
-            public static void FFT_Test()
-            {
-                Complex[] input = { 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
-                var copy = input.ToArray();
-
-                FFTGPU(input);
-                FFT(copy);
-
-                for (int i = 0; i < input.Length; ++i)
                 {
-                    if (!ApproxEqual(copy[i].Real, input[i].Real)) throw new Exception();
-                    if (!ApproxEqual(copy[i].Imaginary, input[i].Imaginary)) throw new Exception();
+                    List<float> data = Enumerable.Range(0, n).Select(i => ((float)i) / 10).ToList();
+                    for (int level = 1; level <= Bithacks.Log2(n); level++)
+                    {
+                        int step = Bithacks.Power2(level);
+                        Campy.Parallel.For(new Extent(n / step), idx =>
+                        {
+                            var i = step * idx;
+                            data[i] = data[i] + data[i + step / 2];
+                        });
+                    }
+                    result_gpu = data[0];
                 }
+                Parallel.Synch();
+                if (result_gpu != result_cpu) throw new Exception();
             }
         }
 
         static void Main(string[] args)
         {
             StartDebugging();
-            FFTC.FFT_Test();
+            Reduction.ReductionUsingArrays();
         }
     }
 }
