@@ -43,10 +43,10 @@ namespace ConsoleApp4
             // sorting direction:
             private static bool ASCENDING = true, DESCENDING = false;
 
-            public void sort(int[] a_)
+            public void sort1(int[] a_)
             {
                 a = a_;
-                bitonicSort(0, a.Length, ASCENDING);
+                BitonicSort1();
             }
 
             private void bitonicSort(int lo, int n, bool dir)
@@ -84,89 +84,48 @@ namespace ConsoleApp4
                 a[i] = a[j];
                 a[j] = t;
             }
-        }
 
-        public class Reduction
-        {
-            public static void ReductionUsingArrays()
-            {
-                int n = Bithacks.Power2(10);
-                int result_gpu = 0;
-                int result_cpu = 0;
-                {
-                    Parallel.Delay();
-                    int[] data = new int[n];
-                    Campy.Parallel.For(n, idx => data[idx] = 1);
-                    for (int level = 1; level <= Bithacks.Log2(n); level++)
-                    {
-                        int step = Bithacks.Power2(level);
-                        Campy.Parallel.For(new Extent(n / step), idx =>
-                        {
-                            var i = step * idx;
-                            data[i] = data[i] + data[i + step / 2];
-                        });
-                    }
-                    Parallel.Synch();
-                    result_gpu = data[0];
-                }
-                {
-                    int[] data = new int[n];
-                    for (int idx = 0; idx < n; ++idx) data[idx] = 1;
-                    for (int level = 1; level <= Bithacks.Log2(n); level++)
-                    {
-                        int step = Bithacks.Power2(level);
-                        for (int idx = 0; idx < n / step; idx++)
-                        {
-                            var i = step * idx;
-                            data[i] = data[i] + data[i + step / 2];
-                        }
-                    }
-                    result_cpu = data[0];
-                }
-                if (result_gpu != result_cpu) throw new Exception();
-            }
+            // [Bat 68]	K.E. Batcher: Sorting Networks and their Applications. Proc. AFIPS Spring Joint Comput. Conf., Vol. 32, 307-314 (1968)
 
-            public static void ReductionUsingLists()
+            void BitonicSort1()
             {
+                uint N = (uint)a.Length;
+                int term = Bithacks.FloorLog2(N);
                 Parallel.Delay();
-                int n = Bithacks.Power2(10);
-                float result_gpu = 0;
-                float result_cpu = 0;
+                for (int k = 2; k <= N; k *= 2)
                 {
-                    List<float> data = Enumerable.Range(0, n).Select(i => ((float)i) / 10).ToList();
-                    for (int level = 1; level <= Bithacks.Log2(n); level++)
+                    for (int j = k >> 1; j > 0; j = j >> 1)
                     {
-                        int step = Bithacks.Power2(level);
-                        for (int idx = 0; idx < n / step; idx++)
+                        // parallel
+                        Campy.Parallel.For((int)N, (i) =>
                         {
-                            var i = step * idx;
-                            data[i] = data[i] + data[i + step / 2];
-                        }
-                    }
-                    result_cpu = data[0];
-                }
-                {
-                    List<float> data = Enumerable.Range(0, n).Select(i => ((float)i) / 10).ToList();
-                    for (int level = 1; level <= Bithacks.Log2(n); level++)
-                    {
-                        int step = Bithacks.Power2(level);
-                        Campy.Parallel.For(new Extent(n / step), idx =>
-                        {
-                            var i = step * idx;
-                            data[i] = data[i] + data[i + step / 2];
+                            int ij = i ^ j;
+                            if ((ij) > i)
+                            {
+                                if ((i & k) == 0 && a[i] > a[ij])
+                                {
+                                    exchange(i, ij);
+                                }
+
+                                if ((i & k) != 0 && a[i] < a[ij])
+                                {
+                                    exchange(i, ij);
+                                }
+                            }
                         });
                     }
-                    result_gpu = data[0];
                 }
                 Parallel.Synch();
-                if (result_gpu != result_cpu) throw new Exception();
             }
         }
 
         static void Main(string[] args)
         {
             StartDebugging();
-            Reduction.ReductionUsingArrays();
+            var b = new BitonicSorter();
+            Random rnd = new Random();
+            int N = 16 * 2 * 2 * 2 * 2 * 2 * 2 * 2 * 2 * 2 * 2 * 2 * 2 * 2;
+            b.sort1(Enumerable.Range(0, N).ToArray().OrderBy(x => rnd.Next()).ToArray());
         }
     }
 }

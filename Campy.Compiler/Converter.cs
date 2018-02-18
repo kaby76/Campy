@@ -419,6 +419,7 @@ namespace Campy.Compiler
 
     public class CampyConverter
     {
+        private Importer _importer;
         private CFG _mcfg;
         private static int _nn_id = 0;
         public static ModuleRef global_llvm_module = default(ModuleRef);
@@ -430,10 +431,12 @@ namespace Campy.Compiler
         internal static Dictionary<TypeReference, TypeRef> previous_llvm_types_created_global = new Dictionary<TypeReference, TypeRef>();
         internal static Dictionary<string, string> _rename_to_legal_llvm_name_cache = new Dictionary<string, string>();
         public int _start_index;
+        private static bool init;
 
-        public CampyConverter(CFG mcfg)
+        public CampyConverter()
         {
-            _mcfg = mcfg;
+            _importer = new Importer();
+            _mcfg = _importer.Cfg;
             global_llvm_module = CreateModule("global");
             LLVM.EnablePrettyStackTrace();
             var triple = LLVM.GetDefaultTargetTriple();
@@ -591,11 +594,12 @@ namespace Campy.Compiler
 
         public static void InitCuda()
         {
-            var res = CUresult.CUDA_SUCCESS;
-
+            // Initialize CUDA if it hasn't been done before.
+            if (init) return;
             Utils.CudaHelpers.CheckCudaError(Cuda.cuInit(0));
             Utils.CudaHelpers.CheckCudaError(Cuda.cuDevicePrimaryCtxReset(0));
             Utils.CudaHelpers.CheckCudaError(Cuda.cuCtxCreate_v2(out CUcontext pctx, 0, 0));
+            init = true;
         }
 
         public class Comparer : IEqualityComparer<Tuple<CFG.Vertex, Mono.Cecil.TypeReference, System.Type>>
@@ -1726,8 +1730,93 @@ namespace Campy.Compiler
             return _mcfg.Vertices.Where(i => i.IsEntry && i.Name == block_id).FirstOrDefault();
         }
 
-        public CUfunction GetCudaFunction(string basic_block_id, string ptx)
+        public IntPtr JitCodeToImage(MethodInfo kernel_method, object kernel_target)
         {
+            Stopwatch stopwatch_discovery = new Stopwatch();
+            stopwatch_discovery.Reset();
+            stopwatch_discovery.Start();
+
+            // Parse kernel instructions to determine basic block representation of all the code to compile.
+            int change_set_id = _mcfg.StartChangeSet();
+            _importer.AnalyzeMethod(kernel_method);
+            if (_importer.Failed)
+            {
+                throw new Exception("Failure to find all methods in GPU code. Cannot continue.");
+            }
+            List<CFG.Vertex> cs = _mcfg.PopChangeSet(change_set_id);
+
+            stopwatch_discovery.Stop();
+            var elapse_discovery = stopwatch_discovery.Elapsed;
+            System.Console.WriteLine("discovery     " + elapse_discovery);
+
+            object target = kernel_target;
+
+            // Get basic block of entry.
+            CFG.Vertex bb;
+            if (!cs.Any())
+            {
+                // Compiled previously. Look for basic block of entry.
+                bb = _mcfg.Entries.Where(v =>
+                    v.IsEntry && v.ExpectedCalleeSignature.Name == kernel_method.Name).FirstOrDefault();
+            }
+            else
+            {
+                bb = cs.First();
+            }
+
+            // Very important note: Although we have the control flow graph of the code that is to
+            // be compiled, there is going to be generics used, e.g., ArrayView<int>, within the body
+            // of the code and in the called runtime library. We need to record the types for compiling
+            // and add that to compilation.
+            // https://stackoverflow.com/questions/5342345/how-do-generics-get-compiled-by-the-jit-compiler
+
+            // Create a list of generics called with types passed.
+            List<System.Type> list_of_data_types_used = new List<System.Type>();
+            list_of_data_types_used.Add(kernel_target.GetType());
+            //Singleton._converter.FindAllTargets(kernel));
+
+            // Convert list into Mono data types.
+            List<Mono.Cecil.TypeReference> list_of_mono_data_types_used = new List<TypeReference>();
+            foreach (System.Type data_type_used in list_of_data_types_used)
+            {
+                list_of_mono_data_types_used.Add(
+                    data_type_used.ToMonoTypeReference());
+            }
+
+            // In the same, in-order discovery of all methods, we're going to pass on
+            // type information. As we spread the type info from basic block to successors,
+            // copy the node with the type information associated with it if the type info
+            // results in a different interpretation/compilation of the function.
+            cs = InstantiateGenerics(
+                cs, list_of_data_types_used, list_of_mono_data_types_used);
+
+            // Associate "this" with entry.
+            Dictionary<Tuple<TypeReference, GenericParameter>, System.Type> ops = bb.OpsFromOriginal;
+
+            var stopwatch_compiler = new Stopwatch();
+            stopwatch_compiler.Reset();
+            stopwatch_compiler.Start();
+
+            // Compile methods with added type information.
+            string ptx = CompileToLLVM(cs, list_of_mono_data_types_used,
+                bb.Name);
+
+            stopwatch_compiler.Stop();
+            var elapse_compiler = stopwatch_compiler.Elapsed;
+            System.Console.WriteLine("compiler      " + elapse_compiler);
+            var current_directory = Directory.GetCurrentDirectory();
+            System.Console.WriteLine("Current directory " + current_directory);
+
+            CudaHelpers.CheckCudaError(Cuda.cuMemGetInfo_v2(out ulong free_memory, out ulong total_memory));
+            System.Console.WriteLine("total memory " + total_memory + " free memory " + free_memory);
+            CudaHelpers.CheckCudaError(Cuda.cuCtxGetLimit(out ulong pvalue, CUlimit.CU_LIMIT_STACK_SIZE));
+            System.Console.WriteLine("Stack size " + pvalue);
+            var stopwatch_cuda_compile = new Stopwatch();
+            stopwatch_cuda_compile.Reset();
+            stopwatch_cuda_compile.Start();
+
+            // GetCudaFunction(string basic_block_id, string ptx)
+            var basic_block_id = bb.Name;
             var basic_block = GetBasicBlock(basic_block_id);
             var method = basic_block.ExpectedCalleeSignature;
 
@@ -1750,37 +1839,37 @@ namespace Campy.Compiler
 
             // Add in all of the GPU BCL runtime required.
             uint num_ops_link = 5;
-		    var op_link = new CUjit_option[num_ops_link];
-		    ulong[] op_values_link = new ulong[num_ops_link];
+            var op_link = new CUjit_option[num_ops_link];
+            ulong[] op_values_link = new ulong[num_ops_link];
 
-		    int size = 1024 * 100;
-		    op_link[0] = CUjit_option.CU_JIT_INFO_LOG_BUFFER_SIZE_BYTES;
-		    op_values_link[0] = (ulong)size;
+            int size = 1024 * 100;
+            op_link[0] = CUjit_option.CU_JIT_INFO_LOG_BUFFER_SIZE_BYTES;
+            op_values_link[0] = (ulong) size;
 
-		    op_link[1] = CUjit_option.CU_JIT_INFO_LOG_BUFFER;
-		    byte[] info_log_buffer = new byte[size];
-		    var info_log_buffer_handle = GCHandle.Alloc(info_log_buffer, GCHandleType.Pinned);
-		    var info_log_buffer_intptr = info_log_buffer_handle.AddrOfPinnedObject();
-		    op_values_link[1] = (ulong)info_log_buffer_intptr;
+            op_link[1] = CUjit_option.CU_JIT_INFO_LOG_BUFFER;
+            byte[] info_log_buffer = new byte[size];
+            var info_log_buffer_handle = GCHandle.Alloc(info_log_buffer, GCHandleType.Pinned);
+            var info_log_buffer_intptr = info_log_buffer_handle.AddrOfPinnedObject();
+            op_values_link[1] = (ulong) info_log_buffer_intptr;
 
-		    op_link[2] = CUjit_option.CU_JIT_ERROR_LOG_BUFFER_SIZE_BYTES;
-		    op_values_link[2] = (ulong)size;
+            op_link[2] = CUjit_option.CU_JIT_ERROR_LOG_BUFFER_SIZE_BYTES;
+            op_values_link[2] = (ulong) size;
 
-		    op_link[3] = CUjit_option.CU_JIT_ERROR_LOG_BUFFER;
-		    byte[] error_log_buffer = new byte[size];
-		    var error_log_buffer_handle = GCHandle.Alloc(error_log_buffer, GCHandleType.Pinned);
-		    var error_log_buffer_intptr = error_log_buffer_handle.AddrOfPinnedObject();
-		    op_values_link[3] = (ulong)error_log_buffer_intptr;
+            op_link[3] = CUjit_option.CU_JIT_ERROR_LOG_BUFFER;
+            byte[] error_log_buffer = new byte[size];
+            var error_log_buffer_handle = GCHandle.Alloc(error_log_buffer, GCHandleType.Pinned);
+            var error_log_buffer_intptr = error_log_buffer_handle.AddrOfPinnedObject();
+            op_values_link[3] = (ulong) error_log_buffer_intptr;
 
-		    op_link[4] = CUjit_option.CU_JIT_LOG_VERBOSE;
-		    op_values_link[4] = (ulong)1;
+            op_link[4] = CUjit_option.CU_JIT_LOG_VERBOSE;
+            op_values_link[4] = (ulong) 1;
 
             //op_link[5] = CUjit_option.CU_JIT_TARGET;
             //op_values_link[5] = (ulong)CUjit_target.CU_TARGET_COMPUTE_35;
 
             var op_values_link_handle = GCHandle.Alloc(op_values_link, GCHandleType.Pinned);
-		    var op_values_link_intptr = op_values_link_handle.AddrOfPinnedObject();
-		    res = Cuda.cuLinkCreate_v2(num_ops_link, op_link, op_values_link_intptr, out CUlinkState linkState);
+            var op_values_link_intptr = op_values_link_handle.AddrOfPinnedObject();
+            res = Cuda.cuLinkCreate_v2(num_ops_link, op_link, op_values_link_intptr, out CUlinkState linkState);
             Utils.CudaHelpers.CheckCudaError(res);
 
 
@@ -1789,7 +1878,8 @@ namespace Campy.Compiler
             ulong[] op_values = new ulong[0];
             var op_values_handle = GCHandle.Alloc(op_values, GCHandleType.Pinned);
             var op_values_intptr = op_values_handle.AddrOfPinnedObject();
-            res = Cuda.cuLinkAddData_v2(linkState, CUjitInputType.CU_JIT_INPUT_PTX, ptr, (uint)ptx.Length, "", 0, op, op_values_intptr);
+            res = Cuda.cuLinkAddData_v2(linkState, CUjitInputType.CU_JIT_INPUT_PTX, ptr, (uint) ptx.Length, "", 0, op,
+                op_values_intptr);
             {
                 string info = Marshal.PtrToStringAnsi(info_log_buffer_intptr);
                 System.Console.WriteLine(info);
@@ -1813,13 +1903,13 @@ namespace Campy.Compiler
                 {
                     var len = stream.Length;
                     var gpu_bcl_obj = new byte[len];
-                    stream.Read(gpu_bcl_obj, 0, (int)len);
+                    stream.Read(gpu_bcl_obj, 0, (int) len);
 
                     var gpu_bcl_obj_handle = GCHandle.Alloc(gpu_bcl_obj, GCHandleType.Pinned);
                     var gpu_bcl_obj_intptr = gpu_bcl_obj_handle.AddrOfPinnedObject();
 
                     res = Cuda.cuLinkAddData_v2(linkState, CUjitInputType.CU_JIT_INPUT_OBJECT,
-                        gpu_bcl_obj_intptr, (uint)len,
+                        gpu_bcl_obj_intptr, (uint) len,
                         "", num_ops, op, op_values_intptr);
                     {
                         string info = Marshal.PtrToStringAnsi(info_log_buffer_intptr);
@@ -1848,16 +1938,27 @@ namespace Campy.Compiler
                 System.Console.WriteLine(error);
             }
             Utils.CudaHelpers.CheckCudaError(res);
+            return image;
+        }
 
+        public CFG.Vertex GetBasicBlock(MethodInfo kernel_method)
+        {
+            CFG.Vertex bb = _mcfg.Entries.Where(v =>
+                v.IsEntry && v.ExpectedCalleeSignature.Name == kernel_method.Name).FirstOrDefault();
+            return bb;
+        }
+
+        public CUfunction GetCudaFunction(MethodInfo kernel_method, IntPtr image)
+        {
+            // Compiled previously. Look for basic block of entry.
+            CFG.Vertex bb = _mcfg.Entries.Where(v =>
+                v.IsEntry && v.ExpectedCalleeSignature.Name == kernel_method.Name).FirstOrDefault();
+            string basic_block_id = bb.Name;
             CUmodule module = Runtime.InitializeModule(image);
             Runtime.RuntimeModule = module;
-
             InitBCL(module);
-
-            //res = Cuda.cuModuleLoadData(out CUmodule cuModule, ptr);
-            //CheckCudaError(res);
-            var normalized_method_name = CampyConverter.RenameToLegalLLVMName(CampyConverter.MethodName(basic_block.ExpectedCalleeSignature));
-            res = Cuda.cuModuleGetFunction(out CUfunction helloWorld, module, normalized_method_name);
+            var normalized_method_name = CampyConverter.RenameToLegalLLVMName(CampyConverter.MethodName(bb.ExpectedCalleeSignature));
+            var res = Cuda.cuModuleGetFunction(out CUfunction helloWorld, module, normalized_method_name);
             Utils.CudaHelpers.CheckCudaError(res);
             return helloWorld;
         }

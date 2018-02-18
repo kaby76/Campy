@@ -255,7 +255,7 @@ namespace Reduction
                 for (int level = 1; level <= Bithacks.Log2(n); level++)
                 {
                     int step = Bithacks.Power2(level);
-                    Campy.Parallel.For(new Extent(n / step), idx =>
+                    Campy.Parallel.For(n / step, idx =>
                     {
                         var i = step * idx;
                         data[i] = data[i] + data[i + step / 2];
@@ -304,7 +304,7 @@ namespace Reduction
                 for (int level = 1; level <= Bithacks.Log2(n); level++)
                 {
                     int step = Bithacks.Power2(level);
-                    Campy.Parallel.For(new Extent(n / step), idx =>
+                    Campy.Parallel.For(n / step, idx =>
                     {
                         var i = step * idx;
                         data[i] = data[i] + data[i + step / 2];
