@@ -1730,8 +1730,15 @@ namespace Campy.Compiler
             return _mcfg.Vertices.Where(i => i.IsEntry && i.Name == block_id).FirstOrDefault();
         }
 
+        private Dictionary<MethodInfo, IntPtr> method_to_image = new Dictionary<MethodInfo, IntPtr>();
+
         public IntPtr JitCodeToImage(MethodInfo kernel_method, object kernel_target)
         {
+            if (method_to_image.TryGetValue(kernel_method, out IntPtr value))
+            {
+                return value;
+            }
+
             Stopwatch stopwatch_discovery = new Stopwatch();
             stopwatch_discovery.Reset();
             stopwatch_discovery.Start();
@@ -1938,6 +1945,9 @@ namespace Campy.Compiler
                 System.Console.WriteLine(error);
             }
             Utils.CudaHelpers.CheckCudaError(res);
+
+            method_to_image[kernel_method] = image;
+
             return image;
         }
 

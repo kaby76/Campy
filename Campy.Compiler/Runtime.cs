@@ -787,8 +787,14 @@ namespace Campy.Compiler
             get; private set;
         }
 
+        private static Dictionary<IntPtr, CUmodule> cached_modules = new Dictionary<IntPtr, CUmodule>();
+
         public static CUmodule InitializeModule(IntPtr cubin)
         {
+            if (cached_modules.TryGetValue(cubin, out CUmodule value))
+            {
+                return value;
+            }
             uint num_ops = 0;
             var op = new CUjit_option[num_ops];
             ulong[] op_values = new ulong[num_ops];
@@ -798,6 +804,7 @@ namespace Campy.Compiler
 
             CUresult res = Cuda.cuModuleLoadDataEx(out CUmodule module, cubin, 0, op, op_values_link_intptr);
             CudaHelpers.CheckCudaError(res);
+            cached_modules[cubin] = module;
             return module;
         }
 
