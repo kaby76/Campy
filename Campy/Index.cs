@@ -81,7 +81,7 @@
         public static implicit operator int(Index idx)
         {
             // compiler must generate special code for GPU.
-            return 0;
+            return idx._M_base[0];
         }
     }
 }
