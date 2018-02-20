@@ -89,7 +89,7 @@ namespace ConsoleApp4
 
             void BitonicSort1()
             {
-                //Parallel.Delay();
+                Parallel.Delay();
                 uint N = (uint)a.Length;
                 int term = Bithacks.FloorLog2(N);
                 for (int k = 2; k <= N; k *= 2)
@@ -112,12 +112,9 @@ namespace ConsoleApp4
                                 }
                             }
                         });
-                        System.Console.Write("{0,3} {1,3} ", k, j);
-                        for (int i = 0; i < N; ++i) System.Console.Write("{0,3}", a[i]);
-                        System.Console.WriteLine();
                     }
                 }
-                //Parallel.Synch();
+                Parallel.Synch();
             }
         }
 
@@ -152,10 +149,10 @@ namespace ConsoleApp4
 
             var b = new BitonicSorter();
             Random rnd = new Random();
-            {
-                int N = 16;
-                b.sort1(Enumerable.Range(0, N).ToArray().OrderBy(x => rnd.Next()).ToArray());
-            }
+            //{
+            //    int N = 16;
+            //    b.sort1(Enumerable.Range(0, N).ToArray().OrderBy(x => rnd.Next()).ToArray());
+            //}
             {
                 int N = 16 * 2 * 2 * 2 * 2 * 2 * 2 * 2 * 2 * 2 * 2 * 2 * 2 * 2;
                 b.sort1(Enumerable.Range(0, N).ToArray().OrderBy(x => rnd.Next()).ToArray());

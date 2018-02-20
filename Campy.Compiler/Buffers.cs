@@ -415,7 +415,8 @@
             // Allocate new buffer for object on GPU.
             if (result == IntPtr.Zero)
             {
-                System.Console.WriteLine("Allocating GPU buf " + to_gpu);
+                if (Campy.Utils.Options.IsOn("copy_trace"))
+                    System.Console.WriteLine("Allocating GPU buf " + to_gpu);
                 result = New(Buffers.SizeOf(btype));
                 _allocated_objects[to_gpu] = result;
                 _allocated_object_level[to_gpu] = _level + 1;
@@ -598,7 +599,8 @@
 
                 if (from_cpu_type.FullName.Equals("System.String"))
                 {
-                    System.Console.WriteLine("Adding object to 'copied_to_gpu' " + from_cpu);
+                    if (Campy.Utils.Options.IsOn("copy_trace"))
+                        System.Console.WriteLine("Adding object to 'copied_to_gpu' " + from_cpu);
                     _copied_to_gpu.Add(from_cpu);
 
                     System.Type f = from_cpu.GetType();
@@ -619,12 +621,14 @@
                     // First, make sure allocated object 
                     if (_copied_to_gpu.Contains(from_cpu))
                     {
-                        System.Console.WriteLine("Not copying object to GPU -- already done.' " + from_cpu);
+                        if (Campy.Utils.Options.IsOn("copy_trace"))
+                            System.Console.WriteLine("Not copying object to GPU -- already done.' " + from_cpu);
                         // Full object already stuffed into implementation buffer.
                     }
                     else
                     {
-                        System.Console.WriteLine("Adding object to 'copied_to_gpu' " + from_cpu);
+                        if (Campy.Utils.Options.IsOn("copy_trace"))
+                            System.Console.WriteLine("Adding object to 'copied_to_gpu' " + from_cpu);
                         _copied_to_gpu.Add(from_cpu);
 
                         // An array is represented as a struct, Runtime::A.
@@ -664,14 +668,16 @@
                         ;
                     else if (_copied_to_gpu.Contains(from_cpu) && !from_cpu_type.IsStruct())
                     {
-                        System.Console.WriteLine("Not copying object to GPU -- already done.' " + from_cpu);
+                        if (Campy.Utils.Options.IsOn("copy_trace"))
+                            System.Console.WriteLine("Not copying object to GPU -- already done.' " + from_cpu);
                         // Full object already stuffed into implementation buffer.
                         return;
                     }
                     {
                         if (!from_cpu_type.IsStruct())
                         {
-                            System.Console.WriteLine("Adding object to 'copied_to_gpu' " + from_cpu);
+                            if (Campy.Utils.Options.IsOn("copy_trace"))
+                                System.Console.WriteLine("Adding object to 'copied_to_gpu' " + from_cpu);
                             _copied_to_gpu.Add(from_cpu);
                         }
 
@@ -714,7 +720,8 @@
                                     }
                                     else
                                     {
-                                        System.Console.WriteLine("Allocating GPU buf " + field_value);
+                                        if (Campy.Utils.Options.IsOn("copy_trace"))
+                                            System.Console.WriteLine("Allocating GPU buf " + field_value);
                                         gp = New(field_size);
                                         _allocated_objects[field_value] = (IntPtr)gp;
                                         _allocated_object_level[field_value] = _level + 1;
@@ -744,7 +751,8 @@
                                     else
                                     {
                                         var field_size = SizeOf(field_value);
-                                        System.Console.WriteLine("Allocating GPU buf " + field_value);
+                                        if (Campy.Utils.Options.IsOn("copy_trace"))
+                                            System.Console.WriteLine("Allocating GPU buf " + field_value);
                                         gp = New(field_size);
                                         _allocated_objects[field_value] = (IntPtr)gp;
                                         _allocated_object_level[field_value] = _level + 1;
@@ -895,7 +903,8 @@
                     Cuda.cuMemcpyDtoH_v2(intptr2, from_gpu + sizeof(int), (uint)len * sizeof(short));
                     block2[len] = 0;
                     to_cpu = new string((char*)intptr2);
-                    System.Console.WriteLine("Copy from GPU " + to_cpu);
+                    if (Campy.Utils.Options.IsOn("copy_trace"))
+                        System.Console.WriteLine("Copy from GPU " + to_cpu);
                     return;
                 }
 
@@ -919,9 +928,13 @@
                         .FirstOrDefault();
 
                     _allocated_buffers[(IntPtr)long_ptr] = to_array;
-                    Cp((void*)long_ptr, to_array, from_element_type);
                     to_cpu = to_array;
-                    System.Console.WriteLine("Copy from GPU " + to_cpu);
+                    if (_copied_from_gpu.Contains(to_array))
+                        return;
+                    _copied_from_gpu.Add(to_array);
+                    Cp((void*)long_ptr, to_array, from_element_type);
+                    if (Campy.Utils.Options.IsOn("copy_trace"))
+                        System.Console.WriteLine("Copy from GPU " + to_cpu);
                     return;
                 }
 
@@ -999,7 +1012,8 @@
                             ip = (IntPtr)((long)ip + field_size);
                         }
                     }
-                    System.Console.WriteLine("Copy from GPU " + to_cpu);
+                    if (Campy.Utils.Options.IsOn("copy_trace"))
+                        System.Console.WriteLine("Copy from GPU " + to_cpu);
 
                     return;
                 }
@@ -1081,7 +1095,8 @@
                             ip = (IntPtr)((long)ip + field_size);
                         }
                     }
-                    System.Console.WriteLine("Copy from GPU " + to_cpu);
+                    if (Campy.Utils.Options.IsOn("copy_trace"))
+                        System.Console.WriteLine("Copy from GPU " + to_cpu);
 
                     return;
                 }
@@ -1139,7 +1154,8 @@
                         }
                         else
                         {
-                            System.Console.WriteLine("Allocating GPU buf " + from_element_value);
+                            if (Campy.Utils.Options.IsOn("copy_trace"))
+                                System.Console.WriteLine("Allocating GPU buf " + from_element_value);
                             IntPtr gp = New(size_element);
                             DeepCopyToImplementation(from_element_value, gp);
                             DeepCopyToImplementation(gp, to_gpu);
@@ -1169,7 +1185,8 @@
                         }
                         else
                         {
-                            System.Console.WriteLine("Allocating GPU buf " + size_element);
+                            if (Campy.Utils.Options.IsOn("copy_trace"))
+                                System.Console.WriteLine("Allocating GPU buf " + size_element);
                             gp = New(size_element);
                             _allocated_objects[from_element_value] = (IntPtr)gp;
                             _allocated_object_level[from_element_value] = _level + 1;
