@@ -732,21 +732,14 @@ function_space_specifier void MethodSemanticsTableReader(tMetaData *pThis, tRVA 
 	tMD_MethodSemantics * p = (tMD_MethodSemantics*)pDest;
 	memset(p, 0, sizeof(tMD_MethodSemantics));
 
-	printf("MS %d %d\n", row, numRows);
-
 	unsigned char * pSource = (unsigned char *)*ppSource;
 
-	//printf("Getting 16 bit\n");
 	p->semantics = GetU16(pSource);
 	pSource += 2;
 
-	printf("Getting 2 I\n");
 	p->method = Coded2Index(pThis, 0x6, &pSource);
 
-	//printf("Getting I\n");
-
 	p->association = CodedIndex(pThis, '6', &pSource);
-	printf("done.\n");
 	*ppSource = pSource;
 }
 
@@ -1043,8 +1036,6 @@ function_space_specifier static void* LoadSingleTable(tMetaData *pThis, tRVA *pR
 	// Calculate the destination row size from table definition, if it hasn't already been calculated
 	int newRowLen = 0;
 
-	printf("TableID %x\n", tableID);
-
 	switch (tableID)
 	{
 		case MD_TABLE_MODULE: rowLen = sizeof(tMD_Module); break;
@@ -1136,19 +1127,16 @@ function_space_specifier static void* LoadSingleTable(tMetaData *pThis, tRVA *pR
 		case MD_TABLE_MODULE:
 		{
 			tMD_Module* y = (tMD_Module*)dd;
-			printf("x1 %s\n", y->name);
 			break;
 		}
 		case MD_TABLE_TYPEREF:
 		{
 			tMD_TypeRef* y = (tMD_TypeRef*)dd;
-			printf("x2 %s\n", y->name);
 			break;
 		}
 		case MD_TABLE_TYPEDEF:
 		{
 			tMD_TypeDef* y = (tMD_TypeDef*)dd;
-			printf("x3 %s\n", y->name);
 			break;
 		}
 		case MD_TABLE_FIELDDEF:
@@ -1256,8 +1244,6 @@ function_space_specifier void MetaData_LoadTables(tMetaData *pThis, tRVA *pRVA, 
 	void *pTable;
 
 	unsigned char * ps = pStream;
-	for (int i = 0; i < 16; ++i)
-		printf("%x\n", ps[i]);
 
 	ps += 6;
 	c = *ps;
@@ -1266,7 +1252,6 @@ function_space_specifier void MetaData_LoadTables(tMetaData *pThis, tRVA *pRVA, 
 	pThis->index32BitBlob = (c & 4) > 0;
 	ps += 2;
 	valid = GetU64(ps);
-	printf("valid = %llx\n", valid);
 	// Count how many tables there are, and read in all the number of rows of each table.
 	numTables = 0;
 	for (i=0, j=1; i<MAX_TABLES; i++, j <<= 1) {
@@ -1276,14 +1261,12 @@ function_space_specifier void MetaData_LoadTables(tMetaData *pThis, tRVA *pRVA, 
 			U32 vvv = GetU32(&((unsigned char*)pStream)[24 + numTables * 4]);
 			pThis->tables.numRows[i] = vvv;
 			numTables++;
-			printf("Row v = %d %d\n", i, vvv);
 		} else {
 			pThis->tables.numRows[i] = 0;
 			pThis->tables.data[i] = NULL;
 		}
 	}
 
-	printf("Num tables %d\n", numTables);
 	char* codedTags[] = {
 		// TypeDefOrRef
 		"\x02\x01\x1Bz",
@@ -1343,12 +1326,9 @@ function_space_specifier void MetaData_LoadTables(tMetaData *pThis, tRVA *pRVA, 
 
 	for (i=0; i<MAX_TABLES; i++) {
 		if (pThis->tables.numRows[i] > 0) {
-
-printf("i = %d\n", i);
 			pThis->tables.data[i] = LoadSingleTable(pThis, pRVA, i, &pTable);
 		}
 	}
-	printf("tables done.\n");
 }
 
 function_space_specifier PTR MetaData_GetBlob(BLOB_ blob, U32 *pBlobLength) {

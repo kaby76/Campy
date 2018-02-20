@@ -398,8 +398,6 @@ namespace Campy.Compiler
                 var t_system_type = System.Type.GetType(bcl_type.FullName);
                 if (t_system_type == null) continue;
 
-                System.Console.WriteLine("BCL type added: " + bcl_type.FullName);
-
                 var to_mono = t_system_type.ToMonoTypeReference();
 
                 _substituted_bcl.Add(to_mono, bcl_type);
@@ -409,8 +407,6 @@ namespace Campy.Compiler
                     var x = m.ImplAttributes;
                     if ((x & MethodImplAttributes.InternalCall) != 0)
                     {
-                        System.Console.WriteLine("BCL internal method added: " + m.FullName);
-
                         _internalCalls.Add(new BclNativeMethod(bcl_type, m));
                     }
                 }
@@ -438,8 +434,6 @@ namespace Campy.Compiler
                             var mangled_name = m.Groups["name"].Value;
 
                             _ptx_functions.Add(new PtxFunction(mangled_name));
-
-                            System.Console.WriteLine("Adding PTX method " + mangled_name);
                         }
                     }
                 }
@@ -751,6 +745,7 @@ namespace Campy.Compiler
                     res = Cuda.cuLinkAddData_v2(linkState, CUjitInputType.CU_JIT_INPUT_OBJECT,
                         gpu_bcl_obj_intptr, (uint)len,
                         "", num_ops, op, op_values_intptr);
+                    if (res != CUresult.CUDA_SUCCESS)
                     {
                         string info = Marshal.PtrToStringAnsi(info_log_buffer_intptr);
                         System.Console.WriteLine(info);

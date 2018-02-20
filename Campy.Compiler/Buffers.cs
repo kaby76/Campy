@@ -886,19 +886,16 @@
                 if (t_type.FullName.Equals("System.String"))
                 {
                     // For now, assume data exists on GPU. Perform memcpy using CUDA.
-                    unsafe
-                    {
-                        int* block = stackalloc int[1];
-                        IntPtr intptr = new IntPtr(block);
-                        var res = Cuda.cuMemcpyDtoH_v2(intptr, from_gpu, sizeof(int));
-                        int len = *block;
-                        short* block2 = stackalloc short[len + 1];
-                        var intptr2 = new IntPtr(block2);
-                        Cuda.cuMemcpyDtoH_v2(intptr2, from_gpu + sizeof(int), (uint)len * sizeof(short));
-                        block2[len] = 0;
-                        to_cpu = new string((char*)intptr2);
-                        System.Console.WriteLine("Copy from GPU " + to_cpu);
-                    }
+                    int* block = stackalloc int[1];
+                    IntPtr intptr = new IntPtr(block);
+                    var res = Cuda.cuMemcpyDtoH_v2(intptr, from_gpu, sizeof(int));
+                    int len = *block;
+                    short* block2 = stackalloc short[len + 1];
+                    var intptr2 = new IntPtr(block2);
+                    Cuda.cuMemcpyDtoH_v2(intptr2, from_gpu + sizeof(int), (uint)len * sizeof(short));
+                    block2[len] = 0;
+                    to_cpu = new string((char*)intptr2);
+                    System.Console.WriteLine("Copy from GPU " + to_cpu);
                     return;
                 }
 
@@ -941,26 +938,26 @@
                         .FirstOrDefault();
                     _allocated_buffers[ip] = to_cpu;
 
-                    FieldInfo[] ffi = f_type.GetFields(
+                    FieldInfo[] all_from_fieldinfo = f_type.GetFields(
                         System.Reflection.BindingFlags.Instance
                         | System.Reflection.BindingFlags.NonPublic
                         | System.Reflection.BindingFlags.Public
                     //| System.Reflection.BindingFlags.Static
                     );
-                    FieldInfo[] tfi = t_type.GetFields(
+                    FieldInfo[] all_to_fieldinfo = t_type.GetFields(
                         System.Reflection.BindingFlags.Instance
                         | System.Reflection.BindingFlags.NonPublic
                         | System.Reflection.BindingFlags.Public
                     //| System.Reflection.BindingFlags.Static
                     );
 
-                    for (int i = 0; i < ffi.Length; ++i)
+                    for (int i = 0; i < all_from_fieldinfo.Length; ++i)
                     {
-                        var ffield = ffi[i];
-                        var tfield = tfi.Where(k => k.Name == ffield.Name).FirstOrDefault();
-                        if (tfield == null) throw new ArgumentException("Field not found.");
+                        var from_fieldinfo = all_from_fieldinfo[i];
+                        var to_fieldinfo = all_to_fieldinfo.Where(k => k.Name == from_fieldinfo.Name).FirstOrDefault();
+                        if (to_fieldinfo == null) throw new ArgumentException("Field not found.");
                         // Note, special case all field types.
-                        if (tfield.FieldType.IsArray)
+                        if (to_fieldinfo.FieldType.IsArray)
                         {
                             ip = (IntPtr)((long)ip + Buffers.Padding((long)ip, Buffers.Alignment(typeof(IntPtr))));
                             int field_size = Buffers.SizeOf(typeof(IntPtr));
@@ -971,34 +968,34 @@
                             else if (_allocated_buffers.ContainsKey(ipv))
                             {
                                 object tooo = _allocated_buffers[ipv];
-                                tfield.SetValue(to_cpu, tooo);
+                                to_fieldinfo.SetValue(to_cpu, tooo);
                             }
                             else
                             {
-                                DeepCopyFromImplementation(ipv, out object tooo, tfield.FieldType);
-                                tfield.SetValue(to_cpu, tooo);
+                                DeepCopyFromImplementation(ipv, out object tooo, to_fieldinfo.FieldType);
+                                to_fieldinfo.SetValue(to_cpu, tooo);
                             }
                             ip = (IntPtr)((long)ip + field_size);
                         }
-                        else if (tfield.FieldType.IsClass)
+                        else if (to_fieldinfo.FieldType.IsClass)
                         {
                             ip = (IntPtr)((long)ip + Buffers.Padding((long)ip, Buffers.Alignment(typeof(IntPtr))));
                             int field_size = Buffers.SizeOf(typeof(IntPtr));
                             IntPtr ipv = (IntPtr)Marshal.PtrToStructure<IntPtr>(ip);
-                            DeepCopyFromImplementation(ipv, out object tooo, tfield.FieldType);
+                            DeepCopyFromImplementation(ipv, out object tooo, to_fieldinfo.FieldType);
                             //if (_allocated_buffers.ContainsKey(ipv))
                             //{
                             //    object tooo = _allocated_buffers[ipv];
                             //}
-                            tfield.SetValue(to_cpu, tooo);
+                            to_fieldinfo.SetValue(to_cpu, tooo);
                             ip = (IntPtr)((long)ip + field_size);
                         }
                         else
                         {
-                            int field_size = Buffers.SizeOf(ffield.FieldType);
-                            ip = (IntPtr)((long)ip + Buffers.Padding((long)ip, Buffers.Alignment(ffield.FieldType)));
-                            DeepCopyFromImplementation(ip, out object tooo, tfield.FieldType);
-                            tfield.SetValue(to_cpu, tooo);
+                            int field_size = Buffers.SizeOf(from_fieldinfo.FieldType);
+                            ip = (IntPtr)((long)ip + Buffers.Padding((long)ip, Buffers.Alignment(from_fieldinfo.FieldType)));
+                            DeepCopyFromImplementation(ip, out object tooo, to_fieldinfo.FieldType);
+                            to_fieldinfo.SetValue(to_cpu, tooo);
                             ip = (IntPtr)((long)ip + field_size);
                         }
                     }

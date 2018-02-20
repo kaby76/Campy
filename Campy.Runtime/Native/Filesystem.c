@@ -66,14 +66,10 @@ function_space_specifier void Gfs_add_file(char * name, char * file, size_t leng
 	{
 		if (*ptr_name == NULL)
 		{
-			printf("name slot null, adding\n");
 			*ptr_name = Gstrdup(name);
 			*ptr_file = (char *)Gmalloc(length);
 			memcpy(*ptr_file, file, length);
-			printf("copy\n");
 			*ptr_length = length;
-			printf("len %d\n", length);
-			printf("returning %d\n", i);
 			*result = i;
 			return;
 		}

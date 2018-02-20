@@ -68,12 +68,9 @@ function_space_specifier tMetaData* CLIFile_GetMetaDataForAssembly(char * fileNa
 		pAssemblyName = "corlib";
 	}
 
-	Gprintf("looking at pfiles.\n");
-
 	// Look in already-loaded files first
 	pFiles = _bcl_->pFilesLoaded;
 	while (pFiles != NULL) {
-		Gprintf("pFiles not null.\n");
 		tCLIFile *pCLIFile;
 		tMD_Assembly *pThisAssembly;
 
@@ -87,13 +84,10 @@ function_space_specifier tMetaData* CLIFile_GetMetaDataForAssembly(char * fileNa
 		pFiles = pFiles->pNext;
 	}
 
-	Gprintf("Doing load\n");
 	// Assembly not loaded, so load it if possible
 	{
 		tCLIFile *pCLIFile;
-		printf("In CLIFile_GetMetaDataForAssembly0\n");
 		pCLIFile = CLIFile_Load(fileName);
-		printf("In CLIFile_GetMetaDataForAssembly1\n");
 		//pCLIFile = CLIFile_Load(pAssemblyName);
 		//printf("In CLIFile_GetMetaDataForAssembly2\n");
 		if (pCLIFile == NULL) {
@@ -280,7 +274,6 @@ function_space_specifier static tCLIFile* LoadPEFile(void *pData) {
 		pChild = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->nestedClass);
 		pChild->pNestedIn = pParent;
 	}
-	Gprintf("normal exit LoadPEFile\n");
 
 	return pRet;
 }
@@ -289,7 +282,6 @@ function_space_specifier tCLIFile* CLIFile_Load(char *pFileName) {
 	void *pRawFile;
 	tCLIFile *pRet;
 	tFilesLoaded *pNewFile;
-	Gprintf("In CLIFile_Load1\n");
 	pRawFile = LoadFileFromDisk(pFileName);
 
 	if (pRawFile == NULL) {
@@ -299,7 +291,6 @@ function_space_specifier tCLIFile* CLIFile_Load(char *pFileName) {
 	log_f(1, "\nLoading file: %s\n", pFileName);
 
 	pRet = LoadPEFile(pRawFile);
-	printf("In CLIFile_Load2\n");
 	pRet->pFileName = (char*)mallocForever((U32)Gstrlen(pFileName) + 1);
 	Gstrcpy(pRet->pFileName, pFileName);
 

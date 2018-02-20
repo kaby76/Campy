@@ -219,7 +219,6 @@ function_space_specifier void * simple_malloc(size_t size)
 	header = get_free_block(size);
 	if (header)
 	{
-		printf("header = %llx\n", header);
 		// split block if big enough.
 		if (header->size > (size + sizeof(struct header_t)))
 		{

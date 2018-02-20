@@ -1887,6 +1887,7 @@ namespace Campy.Compiler
             var op_values_intptr = op_values_handle.AddrOfPinnedObject();
             res = Cuda.cuLinkAddData_v2(linkState, CUjitInputType.CU_JIT_INPUT_PTX, ptr, (uint) ptx.Length, "", 0, op,
                 op_values_intptr);
+            if (res != CUresult.CUDA_SUCCESS)
             {
                 string info = Marshal.PtrToStringAnsi(info_log_buffer_intptr);
                 System.Console.WriteLine(info);
@@ -1918,6 +1919,7 @@ namespace Campy.Compiler
                     res = Cuda.cuLinkAddData_v2(linkState, CUjitInputType.CU_JIT_INPUT_OBJECT,
                         gpu_bcl_obj_intptr, (uint) len,
                         "", num_ops, op, op_values_intptr);
+                    if (res != CUresult.CUDA_SUCCESS)
                     {
                         string info = Marshal.PtrToStringAnsi(info_log_buffer_intptr);
                         System.Console.WriteLine(info);
@@ -1928,6 +1930,7 @@ namespace Campy.Compiler
                 }
             }
 
+            if (res != CUresult.CUDA_SUCCESS)
             {
                 string info = Marshal.PtrToStringAnsi(info_log_buffer_intptr);
                 System.Console.WriteLine(info);
@@ -1938,6 +1941,7 @@ namespace Campy.Compiler
 
             IntPtr image;
             res = Cuda.cuLinkComplete(linkState, out image, out ulong sz);
+            if (res != CUresult.CUDA_SUCCESS)
             {
                 string info = Marshal.PtrToStringAnsi(info_log_buffer_intptr);
                 System.Console.WriteLine(info);
@@ -2045,6 +2049,7 @@ namespace Campy.Compiler
                         res = Cuda.cuLinkAddData_v2(linkState, CUjitInputType.CU_JIT_INPUT_OBJECT,
                             gpu_bcl_obj_intptr, (uint) len,
                             "", num_ops, op, op_values_intptr);
+                        if (res != CUresult.CUDA_SUCCESS)
                         {
                             string info = Marshal.PtrToStringAnsi(info_log_buffer_intptr);
                             System.Console.WriteLine(info);
@@ -2055,6 +2060,7 @@ namespace Campy.Compiler
                     }
                 }
 
+                if (res != CUresult.CUDA_SUCCESS)
                 {
                     string info = Marshal.PtrToStringAnsi(info_log_buffer_intptr);
                     System.Console.WriteLine(info);
@@ -2065,6 +2071,7 @@ namespace Campy.Compiler
 
                 IntPtr image;
                 res = Cuda.cuLinkComplete(linkState, out image, out ulong sz);
+                if (res != CUresult.CUDA_SUCCESS)
                 {
                     string info = Marshal.PtrToStringAnsi(info_log_buffer_intptr);
                     System.Console.WriteLine(info);

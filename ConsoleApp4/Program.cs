@@ -75,10 +75,10 @@ namespace ConsoleApp4
             private void compare(int i, int j, bool dir)
             {
                 if (dir == (a[i] > a[j]))
-                    exchange(i, j);
+                    swap(i, j);
             }
 
-            private void exchange(int i, int j)
+            private void swap(int i, int j)
             {
                 int t = a[i];
                 a[i] = a[j];
@@ -89,49 +89,41 @@ namespace ConsoleApp4
 
             void BitonicSort1()
             {
+                //Parallel.Delay();
                 uint N = (uint)a.Length;
                 int term = Bithacks.FloorLog2(N);
-                Parallel.Delay();
                 for (int k = 2; k <= N; k *= 2)
                 {
                     for (int j = k >> 1; j > 0; j = j >> 1)
                     {
-                        // parallel
                         Campy.Parallel.For((int)N, (i) =>
                         {
                             int ij = i ^ j;
-                            if ((ij) > i)
+                            if (ij > i)
                             {
                                 if ((i & k) == 0)
                                 {
-                                    if (a[i] > a[ij])
-                                    {
-                                        int t = a[i];
-                                        a[i] = a[ij];
-                                        a[ij] = t;
-                                    }
+                                    if (a[i] > a[ij]) swap(i, ij);
                                 }
 
                                 if ((i & k) != 0)
                                 {
-                                    if (a[i] < a[ij])
-                                    {
-                                        int t = a[i];
-                                        a[i] = a[ij];
-                                        a[ij] = t;
-                                    }
+                                    if (a[i] < a[ij]) swap(i, ij);
                                 }
                             }
                         });
+                        System.Console.Write("{0,3} {1,3} ", k, j);
+                        for (int i = 0; i < N; ++i) System.Console.Write("{0,3}", a[i]);
+                        System.Console.WriteLine();
                     }
                 }
-                Parallel.Synch();
+                //Parallel.Synch();
             }
         }
 
         static void Main(string[] args)
         {
-            StartDebugging();
+            //StartDebugging();
             //Campy.Parallel.For((int)8, (i) =>
             //{
             //    int ij = i ^ j;
@@ -160,6 +152,10 @@ namespace ConsoleApp4
 
             var b = new BitonicSorter();
             Random rnd = new Random();
+            {
+                int N = 16;
+                b.sort1(Enumerable.Range(0, N).ToArray().OrderBy(x => rnd.Next()).ToArray());
+            }
             {
                 int N = 16 * 2 * 2 * 2 * 2 * 2 * 2 * 2 * 2 * 2 * 2 * 2 * 2 * 2;
                 b.sort1(Enumerable.Range(0, N).ToArray().OrderBy(x => rnd.Next()).ToArray());
