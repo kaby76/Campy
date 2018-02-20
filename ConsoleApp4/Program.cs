@@ -89,6 +89,7 @@ namespace ConsoleApp4
 
             void BitonicSort1()
             {
+                a = new int[]{7, 0, 1, 6, 5, 3, 2, 4};
                 uint N = (uint)a.Length;
                 int term = Bithacks.FloorLog2(N);
                 Parallel.Delay();
