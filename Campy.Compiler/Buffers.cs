@@ -653,12 +653,21 @@
 
                 if (from_cpu_type.IsStruct() || from_cpu_type.IsClass)
                 {
-                    if (_copied_to_gpu.Contains(from_cpu) && !from_cpu_type.IsStruct())
+                    // Classes are not copied if already copied before, AND
+                    // if it isn't a closure object. Normally, we wouldn't copy anything,
+                    // but it turns out some algorithms modify the closure, which has
+                    // nested closure. So, we copy these objects.
+                    if (from_cpu_type.Name.StartsWith("<>c__DisplayClass") ||
+                        from_cpu_type
+                            .GetCustomAttributes(typeof(System.Runtime.CompilerServices.CompilerGeneratedAttribute),
+                                false).Length > 0)
+                        ;
+                    else if (_copied_to_gpu.Contains(from_cpu) && !from_cpu_type.IsStruct())
                     {
                         System.Console.WriteLine("Not copying object to GPU -- already done.' " + from_cpu);
                         // Full object already stuffed into implementation buffer.
+                        return;
                     }
-                    else
                     {
                         if (!from_cpu_type.IsStruct())
                         {

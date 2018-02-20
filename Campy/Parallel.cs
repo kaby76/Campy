@@ -120,6 +120,8 @@ namespace Campy
                     IntPtr[] parm2 = new IntPtr[1];
                     IntPtr ptr = IntPtr.Zero;
 
+                    // The method really should have a "this" because it's a closure
+                    // object.
                     if (bb.HasThis)
                     {
                         ptr = buffer.AddDataStructure(kernel.Target);
