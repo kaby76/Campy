@@ -89,7 +89,6 @@ namespace ConsoleApp4
 
             void BitonicSort1()
             {
-                a = new int[]{7, 0, 1, 6, 5, 3, 2, 4};
                 uint N = (uint)a.Length;
                 int term = Bithacks.FloorLog2(N);
                 Parallel.Delay();
@@ -138,49 +137,21 @@ namespace ConsoleApp4
             //    int ij = i ^ j;
             //    if ((ij) > i)
             //    {
-            //        bbb[i] = ij;
-            //        if ((i & k) == 0)
+            //        if ((i & k) == 0 && a[i] > a[ij])
             //        {
-            //            if (aaa[i] > aaa[ij])
             //            {
-            //                int t = aaa[i];
-            //                aaa[i] = aaa[ij];
-            //                aaa[ij] = t;
+            //                int t = a[i];
+            //                a[i] = a[ij];
+            //                a[ij] = t;
             //            }
             //        }
 
-            //        if ((i & k) != 0)
-            //        {
-            //            if (aaa[i] < aaa[ij])
-            //            {
-            //                int t = aaa[i];
-            //                aaa[i] = aaa[ij];
-            //                aaa[ij] = t;
-            //            }
-            //        }
-            //    }
-            //});
-            //Campy.Parallel.For((int)8, (i) =>
-            //{
-            //    int ij = i ^ j;
-            //    if ((ij) > i)
-            //    {
-            //        bbb[i] = ij;
-            //        if ((i & k) == 0 && aaa[i] > aaa[ij])
+            //        if ((i & k) != 0 && a[i] < a[ij])
             //        {
             //            {
-            //                int t = aaa[i];
-            //                aaa[i] = aaa[ij];
-            //                aaa[ij] = t;
-            //            }
-            //        }
-
-            //        if ((i & k) != 0 && aaa[i] < aaa[ij])
-            //        {
-            //            {
-            //                int t = aaa[i];
-            //                aaa[i] = aaa[ij];
-            //                aaa[ij] = t;
+            //                int t = a[i];
+            //                a[i] = a[ij];
+            //                a[ij] = t;
             //            }
             //        }
             //    }
@@ -189,13 +160,13 @@ namespace ConsoleApp4
 
             var b = new BitonicSorter();
             Random rnd = new Random();
-            //{
-            //    int N = 16 * 2 * 2 * 2 * 2 * 2 * 2 * 2 * 2 * 2 * 2 * 2 * 2 * 2;
-            //    b.sort2(Enumerable.Range(0, N).ToArray().OrderBy(x => rnd.Next()).ToArray());
-            //}
             {
-                b.sort1(Enumerable.Range(0, 8).ToArray().OrderBy(x => rnd.Next()).ToArray());
+                int N = 16 * 2 * 2 * 2 * 2 * 2 * 2 * 2 * 2 * 2 * 2 * 2 * 2 * 2;
+                b.sort1(Enumerable.Range(0, N).ToArray().OrderBy(x => rnd.Next()).ToArray());
             }
+            //{
+            //    b.sort1(Enumerable.Range(0, 8).ToArray().OrderBy(x => rnd.Next()).ToArray());
+            //}
         }
     }
 }
