@@ -294,10 +294,12 @@ namespace BitonicSort
             Parallel.Delay();
             uint N = (uint)a.Length;
             int term = Bithacks.FloorLog2(N);
-            for (int k = 2; k <= N; k *= 2)
+            for (int kk = 2; kk <= N; kk *= 2)
             {
-                for (int j = k >> 1; j > 0; j = j >> 1)
+                for (int jj = kk >> 1; jj > 0; jj = jj >> 1)
                 {
+                    int k = kk;
+                    int j = jj;
                     Campy.Parallel.For((int)N, (i) =>
                     {
                         int ij = i ^ j;
@@ -307,8 +309,7 @@ namespace BitonicSort
                             {
                                 if (a[i] > a[ij]) swap(i, ij);
                             }
-
-                            if ((i & k) != 0)
+                            else // ((i & k) != 0)
                             {
                                 if (a[i] < a[ij]) swap(i, ij);
                             }

@@ -89,14 +89,16 @@ namespace ConsoleApp4
 
             void BitonicSort1()
             {
-                Parallel.Delay();
+                a = new int[]{0, 14, 1, 3, 4, 8, 11, 10, 2, 7, 5, 6, 12, 15, 13, 9};
                 uint N = (uint)a.Length;
                 int term = Bithacks.FloorLog2(N);
-                for (int k = 2; k <= N; k *= 2)
+                for (int kk = 2; kk <= N; kk *= 2)
                 {
-                    for (int j = k >> 1; j > 0; j = j >> 1)
+                    for (int jj = kk >> 1; jj > 0; jj = jj >> 1)
                     {
-                        Campy.Parallel.For((int)N, (i) =>
+                        int k = kk;
+                        int j = jj;
+                        Campy.Parallel.SFor((int)N, (i) =>
                         {
                             int ij = i ^ j;
                             if (ij > i)
@@ -105,8 +107,7 @@ namespace ConsoleApp4
                                 {
                                     if (a[i] > a[ij]) swap(i, ij);
                                 }
-
-                                if ((i & k) != 0)
+                                else // ((i & k) != 0)
                                 {
                                     if (a[i] < a[ij]) swap(i, ij);
                                 }
@@ -114,7 +115,6 @@ namespace ConsoleApp4
                         });
                     }
                 }
-                Parallel.Synch();
             }
         }
 
@@ -149,17 +149,10 @@ namespace ConsoleApp4
 
             var b = new BitonicSorter();
             Random rnd = new Random();
-            //{
-            //    int N = 16;
-            //    b.sort1(Enumerable.Range(0, N).ToArray().OrderBy(x => rnd.Next()).ToArray());
-            //}
             {
-                int N = 16 * 2 * 2 * 2 * 2 * 2 * 2 * 2 * 2 * 2 * 2 * 2 * 2 * 2;
+                int N = 16;
                 b.sort1(Enumerable.Range(0, N).ToArray().OrderBy(x => rnd.Next()).ToArray());
             }
-            //{
-            //    b.sort1(Enumerable.Range(0, 8).ToArray().OrderBy(x => rnd.Next()).ToArray());
-            //}
         }
     }
 }
