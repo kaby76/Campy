@@ -43,10 +43,10 @@ namespace ConsoleApp4
             // sorting direction:
             private static bool ASCENDING = true, DESCENDING = false;
 
-            public void sort1(int[] a_)
+            public void SortPar(int[] a_)
             {
                 a = a_;
-                BitonicSort1();
+                BitonicSortPar();
             }
 
             private void bitonicSort(int lo, int n, bool dir)
@@ -87,9 +87,8 @@ namespace ConsoleApp4
 
             // [Bat 68]	K.E. Batcher: Sorting Networks and their Applications. Proc. AFIPS Spring Joint Comput. Conf., Vol. 32, 307-314 (1968)
 
-            void BitonicSort1()
+            void BitonicSortSeq()
             {
-                a = new int[]{0, 14, 1, 3, 4, 8, 11, 10, 2, 7, 5, 6, 12, 15, 13, 9};
                 uint N = (uint)a.Length;
                 int term = Bithacks.FloorLog2(N);
                 for (int kk = 2; kk <= N; kk *= 2)
@@ -116,16 +115,43 @@ namespace ConsoleApp4
                     }
                 }
             }
+
+            void BitonicSortPar()
+            {
+                Campy.Parallel.Delay();
+                uint N = (uint)a.Length;
+                int term = Bithacks.FloorLog2(N);
+                for (int kk = 2; kk <= N; kk *= 2)
+                {
+                    for (int jj = kk >> 1; jj > 0; jj = jj >> 1)
+                    {
+                        int k = kk;
+                        int j = jj;
+                        Campy.Parallel.For((int)N, (i) =>
+                        {
+                            int ij = i ^ j;
+                            if (ij > i)
+                            {
+                                if ((i & k) == 0)
+                                {
+                                    if (a[i] > a[ij]) swap(i, ij);
+                                }
+                                else // ((i & k) != 0)
+                                {
+                                    if (a[i] < a[ij]) swap(i, ij);
+                                }
+                            }
+                        });
+                    }
+                }
+                Campy.Parallel.Synch();
+            }
         }
 
         static void Main(string[] args)
         {
             StartDebugging();
-            int n = 4;
-            int[] y = new int[n];
-            Campy.Parallel.For(n, i => y[i] = y.Length);
-            for (int i = 0; i < n; ++i) if (y[i] != y.Length)
-                throw new Exception();
+
             //Campy.Parallel.For((int)8, (i) =>
             //{
             //    int ij = i ^ j;
@@ -155,8 +181,8 @@ namespace ConsoleApp4
             var b = new BitonicSorter();
             Random rnd = new Random();
             {
-                int N = 16;
-                b.sort1(Enumerable.Range(0, N).ToArray().OrderBy(x => rnd.Next()).ToArray());
+                int N = Bithacks.Power2(16);
+                b.SortPar(Enumerable.Range(0, N).ToArray().OrderBy(x => rnd.Next()).ToArray());
             }
         }
     }
