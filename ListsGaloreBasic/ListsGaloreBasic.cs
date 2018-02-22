@@ -50,7 +50,7 @@ namespace UnitTestProject8
 
             var t8 = new List<ushort>();
             for (int i = 0; i < n; ++i) t8.Add(0);
-            Campy.Parallel.For(n, (Index i) =>
+            Campy.Parallel.For(n, (i) =>
             {
                 t8[i] = (ushort)(t4[i] + i + 1);
             });

@@ -1,6 +1,5 @@
 ﻿namespace Campy
 {
     public delegate void ManagedMemoryBlock();
-    public delegate void KernelType(Index idx);
-    public delegate void KernelTiledType(TiledIndex idx);
+    public delegate void KernelType(int idx);
 }

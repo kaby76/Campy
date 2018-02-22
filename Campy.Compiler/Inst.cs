@@ -994,11 +994,75 @@ namespace Campy.Compiler
 
         public override Inst Convert(CampyConverter converter, State state)
         {
-            Value value = state._arguments[_arg];
-            if (Campy.Utils.Options.IsOn("jit_trace"))
-                System.Console.WriteLine(value.ToString());
+            // For ldarg.1 of a compiler generated closure method, generate code
+            // to create an int index for the thread.
+            var bb = this.Block;
+            var mn = bb.ExpectedCalleeSignature.FullName;
+            if (mn.EndsWith("(System.Int32)")
+                && mn.Contains("<>c__DisplayClass")
+                && _arg == 1)
+            {
+                //threadId
+                var tidx = CampyConverter.built_in_functions["llvm.nvvm.read.ptx.sreg.tid.x"];
+                var tidy = CampyConverter.built_in_functions["llvm.nvvm.read.ptx.sreg.tid.y"];
+                var tidz = CampyConverter.built_in_functions["llvm.nvvm.read.ptx.sreg.tid.z"];
 
-            state._stack.Push(value);
+                //blockIdx
+                var ctaidx = CampyConverter.built_in_functions["llvm.nvvm.read.ptx.sreg.ctaid.x"];
+                var ctaidy = CampyConverter.built_in_functions["llvm.nvvm.read.ptx.sreg.ctaid.y"];
+                var ctaidz = CampyConverter.built_in_functions["llvm.nvvm.read.ptx.sreg.ctaid.z"];
+
+                //blockDim
+                var ntidx = CampyConverter.built_in_functions["llvm.nvvm.read.ptx.sreg.ntid.x"];
+                var ntidy = CampyConverter.built_in_functions["llvm.nvvm.read.ptx.sreg.ntid.y"];
+                var ntidz = CampyConverter.built_in_functions["llvm.nvvm.read.ptx.sreg.ntid.z"];
+
+                //gridDim
+                var nctaidx = CampyConverter.built_in_functions["llvm.nvvm.read.ptx.sreg.nctaid.x"];
+                var nctaidy = CampyConverter.built_in_functions["llvm.nvvm.read.ptx.sreg.nctaid.y"];
+                var nctaidz = CampyConverter.built_in_functions["llvm.nvvm.read.ptx.sreg.nctaid.z"];
+
+                var v_tidx = LLVM.BuildCall(bb.Builder, tidx, new ValueRef[] { }, "tidx");
+                var v_tidy = LLVM.BuildCall(bb.Builder, tidy, new ValueRef[] { }, "tidy");
+                var v_ntidx = LLVM.BuildCall(bb.Builder, ntidx, new ValueRef[] { }, "ntidx");
+                var v_ntidy = LLVM.BuildCall(bb.Builder, ntidy, new ValueRef[] { }, "ntidy");
+                var v_ctaidx = LLVM.BuildCall(bb.Builder, ctaidx, new ValueRef[] { }, "ctaidx");
+                var v_ctaidy = LLVM.BuildCall(bb.Builder, ctaidy, new ValueRef[] { }, "ctaidx");
+                var v_nctaidx = LLVM.BuildCall(bb.Builder, nctaidx, new ValueRef[] { }, "nctaidx");
+
+                //int i = (threadIdx.x
+                //         + blockDim.x * blockIdx.x
+                //         + blockDim.x * gridDim.x * blockDim.y * blockIdx.y
+                //         + blockDim.x * gridDim.x * threadIdx.y);
+
+                var t1 = v_tidx;
+
+                var t2 = LLVM.BuildMul(bb.Builder, v_ntidx, v_ctaidx, "i" + instruction_id++);
+
+                var t3 = LLVM.BuildMul(bb.Builder, v_ntidx, v_nctaidx, "i" + instruction_id++);
+                t3 = LLVM.BuildMul(bb.Builder, t3, v_ntidy, "i" + instruction_id++);
+                t3 = LLVM.BuildMul(bb.Builder, t3, v_ctaidy, "i" + instruction_id++);
+
+                var t4 = LLVM.BuildMul(bb.Builder, v_ntidx, v_nctaidx, "i" + instruction_id++);
+                t4 = LLVM.BuildMul(bb.Builder, t4, v_tidy, "i" + instruction_id++);
+
+                var sum = LLVM.BuildAdd(bb.Builder, t1, t2, "i" + instruction_id++);
+                sum = LLVM.BuildAdd(bb.Builder, sum, t3, "i" + instruction_id++);
+                sum = LLVM.BuildAdd(bb.Builder, sum, t4, "i" + instruction_id++);
+                sum = LLVM.BuildAdd(bb.Builder, sum, LLVM.ConstInt(LLVM.Int32Type(),
+                    (ulong)converter._start_index, false), "i" + instruction_id++);
+
+                if (Campy.Utils.Options.IsOn("jit_trace"))
+                    System.Console.WriteLine("load " + new Value(sum));
+                state._stack.Push(new Value(sum));
+            }
+            else
+            {
+                Value value = state._arguments[_arg];
+                if (Campy.Utils.Options.IsOn("jit_trace"))
+                    System.Console.WriteLine(value.ToString());
+                state._stack.Push(value);
+            }
             return Next;
         }
     }
@@ -1506,69 +1570,8 @@ namespace Campy.Compiler
 
         public override Inst Convert(CampyConverter converter, State state)
         {
-            var bb = this.Block;
-            var mn = bb.ExpectedCalleeSignature.FullName;
-            if (mn == "System.Int32 Campy.Index::op_Implicit(Campy.Index)")
-            {
-                //threadId
-                var tidx = CampyConverter.built_in_functions["llvm.nvvm.read.ptx.sreg.tid.x"];
-                var tidy = CampyConverter.built_in_functions["llvm.nvvm.read.ptx.sreg.tid.y"];
-                var tidz = CampyConverter.built_in_functions["llvm.nvvm.read.ptx.sreg.tid.z"];
-
-                //blockIdx
-                var ctaidx = CampyConverter.built_in_functions["llvm.nvvm.read.ptx.sreg.ctaid.x"];
-                var ctaidy = CampyConverter.built_in_functions["llvm.nvvm.read.ptx.sreg.ctaid.y"];
-                var ctaidz = CampyConverter.built_in_functions["llvm.nvvm.read.ptx.sreg.ctaid.z"];
-
-                //blockDim
-                var ntidx = CampyConverter.built_in_functions["llvm.nvvm.read.ptx.sreg.ntid.x"];
-                var ntidy = CampyConverter.built_in_functions["llvm.nvvm.read.ptx.sreg.ntid.y"];
-                var ntidz = CampyConverter.built_in_functions["llvm.nvvm.read.ptx.sreg.ntid.z"];
-
-                //gridDim
-                var nctaidx = CampyConverter.built_in_functions["llvm.nvvm.read.ptx.sreg.nctaid.x"];
-                var nctaidy = CampyConverter.built_in_functions["llvm.nvvm.read.ptx.sreg.nctaid.y"];
-                var nctaidz = CampyConverter.built_in_functions["llvm.nvvm.read.ptx.sreg.nctaid.z"];
-
-                var v_tidx = LLVM.BuildCall(bb.Builder, tidx, new ValueRef[] { }, "tidx");
-                var v_tidy = LLVM.BuildCall(bb.Builder, tidy, new ValueRef[] { }, "tidy");
-                var v_ntidx = LLVM.BuildCall(bb.Builder, ntidx, new ValueRef[] { }, "ntidx");
-                var v_ntidy = LLVM.BuildCall(bb.Builder, ntidy, new ValueRef[] { }, "ntidy");
-                var v_ctaidx = LLVM.BuildCall(bb.Builder, ctaidx, new ValueRef[] { }, "ctaidx");
-                var v_ctaidy = LLVM.BuildCall(bb.Builder, ctaidy, new ValueRef[] { }, "ctaidx");
-                var v_nctaidx = LLVM.BuildCall(bb.Builder, nctaidx, new ValueRef[] { }, "nctaidx");
-
-                //int i = (threadIdx.x
-                //         + blockDim.x * blockIdx.x
-                //         + blockDim.x * gridDim.x * blockDim.y * blockIdx.y
-                //         + blockDim.x * gridDim.x * threadIdx.y);
-
-                var t1 = v_tidx;
-
-                var t2 = LLVM.BuildMul(bb.Builder, v_ntidx, v_ctaidx, "i" + instruction_id++);
-
-                var t3 = LLVM.BuildMul(bb.Builder, v_ntidx, v_nctaidx, "i" + instruction_id++);
-                t3 = LLVM.BuildMul(bb.Builder, t3, v_ntidy, "i" + instruction_id++);
-                t3 = LLVM.BuildMul(bb.Builder, t3, v_ctaidy, "i" + instruction_id++);
-
-                var t4 = LLVM.BuildMul(bb.Builder, v_ntidx, v_nctaidx, "i" + instruction_id++);
-                t4 = LLVM.BuildMul(bb.Builder, t4, v_tidy, "i" + instruction_id++);
-
-                var sum = LLVM.BuildAdd(bb.Builder, t1, t2, "i" + instruction_id++);
-                sum = LLVM.BuildAdd(bb.Builder, sum, t3, "i" + instruction_id++);
-                sum = LLVM.BuildAdd(bb.Builder, sum, t4, "i" + instruction_id++);
-                sum = LLVM.BuildAdd(bb.Builder, sum, LLVM.ConstInt(LLVM.Int32Type(),
-                    (ulong)converter._start_index, false), "i" + instruction_id++);
-
-                if (Campy.Utils.Options.IsOn("jit_trace"))
-                    System.Console.WriteLine("load " + new Value(sum));
-                state._stack.Push(new Value(sum));
-            }
-            else
-            {
-                Value v = state._locals[_arg];
-                state._stack.Push(v);
-            }
+            Value v = state._locals[_arg];
+            state._stack.Push(v);
             return Next;
         }
     }

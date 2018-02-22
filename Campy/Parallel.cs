@@ -68,7 +68,7 @@ namespace Campy
         {
             for (int i = 0; i < number_of_threads; ++i)
             {
-                kernel(new Index(i));
+                kernel(i);
             }
         }
         public static void For(int number_of_threads, KernelType kernel)
@@ -103,7 +103,6 @@ namespace Campy
                     var stopwatch_cuda_compile = new Stopwatch();
                     stopwatch_cuda_compile.Start();
                     var elapse_cuda_compile = stopwatch_cuda_compile.Elapsed;
-                    Index index = new Index();
                     Buffers buffer = Singleton().Buffer;
                     var stopwatch_deep_copy_to = new Stopwatch();
                     stopwatch_deep_copy_to.Reset();
@@ -129,7 +128,7 @@ namespace Campy
                     }
 
                     {
-                        Type btype = buffer.CreateImplementationType(typeof(Index));
+                        Type btype = buffer.CreateImplementationType(typeof(int));
                         var s = Buffers.SizeOf(btype);
                         var ptr2 = buffer.New(s);
                         // buffer.DeepCopyToImplementation(index, ptr2);

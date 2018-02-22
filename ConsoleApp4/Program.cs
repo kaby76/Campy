@@ -120,7 +120,12 @@ namespace ConsoleApp4
 
         static void Main(string[] args)
         {
-            //StartDebugging();
+            StartDebugging();
+            int n = 4;
+            int[] y = new int[n];
+            Campy.Parallel.For(n, i => y[i] = y.Length);
+            for (int i = 0; i < n; ++i) if (y[i] != y.Length)
+                throw new Exception();
             //Campy.Parallel.For((int)8, (i) =>
             //{
             //    int ij = i ^ j;

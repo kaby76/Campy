@@ -41,7 +41,7 @@ namespace UnitTestProject5
             for (int i = 0; i < n; ++i) if (t7[i] != 0.1f * i - t3[i]) throw new Exception();
 
             System.UInt16[] t8 = new ushort[n];
-            Campy.Parallel.For(n, (Index i) =>
+            Campy.Parallel.For(n, (i) =>
             {
                 t8[i] = (ushort) (t4[i] + i + 1);
             });
