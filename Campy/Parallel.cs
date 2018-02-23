@@ -1,13 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Reflection;
 using System.Runtime.InteropServices;
 using Campy.Compiler;
 using Campy.Utils;
-using Mono.Cecil;
 using Swigged.Cuda;
 using Type = System.Type;
 
@@ -64,13 +59,6 @@ namespace Campy
             System.Console.WriteLine("deep copy out " + elapse_deep_copy_back);
         }
 
-        public static void SFor(int number_of_threads, KernelType kernel)
-        {
-            for (int i = 0; i < number_of_threads; ++i)
-            {
-                kernel(i);
-            }
-        }
         public static void For(int number_of_threads, KernelType kernel)
         {
             CampyConverter.InitCuda();

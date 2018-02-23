@@ -97,7 +97,7 @@ namespace ConsoleApp4
                     {
                         int k = kk;
                         int j = jj;
-                        Campy.Parallel.SFor((int)N, (i) =>
+                        Campy.Sequential.For((int)N, (i) =>
                         {
                             int ij = i ^ j;
                             if (ij > i)

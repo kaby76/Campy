@@ -73,6 +73,7 @@
     <Compile Include="Parallel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QueuingMode.cs" />
+    <Compile Include="Sequential.cs" />
     <Compile Include="TiledBarrier.cs" />
     <Compile Include="TiledExtent.cs" />
     <Compile Include="TiledIndex.cs" />
