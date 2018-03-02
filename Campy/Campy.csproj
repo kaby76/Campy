@@ -1,112 +1,26 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{453ABA79-5380-48A0-8C93-53A814977448}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Campy</RootNamespace>
-    <AssemblyName>Campy</AssemblyName>
-    <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
+    <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-  </PropertyGroup>
+
   <ItemGroup>
-    <Reference Include="Mono.Cecil, Version=0.10.0.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e, processorArchitecture=MSIL">
-      <HintPath>..\packages\Mono.Cecil.0.10.0-beta7\lib\net40\Mono.Cecil.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Cecil.Mdb, Version=0.10.0.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e, processorArchitecture=MSIL">
-      <HintPath>..\packages\Mono.Cecil.0.10.0-beta7\lib\net40\Mono.Cecil.Mdb.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Cecil.Pdb, Version=0.10.0.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e, processorArchitecture=MSIL">
-      <HintPath>..\packages\Mono.Cecil.0.10.0-beta7\lib\net40\Mono.Cecil.Pdb.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Cecil.Rocks, Version=0.10.0.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e, processorArchitecture=MSIL">
-      <HintPath>..\packages\Mono.Cecil.0.10.0-beta7\lib\net40\Mono.Cecil.Rocks.dll</HintPath>
-    </Reference>
-    <Reference Include="swigged.cuda, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\swigged.cuda.9.1.85.2\lib\net47\swigged.cuda.dll</HintPath>
-    </Reference>
-    <Reference Include="swigged.llvm, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\swigged.llvm.6.0.0.2-alpha\lib\net47\swigged.llvm.dll</HintPath>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.ComponentModel.Composition" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
+    <PackageReference Include="swigged.cuda" Version="9.1.85.2" />
+    <PackageReference Include="swigged.llvm" Version="6.0.0.2-alpha" />
   </ItemGroup>
+
   <ItemGroup>
-    <Compile Include="Accelerator.cs" />
-    <Compile Include="AcceleratorCuda.cs" />
-    <Compile Include="AcceleratorView.cs" />
-    <Compile Include="Array.cs" />
-    <Compile Include="Extent.cs" />
-    <Compile Include="Index.cs" />
-    <Compile Include="KernelTypes.cs" />
-    <Compile Include="Parallel.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="QueuingMode.cs" />
-    <Compile Include="Sequential.cs" />
-    <Compile Include="TiledBarrier.cs" />
-    <Compile Include="TiledExtent.cs" />
-    <Compile Include="TiledIndex.cs" />
-    <Compile Include="TiledStatic.cs" />
+    <ProjectReference Include="..\Campy.Compiler\Campy.Compiler.csproj" />
+    <ProjectReference Include="..\Campy.Graphs\Campy.Graphs.csproj" />
+    <ProjectReference Include="..\Campy.Utils\Campy.Utils.csproj" />
   </ItemGroup>
+
   <ItemGroup>
-    <None Include="app.config" />
-    <None Include="packages.config" />
+    <Folder Include="Properties\" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Campy.Graphs\Campy.Graphs.csproj">
-      <Project>{a71ce04f-f0d2-46e0-bae8-06cf1ea50f96}</Project>
-      <Name>Campy.Graphs</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Campy.Compiler\Campy.Compiler.csproj">
-      <Project>{ced2299a-4f97-4fb7-bfa8-a61b50e9986d}</Project>
-      <Name>Campy.Compiler</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Campy.Utils\Campy.Utils.csproj">
-      <Project>{ed3c7742-647c-44f9-b64b-29866044a54a}</Project>
-      <Name>Campy.Utils</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\packages\swigged.llvm.6.0.0.2-alpha\build\swigged.llvm.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\swigged.llvm.6.0.0.2-alpha\build\swigged.llvm.targets'))" />
-    <Error Condition="!Exists('..\packages\NETStandard.Library.2.0.0\build\netstandard2.0\NETStandard.Library.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\NETStandard.Library.2.0.0\build\netstandard2.0\NETStandard.Library.targets'))" />
-    <Error Condition="!Exists('..\packages\swigged.cuda.9.1.85.2\build\swigged.cuda.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\swigged.cuda.9.1.85.2\build\swigged.cuda.targets'))" />
-  </Target>
-  <Import Project="..\packages\swigged.llvm.6.0.0.2-alpha\build\swigged.llvm.targets" Condition="Exists('..\packages\swigged.llvm.6.0.0.2-alpha\build\swigged.llvm.targets')" />
-  <Import Project="..\packages\NETStandard.Library.2.0.0\build\netstandard2.0\NETStandard.Library.targets" Condition="Exists('..\packages\NETStandard.Library.2.0.0\build\netstandard2.0\NETStandard.Library.targets')" />
-  <Import Project="..\packages\swigged.cuda.9.1.85.2\build\swigged.cuda.targets" Condition="Exists('..\packages\swigged.cuda.9.1.85.2\build\swigged.cuda.targets')" />
+
 </Project>

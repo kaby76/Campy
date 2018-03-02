@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>  
+        <BuildDependsOn>
+        CampyPreBuildEvent;
+        $(BuildDependsOn);  
+        </BuildDependsOn>  
+    </PropertyGroup>
+    <Target
+      Name="CampyPreBuildEvent"
+      Condition="'$(CampyPreBuildEvent)'!=''"
+      DependsOnTargets="$(PreBuildEventDependsOn)">
+    <Exec WorkingDirectory="$(OutDir)" Command="$(CampyPreBuildEvent)" />
+  </Target>
+  <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
+    <CampyPreBuildEvent Condition="'$(Prefer32Bit)' == 'true'">
+      <ErrorText>This project requires 'Prefer 32-bit' to be unset/unchecked (i.e., 64-bit target). NVIDIA GPU Toolkit version 9+ no longer supports 32-bit targets.</ErrorText>
+    </CampyPreBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
+    <CampyPreBuildEvent Condition="'$(Prefer32Bit)' == 'false'">copy "$(userprofile)\.nuget\packages\Campy\0.0.3-alpha\win10\lib\x64\*.* </SwigCudaPreBuildEvent>
+  </PropertyGroup>
+</Project>

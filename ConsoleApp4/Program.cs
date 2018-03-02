@@ -151,6 +151,16 @@ namespace ConsoleApp4
         static void Main(string[] args)
         {
             StartDebugging();
+            int[][] jagged_array = new int[][]
+            {
+                new int[] {1, 3, 5, 7, 9},
+                new int[] {0, 2, 4, 6},
+                new int[] {11, 22}
+            };
+            Campy.Parallel.For(3, i =>
+            {
+                jagged_array[i][0] = i; //jagged_array[i].Length;
+            });
 
             //Campy.Parallel.For((int)8, (i) =>
             //{

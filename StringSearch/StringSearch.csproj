@@ -3,6 +3,9 @@
   <Import Project="..\packages\Microsoft.NET.Test.Sdk.15.6.0\build\net45\Microsoft.Net.Test.Sdk.props" Condition="Exists('..\packages\Microsoft.NET.Test.Sdk.15.6.0\build\net45\Microsoft.Net.Test.Sdk.props')" />
   <Import Project="..\packages\MSTest.TestAdapter.1.2.0\build\net45\MSTest.TestAdapter.props" Condition="Exists('..\packages\MSTest.TestAdapter.1.2.0\build\net45\MSTest.TestAdapter.props')" />
   <PropertyGroup>
+    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
+  </PropertyGroup>
+  <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{BC95901E-01A5-47B1-8812-090A703A67FD}</ProjectGuid>
@@ -116,4 +119,7 @@
   <Import Project="..\packages\swigged.cuda.9.1.85.2\build\swigged.cuda.targets" Condition="Exists('..\packages\swigged.cuda.9.1.85.2\build\swigged.cuda.targets')" />
   <Import Project="..\packages\swigged.llvm.6.0.0.2-alpha\build\swigged.llvm.targets" Condition="Exists('..\packages\swigged.llvm.6.0.0.2-alpha\build\swigged.llvm.targets')" />
   <Import Project="..\packages\Microsoft.NET.Test.Sdk.15.6.0\build\net45\Microsoft.Net.Test.Sdk.targets" Condition="Exists('..\packages\Microsoft.NET.Test.Sdk.15.6.0\build\net45\Microsoft.Net.Test.Sdk.targets')" />
+  <PropertyGroup>
+    <PostBuildEvent>copy  "$(SolutionDir)Campy.Runtime\Corlib\bin\Debug\net20\*.*" &amp;&amp; copy  "$(SolutionDir)x64\Debug\*.*"</PostBuildEvent>
+  </PropertyGroup>
 </Project>

@@ -422,19 +422,30 @@ namespace Campy.Compiler
         private Importer _importer;
         private CFG _mcfg;
         private static int _nn_id = 0;
-        public static ModuleRef global_llvm_module = default(ModuleRef);
-        private List<ModuleRef> all_llvm_modules = new List<ModuleRef>();
-        public static Dictionary<string, ValueRef> built_in_functions = new Dictionary<string, ValueRef>();
-        Dictionary<Tuple<CFG.Vertex, Mono.Cecil.TypeReference, System.Type>, CFG.Vertex> mmap
-            = new Dictionary<Tuple<CFG.Vertex, TypeReference, System.Type>, CFG.Vertex>(new Comparer());
-        internal static Dictionary<TypeReference, TypeRef> basic_llvm_types_created = new Dictionary<TypeReference, TypeRef>();
-        internal static Dictionary<TypeReference, TypeRef> previous_llvm_types_created_global = new Dictionary<TypeReference, TypeRef>();
-        internal static Dictionary<string, string> _rename_to_legal_llvm_name_cache = new Dictionary<string, string>();
+        public static ModuleRef global_llvm_module;
+        private List<ModuleRef> all_llvm_modules;
+        public static Dictionary<string, ValueRef> built_in_functions;
+        Dictionary<Tuple<CFG.Vertex, Mono.Cecil.TypeReference, System.Type>, CFG.Vertex> mmap;
+        internal static Dictionary<TypeReference, TypeRef> basic_llvm_types_created;
+        internal static Dictionary<TypeReference, TypeRef> previous_llvm_types_created_global;
+        internal static Dictionary<string, string> _rename_to_legal_llvm_name_cache;
         public int _start_index;
         private static bool init;
+        private Dictionary<MethodInfo, IntPtr> method_to_image;
+        private bool done_init;
 
         public CampyConverter()
         {
+            global_llvm_module = default(ModuleRef);
+            all_llvm_modules = new List<ModuleRef>();
+            built_in_functions = new Dictionary<string, ValueRef>();
+            mmap = new Dictionary<Tuple<CFG.Vertex, TypeReference, System.Type>, CFG.Vertex>(new Comparer());
+            basic_llvm_types_created = new Dictionary<TypeReference, TypeRef>();
+            previous_llvm_types_created_global = new Dictionary<TypeReference, TypeRef>();
+            _rename_to_legal_llvm_name_cache = new Dictionary<string, string>();
+            method_to_image = new Dictionary<MethodInfo, IntPtr>();
+            done_init = false;
+
             _importer = new Importer();
             _mcfg = _importer.Cfg;
             global_llvm_module = CreateModule("global");
@@ -1730,8 +1741,6 @@ namespace Campy.Compiler
             return _mcfg.Vertices.Where(i => i.IsEntry && i.Name == block_id).FirstOrDefault();
         }
 
-        private Dictionary<MethodInfo, IntPtr> method_to_image = new Dictionary<MethodInfo, IntPtr>();
-
         public IntPtr JitCodeToImage(MethodInfo kernel_method, object kernel_target)
         {
             if (method_to_image.TryGetValue(kernel_method, out IntPtr value))
@@ -1955,8 +1964,6 @@ namespace Campy.Compiler
             Utils.CudaHelpers.CheckCudaError(res);
             return helloWorld;
         }
-
-        private bool done_init = false;
 
         public void InitBCL(CUmodule mod)
         {
@@ -2306,6 +2313,5 @@ namespace Campy.Compiler
                 System.Console.WriteLine();
             }
         }
-
     }
 }

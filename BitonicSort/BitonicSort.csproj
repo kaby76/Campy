@@ -2,6 +2,9 @@
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\packages\MSTest.TestAdapter.1.2.0\build\net45\MSTest.TestAdapter.props" Condition="Exists('..\packages\MSTest.TestAdapter.1.2.0\build\net45\MSTest.TestAdapter.props')" />
   <PropertyGroup>
+    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
+  </PropertyGroup>
+  <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{0024A512-A88A-415D-99C2-FE7BA9EED092}</ProjectGuid>
@@ -83,4 +86,7 @@
   <Import Project="..\packages\NETStandard.Library.2.0.0\build\netstandard2.0\NETStandard.Library.targets" Condition="Exists('..\packages\NETStandard.Library.2.0.0\build\netstandard2.0\NETStandard.Library.targets')" />
   <Import Project="..\packages\swigged.cuda.9.1.85.2\build\swigged.cuda.targets" Condition="Exists('..\packages\swigged.cuda.9.1.85.2\build\swigged.cuda.targets')" />
   <Import Project="..\packages\swigged.llvm.6.0.0.2-alpha\build\swigged.llvm.targets" Condition="Exists('..\packages\swigged.llvm.6.0.0.2-alpha\build\swigged.llvm.targets')" />
+  <PropertyGroup>
+    <PostBuildEvent>copy  "$(SolutionDir)Campy.Runtime\Corlib\bin\Debug\net20\*.*" &amp;&amp; copy  "$(SolutionDir)x64\Debug\*.*"</PostBuildEvent>
+  </PropertyGroup>
 </Project>

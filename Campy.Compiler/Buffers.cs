@@ -17,7 +17,6 @@
     /// </summary>
     public class Buffers
     {
-        private Asm _asm;
         private Dictionary<string, string> _type_name_map = new Dictionary<string, string>();
 
         // A dictionary of allocated blocks of memory corresponding to an object in C#,
@@ -45,7 +44,6 @@
 
         public void Synchronize()
         {
-
         }
 
         public bool Delay
@@ -54,14 +52,12 @@
             set;
         }
 
-
         public void ClearAllocatedObjects()
         {
         }
 
         public Buffers()
         {
-            _asm = new Asm();
         }
 
         /// <summary>
@@ -100,219 +96,200 @@
             public static readonly bool Value = IsBlittable(typeof(T));
         }
 
-        /// <summary>
-        /// Asm class used by CreateImplementationType in order to create a blittable type
-        /// corresponding to a host type.
-        /// </summary>
-        class Asm
-        {
-            public System.Reflection.AssemblyName assemblyName;
-            public AssemblyBuilder ab;
-            public ModuleBuilder mb;
-            static int v = 1;
-
-            public Asm()
-            {
-                var s = "DynamicAssembly" + v++;
-                assemblyName = new System.Reflection.AssemblyName(s);
-                var assembly_builder = System.Reflection.Emit.AssemblyBuilder.DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.Run);
-                mb = assembly_builder.DefineDynamicModule(s);
-            }
-        }
-
         public System.Type CreateImplementationType(System.Type hostType, bool declare_parent_chain = true, bool declare_flatten_structure = false)
         {
-            try
-            {
-                // Let's start with basic types.
-                if (hostType.FullName.Equals("System.Object")) return typeof(System.Object);
-                if (hostType.FullName.Equals("System.Int16")) return typeof(System.Int16);
-                if (hostType.FullName.Equals("System.Int32")) return typeof(System.Int32);
-                if (hostType.FullName.Equals("System.Int64")) return typeof(System.Int64);
-                if (hostType.FullName.Equals("System.UInt16")) return typeof(System.UInt16);
-                if (hostType.FullName.Equals("System.UInt32")) return typeof(System.UInt32);
-                if (hostType.FullName.Equals("System.UInt64")) return typeof(System.UInt64);
-                if (hostType.FullName.Equals("System.IntPtr")) return typeof(System.IntPtr);
-                // Map boolean into byte.
-                if (hostType.FullName.Equals("System.Boolean")) return typeof(System.Byte);
-                // Map char into uint16.
-                if (hostType.FullName.Equals("System.Char")) return typeof(System.UInt16);
-                if (hostType.FullName.Equals("System.Single")) return typeof(System.Single);
-                if (hostType.FullName.Equals("System.Double")) return typeof(System.Double);
+            return hostType;
+            //try
+            //{
+            //    // Let's start with basic types.
+            //    if (hostType.FullName.Equals("System.Object")) return typeof(System.Object);
+            //    if (hostType.FullName.Equals("System.Int16")) return typeof(System.Int16);
+            //    if (hostType.FullName.Equals("System.Int32")) return typeof(System.Int32);
+            //    if (hostType.FullName.Equals("System.Int64")) return typeof(System.Int64);
+            //    if (hostType.FullName.Equals("System.UInt16")) return typeof(System.UInt16);
+            //    if (hostType.FullName.Equals("System.UInt32")) return typeof(System.UInt32);
+            //    if (hostType.FullName.Equals("System.UInt64")) return typeof(System.UInt64);
+            //    if (hostType.FullName.Equals("System.IntPtr")) return typeof(System.IntPtr);
+            //    // Map boolean into byte.
+            //    if (hostType.FullName.Equals("System.Boolean")) return typeof(System.Byte);
+            //    // Map char into uint16.
+            //    if (hostType.FullName.Equals("System.Char")) return typeof(System.UInt16);
+            //    if (hostType.FullName.Equals("System.Single")) return typeof(System.Single);
+            //    if (hostType.FullName.Equals("System.Double")) return typeof(System.Double);
 
-                String name;
-                System.Reflection.TypeFilter tf;
-                System.Type bbt = null;
+            //    String name;
+            //    System.Reflection.TypeFilter tf;
+            //    System.Type bbt = null;
 
-                // Declare inheritance types.
-                if (declare_parent_chain)
-                {
-                    // First, declare base type
-                    System.Type bt = hostType.BaseType;
-                    bbt = bt;
-                    if (bt != null && !bt.FullName.Equals("System.Object") && !bt.FullName.Equals("System.ValueType"))
-                    {
-                        bbt = CreateImplementationType(bt, declare_parent_chain, declare_flatten_structure);
-                    }
-                }
+            //    // Declare inheritance types.
+            //    if (declare_parent_chain)
+            //    {
+            //        // First, declare base type
+            //        System.Type bt = hostType.BaseType;
+            //        bbt = bt;
+            //        if (bt != null && !bt.FullName.Equals("System.Object") && !bt.FullName.Equals("System.ValueType"))
+            //        {
+            //            bbt = CreateImplementationType(bt, declare_parent_chain, declare_flatten_structure);
+            //        }
+            //    }
 
-                name = hostType.FullName;
-                _type_name_map.TryGetValue(name, out string alt);
-                tf = new System.Reflection.TypeFilter((System.Type t, object o) =>
-                {
-                    return t.FullName == name || t.FullName == alt;
-                });
+            //    name = hostType.FullName;
+            //    _type_name_map.TryGetValue(name, out string alt);
+            //    tf = new System.Reflection.TypeFilter((System.Type t, object o) =>
+            //    {
+            //        return t.FullName == name || t.FullName == alt;
+            //    });
 
-                // Find if blittable type for hostType was already performed.
-                System.Type[] types = _asm.mb.FindTypes(tf, null);
+            //    // Find if blittable type for hostType was already performed.
+            //    System.Type[] types = _asm.mb.FindTypes(tf, null);
 
-                // If blittable type was not created, create one with all fields corresponding
-                // to that in host, with special attention to arrays.
-                if (types.Length != 0)
-                    return types[0];
+            //    // If blittable type was not created, create one with all fields corresponding
+            //    // to that in host, with special attention to arrays.
+            //    if (types.Length != 0)
+            //        return types[0];
 
-                if (hostType.IsArray)
-                {
-                    int rank = hostType.GetArrayRank();
+            //    if (hostType.IsArray)
+            //    {
+            //        int rank = hostType.GetArrayRank();
 
-                    System.Type elementType = CreateImplementationType(hostType.GetElementType(),
-                        declare_parent_chain,
-                        declare_flatten_structure);
+            //        System.Type elementType = CreateImplementationType(hostType.GetElementType(),
+            //            declare_parent_chain,
+            //            declare_flatten_structure);
 
-                    // Create an array of the type given. We need this because
-                    // the element type must exist PRIOR to the definition of the array.
-                    // Great going Micrsoft! (Not!)
-                    int[] dims = new int[rank];
-                    for (int kk = 0; kk < rank; ++kk) dims[kk] = 1;
-                    object array_obj = Array.CreateInstance(elementType, dims);
-                    var array_type = array_obj.GetType();
+            //        // Create an array of the type given. We need this because
+            //        // the element type must exist PRIOR to the definition of the array.
+            //        // Great going Micrsoft! (Not!)
+            //        int[] dims = new int[rank];
+            //        for (int kk = 0; kk < rank; ++kk) dims[kk] = 1;
+            //        object array_obj = Array.CreateInstance(elementType, dims);
+            //        var array_type = array_obj.GetType();
 
-                    // For arrays, convert into the internal representation for runtime.
-                    // See Runtime.cs, struct A.
+            //        // For arrays, convert into the internal representation for runtime.
+            //        // See Runtime.cs, struct A.
 
-                    var tb = _asm.mb.DefineType(
-                        array_type.FullName,
-                        System.Reflection.TypeAttributes.Public
-                        | System.Reflection.TypeAttributes.SequentialLayout
-                        | System.Reflection.TypeAttributes.Serializable);
-                    _type_name_map[hostType.FullName] = tb.FullName;
-                    // Convert byte, int, etc., in host type to pointer in blittable type.
-                    // With array, we need to also encode the length.
-                    tb.DefineField("ptr", typeof(IntPtr), System.Reflection.FieldAttributes.Public);
-                    tb.DefineField("rank", typeof(Int64), System.Reflection.FieldAttributes.Public);
-                    tb.DefineField("len", typeof(Int64), System.Reflection.FieldAttributes.Public);
+            //        var tb = _asm.mb.DefineType(
+            //            array_type.FullName,
+            //            System.Reflection.TypeAttributes.Public
+            //            | System.Reflection.TypeAttributes.SequentialLayout
+            //            | System.Reflection.TypeAttributes.Serializable);
+            //        _type_name_map[hostType.FullName] = tb.FullName;
+            //        // Convert byte, int, etc., in host type to pointer in blittable type.
+            //        // With array, we need to also encode the length.
+            //        tb.DefineField("ptr", typeof(IntPtr), System.Reflection.FieldAttributes.Public);
+            //        tb.DefineField("rank", typeof(Int64), System.Reflection.FieldAttributes.Public);
+            //        tb.DefineField("len", typeof(Int64), System.Reflection.FieldAttributes.Public);
 
-                    return tb.CreateType();
-                }
-                else if (hostType.IsStruct())
-                {
-                    TypeBuilder tb = null;
-                    if (bbt != null)
-                    {
-                        tb = _asm.mb.DefineType(
-                            name,
-                            System.Reflection.TypeAttributes.Public
-                            | System.Reflection.TypeAttributes.SequentialLayout
-                            | System.Reflection.TypeAttributes.Serializable,
-                            bbt);
-                    }
-                    else
-                    {
-                        tb = _asm.mb.DefineType(
-                            name,
-                            System.Reflection.TypeAttributes.Public
-                            | System.Reflection.TypeAttributes.SequentialLayout
-                            | System.Reflection.TypeAttributes.Serializable);
-                    }
-                    _type_name_map[name] = tb.FullName;
-                    System.Type ht = hostType;
-                    while (ht != null)
-                    {
-                        var fields = ht.GetFields(
-                            System.Reflection.BindingFlags.Instance
-                            | System.Reflection.BindingFlags.NonPublic
-                            | System.Reflection.BindingFlags.Public
-                            //| System.Reflection.BindingFlags.Static
-                        );
-                        foreach (var field in fields)
-                        {
-                            // For non-array type fields, just define the field as is.
-                            // Recurse
-                            System.Type elementType = CreateImplementationType(field.FieldType, declare_parent_chain,
-                                declare_flatten_structure);
-                            // If elementType is a reference or array, then we need to convert it to a IntPtr.
-                            if (elementType.IsClass || elementType.IsArray)
-                                elementType = typeof(System.IntPtr);
-                            tb.DefineField(field.Name, elementType, System.Reflection.FieldAttributes.Public);
-                        }
-                        if (declare_flatten_structure)
-                            ht = ht.BaseType;
-                        else
-                            ht = null;
-                    }
-                    // Base type will be used.
-                    return tb.CreateType();
-                }
-                else if (hostType.IsClass)
-                {
-                    TypeBuilder tb = null;
-                    if (bbt != null)
-                    {
-                        tb = _asm.mb.DefineType(
-                            name,
-                            System.Reflection.TypeAttributes.Public
-                            | System.Reflection.TypeAttributes.SequentialLayout
-                            | System.Reflection.TypeAttributes.Serializable,
-                            bbt);
-                    }
-                    else
-                    {
-                        tb = _asm.mb.DefineType(
-                            name,
-                            System.Reflection.TypeAttributes.Public
-                            | System.Reflection.TypeAttributes.SequentialLayout
-                            | System.Reflection.TypeAttributes.Serializable);
-                    }
-                    _type_name_map[name] = tb.FullName;
-                    System.Type ht = hostType;
-                    while (ht != null)
-                    {
-                        var fields = ht.GetFields(
-                            System.Reflection.BindingFlags.Instance
-                            | System.Reflection.BindingFlags.NonPublic
-                            | System.Reflection.BindingFlags.Public
-                            //  | System.Reflection.BindingFlags.Static
-                        );
-                        foreach (var field in fields)
-                        {
-                            // For non-array type fields, just define the field as is.
-                            // Recurse
-                            System.Type elementType = CreateImplementationType(field.FieldType, declare_parent_chain,
-                                declare_flatten_structure);
-                            // If elementType is a reference or array, then we need to convert it to a IntPtr.
-                            if (elementType.IsClass || elementType.IsArray)
-                                elementType = typeof(System.IntPtr);
-                            tb.DefineField(field.Name, elementType, System.Reflection.FieldAttributes.Public);
-                        }
-                        if (declare_flatten_structure)
-                            ht = ht.BaseType;
-                        else
-                            ht = null;
-                    }
-                    // Base type will be used.
-                    return tb.CreateType();
-                }
-                else return null;
-            }
-            catch (Exception e)
-            {
-                System.Console.WriteLine("Exception");
-                System.Console.WriteLine(e);
-                throw e;
-            }
-            finally
-            {
-            }
+            //        return tb.CreateType();
+            //    }
+            //    else if (hostType.IsStruct())
+            //    {
+            //        TypeBuilder tb = null;
+            //        if (bbt != null)
+            //        {
+            //            tb = _asm.mb.DefineType(
+            //                name,
+            //                System.Reflection.TypeAttributes.Public
+            //                | System.Reflection.TypeAttributes.SequentialLayout
+            //                | System.Reflection.TypeAttributes.Serializable,
+            //                bbt);
+            //        }
+            //        else
+            //        {
+            //            tb = _asm.mb.DefineType(
+            //                name,
+            //                System.Reflection.TypeAttributes.Public
+            //                | System.Reflection.TypeAttributes.SequentialLayout
+            //                | System.Reflection.TypeAttributes.Serializable);
+            //        }
+            //        _type_name_map[name] = tb.FullName;
+            //        System.Type ht = hostType;
+            //        while (ht != null)
+            //        {
+            //            var fields = ht.GetFields(
+            //                System.Reflection.BindingFlags.Instance
+            //                | System.Reflection.BindingFlags.NonPublic
+            //                | System.Reflection.BindingFlags.Public
+            //                //| System.Reflection.BindingFlags.Static
+            //            );
+            //            foreach (var field in fields)
+            //            {
+            //                // For non-array type fields, just define the field as is.
+            //                // Recurse
+            //                System.Type elementType = CreateImplementationType(field.FieldType, declare_parent_chain,
+            //                    declare_flatten_structure);
+            //                // If elementType is a reference or array, then we need to convert it to a IntPtr.
+            //                if (elementType.IsClass || elementType.IsArray)
+            //                    elementType = typeof(System.IntPtr);
+            //                tb.DefineField(field.Name, elementType, System.Reflection.FieldAttributes.Public);
+            //            }
+            //            if (declare_flatten_structure)
+            //                ht = ht.BaseType;
+            //            else
+            //                ht = null;
+            //        }
+            //        // Base type will be used.
+            //        return tb.CreateType();
+            //    }
+            //    else if (hostType.IsClass)
+            //    {
+            //        TypeBuilder tb = null;
+            //        if (bbt != null)
+            //        {
+            //            tb = _asm.mb.DefineType(
+            //                name,
+            //                System.Reflection.TypeAttributes.Public
+            //                | System.Reflection.TypeAttributes.SequentialLayout
+            //                | System.Reflection.TypeAttributes.Serializable,
+            //                bbt);
+            //        }
+            //        else
+            //        {
+            //            tb = _asm.mb.DefineType(
+            //                name,
+            //                System.Reflection.TypeAttributes.Public
+            //                | System.Reflection.TypeAttributes.SequentialLayout
+            //                | System.Reflection.TypeAttributes.Serializable);
+            //        }
+            //        _type_name_map[name] = tb.FullName;
+            //        System.Type ht = hostType;
+            //        while (ht != null)
+            //        {
+            //            var fields = ht.GetFields(
+            //                System.Reflection.BindingFlags.Instance
+            //                | System.Reflection.BindingFlags.NonPublic
+            //                | System.Reflection.BindingFlags.Public
+            //                //  | System.Reflection.BindingFlags.Static
+            //            );
+            //            foreach (var field in fields)
+            //            {
+            //                // For non-array type fields, just define the field as is.
+            //                // Recurse
+            //                System.Type elementType = CreateImplementationType(field.FieldType, declare_parent_chain,
+            //                    declare_flatten_structure);
+            //                // If elementType is a reference or array, then we need to convert it to a IntPtr.
+            //                if (elementType.IsClass || elementType.IsArray)
+            //                    elementType = typeof(System.IntPtr);
+            //                tb.DefineField(field.Name, elementType, System.Reflection.FieldAttributes.Public);
+            //            }
+            //            if (declare_flatten_structure)
+            //                ht = ht.BaseType;
+            //            else
+            //                ht = null;
+            //        }
+            //        // Base type will be used.
+            //        return tb.CreateType();
+            //    }
+            //    else return null;
+            //}
+            //catch (Exception e)
+            //{
+            //    System.Console.WriteLine("Exception");
+            //    System.Console.WriteLine(e);
+            //    throw e;
+            //}
+            //finally
+            //{
+            //}
         }
 
         public static int Alignment(System.Type type)
@@ -591,11 +568,7 @@
                     return t.FullName == name || t.FullName == alt;
                 });
 
-                // Find blittable type for hostType.
-                System.Type[] types = _asm.mb.FindTypes(tf, null);
-
-                if (types.Length == 0) throw new Exception("Unknown type.");
-                System.Type blittable_type = types[0];
+                var blittable_type = from_cpu_type;
 
                 if (from_cpu_type.FullName.Equals("System.String"))
                 {
