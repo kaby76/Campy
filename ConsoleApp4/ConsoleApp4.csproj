@@ -180,4 +180,7 @@
   <Import Project="..\packages\NETStandard.Library.2.0.1\build\netstandard2.0\NETStandard.Library.targets" Condition="Exists('..\packages\NETStandard.Library.2.0.1\build\netstandard2.0\NETStandard.Library.targets')" />
   <Import Project="..\packages\swigged.cuda.9.1.85.2\build\swigged.cuda.targets" Condition="Exists('..\packages\swigged.cuda.9.1.85.2\build\swigged.cuda.targets')" />
   <Import Project="..\packages\swigged.llvm.6.0.0.2-alpha\build\swigged.llvm.targets" Condition="Exists('..\packages\swigged.llvm.6.0.0.2-alpha\build\swigged.llvm.targets')" />
+  <PropertyGroup>
+    <PostBuildEvent>copy  "$(SolutionDir)Campy.Runtime\Corlib\bin\Debug\net20\*.*" &amp;&amp; copy  "$(SolutionDir)x64\Debug\*.*"</PostBuildEvent>
+  </PropertyGroup>
 </Project>

@@ -1896,39 +1896,18 @@ namespace Campy.Compiler
             }
             Utils.CudaHelpers.CheckCudaError(res);
 
-            // Go to a standard directory, for now hardwired....
-            var dir = @"C:\Users\kenne\Documents\Campy2\Campy.Runtime\Native\x64\Debug";
-            var resource_names = Directory.GetFiles(dir);
+            // Go to directory for Campy.
+            var dir = Path.GetDirectoryName(Path.GetFullPath(this.GetType().Assembly.Location));
             uint num_ops = 0;
-            foreach (var resource_name in resource_names)
-            {
-                var last_index_of = resource_name.LastIndexOf('.');
-                if (last_index_of < 0) continue;
-                if (resource_name.Contains("device-link")) continue;
-                if (resource_name.Substring(last_index_of) != ".obj") continue;
-
-                using (Stream stream = new FileStream(resource_name, FileMode.Open, FileAccess.Read, FileShare.Read))
-                {
-                    var len = stream.Length;
-                    var gpu_bcl_obj = new byte[len];
-                    stream.Read(gpu_bcl_obj, 0, (int) len);
-
-                    var gpu_bcl_obj_handle = GCHandle.Alloc(gpu_bcl_obj, GCHandleType.Pinned);
-                    var gpu_bcl_obj_intptr = gpu_bcl_obj_handle.AddrOfPinnedObject();
-
-                    res = Cuda.cuLinkAddData_v2(linkState, CUjitInputType.CU_JIT_INPUT_OBJECT,
-                        gpu_bcl_obj_intptr, (uint) len,
-                        "", num_ops, op, op_values_intptr);
-                    if (res != CUresult.CUDA_SUCCESS)
-                    {
-                        string info = Marshal.PtrToStringAnsi(info_log_buffer_intptr);
-                        System.Console.WriteLine(info);
-                        string error = Marshal.PtrToStringAnsi(error_log_buffer_intptr);
-                        System.Console.WriteLine(error);
-                    }
-                    Utils.CudaHelpers.CheckCudaError(res);
-                }
-            }
+            var resource_name = dir + Path.DirectorySeparatorChar + "Campy.Runtime.Native.lib";
+            res = Cuda.cuLinkAddFile_v2(linkState, CUjitInputType.CU_JIT_INPUT_LIBRARY,
+                resource_name, num_ops, op, op_values_intptr);
+            // static .lib
+            // cuLinkAddFile_v2, CU_JIT_INPUT_OBJECT; succeeds cuLinkAddFile_v2, fails cuLinkComplete => truncated .lib?
+            // cuLinkAddFile_v2, CU_JIT_INPUT_LIBRARY; fails cuLinkAddFile_v2 => invalid image?
+            // 
+            // static .lib, device-link = no.
+            // cuLinkAddFile_v2, CU_JIT_INPUT_LIBRARY; succeeds.
 
             if (res != CUresult.CUDA_SUCCESS)
             {
@@ -2025,40 +2004,18 @@ namespace Campy.Compiler
                 var op_values_handle = GCHandle.Alloc(op_values, GCHandleType.Pinned);
                 var op_values_intptr = op_values_handle.AddrOfPinnedObject();
 
-                // Go to a standard directory, for now hardwired....
-                var dir = @"C:\Users\kenne\Documents\Campy2\Campy.Runtime\Native\x64\Debug";
-                var resource_names = Directory.GetFiles(dir);
+                // Go to directory for Campy.
+                var dir = Path.GetDirectoryName(Path.GetFullPath(this.GetType().Assembly.Location));
                 uint num_ops = 0;
-                foreach (var resource_name in resource_names)
-                {
-                    var last_index_of = resource_name.LastIndexOf('.');
-                    if (last_index_of < 0) continue;
-                    if (resource_name.Contains("device-link")) continue;
-                    if (resource_name.Substring(last_index_of) != ".obj") continue;
-
-                    using (Stream stream =
-                        new FileStream(resource_name, FileMode.Open, FileAccess.Read, FileShare.Read))
-                    {
-                        var len = stream.Length;
-                        var gpu_bcl_obj = new byte[len];
-                        stream.Read(gpu_bcl_obj, 0, (int) len);
-
-                        var gpu_bcl_obj_handle = GCHandle.Alloc(gpu_bcl_obj, GCHandleType.Pinned);
-                        var gpu_bcl_obj_intptr = gpu_bcl_obj_handle.AddrOfPinnedObject();
-
-                        res = Cuda.cuLinkAddData_v2(linkState, CUjitInputType.CU_JIT_INPUT_OBJECT,
-                            gpu_bcl_obj_intptr, (uint) len,
-                            "", num_ops, op, op_values_intptr);
-                        if (res != CUresult.CUDA_SUCCESS)
-                        {
-                            string info = Marshal.PtrToStringAnsi(info_log_buffer_intptr);
-                            System.Console.WriteLine(info);
-                            string error = Marshal.PtrToStringAnsi(error_log_buffer_intptr);
-                            System.Console.WriteLine(error);
-                        }
-                        Utils.CudaHelpers.CheckCudaError(res);
-                    }
-                }
+                var resource_name = dir + Path.DirectorySeparatorChar + "Campy.Runtime.Native.lib";
+                res = Cuda.cuLinkAddFile_v2(linkState, CUjitInputType.CU_JIT_INPUT_LIBRARY,
+                    resource_name, num_ops, op, op_values_intptr);
+                // static .lib
+                // cuLinkAddFile_v2, CU_JIT_INPUT_OBJECT; succeeds cuLinkAddFile_v2, fails cuLinkComplete => truncated .lib?
+                // cuLinkAddFile_v2, CU_JIT_INPUT_LIBRARY; fails cuLinkAddFile_v2 => invalid image?
+                // 
+                // static .lib, device-link = no.
+                // cuLinkAddFile_v2, CU_JIT_INPUT_LIBRARY; succeeds.
 
                 if (res != CUresult.CUDA_SUCCESS)
                 {
@@ -2164,8 +2121,9 @@ namespace Campy.Compiler
                 {
                     // Set up corlib.dll in file system.
                     string assem = "corlib.dll";
-                    string full_path_assem =
-                        @"c:\Users\kenne\Documents\Campy2\Campy.Runtime\Corlib\bin\Debug\net20\corlib.dll";
+                    string full_path_assem = Path.GetDirectoryName(Path.GetFullPath(this.GetType().Assembly.Location))
+                                             + Path.DirectorySeparatorChar
+                                             + assem;
                     Stream stream = new FileStream(full_path_assem, FileMode.Open, FileAccess.Read, FileShare.Read);
                     var corlib_bytes_handle_len = stream.Length;
                     var corlib_bytes = new byte[corlib_bytes_handle_len];

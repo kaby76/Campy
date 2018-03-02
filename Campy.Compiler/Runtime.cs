@@ -16,6 +16,10 @@ namespace Campy.Compiler
 {
     public class Runtime
     {
+        public Runtime()
+        {
+        }
+
         // Arrays are implemented as a struct, with the data following the struct
         // in row major format. Note, each dimension has a length that is recorded
         // following the pointer p. The one shown here is for only one-dimensional
@@ -391,7 +395,9 @@ namespace Campy.Compiler
         public static void Initialize()
         {
             // Load C# library for BCL, and grab all types and methods.
-            string yopath = @"C:\Users\kenne\Documents\Campy2\Campy.Runtime\Corlib\bin\Debug\netstandard1.3\corlib.dll";
+            var runtime = new Runtime();
+            var dir = Path.GetDirectoryName(Path.GetFullPath(runtime.GetType().Assembly.Location));
+            string yopath = dir + Path.DirectorySeparatorChar + "corlib.dll";
             Mono.Cecil.ModuleDefinition md = Mono.Cecil.ModuleDefinition.ReadModule(yopath);
             foreach (var bcl_type in md.GetTypes())
             {
@@ -677,99 +683,6 @@ namespace Campy.Compiler
 
         public static void LoadBclCode()
         {
-            return;
-            Utils.CudaHelpers.CheckCudaError(Cuda.cuCtxGetLimit(out ulong pvalue, CUlimit.CU_LIMIT_STACK_SIZE));
-            Utils.CudaHelpers.CheckCudaError(Cuda.cuCtxSetLimit(CUlimit.CU_LIMIT_STACK_SIZE, (uint)pvalue * 25));
-            System.Console.WriteLine("Stack size " + pvalue);
-
-            CUresult res = CUresult.CUDA_SUCCESS;
-
-            uint num_ops_link = 5;
-            var op_link = new CUjit_option[num_ops_link];
-            ulong[] op_values_link = new ulong[num_ops_link];
-
-            int size = 1024 * 100;
-            op_link[0] = CUjit_option.CU_JIT_INFO_LOG_BUFFER_SIZE_BYTES;
-            op_values_link[0] = (ulong)size;
-
-            op_link[1] = CUjit_option.CU_JIT_INFO_LOG_BUFFER;
-            byte[] info_log_buffer = new byte[size];
-            var info_log_buffer_handle = GCHandle.Alloc(info_log_buffer, GCHandleType.Pinned);
-            var info_log_buffer_intptr = info_log_buffer_handle.AddrOfPinnedObject();
-            op_values_link[1] = (ulong)info_log_buffer_intptr;
-
-            op_link[2] = CUjit_option.CU_JIT_ERROR_LOG_BUFFER_SIZE_BYTES;
-            op_values_link[2] = (ulong)size;
-
-            op_link[3] = CUjit_option.CU_JIT_ERROR_LOG_BUFFER;
-            byte[] error_log_buffer = new byte[size];
-            var error_log_buffer_handle = GCHandle.Alloc(error_log_buffer, GCHandleType.Pinned);
-            var error_log_buffer_intptr = error_log_buffer_handle.AddrOfPinnedObject();
-            op_values_link[3] = (ulong)error_log_buffer_intptr;
-
-            op_link[4] = CUjit_option.CU_JIT_LOG_VERBOSE;
-            op_values_link[4] = (ulong)1;
-
-            //op_link[5] = CUjit_option.CU_JIT_TARGET;
-            //op_values_link[5] = (ulong)CUjit_target.CU_TARGET_COMPUTE_35;
-
-            var op_values_link_handle = GCHandle.Alloc(op_values_link, GCHandleType.Pinned);
-            var op_values_link_intptr = op_values_link_handle.AddrOfPinnedObject();
-            res = Cuda.cuLinkCreate_v2(num_ops_link, op_link, op_values_link_intptr, out CUlinkState linkState);
-            CudaHelpers.CheckCudaError(res);
-
-            // Go to a standard directory, for now hardwired....
-            var dir = @"C:\Users\kenne\Documents\Campy2\Campy.Runtime\Native\x64\Debug";
-            var resource_names = Directory.GetFiles(dir);
-            uint num_ops = 0;
-            var op = new CUjit_option[num_ops];
-            var op_values = new ulong[num_ops];
-            var op_values_handle = GCHandle.Alloc(op_values, GCHandleType.Pinned);
-            var op_values_intptr = op_values_handle.AddrOfPinnedObject();
-            foreach (var resource_name in resource_names)
-            {
-                var last_index_of = resource_name.LastIndexOf('.');
-                if (last_index_of < 0) continue;
-                if (resource_name.Contains("device-link")) continue;
-                if (resource_name.Substring(last_index_of) != ".obj") continue;
-
-                using (Stream stream = new FileStream(resource_name, FileMode.Open, FileAccess.Read, FileShare.Read))
-                {
-                    var len = stream.Length;
-                    var gpu_bcl_obj = new byte[len];
-                    stream.Read(gpu_bcl_obj, 0, (int)len);
-
-                    var gpu_bcl_obj_handle = GCHandle.Alloc(gpu_bcl_obj, GCHandleType.Pinned);
-                    var gpu_bcl_obj_intptr = gpu_bcl_obj_handle.AddrOfPinnedObject();
-
-                    res = Cuda.cuLinkAddData_v2(linkState, CUjitInputType.CU_JIT_INPUT_OBJECT,
-                        gpu_bcl_obj_intptr, (uint)len,
-                        "", num_ops, op, op_values_intptr);
-                    if (res != CUresult.CUDA_SUCCESS)
-                    {
-                        string info = Marshal.PtrToStringAnsi(info_log_buffer_intptr);
-                        System.Console.WriteLine(info);
-                        string error = Marshal.PtrToStringAnsi(error_log_buffer_intptr);
-                        System.Console.WriteLine(error);
-                    }
-                    Utils.CudaHelpers.CheckCudaError(res);
-                }
-            }
-
-            IntPtr image;
-            res = Cuda.cuLinkComplete(linkState, out image, out ulong sz);
-
-            {
-                string info = Marshal.PtrToStringAnsi(info_log_buffer_intptr);
-                System.Console.WriteLine(info);
-                string error = Marshal.PtrToStringAnsi(error_log_buffer_intptr);
-                System.Console.WriteLine(error);
-            }
-            CudaHelpers.CheckCudaError(res);
-
-            RuntimeCubinImage = image;
-            RuntimeCubinImageSize = sz;
-            Runtime.RuntimeModule = Runtime.InitializeModule(Runtime.RuntimeCubinImage);
         }
 
         public static IntPtr RuntimeCubinImage
@@ -810,8 +723,10 @@ namespace Campy.Compiler
 
         public static TypeReference FindBCLType(System.Type type)
         {
+            var runtime = new Runtime();
             TypeReference result = null;
-            string yopath = @"C:\Users\kenne\Documents\Campy2\Campy.Runtime\Corlib\bin\Debug\netstandard1.3\corlib.dll";
+            var dir = Path.GetDirectoryName(Path.GetFullPath(runtime.GetType().Assembly.Location));
+            string yopath = dir + Path.DirectorySeparatorChar + "corlib.dll";
             Mono.Cecil.ModuleDefinition md = Mono.Cecil.ModuleDefinition.ReadModule(yopath);
             foreach (var bcl_type in md.GetTypes())
             {
