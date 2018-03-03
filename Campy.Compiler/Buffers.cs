@@ -623,7 +623,7 @@
                         Cp(df_rank, rank);
                         for (int i = 0; i < rank; ++i)
                             Cp(df_length + i * Buffers.SizeOf(typeof(Int64)), a.GetLength(i));
-                        Cp(df_elements, a, CreateImplementationType(a.GetType().GetElementType()));
+                        CpToGpu(df_elements, a);
                     }
                     return;
                 }
@@ -1088,7 +1088,7 @@
             }
         }
 
-        private unsafe void Cp(byte* to_gpu, Array from_cpu, System.Type blittable_element_type)
+        private unsafe void CpToGpu(byte* to_gpu, Array from_cpu)
         {
             System.Type orig_element_type = from_cpu.GetType().GetElementType();
 
@@ -1150,7 +1150,8 @@
                 {
                     if (from_element_value != null)
                     {
-                        var size_element = SizeOf(blittable_element_type);
+                        // Each element is a pointer.
+                        var size_element = SizeOf(from_element_value);
                         IntPtr gp;
                         if (_allocated_objects.ContainsKey(from_element_value))
                         {
@@ -1182,10 +1183,10 @@
                 }
                 else
                 {
-                    int size_element = Buffers.SizeOf(blittable_element_type);
+                    int size_element = Buffers.SizeOf(from_element_value.GetType());
                     DeepCopyToImplementation(from_element_value, to_gpu);
                     to_gpu = (byte*)((long)to_gpu
-                        + Buffers.Padding((long)to_gpu, Buffers.Alignment(blittable_element_type))
+                        + Buffers.Padding((long)to_gpu, Buffers.Alignment(from_element_value.GetType()))
                         + size_element);
                 }
             }
@@ -1197,7 +1198,6 @@
             if (!to_type.IsArray)
                 throw new Exception("Expecting array.");
             var to_element_type = to_cpu.GetType().GetElementType();
-            int from_size_element = Buffers.SizeOf(from_element_type);
             IntPtr mem = (IntPtr)from_gpu;
             for (int i = 0; i < to_cpu.Length; ++i)
             {
@@ -1225,6 +1225,7 @@
                 {
                     DeepCopyFromImplementation(mem, out object to_obj, to_cpu.GetType().GetElementType());
                     to_cpu.SetValue(to_obj, index);
+                    int from_size_element = Buffers.SizeOf(from_element_type);
                     mem = new IntPtr((long)mem + from_size_element);
                 }
             }
