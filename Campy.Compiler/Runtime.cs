@@ -10,6 +10,7 @@ using Swigged.Cuda;
 using Swigged.LLVM;
 using Campy.Utils;
 using Mono.Cecil;
+using Mono.Cecil.Cil;
 using MethodImplAttributes = Mono.Cecil.MethodImplAttributes;
 
 namespace Campy.Compiler
@@ -24,6 +25,12 @@ namespace Campy.Compiler
         // We also need to convert system types that are in the GPU BCL types (represented in Mono.Cecil). Unfortunately,
         // NET Core seems to have problems with System.Reflection.
         private static Dictionary<System.Type, TypeReference> _system_type_to_mono_type_for_bcl = new Dictionary<System.Type, TypeReference>();
+ 
+        // Some methods references resolve to null. And, some methods we might want to substitute a
+        // different implementation that the one normally found through reference Resolve(). Retain a
+        // mapping of methods to be rewritten.
+        private static Dictionary<string, string> _rewritten_runtime = new Dictionary<string, string>();
+
 
         public Runtime()
         {
@@ -820,6 +827,93 @@ namespace Campy.Compiler
             return tr;
         }
 
+
+        public static MethodDefinition SubstituteMethod(MethodReference method_reference)
+        {
+            // Look up base class.
+            TypeReference mr_dt = method_reference.DeclaringType;
+            MethodDefinition method_definition = method_reference.Resolve();
+            // Find in Campy.Runtime, assuming it exists in the same
+            // directory as the Campy compiler assembly.
+            var dir = Campy.Utils.CampyInfo.PathOfCampy();
+            string yopath = dir + Path.DirectorySeparatorChar + "corlib.dll";
+            Mono.Cecil.ModuleDefinition md = Mono.Cecil.ModuleDefinition.ReadModule(yopath);
+            // Find type/method in order to do a substitution. If there
+            // is no substitution, continue on with the method.
+            if (mr_dt != null)
+            {
+                foreach (var type in md.Types)
+                {
+                    if (type.Name == mr_dt.Name && type.Namespace == mr_dt.Namespace)
+                    {
+                        var fn = mr_dt.Module.Assembly.FullName;
+                        var sub = mr_dt.SubstituteMonoTypeReference(md);
+                        foreach (var meth in sub.Methods)
+                        {
+                            if (meth.Name != method_reference.Name) continue;
+                            if (meth.Parameters.Count != method_reference.Parameters.Count) continue;
+
+                            var mrdt_resolve = mr_dt.Resolve();
+                            if (mrdt_resolve != null && mrdt_resolve.FullName != sub.FullName)
+                                continue;
+
+                            for (int i = 0; i < meth.Parameters.Count; ++i)
+                            {
+                                var p1 = meth.Parameters[i];
+                                var p2 = method_reference.Parameters[i];
+                            }
+
+                            method_reference = meth;
+                            method_definition = method_reference.Resolve();
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (method_definition == null)
+            {
+                return null;
+            }
+            else if (method_definition.Body == null)
+            {
+                return null;
+            }
+
+            return method_definition;
+        }
+
+        public static void RewriteCilCodeBlock(Mono.Cecil.Cil.MethodBody body)
+        {
+            List<Instruction> result = new List<Instruction>();
+            for (int j = 0; j < body.Instructions.Count; ++j)
+            {
+                Instruction i = body.Instructions[j];
+
+                var inst_to_insert = i;
+
+                if (i.OpCode.FlowControl == FlowControl.Call)
+                {
+                    object method = i.Operand;
+
+                    if (method as Mono.Cecil.MethodReference == null)
+                        throw new Exception();
+
+                    var method_reference = method as Mono.Cecil.MethodReference;
+                    TypeReference mr_dt = method_reference.DeclaringType;
+
+                    var bcl_substitute = SubstituteMethod(method_reference);
+                    if (bcl_substitute != null)
+                    {
+                        CallSite cs = new CallSite(typeof(void).ToMonoTypeReference());
+                        body.Instructions.RemoveAt(j);
+                        var worker = body.GetILProcessor();
+                        Instruction new_inst = worker.Create(i.OpCode, bcl_substitute);
+                        body.Instructions.Insert(j, new_inst);
+                    }
+                }
+            }
+        }
     }
 }
 

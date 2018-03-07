@@ -17,7 +17,7 @@ namespace Campy.Compiler
     public class Importer
     {
         private CFG _cfg;
-        private List<ModuleDefinition> _loaded_modules;
+        private static List<ModuleDefinition> _loaded_modules;
         private List<ModuleDefinition> _analyzed_modules;
 
         // After studying this for a while, I've come to the conclusion that decompiling methods
@@ -25,11 +25,6 @@ namespace Campy.Compiler
         // Tuple<MethodDefition, List<TypeReference>> that indicates the method, and generic parameters.
         private StackQueue<Tuple<MethodReference, List<TypeReference>>> _methods_to_do;
         private List<string> _methods_done;
-
-        // Some methods references resolve to null. And, some methods we might want to substitute a
-        // different implementation that the one normally found through reference Resolve(). Retain a
-        // mapping of methods to be rewritten.
-        private Dictionary<string, string> _rewritten_runtime;
 
         public bool Failed
         {
@@ -50,17 +45,6 @@ namespace Campy.Compiler
             _analyzed_modules = new List<ModuleDefinition>();
             _methods_to_do = new StackQueue<Tuple<MethodReference, List<TypeReference>>>();
             _methods_done = new List<string>();
-            _rewritten_runtime = new Dictionary<string, string>();
-            _rewritten_runtime.Add("System.Int32 System.Int32[0...,0...]::Get(System.Int32,System.Int32)",
-                "System.Int32 Campy.Compiler.Runtime::get_multi_array(Campy.Compiler.Runtime/A*,System.Int32,System.Int32)");
-            _rewritten_runtime.Add("System.Void System.Int32[0...,0...]::Set(System.Int32,System.Int32,System.Int32)",
-                "System.Void Campy.Compiler.Runtime::set_multi_array(Campy.Compiler.Runtime/A*,System.Int32,System.Int32,System.Int32)");
-            _rewritten_runtime.Add("System.Int32 System.Array::GetLength(System.Int32)",
-                "System.Int32 Campy.Compiler.Runtime::get_length_multi_array(Campy.Compiler.Runtime/A*,System.Int32)");
-            _rewritten_runtime.Add("System.Void System.ThrowHelper::ThrowArgumentOutOfRangeException()",
-                "System.Void Campy.Compiler.Runtime::ThrowArgumentOutOfRangeException()");
-            _rewritten_runtime.Add("System.Void System.Int32[0...,0...,0...]::Set(System.Int32,System.Int32,System.Int32,System.Int32)",
-                "System.Void Campy.Compiler.Runtime::set_multi_array(Campy.Compiler.Runtime/A*,System.Int32,System.Int32,System.Int32,System.Int32)");
         }
 
         public void AnalyzeMethod(MethodInfo methodInfo)
@@ -136,17 +120,12 @@ namespace Campy.Compiler
             return a.Method;
         }
 
-        private ModuleDefinition LoadAssembly(String assembly_file_name)
+        public static ModuleDefinition LoadAssembly(String assembly_file_name)
         {
             // Microsoft keeps screwing and changing the code that finds assemblies all the damn time.
             // Get the type of Importer. Assume that it's in the same directory as everything else.
             // Set that path for the god damn resolver.
-            var this_type = this.GetType();
-            var this_type_assembly = this_type.Assembly;
-            string codeBase = this_type_assembly.CodeBase;
-            UriBuilder uri = new UriBuilder(codeBase);
-            string path = Uri.UnescapeDataString(uri.Path);
-            var fucking_directory_path = Path.GetDirectoryName(path);
+            var fucking_directory_path = Campy.Utils.CampyInfo.PathOfCampy();
             var full_frigging_path_of_assembly_file = fucking_directory_path + "\\" + assembly_file_name;
             var resolver = new DefaultAssemblyResolver();
             resolver.AddSearchDirectory(fucking_directory_path);
@@ -237,25 +216,6 @@ namespace Campy.Compiler
                 reference.GenericParameters.Add(new GenericParameter(genericParam.Name, reference));
 
             return reference;
-        }
-
-        private MethodDefinition GetDefinition(string name)
-        {
-            int index_of_colons = name.IndexOf("::");
-            int index_of_start_namespace = name.Substring(0, index_of_colons).LastIndexOf(" ") + 1;
-            string ns = name.Substring(index_of_start_namespace, index_of_colons - index_of_start_namespace);
-            ns = ns.Substring(0, ns.LastIndexOf("."));
-            ns = ns + ".dll";
-            var result2 = LoadAssembly(ns);
-            foreach (var type in result2.Types)
-            {
-                foreach (var method in type.Methods)
-                {
-                    if (method.FullName == name)
-                        return method;
-                }
-            }
-            return null;
         }
 
         private void ExtractBasicBlocksOfMethod(Tuple<MethodReference, List<TypeReference>> definition)
@@ -491,187 +451,35 @@ namespace Campy.Compiler
         {
             // Several things here. First, rewrite substitute method if this method is part
             // of the BCL runtime for GPUs. 
-            var method_definition = SubstituteMethod(method_reference);
+            var method_definition = Runtime.SubstituteMethod(method_reference);
 
             // Second, in the body of the method, rewrite each instruction, replace references to runtime
             // with instructions in Campy runtime. Some NET runtime cannot be discovered (e.g., multidimensional
             // get and set, and Math methods).
             if (!(method_definition == null || method_definition.Body == null))
-                RewriteCilCodeBlock(method_definition.Body);
+                Runtime.RewriteCilCodeBlock(method_definition.Body);
 
             return method_definition;
         }
 
-        private MethodDefinition SubstituteMethod(MethodReference method_reference)
+
+        public static MethodDefinition GetDefinition(string name)
         {
-            // Look up base class.
-            TypeReference mr_dt = method_reference.DeclaringType;
-            MethodDefinition method_definition = method_reference.Resolve();
-            // Find in Campy.Runtime, assuming it exists in the same
-            // directory as the Campy compiler assembly.
-            var dir = Path.GetDirectoryName(Path.GetFullPath(this.GetType().Assembly.Location));
-            string yopath = dir + Path.DirectorySeparatorChar + "corlib.dll";
-            Mono.Cecil.ModuleDefinition md = Mono.Cecil.ModuleDefinition.ReadModule(yopath);
-            // Find type/method in order to do a substitution. If there
-            // is no substitution, continue on with the method.
-            if (mr_dt != null)
+            int index_of_colons = name.IndexOf("::");
+            int index_of_start_namespace = name.Substring(0, index_of_colons).LastIndexOf(" ") + 1;
+            string ns = name.Substring(index_of_start_namespace, index_of_colons - index_of_start_namespace);
+            ns = ns.Substring(0, ns.LastIndexOf("."));
+            ns = ns + ".dll";
+            var result2 = Importer.LoadAssembly(ns);
+            foreach (var type in result2.Types)
             {
-                foreach (var type in md.Types)
+                foreach (var method in type.Methods)
                 {
-                    if (type.Name == mr_dt.Name && type.Namespace == mr_dt.Namespace)
-                    {
-                        var fn = mr_dt.Module.Assembly.FullName;
-                        var sub = mr_dt.SubstituteMonoTypeReference(md);
-                        foreach (var meth in sub.Methods)
-                        {
-                            if (meth.Name != method_reference.Name) continue;
-                            if (meth.Parameters.Count != method_reference.Parameters.Count) continue;
-
-                            var mrdt_resolve = mr_dt.Resolve();
-                            if (mrdt_resolve != null && mrdt_resolve.FullName != sub.FullName)
-                                continue;
-
-                            for (int i = 0; i < meth.Parameters.Count; ++i)
-                            {
-                                var p1 = meth.Parameters[i];
-                                var p2 = method_reference.Parameters[i];
-                            }
-
-                            method_reference = meth;
-                            break;
-                        }
-                    }
+                    if (method.FullName == name)
+                        return method;
                 }
             }
-
-            var name = method_reference.FullName;
-            var found = _rewritten_runtime.ContainsKey(name);
-            if (found)
-            {
-                string rewrite = _rewritten_runtime[name];
-                MethodDefinition def = GetDefinition(rewrite);
-                method_definition = def;
-            }
-
-            if (method_definition == null)
-            {
-                // Note, some situations MethodDefinition.Resolve() return null.
-                // For a good introduction on Resolve(), see https://github.com/jbevain/cecil/wiki/Resolving
-                // According to that, it should always return non-null. However, multi-dimensional arrays do not
-                // seem to resolve. Moreover, to add more confusion, a one dimensional array do resolve,
-                // As arrays are so central to GPU programming, we need to substitute for System.Array code--that
-                // we cannot find--into code from a runtime library.
-                System.Console.WriteLine("ERROR: No definition for " + method_reference.FullName);
-                System.Console.WriteLine(method_reference.IsDefinition ? "" : "Is not a definition at that!");
-                this.Failed = true;
-                return null;
-            }
-            else if (method_definition.Body == null)
-            {
-                // This is expected for Campy.Runtime types, but not for others. For the Campy runtime, we're
-                // going to load in PTX for this method.
-                if (method_definition.IsInternalCall && method_definition.Module.Name == "corlib.dll")
-                {
-                    return null;
-                }
-                else
-                {
-                    System.Console.WriteLine("ERROR: METHOD BODY NULL! " + method_definition);
-                    this.Failed = true;
-                    return null;
-                }
-            }
-
-            return method_definition;
-
-        }
-
-        private void RewriteCilCodeBlock(Mono.Cecil.Cil.MethodBody body)
-        {
-            List<Instruction> result = new List<Instruction>();
-            for (int j = 0; j < body.Instructions.Count; ++j)
-            {
-                Instruction i = body.Instructions[j];
-
-                var inst_to_insert = i;
-
-                if (i.OpCode.FlowControl == FlowControl.Call)
-                {
-                    object method = i.Operand;
-
-                    if (method as Mono.Cecil.MethodReference == null)
-                        throw new Exception();
-
-                    Mono.Cecil.MethodReference method_reference = method as Mono.Cecil.MethodReference;
-                    TypeReference mr_dt = method_reference.DeclaringType;
-
-                    // There are two ways to rewrite a method call: (1) Specific name match in rewritten_runtime
-                    // table. (2) Name match in BCL for GPU.
-
-                    var name = method_reference.FullName;
-                    var found = _rewritten_runtime.ContainsKey(name);
-                    if (found)
-                    {
-                        string rewrite = _rewritten_runtime[name];
-                        MethodDefinition def = GetDefinition(rewrite);
-
-                        CallSite cs = new CallSite(typeof(void).ToMonoTypeReference());
-                        body.Instructions.RemoveAt(j);
-                        var worker = body.GetILProcessor();
-                        Instruction new_inst = worker.Create(i.OpCode, def);
-                        body.Instructions.Insert(j, new_inst);
-                    }
-                    else if (mr_dt != null && mr_dt.FullName == "System.String")
-                    {
-                        var fn = mr_dt.Module.Assembly.FullName;
-                        // Find in Campy.Runtime.
-                        var dir = Path.GetDirectoryName(Path.GetFullPath(this.GetType().Assembly.Location));
-                        string yopath = dir + Path.DirectorySeparatorChar + "corlib.dll";
-                        Mono.Cecil.ModuleDefinition md = Mono.Cecil.ModuleDefinition.ReadModule(yopath);
-                        var sub = mr_dt.SubstituteMonoTypeReference(md);
-                        foreach (var meth in sub.Methods)
-                        {
-                            if (meth.FullName == method_reference.FullName)
-                            {
-                                method_reference = meth;
-                                name = method_reference.FullName;
-                                MethodDefinition def = method_reference.Resolve();
-                                CallSite cs = new CallSite(typeof(void).ToMonoTypeReference());
-                                body.Instructions.RemoveAt(j);
-                                var worker = body.GetILProcessor();
-                                Instruction new_inst = worker.Create(i.OpCode, def);
-                                body.Instructions.Insert(j, new_inst);
-                                break;
-                            }
-                        }
-                    }
-                    else if (mr_dt != null && mr_dt.FullName == "System.Math")
-                    {
-                        var fn = mr_dt.Module.Assembly.FullName;
-                        // Find in Campy.Runtime.
-
-                        var dir = Path.GetDirectoryName(Path.GetFullPath(this.GetType().Assembly.Location));
-                        string yopath = dir + Path.DirectorySeparatorChar + "corlib.dll";
-                        Mono.Cecil.ModuleDefinition md = Mono.Cecil.ModuleDefinition.ReadModule(yopath);
-                        var sub = mr_dt.SubstituteMonoTypeReference(md);
-                        foreach (var meth in sub.Methods)
-                        {
-                            if (meth.FullName == method_reference.FullName)
-                            {
-                                method_reference = meth;
-                                name = method_reference.FullName;
-                                MethodDefinition def = method_reference.Resolve();
-                                CallSite cs = new CallSite(typeof(void).ToMonoTypeReference());
-                                body.Instructions.RemoveAt(j);
-                                var worker = body.GetILProcessor();
-                                Instruction new_inst = worker.Create(i.OpCode, def);
-                                body.Instructions.Insert(j, new_inst);
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
+            return null;
         }
     }
 }

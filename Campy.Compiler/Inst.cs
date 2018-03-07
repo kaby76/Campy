@@ -4866,7 +4866,10 @@ namespace Campy.Compiler
             // Adjust args.
             //args -= 1;
             
-            level_after = level_after + 1 /* creating new obj on stack */ - args;
+            level_after = level_after
+                          + 1 /* creating new obj on stack */
+                          + 1 /* passing 'this' on stack from newobj */
+                          - args;
         }
 
         public override Inst Convert(CampyConverter converter, State state)

@@ -275,8 +275,8 @@ namespace Campy.Compiler
                 CFG.Vertex v = this;
                 Console.WriteLine();
                 Console.WriteLine("Node: " + v.ToString() + " ");
-                Console.WriteLine(new String(' ', 4) + "Method " + v._original_method_reference.FullName);
-                Console.WriteLine(new String(' ', 4) + "Method " + v._method_definition.FullName);
+                Console.WriteLine(new String(' ', 4) + "Method " + v._original_method_reference.FullName + " " + v._original_method_reference.Module.Name + " " + v._original_method_reference.Module.FileName);
+                Console.WriteLine(new String(' ', 4) + "Method " + v._method_definition.FullName + " " + v._method_definition.Module.Name + " " + v._method_definition.Module.FileName);
                 Console.WriteLine(new String(' ', 4) + "HasThis   " + v.HasThis);
                 Console.WriteLine(new String(' ', 4) + "Args   " + v.StackNumberOfArguments);
                 Console.WriteLine(new String(' ', 4) + "Locals " + v.StackNumberOfLocals);
