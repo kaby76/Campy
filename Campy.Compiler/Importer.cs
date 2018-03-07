@@ -447,39 +447,22 @@ namespace Campy.Compiler
             // and are part of the CFG.
         }
 
+        /// <summary>
+        /// Substitute method reference with an method reference in the BCL runtime for GPUs if there is one.
+        /// The substituted method is returned. If there is no substitution, it will return the method reference unchanged.
+        /// In the body of the method, rewrite each instruction, replacing references to the BCL runtime for GPUs
+        /// </summary>
+        /// <param name="method_reference"></param>
+        /// <returns></returns>
         public MethodDefinition Rewrite(MethodReference method_reference)
         {
-            // Several things here. First, rewrite substitute method if this method is part
-            // of the BCL runtime for GPUs. 
             var method_definition = Runtime.SubstituteMethod(method_reference);
 
-            // Second, in the body of the method, rewrite each instruction, replace references to runtime
-            // with instructions in Campy runtime. Some NET runtime cannot be discovered (e.g., multidimensional
-            // get and set, and Math methods).
             if (!(method_definition == null || method_definition.Body == null))
                 Runtime.RewriteCilCodeBlock(method_definition.Body);
 
             return method_definition;
         }
 
-
-        public static MethodDefinition GetDefinition(string name)
-        {
-            int index_of_colons = name.IndexOf("::");
-            int index_of_start_namespace = name.Substring(0, index_of_colons).LastIndexOf(" ") + 1;
-            string ns = name.Substring(index_of_start_namespace, index_of_colons - index_of_start_namespace);
-            ns = ns.Substring(0, ns.LastIndexOf("."));
-            ns = ns + ".dll";
-            var result2 = Importer.LoadAssembly(ns);
-            foreach (var type in result2.Types)
-            {
-                foreach (var method in type.Methods)
-                {
-                    if (method.FullName == name)
-                        return method;
-                }
-            }
-            return null;
-        }
     }
 }
