@@ -15,39 +15,39 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Campy.Compiler", "Campy.Com
 		{1C06EB45-3235-4564-8A45-F553C34B19D6} = {1C06EB45-3235-4564-8A45-F553C34B19D6}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Campy", "Campy\Campy.csproj", "{453ABA79-5380-48A0-8C93-53A814977448}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Campy", "Campy\Campy.csproj", "{453ABA79-5380-48A0-8C93-53A814977448}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntArraySet", "IntArraySet\IntArraySet.csproj", "{AE7F1BCF-AAC1-46B3-B610-C8D02A9C0CCB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IntArraySet", "Tests\IntArraySet\IntArraySet.csproj", "{AE7F1BCF-AAC1-46B3-B610-C8D02A9C0CCB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntListSet", "IntListSet\IntListSet.csproj", "{9B2094D4-90AB-477F-8F90-06B2F635A9B3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IntListSet", "Tests\IntListSet\IntListSet.csproj", "{9B2094D4-90AB-477F-8F90-06B2F635A9B3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntArrayGetSet", "IntArrayGetSet\IntArrayGetSet.csproj", "{478C99C1-FCA5-40D6-BBE2-A3FDD33CC686}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IntArrayGetSet", "Tests\IntArrayGetSet\IntArrayGetSet.csproj", "{478C99C1-FCA5-40D6-BBE2-A3FDD33CC686}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntListGetSet", "IntListGetSet\IntListGetSet.csproj", "{8BDCF7C4-4592-4CD5-BAF5-6D6E00DE86A8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IntListGetSet", "Tests\IntListGetSet\IntListGetSet.csproj", "{8BDCF7C4-4592-4CD5-BAF5-6D6E00DE86A8}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{FD8F0C87-ED6C-498A-BE3A-B3B7F5B035C6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArrayTypesGetSet", "ArrayTypesGetSet\ArrayTypesGetSet.csproj", "{B469EEBE-008C-4C95-A926-2E3BAF7E1996}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArrayTypesGetSet", "Tests\ArrayTypesGetSet\ArrayTypesGetSet.csproj", "{B469EEBE-008C-4C95-A926-2E3BAF7E1996}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArrayLengthUse", "ArrayLengthUse\ArrayLengthUse.csproj", "{F7CD5EC0-F5DD-404A-A23D-57AF20013063}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArrayLengthUse", "Tests\ArrayLengthUse\ArrayLengthUse.csproj", "{F7CD5EC0-F5DD-404A-A23D-57AF20013063}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JaggedArray", "JaggedArray\JaggedArray.csproj", "{E17F0F7C-E4FC-47BA-B40E-B9C986EF49B2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JaggedArray", "Tests\JaggedArray\JaggedArray.csproj", "{E17F0F7C-E4FC-47BA-B40E-B9C986EF49B2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ListsGaloreBasic", "ListsGaloreBasic\ListsGaloreBasic.csproj", "{A4C83020-D57E-4227-8157-78138AB60D4C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ListsGaloreBasic", "Tests\ListsGaloreBasic\ListsGaloreBasic.csproj", "{A4C83020-D57E-4227-8157-78138AB60D4C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IfThenElse", "IfThenElse\IfThenElse.csproj", "{71E48989-C6B8-4EAD-B6E7-09F366A8C160}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IfThenElse", "Tests\IfThenElse\IfThenElse.csproj", "{71E48989-C6B8-4EAD-B6E7-09F366A8C160}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Saxpy", "Saxpy\Saxpy.csproj", "{B2696F37-6A57-485E-887B-89A81FDD32B4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Saxpy", "Tests\Saxpy\Saxpy.csproj", "{B2696F37-6A57-485E-887B-89A81FDD32B4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JaggedArrayList", "JaggedArrayList\JaggedArrayList.csproj", "{158305F2-E21C-4AB2-A75E-DAE9A6F46379}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JaggedArrayList", "Tests\JaggedArrayList\JaggedArrayList.csproj", "{158305F2-E21C-4AB2-A75E-DAE9A6F46379}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TwoDimArrayInts", "TwoDimArrayInts\TwoDimArrayInts.csproj", "{AE3E525A-3EC3-432A-89BC-94BDFD802A1A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TwoDimArrayInts", "Tests\TwoDimArrayInts\TwoDimArrayInts.csproj", "{AE3E525A-3EC3-432A-89BC-94BDFD802A1A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Reduction", "Reduction\Reduction.csproj", "{8048EE8D-2343-415D-B78B-824AE00B453C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Reduction", "Tests\Reduction\Reduction.csproj", "{8048EE8D-2343-415D-B78B-824AE00B453C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FFT", "FFT\FFT.csproj", "{089D736A-C969-4649-82A7-01C0B1AAADE3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FFT", "Tests\FFT\FFT.csproj", "{089D736A-C969-4649-82A7-01C0B1AAADE3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MultiDimensionalArrays", "MultiDimensionalArrays\MultiDimensionalArrays.csproj", "{C037A145-2BCC-4805-9A48-AD4B34C04A10}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MultiDimensionalArrays", "Tests\MultiDimensionalArrays\MultiDimensionalArrays.csproj", "{C037A145-2BCC-4805-9A48-AD4B34C04A10}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Campy.Runtime.Corlib", "Campy.Runtime\Corlib\Campy.Runtime.Corlib.csproj", "{1C06EB45-3235-4564-8A45-F553C34B19D6}"
 EndProject
@@ -58,11 +58,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTestProject11", "UnitTestProject11\UnitTestProject11.csproj", "{046B54A6-B76B-4F29-AF14-AADE300B410B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTestProject11", "Tests\UnitTestProject11\UnitTestProject11.csproj", "{046B54A6-B76B-4F29-AF14-AADE300B410B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StringSearch", "StringSearch\StringSearch.csproj", "{BC95901E-01A5-47B1-8812-090A703A67FD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StringSearch", "Tests\StringSearch\StringSearch.csproj", "{BC95901E-01A5-47B1-8812-090A703A67FD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BitonicSort", "BitonicSort\BitonicSort.csproj", "{0024A512-A88A-415D-99C2-FE7BA9EED092}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitonicSort", "Tests\BitonicSort\BitonicSort.csproj", "{0024A512-A88A-415D-99C2-FE7BA9EED092}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTestProject1", "UnitTestProject1\UnitTestProject1.csproj", "{1F71B81D-E5CF-46CD-8D36-0043CBE1B316}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleApp1", "ConsoleApp1\ConsoleApp1.csproj", "{D08823DA-80D3-47E5-A91A-DF6B97F6732D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -375,6 +379,30 @@ Global
 		{0024A512-A88A-415D-99C2-FE7BA9EED092}.Release|x64.Build.0 = Release|Any CPU
 		{0024A512-A88A-415D-99C2-FE7BA9EED092}.Release|x86.ActiveCfg = Release|Any CPU
 		{0024A512-A88A-415D-99C2-FE7BA9EED092}.Release|x86.Build.0 = Release|Any CPU
+		{1F71B81D-E5CF-46CD-8D36-0043CBE1B316}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1F71B81D-E5CF-46CD-8D36-0043CBE1B316}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1F71B81D-E5CF-46CD-8D36-0043CBE1B316}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{1F71B81D-E5CF-46CD-8D36-0043CBE1B316}.Debug|x64.Build.0 = Debug|Any CPU
+		{1F71B81D-E5CF-46CD-8D36-0043CBE1B316}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{1F71B81D-E5CF-46CD-8D36-0043CBE1B316}.Debug|x86.Build.0 = Debug|Any CPU
+		{1F71B81D-E5CF-46CD-8D36-0043CBE1B316}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1F71B81D-E5CF-46CD-8D36-0043CBE1B316}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1F71B81D-E5CF-46CD-8D36-0043CBE1B316}.Release|x64.ActiveCfg = Release|Any CPU
+		{1F71B81D-E5CF-46CD-8D36-0043CBE1B316}.Release|x64.Build.0 = Release|Any CPU
+		{1F71B81D-E5CF-46CD-8D36-0043CBE1B316}.Release|x86.ActiveCfg = Release|Any CPU
+		{1F71B81D-E5CF-46CD-8D36-0043CBE1B316}.Release|x86.Build.0 = Release|Any CPU
+		{D08823DA-80D3-47E5-A91A-DF6B97F6732D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D08823DA-80D3-47E5-A91A-DF6B97F6732D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D08823DA-80D3-47E5-A91A-DF6B97F6732D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{D08823DA-80D3-47E5-A91A-DF6B97F6732D}.Debug|x64.Build.0 = Debug|Any CPU
+		{D08823DA-80D3-47E5-A91A-DF6B97F6732D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D08823DA-80D3-47E5-A91A-DF6B97F6732D}.Debug|x86.Build.0 = Debug|Any CPU
+		{D08823DA-80D3-47E5-A91A-DF6B97F6732D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D08823DA-80D3-47E5-A91A-DF6B97F6732D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D08823DA-80D3-47E5-A91A-DF6B97F6732D}.Release|x64.ActiveCfg = Release|Any CPU
+		{D08823DA-80D3-47E5-A91A-DF6B97F6732D}.Release|x64.Build.0 = Release|Any CPU
+		{D08823DA-80D3-47E5-A91A-DF6B97F6732D}.Release|x86.ActiveCfg = Release|Any CPU
+		{D08823DA-80D3-47E5-A91A-DF6B97F6732D}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -398,6 +426,7 @@ Global
 		{046B54A6-B76B-4F29-AF14-AADE300B410B} = {FD8F0C87-ED6C-498A-BE3A-B3B7F5B035C6}
 		{BC95901E-01A5-47B1-8812-090A703A67FD} = {FD8F0C87-ED6C-498A-BE3A-B3B7F5B035C6}
 		{0024A512-A88A-415D-99C2-FE7BA9EED092} = {FD8F0C87-ED6C-498A-BE3A-B3B7F5B035C6}
+		{1F71B81D-E5CF-46CD-8D36-0043CBE1B316} = {FD8F0C87-ED6C-498A-BE3A-B3B7F5B035C6}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {7839B59F-A0C2-4484-BEC1-39F0DAEE8A8D}

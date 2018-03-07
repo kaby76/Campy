@@ -279,8 +279,9 @@ namespace Campy.Compiler
                         // Map parameter to instantiated type.
                         for (int i = 0; i < gg.Count; ++i)
                         {
-                            GenericParameter pp = gg[i];
-                            TypeReference qq = ga[i];
+                            GenericParameter pp = gg[i]; // This is the parameter name, like "T".
+                            TypeReference qq = ga[i]; // This is the generic parameter, like System.Int32.
+                            var rewr = ToTypeRef(qq);
                             TypeReference trrr = pp as TypeReference;
                             var system_type = qq.ToSystemType();
                             Tuple<TypeReference, GenericParameter> tr_gp = new Tuple<TypeReference, GenericParameter>(tr, pp);
@@ -708,7 +709,7 @@ namespace Campy.Compiler
                 // "T", then we add in a mapping of T to the actual data type
                 // used, e.g., Integer, or what have you. When it is compiled,
                 // to LLVM, the mapped data type will be used!
-                MethodReference method = basic_block.ExpectedCalleeSignature;
+                MethodReference method = basic_block._original_method_reference;
                 var declaring_type = method.DeclaringType;
 
                 {
@@ -756,7 +757,7 @@ namespace Campy.Compiler
                                     var new_node = _mcfg.AddVertex(new CFG.Vertex() { Name = new_node_id.ToString() });
                                     var new_cfg_node = (CFG.Vertex)new_node;
                                     new_cfg_node.Instructions = basic_block.Instructions;
-                                    new_cfg_node.ExpectedCalleeSignature = basic_block.ExpectedCalleeSignature;
+                                    new_cfg_node._original_method_reference = basic_block._original_method_reference;
                                     new_cfg_node.RewrittenCalleeSignature = basic_block.RewrittenCalleeSignature;
                                     new_cfg_node.PreviousVertex = basic_block;
                                     var b = type_to_consider as GenericParameter;
@@ -833,7 +834,7 @@ namespace Campy.Compiler
                                     var new_node = _mcfg.AddVertex(new CFG.Vertex(){Name = new_node_id.ToString()});
                                     var new_cfg_node = (CFG.Vertex)new_node;
                                     new_cfg_node.Instructions = basic_block.Instructions;
-                                    new_cfg_node.ExpectedCalleeSignature = basic_block.ExpectedCalleeSignature;
+                                    new_cfg_node._original_method_reference = basic_block._original_method_reference;
                                     new_cfg_node.RewrittenCalleeSignature = basic_block.RewrittenCalleeSignature;
                                     new_cfg_node.PreviousVertex = basic_block;
                                     var b = type_to_consider as GenericParameter;
@@ -919,7 +920,7 @@ namespace Campy.Compiler
                                     var new_node = _mcfg.AddVertex(new CFG.Vertex(){Name = new_node_id.ToString()});
                                     var new_cfg_node = (CFG.Vertex)new_node;
                                     new_cfg_node.Instructions = basic_block.Instructions;
-                                    new_cfg_node.ExpectedCalleeSignature = basic_block.ExpectedCalleeSignature;
+                                    new_cfg_node._original_method_reference = basic_block._original_method_reference;
                                     new_cfg_node.RewrittenCalleeSignature = basic_block.RewrittenCalleeSignature;
                                     new_cfg_node.PreviousVertex = basic_block;
                                     var b = type_to_consider as GenericParameter;
@@ -1044,6 +1045,31 @@ namespace Campy.Compiler
             return type_reference_of_parameter;
         }
 
+        // Method to denormalize information about the method this block is associated with,
+        // placing that information into the block for easier access.
+        private void ComputeBasicMethodProperties(IEnumerable<CFG.Vertex> basic_blocks_to_compile)
+        {
+            foreach (CFG.Vertex bb in basic_blocks_to_compile)
+            {
+                if (Campy.Utils.Options.IsOn("jit_trace"))
+                    System.Console.WriteLine("Compile part 1, node " + bb);
+
+                Mono.Cecil.MethodReturnType rt = bb._method_definition.MethodReturnType;
+                Mono.Cecil.TypeReference tr = rt.ReturnType;
+                var ret = tr.FullName != "System.Void";
+                bb.HasScalarReturnValue = ret && !tr.IsStruct();
+                bb.HasStructReturnValue = ret && tr.IsStruct();
+                bb.RewrittenCalleeSignature = bb._method_definition;
+                bb.HasThis = bb._method_definition.HasThis;
+                bb.StackNumberOfArguments = bb._method_definition.Parameters.Count
+                                      + (bb.HasThis ? 1 : 0)
+                                      + (bb.HasStructReturnValue ? 1 : 0);
+                Mono.Cecil.MethodReference mr = bb.RewrittenCalleeSignature;
+                int locals = mr.Resolve().Body.Variables.Count;
+                bb.StackNumberOfLocals = locals;
+            }
+        }
+
         private void CompilePart1(IEnumerable<CFG.Vertex> basic_blocks_to_compile, List<Mono.Cecil.TypeReference> list_of_data_types_used)
         {
             foreach (CFG.Vertex bb in basic_blocks_to_compile)
@@ -1066,16 +1092,15 @@ namespace Campy.Compiler
                     continue;
                 }
 
-                MethodReference method = bb.ExpectedCalleeSignature;
+                MethodReference method = bb._original_method_reference;
                 List<ParameterDefinition> parameters = method.Parameters.ToList();
                 List<ParameterReference> instantiated_parameters = new List<ParameterReference>();
 
                 ModuleRef mod = global_llvm_module; // LLVM.ModuleCreateWithName(mn);
                 bb.Module = mod;
 
-                uint count = (uint) bb.NumberOfArguments;
-
-                TypeRef[] param_types = new TypeRef[count];
+                uint count = (uint) bb.StackNumberOfArguments;
+                 TypeRef[] param_types = new TypeRef[count];
                 int current = 0;
                 if (count > 0)
                 {
@@ -1115,6 +1140,8 @@ namespace Campy.Compiler
 
                     if (Campy.Utils.Options.IsOn("jit_trace"))
                     {
+                        System.Console.WriteLine("Params for block " + bb.Name + " " + bb._original_method_reference.FullName);
+                        System.Console.WriteLine("(" + bb._method_definition.FullName + ")");
                         foreach (var pp in param_types)
                         {
                             string a = LLVM.PrintTypeToString(pp);
@@ -1266,21 +1293,11 @@ namespace Campy.Compiler
                 // Create DFT order of all nodes.
                 var ordered_list = new TarjanNoBackEdges<CFG.Vertex,CFG.Edge>(_mcfg).ToList();
                 ordered_list.Reverse();
-
-                //IEnumerable<int> objs = entries.Select(x => x.Name);
-                //Graphs.DFSPreorder<int>
-                //    ordered_list = new Graphs.DFSPreorder<int>(
-                //        _mcfg,
-                //        objs
-                //    );
-
                 List<CFG.Vertex> visited = new List<CFG.Vertex>();
                 // Compute stack size for each basic block, processing nodes on work list
                 // in DFT order.
-                foreach (var ob in ordered_list)
+                foreach (CFG.Vertex node in ordered_list)
                 {
-                    CFG.Vertex node = ob;
-                    var llvm_node = node;
                     visited.Add(node);
                     if (!(work.Contains(node)))
                     {
@@ -1292,7 +1309,7 @@ namespace Campy.Compiler
                     if (node.IsEntry)
                     {
                         node.StackLevelIn =
-                            node.NumberOfLocals + node.NumberOfArguments;
+                            node.StackNumberOfLocals + node.StackNumberOfArguments;
                     }
                     else
                     {
@@ -1300,18 +1317,18 @@ namespace Campy.Compiler
                         foreach (CFG.Vertex pred in _mcfg.PredecessorNodes(node))
                         {
                             // Do not consider interprocedural edges when computing stack size.
-                            if (pred.ExpectedCalleeSignature != node.ExpectedCalleeSignature)
+                            if (pred._original_method_reference != node._original_method_reference)
                                 continue;
                             // If predecessor has not been visited, warn and do not consider.
-                            var llvm_pred = pred;
-                            if (llvm_pred.StackLevelOut == null)
+                            if (pred.StackLevelOut == null)
                             {
                                 continue;
                             }
                             // Warn if predecessor does not concur with another predecessor.
-                            CFG.Vertex llvm_nodex = node;
-                            llvm_nodex.StackLevelIn = llvm_pred.StackLevelOut;
-                            in_level = (int) llvm_nodex.StackLevelIn;
+                            if (in_level != -1 && pred.StackLevelOut != node.StackLevelIn)
+                                throw new Exception("Miscalculation in stack size.");
+                            node.StackLevelIn = pred.StackLevelOut;
+                            in_level = (int)node.StackLevelIn;
                         }
                         // Warn if no predecessors have been visited.
                         if (in_level == -1)
@@ -1319,23 +1336,22 @@ namespace Campy.Compiler
                             continue;
                         }
                     }
-                    CFG.Vertex llvm_nodez = node;
-                    int level_after = (int) llvm_nodez.StackLevelIn;
+                    int level_after = (int)node.StackLevelIn;
                     int level_pre = level_after;
-                    foreach (var inst in llvm_nodez.Instructions)
+                    foreach (var inst in node.Instructions)
                     {
                         level_pre = level_after;
                         inst.ComputeStackLevel(this, ref level_after);
-                        if (!(level_after >= node.NumberOfLocals + node.NumberOfArguments))
+                        if (!(level_after >= node.StackNumberOfLocals + node.StackNumberOfArguments))
                             throw new Exception("Stack computation off. Internal error.");
                     }
-                    llvm_nodez.StackLevelOut = level_after;
+                    node.StackLevelOut = level_after;
                     // Verify return node that it makes sense.
                     if (node.IsReturn && !unreachable.Contains(node))
                     {
-                        if (llvm_nodez.StackLevelOut ==
-                            node.NumberOfArguments
-                            + node.NumberOfLocals
+                        if (node.StackLevelOut ==
+                            node.StackNumberOfArguments
+                            + node.StackNumberOfLocals
                             + (node.HasScalarReturnValue ? 1 : 0))
                             ;
                         else
@@ -1346,7 +1362,7 @@ namespace Campy.Compiler
                     foreach (CFG.Vertex succ in node._graph.SuccessorNodes(node))
                     {
                         // If it's an interprocedural edge, nothing to pass on.
-                        if (succ.ExpectedCalleeSignature != node.ExpectedCalleeSignature)
+                        if (succ._original_method_reference != node._original_method_reference)
                             continue;
                         // If it's recursive, nothing more to do.
                         if (succ.IsEntry)
@@ -1355,12 +1371,11 @@ namespace Campy.Compiler
                         if (node.Instructions.Last() as i_ret != null)
                             continue;
                         // Nothing to update if no change.
-                        CFG.Vertex llvm_succ = node;
-                        if (llvm_succ.StackLevelIn > level_after)
+                        if (node.StackLevelIn > level_after)
                         {
                             continue;
                         }
-                        else if (llvm_succ.StackLevelIn == level_after)
+                        else if (node.StackLevelIn == level_after)
                         {
                             continue;
                         }
@@ -1395,6 +1410,8 @@ namespace Campy.Compiler
             _start_index = start_index;
 
             basic_blocks_to_compile = RemoveBasicBlocksAlreadyCompiled(basic_blocks_to_compile);
+
+            ComputeBasicMethodProperties(basic_blocks_to_compile);
 
             CompilePart1(basic_blocks_to_compile, list_of_data_types_used);
 
@@ -1773,7 +1790,7 @@ namespace Campy.Compiler
             {
                 // Compiled previously. Look for basic block of entry.
                 bb = _mcfg.Entries.Where(v =>
-                    v.IsEntry && v.ExpectedCalleeSignature.Name == kernel_method.Name).FirstOrDefault();
+                    v.IsEntry && v._original_method_reference.Name == kernel_method.Name).FirstOrDefault();
             }
             else
             {
@@ -1834,7 +1851,7 @@ namespace Campy.Compiler
             // GetCudaFunction(string basic_block_id, string ptx)
             var basic_block_id = bb.Name;
             var basic_block = GetBasicBlock(basic_block_id);
-            var method = basic_block.ExpectedCalleeSignature;
+            var method = basic_block._original_method_reference;
 
             var res = Cuda.cuDeviceGet(out int device, 0);
             Utils.CudaHelpers.CheckCudaError(res);
@@ -1946,7 +1963,7 @@ namespace Campy.Compiler
         public CFG.Vertex GetBasicBlock(MethodInfo kernel_method)
         {
             CFG.Vertex bb = _mcfg.Entries.Where(v =>
-                v.IsEntry && v.ExpectedCalleeSignature.Name == kernel_method.Name).FirstOrDefault();
+                v.IsEntry && v._original_method_reference.Name == kernel_method.Name).FirstOrDefault();
             return bb;
         }
 
@@ -1954,12 +1971,12 @@ namespace Campy.Compiler
         {
             // Compiled previously. Look for basic block of entry.
             CFG.Vertex bb = _mcfg.Entries.Where(v =>
-                v.IsEntry && v.ExpectedCalleeSignature.Name == kernel_method.Name).FirstOrDefault();
+                v.IsEntry && v._original_method_reference.Name == kernel_method.Name).FirstOrDefault();
             string basic_block_id = bb.Name;
             CUmodule module = Runtime.InitializeModule(image);
             Runtime.RuntimeModule = module;
             InitBCL(module);
-            var normalized_method_name = CampyConverter.RenameToLegalLLVMName(CampyConverter.MethodName(bb.ExpectedCalleeSignature));
+            var normalized_method_name = CampyConverter.RenameToLegalLLVMName(CampyConverter.MethodName(bb._original_method_reference));
             var res = Cuda.cuModuleGetFunction(out CUfunction helloWorld, module, normalized_method_name);
             Utils.CudaHelpers.CheckCudaError(res);
             return helloWorld;

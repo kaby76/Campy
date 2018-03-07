@@ -16,6 +16,15 @@ namespace Campy.Compiler
 {
     public class Runtime
     {
+        // This table encodes runtime type information for rewriting BCL types. Use this to determine
+        // what a type (represented in Mono.Cecil.TypeReference) in the user's program maps to
+        // in the GPU base class layer (also represented in Mono.Cecil.TypeReference).
+        private static Dictionary<TypeReference, TypeReference> _substituted_bcl = new Dictionary<TypeReference, TypeReference>();
+
+        // We also need to convert system types that are in the GPU BCL types (represented in Mono.Cecil). Unfortunately,
+        // NET Core seems to have problems with System.Reflection.
+        private static Dictionary<System.Type, TypeReference> _system_type_to_mono_type_for_bcl = new Dictionary<System.Type, TypeReference>();
+
         public Runtime()
         {
         }
@@ -338,10 +347,6 @@ namespace Campy.Compiler
         // the original call (it is all three parameters of void*).
         private static List<BclNativeMethod> _internalCalls = new List<BclNativeMethod>();
 
-        // This table encode runtime type information for rewriting BCL types. Use this to determine
-        // what the type maps into in the GPU BCL.
-        private static Dictionary<TypeReference, TypeReference> _substituted_bcl = new Dictionary<TypeReference, TypeReference>();
-
         // This table is a record of all '.visible' functions in a generated PTX file. Use this name when calling
         // functions in PTX/LLVM.
         private static List<PtxFunction> _ptx_functions = new List<PtxFunction>();
@@ -382,30 +387,44 @@ namespace Campy.Compiler
             }
         }
 
-        public static TypeReference RewriteType(TypeReference tr)
-        {
-            foreach (var kv in _substituted_bcl)
-            {
-                if (kv.Key.FullName == tr.FullName)
-                    tr = kv.Value;
-            }
-            return tr;
-        }
-
         public static void Initialize()
         {
             // Load C# library for BCL, and grab all types and methods.
+            // The tables that this method sets up are:
+            // _substituted_bcl -- maps types in program (represented in Mono.Cecil) into GPU BCL types (represented in Mono.Cecil).
+            // _system_type_to_mono_type_for_bcl -- associates types in GPU BCL with NET Core/NET Framework/... in user program.
+            // Note, there seems to be an underlying bug in System.Type.GetType for certain generics, like System.Collections.Generic.HashSet.
+            // The method returns null.
+            var xx = typeof(System.Collections.Generic.HashSet<>);
+            var x2 = typeof(System.Collections.Generic.HashSet<int>);
+            var yy = System.Type.GetType("System.Collections.Generic.HashSet");
+            var y2 = System.Type.GetType("System.Collections.Generic.HashSet<>");
+            var y3 = System.Type.GetType("System.Collections.Generic.HashSet`1");
+            var y4 = System.Type.GetType("System.Collections.Generic.HashSet<T>");
+            var y5 = System.Type.GetType(xx.FullName);
+            var y6 = System.Type.GetType(@"System.Collections.Generic.HashSet`1[System.Int32]");
+            var y7 = System.Type.GetType(@"System.Collections.Generic.Dictionary`2[System.String,System.String]");
+            var y8 = System.Type.GetType(x2.FullName);
+
+            // Set up _substituted_bcl.
             var runtime = new Runtime();
             var dir = Path.GetDirectoryName(Path.GetFullPath(runtime.GetType().Assembly.Location));
             string yopath = dir + Path.DirectorySeparatorChar + "corlib.dll";
             Mono.Cecil.ModuleDefinition md = Mono.Cecil.ModuleDefinition.ReadModule(yopath);
             foreach (var bcl_type in md.GetTypes())
             {
+                // Filter out <Module> and <PrivateImplementationDetails>, among possible others.
+                Regex regex = new Regex(@"^[<]\w+[>]");
+                if (regex.IsMatch(bcl_type.FullName)) continue;
+
+                // Try to map the type into native NET type. Some things just won't.
+                System.Console.WriteLine("bcl type " + bcl_type.FullName);
                 var t_system_type = System.Type.GetType(bcl_type.FullName);
                 if (t_system_type == null) continue;
 
                 var to_mono = t_system_type.ToMonoTypeReference();
 
+                // Add entry for converting intrinsic NET BCL type to GPU BCL type.
                 _substituted_bcl.Add(to_mono, bcl_type);
 
                 foreach (var m in bcl_type.Methods)
@@ -417,6 +436,11 @@ namespace Campy.Compiler
                     }
                 }
             }
+
+            // Set up _system_type_to_mono_type_for_bcl.
+            // There really isn't any good way to set this up because NET Core System.Reflection does not work
+            // on things like System.Int32. We will manually set up it here, checking then to see if we miss
+            // something.
 
             // Parse PTX files for all "visible" functions, and create LLVM declarations.
             // For "Internal Calls", these functions appear here, but also on the _internalCalls list.
@@ -785,6 +809,17 @@ namespace Campy.Compiler
         }
         
         public static IntPtr BclPtr { get; set; }
+
+        public static TypeReference RewriteType(TypeReference tr)
+        {
+            foreach (var kv in _substituted_bcl)
+            {
+                if (kv.Key.FullName == tr.FullName)
+                    tr = kv.Value;
+            }
+            return tr;
+        }
+
     }
 }
 

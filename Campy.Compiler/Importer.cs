@@ -283,22 +283,8 @@ namespace Campy.Compiler
 
             // Each method is a leader of a block.
             CFG.Vertex v = (CFG.Vertex)_cfg.AddVertex(new CFG.Vertex(){Name = _cfg.NewNodeNumber().ToString()});
-
-            Mono.Cecil.MethodReturnType rt = method_definition.MethodReturnType;
-            Mono.Cecil.TypeReference tr = rt.ReturnType;
-            var ret = tr.FullName != "System.Void";
-            v.HasScalarReturnValue = ret && ! tr.IsStruct();
-            v.HasStructReturnValue = ret && tr.IsStruct();
-            v.ExpectedCalleeSignature = original_method_reference;
-            v.RewrittenCalleeSignature = method_definition;
-            v.HasThis = method_definition.HasThis;
-            v.NumberOfArguments = method_definition.Parameters.Count
-                + (v.HasThis ? 1 : 0)
-                + (v.HasStructReturnValue ? 1 : 0);
-            Mono.Cecil.MethodReference mr = v.RewrittenCalleeSignature;
-            int locals = mr.Resolve().Body.Variables.Count;
-            v.NumberOfLocals = locals;
-
+            v._method_definition = method_definition;
+            v._original_method_reference = original_method_reference;
             v.Entry = v;
             _cfg.Entries.Add(v);
 
@@ -520,25 +506,44 @@ namespace Campy.Compiler
         {
             // Look up base class.
             TypeReference mr_dt = method_reference.DeclaringType;
-            if (mr_dt != null && mr_dt.FullName == "System.String")
+            MethodDefinition method_definition = method_reference.Resolve();
+            // Find in Campy.Runtime, assuming it exists in the same
+            // directory as the Campy compiler assembly.
+            var dir = Path.GetDirectoryName(Path.GetFullPath(this.GetType().Assembly.Location));
+            string yopath = dir + Path.DirectorySeparatorChar + "corlib.dll";
+            Mono.Cecil.ModuleDefinition md = Mono.Cecil.ModuleDefinition.ReadModule(yopath);
+            // Find type/method in order to do a substitution. If there
+            // is no substitution, continue on with the method.
+            if (mr_dt != null)
             {
-                var fn = mr_dt.Module.Assembly.FullName;
-                // Find in Campy.Runtime.
-                var dir = Path.GetDirectoryName(Path.GetFullPath(this.GetType().Assembly.Location));
-                string yopath = dir + Path.DirectorySeparatorChar + "corlib.dll";
-                Mono.Cecil.ModuleDefinition md = Mono.Cecil.ModuleDefinition.ReadModule(yopath);
-                var sub = mr_dt.SubstituteMonoTypeReference(md);
-                foreach (var meth in sub.Methods)
+                foreach (var type in md.Types)
                 {
-                    if (meth.FullName == method_reference.FullName)
+                    if (type.Name == mr_dt.Name && type.Namespace == mr_dt.Namespace)
                     {
-                        method_reference = meth;
-                        break;
+                        var fn = mr_dt.Module.Assembly.FullName;
+                        var sub = mr_dt.SubstituteMonoTypeReference(md);
+                        foreach (var meth in sub.Methods)
+                        {
+                            if (meth.Name != method_reference.Name) continue;
+                            if (meth.Parameters.Count != method_reference.Parameters.Count) continue;
+
+                            var mrdt_resolve = mr_dt.Resolve();
+                            if (mrdt_resolve != null && mrdt_resolve.FullName != sub.FullName)
+                                continue;
+
+                            for (int i = 0; i < meth.Parameters.Count; ++i)
+                            {
+                                var p1 = meth.Parameters[i];
+                                var p2 = method_reference.Parameters[i];
+                            }
+
+                            method_reference = meth;
+                            break;
+                        }
                     }
                 }
             }
 
-            MethodDefinition method_definition = method_reference.Resolve();
             var name = method_reference.FullName;
             var found = _rewritten_runtime.ContainsKey(name);
             if (found)
@@ -547,6 +552,7 @@ namespace Campy.Compiler
                 MethodDefinition def = GetDefinition(rewrite);
                 method_definition = def;
             }
+
             if (method_definition == null)
             {
                 // Note, some situations MethodDefinition.Resolve() return null.
@@ -577,6 +583,7 @@ namespace Campy.Compiler
             }
 
             return method_definition;
+
         }
 
         private void RewriteCilCodeBlock(Mono.Cecil.Cil.MethodBody body)

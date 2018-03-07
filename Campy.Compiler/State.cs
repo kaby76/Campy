@@ -34,11 +34,11 @@ namespace Campy.Compiler
         public State(CFG.Vertex basic_block, bool use_in = true)
         {
             int level = use_in ? (int)basic_block.StackLevelIn : (int)basic_block.StackLevelOut;
-            int args = basic_block.NumberOfArguments;
+            int args = basic_block.StackNumberOfArguments;
             bool scalar_ret = basic_block.HasScalarReturnValue;
             bool struct_ret = basic_block.HasStructReturnValue;
             bool has_this = basic_block.HasThis;
-            int locals = basic_block.NumberOfLocals;
+            int locals = basic_block.StackNumberOfLocals;
 
             // Set up state with args, locals, basic stack initial value of 0xDEADBEEF.
             // In addition, use type information from method to compute types for all args.
@@ -122,11 +122,11 @@ namespace Campy.Compiler
             // Set up a blank stack.
             _stack = new StackQueue<Value>();
 
-            int args = bb.NumberOfArguments;
+            int args = bb.StackNumberOfArguments;
             bool scalar_ret = bb.HasScalarReturnValue;
             bool struct_ret = bb.HasStructReturnValue;
             bool has_this = bb.HasThis;
-            int locals = bb.NumberOfLocals;
+            int locals = bb.StackNumberOfLocals;
             int level = (int)bb.StackLevelIn;
 
             // Set up list of phi functions in case there are multiple predecessors.

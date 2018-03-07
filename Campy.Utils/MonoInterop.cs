@@ -29,6 +29,8 @@ namespace Campy.Utils
 
         public static System.Type ToSystemType2(this Mono.Cecil.TypeReference tr)
         {
+            return Type.GetType(tr.FullName);
+
             Type result = null;
             TypeReference element_type = null;
 
@@ -93,7 +95,7 @@ namespace Campy.Utils
             // ImportReference does not work as expected because the scope of the type found isn't in the module.
             foreach (var tt in md.Types)
             {
-                if (type.FullName == tt.FullName)
+                if (type.Name == tt.Name && type.Namespace == tt.Namespace)
                 {
                     return tt;
                 }

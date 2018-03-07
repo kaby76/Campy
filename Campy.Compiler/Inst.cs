@@ -997,7 +997,7 @@ namespace Campy.Compiler
             // For ldarg.1 of a compiler generated closure method, generate code
             // to create an int index for the thread.
             var bb = this.Block;
-            var mn = bb.ExpectedCalleeSignature.FullName;
+            var mn = bb._original_method_reference.FullName;
             if (mn.EndsWith("(System.Int32)")
                 && mn.Contains("<>c__DisplayClass")
                 && _arg == 1)
@@ -1229,7 +1229,7 @@ namespace Campy.Compiler
                 var g = this.Block._graph;
                 CFG.Vertex v = node;
                 CampyConverter c = converter;
-                if (v.IsEntry && CampyConverter.MethodName(v.ExpectedCalleeSignature) == mr.FullName &&
+                if (v.IsEntry && CampyConverter.MethodName(v._original_method_reference) == mr.FullName &&
                     c.IsFullyInstantiatedNode(v))
                     return true;
                 else return false;
@@ -1423,7 +1423,7 @@ namespace Campy.Compiler
             {
                 // For return, we need to leave something on the damn stack regardless of how it's implmented.
                 int xret = (the_entry.HasScalarReturnValue || the_entry.HasStructReturnValue) ? 1 : 0;
-                int xargs = the_entry.NumberOfArguments;
+                int xargs = the_entry.StackNumberOfArguments;
 
                 var name = CampyConverter.MethodName(mr);
                 BuilderRef bu = this.Builder;
@@ -2206,7 +2206,7 @@ namespace Campy.Compiler
                     if (!declaring_type.IsGenericInstance && declaring_type.HasGenericParameters)
                     {
                         // This is a red flag. We need to come up with a generic instance for type.
-                        declaring_type_tr = this.Block.ExpectedCalleeSignature.DeclaringType;
+                        declaring_type_tr = this.Block._original_method_reference.DeclaringType;
                     }
                     
                     // need to take into account padding fields. Unfortunately,
@@ -4834,7 +4834,7 @@ namespace Campy.Compiler
                 var g = this.Block._graph;
                 CFG.Vertex v = node;
                 CampyConverter c = converter;
-                if (v.IsEntry && CampyConverter.MethodName(v.ExpectedCalleeSignature) == name && c.IsFullyInstantiatedNode(v))
+                if (v.IsEntry && CampyConverter.MethodName(v._original_method_reference) == name && c.IsFullyInstantiatedNode(v))
                     return true;
                 else return false;
             }).ToList().FirstOrDefault();
@@ -4861,10 +4861,10 @@ namespace Campy.Compiler
 
             }
 
-            int args = the_entry.NumberOfArguments;
+            int args = the_entry.StackNumberOfArguments;
             // Note we push a pointer to the new allocated struct, so that's why there +1 args.
             // Adjust args.
-            args -= 1;
+            //args -= 1;
             
             level_after = level_after + 1 /* creating new obj on stack */ - args;
         }
@@ -4897,7 +4897,7 @@ namespace Campy.Compiler
                 var g = inst.Block._graph;
                 CFG.Vertex v = node;
                 CampyConverter c = converter;
-                if (v.IsEntry && CampyConverter.MethodName(v.ExpectedCalleeSignature) == name && c.IsFullyInstantiatedNode(v))
+                if (v.IsEntry && CampyConverter.MethodName(v._original_method_reference) == name && c.IsFullyInstantiatedNode(v))
                     return true;
                 else return false;
             }).ToList().FirstOrDefault();
@@ -4919,7 +4919,7 @@ namespace Campy.Compiler
             }
             else if (is_type_value_type && the_entry != null)
             {
-                int nargs = the_entry.NumberOfArguments;
+                int nargs = the_entry.StackNumberOfArguments;
                 int ret = the_entry.HasScalarReturnValue ? 1 : 0;
 
                 // First, create a struct.
@@ -5154,7 +5154,7 @@ namespace Campy.Compiler
                 }
 
                 {
-                    int nargs = the_entry.NumberOfArguments;
+                    int nargs = the_entry.StackNumberOfArguments;
                     int ret = the_entry.HasScalarReturnValue ? 1 : 0;
 
                     BuilderRef bu = this.Builder;

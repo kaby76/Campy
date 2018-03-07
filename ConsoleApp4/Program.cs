@@ -151,49 +151,25 @@ namespace ConsoleApp4
         static void Main(string[] args)
         {
             StartDebugging();
-            int[][] jagged_array = new int[][]
+            int n = 4;
+            var t1 = new List<int>();
+            for (int i = 0; i < n; ++i) t1.Add(0);
+            Campy.Parallel.For(n, i =>
             {
-                new int[] {1, 3, 5, 7, 9},
-                new int[] {0, 2, 4, 6},
-                new int[] {11, 22}
-            };
-            Campy.Parallel.For(3, i =>
-            {
-                jagged_array[i][0] = i; //jagged_array[i].Length;
+                if (i % 2 == 0)
+                    t1[i] = i * 20;
+                else
+                    t1[i] = i * 30;
             });
-
-            //Campy.Parallel.For((int)8, (i) =>
-            //{
-            //    int ij = i ^ j;
-            //    if ((ij) > i)
-            //    {
-            //        if ((i & k) == 0 && a[i] > a[ij])
-            //        {
-            //            {
-            //                int t = a[i];
-            //                a[i] = a[ij];
-            //                a[ij] = t;
-            //            }
-            //        }
-
-            //        if ((i & k) != 0 && a[i] < a[ij])
-            //        {
-            //            {
-            //                int t = a[i];
-            //                a[i] = a[ij];
-            //                a[ij] = t;
-            //            }
-            //        }
-            //    }
-            //});
-
-
-            var b = new BitonicSorter();
-            Random rnd = new Random();
-            {
-                int N = Bithacks.Power2(16);
-                b.SortPar(Enumerable.Range(0, N).ToArray().OrderBy(x => rnd.Next()).ToArray());
-            }
+            for (int i = 0; i < n; ++i)
+                if (i % 2 == 0)
+                {
+                    if (t1[i] != i * 20) throw new Exception();
+                }
+                else
+                {
+                    if (t1[i] != i * 30) throw new Exception();
+                }
         }
     }
 }
