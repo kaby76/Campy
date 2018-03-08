@@ -35,15 +35,6 @@ namespace Campy
             return SetDefaultAccelerator(acc);
         }
 
-        public static AcceleratorView GetAutoSelectionView()
-        {
-            List<Accelerator> list = new List<Accelerator>();
-            //list = Accelerator.GetAll();
-            if (list.Count > 0)
-                return new AcceleratorView(list.FirstOrDefault());
-            return default(AcceleratorView);
-        }
-
         public string GetDevicePath { get; internal set; }
         public string DevicePath { get; internal set; }
 
@@ -103,13 +94,6 @@ namespace Campy
 
         public bool SupportsCpuSharedMemory { get; internal set; }
 
-        public AcceleratorView GetDefaultView()
-        {
-            return DefaultView;
-        }
-
-        public AcceleratorView DefaultView { get; internal set; }
-
         public ulong GetDedicatedMemory()
         {
             return DedicatedMemory;
@@ -127,11 +111,6 @@ namespace Campy
         public bool SetDefaultCpuAccessType(Accelerator the_default)
         {
             return false;
-        }
-
-        public AcceleratorView CreateView(QueuingMode qmode = QueuingMode.QueuingModeAutomatic)
-        {
-            return default(AcceleratorView);
         }
 
         private void Init(string path)
