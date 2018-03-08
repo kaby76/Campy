@@ -18,7 +18,6 @@ namespace Campy.Compiler
     {
         private CFG _cfg;
         private static List<ModuleDefinition> _loaded_modules;
-        private List<ModuleDefinition> _analyzed_modules;
 
         // After studying this for a while, I've come to the conclusion that decompiling methods
         // requires type information, as methods/"this" could be generic. So, we create a list of
@@ -42,7 +41,6 @@ namespace Campy.Compiler
         {
             _cfg = new CFG();
             _loaded_modules = new List<ModuleDefinition>();
-            _analyzed_modules = new List<ModuleDefinition>();
             _methods_to_do = new StackQueue<Tuple<MethodReference, List<TypeReference>>>();
             _methods_done = new List<string>();
         }
