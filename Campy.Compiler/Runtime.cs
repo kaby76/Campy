@@ -15,7 +15,7 @@ using MethodImplAttributes = Mono.Cecil.MethodImplAttributes;
 
 namespace Campy.Compiler
 {
-    public class Runtime
+    public class RUNTIME
     {
         // This table encodes runtime type information for rewriting BCL types. Use this to determine
         // what a type (represented in Mono.Cecil.TypeReference) in the user's program maps to
@@ -32,7 +32,7 @@ namespace Campy.Compiler
         private static Dictionary<string, string> _rewritten_runtime = new Dictionary<string, string>();
 
 
-        public Runtime()
+        public RUNTIME()
         {
         }
 
@@ -218,14 +218,14 @@ namespace Campy.Compiler
                     else if (suffix == "Pc")
                     {
                         var decl = LLVM.AddFunction(
-                                CampyConverter.global_llvm_module,
+                                JITER.global_llvm_module,
                                 _mangled_name,
                                 LLVM.FunctionType(LLVM.Int64Type(),
                                     new TypeRef[]
                                     {
                                         LLVM.PointerType(LLVM.Int8Type(), 0) // return value block.
                                     }, false));
-                        CampyConverter.built_in_functions.Add(_mangled_name, decl);
+                        JITER.built_in_functions.Add(_mangled_name, decl);
                         this._valueref = decl;
                     }
                     else if (suffix == "Ph")
@@ -311,7 +311,7 @@ namespace Campy.Compiler
                     else if (suffix == "PhS_S_")
                     {
                         var decl = LLVM.AddFunction(
-                                CampyConverter.global_llvm_module,
+                                JITER.global_llvm_module,
                                 _mangled_name,
                                 LLVM.FunctionType(LLVM.Int64Type(),
                                     new TypeRef[]
@@ -320,13 +320,13 @@ namespace Campy.Compiler
                                                         LLVM.PointerType(LLVM.VoidType(), 0), // params in a block.
                                                         LLVM.PointerType(LLVM.VoidType(), 0) // return value block.
                                     }, false));
-                        CampyConverter.built_in_functions.Add(_mangled_name, decl);
+                        JITER.built_in_functions.Add(_mangled_name, decl);
                         this._valueref = decl;
                     }
                     else if (suffix == "PcS_S_")
                     {
                         var decl = LLVM.AddFunction(
-                                CampyConverter.global_llvm_module,
+                                JITER.global_llvm_module,
                                 _mangled_name,
                                 LLVM.FunctionType(
                                     LLVM.PointerType(LLVM.VoidType(),0),
@@ -336,7 +336,7 @@ namespace Campy.Compiler
                                         LLVM.PointerType(LLVM.Int8Type(), 0),
                                         LLVM.PointerType(LLVM.Int8Type(), 0)
                                     }, false));
-                        CampyConverter.built_in_functions.Add(_mangled_name, decl);
+                        JITER.built_in_functions.Add(_mangled_name, decl);
                         this._valueref = decl;
                     }
                     else;
@@ -414,7 +414,7 @@ namespace Campy.Compiler
             var y8 = System.Type.GetType(x2.FullName);
 
             // Set up _substituted_bcl.
-            var runtime = new Runtime();
+            var runtime = new RUNTIME();
             var dir = Path.GetDirectoryName(Path.GetFullPath(runtime.GetType().Assembly.Location));
             string yopath = dir + Path.DirectorySeparatorChar + "corlib.dll";
             Mono.Cecil.ModuleDefinition md = Mono.Cecil.ModuleDefinition.ReadModule(yopath);
@@ -451,7 +451,7 @@ namespace Campy.Compiler
 
             // Parse PTX files for all "visible" functions, and create LLVM declarations.
             // For "Internal Calls", these functions appear here, but also on the _internalCalls list.
-            var assembly = Assembly.GetAssembly(typeof(Campy.Compiler.Runtime));
+            var assembly = Assembly.GetAssembly(typeof(Campy.Compiler.RUNTIME));
             var resource_names = assembly.GetManifestResourceNames();
             foreach (var resource_name in resource_names)
             {
@@ -509,15 +509,15 @@ namespace Campy.Compiler
                 IntPtr parm4; // result
 
                 var ptr = Marshal.StringToHGlobalAnsi(assem);
-                Buffers buffers = new Buffers();
+                BUFFERS buffers = new BUFFERS();
                 IntPtr pointer1 = buffers.New(assem.Length + 1);
-                Buffers.Cp(pointer1, ptr, assem.Length + 1);
+                BUFFERS.Cp(pointer1, ptr, assem.Length + 1);
                 IntPtr[] x1 = new IntPtr[] { pointer1 };
                 GCHandle handle1 = GCHandle.Alloc(x1, GCHandleType.Pinned);
                 parm1 = handle1.AddrOfPinnedObject();
 
                 IntPtr pointer2 = buffers.New((int)corlib_bytes_handle_len);
-                Buffers.Cp(pointer2, corlib_bytes_intptr, (int)corlib_bytes_handle_len);
+                BUFFERS.Cp(pointer2, corlib_bytes_intptr, (int)corlib_bytes_handle_len);
                 IntPtr[] x2 = new IntPtr[] { pointer2 };
                 GCHandle handle2 = GCHandle.Alloc(x2, GCHandleType.Pinned);
                 parm2 = handle2.AddrOfPinnedObject();
@@ -533,8 +533,8 @@ namespace Campy.Compiler
 
                 IntPtr[] kp = new IntPtr[] { parm1, parm2, parm3, parm4 };
 
-                CUmodule module = Runtime.RuntimeModule;
-                CUfunction _Z16Bcl_Gfs_add_filePcS_yPi = Runtime._Z16Bcl_Gfs_add_filePcS_yPi(module);
+                CUmodule module = RUNTIME.RuntimeModule;
+                CUfunction _Z16Bcl_Gfs_add_filePcS_yPi = RUNTIME._Z16Bcl_Gfs_add_filePcS_yPi(module);
                 Campy.Utils.CudaHelpers.MakeLinearTiling(1,
                     out Campy.Utils.CudaHelpers.dim3 tile_size,
                     out Campy.Utils.CudaHelpers.dim3 tiles);
@@ -562,17 +562,17 @@ namespace Campy.Compiler
                 IntPtr parm1; // Name of assembly.
 
                 var ptr = Marshal.StringToHGlobalAnsi(assem);
-                Buffers buffers = new Buffers();
+                BUFFERS buffers = new BUFFERS();
                 IntPtr pointer1 = buffers.New(assem.Length + 1);
-                Buffers.Cp(pointer1, ptr, assem.Length + 1);
+                BUFFERS.Cp(pointer1, ptr, assem.Length + 1);
                 IntPtr[] x1 = new IntPtr[] { pointer1 };
                 GCHandle handle1 = GCHandle.Alloc(x1, GCHandleType.Pinned);
                 parm1 = handle1.AddrOfPinnedObject();
 
                 IntPtr[] kp = new IntPtr[] { parm1 };
 
-                CUmodule module = Runtime.RuntimeModule;
-                CUfunction _Z34BCL_CLIFile_GetMetaDataForAssemblyPc = Runtime._Z34BCL_CLIFile_GetMetaDataForAssemblyPc(module);
+                CUmodule module = RUNTIME.RuntimeModule;
+                CUfunction _Z34BCL_CLIFile_GetMetaDataForAssemblyPc = RUNTIME._Z34BCL_CLIFile_GetMetaDataForAssemblyPc(module);
                 Campy.Utils.CudaHelpers.MakeLinearTiling(1,
                     out Campy.Utils.CudaHelpers.dim3 tile_size,
                     out Campy.Utils.CudaHelpers.dim3 tiles);
@@ -627,15 +627,15 @@ namespace Campy.Compiler
                 IntPtr parm4; // result
 
                 var ptr = Marshal.StringToHGlobalAnsi(assem);
-                Buffers buffers = new Buffers();
+                BUFFERS buffers = new BUFFERS();
                 IntPtr pointer1 = buffers.New(assem.Length + 1);
-                Buffers.Cp(pointer1, ptr, assem.Length + 1);
+                BUFFERS.Cp(pointer1, ptr, assem.Length + 1);
                 IntPtr[] x1 = new IntPtr[] { pointer1 };
                 GCHandle handle1 = GCHandle.Alloc(x1, GCHandleType.Pinned);
                 parm1 = handle1.AddrOfPinnedObject();
 
                 IntPtr pointer2 = buffers.New((int)corlib_bytes_handle_len);
-                Buffers.Cp(pointer2, corlib_bytes_intptr, (int)corlib_bytes_handle_len);
+                BUFFERS.Cp(pointer2, corlib_bytes_intptr, (int)corlib_bytes_handle_len);
                 IntPtr[] x2 = new IntPtr[] { pointer2 };
                 GCHandle handle2 = GCHandle.Alloc(x2, GCHandleType.Pinned);
                 parm2 = handle2.AddrOfPinnedObject();
@@ -651,8 +651,8 @@ namespace Campy.Compiler
 
                 IntPtr[] kp = new IntPtr[] { parm1, parm2, parm3, parm4 };
 
-                CUmodule module = Runtime.RuntimeModule;
-                CUfunction _Z16Bcl_Gfs_add_filePcS_yPi = Runtime._Z16Bcl_Gfs_add_filePcS_yPi(module);
+                CUmodule module = RUNTIME.RuntimeModule;
+                CUfunction _Z16Bcl_Gfs_add_filePcS_yPi = RUNTIME._Z16Bcl_Gfs_add_filePcS_yPi(module);
                 Campy.Utils.CudaHelpers.MakeLinearTiling(1,
                     out Campy.Utils.CudaHelpers.dim3 tile_size,
                     out Campy.Utils.CudaHelpers.dim3 tiles);
@@ -680,17 +680,17 @@ namespace Campy.Compiler
                 IntPtr parm1; // Name of assembly.
 
                 var ptr = Marshal.StringToHGlobalAnsi(assem);
-                Buffers buffers = new Buffers();
+                BUFFERS buffers = new BUFFERS();
                 IntPtr pointer1 = buffers.New(assem.Length + 1);
-                Buffers.Cp(pointer1, ptr, assem.Length + 1);
+                BUFFERS.Cp(pointer1, ptr, assem.Length + 1);
                 IntPtr[] x1 = new IntPtr[] { pointer1 };
                 GCHandle handle1 = GCHandle.Alloc(x1, GCHandleType.Pinned);
                 parm1 = handle1.AddrOfPinnedObject();
 
                 IntPtr[] kp = new IntPtr[] { parm1 };
 
-                CUmodule module = Runtime.RuntimeModule;
-                CUfunction _Z34BCL_CLIFile_GetMetaDataForAssemblyPc = Runtime._Z34BCL_CLIFile_GetMetaDataForAssemblyPc(module);
+                CUmodule module = RUNTIME.RuntimeModule;
+                CUfunction _Z34BCL_CLIFile_GetMetaDataForAssemblyPc = RUNTIME._Z34BCL_CLIFile_GetMetaDataForAssemblyPc(module);
                 Campy.Utils.CudaHelpers.MakeLinearTiling(1,
                     out Campy.Utils.CudaHelpers.dim3 tile_size,
                     out Campy.Utils.CudaHelpers.dim3 tiles);
@@ -754,7 +754,7 @@ namespace Campy.Compiler
 
         public static TypeReference FindBCLType(System.Type type)
         {
-            var runtime = new Runtime();
+            var runtime = new RUNTIME();
             TypeReference result = null;
             var dir = Path.GetDirectoryName(Path.GetFullPath(runtime.GetType().Assembly.Location));
             string yopath = dir + Path.DirectorySeparatorChar + "corlib.dll";

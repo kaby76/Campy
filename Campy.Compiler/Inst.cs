@@ -17,11 +17,11 @@ namespace Campy.Compiler
     /// This class adds basic block graph structure on top of these instructions. There
     /// is no semantics encoded in the wrapper.
     /// </summary>
-    public class Inst
+    public class INST
     {
         // Required for Mono to bb conversion.
         public Mono.Cecil.Cil.Instruction Instruction { get; private set; }
-        public static List<Inst> CallInstructions { get; private set; } = new List<Inst>();
+        public static List<INST> CallInstructions { get; private set; } = new List<INST>();
         public override string ToString() { return Instruction.ToString(); }
         public Mono.Cecil.Cil.OpCode OpCode { get { return Instruction.OpCode; } }
         public object Operand { get { return Instruction.Operand; } }
@@ -30,31 +30,31 @@ namespace Campy.Compiler
         // Required for LLVM conversion.
         public BuilderRef Builder { get { return Block.Builder; } }
         public ContextRef LLVMContext { get; set; }
-        public List<Value> LLVMInstructions { get; private set; }
+        public List<VALUE> LLVMInstructions { get; private set; }
         public CFG.Vertex Block { get; set; }
         // Required instruction sequencing so we can translate groups of instructions.
-        public virtual Inst Next { get; set; }
+        public virtual INST Next { get; set; }
 
-        public virtual void ComputeStackLevel(CampyConverter converter, ref int level_after)
+        public virtual void ComputeStackLevel(JITER converter, ref int level_after)
         {
             throw new Exception("Must have an implementation for ComputeStackLevel! The instruction is: "
                 + this.ToString());
         }
 
-        public virtual Inst Convert(CampyConverter converter, State state)
+        public virtual INST Convert(JITER converter, STATE state)
         {
             throw new Exception("Must have an implementation for Convert! The instruction is: "
                                 + this.ToString());
         }
 
-        private State _state_in;
-        public State StateIn
+        private STATE _state_in;
+        public STATE StateIn
         {
             get { return _state_in; }
             set { _state_in = value; }
         }
-        private State _state_out;
-        public State StateOut
+        private STATE _state_out;
+        public STATE StateOut
         {
             get { return _state_out; }
             set { _state_out = value; }
@@ -62,15 +62,15 @@ namespace Campy.Compiler
         public UInt32 TargetPointerSizeInBits = 64;
 
 
-        public Inst(Mono.Cecil.Cil.Instruction i)
+        public INST(Mono.Cecil.Cil.Instruction i)
         {
             Instruction = i;
             if (i.OpCode.FlowControl == Mono.Cecil.Cil.FlowControl.Call)
             {
-                Inst.CallInstructions.Add(this);
+                INST.CallInstructions.Add(this);
             }
         }
-        static public Inst Wrap(Mono.Cecil.Cil.Instruction i)
+        static public INST Wrap(Mono.Cecil.Cil.Instruction i)
         {
             // Wrap instruction with semantics, def/use/kill properties.
             Mono.Cecil.Cil.OpCode op = i.OpCode;
@@ -522,19 +522,19 @@ namespace Campy.Compiler
         }
     }
 
-    public class BinaryOpInst : Inst
+    public class BinaryOpInst : INST
     {
         public BinaryOpInst(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
 
-        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
+        public override void ComputeStackLevel(JITER converter, ref int level_after)
         {
             level_after--;
         }
 
-        public override Inst Convert(CampyConverter converter, State state)
+        public override INST Convert(JITER converter, STATE state)
         {
             var rhs = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -614,7 +614,7 @@ namespace Campy.Compiler
         };
 
 
-        Type binaryOpType(System.Type Opcode, Type Type1, Type Type2)
+        TYPE binaryOpType(System.Type Opcode, TYPE Type1, TYPE Type2)
         {
             // Roughly follows ECMA-355, Table III.2.
             // If both types are floats, the result is the larger float type.
@@ -654,8 +654,8 @@ namespace Campy.Compiler
             }
             else
             {
-                bool Type1IsUnmanagedPointer = GcInfo.isUnmanagedPointer(Type1);
-                bool Type2IsUnmanagedPointer = GcInfo.isUnmanagedPointer(Type2);
+                bool Type1IsUnmanagedPointer = false;
+                bool Type2IsUnmanagedPointer = false;
                 bool IsStrictlyAdd = (Opcode == typeof(i_add));
                 bool IsAdd = IsStrictlyAdd || (Opcode == typeof(i_add_ovf)) ||
                              (Opcode == typeof(i_add_ovf_un));
@@ -686,16 +686,16 @@ namespace Campy.Compiler
                     if ((Size1 <= TargetPointerSizeInBits) &&
                         (Size2 <= TargetPointerSizeInBits))
                     {
-                        return new Type(Type.getIntNTy(LLVM.GetModuleContext(CampyConverter.global_llvm_module),
+                        return new TYPE(TYPE.getIntNTy(LLVM.GetModuleContext(JITER.global_llvm_module),
                             TargetPointerSizeInBits));
                     }
                 }
-                else if (GcInfo.isGcPointer(Type1))
+                else if (Type1.isPointerTy())
                 {
-                    if (IsSub && GcInfo.isGcPointer(Type2))
+                    if (IsSub && Type2.isPointerTy())
                     {
                         // The difference of two managed pointers is a native int.
-                        return new Type(Type.getIntNTy(LLVM.GetModuleContext(CampyConverter.global_llvm_module),
+                        return new TYPE(TYPE.getIntNTy(LLVM.GetModuleContext(JITER.global_llvm_module),
                             TargetPointerSizeInBits));
                     }
                     else if (IsStrictlyAddOrSub && Type2IsInt && (Size1 >= Size2))
@@ -714,11 +714,11 @@ namespace Campy.Compiler
         }
 
         // Handle pointer + int by emitting a flattened LLVM GEP.
-        Value genPointerAdd(Value Arg1, Value Arg2)
+        VALUE genPointerAdd(VALUE Arg1, VALUE Arg2)
         {
             // Assume 1 is base and 2 is offset
-            Value BasePtr = Arg1;
-            Value Offset = Arg2;
+            VALUE BasePtr = Arg1;
+            VALUE Offset = Arg2;
 
             // Reconsider based on types.
             bool Arg1IsPointer = Arg1.T.isPointerTy();
@@ -739,7 +739,7 @@ namespace Campy.Compiler
             }
 
             // Bail if offset is not integral.
-            Type OffsetTy = Offset.T;
+            TYPE OffsetTy = Offset.T;
             if (!OffsetTy.isIntegerTy())
             {
                 return null;
@@ -748,18 +748,18 @@ namespace Campy.Compiler
             // Build an LLVM GEP for the resulting address.
             // For now we "flatten" to byte offsets.
 
-            Type CharPtrTy = new Type(
-                Type.getInt8PtrTy(
-                LLVM.GetModuleContext(CampyConverter.global_llvm_module),
+            TYPE CharPtrTy = new TYPE(
+                TYPE.getInt8PtrTy(
+                LLVM.GetModuleContext(JITER.global_llvm_module),
                 BasePtr.T.getPointerAddressSpace()));
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(CharPtrTy);
 
-            Value BasePtrCast = new Value(LLVM.BuildBitCast(Builder, BasePtr.V, CharPtrTy.IntermediateType, "i"+instruction_id++));
+            VALUE BasePtrCast = new VALUE(LLVM.BuildBitCast(Builder, BasePtr.V, CharPtrTy.IntermediateType, "i"+instruction_id++));
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(BasePtrCast);
 
-            Value ResultPtr = new Value(LLVM.BuildInBoundsGEP(Builder, BasePtrCast.V, new ValueRef[] {Offset.V}, ""));
+            VALUE ResultPtr = new VALUE(LLVM.BuildInBoundsGEP(Builder, BasePtrCast.V, new ValueRef[] {Offset.V}, ""));
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(ResultPtr);
 
@@ -767,12 +767,12 @@ namespace Campy.Compiler
         }
 
         // Handle pointer - int by emitting a flattened LLVM GEP.
-        Value genPointerSub(Value Arg1, Value Arg2)
+        VALUE genPointerSub(VALUE Arg1, VALUE Arg2)
         {
 
             // Assume 1 is base and 2 is offset
-            Value BasePtr = Arg1;
-            Value Offset = Arg2;
+            VALUE BasePtr = Arg1;
+            VALUE Offset = Arg2;
 
             // Reconsider based on types.
             bool Arg1IsPointer = Arg1.T.isPointerTy();
@@ -786,7 +786,7 @@ namespace Campy.Compiler
             }
 
             // Bail if offset is not integral.
-            Type OffsetTy = Offset.T;
+            TYPE OffsetTy = Offset.T;
             if (!OffsetTy.isIntegerTy())
             {
                 return null;
@@ -794,20 +794,20 @@ namespace Campy.Compiler
 
             // Build an LLVM GEP for the resulting address.
             // For now we "flatten" to byte offsets.
-            Type CharPtrTy = new Type(Type.getInt8PtrTy(
-                LLVM.GetModuleContext(CampyConverter.global_llvm_module), BasePtr.T.getPointerAddressSpace()));
-            Value BasePtrCast = new Value(LLVM.BuildBitCast(Builder, BasePtr.V, CharPtrTy.IntermediateType, "i" + instruction_id++));
-            Value NegOffset = new Value(LLVM.BuildNeg(Builder, Offset.V, "i" + instruction_id++));
-            Value ResultPtr = new Value(LLVM.BuildGEP(Builder, BasePtrCast.V, new ValueRef[] { NegOffset.V }, "i" + instruction_id++));
+            TYPE CharPtrTy = new TYPE(TYPE.getInt8PtrTy(
+                LLVM.GetModuleContext(JITER.global_llvm_module), BasePtr.T.getPointerAddressSpace()));
+            VALUE BasePtrCast = new VALUE(LLVM.BuildBitCast(Builder, BasePtr.V, CharPtrTy.IntermediateType, "i" + instruction_id++));
+            VALUE NegOffset = new VALUE(LLVM.BuildNeg(Builder, Offset.V, "i" + instruction_id++));
+            VALUE ResultPtr = new VALUE(LLVM.BuildGEP(Builder, BasePtrCast.V, new ValueRef[] { NegOffset.V }, "i" + instruction_id++));
             return ResultPtr;
         }
 
         // This method only handles basic arithmetic conversions for use in
         // binary operations.
-        public Value convert(Type Ty, Value Node, bool SourceIsSigned)
+        public VALUE convert(TYPE Ty, VALUE Node, bool SourceIsSigned)
         {
-            Type SourceTy = Node.T;
-            Value Result = null;
+            TYPE SourceTy = Node.T;
+            VALUE Result = null;
 
             if (Ty == SourceTy)
             {
@@ -815,15 +815,15 @@ namespace Campy.Compiler
             }
             else if (SourceTy.isIntegerTy() && Ty.isIntegerTy())
             {
-                Result = new Value(LLVM.BuildIntCast(Builder, Node.V, Ty.IntermediateType, "i" + instruction_id++));//SourceIsSigned);
+                Result = new VALUE(LLVM.BuildIntCast(Builder, Node.V, Ty.IntermediateType, "i" + instruction_id++));//SourceIsSigned);
             }
             else if (SourceTy.isFloatingPointTy() && Ty.isFloatingPointTy())
             {
-                Result = new Value(LLVM.BuildFPCast(Builder, Node.V, Ty.IntermediateType, "i" + instruction_id++));
+                Result = new VALUE(LLVM.BuildFPCast(Builder, Node.V, Ty.IntermediateType, "i" + instruction_id++));
             }
             else if (SourceTy.isPointerTy() && Ty.isIntegerTy())
             {
-                Result = new Value(LLVM.BuildPtrToInt(Builder, Node.V, Ty.IntermediateType, "i" + instruction_id++));
+                Result = new VALUE(LLVM.BuildPtrToInt(Builder, Node.V, Ty.IntermediateType, "i" + instruction_id++));
             }
             else
             {
@@ -833,12 +833,12 @@ namespace Campy.Compiler
             return Result;
         }
 
-        Value binaryOp(System.Type Opcode, Value Arg1, Value Arg2)
+        VALUE binaryOp(System.Type Opcode, VALUE Arg1, VALUE Arg2)
         {
-            Type Type1 = Arg1.T;
-            Type Type2 = Arg2.T;
-            Type ResultType = binaryOpType(Opcode, Type1, Type2);
-            Type ArithType = ResultType;
+            TYPE Type1 = Arg1.T;
+            TYPE Type2 = Arg2.T;
+            TYPE ResultType = binaryOpType(Opcode, Type1, Type2);
+            TYPE ArithType = ResultType;
 
             // If the result is a pointer, see if we have simple
             // pointer + int op...
@@ -846,7 +846,7 @@ namespace Campy.Compiler
             {
                 if (Opcode == typeof(i_add))
                 {
-                    Value PtrAdd = genPointerAdd(Arg1, Arg2);
+                    VALUE PtrAdd = genPointerAdd(Arg1, Arg2);
                     if (PtrAdd != null)
                     {
                         return PtrAdd;
@@ -854,7 +854,7 @@ namespace Campy.Compiler
                 }
                 else if (Opcode == typeof(i_add_ovf_un))
                 {
-                    Value PtrSub = genPointerSub(Arg1, Arg2);
+                    VALUE PtrSub = genPointerSub(Arg1, Arg2);
                     if (PtrSub != null)
                     {
                         return PtrSub;
@@ -865,7 +865,7 @@ namespace Campy.Compiler
                     // Arithmetic with overflow must use an appropriately-sized integer to
                     // perform the arithmetic, then convert the result back to the pointer
                     // type.
-                    ArithType = new Type(Type.getIntNTy(LLVM.GetModuleContext(CampyConverter.global_llvm_module), TargetPointerSizeInBits));
+                    ArithType = new TYPE(TYPE.getIntNTy(LLVM.GetModuleContext(JITER.global_llvm_module), TargetPointerSizeInBits));
                 }
             }
 
@@ -887,7 +887,7 @@ namespace Campy.Compiler
                 Arg2 = convert(ArithType, Arg2, !IsUnsigned);
             }
 
-            Value Result;
+            VALUE Result;
             //if (IsFloat && Opcode == typeof(i_rem))
             //{
             //    // FRem must be lowered to a JIT helper call to avoid undefined symbols
@@ -945,7 +945,7 @@ namespace Campy.Compiler
                     // if the divisor is zero
                     if (UseExplicitZeroDivideChecks)
                     {
-                        Value IsZero = new Value(LLVM.BuildIsNull(Builder, Arg2.V, "i" + instruction_id++));
+                        VALUE IsZero = new VALUE(LLVM.BuildIsNull(Builder, Arg2.V, "i" + instruction_id++));
                         //genConditionalThrow(IsZero, CORINFO_HELP_THROWDIVZERO, "ThrowDivideByZero");
                     }
                     else
@@ -956,7 +956,7 @@ namespace Campy.Compiler
                     }
                 }
 
-                Result = new Value(LLVM.BuildBinOp(Builder, OpI.Opcode, Arg1.V, Arg2.V, "i"+instruction_id++));
+                Result = new VALUE(LLVM.BuildBinOp(Builder, OpI.Opcode, Arg1.V, Arg2.V, "i"+instruction_id++));
             }
 
             if (ResultType != ArithType)
@@ -964,7 +964,7 @@ namespace Campy.Compiler
                 Debug.Assert(ResultType.isPointerTy());
                 Debug.Assert(ArithType.isIntegerTy());
 
-                Result = new Value(LLVM.BuildIntToPtr(Builder, Result.V, ResultType.IntermediateType, "i" + instruction_id++));
+                Result = new VALUE(LLVM.BuildIntToPtr(Builder, Result.V, ResultType.IntermediateType, "i" + instruction_id++));
             }
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(Result);
@@ -979,7 +979,7 @@ namespace Campy.Compiler
     /// The LoadArgInst is a class for representing Load Arg instructions. The purpose to
     /// provide a representation of the arg operand of the instruction.
     /// </summary>
-    public class LoadArgInst : Inst
+    public class LoadArgInst : INST
     {
         public int _arg;
 
@@ -987,12 +987,12 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
+        public override void ComputeStackLevel(JITER converter, ref int level_after)
         {
             level_after++;
         }
 
-        public override Inst Convert(CampyConverter converter, State state)
+        public override INST Convert(JITER converter, STATE state)
         {
             // For ldarg.1 of a compiler generated closure method, generate code
             // to create an int index for the thread.
@@ -1003,24 +1003,24 @@ namespace Campy.Compiler
                 && _arg == 1)
             {
                 //threadId
-                var tidx = CampyConverter.built_in_functions["llvm.nvvm.read.ptx.sreg.tid.x"];
-                var tidy = CampyConverter.built_in_functions["llvm.nvvm.read.ptx.sreg.tid.y"];
-                var tidz = CampyConverter.built_in_functions["llvm.nvvm.read.ptx.sreg.tid.z"];
+                var tidx = JITER.built_in_functions["llvm.nvvm.read.ptx.sreg.tid.x"];
+                var tidy = JITER.built_in_functions["llvm.nvvm.read.ptx.sreg.tid.y"];
+                var tidz = JITER.built_in_functions["llvm.nvvm.read.ptx.sreg.tid.z"];
 
                 //blockIdx
-                var ctaidx = CampyConverter.built_in_functions["llvm.nvvm.read.ptx.sreg.ctaid.x"];
-                var ctaidy = CampyConverter.built_in_functions["llvm.nvvm.read.ptx.sreg.ctaid.y"];
-                var ctaidz = CampyConverter.built_in_functions["llvm.nvvm.read.ptx.sreg.ctaid.z"];
+                var ctaidx = JITER.built_in_functions["llvm.nvvm.read.ptx.sreg.ctaid.x"];
+                var ctaidy = JITER.built_in_functions["llvm.nvvm.read.ptx.sreg.ctaid.y"];
+                var ctaidz = JITER.built_in_functions["llvm.nvvm.read.ptx.sreg.ctaid.z"];
 
                 //blockDim
-                var ntidx = CampyConverter.built_in_functions["llvm.nvvm.read.ptx.sreg.ntid.x"];
-                var ntidy = CampyConverter.built_in_functions["llvm.nvvm.read.ptx.sreg.ntid.y"];
-                var ntidz = CampyConverter.built_in_functions["llvm.nvvm.read.ptx.sreg.ntid.z"];
+                var ntidx = JITER.built_in_functions["llvm.nvvm.read.ptx.sreg.ntid.x"];
+                var ntidy = JITER.built_in_functions["llvm.nvvm.read.ptx.sreg.ntid.y"];
+                var ntidz = JITER.built_in_functions["llvm.nvvm.read.ptx.sreg.ntid.z"];
 
                 //gridDim
-                var nctaidx = CampyConverter.built_in_functions["llvm.nvvm.read.ptx.sreg.nctaid.x"];
-                var nctaidy = CampyConverter.built_in_functions["llvm.nvvm.read.ptx.sreg.nctaid.y"];
-                var nctaidz = CampyConverter.built_in_functions["llvm.nvvm.read.ptx.sreg.nctaid.z"];
+                var nctaidx = JITER.built_in_functions["llvm.nvvm.read.ptx.sreg.nctaid.x"];
+                var nctaidy = JITER.built_in_functions["llvm.nvvm.read.ptx.sreg.nctaid.y"];
+                var nctaidz = JITER.built_in_functions["llvm.nvvm.read.ptx.sreg.nctaid.z"];
 
                 var v_tidx = LLVM.BuildCall(bb.Builder, tidx, new ValueRef[] { }, "tidx");
                 var v_tidy = LLVM.BuildCall(bb.Builder, tidy, new ValueRef[] { }, "tidy");
@@ -1053,12 +1053,12 @@ namespace Campy.Compiler
                     (ulong)converter._start_index, false), "i" + instruction_id++);
 
                 if (Campy.Utils.Options.IsOn("jit_trace"))
-                    System.Console.WriteLine("load " + new Value(sum));
-                state._stack.Push(new Value(sum));
+                    System.Console.WriteLine("load " + new VALUE(sum));
+                state._stack.Push(new VALUE(sum));
             }
             else
             {
-                Value value = state._arguments[_arg];
+                VALUE value = state._arguments[_arg];
                 if (Campy.Utils.Options.IsOn("jit_trace"))
                     System.Console.WriteLine(value.ToString());
                 state._stack.Push(value);
@@ -1067,7 +1067,7 @@ namespace Campy.Compiler
         }
     }
 
-    public class StoreArgInst : Inst
+    public class StoreArgInst : INST
     {
         public int _arg;
 
@@ -1075,14 +1075,14 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
+        public override void ComputeStackLevel(JITER converter, ref int level_after)
         {
             level_after--;
         }
 
-        public override Inst Convert(CampyConverter converter, State state)
+        public override INST Convert(JITER converter, STATE state)
         {
-            Value value = state._stack.Pop();
+            VALUE value = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(value);
 
@@ -1096,7 +1096,7 @@ namespace Campy.Compiler
     /// The LDCInstI4 and LDCInstI8 are classes for representing load constant instructions. The constant
     /// of the instruction is encoded here.
     /// </summary>
-    public class LDCInstI4 : Inst
+    public class LDCInstI4 : INST
     {
         public Int32 _arg;
 
@@ -1104,20 +1104,20 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
+        public override void ComputeStackLevel(JITER converter, ref int level_after)
         {
             level_after++;
         }
 
-        public override Inst Convert(CampyConverter converter, State state)
+        public override INST Convert(JITER converter, STATE state)
         {
-            Value value = new Value(LLVM.ConstInt(LLVM.Int32Type(), (ulong)_arg, true));
+            VALUE value = new VALUE(LLVM.ConstInt(LLVM.Int32Type(), (ulong)_arg, true));
             state._stack.Push(value);
             return Next;
         }
     }
 
-    public class LDCInstI8 : Inst
+    public class LDCInstI8 : INST
     {
         public Int64 _arg;
 
@@ -1125,20 +1125,20 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
+        public override void ComputeStackLevel(JITER converter, ref int level_after)
         {
             level_after++;
         }
 
-        public override Inst Convert(CampyConverter converter, State state)
+        public override INST Convert(JITER converter, STATE state)
         {
-            Value value = new Value(LLVM.ConstInt(LLVM.Int64Type(), (ulong)_arg, true));
+            VALUE value = new VALUE(LLVM.ConstInt(LLVM.Int64Type(), (ulong)_arg, true));
             state._stack.Push(value);
             return Next;
         }
     }
 
-    public class LDCInstR4 : Inst
+    public class LDCInstR4 : INST
     {
         public double _arg;
 
@@ -1146,20 +1146,20 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
+        public override void ComputeStackLevel(JITER converter, ref int level_after)
         {
             level_after++;
         }
 
-        public override Inst Convert(CampyConverter converter, State state)
+        public override INST Convert(JITER converter, STATE state)
         {
-            Value value = new Value(LLVM.ConstReal(LLVM.FloatType(), _arg));
+            VALUE value = new VALUE(LLVM.ConstReal(LLVM.FloatType(), _arg));
             state._stack.Push(value);
             return Next;
         }
     }
 
-    public class LDCInstR8 : Inst
+    public class LDCInstR8 : INST
     {
         public double _arg;
 
@@ -1167,26 +1167,26 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
+        public override void ComputeStackLevel(JITER converter, ref int level_after)
         {
             level_after++;
         }
 
-        public override Inst Convert(CampyConverter converter, State state)
+        public override INST Convert(JITER converter, STATE state)
         {
-            Value value = new Value(LLVM.ConstReal(LLVM.DoubleType(), _arg));
+            VALUE value = new VALUE(LLVM.ConstReal(LLVM.DoubleType(), _arg));
             state._stack.Push(value);
             return Next;
         }
     }
 
-    public class CallInst : Inst
+    public class CallInst : INST
     {
         public CallInst(Instruction i) : base(i)
         {
         }
 
-        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
+        public override void ComputeStackLevel(JITER converter, ref int level_after)
         {
             object method = this.Operand;
             if (method as Mono.Cecil.MethodReference == null)
@@ -1209,7 +1209,7 @@ namespace Campy.Compiler
             level_after = level_after + xret - xargs;
         }
 
-        public override Inst Convert(CampyConverter converter, State state)
+        public override INST Convert(JITER converter, STATE state)
         {
             // Successor is fallthrough.
             object method = this.Operand;
@@ -1228,8 +1228,8 @@ namespace Campy.Compiler
             {
                 var g = this.Block._graph;
                 CFG.Vertex v = node;
-                CampyConverter c = converter;
-                if (v.IsEntry && CampyConverter.MethodName(v._original_method_reference) == mr.FullName &&
+                JITER c = converter;
+                if (v.IsEntry && JITER.MethodName(v._original_method_reference) == mr.FullName &&
                     c.IsFullyInstantiatedNode(v))
                     return true;
                 else return false;
@@ -1269,15 +1269,15 @@ namespace Campy.Compiler
                 var as_name = mr.Module.Assembly.Name;
 
                 // Find the specific function called.
-                var xx = CampyConverter.built_in_functions.Where(t => t.Key.Contains(demangled_name) || demangled_name.Contains(t.Key));
+                var xx = JITER.built_in_functions.Where(t => t.Key.Contains(demangled_name) || demangled_name.Contains(t.Key));
                 var first_kv_pair = xx.FirstOrDefault();
                 ValueRef fv = first_kv_pair.Value;
                 var t_fun = LLVM.TypeOf(fv);
                 var t_fun_con = LLVM.GetTypeContext(t_fun);
-                var context = LLVM.GetModuleContext(CampyConverter.global_llvm_module);
+                var context = LLVM.GetModuleContext(JITER.global_llvm_module);
 
-                Runtime.BclNativeMethod mat = null;
-                foreach (Runtime.BclNativeMethod ci in Runtime.BclNativeMethods)
+                RUNTIME.BclNativeMethod mat = null;
+                foreach (RUNTIME.BclNativeMethod ci in RUNTIME.BclNativeMethods)
                 {
                     if (ci._full_name == full_name)
                     {
@@ -1291,7 +1291,7 @@ namespace Campy.Compiler
 
                     // Set up "this".
                     ValueRef nul = LLVM.ConstPointerNull(LLVM.PointerType(LLVM.VoidType(), 0));
-                    Value t = new Value(nul);
+                    VALUE t = new VALUE(nul);
                     
                     // Pop all parameters and stuff into params buffer. Note, "this" and
                     // "return" are separate parameters in GPU BCL runtime C-functions,
@@ -1307,14 +1307,14 @@ namespace Campy.Compiler
 			    LLVM.PointerType(LLVM.Int64Type(), 0), "i" + instruction_id++);
                     for (int i = mr.Parameters.Count - 1; i >= 0; i--)
                     {
-                        Value p = state._stack.Pop();
+                        VALUE p = state._stack.Pop();
                         ValueRef[] index = new ValueRef[1] { LLVM.ConstInt(LLVM.Int32Type(), (ulong)i, true) };
                         var gep = LLVM.BuildGEP(Builder, param_buffer, index, "i" + instruction_id++);
 			            var add = LLVM.BuildInBoundsGEP(Builder, base_of_parameters, index, "i" + instruction_id++);
 			            ValueRef v = LLVM.BuildPointerCast(Builder, add, LLVM.PointerType(LLVM.TypeOf(p.V), 0), "i" + instruction_id++);
 			            ValueRef store = LLVM.BuildStore(Builder, p.V, v);
                         if (Campy.Utils.Options.IsOn("jit_trace"))
-                            System.Console.WriteLine(new Value(store));
+                            System.Console.WriteLine(new VALUE(store));
                     }
 
                     if (HasThis)
@@ -1346,7 +1346,7 @@ namespace Campy.Compiler
                     if (ret)
                     {
                         var load = LLVM.BuildLoad(Builder, return_buffer, "i" + instruction_id++);
-                        state._stack.Push(new Value(load));
+                        state._stack.Push(new VALUE(load));
                     }
 
                     if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -1425,12 +1425,12 @@ namespace Campy.Compiler
                 int xret = (the_entry.HasScalarReturnValue || the_entry.HasStructReturnValue) ? 1 : 0;
                 int xargs = the_entry.StackNumberOfArguments;
 
-                var name = CampyConverter.MethodName(mr);
+                var name = JITER.MethodName(mr);
                 BuilderRef bu = this.Builder;
                 ValueRef fv = the_entry.MethodValueRef;
                 var t_fun = LLVM.TypeOf(fv);
                 var t_fun_con = LLVM.GetTypeContext(t_fun);
-                var context = LLVM.GetModuleContext(CampyConverter.global_llvm_module);
+                var context = LLVM.GetModuleContext(JITER.global_llvm_module);
                 if (t_fun_con != context) throw new Exception("not equal");
                 //LLVM.VerifyFunction(fv, VerifierFailureAction.PrintMessageAction);
 
@@ -1453,11 +1453,11 @@ namespace Campy.Compiler
                             "i" + instruction_id++); // Allocates struct on stack, but returns a pointer to struct.
                     //LLVM.PositionBuilderAtEnd(Builder, this.Block.BasicBlock);
                     if (Campy.Utils.Options.IsOn("jit_trace"))
-                        System.Console.WriteLine(new Value(new_obj));
+                        System.Console.WriteLine(new VALUE(new_obj));
                     args[0] = new_obj;
                     for (int k = xargs - 1; k >= 1; --k)
                     {
-                        Value v = state._stack.Pop();
+                        VALUE v = state._stack.Pop();
                         ValueRef par = LLVM.GetParam(fv, (uint)k);
                         ValueRef value = v.V;
                         if (LLVM.TypeOf(value) != LLVM.TypeOf(par))
@@ -1483,13 +1483,13 @@ namespace Campy.Compiler
                         System.Console.WriteLine(call.ToString());
                     // Push the return on the stack. Note, it's not the call, but the new obj dereferenced.
                     var dereferenced_return_value = LLVM.BuildLoad(Builder, new_obj, "i" + instruction_id++);
-                    state._stack.Push(new Value(dereferenced_return_value));
+                    state._stack.Push(new VALUE(dereferenced_return_value));
                 }
                 else if (the_entry.HasScalarReturnValue)
                 {
                     for (int k = xargs - 1; k >= 0; --k)
                     {
-                        Value v = state._stack.Pop();
+                        VALUE v = state._stack.Pop();
                         ValueRef par = LLVM.GetParam(fv, (uint)k);
                         ValueRef value = v.V;
                         if (LLVM.TypeOf(value) != LLVM.TypeOf(par))
@@ -1511,7 +1511,7 @@ namespace Campy.Compiler
                         args[k] = value;
                     }
                     var call = LLVM.BuildCall(Builder, fv, args, "");
-                    state._stack.Push(new Value(call));
+                    state._stack.Push(new VALUE(call));
                     if (Campy.Utils.Options.IsOn("jit_trace"))
                         System.Console.WriteLine(call.ToString());
                 }
@@ -1520,7 +1520,7 @@ namespace Campy.Compiler
                     // No return.
                     for (int k = xargs - 1; k >= 0; --k)
                     {
-                        Value v = state._stack.Pop();
+                        VALUE v = state._stack.Pop();
                         ValueRef par = LLVM.GetParam(fv, (uint)k);
                         ValueRef value = v.V;
                         if (LLVM.TypeOf(value) != LLVM.TypeOf(par))
@@ -1555,7 +1555,7 @@ namespace Campy.Compiler
     /// <summary>
     /// The LdLoc is a class for representing load local instructions.
     /// </summary>
-    public class LdLoc : Inst
+    public class LdLoc : INST
     {
         public int _arg;
 
@@ -1563,14 +1563,14 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
+        public override void ComputeStackLevel(JITER converter, ref int level_after)
         {
             level_after++;
         }
 
-        public override Inst Convert(CampyConverter converter, State state)
+        public override INST Convert(JITER converter, STATE state)
         {
-            Value v = state._locals[_arg];
+            VALUE v = state._locals[_arg];
             state._stack.Push(v);
             return Next;
         }
@@ -1579,7 +1579,7 @@ namespace Campy.Compiler
     /// <summary>
     /// The StLoc is a class for representing store local instructions.
     /// </summary>
-    public class StLoc : Inst
+    public class StLoc : INST
     {
         public int _arg;
 
@@ -1587,27 +1587,27 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
+        public override void ComputeStackLevel(JITER converter, ref int level_after)
         {
             level_after--;
         }
 
-        public override Inst Convert(CampyConverter converter, State state)
+        public override INST Convert(JITER converter, STATE state)
         {
-            Value v = state._stack.Pop();
+            VALUE v = state._stack.Pop();
             state._locals[_arg] = v;
             return Next;
         }
     }
 
 
-    public class CompareInst : Inst
+    public class CompareInst : INST
     {
         public CompareInst(Mono.Cecil.Cil.Instruction i) : base(i)
         {
         }
 
-        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
+        public override void ComputeStackLevel(JITER converter, ref int level_after)
         {
             level_after -= 1;
         }
@@ -1645,13 +1645,13 @@ namespace Campy.Compiler
         public virtual PredicateType Predicate { get; set; }
         public virtual bool IsSigned { get; set; }
 
-        public override Inst Convert(CampyConverter converter, State state)
+        public override INST Convert(JITER converter, STATE state)
         {
-            Value v2 = state._stack.Pop();
-            Value v1 = state._stack.Pop();
+            VALUE v2 = state._stack.Pop();
+            VALUE v1 = state._stack.Pop();
             // TODO Undoubtably, this will be much more complicated than my initial stab.
-            Type t1 = v1.T;
-            Type t2 = v2.T;
+            TYPE t1 = v1.T;
+            TYPE t2 = v2.T;
             ValueRef cmp = default(ValueRef);
             // Deal with various combinations of types.
             if (t1.isIntegerTy() && t2.isIntegerTy())
@@ -1682,9 +1682,9 @@ namespace Campy.Compiler
                 else
                 {
                     // Set up for push of 0/1.
-                    var return_type = new Type(typeof(bool));
+                    var return_type = new TYPE(typeof(bool));
                     var ret_llvm = LLVM.BuildZExt(Builder, cmp, return_type.IntermediateType, "");
-                    var ret = new Value(ret_llvm, return_type);
+                    var ret = new VALUE(ret_llvm, return_type);
                     if (Campy.Utils.Options.IsOn("jit_trace"))
                         System.Console.WriteLine(ret);
 
@@ -1695,13 +1695,13 @@ namespace Campy.Compiler
         }
     }
 
-    public class CompareAndBranchInst : Inst
+    public class CompareAndBranchInst : INST
     {
         public CompareAndBranchInst(Mono.Cecil.Cil.Instruction i) : base(i)
         {
         }
 
-        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
+        public override void ComputeStackLevel(JITER converter, ref int level_after)
         {
             level_after -= 2;
         }
@@ -1749,19 +1749,19 @@ namespace Campy.Compiler
         public virtual PredicateType Predicate { get; set; }
         public virtual bool IsSigned { get; set; }
 
-        public override Inst Convert(CampyConverter converter, State state)
+        public override INST Convert(JITER converter, STATE state)
         {
-            Value v2 = state._stack.Pop();
+            VALUE v2 = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(v2);
 
-            Value v1 = state._stack.Pop();
+            VALUE v1 = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(v1);
 
             // TODO Undoubtably, this will be much more complicated than my initial stab.
-            Type t1 = v1.T;
-            Type t2 = v2.T;
+            TYPE t1 = v1.T;
+            TYPE t2 = v2.T;
             ValueRef cmp = default(ValueRef);
             // Deal with various combinations of types.
             if (t1.isIntegerTy() && t2.isIntegerTy())
@@ -1825,13 +1825,13 @@ namespace Campy.Compiler
     }
 
 
-    public class ConvertInst : Inst
+    public class ConvertInst : INST
     {
-        protected Type _dst;
+        protected TYPE _dst;
         protected bool _check_overflow;
         protected bool _from_unsigned;
 
-        Value convert_full(Value src)
+        VALUE convert_full(VALUE src)
         {
             TypeRef stype = LLVM.TypeOf(src.V);
             TypeRef dtype = _dst.IntermediateType;
@@ -1852,40 +1852,40 @@ namespace Campy.Compiler
                     ext = true;
 
                 if (ext)
-                    return new Value(
+                    return new VALUE(
                         _dst.is_unsigned
                         ? LLVM.BuildZExt(Builder, src.V, dtype, "i" + instruction_id++)
                         : LLVM.BuildSExt(Builder, src.V, dtype, "i" + instruction_id++));
 
                 if (dtype == LLVM.DoubleType() && stype == LLVM.FloatType())
-                    return new Value(LLVM.BuildFPExt(Builder, src.V, dtype, "i" + instruction_id++));
+                    return new VALUE(LLVM.BuildFPExt(Builder, src.V, dtype, "i" + instruction_id++));
 
                 /* Trunc */
                 if (stype == LLVM.Int64Type()
                     && (dtype == LLVM.Int32Type() || dtype == LLVM.Int16Type() || dtype == LLVM.Int8Type()))
-                    return new Value(LLVM.BuildTrunc(Builder, src.V, dtype, "i" + instruction_id++));
+                    return new VALUE(LLVM.BuildTrunc(Builder, src.V, dtype, "i" + instruction_id++));
                 if (stype == LLVM.Int32Type()
                     && (dtype == LLVM.Int16Type() || dtype == LLVM.Int8Type()))
-                    return new Value(LLVM.BuildTrunc(Builder, src.V, dtype, "i" + instruction_id++));
+                    return new VALUE(LLVM.BuildTrunc(Builder, src.V, dtype, "i" + instruction_id++));
                 if (stype == LLVM.Int16Type()
                     && dtype == LLVM.Int8Type())
-                    return new Value(LLVM.BuildTrunc(Builder, src.V, dtype, "i" + instruction_id++));
+                    return new VALUE(LLVM.BuildTrunc(Builder, src.V, dtype, "i" + instruction_id++));
                 if (stype == LLVM.DoubleType()
                     && dtype == LLVM.FloatType())
-                    return new Value(LLVM.BuildFPTrunc(Builder, src.V, dtype, "i" + instruction_id++));
+                    return new VALUE(LLVM.BuildFPTrunc(Builder, src.V, dtype, "i" + instruction_id++));
 
                 if (stype == LLVM.Int64Type()
                     && (dtype == LLVM.FloatType()))
-                    return new Value(LLVM.BuildSIToFP(Builder, src.V, dtype, "i" + instruction_id++));
+                    return new VALUE(LLVM.BuildSIToFP(Builder, src.V, dtype, "i" + instruction_id++));
                 if (stype == LLVM.Int32Type()
                     && (dtype == LLVM.FloatType()))
-                    return new Value(LLVM.BuildSIToFP(Builder, src.V, dtype, "i" + instruction_id++));
+                    return new VALUE(LLVM.BuildSIToFP(Builder, src.V, dtype, "i" + instruction_id++));
                 if (stype == LLVM.Int64Type()
                     && (dtype == LLVM.DoubleType()))
-                    return new Value(LLVM.BuildSIToFP(Builder, src.V, dtype, "i" + instruction_id++));
+                    return new VALUE(LLVM.BuildSIToFP(Builder, src.V, dtype, "i" + instruction_id++));
                 if (stype == LLVM.Int32Type()
                     && (dtype == LLVM.DoubleType()))
-                    return new Value(LLVM.BuildSIToFP(Builder, src.V, dtype, "i" + instruction_id++));
+                    return new VALUE(LLVM.BuildSIToFP(Builder, src.V, dtype, "i" + instruction_id++));
 
                 //if (LLVM.GetTypeKind(stype) == LLVM.PointerTypeKind && LLVM.GetTypeKind(dtype) == LLVMPointerTypeKind)
                 //    return LLVM.BuildBitCast(Builder, src, dtype, "");
@@ -1907,7 +1907,7 @@ namespace Campy.Compiler
 
                 //                LLVM.DumpValue(src);
                 //                LLVM.DumpValue(LLVM.ConstNull(dtype.T));
-                return new Value(default(ValueRef));
+                return new VALUE(default(ValueRef));
             }
             else
             {
@@ -1920,18 +1920,18 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
+        public override void ComputeStackLevel(JITER converter, ref int level_after)
         {
             // No change in stack level.
         }
 
-        public override Inst Convert(CampyConverter converter, State state)
+        public override INST Convert(JITER converter, STATE state)
         {
-            Value s = state._stack.Pop();
+            VALUE s = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(s.ToString());
 
-            Value d = convert_full(s);
+            VALUE d = convert_full(s);
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(d.ToString());
 
@@ -1968,9 +1968,9 @@ namespace Campy.Compiler
         }
     }
 
-    public class ConvertLoadElement : Inst
+    public class ConvertLoadElement : INST
     {
-        protected Type _dst;
+        protected TYPE _dst;
         protected bool _check_overflow;
         protected bool _from_unsigned;
 
@@ -1979,47 +1979,47 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
+        public override void ComputeStackLevel(JITER converter, ref int level_after)
         {
             level_after--;
         }
 
-        public override Inst Convert(CampyConverter converter, State state)
+        public override INST Convert(JITER converter, STATE state)
         {
-            Value i = state._stack.Pop();
+            VALUE i = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(i.ToString());
 
-            Value a = state._stack.Pop();
+            VALUE a = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(a.ToString());
 
             var load = a.V;
             load = LLVM.BuildLoad(Builder, load, "i" + instruction_id++);
             if (Campy.Utils.Options.IsOn("jit_trace"))
-                System.Console.WriteLine(new Value(load));
+                System.Console.WriteLine(new VALUE(load));
 
             // Load array base.
             ValueRef extract_value = LLVM.BuildExtractValue(Builder, load, 0, "i" + instruction_id++);
             if (Campy.Utils.Options.IsOn("jit_trace"))
-                System.Console.WriteLine(new Value(extract_value));
+                System.Console.WriteLine(new VALUE(extract_value));
 
             // Now add in index to pointer.
             ValueRef[] indexes = new ValueRef[1];
             indexes[0] = i.V;
             ValueRef gep = LLVM.BuildInBoundsGEP(Builder, extract_value, indexes, "i" + instruction_id++);
             if (Campy.Utils.Options.IsOn("jit_trace"))
-                System.Console.WriteLine(new Value(gep));
+                System.Console.WriteLine(new VALUE(gep));
 
             load = LLVM.BuildLoad(Builder, gep, "i" + instruction_id++);
             if (Campy.Utils.Options.IsOn("jit_trace"))
-                System.Console.WriteLine(new Value(load));
+                System.Console.WriteLine(new VALUE(load));
 
             if (_dst != null &&_dst.IntermediateType != LLVM.TypeOf(load))
             {
                 load = LLVM.BuildIntCast(Builder, load, _dst.IntermediateType, "i" + instruction_id++);
                 if (Campy.Utils.Options.IsOn("jit_trace"))
-                    System.Console.WriteLine(new Value(load));
+                    System.Console.WriteLine(new VALUE(load));
             }
             else if (_dst == null)
             {
@@ -2031,7 +2031,7 @@ namespace Campy.Compiler
                 {
                     load = LLVM.BuildIntCast(Builder, load, LLVM.Int32Type(), "i" + instruction_id++);
                     if (Campy.Utils.Options.IsOn("jit_trace"))
-                        System.Console.WriteLine(new Value(load));
+                        System.Console.WriteLine(new VALUE(load));
                 }
                 else
                     t_to = t_v;
@@ -2039,14 +2039,14 @@ namespace Campy.Compiler
                 //var tt = op.GetType();
             }
 
-            state._stack.Push(new Value(load));
+            state._stack.Push(new VALUE(load));
             return Next;
         }
     }
 
-    public class ConvertStoreElement : Inst
+    public class ConvertStoreElement : INST
     {
-        protected Type _dst;
+        protected TYPE _dst;
         protected bool _check_overflow;
         protected bool _from_unsigned;
 
@@ -2055,47 +2055,47 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
+        public override void ComputeStackLevel(JITER converter, ref int level_after)
         {
             level_after = level_after - 3;
         }
 
-        public override Inst Convert(CampyConverter converter, State state)
+        public override INST Convert(JITER converter, STATE state)
         {
-            Value v = state._stack.Pop();
+            VALUE v = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(v.ToString());
 
-            Value i = state._stack.Pop();
+            VALUE i = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(i.ToString());
 
-            Value a = state._stack.Pop();
+            VALUE a = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(a.ToString());
 
             var load = a.V;
             load = LLVM.BuildLoad(Builder, load, "i" + instruction_id++);
             if (Campy.Utils.Options.IsOn("jit_trace"))
-                System.Console.WriteLine(new Value(load));
+                System.Console.WriteLine(new VALUE(load));
 
             ValueRef extract_value = LLVM.BuildExtractValue(Builder, load, 0, "i" + instruction_id++);
             if (Campy.Utils.Options.IsOn("jit_trace"))
-                System.Console.WriteLine(new Value(extract_value));
+                System.Console.WriteLine(new VALUE(extract_value));
 
             // Now add in index to pointer.
             ValueRef[] indexes = new ValueRef[1];
             indexes[0] = i.V;
             ValueRef gep = LLVM.BuildInBoundsGEP(Builder, extract_value, indexes, "i" + instruction_id++);
             if (Campy.Utils.Options.IsOn("jit_trace"))
-                System.Console.WriteLine(new Value(gep));
+                System.Console.WriteLine(new VALUE(gep));
 
             var value = v.V;
             if (_dst != null && _dst.VerificationType.ToTypeRef() != v.T.IntermediateType)
             {
                 value = LLVM.BuildIntCast(Builder, value, _dst.VerificationType.ToTypeRef(), "i" + instruction_id++);
                 if (Campy.Utils.Options.IsOn("jit_trace"))
-                    System.Console.WriteLine(new Value(value));
+                    System.Console.WriteLine(new VALUE(value));
             }
             else if (_dst == null)
             {
@@ -2106,57 +2106,57 @@ namespace Campy.Compiler
                 {
                     value = LLVM.BuildIntCast(Builder, value, t_e, "i" + instruction_id++);
                     if (Campy.Utils.Options.IsOn("jit_trace"))
-                        System.Console.WriteLine(new Value(value));
+                        System.Console.WriteLine(new VALUE(value));
                 }
             }
 
             // Store.
             var store = LLVM.BuildStore(Builder, value, gep);
             if (Campy.Utils.Options.IsOn("jit_trace"))
-                System.Console.WriteLine(new Value(store));
+                System.Console.WriteLine(new VALUE(store));
 
             return Next;
         }
     }
 
 
-    public class ConvertLoadElementA : Inst
+    public class ConvertLoadElementA : INST
     {
         public ConvertLoadElementA(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
 
-        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
+        public override void ComputeStackLevel(JITER converter, ref int level_after)
         {
             level_after--;
         }
 
-        public override Inst Convert(CampyConverter converter, State state)
+        public override INST Convert(JITER converter, STATE state)
         {
-            Value i = state._stack.Pop();
+            VALUE i = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(i.ToString());
 
-            Value a = state._stack.Pop();
+            VALUE a = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(a.ToString());
 
             var load = a.V;
             load = LLVM.BuildLoad(Builder, load, "i" + instruction_id++);
             if (Campy.Utils.Options.IsOn("jit_trace"))
-                System.Console.WriteLine(new Value(load));
+                System.Console.WriteLine(new VALUE(load));
 
             // Load array base.
             ValueRef extract_value = LLVM.BuildExtractValue(Builder, load, 0, "i" + instruction_id++);
             if (Campy.Utils.Options.IsOn("jit_trace"))
-                System.Console.WriteLine(new Value(extract_value));
+                System.Console.WriteLine(new VALUE(extract_value));
 
             // Now add in index to pointer.
             ValueRef[] indexes = new ValueRef[1];
             indexes[0] = i.V;
             ValueRef gep = LLVM.BuildInBoundsGEP(Builder, extract_value, indexes, "i" + instruction_id++);
-            var result = new Value(gep);
+            var result = new VALUE(gep);
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(result);
 
@@ -2165,22 +2165,22 @@ namespace Campy.Compiler
         }
     }
 
-    public class ConvertLoadField : Inst
+    public class ConvertLoadField : INST
     {
         public ConvertLoadField(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
 
-        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
+        public override void ComputeStackLevel(JITER converter, ref int level_after)
         {
             // Stack level remains unchanged through instruction.
         }
 
-        public override Inst Convert(CampyConverter converter, State state)
+        public override INST Convert(JITER converter, STATE state)
         {
             {
-                Value v = state._stack.Pop();
+                VALUE v = state._stack.Pop();
                 if (Campy.Utils.Options.IsOn("jit_trace"))
                     System.Console.WriteLine(v);
 
@@ -2224,16 +2224,16 @@ namespace Campy.Compiler
                         var array_or_class = (f.FieldType.IsArray || !f.FieldType.IsValueType);
                         if (array_or_class)
                         {
-                            field_size = Buffers.SizeOf(typeof(IntPtr));
-                            alignment = Buffers.Alignment(typeof(IntPtr));
+                            field_size = BUFFERS.SizeOf(typeof(IntPtr));
+                            alignment = BUFFERS.Alignment(typeof(IntPtr));
                         }
                         else
                         {
                             var ft = f.FieldType.ToSystemType();
-                            field_size = Buffers.SizeOf(ft);
-                            alignment = Buffers.Alignment(ft);
+                            field_size = BUFFERS.SizeOf(ft);
+                            alignment = BUFFERS.Alignment(ft);
                         }
-                        int padding = Buffers.Padding(size, alignment);
+                        int padding = BUFFERS.Padding(size, alignment);
                         size = size + padding + field_size;
                         if (padding != 0)
                         {
@@ -2253,11 +2253,11 @@ namespace Campy.Compiler
 
                     var addr = LLVM.BuildStructGEP(Builder, v.V, offset, "i" + instruction_id++);
                     if (Campy.Utils.Options.IsOn("jit_trace"))
-                        System.Console.WriteLine(new Value(addr));
+                        System.Console.WriteLine(new VALUE(addr));
 
                     var load = LLVM.BuildLoad(Builder, addr, "i" + instruction_id++);
                     if (Campy.Utils.Options.IsOn("jit_trace"))
-                        System.Console.WriteLine(new Value(load));
+                        System.Console.WriteLine(new VALUE(load));
 
 
                     //var you = Converter.FromGenericParameterToTypeReference(field.FieldType,
@@ -2280,7 +2280,7 @@ namespace Campy.Compiler
                     // as LLVM cannot handle these at all. So, all pointer types
                     // were defined as void* in the LLVM field.
 
-                    var load_value = new Value(load);
+                    var load_value = new VALUE(load);
                     bool isPtrLoad = load_value.T.isPointerTy();
                     //if (isPtrLoad)
                     //{
@@ -2294,7 +2294,7 @@ namespace Campy.Compiler
                     //        System.Console.WriteLine(new Value(load));
                     //}
 
-                    state._stack.Push(new Value(load));
+                    state._stack.Push(new VALUE(load));
                 }
                 else
                 {
@@ -2321,15 +2321,15 @@ namespace Campy.Compiler
                         var array_or_class = (f.FieldType.IsArray || !f.FieldType.IsValueType);
                         if (array_or_class)
                         {
-                            field_size = Buffers.SizeOf(typeof(IntPtr));
-                            alignment = Buffers.Alignment(typeof(IntPtr));
+                            field_size = BUFFERS.SizeOf(typeof(IntPtr));
+                            alignment = BUFFERS.Alignment(typeof(IntPtr));
                         }
                         else
                         {
-                            field_size = Buffers.SizeOf(ft);
-                            alignment = Buffers.Alignment(ft);
+                            field_size = BUFFERS.SizeOf(ft);
+                            alignment = BUFFERS.Alignment(ft);
                         }
-                        int padding = Buffers.Padding(size, alignment);
+                        int padding = BUFFERS.Padding(size, alignment);
                         size = size + padding + field_size;
                         if (padding != 0)
                         {
@@ -2349,7 +2349,7 @@ namespace Campy.Compiler
 
                     var load = LLVM.BuildExtractValue(Builder, v.V, offset, "i" + instruction_id++);
                     if (Campy.Utils.Options.IsOn("jit_trace"))
-                        System.Console.WriteLine(new Value(load));
+                        System.Console.WriteLine(new VALUE(load));
 
                     bool xInt = LLVM.GetTypeKind(tt) == TypeKind.IntegerTypeKind;
                     bool xP = LLVM.GetTypeKind(tt) == TypeKind.PointerTypeKind;
@@ -2360,7 +2360,7 @@ namespace Campy.Compiler
                     // as LLVM cannot handle these at all. So, all pointer types
                     // were defined as void* in the LLVM field.
 
-                    var load_value = new Value(load);
+                    var load_value = new VALUE(load);
                     bool isPtrLoad = load_value.T.isPointerTy();
                     if (isPtrLoad)
                     {
@@ -2369,10 +2369,10 @@ namespace Campy.Compiler
                         load = LLVM.BuildBitCast(Builder,
                             load, type, "i" + instruction_id++);
                         if (Campy.Utils.Options.IsOn("jit_trace"))
-                            System.Console.WriteLine(new Value(load));
+                            System.Console.WriteLine(new VALUE(load));
                     }
 
-                    state._stack.Push(new Value(load));
+                    state._stack.Push(new VALUE(load));
                 }
 
                 return Next;
@@ -2380,26 +2380,26 @@ namespace Campy.Compiler
         }
     }
 
-    public class ConvertStoreField : Inst
+    public class ConvertStoreField : INST
     {
         public ConvertStoreField(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
 
-        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
+        public override void ComputeStackLevel(JITER converter, ref int level_after)
         {
             level_after = level_after - 2;
         }
 
-        public override Inst Convert(CampyConverter converter, State state)
+        public override INST Convert(JITER converter, STATE state)
         {
             {
-                Value v = state._stack.Pop();
+                VALUE v = state._stack.Pop();
                 if (Campy.Utils.Options.IsOn("jit_trace"))
                     System.Console.WriteLine(v);
 
-                Value o = state._stack.Pop();
+                VALUE o = state._stack.Pop();
                 if (Campy.Utils.Options.IsOn("jit_trace"))
                     System.Console.WriteLine(o);
 
@@ -2432,16 +2432,16 @@ namespace Campy.Compiler
                         var array_or_class = (f.FieldType.IsArray || !f.FieldType.IsValueType);
                         if (array_or_class)
                         {
-                            field_size = Buffers.SizeOf(typeof(IntPtr));
-                            alignment = Buffers.Alignment(typeof(IntPtr));
+                            field_size = BUFFERS.SizeOf(typeof(IntPtr));
+                            alignment = BUFFERS.Alignment(typeof(IntPtr));
                         }
                         else
                         {
                             var ft = f.FieldType.ToSystemType();
-                            field_size = Buffers.SizeOf(ft);
-                            alignment = Buffers.Alignment(ft);
+                            field_size = BUFFERS.SizeOf(ft);
+                            alignment = BUFFERS.Alignment(ft);
                         }
-                        int padding = Buffers.Padding(size, alignment);
+                        int padding = BUFFERS.Padding(size, alignment);
                         size = size + padding + field_size;
                         if (padding != 0)
                         {
@@ -2460,7 +2460,7 @@ namespace Campy.Compiler
 
                     var addr = LLVM.BuildStructGEP(Builder, o.V, offset, "i" + instruction_id++);
                     if (Campy.Utils.Options.IsOn("jit_trace"))
-                        System.Console.WriteLine(new Value(addr));
+                        System.Console.WriteLine(new VALUE(addr));
 
                     // If value is a pointer, then cast it to void*.
                     // This is because I had to avoid recursive data types in classes
@@ -2468,7 +2468,7 @@ namespace Campy.Compiler
                     // were defined as void* in the LLVM field.
                     var load = LLVM.BuildLoad(Builder, addr, "i" + instruction_id++);
 
-                    var load_value = new Value(load);
+                    var load_value = new VALUE(load);
                     bool isPtrLoad = load_value.T.isPointerTy();
                     //if (isPtrLoad)
                     //{
@@ -2482,7 +2482,7 @@ namespace Campy.Compiler
 
                     var store = LLVM.BuildStore(Builder, v.V, addr);
                     if (Campy.Utils.Options.IsOn("jit_trace"))
-                        System.Console.WriteLine(new Value(store));
+                        System.Console.WriteLine(new VALUE(store));
                 }
                 else if (isSt)
                 {
@@ -2508,16 +2508,16 @@ namespace Campy.Compiler
                         var array_or_class = (f.FieldType.IsArray || !f.FieldType.IsValueType);
                         if (array_or_class)
                         {
-                            field_size = Buffers.SizeOf(typeof(IntPtr));
-                            alignment = Buffers.Alignment(typeof(IntPtr));
+                            field_size = BUFFERS.SizeOf(typeof(IntPtr));
+                            alignment = BUFFERS.Alignment(typeof(IntPtr));
                         }
                         else
                         {
                             var ft = f.FieldType.ToSystemType();
-                            field_size = Buffers.SizeOf(ft);
-                            alignment = Buffers.Alignment(ft);
+                            field_size = BUFFERS.SizeOf(ft);
+                            alignment = BUFFERS.Alignment(ft);
                         }
-                        int padding = Buffers.Padding(size, alignment);
+                        int padding = BUFFERS.Padding(size, alignment);
                         size = size + padding + field_size;
                         if (padding != 0)
                         {
@@ -2536,9 +2536,9 @@ namespace Campy.Compiler
 
                     var value = LLVM.BuildExtractValue(Builder, o.V, offset, "i" + instruction_id++);
                     if (Campy.Utils.Options.IsOn("jit_trace"))
-                        System.Console.WriteLine(new Value(value));
+                        System.Console.WriteLine(new VALUE(value));
 
-                    var load_value = new Value(value);
+                    var load_value = new VALUE(value);
                     bool isPtrLoad = load_value.T.isPointerTy();
                     if (isPtrLoad)
                     {
@@ -2547,12 +2547,12 @@ namespace Campy.Compiler
                         value = LLVM.BuildBitCast(Builder,
                             value, type, "i" + instruction_id++);
                         if (Campy.Utils.Options.IsOn("jit_trace"))
-                            System.Console.WriteLine(new Value(value));
+                            System.Console.WriteLine(new VALUE(value));
                     }
 
                     var store = LLVM.BuildStore(Builder, v.V, value);
                     if (Campy.Utils.Options.IsOn("jit_trace"))
-                        System.Console.WriteLine(new Value(store));
+                        System.Console.WriteLine(new VALUE(store));
                 }
                 else
                 {
@@ -2564,9 +2564,9 @@ namespace Campy.Compiler
         }
     }
 
-    public class ConvertLoadIndirect : Inst
+    public class ConvertLoadIndirect : INST
     {
-        protected Type _dst;
+        protected TYPE _dst;
         protected bool _check_overflow;
         protected bool _from_unsigned;
 
@@ -2575,14 +2575,14 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
+        public override void ComputeStackLevel(JITER converter, ref int level_after)
         {
             // No change in depth of stack.
         }
 
-        public override Inst Convert(CampyConverter converter, State state)
+        public override INST Convert(JITER converter, STATE state)
         {
-            Value v = state._stack.Pop();
+            VALUE v = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine("ConvertLoadIndirect into function " + v.ToString());
 
@@ -2592,17 +2592,17 @@ namespace Campy.Compiler
             ValueRef[] indexes = new ValueRef[0];
             ValueRef gep = LLVM.BuildInBoundsGEP(Builder, v.V, indexes, "i" + instruction_id++);
             if (Campy.Utils.Options.IsOn("jit_trace"))
-                System.Console.WriteLine(new Value(gep).ToString());
+                System.Console.WriteLine(new VALUE(gep).ToString());
 
             var load = LLVM.BuildLoad(Builder, gep, "i" + instruction_id++);
             if (Campy.Utils.Options.IsOn("jit_trace"))
-                System.Console.WriteLine("load = " + new Value(load).ToString());
+                System.Console.WriteLine("load = " + new VALUE(load).ToString());
 
             if (_dst != null && _dst.IntermediateType != LLVM.TypeOf(load))
             {
                 load = LLVM.BuildIntCast(Builder, load, _dst.IntermediateType, "i" + instruction_id++);
                 if (Campy.Utils.Options.IsOn("jit_trace"))
-                    System.Console.WriteLine(new Value(load));
+                    System.Console.WriteLine(new VALUE(load));
             }
             else if (_dst == null)
             {
@@ -2614,7 +2614,7 @@ namespace Campy.Compiler
                 {
                     load = LLVM.BuildIntCast(Builder, load, LLVM.Int32Type(), "i" + instruction_id++);
                     if (Campy.Utils.Options.IsOn("jit_trace"))
-                        System.Console.WriteLine(new Value(load));
+                        System.Console.WriteLine(new VALUE(load));
                 }
                 else
                     t_to = t_v;
@@ -2622,14 +2622,14 @@ namespace Campy.Compiler
                 //var tt = op.GetType();
             }
 
-            state._stack.Push(new Value(load));
+            state._stack.Push(new VALUE(load));
             return Next;
         }
     }
 
-    public class ConvertStoreIndirect : Inst
+    public class ConvertStoreIndirect : INST
     {
-        protected Type _dst;
+        protected TYPE _dst;
         protected bool _check_overflow;
         protected bool _from_unsigned;
 
@@ -2638,31 +2638,31 @@ namespace Campy.Compiler
         {
         }
 
-        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
+        public override void ComputeStackLevel(JITER converter, ref int level_after)
         {
             level_after -= 2;
         }
 
-        public override Inst Convert(CampyConverter converter, State state)
+        public override INST Convert(JITER converter, STATE state)
         {
-            Value v = state._stack.Pop();
+            VALUE v = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(v);
 
-            Value a = state._stack.Pop();
+            VALUE a = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(a);
 
             ValueRef[] indexes = new ValueRef[0];
             ValueRef gep = LLVM.BuildInBoundsGEP(Builder, a.V, indexes, "i" + instruction_id++);
             if (Campy.Utils.Options.IsOn("jit_trace"))
-                System.Console.WriteLine(new Value(gep));
+                System.Console.WriteLine(new VALUE(gep));
 
             // Cast long into a pointer of the given dst type.
             var ptr = LLVM.BuildPointerCast(Builder, gep,
                 LLVM.PointerType(_dst.VerificationType.ToTypeRef(), 0), "i" + instruction_id++);
             if (Campy.Utils.Options.IsOn("jit_trace"))
-                System.Console.WriteLine(new Value(ptr));
+                System.Console.WriteLine(new VALUE(ptr));
 
 
             var value = v.V;
@@ -2670,7 +2670,7 @@ namespace Campy.Compiler
             {
                 value = LLVM.BuildIntCast(Builder, value, _dst.VerificationType.ToTypeRef(), "i" + instruction_id++);
                 if (Campy.Utils.Options.IsOn("jit_trace"))
-                    System.Console.WriteLine(new Value(value));
+                    System.Console.WriteLine(new VALUE(value));
             }
             else if (_dst == null)
             {
@@ -2681,13 +2681,13 @@ namespace Campy.Compiler
                 {
                     value = LLVM.BuildIntCast(Builder, value, t_e, "i" + instruction_id++);
                     if (Campy.Utils.Options.IsOn("jit_trace"))
-                        System.Console.WriteLine(new Value(value));
+                        System.Console.WriteLine(new VALUE(value));
                 }
             }
             
             var zz = LLVM.BuildStore(Builder, value, ptr);
             if (Campy.Utils.Options.IsOn("jit_trace"))
-                System.Console.WriteLine("Store = " + new Value(zz).ToString());
+                System.Console.WriteLine("Store = " + new VALUE(zz).ToString());
 
             return Next;
         }
@@ -2727,7 +2727,7 @@ namespace Campy.Compiler
         }
     }
 
-    public class i_arglist : Inst
+    public class i_arglist : INST
     {
         public i_arglist(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -2934,7 +2934,7 @@ namespace Campy.Compiler
         }
     }
 
-    public class i_box : Inst
+    public class i_box : INST
     {
         public i_box(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -2942,19 +2942,19 @@ namespace Campy.Compiler
         }
     }
 
-    public class i_br : Inst
+    public class i_br : INST
     {
         public i_br(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
 
-        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
+        public override void ComputeStackLevel(JITER converter, ref int level_after)
         {
             // No change.
         }
 
-        public override Inst Convert(CampyConverter converter, State state)
+        public override INST Convert(JITER converter, STATE state)
         {
             var edge = Block._graph.SuccessorEdges(Block).ToList()[0];
             var s = edge.To;
@@ -2963,19 +2963,19 @@ namespace Campy.Compiler
         }
     }
 
-    public class i_br_s : Inst
+    public class i_br_s : INST
     {
         public i_br_s(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
 
-        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
+        public override void ComputeStackLevel(JITER converter, ref int level_after)
         {
             // No change.
         }
 
-        public override Inst Convert(CampyConverter converter, State state)
+        public override INST Convert(JITER converter, STATE state)
         {
             var edge = Block._graph.SuccessorEdges(Block).ToList()[0];
             var s = edge.To;
@@ -2984,19 +2984,19 @@ namespace Campy.Compiler
         }
     }
 
-    public class i_brfalse : Inst
+    public class i_brfalse : INST
     {
         public i_brfalse(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
 
-        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
+        public override void ComputeStackLevel(JITER converter, ref int level_after)
         {
             level_after--;
         }
 
-        public override Inst Convert(CampyConverter converter, State state)
+        public override INST Convert(JITER converter, STATE state)
         {
             object operand = this.Operand;
             Instruction instruction = operand as Instruction;
@@ -3027,7 +3027,7 @@ namespace Campy.Compiler
         }
     }
 
-    public class i_break : Inst
+    public class i_break : INST
     {
         public i_break(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3035,19 +3035,19 @@ namespace Campy.Compiler
         }
     }
 
-    public class i_brfalse_s : Inst
+    public class i_brfalse_s : INST
     {
         public i_brfalse_s(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
 
-        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
+        public override void ComputeStackLevel(JITER converter, ref int level_after)
         {
             level_after--;
         }
 
-        public override Inst Convert(CampyConverter converter, State state)
+        public override INST Convert(JITER converter, STATE state)
         {
             object operand = this.Operand;
             Instruction instruction = operand as Instruction;
@@ -3078,19 +3078,19 @@ namespace Campy.Compiler
         }
     }
 
-    public class i_brtrue : Inst
+    public class i_brtrue : INST
     {
         public i_brtrue(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
 
-        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
+        public override void ComputeStackLevel(JITER converter, ref int level_after)
         {
             level_after--;
         }
 
-        public override Inst Convert(CampyConverter converter, State state)
+        public override INST Convert(JITER converter, STATE state)
         {
             object operand = this.Operand;
             Instruction instruction = operand as Instruction;
@@ -3121,19 +3121,19 @@ namespace Campy.Compiler
         }
     }
 
-    public class i_brtrue_s : Inst
+    public class i_brtrue_s : INST
     {
         public i_brtrue_s(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
 
-        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
+        public override void ComputeStackLevel(JITER converter, ref int level_after)
         {
             level_after--;
         }
 
-        public override Inst Convert(CampyConverter converter, State state)
+        public override INST Convert(JITER converter, STATE state)
         {
             object operand = this.Operand;
             Instruction instruction = operand as Instruction;
@@ -3226,7 +3226,7 @@ namespace Campy.Compiler
         }
     }
 
-    public class i_ckfinite : Inst
+    public class i_ckfinite : INST
     {
         public i_ckfinite(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3254,7 +3254,7 @@ namespace Campy.Compiler
         }
     }
 
-    public class i_constrained : Inst
+    public class i_constrained : INST
     {
         public i_constrained(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3267,7 +3267,7 @@ namespace Campy.Compiler
         public i_conv_i1(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            _dst = new Type(typeof(sbyte));
+            _dst = new TYPE(typeof(sbyte));
         }
     }
 
@@ -3276,7 +3276,7 @@ namespace Campy.Compiler
         public i_conv_i2(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            _dst = new Type(typeof(short));
+            _dst = new TYPE(typeof(short));
         }
     }
 
@@ -3285,7 +3285,7 @@ namespace Campy.Compiler
         public i_conv_i4(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            _dst = new Type(typeof(int));
+            _dst = new TYPE(typeof(int));
         }
     }
 
@@ -3294,7 +3294,7 @@ namespace Campy.Compiler
         public i_conv_i8(Mono.Cecil.Cil.Instruction i)
                 : base(i)
         {
-            _dst = new Type(typeof(long));
+            _dst = new TYPE(typeof(long));
         }
     }
 
@@ -3303,7 +3303,7 @@ namespace Campy.Compiler
         public i_conv_i(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            _dst = new Type(typeof(int));
+            _dst = new TYPE(typeof(int));
         }
     }
 
@@ -3312,7 +3312,7 @@ namespace Campy.Compiler
         public i_conv_ovf_i1(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            _dst = new Type(typeof(sbyte));
+            _dst = new TYPE(typeof(sbyte));
         }
     }
 
@@ -3321,7 +3321,7 @@ namespace Campy.Compiler
         public i_conv_ovf_i1_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            _dst = new Type(typeof(sbyte));
+            _dst = new TYPE(typeof(sbyte));
         }
     }
 
@@ -3330,7 +3330,7 @@ namespace Campy.Compiler
         public i_conv_ovf_i2(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            _dst = new Type(typeof(short));
+            _dst = new TYPE(typeof(short));
         }
     }
 
@@ -3339,7 +3339,7 @@ namespace Campy.Compiler
         public i_conv_ovf_i2_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            _dst = new Type(typeof(short));
+            _dst = new TYPE(typeof(short));
         }
     }
 
@@ -3348,7 +3348,7 @@ namespace Campy.Compiler
         public i_conv_ovf_i4(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            _dst = new Type(typeof(int));
+            _dst = new TYPE(typeof(int));
         }
     }
 
@@ -3357,7 +3357,7 @@ namespace Campy.Compiler
         public i_conv_ovf_i4_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            _dst = new Type(typeof(int));
+            _dst = new TYPE(typeof(int));
         }
     }
 
@@ -3366,7 +3366,7 @@ namespace Campy.Compiler
         public i_conv_ovf_i8(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            _dst = new Type(typeof(long));
+            _dst = new TYPE(typeof(long));
         }
     }
 
@@ -3375,7 +3375,7 @@ namespace Campy.Compiler
         public i_conv_ovf_i8_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            _dst = new Type(typeof(long));
+            _dst = new TYPE(typeof(long));
         }
     }
 
@@ -3384,7 +3384,7 @@ namespace Campy.Compiler
         public i_conv_ovf_i(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            _dst = new Type(typeof(int));
+            _dst = new TYPE(typeof(int));
         }
     }
 
@@ -3393,7 +3393,7 @@ namespace Campy.Compiler
         public i_conv_ovf_i_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            _dst = new Type(typeof(int));
+            _dst = new TYPE(typeof(int));
         }
     }
 
@@ -3402,7 +3402,7 @@ namespace Campy.Compiler
         public i_conv_ovf_u1(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            _dst = new Type(typeof(byte));
+            _dst = new TYPE(typeof(byte));
         }
     }
 
@@ -3411,7 +3411,7 @@ namespace Campy.Compiler
         public i_conv_ovf_u1_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            _dst = new Type(typeof(byte));
+            _dst = new TYPE(typeof(byte));
         }
     }
 
@@ -3420,7 +3420,7 @@ namespace Campy.Compiler
         public i_conv_ovf_u2(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            _dst = new Type(typeof(ushort));
+            _dst = new TYPE(typeof(ushort));
         }
     }
 
@@ -3429,7 +3429,7 @@ namespace Campy.Compiler
         public i_conv_ovf_u2_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            _dst = new Type(typeof(ushort));
+            _dst = new TYPE(typeof(ushort));
         }
     }
 
@@ -3438,7 +3438,7 @@ namespace Campy.Compiler
         public i_conv_ovf_u4(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            _dst = new Type(typeof(uint));
+            _dst = new TYPE(typeof(uint));
         }
     }
 
@@ -3447,7 +3447,7 @@ namespace Campy.Compiler
         public i_conv_ovf_u4_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            _dst = new Type(typeof(uint));
+            _dst = new TYPE(typeof(uint));
         }
     }
 
@@ -3456,7 +3456,7 @@ namespace Campy.Compiler
         public i_conv_ovf_u8(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            _dst = new Type(typeof(ulong));
+            _dst = new TYPE(typeof(ulong));
         }
     }
 
@@ -3465,7 +3465,7 @@ namespace Campy.Compiler
         public i_conv_ovf_u8_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            _dst = new Type(typeof(ulong));
+            _dst = new TYPE(typeof(ulong));
         }
     }
 
@@ -3474,7 +3474,7 @@ namespace Campy.Compiler
         public i_conv_ovf_u(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            _dst = new Type(typeof(uint));
+            _dst = new TYPE(typeof(uint));
         }
     }
 
@@ -3483,7 +3483,7 @@ namespace Campy.Compiler
         public i_conv_ovf_u_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            _dst = new Type(typeof(uint));
+            _dst = new TYPE(typeof(uint));
         }
     }
 
@@ -3492,7 +3492,7 @@ namespace Campy.Compiler
         public i_conv_r4(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            _dst = new Type(typeof(float));
+            _dst = new TYPE(typeof(float));
         }
     }
 
@@ -3501,7 +3501,7 @@ namespace Campy.Compiler
         public i_conv_r8(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            _dst = new Type(typeof(double));
+            _dst = new TYPE(typeof(double));
         }
     }
 
@@ -3510,7 +3510,7 @@ namespace Campy.Compiler
         public i_conv_r_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            _dst = new Type(typeof(float));
+            _dst = new TYPE(typeof(float));
         }
     }
 
@@ -3519,7 +3519,7 @@ namespace Campy.Compiler
         public i_conv_u1(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            _dst = new Type(typeof(byte));
+            _dst = new TYPE(typeof(byte));
         }
     }
 
@@ -3528,7 +3528,7 @@ namespace Campy.Compiler
         public i_conv_u2(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            _dst = new Type(typeof(ushort));
+            _dst = new TYPE(typeof(ushort));
         }
     }
 
@@ -3537,7 +3537,7 @@ namespace Campy.Compiler
         public i_conv_u4(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            _dst = new Type(typeof(uint));
+            _dst = new TYPE(typeof(uint));
         }
     }
 
@@ -3546,7 +3546,7 @@ namespace Campy.Compiler
         public i_conv_u8(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            _dst = new Type(typeof(ulong));
+            _dst = new TYPE(typeof(ulong));
         }
     }
 
@@ -3555,11 +3555,11 @@ namespace Campy.Compiler
         public i_conv_u(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            _dst = new Type(typeof(uint));
+            _dst = new TYPE(typeof(uint));
         }
     }
 
-    public class i_cpblk : Inst
+    public class i_cpblk : INST
     {
         public i_cpblk(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3567,7 +3567,7 @@ namespace Campy.Compiler
         }
     }
 
-    public class i_cpobj : Inst
+    public class i_cpobj : INST
     {
         public i_cpobj(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3591,19 +3591,19 @@ namespace Campy.Compiler
         }
     }
 
-    public class i_dup : Inst
+    public class i_dup : INST
     {
         public i_dup(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
 
-        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
+        public override void ComputeStackLevel(JITER converter, ref int level_after)
         {
             level_after++;
         }
 
-        public override Inst Convert(CampyConverter converter, State state)
+        public override INST Convert(JITER converter, STATE state)
         {
             var rhs = state._stack.Pop();
             state._stack.Push(rhs);
@@ -3613,20 +3613,20 @@ namespace Campy.Compiler
 
     }
 
-    public class i_endfilter : Inst
+    public class i_endfilter : INST
     {
         public i_endfilter(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
 
-        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
+        public override void ComputeStackLevel(JITER converter, ref int level_after)
         {
             level_after--;
         }
     }
 
-    public class i_endfinally : Inst
+    public class i_endfinally : INST
     {
         public i_endfinally(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3634,33 +3634,33 @@ namespace Campy.Compiler
         }
     }
 
-    public class i_initblk : Inst
+    public class i_initblk : INST
     {
         public i_initblk(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
 
-        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
+        public override void ComputeStackLevel(JITER converter, ref int level_after)
         {
             level_after -= 3;
         }
     }
 
-    public class i_initobj : Inst
+    public class i_initobj : INST
     {
         public i_initobj(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
 
-        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
+        public override void ComputeStackLevel(JITER converter, ref int level_after)
         {
             level_after--;
         }
     }
 
-    public class i_isinst : Inst
+    public class i_isinst : INST
     {
         public i_isinst(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3668,7 +3668,7 @@ namespace Campy.Compiler
         }
     }
 
-    public class i_jmp : Inst
+    public class i_jmp : INST
     {
         public i_jmp(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -4185,7 +4185,7 @@ namespace Campy.Compiler
             _arg = arg;
         }
 
-        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
+        public override void ComputeStackLevel(JITER converter, ref int level_after)
         {
             level_after++;
         }
@@ -4204,7 +4204,7 @@ namespace Campy.Compiler
         public i_ldelem_i1(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            _dst = new Type(typeof(sbyte));
+            _dst = new TYPE(typeof(sbyte));
         }
     }
 
@@ -4213,7 +4213,7 @@ namespace Campy.Compiler
         public i_ldelem_i2(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            _dst = new Type(typeof(short));
+            _dst = new TYPE(typeof(short));
         }
     }
 
@@ -4222,7 +4222,7 @@ namespace Campy.Compiler
         public i_ldelem_i4(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            _dst = new Type(typeof(int));
+            _dst = new TYPE(typeof(int));
         }
     }
 
@@ -4231,7 +4231,7 @@ namespace Campy.Compiler
         public i_ldelem_i8(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            _dst = new Type(typeof(long));
+            _dst = new TYPE(typeof(long));
         }
     }
 
@@ -4248,7 +4248,7 @@ namespace Campy.Compiler
         public i_ldelem_r4(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            _dst = new Type(typeof(float));
+            _dst = new TYPE(typeof(float));
         }
     }
 
@@ -4257,7 +4257,7 @@ namespace Campy.Compiler
         public i_ldelem_r8(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            _dst = new Type(typeof(double));
+            _dst = new TYPE(typeof(double));
         }
     }
 
@@ -4274,7 +4274,7 @@ namespace Campy.Compiler
         public i_ldelem_u1(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            _dst = new Type(typeof(byte));
+            _dst = new TYPE(typeof(byte));
         }
     }
 
@@ -4283,7 +4283,7 @@ namespace Campy.Compiler
         public i_ldelem_u2(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            _dst = new Type(typeof(ushort));
+            _dst = new TYPE(typeof(ushort));
         }
     }
 
@@ -4292,7 +4292,7 @@ namespace Campy.Compiler
         public i_ldelem_u4(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            _dst = new Type(typeof(uint));
+            _dst = new TYPE(typeof(uint));
         }
     }
 
@@ -4312,7 +4312,7 @@ namespace Campy.Compiler
         }
     }
 
-    public class i_ldflda : Inst
+    public class i_ldflda : INST
     {
         public i_ldflda(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -4320,14 +4320,14 @@ namespace Campy.Compiler
         }
     }
 
-    public class i_ldftn : Inst
+    public class i_ldftn : INST
     {
         public i_ldftn(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
 
-        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
+        public override void ComputeStackLevel(JITER converter, ref int level_after)
         {
             level_after++;
         }
@@ -4338,7 +4338,7 @@ namespace Campy.Compiler
         public i_ldind_i1(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            _dst = new Type(typeof(sbyte));
+            _dst = new TYPE(typeof(sbyte));
         }
     }
 
@@ -4347,7 +4347,7 @@ namespace Campy.Compiler
         public i_ldind_i2(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            _dst = new Type(typeof(short));
+            _dst = new TYPE(typeof(short));
         }
     }
 
@@ -4356,7 +4356,7 @@ namespace Campy.Compiler
         public i_ldind_i4(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            _dst = new Type(typeof(int));
+            _dst = new TYPE(typeof(int));
         }
     }
 
@@ -4365,7 +4365,7 @@ namespace Campy.Compiler
         public i_ldind_i8(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            _dst = new Type(typeof(long));
+            _dst = new TYPE(typeof(long));
         }
     }
 
@@ -4382,7 +4382,7 @@ namespace Campy.Compiler
         public i_ldind_r4(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            _dst = new Type(typeof(float));
+            _dst = new TYPE(typeof(float));
         }
     }
 
@@ -4391,7 +4391,7 @@ namespace Campy.Compiler
         public i_ldind_r8(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            _dst = new Type(typeof(double));
+            _dst = new TYPE(typeof(double));
         }
     }
 
@@ -4408,7 +4408,7 @@ namespace Campy.Compiler
         public i_ldind_u1(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            _dst = new Type(typeof(byte));
+            _dst = new TYPE(typeof(byte));
         }
     }
 
@@ -4417,7 +4417,7 @@ namespace Campy.Compiler
         public i_ldind_u2(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-             _dst = new Type(typeof(ushort));
+             _dst = new TYPE(typeof(ushort));
         }
     }
 
@@ -4426,11 +4426,11 @@ namespace Campy.Compiler
         public i_ldind_u4(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            _dst = new Type(typeof(uint));
+            _dst = new TYPE(typeof(uint));
         }
     }
 
-    public class i_ldlen : Inst
+    public class i_ldlen : INST
     {
         public i_ldlen(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -4438,21 +4438,21 @@ namespace Campy.Compiler
         }
 
         // For array implementation, see https://www.codeproject.com/Articles/3467/Arrays-UNDOCUMENTED
-        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
+        public override void ComputeStackLevel(JITER converter, ref int level_after)
         {
             // No effect change in stack size.
         }
 
-        public override Inst Convert(CampyConverter converter, State state)
+        public override INST Convert(JITER converter, STATE state)
         {
-            Value v = state._stack.Pop();
+            VALUE v = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(v);
 
             var load = v.V;
             load = LLVM.BuildLoad(Builder, load, "i" + instruction_id++);
             if (Campy.Utils.Options.IsOn("jit_trace"))
-                System.Console.WriteLine(new Value(load));
+                System.Console.WriteLine(new VALUE(load));
 
             // The length of an array is the product of all dimensions, but this instruction
             // is only used for 1d arrays.
@@ -4460,13 +4460,13 @@ namespace Campy.Compiler
             // Load len.
             load = LLVM.BuildExtractValue(Builder, load, 2, "i" + instruction_id++);
             if (Campy.Utils.Options.IsOn("jit_trace"))
-                System.Console.WriteLine(new Value(load));
+                System.Console.WriteLine(new VALUE(load));
 
             load = LLVM.BuildTrunc(Builder, load, LLVM.Int32Type(), "i" + instruction_id++);
             if (Campy.Utils.Options.IsOn("jit_trace"))
-                System.Console.WriteLine(new Value(load));
+                System.Console.WriteLine(new VALUE(load));
 
-            state._stack.Push(new Value(load));
+            state._stack.Push(new VALUE(load));
             return Next;
         }
     }
@@ -4555,20 +4555,20 @@ namespace Campy.Compiler
         }
     }
 
-    public class i_ldnull : Inst
+    public class i_ldnull : INST
     {
         public i_ldnull(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
 
-        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
+        public override void ComputeStackLevel(JITER converter, ref int level_after)
         {
             level_after++;
         }
     }
 
-    public class i_ldobj : Inst
+    public class i_ldobj : INST
     {
         public i_ldobj(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -4576,45 +4576,45 @@ namespace Campy.Compiler
         }
     }
 
-    public class i_ldsfld : Inst
+    public class i_ldsfld : INST
     {
         public i_ldsfld(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
 
-        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
+        public override void ComputeStackLevel(JITER converter, ref int level_after)
         {
             level_after++;
         }
     }
 
-    public class i_ldsflda : Inst
+    public class i_ldsflda : INST
     {
         public i_ldsflda(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
 
-        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
+        public override void ComputeStackLevel(JITER converter, ref int level_after)
         {
             level_after++;
         }
     }
 
-    public class i_ldstr : Inst
+    public class i_ldstr : INST
     {
         public i_ldstr(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
 
-        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
+        public override void ComputeStackLevel(JITER converter, ref int level_after)
         {
             level_after++;
         }
 
-        public override Inst Convert(CampyConverter converter, State state)
+        public override INST Convert(JITER converter, STATE state)
         {
             // Call SystemString_FromCharPtrASCII and push new string object on the stack.
             // _Z29SystemString_FromCharPtrASCIIPc
@@ -4630,42 +4630,42 @@ namespace Campy.Compiler
                 var llvm_cstr = LLVM.BuildBitCast(Builder, llvm_cstr_t, LLVM.PointerType(LLVM.Int8Type(), 0), "i" + instruction_id++);
                 args[0] = llvm_cstr;
                 string name = "_Z29SystemString_FromCharPtrASCIIPc";
-                var list = Runtime.BclNativeMethods.ToList();
-                var list2 = Runtime.PtxFunctions.ToList();
+                var list = RUNTIME.BclNativeMethods.ToList();
+                var list2 = RUNTIME.PtxFunctions.ToList();
                 var f = list2.Where(t => t._mangled_name == name).First();
                 ValueRef fv = f._valueref;
                 var call = LLVM.BuildCall(Builder, fv, args, "");
 
                 // Find type of System.String in BCL.
-                Mono.Cecil.TypeReference tr = Runtime.FindBCLType(typeof(System.String));
+                Mono.Cecil.TypeReference tr = RUNTIME.FindBCLType(typeof(System.String));
                 var llvm_type = tr.ToTypeRef();
 
                 // Convert to pointer to pointer of string.
                 var cast = LLVM.BuildIntToPtr(Builder, call, llvm_type, "i" + instruction_id++);
                 if (Campy.Utils.Options.IsOn("jit_trace"))
-                    System.Console.WriteLine(new Value(cast));
+                    System.Console.WriteLine(new VALUE(cast));
 
-                state._stack.Push(new Value(cast));
+                state._stack.Push(new VALUE(cast));
             }
 
             return Next;
         }
     }
 
-    public class i_ldtoken : Inst
+    public class i_ldtoken : INST
     {
         public i_ldtoken(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
 
-    public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
+    public override void ComputeStackLevel(JITER converter, ref int level_after)
     {
         level_after++;
     }
     }
 
-    public class i_ldvirtftn : Inst
+    public class i_ldvirtftn : INST
     {
         public i_ldvirtftn(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -4673,7 +4673,7 @@ namespace Campy.Compiler
         }
     }
 
-    public class i_leave : Inst
+    public class i_leave : INST
     {
         public i_leave(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -4681,7 +4681,7 @@ namespace Campy.Compiler
         }
     }
 
-    public class i_leave_s : Inst
+    public class i_leave_s : INST
     {
         public i_leave_s(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -4689,7 +4689,7 @@ namespace Campy.Compiler
         }
     }
 
-    public class i_localloc : Inst
+    public class i_localloc : INST
     {
         public i_localloc(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -4697,7 +4697,7 @@ namespace Campy.Compiler
         }
     }
 
-    public class i_mkrefany : Inst
+    public class i_mkrefany : INST
     {
         public i_mkrefany(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -4729,19 +4729,19 @@ namespace Campy.Compiler
         }
     }
 
-    public class i_neg : Inst
+    public class i_neg : INST
     {
         public i_neg(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
 
-        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
+        public override void ComputeStackLevel(JITER converter, ref int level_after)
         {
             // No change in stack depth.
         }
 
-        public override Inst Convert(CampyConverter converter, State state)
+        public override INST Convert(JITER converter, STATE state)
         {
             var rhs = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -4756,22 +4756,22 @@ namespace Campy.Compiler
                 neg = LLVM.BuildNeg(Builder, rhs.V, "i" + instruction_id++);
 
             if (Campy.Utils.Options.IsOn("jit_trace"))
-                System.Console.WriteLine(new Value(neg));
+                System.Console.WriteLine(new VALUE(neg));
 
-            state._stack.Push(new Value(neg));
+            state._stack.Push(new VALUE(neg));
 
             return Next;
         }
     }
 
-    public class i_newarr : Inst
+    public class i_newarr : INST
     {
         public i_newarr(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
 
-        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
+        public override void ComputeStackLevel(JITER converter, ref int level_after)
         {
         // Successor is fallthrough.
             int args = 0;
@@ -4804,14 +4804,14 @@ namespace Campy.Compiler
         }
     }
 
-    public class i_newobj : Inst
+    public class i_newobj : INST
     {
         public i_newobj(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
 
-        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
+        public override void ComputeStackLevel(JITER converter, ref int level_after)
         {
             // Stack level for new obj depends on the initializer called. Get that information.
 
@@ -4827,14 +4827,14 @@ namespace Campy.Compiler
 
             CFG graph = (CFG)this.Block._graph;
 
-            var name = CampyConverter.MethodName(method);
+            var name = JITER.MethodName(method);
             CFG.Vertex the_entry = this.Block._graph.Vertices.Where(node
                 =>
             {
                 var g = this.Block._graph;
                 CFG.Vertex v = node;
-                CampyConverter c = converter;
-                if (v.IsEntry && CampyConverter.MethodName(v._original_method_reference) == name && c.IsFullyInstantiatedNode(v))
+                JITER c = converter;
+                if (v.IsEntry && JITER.MethodName(v._original_method_reference) == name && c.IsFullyInstantiatedNode(v))
                     return true;
                 else return false;
             }).ToList().FirstOrDefault();
@@ -4872,7 +4872,7 @@ namespace Campy.Compiler
                           - args;
         }
 
-        public override Inst Convert(CampyConverter converter, State state)
+        public override INST Convert(JITER converter, STATE state)
         {
             // The JIT of a call instructure requires a little explanation. The operand
             // for the instruction is a MethodReference, which is a C# method of some type.
@@ -4893,14 +4893,14 @@ namespace Campy.Compiler
             if (type == null)
                 throw new Exception("Cannot get type of object/value for newobj instruction.");
             bool is_type_value_type = type.IsValueType;
-            var name = CampyConverter.MethodName(method);
+            var name = JITER.MethodName(method);
             CFG.Vertex the_entry = this.Block._graph.Vertices.Where(node
                 =>
             {
                 var g = inst.Block._graph;
                 CFG.Vertex v = node;
-                CampyConverter c = converter;
-                if (v.IsEntry && CampyConverter.MethodName(v._original_method_reference) == name && c.IsFullyInstantiatedNode(v))
+                JITER c = converter;
+                if (v.IsEntry && JITER.MethodName(v._original_method_reference) == name && c.IsFullyInstantiatedNode(v))
                     return true;
                 else return false;
             }).ToList().FirstOrDefault();
@@ -4932,20 +4932,20 @@ namespace Campy.Compiler
                 var new_obj = LLVM.BuildAlloca(Builder, llvm_type, "i" + instruction_id++); // Allocates struct on stack, but returns a pointer to struct.
                 //LLVM.PositionBuilderAtEnd(Builder, this.Block.BasicBlock);
                 if (Campy.Utils.Options.IsOn("jit_trace"))
-                    System.Console.WriteLine(new Value(new_obj));
+                    System.Console.WriteLine(new VALUE(new_obj));
 
                 BuilderRef bu = this.Builder;
                 ValueRef fv = the_entry.MethodValueRef;
                 var t_fun = LLVM.TypeOf(fv);
                 var t_fun_con = LLVM.GetTypeContext(t_fun);
-                var context = LLVM.GetModuleContext(CampyConverter.global_llvm_module);
+                var context = LLVM.GetModuleContext(JITER.global_llvm_module);
                 if (t_fun_con != context) throw new Exception("not equal");
 
                 // Set up args, type casting if required.
                 ValueRef[] args = new ValueRef[nargs];
                 for (int k = nargs - 1; k >= 1; --k)
                 {
-                    Value v = state._stack.Pop();
+                    VALUE v = state._stack.Pop();
                     ValueRef par = LLVM.GetParam(fv, (uint)k);
                     ValueRef value = v.V;
                     if (LLVM.TypeOf(value) != LLVM.TypeOf(par))
@@ -4965,13 +4965,13 @@ namespace Campy.Compiler
 
                 var call = LLVM.BuildCall(Builder, fv, args, "");
                 if (Campy.Utils.Options.IsOn("jit_trace"))
-                    System.Console.WriteLine(new Value(call));
+                    System.Console.WriteLine(new VALUE(call));
 
                 var load = LLVM.BuildLoad(Builder, new_obj, "i" + instruction_id++);
                 if (Campy.Utils.Options.IsOn("jit_trace"))
-                    System.Console.WriteLine(new Value(load));
+                    System.Console.WriteLine(new VALUE(load));
 
-                state._stack.Push(new Value(load));
+                state._stack.Push(new VALUE(load));
             }
             else if (!is_type_value_type && the_entry == null)
             {
@@ -5005,28 +5005,28 @@ namespace Campy.Compiler
                 demangled_name = demangled_name.Replace("__", "_");
                 BuilderRef bu = this.Builder;
                 var as_name = method.Module.Assembly.Name;
-                var xx = Runtime.BclNativeMethods
+                var xx = RUNTIME.BclNativeMethods
                     .Where(t =>
                     {
                         return t._full_name == full_name;
                     });
                 var xxx = xx.ToList();
-                Runtime.BclNativeMethod first_kv_pair = xx.FirstOrDefault();
+                RUNTIME.BclNativeMethod first_kv_pair = xx.FirstOrDefault();
                 if (first_kv_pair == null)
                     throw new Exception("Yikes.");
 
-                Runtime.PtxFunction fffv = Runtime.PtxFunctions.Where(t => t._short_name == first_kv_pair._native_name).First();
+                RUNTIME.PtxFunction fffv = RUNTIME.PtxFunctions.Where(t => t._short_name == first_kv_pair._native_name).First();
                 ValueRef fv = fffv._valueref;
                 var t_fun = LLVM.TypeOf(fv);
                 var t_fun_con = LLVM.GetTypeContext(t_fun);
-                var context = LLVM.GetModuleContext(CampyConverter.global_llvm_module);
+                var context = LLVM.GetModuleContext(JITER.global_llvm_module);
 
                 {
                     ValueRef[] args = new ValueRef[3];
 
                     // Set up "this".
                     ValueRef nul = LLVM.ConstPointerNull(LLVM.PointerType(LLVM.VoidType(), 0));
-                    Value t = new Value(nul);
+                    VALUE t = new VALUE(nul);
 
                     // Pop all parameters and stuff into params buffer. Note, "this" and
                     // "return" are separate parameters in GPU BCL runtime C-functions,
@@ -5044,19 +5044,19 @@ namespace Campy.Compiler
 
                     for (int i = method.Parameters.Count - 1; i >= 0; i--)
                     {
-                        Value p = state._stack.Pop();
+                        VALUE p = state._stack.Pop();
                         if (Campy.Utils.Options.IsOn("jit_trace"))
                             System.Console.WriteLine(p);
                         ValueRef[] index = new ValueRef[1] { LLVM.ConstInt(LLVM.Int32Type(), (ulong)i, true) };
                         var add = LLVM.BuildInBoundsGEP(Builder, base_of_parameters, index, "i" + instruction_id++);
                         if (Campy.Utils.Options.IsOn("jit_trace"))
-                            System.Console.WriteLine(new Value(add));
+                            System.Console.WriteLine(new VALUE(add));
                         ValueRef v = LLVM.BuildPointerCast(Builder, add, LLVM.PointerType(LLVM.TypeOf(p.V), 0), "i" + instruction_id++);
                         if (Campy.Utils.Options.IsOn("jit_trace"))
-                            System.Console.WriteLine(new Value(v));
+                            System.Console.WriteLine(new VALUE(v));
                         ValueRef store = LLVM.BuildStore(Builder, p.V, v);
                         if (Campy.Utils.Options.IsOn("jit_trace"))
-                            System.Console.WriteLine(new Value(store));
+                            System.Console.WriteLine(new VALUE(store));
                     }
 
                     // Set up return. For now, always allocate buffer.
@@ -5085,7 +5085,7 @@ namespace Campy.Compiler
 
                     var call = LLVM.BuildCall(Builder, fv, args, name);
                     if (Campy.Utils.Options.IsOn("jit_trace"))
-                        System.Console.WriteLine(new Value(call));
+                        System.Console.WriteLine(new VALUE(call));
 
                     // There is always a return from a newobj instruction.
                     var ptr_cast = LLVM.BuildBitCast(Builder,
@@ -5095,10 +5095,10 @@ namespace Campy.Compiler
                     var load = LLVM.BuildLoad(Builder, ptr_cast, "i" + instruction_id++);
 
                     // Cast the damn object into the right type.
-                    state._stack.Push(new Value(load));
+                    state._stack.Push(new VALUE(load));
 
                     if (Campy.Utils.Options.IsOn("jit_trace"))
-                        System.Console.WriteLine(new Value(load));
+                        System.Console.WriteLine(new VALUE(load));
                 }
             }
             else if (!is_type_value_type && the_entry != null)
@@ -5114,8 +5114,8 @@ namespace Campy.Compiler
                     // To do that, we have to define up front the classes used in this code to the BCL.
                     // The BCL is extended to construct types for this kernel!
                     // (call void* _Z14Bcl_Heap_AllocPcS_S_(STRING assemblyName, STRING nameSpace, STRING name);)
-                    var xx1 = Runtime.BclNativeMethods.ToList();
-                    var xx2 = Runtime.PtxFunctions.ToList();
+                    var xx1 = RUNTIME.BclNativeMethods.ToList();
+                    var xx2 = RUNTIME.PtxFunctions.ToList();
 
                     var xx = xx2
                         .Where(t =>
@@ -5123,7 +5123,7 @@ namespace Campy.Compiler
                             return t._mangled_name == "_Z14Bcl_Heap_AllocPcS_S_";
                         });
                     var xxx = xx.ToList();
-                    Runtime.PtxFunction first_kv_pair = xx.FirstOrDefault();
+                    RUNTIME.PtxFunction first_kv_pair = xx.FirstOrDefault();
                     if (first_kv_pair == null)
                         throw new Exception("Yikes.");
 
@@ -5136,12 +5136,12 @@ namespace Campy.Compiler
                     var p0 = LLVM.BuildGlobalString(Builder, type_assembly, "i" + instruction_id++);
                     var p1 = LLVM.BuildGlobalString(Builder, type_namespace, "i" + instruction_id++);
                     var p2 = LLVM.BuildGlobalString(Builder, type_name, "i" + instruction_id++);
-                    System.Console.WriteLine(new Value(p0));
+                    System.Console.WriteLine(new VALUE(p0));
 
                     var pp0 = LLVM.BuildBitCast(Builder, p0, LLVM.PointerType(LLVM.Int8Type(), 0), "i" + instruction_id++);
                     var pp1 = LLVM.BuildBitCast(Builder, p1, LLVM.PointerType(LLVM.Int8Type(), 0), "i" + instruction_id++);
                     var pp2 = LLVM.BuildBitCast(Builder, p2, LLVM.PointerType(LLVM.Int8Type(), 0), "i" + instruction_id++);
-                    System.Console.WriteLine(new Value(pp0));
+                    System.Console.WriteLine(new VALUE(pp0));
 
                     args[0] = pp0;
                     args[1] = pp1;
@@ -5153,7 +5153,7 @@ namespace Campy.Compiler
                         llvm_type, "i" + instruction_id++);
 
                     if (Campy.Utils.Options.IsOn("jit_trace"))
-                        System.Console.WriteLine(new Value(new_obj));
+                        System.Console.WriteLine(new VALUE(new_obj));
                 }
 
                 {
@@ -5164,14 +5164,14 @@ namespace Campy.Compiler
                     ValueRef fv = the_entry.MethodValueRef;
                     var t_fun = LLVM.TypeOf(fv);
                     var t_fun_con = LLVM.GetTypeContext(t_fun);
-                    var context = LLVM.GetModuleContext(CampyConverter.global_llvm_module);
+                    var context = LLVM.GetModuleContext(JITER.global_llvm_module);
                     if (t_fun_con != context) throw new Exception("not equal");
 
                     // Set up args, type casting if required.
                     ValueRef[] args = new ValueRef[nargs];
                     for (int k = nargs - 1; k >= 1; --k)
                     {
-                        Value v = state._stack.Pop();
+                        VALUE v = state._stack.Pop();
                         ValueRef par = LLVM.GetParam(fv, (uint)k);
                         ValueRef value = v.V;
                         if (LLVM.TypeOf(value) != LLVM.TypeOf(par))
@@ -5191,9 +5191,9 @@ namespace Campy.Compiler
 
                     var call = LLVM.BuildCall(Builder, fv, args, "");
                     if (Campy.Utils.Options.IsOn("jit_trace"))
-                        System.Console.WriteLine(new Value(call));
+                        System.Console.WriteLine(new VALUE(call));
 
-                    state._stack.Push(new Value(new_obj));
+                    state._stack.Push(new VALUE(new_obj));
 
                 }
             }
@@ -5202,7 +5202,7 @@ namespace Campy.Compiler
         }
     }
 
-    public class i_no : Inst
+    public class i_no : INST
     {
         public i_no(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -5210,25 +5210,25 @@ namespace Campy.Compiler
         }
     }
 
-    public class i_nop : Inst
+    public class i_nop : INST
     {
         public i_nop(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
 
-        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
+        public override void ComputeStackLevel(JITER converter, ref int level_after)
         {
             // No change.
         }
 
-        public override Inst Convert(CampyConverter converter, State state)
+        public override INST Convert(JITER converter, STATE state)
         {
             return Next;
         }
     }
 
-    public class i_not : Inst
+    public class i_not : INST
     {
         public i_not(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -5244,20 +5244,20 @@ namespace Campy.Compiler
         }
     }
 
-    public class i_pop : Inst
+    public class i_pop : INST
     {
         public i_pop(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
 
-    public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
+    public override void ComputeStackLevel(JITER converter, ref int level_after)
     {
         level_after--;
     }
     }
 
-    public class i_readonly : Inst
+    public class i_readonly : INST
     {
         public i_readonly(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -5265,7 +5265,7 @@ namespace Campy.Compiler
         }
     }
 
-    public class i_refanytype : Inst
+    public class i_refanytype : INST
     {
         public i_refanytype(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -5273,7 +5273,7 @@ namespace Campy.Compiler
         }
     }
 
-    public class i_refanyval : Inst
+    public class i_refanyval : INST
     {
         public i_refanyval(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -5297,14 +5297,14 @@ namespace Campy.Compiler
         }
     }
 
-    public class i_ret : Inst
+    public class i_ret : INST
     {
         public i_ret(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
 
-        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
+        public override void ComputeStackLevel(JITER converter, ref int level_after)
         {
             // There are really two different stacks here:
             // one for the called method, and the other for the caller of the method.
@@ -5330,7 +5330,7 @@ namespace Campy.Compiler
             }
         }
 
-        public override Inst Convert(CampyConverter converter, State state)
+        public override INST Convert(JITER converter, STATE state)
         {
             // There are really two different stacks here:
             // one for the called method, and the other for the caller of the method.
@@ -5350,7 +5350,7 @@ namespace Campy.Compiler
                 // The following fails for structs, so do not do this for struct returns.
                 var v = state._stack.Pop();
                 var i = LLVM.BuildRet(Builder, v.V);
-                state._stack.Push(new Value(i));
+                state._stack.Push(new VALUE(i));
             }
             else if (this.Block.HasStructReturnValue)
             {
@@ -5358,14 +5358,14 @@ namespace Campy.Compiler
                 var p = state._struct_ret[0];
                 var store = LLVM.BuildStore(Builder, v.V, p.V);
                 if (Campy.Utils.Options.IsOn("jit_trace"))
-                    System.Console.WriteLine(new Value(store));
+                    System.Console.WriteLine(new VALUE(store));
                 var i = LLVM.BuildRetVoid(Builder);
             }
             return Next;
         }
     }
 
-    public class i_rethrow : Inst
+    public class i_rethrow : INST
     {
         public i_rethrow(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -5373,19 +5373,19 @@ namespace Campy.Compiler
         }
     }
 
-    public class i_shl : Inst
+    public class i_shl : INST
     {
         public i_shl(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
 
-        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
+        public override void ComputeStackLevel(JITER converter, ref int level_after)
         {
             level_after--;
         }
 
-        public override Inst Convert(CampyConverter converter, State state)
+        public override INST Convert(JITER converter, STATE state)
         {
             var rhs = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -5397,27 +5397,27 @@ namespace Campy.Compiler
 
             var result = LLVM.BuildShl(Builder, lhs.V, rhs.V, "i" + instruction_id++);
             if (Campy.Utils.Options.IsOn("jit_trace"))
-                System.Console.WriteLine(new Value(result));
+                System.Console.WriteLine(new VALUE(result));
 
-            state._stack.Push(new Value(result));
+            state._stack.Push(new VALUE(result));
 
             return Next;
         }
     }
 
-    public class i_shr : Inst
+    public class i_shr : INST
     {
         public i_shr(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
 
-        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
+        public override void ComputeStackLevel(JITER converter, ref int level_after)
         {
             level_after--;
         }
 
-        public override Inst Convert(CampyConverter converter, State state)
+        public override INST Convert(JITER converter, STATE state)
         {
             var rhs = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -5429,45 +5429,45 @@ namespace Campy.Compiler
 
             var result = LLVM.BuildAShr(Builder, lhs.V, rhs.V, "i" + instruction_id++);
             if (Campy.Utils.Options.IsOn("jit_trace"))
-                System.Console.WriteLine(new Value(result));
+                System.Console.WriteLine(new VALUE(result));
 
-            state._stack.Push(new Value(result));
+            state._stack.Push(new VALUE(result));
 
             return Next;
         }
     }
 
-    public class i_shr_un : Inst
+    public class i_shr_un : INST
     {
         public i_shr_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
 
-        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
+        public override void ComputeStackLevel(JITER converter, ref int level_after)
         {
             level_after--;
         }
     }
 
-    public class i_sizeof : Inst
+    public class i_sizeof : INST
     {
         public i_sizeof(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
 
-        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
+        public override void ComputeStackLevel(JITER converter, ref int level_after)
         {
             level_after++;
         }
 
-        public override Inst Convert(CampyConverter converter, State state)
+        public override INST Convert(JITER converter, STATE state)
         {
             object operand = this.Operand;
             System.Type t = operand.GetType();
             if (t.FullName == "Mono.Cecil.PointerType")
-                state._stack.Push(new Value(LLVM.ConstInt(LLVM.Int32Type(), 8, false)));
+                state._stack.Push(new VALUE(LLVM.ConstInt(LLVM.Int32Type(), 8, false)));
             else
                 throw new Exception("Unimplemented sizeof");
             return Next;
@@ -5509,7 +5509,7 @@ namespace Campy.Compiler
         public i_stelem_i1(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            _dst = new Type(typeof(sbyte));
+            _dst = new TYPE(typeof(sbyte));
         }
     }
 
@@ -5518,7 +5518,7 @@ namespace Campy.Compiler
         public i_stelem_i2(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            _dst = new Type(typeof(short));
+            _dst = new TYPE(typeof(short));
         }
     }
 
@@ -5527,7 +5527,7 @@ namespace Campy.Compiler
         public i_stelem_i4(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            _dst = new Type(typeof(int));
+            _dst = new TYPE(typeof(int));
         }
     }
 
@@ -5536,7 +5536,7 @@ namespace Campy.Compiler
         public i_stelem_i8(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            _dst = new Type(typeof(long));
+            _dst = new TYPE(typeof(long));
         }
     }
 
@@ -5553,7 +5553,7 @@ namespace Campy.Compiler
         public i_stelem_r4(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            _dst = new Type(typeof(float));
+            _dst = new TYPE(typeof(float));
         }
     }
 
@@ -5562,7 +5562,7 @@ namespace Campy.Compiler
         public i_stelem_r8(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            _dst = new Type(typeof(double));
+            _dst = new TYPE(typeof(double));
         }
     }
 
@@ -5587,7 +5587,7 @@ namespace Campy.Compiler
         public i_stind_i1(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            _dst = new Type(typeof(sbyte));
+            _dst = new TYPE(typeof(sbyte));
         }
     }
 
@@ -5596,7 +5596,7 @@ namespace Campy.Compiler
         public i_stind_i2(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            _dst = new Type(typeof(short));
+            _dst = new TYPE(typeof(short));
         }
     }
 
@@ -5605,7 +5605,7 @@ namespace Campy.Compiler
         public i_stind_i4(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            _dst = new Type(typeof(int));
+            _dst = new TYPE(typeof(int));
         }
     }
 
@@ -5614,7 +5614,7 @@ namespace Campy.Compiler
         public i_stind_i8(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            _dst = new Type(typeof(long));
+            _dst = new TYPE(typeof(long));
         }
     }
 
@@ -5631,7 +5631,7 @@ namespace Campy.Compiler
         public i_stind_r4(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            _dst = new Type(typeof(float));
+            _dst = new TYPE(typeof(float));
         }
     }
 
@@ -5640,7 +5640,7 @@ namespace Campy.Compiler
         public i_stind_r8(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-            _dst = new Type(typeof(double));
+            _dst = new TYPE(typeof(double));
         }
     }
 
@@ -5714,27 +5714,27 @@ namespace Campy.Compiler
         }
     }
 
-    public class i_stobj : Inst
+    public class i_stobj : INST
     {
         public i_stobj(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
 
-        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
+        public override void ComputeStackLevel(JITER converter, ref int level_after)
         {
             level_after -= 2;
         }
     }
 
-    public class i_stsfld : Inst
+    public class i_stsfld : INST
     {
         public i_stsfld(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
 
-        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
+        public override void ComputeStackLevel(JITER converter, ref int level_after)
         {
             level_after--;
         }
@@ -5764,20 +5764,20 @@ namespace Campy.Compiler
         }
     }
 
-    public class i_switch : Inst
+    public class i_switch : INST
     {
         public i_switch(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
 
-        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
+        public override void ComputeStackLevel(JITER converter, ref int level_after)
         {
             level_after--;
         }
     }
 
-    public class i_tail : Inst
+    public class i_tail : INST
     {
         public i_tail(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -5785,19 +5785,19 @@ namespace Campy.Compiler
         }
     }
 
-    public class i_throw : Inst
+    public class i_throw : INST
     {
         public i_throw(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
 
-        public override void ComputeStackLevel(CampyConverter converter, ref int level_after)
+        public override void ComputeStackLevel(JITER converter, ref int level_after)
         {
             level_after--;
         }
 
-        public override Inst Convert(CampyConverter converter, State state)
+        public override INST Convert(JITER converter, STATE state)
         {
             var rhs = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -5807,7 +5807,7 @@ namespace Campy.Compiler
         }
     }
 
-    public class i_unaligned : Inst
+    public class i_unaligned : INST
     {
         public i_unaligned(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -5815,7 +5815,7 @@ namespace Campy.Compiler
         }
     }
 
-    public class i_unbox : Inst
+    public class i_unbox : INST
     {
         public i_unbox(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -5823,7 +5823,7 @@ namespace Campy.Compiler
         }
     }
 
-    public class i_unbox_any : Inst
+    public class i_unbox_any : INST
     {
         public i_unbox_any(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -5831,7 +5831,7 @@ namespace Campy.Compiler
         }
     }
 
-    public class i_volatile : Inst
+    public class i_volatile : INST
     {
         public i_volatile(Mono.Cecil.Cil.Instruction i)
             : base(i)

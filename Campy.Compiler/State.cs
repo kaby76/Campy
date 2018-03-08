@@ -9,29 +9,29 @@ using Swigged.LLVM;
 
 namespace Campy.Compiler
 {
-    public class State
+    public class STATE
     {
         // See ECMA 335, page 82.
-        public StackQueue<Value> _stack;
-        public ListSection<Value> _struct_ret; // Pointer to _stack, if there is a "this" pointer.
-        public ListSection<Value> _this; // Pointer to _stack, if there is a "this" pointer.
-        public ListSection<Value> _arguments; // Pointer to _stack, if there are parameters for the method.
-        public ListSection<Value> _locals; // Pointer to _stack, if there are local variables to the method.
-        public Dictionary<String, Value> _memory;
+        public StackQueue<VALUE> _stack;
+        public ListSection<VALUE> _struct_ret; // Pointer to _stack, if there is a "this" pointer.
+        public ListSection<VALUE> _this; // Pointer to _stack, if there is a "this" pointer.
+        public ListSection<VALUE> _arguments; // Pointer to _stack, if there are parameters for the method.
+        public ListSection<VALUE> _locals; // Pointer to _stack, if there are local variables to the method.
+        public Dictionary<String, VALUE> _memory;
         public List<ValueRef> _phi;
 
-        public State()
+        public STATE()
         {
-            _stack = new StackQueue<Value>();
+            _stack = new StackQueue<VALUE>();
             _this = null;
             _arguments = null;
             _locals = null;
             _struct_ret = null;
-            _memory = new Dictionary<string, Value>();
+            _memory = new Dictionary<string, VALUE>();
             _phi = new List<ValueRef>();
         }
 
-        public State(CFG.Vertex basic_block, bool use_in = true)
+        public STATE(CFG.Vertex basic_block, bool use_in = true)
         {
             int level = use_in ? (int)basic_block.StackLevelIn : (int)basic_block.StackLevelOut;
             int args = basic_block.StackNumberOfArguments;
@@ -42,7 +42,7 @@ namespace Campy.Compiler
 
             // Set up state with args, locals, basic stack initial value of 0xDEADBEEF.
             // In addition, use type information from method to compute types for all args.
-            _stack = new StackQueue<Value>();
+            _stack = new StackQueue<VALUE>();
 
             int begin = 0;
 
@@ -53,12 +53,12 @@ namespace Campy.Compiler
             var fun = basic_block.MethodValueRef;
             var t_fun = LLVM.TypeOf(fun);
             var t_fun_con = LLVM.GetTypeContext(t_fun);
-            var context = LLVM.GetModuleContext(CampyConverter.global_llvm_module);
+            var context = LLVM.GetModuleContext(JITER.global_llvm_module);
             if (t_fun_con != context) throw new Exception("not equal");
 
             for (uint i = 0; i < args; ++i)
             {
-                var par = new Value(LLVM.GetParam(fun, i));
+                var par = new VALUE(LLVM.GetParam(fun, i));
                 if (Campy.Utils.Options.IsOn("jit_trace"))
                     System.Console.WriteLine(par);
                 _stack.Push(par);
@@ -83,14 +83,14 @@ namespace Campy.Compiler
             for (int i = 0; i < locals; ++i)
             {
                 var tr = variables[i].VariableType;
-                Type type = new Type(tr);
-                Value value;
+                TYPE type = new TYPE(tr);
+                VALUE value;
                 if (LLVM.GetTypeKind(type.IntermediateType) == TypeKind.PointerTypeKind)
-                    value = new Value(LLVM.ConstPointerNull(type.IntermediateType));
+                    value = new VALUE(LLVM.ConstPointerNull(type.IntermediateType));
                 else if (LLVM.GetTypeKind(type.IntermediateType) == TypeKind.DoubleTypeKind)
-                    value = new Value(LLVM.ConstReal(LLVM.DoubleType(), 0));
+                    value = new VALUE(LLVM.ConstReal(LLVM.DoubleType(), 0));
                 else if (LLVM.GetTypeKind(type.IntermediateType) == TypeKind.IntegerTypeKind)
-                    value = new Value(LLVM.ConstInt(type.IntermediateType, (ulong)0, true));
+                    value = new VALUE(LLVM.ConstInt(type.IntermediateType, (ulong)0, true));
 		        else if (LLVM.GetTypeKind(type.IntermediateType) == TypeKind.StructTypeKind)
 		        {
 			        var entry = basic_block.Entry.BasicBlock;
@@ -98,7 +98,7 @@ namespace Campy.Compiler
 			        //LLVM.PositionBuilderBefore(basic_block.Builder, beginning);
 			        var new_obj = LLVM.BuildAlloca(basic_block.Builder, type.IntermediateType, ""); // Allocates struct on stack, but returns a pointer to struct.
 			        //LLVM.PositionBuilderAtEnd(basic_block.Builder, basic_block.BasicBlock);
-			        value = new Value(new_obj);
+			        value = new VALUE(new_obj);
 		        }
                 else
                     throw new Exception("Unhandled type");
@@ -110,17 +110,17 @@ namespace Campy.Compiler
             // Set up any thing else.
             for (int i = _stack.Size(); i < level; ++i)
             {
-                Value value = new Value(LLVM.ConstInt(LLVM.Int32Type(), (ulong)0, true));
+                VALUE value = new VALUE(LLVM.ConstInt(LLVM.Int32Type(), (ulong)0, true));
                 _stack.Push(value);
                 if (Campy.Utils.Options.IsOn("jit_trace"))
                     System.Console.WriteLine(value);
             }
         }
 
-        public State(Dictionary<CFG.Vertex, bool> visited, CFG.Vertex bb, List<Mono.Cecil.TypeReference> list_of_data_types_used)
+        public STATE(Dictionary<CFG.Vertex, bool> visited, CFG.Vertex bb, List<Mono.Cecil.TypeReference> list_of_data_types_used)
         {
             // Set up a blank stack.
-            _stack = new StackQueue<Value>();
+            _stack = new StackQueue<VALUE>();
 
             int args = bb.StackNumberOfArguments;
             bool scalar_ret = bb.HasScalarReturnValue;
@@ -141,12 +141,12 @@ namespace Campy.Compiler
                 var fun = bb.MethodValueRef;
                 var t_fun = LLVM.TypeOf(fun);
                 var t_fun_con = LLVM.GetTypeContext(t_fun);
-                var context = LLVM.GetModuleContext(CampyConverter.global_llvm_module);
+                var context = LLVM.GetModuleContext(JITER.global_llvm_module);
                 if (t_fun_con != context) throw new Exception("not equal");
 
                 for (uint i = 0; i < args; ++i)
                 {
-                    var par = new Value(LLVM.GetParam(fun, i));
+                    var par = new VALUE(LLVM.GetParam(fun, i));
                     if (Campy.Utils.Options.IsOn("jit_trace"))
                         System.Console.WriteLine(par);
                     _stack.Push(par);
@@ -171,22 +171,22 @@ namespace Campy.Compiler
                 for (int i = 0; i < locals; ++i)
                 {
                     var tr = variables[i].VariableType;
-                    Type type = new Type(tr);
-                    Value value;
+                    TYPE type = new TYPE(tr);
+                    VALUE value;
                     if (LLVM.GetTypeKind(type.IntermediateType) == TypeKind.PointerTypeKind)
-                        value = new Value(LLVM.ConstPointerNull(type.IntermediateType));
+                        value = new VALUE(LLVM.ConstPointerNull(type.IntermediateType));
                     else if (LLVM.GetTypeKind(type.IntermediateType) == TypeKind.DoubleTypeKind)
-                        value = new Value(LLVM.ConstReal(LLVM.DoubleType(), 0));
+                        value = new VALUE(LLVM.ConstReal(LLVM.DoubleType(), 0));
                     else if (LLVM.GetTypeKind(type.IntermediateType) == TypeKind.IntegerTypeKind)
-                        value = new Value(LLVM.ConstInt(type.IntermediateType, (ulong)0, true));
+                        value = new VALUE(LLVM.ConstInt(type.IntermediateType, (ulong)0, true));
                     else if (LLVM.GetTypeKind(type.IntermediateType) == TypeKind.StructTypeKind)
                     {
                         var entry = bb.Entry.BasicBlock;
                         //var beginning = LLVM.GetFirstInstruction(entry);
                         //LLVM.PositionBuilderBefore(basic_block.Builder, beginning);
-                        var new_obj = LLVM.BuildAlloca(bb.Builder, type.IntermediateType, "i" + Inst.instruction_id++); // Allocates struct on stack, but returns a pointer to struct.
+                        var new_obj = LLVM.BuildAlloca(bb.Builder, type.IntermediateType, "i" + INST.instruction_id++); // Allocates struct on stack, but returns a pointer to struct.
                         //LLVM.PositionBuilderAtEnd(bb.Builder, bb.BasicBlock);
-                        value = new Value(new_obj);
+                        value = new VALUE(new_obj);
                     }
                     else
                         throw new Exception("Unhandled type");
@@ -196,7 +196,7 @@ namespace Campy.Compiler
                 // Set up any thing else.
                 for (int i = _stack.Size(); i < level; ++i)
                 {
-                    Value value = new Value(LLVM.ConstInt(LLVM.Int32Type(), (ulong)0, true));
+                    VALUE value = new VALUE(LLVM.ConstInt(LLVM.Int32Type(), (ulong)0, true));
                     _stack.Push(value);
                 }
             }
@@ -245,16 +245,16 @@ namespace Campy.Compiler
                 for (int i = 0; i < size; ++i)
                 {
                     {
-                        Value f = new Value(LLVM.ConstInt(LLVM.Int32Type(), (ulong)0, true));
+                        VALUE f = new VALUE(LLVM.ConstInt(LLVM.Int32Type(), (ulong)0, true));
                         _stack.Push(f);
                     }
                     var count = bb._graph.Predecessors(bb).Count();
                     var value = p_llvm_node.StateOut._stack[i];
                     var v = value.V;
                     TypeRef tr = LLVM.TypeOf(v);
-                    ValueRef res = LLVM.BuildPhi(bb.Builder, tr, "i" + Inst.instruction_id++);
+                    ValueRef res = LLVM.BuildPhi(bb.Builder, tr, "i" + INST.instruction_id++);
                     _phi.Add(res);
-                    _stack[i] = new Value(res);
+                    _stack[i] = new VALUE(res);
                 }
                 var other = p_llvm_node.StateOut;
                 _struct_ret = _stack.Section(other._struct_ret.Base, other._struct_ret.Len);
@@ -264,9 +264,9 @@ namespace Campy.Compiler
             }
         }
 
-        public State(State other)
+        public STATE(STATE other)
         {
-            _stack = new StackQueue<Value>();
+            _stack = new StackQueue<VALUE>();
             for (int i = 0; i < other._stack.Count; ++i)
             {
                 _stack.Push(other._stack.PeekBottom(i));

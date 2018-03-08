@@ -14,7 +14,7 @@ namespace Campy.Compiler
     using System.Reflection;
     using Mono.Cecil.Cil;
 
-    public class Importer
+    public class IMPORTER
     {
         private CFG _cfg;
         private static List<ModuleDefinition> _loaded_modules;
@@ -37,7 +37,7 @@ namespace Campy.Compiler
             set { _cfg = value; }
         }
 
-        public Importer()
+        public IMPORTER()
         {
             _cfg = new CFG();
             _loaded_modules = new List<ModuleDefinition>();
@@ -97,7 +97,7 @@ namespace Campy.Compiler
                 // Get closure of calls, if possible.
                 foreach (var b in blocks)
                 {
-                    foreach (Inst i in b.Instructions)
+                    foreach (INST i in b.Instructions)
                     {
                         var fc = i.OpCode.FlowControl;
                         if (fc != Mono.Cecil.Cil.FlowControl.Call)
@@ -250,7 +250,7 @@ namespace Campy.Compiler
             for (int j = 0; j < instruction_count; ++j)
             {
                 Mono.Cecil.Cil.Instruction mi = method_definition.Body.Instructions[j];
-                Inst i = Inst.Wrap(mi);
+                INST i = INST.Wrap(mi);
                 i.Block = v;
                 Mono.Cecil.Cil.OpCode op = i.OpCode;
                 Mono.Cecil.Cil.FlowControl fc = op.FlowControl;
@@ -261,7 +261,7 @@ namespace Campy.Compiler
             // Accumalated splits are in "leader_list" following this for-loop.
             for (int j = 0; j < instruction_count; ++j)
             {
-                Inst i = v.Instructions[j];
+                INST i = v.Instructions[j];
                 Mono.Cecil.Cil.OpCode op = i.OpCode;
                 Mono.Cecil.Cil.FlowControl fc = op.FlowControl;
 
@@ -351,7 +351,7 @@ namespace Campy.Compiler
             foreach (var node in list_new_nodes)
             {
                 int node_instruction_count = node.Instructions.Count;
-                Inst last_instruction = node.Instructions[node_instruction_count - 1];
+                INST last_instruction = node.Instructions[node_instruction_count - 1];
 
                 Mono.Cecil.Cil.OpCode op = last_instruction.OpCode;
                 Mono.Cecil.Cil.FlowControl fc = op.FlowControl;
@@ -454,10 +454,10 @@ namespace Campy.Compiler
         /// <returns></returns>
         public MethodDefinition Rewrite(MethodReference method_reference)
         {
-            var method_definition = Runtime.SubstituteMethod(method_reference);
+            var method_definition = RUNTIME.SubstituteMethod(method_reference);
 
             if (!(method_definition == null || method_definition.Body == null))
-                Runtime.RewriteCilCodeBlock(method_definition.Body);
+                RUNTIME.RewriteCilCodeBlock(method_definition.Body);
 
             return method_definition;
         }

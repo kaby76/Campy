@@ -7,7 +7,7 @@ using Swigged.LLVM;
 
 namespace Campy.Compiler
 {
-    public class Value : IComparable
+    public class VALUE : IComparable
     {
         private ValueRef _value_ref;
 
@@ -17,32 +17,32 @@ namespace Campy.Compiler
             set { _value_ref = value; }
         }
 
-        private Type _type;
+        private TYPE _type;
 
-        public Type T
+        public TYPE T
         {
             get { return _type; }
             set { _type = value; }
         }
 
-        public Value(ValueRef v)
+        public VALUE(ValueRef v)
         {
             _value_ref = v;
             TypeRef t = LLVM.TypeOf(v);
-            _type = new Type(t);
+            _type = new TYPE(t);
         }
 
-        public Value(ValueRef v, Type t)
+        public VALUE(ValueRef v, TYPE t)
         {
             _value_ref = v;
             TypeRef tt = LLVM.TypeOf(v);
             // Fails. Debug.Assert(t.IntermediateType == tt);
             _type = t;
         }
-        private Value(ValueRef v, TypeRef t)
+        private VALUE(ValueRef v, TypeRef t)
         {
             _value_ref = v;
-            _type = new Type(t);
+            _type = new TYPE(t);
         }
 
 

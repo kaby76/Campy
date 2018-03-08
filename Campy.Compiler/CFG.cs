@@ -94,7 +94,7 @@ namespace Campy.Compiler
             return x;
         }
 
-        public Vertex FindEntry(Inst inst)
+        public Vertex FindEntry(INST inst)
         {
             Vertex result = null;
 
@@ -136,7 +136,7 @@ namespace Campy.Compiler
             public Tuple<Tuple<TypeReference, GenericParameter>, System.Type> OpFromPreviousNode { get; set; }
             public Dictionary<TypeReference, TypeRef> LLVMTypeMap = new Dictionary<TypeReference, TypeRef>();
             public MethodReference RewrittenCalleeSignature { get; set; }
-            public List<Inst> Instructions { get; set; } = new List<Inst>();
+            public List<INST> Instructions { get; set; } = new List<INST>();
 
             public CFG _graph
             {
@@ -163,8 +163,8 @@ namespace Campy.Compiler
             public bool HasStructReturnValue { get; set; }
             public int? StackLevelIn { get; set; }
             public int? StackLevelOut { get; set; }
-            public State StateIn { get; set; }
-            public State StateOut { get; set; }
+            public STATE StateIn { get; set; }
+            public STATE StateOut { get; set; }
 
             private Vertex _entry;
             public Vertex Entry
@@ -185,7 +185,7 @@ namespace Campy.Compiler
             {
                 get
                 {
-                    Inst last = Instructions[Instructions.Count - 1];
+                    INST last = Instructions[Instructions.Count - 1];
                     switch (last.OpCode.FlowControl)
                     {
                         case FlowControl.Call:
@@ -200,7 +200,7 @@ namespace Campy.Compiler
             {
                 get
                 {
-                    Inst last = Instructions[Instructions.Count - 1];
+                    INST last = Instructions[Instructions.Count - 1];
                     return last.OpCode.Code == Code.Newobj;
                 }
             }
@@ -209,7 +209,7 @@ namespace Campy.Compiler
             {
                 get
                 {
-                    Inst last = Instructions[Instructions.Count - 1];
+                    INST last = Instructions[Instructions.Count - 1];
                     return last.OpCode.Code == Code.Newarr;
                 }
             }
@@ -218,7 +218,7 @@ namespace Campy.Compiler
             {
                 get
                 {
-                    Inst last = Instructions[Instructions.Count - 1];
+                    INST last = Instructions[Instructions.Count - 1];
                     switch (last.OpCode.FlowControl)
                     {
                         case FlowControl.Return:
@@ -300,7 +300,7 @@ namespace Campy.Compiler
                     Console.WriteLine();
                 }
                 Console.WriteLine(new String(' ', 4) + "Instructions:");
-                foreach (Inst i in v.Instructions)
+                foreach (INST i in v.Instructions)
                 {
                     Console.Write(new String(' ', 8) + i + new String(' ', 4));
                     Console.WriteLine();
@@ -331,7 +331,7 @@ namespace Campy.Compiler
                 // Add instructions from split point to new block.
                 for (int j = i; j < count; ++j)
                 {
-                    Inst inst_to_move = Inst.Wrap(Instructions[j].Instruction);
+                    INST inst_to_move = INST.Wrap(Instructions[j].Instruction);
                     CFG.Vertex v = inst_to_move.Block;
                     inst_to_move.Block = (CFG.Vertex) result;
                     result.Instructions.Add(inst_to_move);
@@ -347,7 +347,7 @@ namespace Campy.Compiler
                 Debug.Assert(result.Instructions.Count != 0);
                 Debug.Assert(this.Instructions.Count + result.Instructions.Count == count);
 
-                Inst last_instruction = this.Instructions[
+                INST last_instruction = this.Instructions[
                     this.Instructions.Count - 1];
 
                 // Transfer any out edges to pred block to new block.
@@ -405,7 +405,7 @@ namespace Campy.Compiler
             System.Console.WriteLine();
             System.Console.WriteLine("List of callers:");
             System.Console.WriteLine(new String(' ', 4) + "Node" + new string(' ', 4) + "Instruction");
-            foreach (Inst caller in Inst.CallInstructions)
+            foreach (INST caller in INST.CallInstructions)
             {
                 Vertex n = caller.Block;
                 System.Console.Write("{0,8}", n);

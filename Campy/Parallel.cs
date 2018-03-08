@@ -12,13 +12,13 @@ namespace Campy
     {
         private static Parallel _singleton;
         private CFG _graph;
-        private CampyConverter _converter;
-        private Buffers Buffer { get; }
+        private JITER _converter;
+        private BUFFERS Buffer { get; }
 
         private Parallel()
         {
-            _converter = new Campy.Compiler.CampyConverter();
-            Buffer = new Buffers();
+            _converter = new Campy.Compiler.JITER();
+            Buffer = new BUFFERS();
             //InitCuda();
             // var ok = GC.TryStartNoGCRegion(200000000);
         }
@@ -61,7 +61,7 @@ namespace Campy
 
         public static void For(int number_of_threads, KernelType kernel)
         {
-            CampyConverter.InitCuda();
+            JITER.InitCuda();
 
             GCHandle handle1 = default(GCHandle);
             GCHandle handle2 = default(GCHandle);
@@ -91,7 +91,7 @@ namespace Campy
                     var stopwatch_cuda_compile = new Stopwatch();
                     stopwatch_cuda_compile.Start();
                     var elapse_cuda_compile = stopwatch_cuda_compile.Elapsed;
-                    Buffers buffer = Singleton().Buffer;
+                    BUFFERS buffer = Singleton().Buffer;
                     var stopwatch_deep_copy_to = new Stopwatch();
                     stopwatch_deep_copy_to.Reset();
                     stopwatch_deep_copy_to.Start();
@@ -117,7 +117,7 @@ namespace Campy
 
                     {
                         Type btype = buffer.CreateImplementationType(typeof(int));
-                        var s = Buffers.SizeOf(btype);
+                        var s = BUFFERS.SizeOf(btype);
                         var ptr2 = buffer.New(s);
                         // buffer.DeepCopyToImplementation(index, ptr2);
                         parm2[0] = ptr2;
@@ -193,7 +193,7 @@ namespace Campy
             }
         }
 
-        private static void Finish(Buffers buffer, KernelType kernel, IntPtr ptr)
+        private static void Finish(BUFFERS buffer, KernelType kernel, IntPtr ptr)
         {
             try
             {

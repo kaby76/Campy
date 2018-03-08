@@ -4,7 +4,7 @@ using Swigged.LLVM;
 
 namespace Campy.Compiler
 {
-    public class Type
+    public class TYPE
     {
         // ECMA 335: There really are many types associated with a "type".
         // Storage type, Underlying type, Reduced type, Verification type,
@@ -20,13 +20,13 @@ namespace Campy.Compiler
         private readonly Mono.Cecil.TypeReference _intermediate_type;
         private readonly TypeRef _intermediate_type_ref;
 
-        public Type(TypeRef intermediate_type, bool signed = true)
+        public TYPE(TypeRef intermediate_type, bool signed = true)
         {
             _intermediate_type_ref = intermediate_type;
             _signed = signed;
         }
 
-        public Type(System.Type system_type)
+        public TYPE(System.Type system_type)
         {
             var mono_type = system_type.ToMonoTypeReference();
             _cil_type = mono_type;
@@ -35,7 +35,7 @@ namespace Campy.Compiler
             _intermediate_type_ref = _stack_verification_type.ToTypeRef();
         }
 
-        public Type(Mono.Cecil.TypeReference mono_type)
+        public TYPE(Mono.Cecil.TypeReference mono_type)
         {
             _cil_type = mono_type;
             _verification_type = InitVerificationType(_cil_type);
@@ -225,7 +225,7 @@ namespace Campy.Compiler
             return kind == TypeKind.VectorTypeKind;
         }
 
-        public Type getScalarType()
+        public TYPE getScalarType()
         {
             return null;
         }
@@ -277,8 +277,8 @@ namespace Campy.Compiler
 
         public override bool Equals(object obj)
         {
-            if (obj as Type == null) return false;
-            return this.IntermediateType.Equals((obj as Type).IntermediateType);
+            if (obj as TYPE == null) return false;
+            return this.IntermediateType.Equals((obj as TYPE).IntermediateType);
         }
 
         public override string ToString()
@@ -286,14 +286,14 @@ namespace Campy.Compiler
             return _intermediate_type_ref.ToString();
         }
 
-        public static bool operator ==(Type a, Type b)
+        public static bool operator ==(TYPE a, TYPE b)
         {
             if (System.Object.ReferenceEquals(a, b)) return true;
             if (((object) a == null) || ((object) b == null)) return false;
             return a._intermediate_type_ref == b._intermediate_type_ref;
         }
 
-        public static bool operator !=(Type a, Type b)
+        public static bool operator !=(TYPE a, TYPE b)
         {
             return !(a == b);
         }

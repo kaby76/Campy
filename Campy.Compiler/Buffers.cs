@@ -15,7 +15,7 @@
     /// This code marshals C#/Net data structures that have an unknown implementation to/from
     /// the implementation for NVIDIA GPUs.
     /// </summary>
-    public class Buffers
+    public class BUFFERS
     {
         private Dictionary<string, string> _type_name_map = new Dictionary<string, string>();
 
@@ -56,7 +56,7 @@
         {
         }
 
-        public Buffers()
+        public BUFFERS()
         {
         }
 
@@ -394,7 +394,7 @@
             {
                 if (Campy.Utils.Options.IsOn("copy_trace"))
                     System.Console.WriteLine("Allocating GPU buf " + to_gpu);
-                result = New(Buffers.SizeOf(btype));
+                result = New(BUFFERS.SizeOf(btype));
                 _allocated_objects[to_gpu] = result;
                 _allocated_object_level[to_gpu] = _level + 1;
             }
@@ -435,18 +435,18 @@
                 if (array.GetType().GetElementType().IsClass)
                 {
                     // We create a buffer for the class, and stuff a pointer in the array.
-                    bytes = Buffers.SizeOf(typeof(IntPtr)); // Pointer
-                    bytes += Buffers.SizeOf((typeof(Int64))); // Rank
-                    bytes += Buffers.SizeOf(typeof(Int64)) * rank; // Length for each dimension
-                    bytes += Buffers.SizeOf(typeof(IntPtr)) * array.Length; // Elements
+                    bytes = BUFFERS.SizeOf(typeof(IntPtr)); // Pointer
+                    bytes += BUFFERS.SizeOf((typeof(Int64))); // Rank
+                    bytes += BUFFERS.SizeOf(typeof(Int64)) * rank; // Length for each dimension
+                    bytes += BUFFERS.SizeOf(typeof(IntPtr)) * array.Length; // Elements
                 }
                 else
                 {
                     // We create a buffer for the class, and stuff a pointer in the array.
-                    bytes = Buffers.SizeOf(typeof(IntPtr)); // Pointer
-                    bytes += Buffers.SizeOf((typeof(Int64))); // Rank
-                    bytes += Buffers.SizeOf(typeof(Int64)) * rank; // Length for each dimension
-                    bytes += Buffers.SizeOf(blittable_element_type) * array.Length; // Elements
+                    bytes = BUFFERS.SizeOf(typeof(IntPtr)); // Pointer
+                    bytes += BUFFERS.SizeOf((typeof(Int64))); // Rank
+                    bytes += BUFFERS.SizeOf(typeof(Int64)) * rank; // Length for each dimension
+                    bytes += BUFFERS.SizeOf(blittable_element_type) * array.Length; // Elements
                 }
                 return bytes;
             }
@@ -616,13 +616,13 @@
                         int bytes = SizeOf(a);
                         var destIntPtr = (byte*)to_gpu;
                         byte* df_ptr = destIntPtr;
-                        byte* df_rank = df_ptr + Buffers.SizeOf(typeof(IntPtr));
-                        byte* df_length = df_rank + Buffers.SizeOf(typeof(Int64));
-                        byte* df_elements = df_length + Buffers.SizeOf(typeof(Int64)) * rank;
+                        byte* df_rank = df_ptr + BUFFERS.SizeOf(typeof(IntPtr));
+                        byte* df_length = df_rank + BUFFERS.SizeOf(typeof(Int64));
+                        byte* df_elements = df_length + BUFFERS.SizeOf(typeof(Int64)) * rank;
                         Cp(df_ptr, (IntPtr)df_elements); // Copy df_elements to *df_ptr
                         Cp(df_rank, rank);
                         for (int i = 0; i < rank; ++i)
-                            Cp(df_length + i * Buffers.SizeOf(typeof(Int64)), a.GetLength(i));
+                            Cp(df_length + i * BUFFERS.SizeOf(typeof(Int64)), a.GetLength(i));
                         CpToGpu(df_elements, a);
                     }
                     return;
@@ -681,7 +681,7 @@
                             if (fi.FieldType.IsArray)
                             {
                                 // Allocate a whole new buffer, copy to that, place buffer pointer into field at ip.
-                                ip = (void*)((long)ip + Buffers.Padding((long)ip, Buffers.Alignment(typeof(IntPtr))));
+                                ip = (void*)((long)ip + BUFFERS.Padding((long)ip, BUFFERS.Alignment(typeof(IntPtr))));
                                 if (field_value != null)
                                 {
                                     Array ff = (Array)field_value;
@@ -708,14 +708,14 @@
                                     DeepCopyToImplementation(field_value, ip);
                                 }
                                 ip = (void*)((long)ip
-                                             + Buffers.SizeOf(typeof(IntPtr)));
+                                             + BUFFERS.SizeOf(typeof(IntPtr)));
                             }
                             else if (fi.FieldType.IsClass)
                             {
                                 // Allocate a whole new buffer, copy to that, place buffer pointer into field at ip.
                                 if (field_value != null)
                                 {
-                                    ip = (void*)((long)ip + Buffers.Padding((long)ip, Buffers.Alignment(typeof(IntPtr))));
+                                    ip = (void*)((long)ip + BUFFERS.Padding((long)ip, BUFFERS.Alignment(typeof(IntPtr))));
                                     IntPtr gp;
                                     if (_allocated_objects.ContainsKey(field_value))
                                     {
@@ -741,7 +741,7 @@
                                     DeepCopyToImplementation(field_value, ip);
                                 }
                                 ip = (void*)((long)ip
-                                             + Buffers.SizeOf(typeof(IntPtr)));
+                                             + BUFFERS.SizeOf(typeof(IntPtr)));
                             }
                             else if (fi.FieldType.IsStruct())
                             {
@@ -945,8 +945,8 @@
                         // Note, special case all field types.
                         if (to_fieldinfo.FieldType.IsArray)
                         {
-                            ip = (IntPtr)((long)ip + Buffers.Padding((long)ip, Buffers.Alignment(typeof(IntPtr))));
-                            int field_size = Buffers.SizeOf(typeof(IntPtr));
+                            ip = (IntPtr)((long)ip + BUFFERS.Padding((long)ip, BUFFERS.Alignment(typeof(IntPtr))));
+                            int field_size = BUFFERS.SizeOf(typeof(IntPtr));
                             IntPtr ipv = (IntPtr)Marshal.PtrToStructure<IntPtr>(ip);
                             if (ipv == IntPtr.Zero)
                             {
@@ -965,8 +965,8 @@
                         }
                         else if (to_fieldinfo.FieldType.IsClass)
                         {
-                            ip = (IntPtr)((long)ip + Buffers.Padding((long)ip, Buffers.Alignment(typeof(IntPtr))));
-                            int field_size = Buffers.SizeOf(typeof(IntPtr));
+                            ip = (IntPtr)((long)ip + BUFFERS.Padding((long)ip, BUFFERS.Alignment(typeof(IntPtr))));
+                            int field_size = BUFFERS.SizeOf(typeof(IntPtr));
                             IntPtr ipv = (IntPtr)Marshal.PtrToStructure<IntPtr>(ip);
                             DeepCopyFromImplementation(ipv, out object tooo, to_fieldinfo.FieldType);
                             //if (_allocated_buffers.ContainsKey(ipv))
@@ -978,8 +978,8 @@
                         }
                         else
                         {
-                            int field_size = Buffers.SizeOf(from_fieldinfo.FieldType);
-                            ip = (IntPtr)((long)ip + Buffers.Padding((long)ip, Buffers.Alignment(from_fieldinfo.FieldType)));
+                            int field_size = BUFFERS.SizeOf(from_fieldinfo.FieldType);
+                            ip = (IntPtr)((long)ip + BUFFERS.Padding((long)ip, BUFFERS.Alignment(from_fieldinfo.FieldType)));
                             DeepCopyFromImplementation(ip, out object tooo, to_fieldinfo.FieldType);
                             to_fieldinfo.SetValue(to_cpu, tooo);
                             ip = (IntPtr)((long)ip + field_size);
@@ -1024,8 +1024,8 @@
                         // Note, special case all field types.
                         if (tfield.FieldType.IsArray)
                         {
-                            ip = (IntPtr)((long)ip + Buffers.Padding((long)ip, Buffers.Alignment(typeof(IntPtr))));
-                            int field_size = Buffers.SizeOf(typeof(IntPtr));
+                            ip = (IntPtr)((long)ip + BUFFERS.Padding((long)ip, BUFFERS.Alignment(typeof(IntPtr))));
+                            int field_size = BUFFERS.SizeOf(typeof(IntPtr));
                             IntPtr ipv = (IntPtr)Marshal.PtrToStructure<IntPtr>(ip);
                             if (ipv == IntPtr.Zero)
                             {
@@ -1044,8 +1044,8 @@
                         }
                         else if (tfield.FieldType.IsClass)
                         {
-                            ip = (IntPtr)((long)ip + Buffers.Padding((long)ip, Buffers.Alignment(typeof(IntPtr))));
-                            int field_size = Buffers.SizeOf(typeof(IntPtr));
+                            ip = (IntPtr)((long)ip + BUFFERS.Padding((long)ip, BUFFERS.Alignment(typeof(IntPtr))));
+                            int field_size = BUFFERS.SizeOf(typeof(IntPtr));
                             IntPtr ipv = (IntPtr)Marshal.PtrToStructure<IntPtr>(ip);
                             if (_allocated_buffers.ContainsKey(ipv))
                             {
@@ -1061,8 +1061,8 @@
                         }
                         else
                         {
-                            int field_size = Buffers.SizeOf(ffield.FieldType);
-                            ip = (IntPtr)((long)ip + Buffers.Padding((long)ip, Buffers.Alignment(ffield.FieldType)));
+                            int field_size = BUFFERS.SizeOf(ffield.FieldType);
+                            ip = (IntPtr)((long)ip + BUFFERS.Padding((long)ip, BUFFERS.Alignment(ffield.FieldType)));
                             DeepCopyFromImplementation(ip, out object tooo, tfield.FieldType);
                             tfield.SetValue(to_cpu, tooo);
                             ip = (IntPtr)((long)ip + field_size);
@@ -1134,16 +1134,16 @@
                             DeepCopyToImplementation(gp, to_gpu);
                         }
                         to_gpu = (byte*)((long)to_gpu
-                                     + Buffers.Padding((long)to_gpu, Buffers.Alignment(typeof(IntPtr)))
-                                     + Buffers.SizeOf(typeof(IntPtr)));
+                                     + BUFFERS.Padding((long)to_gpu, BUFFERS.Alignment(typeof(IntPtr)))
+                                     + BUFFERS.SizeOf(typeof(IntPtr)));
                     }
                     else
                     {
                         from_element_value = IntPtr.Zero;
                         DeepCopyToImplementation(from_element_value, to_gpu);
                         to_gpu = (byte*)((long)to_gpu
-                                     + Buffers.Padding((long)to_gpu, Buffers.Alignment(typeof(IntPtr)))
-                                     + Buffers.SizeOf(typeof(IntPtr)));
+                                     + BUFFERS.Padding((long)to_gpu, BUFFERS.Alignment(typeof(IntPtr)))
+                                     + BUFFERS.SizeOf(typeof(IntPtr)));
                     }
                 }
                 else if (orig_element_type.IsArray || orig_element_type.IsClass)
@@ -1169,24 +1169,24 @@
                         DeepCopyToImplementation(from_element_value, gp);
 
                         to_gpu = (byte*)((long)to_gpu
-                                     + Buffers.Padding((long)to_gpu, Buffers.Alignment(typeof(IntPtr)))
-                                     + Buffers.SizeOf(typeof(IntPtr)));
+                                     + BUFFERS.Padding((long)to_gpu, BUFFERS.Alignment(typeof(IntPtr)))
+                                     + BUFFERS.SizeOf(typeof(IntPtr)));
                     }
                     else
                     {
                         from_element_value = IntPtr.Zero;
                         DeepCopyToImplementation(from_element_value, to_gpu);
                         to_gpu = (byte*)((long)to_gpu
-                                     + Buffers.Padding((long)to_gpu, Buffers.Alignment(typeof(IntPtr)))
-                                     + Buffers.SizeOf(typeof(IntPtr)));
+                                     + BUFFERS.Padding((long)to_gpu, BUFFERS.Alignment(typeof(IntPtr)))
+                                     + BUFFERS.SizeOf(typeof(IntPtr)));
                     }
                 }
                 else
                 {
-                    int size_element = Buffers.SizeOf(from_element_value.GetType());
+                    int size_element = BUFFERS.SizeOf(from_element_value.GetType());
                     DeepCopyToImplementation(from_element_value, to_gpu);
                     to_gpu = (byte*)((long)to_gpu
-                        + Buffers.Padding((long)to_gpu, Buffers.Alignment(from_element_value.GetType()))
+                        + BUFFERS.Padding((long)to_gpu, BUFFERS.Alignment(from_element_value.GetType()))
                         + size_element);
                 }
             }
@@ -1225,7 +1225,7 @@
                 {
                     DeepCopyFromImplementation(mem, out object to_obj, to_cpu.GetType().GetElementType());
                     to_cpu.SetValue(to_obj, index);
-                    int from_size_element = Buffers.SizeOf(from_element_type);
+                    int from_size_element = BUFFERS.SizeOf(from_element_type);
                     mem = new IntPtr((long)mem + from_size_element);
                 }
             }
@@ -1313,7 +1313,7 @@
             where T : struct
         {
             return (Marshal.ReAllocHGlobal(new IntPtr(oldPointer),
-                new IntPtr(Buffers.SizeOf(typeof(T)) * newElementCount))).ToPointer();
+                new IntPtr(BUFFERS.SizeOf(typeof(T)) * newElementCount))).ToPointer();
         }
 
         public static void Cp(IntPtr destPtr, IntPtr srcPtr, int size)

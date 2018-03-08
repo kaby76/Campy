@@ -17,7 +17,7 @@ using FieldAttributes = Mono.Cecil.FieldAttributes;
 
 namespace Campy.Compiler
 {
-    public static class ConverterHelper
+    public static class JIT_HELPER
     {
         public static TypeRef ToTypeRef(
             this Mono.Cecil.TypeReference tr,
@@ -30,25 +30,25 @@ namespace Campy.Compiler
             // containing types with different properties.
             // Also, NB: we use full name for the conversion, as types can be similarly named but within
             // different owning classes.
-            foreach (var kv in CampyConverter.basic_llvm_types_created)
+            foreach (var kv in JITER.basic_llvm_types_created)
             {
                 if (kv.Key.FullName == tr.FullName)
                 {
                     return kv.Value;
                 }
             }
-            foreach (var kv in CampyConverter.previous_llvm_types_created_global)
+            foreach (var kv in JITER.previous_llvm_types_created_global)
             {
                 if (kv.Key.FullName == tr.FullName)
                     return kv.Value;
             }
-            foreach (var kv in CampyConverter.previous_llvm_types_created_global)
+            foreach (var kv in JITER.previous_llvm_types_created_global)
             {
                 if (kv.Key.FullName == tr.FullName)
                     return kv.Value;
             }
 
-            tr = Runtime.RewriteType(tr);
+            tr = RUNTIME.RewriteType(tr);
 
             try
             {
@@ -86,7 +86,7 @@ namespace Campy.Compiler
 
                     tr = typeof(int[]).ToMonoTypeReference();
                     var p = tr.ToTypeRef(generic_type_rewrite_rules, level + 1);
-                    CampyConverter.previous_llvm_types_created_global.Add(original_tr, p);
+                    JITER.previous_llvm_types_created_global.Add(original_tr, p);
                     return p;
                 }
                 else if (tr.IsArray)
@@ -96,11 +96,11 @@ namespace Campy.Compiler
                     var array_type = tr as ArrayType;
                     var element_type = array_type.ElementType;
                     // ContextRef c = LLVM.ContextCreate();
-                    ContextRef c = LLVM.GetModuleContext(CampyConverter.global_llvm_module);
-                    string type_name = CampyConverter.RenameToLegalLLVMName(tr.ToString());
+                    ContextRef c = LLVM.GetModuleContext(JITER.global_llvm_module);
+                    string type_name = JITER.RenameToLegalLLVMName(tr.ToString());
                     TypeRef s = LLVM.StructCreateNamed(c, type_name);
                     TypeRef p = LLVM.PointerType(s, 0);
-                    CampyConverter.previous_llvm_types_created_global.Add(tr, p);
+                    JITER.previous_llvm_types_created_global.Add(tr, p);
                     var e = ToTypeRef(element_type, generic_type_rewrite_rules, level + 1);
                     LLVM.StructSetBody(s, new TypeRef[3]
                     {
@@ -123,7 +123,7 @@ namespace Campy.Compiler
                             var v = value;
                             var mv = v.ToMonoTypeReference();
                             var e = ToTypeRef(mv, generic_type_rewrite_rules, level + 1);
-                            CampyConverter.previous_llvm_types_created_global.Add(tr, e);
+                            JITER.previous_llvm_types_created_global.Add(tr, e);
                             return e;
                         }
                     }
@@ -153,8 +153,8 @@ namespace Campy.Compiler
                     }
 
                     // Create a struct type.
-                    ContextRef c = LLVM.GetModuleContext(CampyConverter.global_llvm_module);
-                    string llvm_name = CampyConverter.RenameToLegalLLVMName(tr.ToString());
+                    ContextRef c = LLVM.GetModuleContext(JITER.global_llvm_module);
+                    string llvm_name = JITER.RenameToLegalLLVMName(tr.ToString());
 
                     TypeRef s = LLVM.StructCreateNamed(c, llvm_name);
                     
@@ -164,7 +164,7 @@ namespace Campy.Compiler
                     if (is_pointer) p = LLVM.PointerType(s, 0);
                     else p = s;
 
-                    CampyConverter.previous_llvm_types_created_global.Add(tr, p);
+                    JITER.previous_llvm_types_created_global.Add(tr, p);
 
                     // Create array of typerefs as argument to StructSetBody below.
                     // Note, tr is correct type, but tr.Resolve of a generic type turns the type
@@ -234,9 +234,9 @@ namespace Campy.Compiler
                         var array_or_class = (instantiated_field_type.IsArray || !instantiated_field_type.IsValueType);
                         if (array_or_class)
                         {
-                            field_size = Buffers.SizeOf(typeof(IntPtr));
-                            alignment = Buffers.Alignment(typeof(IntPtr));
-                            int padding = Buffers.Padding(offset, alignment);
+                            field_size = BUFFERS.SizeOf(typeof(IntPtr));
+                            alignment = BUFFERS.Alignment(typeof(IntPtr));
+                            int padding = BUFFERS.Padding(offset, alignment);
                             offset = offset + padding + field_size;
                             if (padding != 0)
                             {
@@ -250,9 +250,9 @@ namespace Campy.Compiler
                         }
                         else
                         {
-                            field_size = Buffers.SizeOf(ft);
-                            alignment = Buffers.Alignment(ft);
-                            int padding = Buffers.Padding(offset, alignment);
+                            field_size = BUFFERS.SizeOf(ft);
+                            alignment = BUFFERS.Alignment(ft);
+                            int padding = BUFFERS.Padding(offset, alignment);
                             offset = offset + padding + field_size;
                             if (padding != 0)
                             {
@@ -292,15 +292,15 @@ namespace Campy.Compiler
 
                     // Create a struct/class type.
                     //ContextRef c = LLVM.ContextCreate();
-                    ContextRef c = LLVM.GetModuleContext(CampyConverter.global_llvm_module);
-                    string llvm_name = CampyConverter.RenameToLegalLLVMName(tr.ToString());
+                    ContextRef c = LLVM.GetModuleContext(JITER.global_llvm_module);
+                    string llvm_name = JITER.RenameToLegalLLVMName(tr.ToString());
                     TypeRef s = LLVM.StructCreateNamed(c, llvm_name);
 
                     // Classes are always implemented as pointers.
                     TypeRef p;
                     p = LLVM.PointerType(s, 0);
 
-                    CampyConverter.previous_llvm_types_created_global.Add(tr, p);
+                    JITER.previous_llvm_types_created_global.Add(tr, p);
 
                     // Create array of typerefs as argument to StructSetBody below.
                     // Note, tr is correct type, but tr.Resolve of a generic type turns the type
@@ -369,9 +369,9 @@ namespace Campy.Compiler
                         var array_or_class = (instantiated_field_type.IsArray || !instantiated_field_type.IsValueType);
                         if (array_or_class)
                         {
-                            field_size = Buffers.SizeOf(typeof(IntPtr));
-                            alignment = Buffers.Alignment(typeof(IntPtr));
-                            int padding = Buffers.Padding(offset, alignment);
+                            field_size = BUFFERS.SizeOf(typeof(IntPtr));
+                            alignment = BUFFERS.Alignment(typeof(IntPtr));
+                            int padding = BUFFERS.Padding(offset, alignment);
                             offset = offset + padding + field_size;
                             if (padding != 0)
                             {
@@ -387,9 +387,9 @@ namespace Campy.Compiler
                         {
                             var ft =
                                 instantiated_field_type.ToSystemType();
-                            field_size = Buffers.SizeOf(ft);
-                            alignment = Buffers.Alignment(ft);
-                            int padding = Buffers.Padding(offset, alignment);
+                            field_size = BUFFERS.SizeOf(ft);
+                            alignment = BUFFERS.Alignment(ft);
+                            int padding = BUFFERS.Padding(offset, alignment);
                             offset = offset + padding + field_size;
                             if (padding != 0)
                             {
@@ -418,9 +418,9 @@ namespace Campy.Compiler
         }
     }
 
-    public class CampyConverter
+    public class JITER
     {
-        private Importer _importer;
+        private IMPORTER _importer;
         private CFG _mcfg;
         private static int _nn_id = 0;
         public static ModuleRef global_llvm_module;
@@ -435,7 +435,7 @@ namespace Campy.Compiler
         private Dictionary<MethodInfo, IntPtr> method_to_image;
         private bool done_init;
 
-        public CampyConverter()
+        public JITER()
         {
             global_llvm_module = default(ModuleRef);
             all_llvm_modules = new List<ModuleRef>();
@@ -447,7 +447,7 @@ namespace Campy.Compiler
             method_to_image = new Dictionary<MethodInfo, IntPtr>();
             done_init = false;
 
-            _importer = new Importer();
+            _importer = new IMPORTER();
             _mcfg = _importer.Cfg;
             global_llvm_module = CreateModule("global");
             LLVM.EnablePrettyStackTrace();
@@ -595,7 +595,7 @@ namespace Campy.Compiler
 
             InitializeBCLRewrites();
 
-            Runtime.Initialize();
+            RUNTIME.Initialize();
 
         }
 
@@ -719,7 +719,7 @@ namespace Campy.Compiler
                     {
                         ParameterDefinition par = parameters[k];
                         var type_to_consider = par.ParameterType;
-                        type_to_consider = CampyConverter.FromGenericParameterToTypeReference(type_to_consider, method.DeclaringType as GenericInstanceType);
+                        type_to_consider = JITER.FromGenericParameterToTypeReference(type_to_consider, method.DeclaringType as GenericInstanceType);
                         if (type_to_consider.ContainsGenericParameter)
                         {
                             var declaring_type_of_considered_type = type_to_consider.DeclaringType;
@@ -1106,12 +1106,12 @@ namespace Campy.Compiler
                 {
                     if (bb.HasStructReturnValue)
                     {
-                        Type t = new Type(method.ReturnType);
+                        TYPE t = new TYPE(method.ReturnType);
                         param_types[current++] = LLVM.PointerType(t.IntermediateType, 0);
                     }
                     if (bb.HasThis)
                     {
-                        Type t = new Type(method.DeclaringType);
+                        TYPE t = new TYPE(method.DeclaringType);
                         if (method.DeclaringType.IsValueType)
                         {
                             // Parameter "this" is a struct, but code in body of method assumes
@@ -1134,7 +1134,7 @@ namespace Campy.Compiler
                             type_reference_of_parameter = FromGenericParameterToTypeReference(
                                 type_reference_of_parameter, git);
                         }
-                        Type t = new Type(type_reference_of_parameter);
+                        TYPE t = new TYPE(type_reference_of_parameter);
                         param_types[current++] = t.IntermediateType;
                     }
 
@@ -1151,21 +1151,21 @@ namespace Campy.Compiler
                 }
 
                 //mi2 = FromGenericParameterToTypeReference(typeof(void).ToMonoTypeReference(), null);
-                Type t_ret = new Type(FromGenericParameterToTypeReference(method.ReturnType, method.DeclaringType as GenericInstanceType));
+                TYPE t_ret = new TYPE(FromGenericParameterToTypeReference(method.ReturnType, method.DeclaringType as GenericInstanceType));
                 if (bb.HasStructReturnValue)
                 {
-                    t_ret = new Type(typeof(void).ToMonoTypeReference());
+                    t_ret = new TYPE(typeof(void).ToMonoTypeReference());
                 }
                 TypeRef ret_type = t_ret.IntermediateType;
                 TypeRef met_type = LLVM.FunctionType(ret_type, param_types, false);
                 ValueRef fun = LLVM.AddFunction(mod,
-                    CampyConverter.RenameToLegalLLVMName(CampyConverter.MethodName(method)), met_type);
+                    JITER.RenameToLegalLLVMName(JITER.MethodName(method)), met_type);
                 BasicBlockRef entry = LLVM.AppendBasicBlock(fun, bb.Name.ToString());
                 bb.BasicBlock = entry;
                 bb.MethodValueRef = fun;
                 var t_fun = LLVM.TypeOf(fun);
                 var t_fun_con = LLVM.GetTypeContext(t_fun);
-                var context = LLVM.GetModuleContext(CampyConverter.global_llvm_module);
+                var context = LLVM.GetModuleContext(JITER.global_llvm_module);
                 if (t_fun_con != context) throw new Exception("not equal");
                 //////////LLVM.VerifyFunction(fun, VerifierFailureAction.PrintMessageAction);
                 BuilderRef builder = LLVM.CreateBuilder();
@@ -1189,7 +1189,7 @@ namespace Campy.Compiler
                     var fun = lvv_ent.MethodValueRef;
                     var t_fun = LLVM.TypeOf(fun);
                     var t_fun_con = LLVM.GetTypeContext(t_fun);
-                    var context = LLVM.GetModuleContext(CampyConverter.global_llvm_module);
+                    var context = LLVM.GetModuleContext(JITER.global_llvm_module);
                     if (t_fun_con != context) throw new Exception("not equal");
                     //LLVM.VerifyFunction(fun, VerifierFailureAction.PrintMessageAction);
                     var llvm_bb = LLVM.AppendBasicBlock(fun, bb.Name.ToString());
@@ -1209,7 +1209,7 @@ namespace Campy.Compiler
                 if (!IsFullyInstantiatedNode(bb))
                     continue;
 
-                Inst prev = null;
+                INST prev = null;
                 foreach (var j in bb.Instructions)
                 {
                     j.Block = bb;
@@ -1463,7 +1463,7 @@ namespace Campy.Compiler
                     if (Campy.Utils.Options.IsOn("state_computation_trace"))
                         System.Console.WriteLine("State computations for node " + bb.Name);
 
-                    var state_in = new State(visited, bb, list_of_data_types_used);
+                    var state_in = new STATE(visited, bb, list_of_data_types_used);
 
                     if (Campy.Utils.Options.IsOn("state_computation_trace"))
                     {
@@ -1472,7 +1472,7 @@ namespace Campy.Compiler
                     }
 
                     bb.StateIn = state_in;
-                    bb.StateOut = new State(state_in);
+                    bb.StateOut = new STATE(state_in);
 
                     if (Campy.Utils.Options.IsOn("state_computation_trace"))
                     {
@@ -1480,7 +1480,7 @@ namespace Campy.Compiler
                         state_in.OutputTrace();
                     }
 
-                    Inst last_inst = null;
+                    INST last_inst = null;
                     for (int i = 0; i < bb.Instructions.Count; ++i)
                     {
                         var inst = bb.Instructions[i];
@@ -1564,7 +1564,7 @@ namespace Campy.Compiler
 
 
             {
-                var module = CampyConverter.global_llvm_module;
+                var module = JITER.global_llvm_module;
                 var basic_block = GetBasicBlock(basic_block_id);
 
                 if (Campy.Utils.Options.IsOn("module_trace"))
@@ -1588,7 +1588,7 @@ namespace Campy.Compiler
                 TargetMachineRef tmr = LLVM.CreateTargetMachine(t2, triple, "", "", CodeGenOptLevel.CodeGenLevelDefault,
                     RelocMode.RelocDefault, CodeModel.CodeModelKernel);
                 //ContextRef context_ref = LLVM.ContextCreate();
-                ContextRef context_ref = LLVM.GetModuleContext(CampyConverter.global_llvm_module);
+                ContextRef context_ref = LLVM.GetModuleContext(JITER.global_llvm_module);
                 ValueRef kernelMd = LLVM.MDNodeInContext(
                     context_ref, new ValueRef[3]
                 {
@@ -1973,10 +1973,10 @@ namespace Campy.Compiler
             CFG.Vertex bb = _mcfg.Entries.Where(v =>
                 v.IsEntry && v._original_method_reference.Name == kernel_method.Name).FirstOrDefault();
             string basic_block_id = bb.Name;
-            CUmodule module = Runtime.InitializeModule(image);
-            Runtime.RuntimeModule = module;
+            CUmodule module = RUNTIME.InitializeModule(image);
+            RUNTIME.RuntimeModule = module;
             InitBCL(module);
-            var normalized_method_name = CampyConverter.RenameToLegalLLVMName(CampyConverter.MethodName(bb._original_method_reference));
+            var normalized_method_name = JITER.RenameToLegalLLVMName(JITER.MethodName(bb._original_method_reference));
             var res = Cuda.cuModuleGetFunction(out CUfunction helloWorld, module, normalized_method_name);
             Utils.CudaHelpers.CheckCudaError(res);
             return helloWorld;
@@ -2061,7 +2061,7 @@ namespace Campy.Compiler
                 }
                 Utils.CudaHelpers.CheckCudaError(res);
 
-                CUmodule module = Runtime.InitializeModule(image);
+                CUmodule module = RUNTIME.InitializeModule(image);
 
                 // Initialize BCL.
                 Utils.CudaHelpers.CheckCudaError(Cuda.cuCtxGetLimit(out ulong pvalue, CUlimit.CU_LIMIT_STACK_SIZE));
@@ -2075,10 +2075,10 @@ namespace Campy.Compiler
                 // Set up malloc, required for everything else.
                 unsafe
                 {
-                    Buffers buffers = new Buffers();
+                    BUFFERS buffers = new BUFFERS();
                     int the_size = 536870912;
                     IntPtr b = buffers.New(the_size);
-                    Runtime.BclPtr = b;
+                    RUNTIME.BclPtr = b;
                     int max_threads = 16;
 
                     // Set up parameters.
@@ -2107,7 +2107,7 @@ namespace Campy.Compiler
                     IntPtr[] kp = new IntPtr[] {parm1, parm2, parm3, parm4};
 
                     CUfunction _Z22Initialize_BCL_GlobalsPvyiPP6_BCL_t =
-                        Runtime._Z22Initialize_BCL_GlobalsPvyiPP6_BCL_t(module);
+                        RUNTIME._Z22Initialize_BCL_GlobalsPvyiPP6_BCL_t(module);
                     fixed (IntPtr* kernelParams = kp)
                     {
                         res = Cuda.cuLaunchKernel(
@@ -2127,7 +2127,7 @@ namespace Campy.Compiler
                 }
 
                 // Set up a file system for GPU.
-                CUfunction _Z12Bcl_Gfs_initv = Runtime._Z12Bcl_Gfs_initv(module);
+                CUfunction _Z12Bcl_Gfs_initv = RUNTIME._Z12Bcl_Gfs_initv(module);
                 res = Cuda.cuLaunchKernel(
                     _Z12Bcl_Gfs_initv,
                     tiles.x, tiles.y, tiles.z, // grid has one block.
@@ -2165,16 +2165,16 @@ namespace Campy.Compiler
                     IntPtr parm4; // result
 
                     var ptrx = Marshal.StringToHGlobalAnsi(assem);
-                    Buffers buffers = new Buffers();
+                    BUFFERS buffers = new BUFFERS();
                     IntPtr pointer1 = buffers.New(assem.Length + 1);
-                    Buffers.Cp(pointer1, ptrx, assem.Length + 1);
+                    BUFFERS.Cp(pointer1, ptrx, assem.Length + 1);
                     IntPtr[] x1 = new IntPtr[] {pointer1};
                     GCHandle handle1 = GCHandle.Alloc(x1, GCHandleType.Pinned);
                     parm1 = handle1.AddrOfPinnedObject();
 
                     parm2 = corlib_bytes_intptr;
                     IntPtr pointer2 = buffers.New((int) corlib_bytes_handle_len);
-                    Buffers.Cp(pointer2, corlib_bytes_intptr, (int) corlib_bytes_handle_len);
+                    BUFFERS.Cp(pointer2, corlib_bytes_intptr, (int) corlib_bytes_handle_len);
                     IntPtr[] x2 = new IntPtr[] {pointer2};
                     GCHandle handle2 = GCHandle.Alloc(x2, GCHandleType.Pinned);
                     parm2 = handle2.AddrOfPinnedObject();
@@ -2190,7 +2190,7 @@ namespace Campy.Compiler
 
                     IntPtr[] kp = new IntPtr[] {parm1, parm2, parm3, parm4};
 
-                    CUfunction _Z16Bcl_Gfs_add_filePcS_yPi = Runtime._Z16Bcl_Gfs_add_filePcS_yPi(module);
+                    CUfunction _Z16Bcl_Gfs_add_filePcS_yPi = RUNTIME._Z16Bcl_Gfs_add_filePcS_yPi(module);
                     fixed (IntPtr* kernelParams = kp)
                     {
                         res = Cuda.cuLaunchKernel(
@@ -2209,7 +2209,7 @@ namespace Campy.Compiler
                     Utils.CudaHelpers.CheckCudaError(res);
                 }
 
-                CUfunction _Z15Initialize_BCL1v = Runtime._Z15Initialize_BCL1v(module);
+                CUfunction _Z15Initialize_BCL1v = RUNTIME._Z15Initialize_BCL1v(module);
                 res = Cuda.cuLaunchKernel(
                     _Z15Initialize_BCL1v,
                     tiles.x, tiles.y, tiles.z, // grid has one block.
@@ -2223,7 +2223,7 @@ namespace Campy.Compiler
                 res = Cuda.cuCtxSynchronize(); // Make sure it's copied back to host.
                 Utils.CudaHelpers.CheckCudaError(res);
 
-                CUfunction _Z15Initialize_BCL2v = Runtime._Z15Initialize_BCL2v(module);
+                CUfunction _Z15Initialize_BCL2v = RUNTIME._Z15Initialize_BCL2v(module);
                 res = Cuda.cuLaunchKernel(
                     _Z15Initialize_BCL2v,
                     tiles.x, tiles.y, tiles.z, // grid has one block.
@@ -2257,13 +2257,13 @@ namespace Campy.Compiler
                     // Set up parameters.
                     int count = 1;
                     IntPtr parm1;
-                    IntPtr[] x1 = new IntPtr[] { Runtime.BclPtr };
+                    IntPtr[] x1 = new IntPtr[] { RUNTIME.BclPtr };
                     GCHandle handle1 = GCHandle.Alloc(x1, GCHandleType.Pinned);
                     parm1 = handle1.AddrOfPinnedObject();
 
                     IntPtr[] kp = new IntPtr[] { parm1 };
 
-                    CUfunction _Z15Set_BCL_GlobalsP6_BCL_t = Runtime._Z15Set_BCL_GlobalsP6_BCL_t(mod);
+                    CUfunction _Z15Set_BCL_GlobalsP6_BCL_t = RUNTIME._Z15Set_BCL_GlobalsP6_BCL_t(mod);
                     fixed (IntPtr* kernelParams = kp)
                     {
                         res = Cuda.cuLaunchKernel(
