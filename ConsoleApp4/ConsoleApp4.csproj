@@ -97,7 +97,7 @@
       <Version>9.1.85.2</Version>
     </PackageReference>
     <PackageReference Include="swigged.llvm">
-      <Version>6.0.0.2-alpha</Version>
+      <Version>6.0.0.3</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
