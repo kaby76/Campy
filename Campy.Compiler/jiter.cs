@@ -1780,7 +1780,8 @@ namespace Campy.Compiler
 
             stopwatch_discovery.Stop();
             var elapse_discovery = stopwatch_discovery.Elapsed;
-            System.Console.WriteLine("discovery     " + elapse_discovery);
+            if (Campy.Utils.Options.IsOn("jit_trace"))
+                System.Console.WriteLine("discovery     " + elapse_discovery);
 
             object target = kernel_target;
 
@@ -1836,14 +1837,18 @@ namespace Campy.Compiler
 
             stopwatch_compiler.Stop();
             var elapse_compiler = stopwatch_compiler.Elapsed;
-            System.Console.WriteLine("compiler      " + elapse_compiler);
+            if (Campy.Utils.Options.IsOn("jit_trace"))
+                System.Console.WriteLine("compiler      " + elapse_compiler);
             var current_directory = Directory.GetCurrentDirectory();
-            System.Console.WriteLine("Current directory " + current_directory);
+            if (Campy.Utils.Options.IsOn("jit_trace"))
+                System.Console.WriteLine("Current directory " + current_directory);
 
             CudaHelpers.CheckCudaError(Cuda.cuMemGetInfo_v2(out ulong free_memory, out ulong total_memory));
-            System.Console.WriteLine("total memory " + total_memory + " free memory " + free_memory);
+            if (Campy.Utils.Options.IsOn("jit_trace"))
+                System.Console.WriteLine("total memory " + total_memory + " free memory " + free_memory);
             CudaHelpers.CheckCudaError(Cuda.cuCtxGetLimit(out ulong pvalue, CUlimit.CU_LIMIT_STACK_SIZE));
-            System.Console.WriteLine("Stack size " + pvalue);
+            if (Campy.Utils.Options.IsOn("jit_trace"))
+                System.Console.WriteLine("Stack size " + pvalue);
             var stopwatch_cuda_compile = new Stopwatch();
             stopwatch_cuda_compile.Reset();
             stopwatch_cuda_compile.Start();
@@ -1923,7 +1928,7 @@ namespace Campy.Compiler
             Utils.CudaHelpers.CheckCudaError(res);
 
             // Go to directory for Campy.
-            var dir = Path.GetDirectoryName(Path.GetFullPath(this.GetType().Assembly.Location));
+            var dir = Path.GetDirectoryName(Path.GetFullPath(System.Reflection.Assembly.GetEntryAssembly().Location));
             uint num_ops = 0;
             var resource_name = dir + Path.DirectorySeparatorChar + "Campy.Runtime.Native.lib";
             res = Cuda.cuLinkAddFile_v2(linkState, CUjitInputType.CU_JIT_INPUT_LIBRARY,
@@ -2029,7 +2034,7 @@ namespace Campy.Compiler
                 var op_values_intptr = op_values_handle.AddrOfPinnedObject();
 
                 // Go to directory for Campy.
-                var dir = Path.GetDirectoryName(Path.GetFullPath(this.GetType().Assembly.Location));
+                var dir = Path.GetDirectoryName(Path.GetFullPath(System.Reflection.Assembly.GetEntryAssembly().Location));
                 uint num_ops = 0;
                 var resource_name = dir + Path.DirectorySeparatorChar + "Campy.Runtime.Native.lib";
                 res = Cuda.cuLinkAddFile_v2(linkState, CUjitInputType.CU_JIT_INPUT_LIBRARY,
@@ -2066,7 +2071,8 @@ namespace Campy.Compiler
                 // Initialize BCL.
                 Utils.CudaHelpers.CheckCudaError(Cuda.cuCtxGetLimit(out ulong pvalue, CUlimit.CU_LIMIT_STACK_SIZE));
                 Utils.CudaHelpers.CheckCudaError(Cuda.cuCtxSetLimit(CUlimit.CU_LIMIT_STACK_SIZE, (uint) pvalue * 25));
-                System.Console.WriteLine("Stack size " + pvalue);
+                if (Campy.Utils.Options.IsOn("jit_trace"))
+                    System.Console.WriteLine("Stack size " + pvalue);
 
                 Campy.Utils.CudaHelpers.MakeLinearTiling(1,
                     out Campy.Utils.CudaHelpers.dim3 tile_size,
@@ -2145,7 +2151,7 @@ namespace Campy.Compiler
                 {
                     // Set up corlib.dll in file system.
                     string assem = "corlib.dll";
-                    string full_path_assem = Path.GetDirectoryName(Path.GetFullPath(this.GetType().Assembly.Location))
+                    string full_path_assem = Path.GetDirectoryName(Path.GetFullPath(System.Reflection.Assembly.GetEntryAssembly().Location))
                                              + Path.DirectorySeparatorChar
                                              + assem;
                     Stream stream = new FileStream(full_path_assem, FileMode.Open, FileAccess.Read, FileShare.Read);

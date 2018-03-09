@@ -38,7 +38,6 @@ __global__ void Bcl_Gfs_init()
 
 function_space_specifier void Gfs_init()
 {
-	printf("Gfs_init in\n");
 	_bcl_->initial_size = 10;
 	_bcl_->names = (char**)Gmalloc(_bcl_->initial_size * sizeof(char*));
 	memset(_bcl_->names, 0, _bcl_->initial_size * sizeof(char*));
@@ -47,7 +46,6 @@ function_space_specifier void Gfs_init()
 	_bcl_->lengths = (size_t*)Gmalloc(_bcl_->initial_size * sizeof(size_t));
 	memset(_bcl_->lengths, 0, _bcl_->initial_size * sizeof(size_t));
 	_bcl_->init = 1;
-	printf("Gfs_init out\n");
 }
 
 __global__ void Bcl_Gfs_add_file(char * name, char * file, size_t length, int * result)
@@ -57,7 +55,6 @@ __global__ void Bcl_Gfs_add_file(char * name, char * file, size_t length, int * 
 
 function_space_specifier void Gfs_add_file(char * name, char * file, size_t length, int * result)
 {
-	printf("name %s\n", name);
 	if (_bcl_->init == 0) Gfs_init();
 	char ** ptr_name = _bcl_->names;
 	char ** ptr_file = _bcl_->files;

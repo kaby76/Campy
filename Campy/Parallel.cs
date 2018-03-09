@@ -163,9 +163,12 @@ namespace Campy
                     stopwatch_call_kernel.Stop();
                     var elapse_call_kernel = stopwatch_call_kernel.Elapsed;
 
-                    System.Console.WriteLine("cuda compile  " + elapse_cuda_compile);
-                    System.Console.WriteLine("deep copy in  " + elapse_deep_copy_to);
-                    System.Console.WriteLine("cuda kernel   " + elapse_call_kernel);
+                    if (Campy.Utils.Options.IsOn("jit_trace"))
+                    {
+                        System.Console.WriteLine("cuda compile  " + elapse_cuda_compile);
+                        System.Console.WriteLine("deep copy in  " + elapse_deep_copy_to);
+                        System.Console.WriteLine("cuda kernel   " + elapse_call_kernel);
+                    }
 
                     {
                         var stopwatch_deep_copy_back = new Stopwatch();
@@ -177,7 +180,8 @@ namespace Campy
                         
                         stopwatch_deep_copy_back.Stop();
                         var elapse_deep_copy_back = stopwatch_deep_copy_back.Elapsed;
-                        System.Console.WriteLine("deep copy out " + elapse_deep_copy_back);
+                        if (Campy.Utils.Options.IsOn("jit_trace"))
+                            System.Console.WriteLine("deep copy out " + elapse_deep_copy_back);
                     }
                 }
             }
@@ -208,7 +212,8 @@ namespace Campy
                     stopwatch_deep_copy_back.Stop();
                     var elapse_deep_copy_back = stopwatch_deep_copy_back.Elapsed;
 
-                    System.Console.WriteLine("deep copy out " + elapse_deep_copy_back);
+                    if (Campy.Utils.Options.IsOn("jit_trace"))
+                        System.Console.WriteLine("deep copy out " + elapse_deep_copy_back);
                 }
             }
             catch (Exception e)

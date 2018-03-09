@@ -178,8 +178,6 @@ function_space_specifier void Initialize_BCL0(void * g, size_t size, int count)
 		h->size = alloc_siz;
 		ptr += siz;
 	}
-	printf("Initialized memory allocation/malloc\n");
-
 }
 
 function_space_specifier struct header_t *get_free_block(size_t size)

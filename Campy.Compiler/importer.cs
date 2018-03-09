@@ -221,7 +221,6 @@ namespace Campy.Compiler
             MethodReference original_method_reference = definition.Item1;
             List<TypeReference> item2 = definition.Item2;
             String full_name = original_method_reference.Module.FullyQualifiedName;
-            var result = LoadAssembly(full_name);
 
             _methods_done.Add(original_method_reference.FullName);
 
@@ -437,12 +436,6 @@ namespace Campy.Compiler
             }
             _cfg.OutputDotGraph();
             _cfg.OutputEntireGraph();
-            System.Console.WriteLine();
-
-            //this.Dump();
-
-            // At this point, the given method has been converted into a bunch of basic blocks,
-            // and are part of the CFG.
         }
 
         /// <summary>

@@ -415,7 +415,7 @@ namespace Campy.Compiler
 
             // Set up _substituted_bcl.
             var runtime = new RUNTIME();
-            var dir = Path.GetDirectoryName(Path.GetFullPath(runtime.GetType().Assembly.Location));
+            var dir = Path.GetDirectoryName(Path.GetFullPath(System.Reflection.Assembly.GetEntryAssembly().Location));
             string yopath = dir + Path.DirectorySeparatorChar + "corlib.dll";
             Mono.Cecil.ModuleDefinition md = Mono.Cecil.ModuleDefinition.ReadModule(yopath);
             foreach (var bcl_type in md.GetTypes())
@@ -425,7 +425,6 @@ namespace Campy.Compiler
                 if (regex.IsMatch(bcl_type.FullName)) continue;
 
                 // Try to map the type into native NET type. Some things just won't.
-                System.Console.WriteLine("bcl type " + bcl_type.FullName);
                 var t_system_type = System.Type.GetType(bcl_type.FullName);
                 if (t_system_type == null) continue;
 
@@ -756,7 +755,7 @@ namespace Campy.Compiler
         {
             var runtime = new RUNTIME();
             TypeReference result = null;
-            var dir = Path.GetDirectoryName(Path.GetFullPath(runtime.GetType().Assembly.Location));
+            var dir = Path.GetDirectoryName(Path.GetFullPath(System.Reflection.Assembly.GetEntryAssembly().Location));
             string yopath = dir + Path.DirectorySeparatorChar + "corlib.dll";
             Mono.Cecil.ModuleDefinition md = Mono.Cecil.ModuleDefinition.ReadModule(yopath);
             foreach (var bcl_type in md.GetTypes())
@@ -835,7 +834,7 @@ namespace Campy.Compiler
             MethodDefinition method_definition = method_reference.Resolve();
             // Find in Campy.Runtime, assuming it exists in the same
             // directory as the Campy compiler assembly.
-            var dir = Campy.Utils.CampyInfo.PathOfCampy();
+            var dir = Path.GetDirectoryName(Path.GetFullPath(System.Reflection.Assembly.GetEntryAssembly().Location));
             string yopath = dir + Path.DirectorySeparatorChar + "corlib.dll";
             Mono.Cecil.ModuleDefinition md = Mono.Cecil.ModuleDefinition.ReadModule(yopath);
             // Find type/method in order to do a substitution. If there

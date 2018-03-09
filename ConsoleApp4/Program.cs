@@ -268,7 +268,7 @@ namespace ConsoleApp4
 
         static void Main(string[] args)
         {
-            StartDebugging();
+            //StartDebugging();
             FFTC.FFT_Test();
 
             //var t1 = new List<int>();
