@@ -5,7 +5,7 @@
     <id>Campy</id>
     <title>Campy</title>
 
-    <version>0.0.3</version>
+    <version>0.0.4</version>
 
     <!-- Authors contain text that appears directly on the gallery -->
     <authors>Ken Domino</authors>
@@ -54,38 +54,38 @@ For further information, see https://github.com/kaby76/campy and http://campynet
     <dependencies>
       <group targetFramework="net461" >
 	 <dependency id="NETStandard.Library" version="[2.0.0,)" />
-	 <dependency id="swigged.llvm" version="[6.0.0.3,)" />
-	 <dependency id="swigged.cuda" version="[9.1.85.2,)" />
+	 <dependency id="swigged.llvm" version="[6.0.3,)" />
+	 <dependency id="swigged.cuda" version="[9.185.3,)" />
 	 <dependency id="Mono.Cecil" version="[0.10.0-beta7,)" />
       </group>
       <group targetFramework="net462" >
 	 <dependency id="NETStandard.Library" version="[2.0.0,)" />
-	 <dependency id="swigged.llvm" version="[6.0.0.3,)" />
-	 <dependency id="swigged.cuda" version="[9.1.85.2,)" />
+	 <dependency id="swigged.llvm" version="[6.0.3,)" />
+	 <dependency id="swigged.cuda" version="[9.185.3,)" />
 	 <dependency id="Mono.Cecil" version="[0.10.0-beta7,)" />
       </group>
       <group targetFramework="net47" >
 	 <dependency id="NETStandard.Library" version="[2.0.0,)" />
-	 <dependency id="swigged.llvm" version="[6.0.0.3,)" />
-	 <dependency id="swigged.cuda" version="[9.1.85.2,)" />
+	 <dependency id="swigged.llvm" version="[6.0.3,)" />
+	 <dependency id="swigged.cuda" version="[9.185.3,)" />
 	 <dependency id="Mono.Cecil" version="[0.10.0-beta7,)" />
       </group>
       <group targetFramework="net471" >
 	 <dependency id="NETStandard.Library" version="[2.0.0,)" />
-	 <dependency id="swigged.llvm" version="[6.0.0.3,)" />
-	 <dependency id="swigged.cuda" version="[9.1.85.2,)" />
+	 <dependency id="swigged.llvm" version="[6.0.3,)" />
+	 <dependency id="swigged.cuda" version="[9.185.3,)" />
 	 <dependency id="Mono.Cecil" version="[0.10.0-beta7,)" />
       </group>
       <group targetFramework="netstandard2.0" >
 	 <dependency id="NETStandard.Library" version="[2.0.0,)" />
-	 <dependency id="swigged.llvm" version="[6.0.0.3,)" />
-	 <dependency id="swigged.cuda" version="[9.1.85.2,)" />
+	 <dependency id="swigged.llvm" version="[6.0.3,)" />
+	 <dependency id="swigged.cuda" version="[9.185.3,)" />
 	 <dependency id="Mono.Cecil" version="[0.10.0-beta7,)" />
       </group>
       <group targetFramework="netcoreapp2.0" >
 	 <dependency id="NETStandard.Library" version="[2.0.0,)" />
-	 <dependency id="swigged.llvm" version="[6.0.0.3,)" />
-	 <dependency id="swigged.cuda" version="[9.1.85.2,)" />
+	 <dependency id="swigged.llvm" version="[6.0.3,)" />
+	 <dependency id="swigged.cuda" version="[9.185.3,)" />
 	 <dependency id="Mono.Cecil" version="[0.10.0-beta7,)" />
       </group>
     </dependencies>
@@ -93,7 +93,7 @@ For further information, see https://github.com/kaby76/campy and http://campynet
   </metadata>
   
   <files>
-    <file src="..\Campy.targets" target="build\Campy.targets" />
+    <file src="Campy.targets" target="build\Campy.targets" />
 
     <file src="..\x64\Debug\Campy.Runtime.Native.lib" target="content\Campy.Runtime.Native.lib" />
 

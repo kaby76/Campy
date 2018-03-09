@@ -23,6 +23,6 @@
     </CampyPreBuildEvent>
   </PropertyGroup>
   <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
-    <CampyPreBuildEvent Condition="'$(Prefer32Bit)' == 'false'">copy "$(userprofile)\.nuget\packages\Campy\0.0.3\content\*.*"</CampyPreBuildEvent>
+    <CampyPreBuildEvent Condition="'$(Prefer32Bit)' == 'false'">copy "$(userprofile)\.nuget\packages\Campy\0.0.4\content\*.*"</CampyPreBuildEvent>
   </PropertyGroup>
 </Project>
