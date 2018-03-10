@@ -5,7 +5,7 @@
     <id>Campy</id>
     <title>Campy</title>
 
-    <version>0.0.4</version>
+    <version>0.0.5</version>
 
     <!-- Authors contain text that appears directly on the gallery -->
     <authors>Ken Domino</authors>
@@ -23,19 +23,10 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>An API for GP-GPU computing using C# or any other NET language, for Windows x64.</description>
     <releaseNotes>
-* Version 0.0.3
-Release of Campy with GPU Base Class Layer, reference and value types. This version does not handle generics.
+* Version 0.0.5
+Fixing code that tries to find GPU base class layer .DLL and .LIB files.
 
-* Version 0.0.2-alpha
-Added compilation of generics and classes. Problems in memory management and recompilation (speed) outstanding.
-Release for demonstration purposes only. Debug version only.
-
-* Version 0.0.1-alpha
-Simple compilation of value types only. Debug version only.
-
-When building with Campy, select Platform = "AnyCPU", config = "Debug" or "Release", "Prefer 32-bit" unchecked.
 For further information, see https://github.com/kaby76/campy and http://campynet.com.
-
     </releaseNotes>
 
     <!-- Copyright information -->
