@@ -69,21 +69,14 @@ namespace ConsoleApp4
         {
             StartDebugging();
 
-            int n = 4;
-            int[] x = new int[n];
-            Campy.Parallel.For(n, i => x[i] = i);
-            for (int i = 0; i < n; ++i) if (x[i] != i)
-                throw new Exception();
-
-
-            //var b = new BitonicSorter();
-            //Random rnd = new Random();
-            //int N = Bithacks.Power2(20);
-            //var a = Enumerable.Range(0, N).ToArray().OrderBy(x => rnd.Next()).ToArray();
-            //BitonicSorter.BitonicSortParallel1(a);
-            //for (int i = 0; i < N; ++i)
-            //    if (a[i] != i)
-            //        throw new Exception();
+            var b = new BitonicSorter();
+            Random rnd = new Random();
+            int N = Bithacks.Power2(20);
+            var a = Enumerable.Range(0, N).ToArray().OrderBy(x => rnd.Next()).ToArray();
+            BitonicSorter.BitonicSortParallel1(a);
+            for (int i = 0; i < N; ++i)
+                if (a[i] != i)
+                    throw new Exception();
         }
     }
 }

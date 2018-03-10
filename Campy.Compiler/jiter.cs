@@ -63,17 +63,28 @@ namespace Campy.Compiler
                 // about! I cannot rail enough with this half-baked type system in Mono. It has caused so many
                 // problems!!!!!!!
 
+                TypeDefinition td = tr.Resolve();
+
                 var is_pointer = tr.IsPointer;
+                var is_reference = tr.IsByReference;
                 var is_array = tr.IsArray;
                 var is_value_type = tr.IsValueType;
+
 
                 if (is_pointer)
                 {
                     
                 }
 
-                TypeDefinition td = tr.Resolve();
-                
+                if (is_reference)
+                {
+                    // Convert the base type first.
+                    var base_type = ToTypeRef(td, generic_type_rewrite_rules, level + 1);
+                    // Add in pointer to type.
+                    TypeRef p = LLVM.PointerType(base_type, 0);
+                    return p;
+                }
+
                 GenericInstanceType git = tr as GenericInstanceType;
                 TypeDefinition gtd = tr as TypeDefinition;
 

@@ -2589,14 +2589,10 @@ namespace Campy.Compiler
             TypeRef tr = LLVM.TypeOf(v.V);
             TypeKind kind = LLVM.GetTypeKind(tr);
 
-            ValueRef[] indexes = new ValueRef[0];
-            ValueRef gep = LLVM.BuildInBoundsGEP(Builder, v.V, indexes, "i" + instruction_id++);
+            var load = v.V;
+            load = LLVM.BuildLoad(Builder, load, "i" + instruction_id++);
             if (Campy.Utils.Options.IsOn("jit_trace"))
-                System.Console.WriteLine(new VALUE(gep).ToString());
-
-            var load = LLVM.BuildLoad(Builder, gep, "i" + instruction_id++);
-            if (Campy.Utils.Options.IsOn("jit_trace"))
-                System.Console.WriteLine("load = " + new VALUE(load).ToString());
+                System.Console.WriteLine(new VALUE(load));
 
             if (_dst != null && _dst.IntermediateType != LLVM.TypeOf(load))
             {
