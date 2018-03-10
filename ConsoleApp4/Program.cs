@@ -9,16 +9,45 @@ using Campy.Graphs;
 
 namespace ConsoleApp4
 {
-    static class Foo
+    public class BitonicSorter
     {
-        public static IEnumerable<IEnumerable<T>> Split<T>(this T[] array, int size)
+        private static void Swap(ref int x, ref int y)
         {
-            for (var i = 0; i < (float)array.Length / size; i++)
-            {
-                yield return array.Skip(i * size).Take(size);
-            }
+            var t = x;
+            x = y;
+            y = t;
         }
 
+        public static void BitonicSortParallel1(int[] a)
+        {
+            Parallel.Delay();
+            uint N = (uint)a.Length;
+            int log2n = Bithacks.FloorLog2(N);
+            for (int k = 0; k < log2n; ++k)
+            {
+                uint n2 = N / 2;
+                int twok = Bithacks.Power2(k);
+                Campy.Parallel.For((int)n2, i =>
+                {
+                    int imp2 = i % twok;
+                    int cross = imp2 + 2 * twok * (int)(i / twok);
+                    int paired = -1 - imp2 + 2 * twok * (int)((i + twok) / twok);
+                    if (a[cross] > a[paired]) Swap(ref a[cross], ref a[paired]);
+                });
+                for (int j = k - 1; j >= 0; --j)
+                {
+                    int twoj = Bithacks.Power2(j);
+                    Campy.Parallel.For((int)n2, i =>
+                    {
+                        int imp2 = i % twoj;
+                        int cross = imp2 + 2 * twoj * (int)(i / twoj);
+                        int paired = cross + twoj;
+                        if (a[cross] > a[paired]) Swap(ref a[cross], ref a[paired]);
+                    });
+                }
+            }
+            Parallel.Synch();
+        }
     }
 
     class Program
@@ -36,259 +65,25 @@ namespace ConsoleApp4
             Campy.Utils.Options.Set("state_computation_trace");
             Campy.Utils.Options.Set("continue_with_no_resolve");
         }
-
-        public class BitonicSorter
-        {
-            private int[] a;
-            // sorting direction:
-            private static bool ASCENDING = true, DESCENDING = false;
-
-            public void SortPar(int[] a_)
-            {
-                a = a_;
-                BitonicSortPar();
-            }
-
-            private void bitonicSort(int lo, int n, bool dir)
-            {
-                if (n > 1)
-                {
-                    int m = n / 2;
-                    bitonicSort(lo, m, ASCENDING);
-                    bitonicSort(lo + m, m, DESCENDING);
-                    bitonicMerge(lo, n, dir);
-                }
-            }
-
-            private void bitonicMerge(int lo, int n, bool dir)
-            {
-                if (n > 1)
-                {
-                    int m = n / 2;
-                    for (int i = lo; i < lo + m; i++)
-                        compare(i, i + m, dir);
-                    bitonicMerge(lo, m, dir);
-                    bitonicMerge(lo + m, m, dir);
-                }
-            }
-
-            private void compare(int i, int j, bool dir)
-            {
-                if (dir == (a[i] > a[j]))
-                    swap(i, j);
-            }
-
-            private void swap(int i, int j)
-            {
-                int t = a[i];
-                a[i] = a[j];
-                a[j] = t;
-            }
-
-            // [Bat 68]	K.E. Batcher: Sorting Networks and their Applications. Proc. AFIPS Spring Joint Comput. Conf., Vol. 32, 307-314 (1968)
-
-            void BitonicSortSeq()
-            {
-                uint N = (uint)a.Length;
-                int term = Bithacks.FloorLog2(N);
-                for (int kk = 2; kk <= N; kk *= 2)
-                {
-                    for (int jj = kk >> 1; jj > 0; jj = jj >> 1)
-                    {
-                        int k = kk;
-                        int j = jj;
-                        Campy.Sequential.For((int)N, (i) =>
-                        {
-                            int ij = i ^ j;
-                            if (ij > i)
-                            {
-                                if ((i & k) == 0)
-                                {
-                                    if (a[i] > a[ij]) swap(i, ij);
-                                }
-                                else // ((i & k) != 0)
-                                {
-                                    if (a[i] < a[ij]) swap(i, ij);
-                                }
-                            }
-                        });
-                    }
-                }
-            }
-
-            void BitonicSortPar()
-            {
-                Campy.Parallel.Delay();
-                uint N = (uint)a.Length;
-                int term = Bithacks.FloorLog2(N);
-                for (int kk = 2; kk <= N; kk *= 2)
-                {
-                    for (int jj = kk >> 1; jj > 0; jj = jj >> 1)
-                    {
-                        int k = kk;
-                        int j = jj;
-                        Campy.Parallel.For((int)N, (i) =>
-                        {
-                            int ij = i ^ j;
-                            if (ij > i)
-                            {
-                                if ((i & k) == 0)
-                                {
-                                    if (a[i] > a[ij]) swap(i, ij);
-                                }
-                                else // ((i & k) != 0)
-                                {
-                                    if (a[i] < a[ij]) swap(i, ij);
-                                }
-                            }
-                        });
-                    }
-                }
-                Campy.Parallel.Synch();
-            }
-        }
-
-        public class FFTC
-        {
-            /* Performs a Bit Reversal Algorithm on a postive integer 
-             * for given number of bits
-             * e.g. 011 with 3 bits is reversed to 110
-             */
-            public static int BitReverse(int n, int bits)
-            {
-                int reversedN = n;
-                int count = bits - 1;
-
-                n >>= 1;
-                while (n > 0)
-                {
-                    reversedN = (reversedN << 1) | (n & 1);
-                    count--;
-                    n >>= 1;
-                }
-
-                return ((reversedN << count) & ((1 << bits) - 1));
-            }
-
-            /* Uses Cooley-Tukey iterative in-place algorithm with radix-2 DIT case
-             * assumes no of points provided are a power of 2 */
-            public static void FFT(Complex[] buffer)
-            {
-
-                int bits = (int)Math.Log(buffer.Length, 2);
-                for (int j = 1; j < buffer.Length / 2; j++)
-                {
-                    int swapPos = BitReverse(j, bits);
-                    var temp = buffer[j];
-                    buffer[j] = buffer[swapPos];
-                    buffer[swapPos] = temp;
-                }
-
-                for (int N = 2; N <= buffer.Length; N <<= 1)
-                {
-                    for (int i = 0; i < buffer.Length; i += N)
-                    {
-                        for (int k = 0; k < N / 2; k++)
-                        {
-                            int evenIndex = i + k;
-                            int oddIndex = i + k + (N / 2);
-                            var even = buffer[evenIndex];
-                            var odd = buffer[oddIndex];
-
-                            double term = -2 * Math.PI * k / (double)N;
-                            Complex exp = new Complex(Math.Cos(term), Math.Sin(term)) * odd;
-
-                            buffer[evenIndex] = even + exp;
-                            buffer[oddIndex] = even - exp;
-                        }
-                    }
-                }
-            }
-
-            public static void FFTGPU(Complex[] buffer)
-            {
-                int bits = (int)Math.Log(buffer.Length, 2);
-
-                Campy.Parallel.For(buffer.Length / 2 - 1, k =>
-                {
-                    int j = k + 1;
-                    int swapPos = BitReverse(j, bits);
-                    var temp = buffer[j];
-                    buffer[j] = buffer[swapPos];
-                    buffer[swapPos] = temp;
-                });
-
-                for (int N = 2; N <= buffer.Length; N <<= 1)
-                {
-                    int step = N / 2;
-                    int bstep = N;
-                    Campy.Parallel.For(buffer.Length / 2, d =>
-                    {
-                        var k = d % step;
-                        var i = N * (d / step);
-                        var t = d % step + N * (d / step);
-                        int evenIndex = t;
-                        int oddIndex = t + step;
-
-                        var even = buffer[evenIndex];
-                        var odd = buffer[oddIndex];
-
-                        double term = -2 * Math.PI * k / (double)N;
-                        Complex exp = new Complex(Math.Cos(term), Math.Sin(term)) * odd;
-
-                        buffer[evenIndex] = even + exp;
-                        buffer[oddIndex] = even - exp;
-                    });
-                }
-            }
-
-            static bool ApproxEqual(double a, double b)
-            {
-                if (b > a)
-                    return (b - a) < 0.01;
-                else
-                    return (a - b) < 0.01;
-            }
-
-            public static void FFT_Test()
-            {
-                Complex[] input = { 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
-                var copy = input.ToArray();
-
-                FFTGPU(input);
-                FFT(copy);
-
-                for (int i = 0; i < input.Length; ++i)
-                {
-                    if (!ApproxEqual(copy[i].Real, input[i].Real)) throw new Exception();
-                    if (!ApproxEqual(copy[i].Imaginary, input[i].Imaginary)) throw new Exception();
-                }
-            }
-        }
-
         static void Main(string[] args)
         {
-            //StartDebugging();
-            FFTC.FFT_Test();
+            StartDebugging();
 
-            //var t1 = new List<int>();
-            //for (int i = 0; i < n; ++i) t1.Add(0);
-            //Campy.Parallel.For(n, i =>
-            //{
-            //    if (i % 2 == 0)
-            //        t1[i] = i * 20;
-            //    else
-            //        t1[i] = i * 30;
-            //});
-            //for (int i = 0; i < n; ++i)
-            //    if (i % 2 == 0)
-            //    {
-            //        if (t1[i] != i * 20) throw new Exception();
-            //    }
-            //    else
-            //    {
-            //        if (t1[i] != i * 30) throw new Exception();
-            //    }
+            int n = 4;
+            int[] x = new int[n];
+            Campy.Parallel.For(n, i => x[i] = i);
+            for (int i = 0; i < n; ++i) if (x[i] != i)
+                throw new Exception();
+
+
+            //var b = new BitonicSorter();
+            //Random rnd = new Random();
+            //int N = Bithacks.Power2(20);
+            //var a = Enumerable.Range(0, N).ToArray().OrderBy(x => rnd.Next()).ToArray();
+            //BitonicSorter.BitonicSortParallel1(a);
+            //for (int i = 0; i < N; ++i)
+            //    if (a[i] != i)
+            //        throw new Exception();
         }
     }
 }

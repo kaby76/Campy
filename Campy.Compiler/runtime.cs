@@ -417,7 +417,9 @@ namespace Campy.Compiler
             var runtime = new RUNTIME();
             var dir = Path.GetDirectoryName(Path.GetFullPath(System.Reflection.Assembly.GetEntryAssembly().Location));
             string yopath = dir + Path.DirectorySeparatorChar + "corlib.dll";
-            Mono.Cecil.ModuleDefinition md = Mono.Cecil.ModuleDefinition.ReadModule(yopath);
+
+            Mono.Cecil.ModuleDefinition md = Mono.Cecil.ModuleDefinition.ReadModule("corlib.dll");
+            //Mono.Cecil.ModuleDefinition md = Mono.Cecil.ModuleDefinition.ReadModule(yopath);
             foreach (var bcl_type in md.GetTypes())
             {
                 // Filter out <Module> and <PrivateImplementationDetails>, among possible others.
