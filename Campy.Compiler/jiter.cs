@@ -1930,9 +1930,8 @@ namespace Campy.Compiler
             // Go to directory for Campy.
             var dir = Path.GetDirectoryName(Path.GetFullPath(System.Reflection.Assembly.GetEntryAssembly().Location));
             uint num_ops = 0;
-            var resource_name = dir + Path.DirectorySeparatorChar + "Campy.Runtime.Native.lib";
             res = Cuda.cuLinkAddFile_v2(linkState, CUjitInputType.CU_JIT_INPUT_LIBRARY,
-                resource_name, num_ops, op, op_values_intptr);
+                RUNTIME.FindNativeCoreLib(), num_ops, op, op_values_intptr);
             // static .lib
             // cuLinkAddFile_v2, CU_JIT_INPUT_OBJECT; succeeds cuLinkAddFile_v2, fails cuLinkComplete => truncated .lib?
             // cuLinkAddFile_v2, CU_JIT_INPUT_LIBRARY; fails cuLinkAddFile_v2 => invalid image?
@@ -2036,9 +2035,8 @@ namespace Campy.Compiler
                 // Go to directory for Campy.
                 var dir = Path.GetDirectoryName(Path.GetFullPath(System.Reflection.Assembly.GetEntryAssembly().Location));
                 uint num_ops = 0;
-                var resource_name = dir + Path.DirectorySeparatorChar + "Campy.Runtime.Native.lib";
                 res = Cuda.cuLinkAddFile_v2(linkState, CUjitInputType.CU_JIT_INPUT_LIBRARY,
-                    resource_name, num_ops, op, op_values_intptr);
+                    RUNTIME.FindNativeCoreLib(), num_ops, op, op_values_intptr);
                 // static .lib
                 // cuLinkAddFile_v2, CU_JIT_INPUT_OBJECT; succeeds cuLinkAddFile_v2, fails cuLinkComplete => truncated .lib?
                 // cuLinkAddFile_v2, CU_JIT_INPUT_LIBRARY; fails cuLinkAddFile_v2 => invalid image?
@@ -2150,10 +2148,8 @@ namespace Campy.Compiler
                 unsafe
                 {
                     // Set up corlib.dll in file system.
-                    string assem = "corlib.dll";
-                    string full_path_assem = Path.GetDirectoryName(Path.GetFullPath(System.Reflection.Assembly.GetEntryAssembly().Location))
-                                             + Path.DirectorySeparatorChar
-                                             + assem;
+                    string full_path_assem = RUNTIME.FindCoreLib();
+                    string assem = Path.GetFileName(full_path_assem);
                     Stream stream = new FileStream(full_path_assem, FileMode.Open, FileAccess.Read, FileShare.Read);
                     var corlib_bytes_handle_len = stream.Length;
                     var corlib_bytes = new byte[corlib_bytes_handle_len];

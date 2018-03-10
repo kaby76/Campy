@@ -394,6 +394,120 @@ namespace Campy.Compiler
             }
         }
 
+        public static string FindNativeCoreLib()
+        {
+            try
+            {
+                // Let's try the obvious, in the same directory as Campy.Utils.dll.
+                var path_of_campy = Campy.Utils.CampyInfo.PathOfCampy();
+                string full_path_assem = path_of_campy + Path.DirectorySeparatorChar + "Campy.Runtime.Native.lib";
+                Stream stream = new FileStream(full_path_assem, FileMode.Open, FileAccess.Read, FileShare.Read);
+                stream.Close();
+                return full_path_assem;
+            }
+            catch (Exception e)
+            {
+            }
+
+            // Try something else...
+
+            try
+            {
+                // Let's say it's in the Nuget packages directory. Go up a few levels and look for it in "contents" directory.
+                // .../.nuget/packages/campy/0.0.4/lib/netstandard2.0/Campy.Utils.dll
+                // =>
+                // .../.nuget/packages/campy/0.0.4/contents/corlib.dll.
+                var path_of_campy = Campy.Utils.CampyInfo.PathOfCampy();
+                string full_path_assem = path_of_campy + Path.DirectorySeparatorChar
+                                                       + ".." + Path.DirectorySeparatorChar
+                                                       + ".." + Path.DirectorySeparatorChar
+                                                       + "content" + Path.DirectorySeparatorChar
+                                                       + "Campy.Runtime.Native.lib";
+                full_path_assem = Path.GetFullPath(full_path_assem);
+                Stream stream = new FileStream(full_path_assem, FileMode.Open, FileAccess.Read, FileShare.Read);
+                stream.Close();
+                return full_path_assem;
+            }
+            catch (Exception e)
+            {
+            }
+
+            try
+            {
+                // Let's try the calling executable directory.
+                var dir = Path.GetDirectoryName(Path.GetFullPath(System.Reflection.Assembly.GetEntryAssembly().Location));
+                string full_path_assem = dir + Path.DirectorySeparatorChar
+                                                       + "Campy.Runtime.Native.lib";
+                full_path_assem = Path.GetFullPath(full_path_assem);
+                Stream stream = new FileStream(full_path_assem, FileMode.Open, FileAccess.Read, FileShare.Read);
+                stream.Close();
+                return full_path_assem;
+            }
+            catch (Exception e)
+            {
+            }
+
+            // Fuck. I have no idea.
+            return null;
+        }
+
+        public static string FindCoreLib()
+        {
+            try
+            {
+                // Let's try the obvious, in the same directory as Campy.Utils.dll.
+                var path_of_campy = Campy.Utils.CampyInfo.PathOfCampy();
+                string full_path_assem = path_of_campy + Path.DirectorySeparatorChar + "corlib.dll";
+                Stream stream = new FileStream(full_path_assem, FileMode.Open, FileAccess.Read, FileShare.Read);
+                stream.Close();
+                return full_path_assem;
+            }
+            catch (Exception e)
+            {
+            }
+
+            // Try something else...
+
+            try
+            {
+                // Let's say it's in the Nuget packages directory. Go up a few levels and look for it in "contents" directory.
+                // .../.nuget/packages/campy/0.0.4/lib/netstandard2.0/Campy.Utils.dll
+                // =>
+                // .../.nuget/packages/campy/0.0.4/contents/corlib.dll.
+                var path_of_campy = Campy.Utils.CampyInfo.PathOfCampy();
+                string full_path_assem = path_of_campy + Path.DirectorySeparatorChar
+                                                       + ".." + Path.DirectorySeparatorChar
+                                                       + ".." + Path.DirectorySeparatorChar
+                                                       + "content" + Path.DirectorySeparatorChar
+                                                       + "corlib.dll";
+                full_path_assem = Path.GetFullPath(full_path_assem);
+                Stream stream = new FileStream(full_path_assem, FileMode.Open, FileAccess.Read, FileShare.Read);
+                stream.Close();
+                return full_path_assem;
+            }
+            catch (Exception e)
+            {
+            }
+
+            try
+            {
+                // Let's try the calling executable directory.
+                var dir = Path.GetDirectoryName(Path.GetFullPath(System.Reflection.Assembly.GetEntryAssembly().Location));
+                string full_path_assem = dir + Path.DirectorySeparatorChar
+                                                       + "corlib.dll";
+                full_path_assem = Path.GetFullPath(full_path_assem);
+                Stream stream = new FileStream(full_path_assem, FileMode.Open, FileAccess.Read, FileShare.Read);
+                stream.Close();
+                return full_path_assem;
+            }
+            catch (Exception e)
+            {
+            }
+
+            // Fuck. I have no idea.
+            return null;
+        }
+
         public static void Initialize()
         {
             // Load C# library for BCL, and grab all types and methods.
@@ -415,11 +529,9 @@ namespace Campy.Compiler
 
             // Set up _substituted_bcl.
             var runtime = new RUNTIME();
-            var dir = Path.GetDirectoryName(Path.GetFullPath(System.Reflection.Assembly.GetEntryAssembly().Location));
-            string yopath = dir + Path.DirectorySeparatorChar + "corlib.dll";
 
-            Mono.Cecil.ModuleDefinition md = Mono.Cecil.ModuleDefinition.ReadModule("corlib.dll");
-            //Mono.Cecil.ModuleDefinition md = Mono.Cecil.ModuleDefinition.ReadModule(yopath);
+            // Find corlib.dll. It could be anywhere, but let's check the usual spots.
+            Mono.Cecil.ModuleDefinition md = Mono.Cecil.ModuleDefinition.ReadModule(FindCoreLib());
             foreach (var bcl_type in md.GetTypes())
             {
                 // Filter out <Module> and <PrivateImplementationDetails>, among possible others.
@@ -757,9 +869,7 @@ namespace Campy.Compiler
         {
             var runtime = new RUNTIME();
             TypeReference result = null;
-            var dir = Path.GetDirectoryName(Path.GetFullPath(System.Reflection.Assembly.GetEntryAssembly().Location));
-            string yopath = dir + Path.DirectorySeparatorChar + "corlib.dll";
-            Mono.Cecil.ModuleDefinition md = Mono.Cecil.ModuleDefinition.ReadModule(yopath);
+            Mono.Cecil.ModuleDefinition md = Mono.Cecil.ModuleDefinition.ReadModule(FindCoreLib());
             foreach (var bcl_type in md.GetTypes())
             {
                 if (bcl_type.FullName == type.FullName)
@@ -836,9 +946,7 @@ namespace Campy.Compiler
             MethodDefinition method_definition = method_reference.Resolve();
             // Find in Campy.Runtime, assuming it exists in the same
             // directory as the Campy compiler assembly.
-            var dir = Path.GetDirectoryName(Path.GetFullPath(System.Reflection.Assembly.GetEntryAssembly().Location));
-            string yopath = dir + Path.DirectorySeparatorChar + "corlib.dll";
-            Mono.Cecil.ModuleDefinition md = Mono.Cecil.ModuleDefinition.ReadModule(yopath);
+            Mono.Cecil.ModuleDefinition md = Mono.Cecil.ModuleDefinition.ReadModule(FindCoreLib());
             // Find type/method in order to do a substitution. If there
             // is no substitution, continue on with the method.
             if (mr_dt != null)
