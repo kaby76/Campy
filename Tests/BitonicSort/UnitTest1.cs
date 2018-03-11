@@ -241,55 +241,16 @@ namespace BitonicSort
 
     public class BitonicSorter
     {
-        public int[] a;
-        // sorting direction:
-        private static bool ASCENDING = true, DESCENDING = false;
-
-        public void sort1(int[] a_)
+        public static void swap(ref int i, ref int j)
         {
-            a = a_;
-            BitonicSort1();
-        }
-
-        private void bitonicSort(int lo, int n, bool dir)
-        {
-            if (n > 1)
-            {
-                int m = n / 2;
-                bitonicSort(lo, m, ASCENDING);
-                bitonicSort(lo + m, m, DESCENDING);
-                bitonicMerge(lo, n, dir);
-            }
-        }
-
-        private void bitonicMerge(int lo, int n, bool dir)
-        {
-            if (n > 1)
-            {
-                int m = n / 2;
-                for (int i = lo; i < lo + m; i++)
-                    compare(i, i + m, dir);
-                bitonicMerge(lo, m, dir);
-                bitonicMerge(lo + m, m, dir);
-            }
-        }
-
-        private void compare(int i, int j, bool dir)
-        {
-            if (dir == (a[i] > a[j]))
-                swap(i, j);
-        }
-
-        private void swap(int i, int j)
-        {
-            int t = a[i];
-            a[i] = a[j];
-            a[j] = t;
+            int t = i;
+            i = j;
+            j = t;
         }
 
         // [Bat 68]	K.E. Batcher: Sorting Networks and their Applications. Proc. AFIPS Spring Joint Comput. Conf., Vol. 32, 307-314 (1968)
 
-        void BitonicSort1()
+        public static void BitonicSort1(int[] a)
         {
             Parallel.Delay();
             uint N = (uint)a.Length;
@@ -307,11 +268,11 @@ namespace BitonicSort
                         {
                             if ((i & k) == 0)
                             {
-                                if (a[i] > a[ij]) swap(i, ij);
+                                if (a[i] > a[ij]) swap(ref a[i], ref a[ij]);
                             }
                             else // ((i & k) != 0)
                             {
-                                if (a[i] < a[ij]) swap(i, ij);
+                                if (a[i] < a[ij]) swap(ref a[i], ref a[ij]);
                             }
                         }
                     });
@@ -330,9 +291,10 @@ namespace BitonicSort
             var b = new BitonicSorter();
             Random rnd = new Random();
             int N = 8;
-            b.sort1(Enumerable.Range(0, N).ToArray().OrderBy(x => rnd.Next()).ToArray());
+            int[] a = Enumerable.Range(0, N).ToArray().OrderBy(x => rnd.Next()).ToArray();
+            BitonicSorter.BitonicSort1(a);
             for (int i = 0; i < N; ++i)
-                if (b.a[i] != i)
+                if (a[i] != i)
                     throw new Exception();
         }
     }
