@@ -504,7 +504,7 @@ namespace Campy.Compiler
 
             basic_llvm_types_created.Add(
                 typeof(bool).ToMonoTypeReference(),
-                LLVM.Int1Type());
+                LLVM.Int8Type()); // Asking for trouble if one tries to map directly to 1 bit.
 
             basic_llvm_types_created.Add(
                 typeof(char).ToMonoTypeReference(),
@@ -1416,10 +1416,8 @@ namespace Campy.Compiler
         }
 
         public string CompileToLLVM(List<CFG.Vertex> basic_blocks_to_compile, List<Mono.Cecil.TypeReference> list_of_data_types_used,
-            string basic_block_id, int start_index = 0)
+            string basic_block_id)
         {
-            _start_index = start_index;
-
             basic_blocks_to_compile = RemoveBasicBlocksAlreadyCompiled(basic_blocks_to_compile);
 
             ComputeBasicMethodProperties(basic_blocks_to_compile);

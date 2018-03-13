@@ -16,11 +16,6 @@
 	.param .b64 _Z7Gmallocy_param_0
 )
 ;
-.extern .func  (.param .b64 func_retval0) malloc
-(
-	.param .b64 malloc_param_0
-)
-;
 .func  (.param .b64 func_retval0) memcpy
 (
 	.param .b64 memcpy_param_0,
@@ -427,12 +422,12 @@ tmp16:
 	ld.u32 	%r7, [%rd4+8];
 	st.u32 	[%rd1+4], %r7;
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/RVA.c:42 	pRet->pData = malloc(pRet->size);
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/RVA.c:42 	pRet->pData = Gmalloc(pRet->size);
 	.loc	1 42 2
 	ld.u32 	%r8, [%rd1+4];
 	cvt.u64.u32	%rd7, %r8;
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/RVA.c:42 	pRet->pData = malloc(pRet->size);
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/RVA.c:42 	pRet->pData = Gmalloc(pRet->size);
 	.loc	1 42 16
 	// Callseq Start 4
 	{
@@ -442,7 +437,7 @@ tmp16:
 	st.param.b64	[param0+0], %rd7;
 	.param .b64 retval0;
 	call.uni (retval0), 
-	malloc, 
+	_Z7Gmallocy, 
 	(
 	param0
 	);
@@ -800,9 +795,9 @@ BB10_2:
 	ret;
 }
 
-	.file	1 "C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/RVA.c", 1513259529, 2386
+	.file	1 "C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/RVA.c", 1516140945, 2387
 	.file	2 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v9.0\\include\\cuda_device_runtime_api.h", 1504359958, 14836
-	.file	3 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\RVA.h", 1513259529, 1603
+	.file	3 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\RVA.h", 1516285725, 1645
 	.file	4 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v9.0\\include\\driver_types.h", 1504359957, 76651
 
 .section .debug_info {

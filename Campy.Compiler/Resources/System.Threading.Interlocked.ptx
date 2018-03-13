@@ -274,13 +274,13 @@ tmp13:
 
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/System.Threading.Interlocked.c:28 	U32 value = INTERNALCALL_PARAM(4, U32);
 	.loc	1 28 12
-	ld.u32 	%r2, [%rd3+4];
+	ld.u32 	%r2, [%rd3+32];
 	mov.b32 	%r1, %r2;
 tmp14:
 
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/System.Threading.Interlocked.c:29 	U32 comparand = INTERNALCALL_PARAM(8, U32);
 	.loc	1 29 16
-	ld.u32 	%r3, [%rd3+8];
+	ld.u32 	%r3, [%rd3+64];
 	mov.b32 	%r4, %r3;
 tmp15:
 
@@ -472,7 +472,7 @@ tmp26:
 
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/System.Threading.Interlocked.c:59 	U32 value = INTERNALCALL_PARAM(4, U32);
 	.loc	1 59 12
-	ld.u32 	%r1, [%rd2+4];
+	ld.u32 	%r1, [%rd2+32];
 	mov.b32 	%r2, %r1;
 tmp27:
 
@@ -536,7 +536,7 @@ tmp30:
 
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/System.Threading.Interlocked.c:69 	U32 value = INTERNALCALL_PARAM(4, U32);
 	.loc	1 69 12
-	ld.u32 	%r1, [%rd2+4];
+	ld.u32 	%r1, [%rd2+32];
 	mov.b32 	%r2, %r1;
 tmp31:
 
@@ -561,7 +561,7 @@ tmp32:
 func_end10:
 }
 
-	.file	1 "C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/System.Threading.Interlocked.c", 1513259530, 2559
+	.file	1 "C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/System.Threading.Interlocked.c", 1516287436, 2629
 	.file	2 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v9.0\\include\\cuda_device_runtime_api.h", 1504359958, 14836
 	.file	3 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\Types.h", 1513259530, 3048
 	.file	4 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v9.0\\include\\driver_types.h", 1504359957, 76651

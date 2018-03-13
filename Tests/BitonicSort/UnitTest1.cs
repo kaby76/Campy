@@ -288,7 +288,6 @@ namespace BitonicSort
         [TestMethod]
         public void BitonicSort()
         {
-            var b = new BitonicSorter();
             Random rnd = new Random();
             int N = 8;
             int[] a = Enumerable.Range(0, N).ToArray().OrderBy(x => rnd.Next()).ToArray();

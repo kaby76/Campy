@@ -42,9 +42,9 @@
 	.param .b32 _ZN40_INTERNAL_18_Gvsnprintf_cpp1_ii_c2a7d16e6fmtstrEPcPyyS0_iii_param_6
 )
 ;
-.extern .func  (.param .b64 func_retval0) malloc
+.extern .func  (.param .b64 func_retval0) _Z7Gmallocy
 (
-	.param .b64 malloc_param_0
+	.param .b64 _Z7Gmallocy_param_0
 )
 ;
 .extern .func  (.param .b32 func_retval0) vprintf
@@ -4342,11 +4342,11 @@ tmp581:
 
 BB11_2:
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Gvsnprintf.c:530 	if (NULLP == (*ptr = (char *)malloc(ret + 1))) return (sizeret_t)-1;
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Gvsnprintf.c:530 	if (NULLP == (*ptr = (char *)Gmalloc(ret + 1))) return (sizeret_t)-1;
 	.loc	1 530 2
 	add.s64 	%rd7, %rd1, 1;
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Gvsnprintf.c:530 	if (NULLP == (*ptr = (char *)malloc(ret + 1))) return (sizeret_t)-1;
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Gvsnprintf.c:530 	if (NULLP == (*ptr = (char *)Gmalloc(ret + 1))) return (sizeret_t)-1;
 	.loc	1 530 29
 	// Callseq Start 19
 	{
@@ -4356,7 +4356,7 @@ BB11_2:
 	st.param.b64	[param0+0], %rd7;
 	.param .b64 retval0;
 	call.uni (retval0), 
-	malloc, 
+	_Z7Gmallocy, 
 	(
 	param0
 	);
@@ -4374,8 +4374,8 @@ BB11_2:
 BB11_3:
 	mov.u32 	%r6, -1;
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Gvsnprintf.c:530 	if (NULLP == (*ptr = (char *)malloc(ret + 1))) return (sizeret_t)-1;
-	.loc	1 530 47
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Gvsnprintf.c:530 	if (NULLP == (*ptr = (char *)Gmalloc(ret + 1))) return (sizeret_t)-1;
+	.loc	1 530 48
 tmp582:
 	mov.b32 	%r2, %r6;
 	mov.u32 	%r7, %r2;
@@ -4792,7 +4792,7 @@ tmp599:
 func_end16:
 }
 
-	.file	1 "C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Gvsnprintf.c", 1513259529, 15053
+	.file	1 "C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Gvsnprintf.c", 1516287078, 15278
 	.file	2 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v9.0\\include\\cuda_device_runtime_api.h", 1504359958, 14836
 	.file	3 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v9.0\\include\\driver_types.h", 1504359957, 76651
 

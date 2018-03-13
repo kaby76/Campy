@@ -361,14 +361,14 @@ tmp15:
 func_end7:
 }
 
-	.file	1 "C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/System.Type.c", 1513259530, 1742
+	.file	1 "C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/System.Type.c", 1516287436, 1770
 	.file	2 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v9.0\\include\\cuda_device_runtime_api.h", 1504359958, 14836
 	.file	3 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\Types.h", 1513259530, 3048
 	.file	4 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v9.0\\include\\driver_types.h", 1504359957, 76651
 	.file	5 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\MetaDataTables.h", 1513259529, 18172
-	.file	6 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\MetaData.h", 1513259529, 9312
-	.file	7 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\Generics.h", 1513259529, 2832
-	.file	8 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\System.RuntimeType.h", 1513259530, 2478
+	.file	6 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\MetaData.h", 1516287436, 9774
+	.file	7 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\Generics.h", 1516286593, 2902
+	.file	8 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\System.RuntimeType.h", 1516285724, 2618
 
 .section .debug_info {
  .b32 9629

@@ -48,9 +48,9 @@
 	.param .b64 _Z20Heap_UnmarkFinalizerPh_param_0
 )
 ;
-.extern .func free
+.extern .func _Z5GfreePv
 (
-	.param .b64 free_param_0
+	.param .b64 _Z5GfreePv_param_0
 )
 ;
 .extern .func _Z16Thread_StackFreeP8tThread_Pv
@@ -769,7 +769,7 @@ BB8_2:
 
 BB8_3:
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/MethodState.c:232 		free(pThis->pDelegateParams);
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/MethodState.c:232 		Gfree(pThis->pDelegateParams);
 	.loc	1 232 3
 tmp27:
 	ld.u64 	%rd11, [%SP+0];
@@ -781,7 +781,7 @@ tmp27:
 	.param .b64 param0;
 	st.param.b64	[param0+0], %rd12;
 	call.uni 
-	free, 
+	_Z5GfreePv, 
 	(
 	param0
 	);
@@ -868,15 +868,15 @@ BB9_2:
 	ret;
 }
 
-	.file	1 "C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/MethodState.c", 1513259529, 8625
+	.file	1 "C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/MethodState.c", 1516182285, 8630
 	.file	2 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v9.0\\include\\cuda_device_runtime_api.h", 1504359958, 14836
-	.file	3 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\MetaData.h", 1513259529, 9312
-	.file	4 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\MethodState.h", 1513259529, 3051
+	.file	3 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\MetaData.h", 1516287436, 9774
+	.file	4 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\MethodState.h", 1516286593, 3093
 	.file	5 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\MetaDataTables.h", 1513259529, 18172
-	.file	6 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\JIT.h", 1513259529, 4124
-	.file	7 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\Generics.h", 1513259529, 2832
+	.file	6 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\JIT.h", 1516637997, 4246
+	.file	7 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\Generics.h", 1516286593, 2902
 	.file	8 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v9.0\\include\\driver_types.h", 1504359957, 76651
-	.file	9 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\Thread.h", 1513259530, 4302
+	.file	9 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\Thread.h", 1516285724, 4400
 
 .section .debug_info {
  .b32 11384
@@ -5864,7 +5864,7 @@ BB9_2:
  .b8 0
  .b32 32
  .b32 6
- .b32 37
+ .b32 38
  .b8 11
 
  .b8 112
@@ -5875,7 +5875,7 @@ BB9_2:
  .b8 0
  .b32 5497
  .b32 6
- .b32 39
+ .b32 40
  .b8 0
 
  .b8 1
@@ -5893,7 +5893,7 @@ BB9_2:
  .b8 0
  .b32 5503
  .b32 6
- .b32 41
+ .b32 42
  .b8 8
 
  .b8 1
@@ -5918,7 +5918,7 @@ BB9_2:
  .b8 0
  .b32 5503
  .b32 6
- .b32 43
+ .b32 44
  .b8 12
 
  .b8 1
@@ -5948,7 +5948,7 @@ BB9_2:
  .b8 0
  .b32 5503
  .b32 6
- .b32 45
+ .b32 46
  .b8 16
 
  .b8 1
@@ -5975,7 +5975,7 @@ BB9_2:
  .b8 0
  .b32 5512
  .b32 6
- .b32 47
+ .b32 48
  .b8 24
 
  .b8 1
@@ -6040,7 +6040,7 @@ BB9_2:
  .b8 0
  .b32 0
  .b32 6
- .b32 63
+ .b32 64
  .b8 4
 
  .b32 5210

@@ -36,9 +36,9 @@
 	.param .b64 _Z19Type_GetTypeFromSigP10tMetaData_PPhPP12tMD_TypeDef_S5__param_3
 )
 ;
-.extern .func  (.param .b64 func_retval0) malloc
+.extern .func  (.param .b64 func_retval0) _Z7Gmallocy
 (
-	.param .b64 malloc_param_0
+	.param .b64 _Z7Gmallocy_param_0
 )
 ;
 .extern .func  (.param .b32 func_retval0) _Z8GsprintfPcPKcz
@@ -998,7 +998,7 @@ BB7_9:
 tmp54:
 	mov.u64 	%rd16, 2048;
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/MetaData_Search.c:101 		pMsg = (char*)malloc(2048);
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/MetaData_Search.c:101 		pMsg = (char*)Gmalloc(2048);
 	.loc	1 101 17
 tmp55:
 	// Callseq Start 11
@@ -1009,7 +1009,7 @@ tmp55:
 	st.param.b64	[param0+0], %rd16;
 	.param .b64 retval0;
 	call.uni (retval0), 
-	malloc, 
+	_Z7Gmallocy, 
 	(
 	param0
 	);
@@ -4524,12 +4524,12 @@ tmp227:
 func_end20:
 }
 
-	.file	1 "C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/MetaData_Search.c", 1515540830, 16522
+	.file	1 "C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/MetaData_Search.c", 1516286593, 16719
 	.file	2 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v9.0\\include\\cuda_device_runtime_api.h", 1504359958, 14836
 	.file	3 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\MetaDataTables.h", 1513259529, 18172
-	.file	4 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\MetaData.h", 1513259529, 9312
-	.file	5 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\JIT.h", 1513259529, 4124
-	.file	6 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\Generics.h", 1513259529, 2832
+	.file	4 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\MetaData.h", 1516287436, 9774
+	.file	5 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\JIT.h", 1516637997, 4246
+	.file	6 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\Generics.h", 1516286593, 2902
 	.file	7 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v9.0\\include\\driver_types.h", 1504359957, 76651
 
 .section .debug_info {
@@ -10590,7 +10590,7 @@ func_end20:
  .b8 0
  .b32 0
  .b32 5
- .b32 37
+ .b32 38
  .b8 4
 
  .b32 6648

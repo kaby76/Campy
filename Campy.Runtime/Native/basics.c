@@ -16,13 +16,16 @@ function_space_specifier void Initialize_BCL0(void * g, size_t size, int count);
 
 global_space_specifier void Initialize_BCL_Globals(void * g, size_t size, int count, struct _BCL_t ** pbcl)
 {
-	// basics/memory allocation.
+	// Erase the structure, then afterwards set everything up.
 	struct _BCL_t * bcl = (struct _BCL_t*)g;
 	*pbcl = bcl;
 	_bcl_ = bcl;
 	memset(bcl, 0, sizeof(struct _BCL_t));
+
+	// basics/memory allocation.
 	_bcl_->global_memory_heap = NULL;
 	_bcl_->head = NULL;
+	_bcl_->kernel_base_index = 0;
 
 	// Init memory allocation.
 	Initialize_BCL0(g, size, count);
@@ -272,4 +275,15 @@ function_space_specifier void* Bcl_Heap_Alloc(STRING assemblyName, STRING nameSp
 	tMD_TypeDef* type_def = MetaData_GetTypeDefFromFullName(assemblyName, nameSpace, name);
 	void * result = Heap_AllocType(type_def);
 	return result;
+}
+
+
+function_space_specifier int get_kernel_base_index()
+{
+	return _bcl_->kernel_base_index;
+}
+
+global_space_specifier void set_kernel_base_index(int i)
+{
+	_bcl_->kernel_base_index = i;
 }

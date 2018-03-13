@@ -38,9 +38,9 @@
 	.param .b64 _Z23MetaData_DecodeSigEntryPPh_param_0
 )
 ;
-.extern .func  (.param .b64 func_retval0) malloc
+.extern .func  (.param .b64 func_retval0) _Z7Gmallocy
 (
-	.param .b64 malloc_param_0
+	.param .b64 _Z7Gmallocy_param_0
 )
 ;
 .visible .func  (.param .b64 func_retval0) _Z35Generics_GetGenericTypeFromCoreTypeP12tMD_TypeDef_jPS0_
@@ -50,9 +50,9 @@
 	.param .b64 _Z35Generics_GetGenericTypeFromCoreTypeP12tMD_TypeDef_jPS0__param_2
 )
 ;
-.extern .func free
+.extern .func _Z5GfreePv
 (
-	.param .b64 free_param_0
+	.param .b64 _Z5GfreePv_param_0
 )
 ;
 .func  (.param .b64 func_retval0) _ZN38_INTERNAL_16_Generics_cpp1_ii_b79af50d16FindGenericParamEP12tMD_TypeDef_j
@@ -630,12 +630,12 @@ BB7_2:
 	}// Callseq End 3
 tmp22:
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Generics.c:53 	ppTypeArgs = (tMD_TypeDef**)malloc(numTypeArgs * sizeof(tMD_TypeDef*));
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Generics.c:53 	ppTypeArgs = (tMD_TypeDef**)Gmalloc(numTypeArgs * sizeof(tMD_TypeDef*));
 	.loc	1 53 2
 	cvt.u64.u32	%rd7, %r1;
 	mul.lo.s64 	%rd8, %rd7, 8;
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Generics.c:53 	ppTypeArgs = (tMD_TypeDef**)malloc(numTypeArgs * sizeof(tMD_TypeDef*));
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Generics.c:53 	ppTypeArgs = (tMD_TypeDef**)Gmalloc(numTypeArgs * sizeof(tMD_TypeDef*));
 	.loc	1 53 30
 	// Callseq Start 4
 	{
@@ -645,7 +645,7 @@ tmp22:
 	st.param.b64	[param0+0], %rd8;
 	.param .b64 retval0;
 	call.uni (retval0), 
-	malloc, 
+	_Z7Gmallocy, 
 	(
 	param0
 	);
@@ -810,7 +810,7 @@ BB7_10:
 	}// Callseq End 5
 tmp33:
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Generics.c:62 	free(ppTypeArgs);
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Generics.c:62 	Gfree(ppTypeArgs);
 	.loc	1 62 2
 	// Callseq Start 6
 	{
@@ -819,7 +819,7 @@ tmp33:
 	.param .b64 param0;
 	st.param.b64	[param0+0], %rd2;
 	call.uni 
-	free, 
+	_Z5GfreePv, 
 	(
 	param0
 	);
@@ -2008,12 +2008,12 @@ tmp84:
 	}// Callseq End 34
 tmp85:
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Generics.c:177 	ppTypeArgs = (tMD_TypeDef**)malloc(argCount * sizeof(tMD_TypeDef*));
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Generics.c:177 	ppTypeArgs = (tMD_TypeDef**)Gmalloc(argCount * sizeof(tMD_TypeDef*));
 	.loc	1 177 2
 	cvt.u64.u32	%rd11, %r1;
 	mul.lo.s64 	%rd12, %rd11, 8;
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Generics.c:177 	ppTypeArgs = (tMD_TypeDef**)malloc(argCount * sizeof(tMD_TypeDef*));
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Generics.c:177 	ppTypeArgs = (tMD_TypeDef**)Gmalloc(argCount * sizeof(tMD_TypeDef*));
 	.loc	1 177 30
 	// Callseq Start 35
 	{
@@ -2023,7 +2023,7 @@ tmp85:
 	st.param.b64	[param0+0], %rd12;
 	.param .b64 retval0;
 	call.uni (retval0), 
-	malloc, 
+	_Z7Gmallocy, 
 	(
 	param0
 	);
@@ -2141,7 +2141,7 @@ BB10_4:
 	}// Callseq End 36
 tmp95:
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Generics.c:187 	free(ppTypeArgs);
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Generics.c:187 	Gfree(ppTypeArgs);
 	.loc	1 187 2
 	// Callseq Start 37
 	{
@@ -2150,7 +2150,7 @@ tmp95:
 	.param .b64 param0;
 	st.param.b64	[param0+0], %rd2;
 	call.uni 
-	free, 
+	_Z5GfreePv, 
 	(
 	param0
 	);
@@ -2590,14 +2590,14 @@ BB13_2:
 	ret;
 }
 
-	.file	1 "C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Generics.c", 1513259529, 8865
+	.file	1 "C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Generics.c", 1516287078, 8953
 	.file	2 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v9.0\\include\\cuda_device_runtime_api.h", 1504359958, 14836
 	.file	3 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\MetaDataTables.h", 1513259529, 18172
-	.file	4 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\MetaData.h", 1513259529, 9312
-	.file	5 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\JIT.h", 1513259529, 4124
-	.file	6 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\Generics.h", 1513259529, 2832
+	.file	4 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\MetaData.h", 1516287436, 9774
+	.file	5 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\JIT.h", 1516637997, 4246
+	.file	6 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\Generics.h", 1516286593, 2902
 	.file	7 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v9.0\\include\\driver_types.h", 1504359957, 76651
-	.file	8 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\Heap.h", 1513259529, 2580
+	.file	8 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\Heap.h", 1516285725, 2832
 
 .section .debug_info {
  .b32 13661
@@ -9029,7 +9029,7 @@ BB13_2:
  .b8 0
  .b32 0
  .b32 5
- .b32 37
+ .b32 38
  .b8 4
 
  .b32 7126

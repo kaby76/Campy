@@ -19,6 +19,7 @@ struct _BCL_t {
 	// Basics.
 	void * global_memory_heap;
 	struct header_t * head;
+	int kernel_base_index;
 
 	// CLIFile.
 	struct tFilesLoaded_ * pFilesLoaded;
