@@ -94,6 +94,8 @@ namespace Campy.Compiler
                 return typeof(float).ToMonoTypeReference();
             else if (_verification_type.FullName == typeof(double).ToMonoTypeReference().FullName)
                 return typeof(double).ToMonoTypeReference();
+            else if (_verification_type.FullName == typeof(bool).ToMonoTypeReference().FullName)
+                return typeof(int).ToMonoTypeReference();
             else
                 return _cil_type;
         }

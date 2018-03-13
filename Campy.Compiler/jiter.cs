@@ -2095,7 +2095,6 @@ namespace Campy.Compiler
                     int max_threads = 16;
 
                     // Set up parameters.
-                    int count = 3;
                     IntPtr parm1;
                     IntPtr parm2;
                     IntPtr parm3;

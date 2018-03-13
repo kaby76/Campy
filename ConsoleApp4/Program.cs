@@ -9,44 +9,50 @@ using Campy.Graphs;
 
 namespace ConsoleApp4
 {
-    public class BitonicSorter
+    class CombSorter
     {
-        private static void Swap(ref int x, ref int y)
+        public static void swap(ref int i, ref int j)
         {
-            var t = x;
-            x = y;
-            y = t;
+            int t = i;
+            i = j;
+            j = t;
         }
 
-        public static void BitonicSortParallel1(int[] a)
+        public static void Sort(int[] a)
         {
-            Parallel.Delay();
-            uint N = (uint)a.Length;
-            int log2n = Bithacks.FloorLog2(N);
-            for (int k = 0; k < log2n; ++k)
+            //Campy.Parallel.Delay();
+            int N = a.Length;
+            int global_gap = N;
+            int swaps = 1;
+            float gap_factor = (float)1.25;
+            while (global_gap > 1 || swaps > 0)
             {
-                uint n2 = N / 2;
-                int twok = Bithacks.Power2(k);
-                Campy.Parallel.For((int)n2, i =>
+                System.Console.WriteLine(String.Join(" ", a));
+                int local_gap = (int)(global_gap / gap_factor);
+                if (local_gap < 1) local_gap = 1;
+                System.Console.WriteLine(local_gap);
+                System.Console.WriteLine(swaps);
+                global_gap = local_gap;
+                swaps = 0;
+                KernelType k = i =>
                 {
-                    int imp2 = i % twok;
-                    int cross = imp2 + 2 * twok * (int)(i / twok);
-                    int paired = -1 - imp2 + 2 * twok * (int)((i + twok) / twok);
-                    if (a[cross] > a[paired]) Swap(ref a[cross], ref a[paired]);
-                });
-                for (int j = k - 1; j >= 0; --j)
-                {
-                    int twoj = Bithacks.Power2(j);
-                    Campy.Parallel.For((int)n2, i =>
+                    if (a[i] > a[i + local_gap])
                     {
-                        int imp2 = i % twoj;
-                        int cross = imp2 + 2 * twoj * (int)(i / twoj);
-                        int paired = cross + twoj;
-                        if (a[cross] > a[paired]) Swap(ref a[cross], ref a[paired]);
-                    });
-                }
+                        {
+                            int t = a[i];
+                            a[i] = a[i + local_gap];
+                            a[i + local_gap] = t;
+                        }
+                        swaps = 1;
+                    }
+                };
+                if (local_gap != 1)
+                    Campy.Parallel.For(N - local_gap, k);
+                else
+                    Campy.Sequential.For(N - local_gap, k);
+                System.Console.WriteLine(String.Join(" ", a));
             }
-            Parallel.Synch();
+            //Campy.Parallel.Synch();
         }
     }
 
@@ -67,13 +73,11 @@ namespace ConsoleApp4
         }
         static void Main(string[] args)
         {
-            StartDebugging();
-
-            var b = new BitonicSorter();
+            //StartDebugging();
             Random rnd = new Random();
-            int N = Bithacks.Power2(20);
+            int N = Bithacks.Power2(4);
             var a = Enumerable.Range(0, N).ToArray().OrderBy(x => rnd.Next()).ToArray();
-            BitonicSorter.BitonicSortParallel1(a);
+            CombSorter.Sort(a);
             for (int i = 0; i < N; ++i)
                 if (a[i] != i)
                     throw new Exception();

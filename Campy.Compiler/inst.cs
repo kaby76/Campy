@@ -1049,8 +1049,19 @@ namespace Campy.Compiler
                 var sum = LLVM.BuildAdd(bb.Builder, t1, t2, "i" + instruction_id++);
                 sum = LLVM.BuildAdd(bb.Builder, sum, t3, "i" + instruction_id++);
                 sum = LLVM.BuildAdd(bb.Builder, sum, t4, "i" + instruction_id++);
-                sum = LLVM.BuildAdd(bb.Builder, sum, LLVM.ConstInt(LLVM.Int32Type(),
-                    (ulong)converter._start_index, false), "i" + instruction_id++);
+
+                unsafe
+                {
+                    ValueRef[] args = new ValueRef[0];
+
+                    string name = "_Z21get_kernel_base_indexv";
+                    var list = RUNTIME.BclNativeMethods.ToList();
+                    var list2 = RUNTIME.PtxFunctions.ToList();
+                    var f = list2.Where(t => t._mangled_name == name).First();
+                    ValueRef fv = f._valueref;
+                    var call = LLVM.BuildCall(Builder, fv, args, "");
+                    sum = LLVM.BuildAdd(bb.Builder, sum, call, "i" + instruction_id++);
+                }
 
                 if (Campy.Utils.Options.IsOn("jit_trace"))
                     System.Console.WriteLine("load " + new VALUE(sum));
@@ -2458,29 +2469,28 @@ namespace Campy.Compiler
                         offset++;
                     }
 
-                    var addr = LLVM.BuildStructGEP(Builder, o.V, offset, "i" + instruction_id++);
+                    var dst = LLVM.BuildStructGEP(Builder, o.V, offset, "i" + instruction_id++);
                     if (Campy.Utils.Options.IsOn("jit_trace"))
-                        System.Console.WriteLine(new VALUE(addr));
+                        System.Console.WriteLine(new VALUE(dst));
 
-                    // If value is a pointer, then cast it to void*.
-                    // This is because I had to avoid recursive data types in classes
-                    // as LLVM cannot handle these at all. So, all pointer types
-                    // were defined as void* in the LLVM field.
-                    var load = LLVM.BuildLoad(Builder, addr, "i" + instruction_id++);
+                    var dd = LLVM.TypeOf(dst);
+                    var ddd = LLVM.GetElementType(dd);
+                    var src = v;
+                    TypeRef stype = LLVM.TypeOf(src.V);
+                    TypeRef dtype = ddd;
 
-                    var load_value = new VALUE(load);
-                    bool isPtrLoad = load_value.T.isPointerTy();
-                    //if (isPtrLoad)
-                    //{
-                    //    var mono_field_type = field.FieldType;
-                    //    TypeRef type = mono_field_type.ToTypeRef(Block.OpsFromOriginal);
-                    //    addr = LLVM.BuildBitCast(Builder,
-                    //        addr, type, "");
-                    //    if (Campy.Utils.Options.IsOn("jit_trace"))
-                    //        System.Console.WriteLine(new Value(addr));
-                    //}
+                    /* Trunc */
+                    if (stype == LLVM.Int64Type()
+                        && (dtype == LLVM.Int32Type() || dtype == LLVM.Int16Type() || dtype == LLVM.Int8Type() || dtype == LLVM.Int1Type()))
+                        src = new VALUE(LLVM.BuildTrunc(Builder, src.V, dtype, "i" + instruction_id++));
+                    else if (stype == LLVM.Int32Type()
+                             && (dtype == LLVM.Int16Type() || dtype == LLVM.Int8Type() || dtype == LLVM.Int1Type()))
+                        src = new VALUE(LLVM.BuildTrunc(Builder, src.V, dtype, "i" + instruction_id++));
+                    else if (stype == LLVM.Int16Type()
+                             && (dtype == LLVM.Int8Type() || dtype == LLVM.Int1Type()))
+                        src = new VALUE(LLVM.BuildTrunc(Builder, src.V, dtype, "i" + instruction_id++));
 
-                    var store = LLVM.BuildStore(Builder, v.V, addr);
+                    var store = LLVM.BuildStore(Builder, src.V, dst);
                     if (Campy.Utils.Options.IsOn("jit_trace"))
                         System.Console.WriteLine(new VALUE(store));
                 }
@@ -2641,47 +2651,29 @@ namespace Campy.Compiler
 
         public override INST Convert(JITER converter, STATE state)
         {
-            VALUE v = state._stack.Pop();
+            VALUE src = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
-                System.Console.WriteLine(v);
+                System.Console.WriteLine(src);
 
             VALUE a = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(a);
 
-            ValueRef[] indexes = new ValueRef[0];
-            ValueRef gep = LLVM.BuildInBoundsGEP(Builder, a.V, indexes, "i" + instruction_id++);
-            if (Campy.Utils.Options.IsOn("jit_trace"))
-                System.Console.WriteLine(new VALUE(gep));
+			TypeRef stype = LLVM.TypeOf(src.V);
+			TypeRef dtype = _dst.IntermediateType;
 
-            // Cast long into a pointer of the given dst type.
-            var ptr = LLVM.BuildPointerCast(Builder, gep,
-                LLVM.PointerType(_dst.VerificationType.ToTypeRef(), 0), "i" + instruction_id++);
-            if (Campy.Utils.Options.IsOn("jit_trace"))
-                System.Console.WriteLine(new VALUE(ptr));
-
-
-            var value = v.V;
-            if (_dst != null && _dst.VerificationType.ToTypeRef() != v.T.IntermediateType)
-            {
-                value = LLVM.BuildIntCast(Builder, value, _dst.VerificationType.ToTypeRef(), "i" + instruction_id++);
-                if (Campy.Utils.Options.IsOn("jit_trace"))
-                    System.Console.WriteLine(new VALUE(value));
-            }
-            else if (_dst == null)
-            {
-                var t_v = LLVM.TypeOf(value);
-                var t_d = LLVM.TypeOf(gep);
-                var t_e = LLVM.GetElementType(t_d);
-                if (t_v != t_e)
-                {
-                    value = LLVM.BuildIntCast(Builder, value, t_e, "i" + instruction_id++);
-                    if (Campy.Utils.Options.IsOn("jit_trace"))
-                        System.Console.WriteLine(new VALUE(value));
-                }
-            }
-            
-            var zz = LLVM.BuildStore(Builder, value, ptr);
+			/* Trunc */
+			if (stype == LLVM.Int64Type()
+				  && (dtype == LLVM.Int32Type() || dtype == LLVM.Int16Type() || dtype == LLVM.Int8Type() || dtype == LLVM.Int1Type()))
+				src = new VALUE(LLVM.BuildTrunc(Builder, src.V, dtype, "i" + instruction_id++));
+			else if (stype == LLVM.Int32Type()
+				  && (dtype == LLVM.Int16Type() || dtype == LLVM.Int8Type() || dtype == LLVM.Int1Type()))
+                src = new VALUE(LLVM.BuildTrunc(Builder, src.V, dtype, "i" + instruction_id++));
+            else if (stype == LLVM.Int16Type()
+				  && (dtype == LLVM.Int8Type() || dtype == LLVM.Int1Type()))
+                src = new VALUE(LLVM.BuildTrunc(Builder, src.V, dtype, "i" + instruction_id++));
+			            
+            var zz = LLVM.BuildStore(Builder, src.V, a.V);
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine("Store = " + new VALUE(zz).ToString());
 

@@ -31,6 +31,13 @@ namespace Campy.Compiler
         // mapping of methods to be rewritten.
         private static Dictionary<string, string> _rewritten_runtime = new Dictionary<string, string>();
 
+        private static Dictionary<string, TypeRef> _ptx_type_to_llvm_typeref = new Dictionary<string, TypeRef>()
+        {
+            {".b8", LLVM.Int8Type()},
+            {".b16", LLVM.Int16Type()},
+            {".b32", LLVM.Int32Type()},
+            {".b64", LLVM.Int64Type()},
+        };
 
         public RUNTIME()
         {
@@ -187,161 +194,10 @@ namespace Campy.Compiler
             public string _short_name;
             public ValueRef _valueref;
 
-            public PtxFunction(string mangled_name)
+            public PtxFunction(string mangled_name, ValueRef value_ref)
             {
                 _mangled_name = mangled_name;
-
-                // Construct LLVM extern that corresponds to type of function.
-                Regex regex = new Regex(@"^_Z(?<len>[\d]+)(?<name>.+)$");
-                Match m = regex.Match(_mangled_name);
-                if (m.Success)
-                {
-                    var len_string = m.Groups["len"].Value;
-                    var rest = m.Groups["name"].Value;
-                    var len = Int32.Parse(len_string);
-                    var name = rest.Substring(0, len);
-                    var suffix = rest.Substring(len);
-                    _short_name = name;
-
-                    if (suffix == "i")
-                    {
-
-                    }
-                    else if (suffix == "c")
-                    { }
-                    else if (suffix == "PKc")
-                    { }
-                    else if (suffix == "Pvy")
-                    { }
-                    else if (suffix == "y")
-                    { }
-                    else if (suffix == "Pc")
-                    {
-                        var decl = LLVM.AddFunction(
-                                JITER.global_llvm_module,
-                                _mangled_name,
-                                LLVM.FunctionType(LLVM.Int64Type(),
-                                    new TypeRef[]
-                                    {
-                                        LLVM.PointerType(LLVM.Int8Type(), 0) // return value block.
-                                    }, false));
-                        JITER.built_in_functions.Add(_mangled_name, decl);
-                        this._valueref = decl;
-                    }
-                    else if (suffix == "Ph")
-                    { }
-                    else if (suffix == "Pv")
-                    { }
-                    else if (suffix == "v")
-                    { }
-                    else if (suffix == "P9tCLIFile_iPPc")
-                    { }
-                    else if (suffix == "P11tHeapRoots_")
-                    { }
-                    else if (suffix == "PvPPhPS_")
-                    { }
-                    else if (suffix == "P14tMD_MethodDef_")
-                    { }
-                    else if (suffix == "P11tHeapRoots_P12tMD_TypeDef_")
-                    { }
-                    else if (suffix == "P10tMetaData_PPhPP12tMD_TypeDef_S5_")
-                    { }
-                    else if (suffix == "P12tMD_TypeDef_jPS0_")
-                    { }
-                    else if (suffix == "P15tMD_MethodSpec_PP12tMD_TypeDef_S3_")
-                    { }
-                    else if (suffix == "P14tMD_MethodDef_P12tMD_TypeDef_jPS2_")
-                    { }
-                    else if (suffix == "PKcS0_y")
-                    { }
-                    else if (suffix == "PKcS0_")
-                    { }
-                    else if (suffix == "PcPKc")
-                    { }
-                    else if (suffix == "PcPKcy")
-                    { }
-                    else if (suffix == "PvPKvy")
-                    { }
-                    else if (suffix == "PKci")
-                    { }
-                    else if (suffix == "PKcy")
-                    { }
-                    else if (suffix == "PPcPKc")
-                    { }
-                    else if (suffix == "Pviy")
-                    { }
-                    else if (suffix == "PKvS0_y")
-                    { }
-                    else if (suffix == "PKviy")
-                    { }
-                    else if (suffix == "PcyPKcS_")
-                    { }
-                    else if (suffix == "PPcPKcS_")
-                    { }
-                    else if (suffix == "PPcPKcz")
-                    { }
-                    else if (suffix == "PcPKcS_")
-                    { }
-                    else if (suffix == "PcPKcz")
-                    { }
-                    else if (suffix == "PKcz")
-                    { }
-                    else if (suffix == "PKcPc")
-                    { }
-                    else if (suffix == "P11tHeapRoots_Pvj")
-                    { }
-                    else if (suffix == "P12tMD_TypeDef_j")
-                    { }
-                    else if (suffix == "P12tMD_TypeDef_")
-                    { }
-                    else if (suffix == "P12tMD_TypeDef_Ph")
-                    { }
-                    else if (suffix == "PhS_")
-                    { }
-                    else if (suffix == "P14tMD_MethodDef_j")
-                    { }
-                    else if (suffix == "P8tThread_j")
-                    { }
-                    else if (suffix == "PPh")
-                    { }
-                    else if (suffix == "P10tMetaData_Pvj")
-                    { }
-                    else if (suffix == "P10tMetaData_hPPh")
-                    { }
-                    else if (suffix == "PhS_S_")
-                    {
-                        var decl = LLVM.AddFunction(
-                                JITER.global_llvm_module,
-                                _mangled_name,
-                                LLVM.FunctionType(LLVM.Int64Type(),
-                                    new TypeRef[]
-                                    {
-                                                        LLVM.PointerType(LLVM.VoidType(), 0), // "this"
-                                                        LLVM.PointerType(LLVM.VoidType(), 0), // params in a block.
-                                                        LLVM.PointerType(LLVM.VoidType(), 0) // return value block.
-                                    }, false));
-                        JITER.built_in_functions.Add(_mangled_name, decl);
-                        this._valueref = decl;
-                    }
-                    else if (suffix == "PcS_S_")
-                    {
-                        var decl = LLVM.AddFunction(
-                                JITER.global_llvm_module,
-                                _mangled_name,
-                                LLVM.FunctionType(
-                                    LLVM.PointerType(LLVM.VoidType(),0),
-                                    new TypeRef[]
-                                    {
-                                        LLVM.PointerType(LLVM.Int8Type(), 0),
-                                        LLVM.PointerType(LLVM.Int8Type(), 0),
-                                        LLVM.PointerType(LLVM.Int8Type(), 0)
-                                    }, false));
-                        JITER.built_in_functions.Add(_mangled_name, decl);
-                        this._valueref = decl;
-                    }
-                    else;
-
-                }
+                _valueref = value_ref;
             }
         }
 
@@ -504,6 +360,25 @@ namespace Campy.Compiler
             {
             }
 
+            // Try something else...
+
+            try
+            {
+                // This could be a unit test in Campy. If that is true, then look in the standard directory structure
+                // for Campy source/object. It should have actually copied the damn corlib.dll to the output executable directory,
+                // but someone set up the test wrong. Anyways, assume that the project is up to date, and load from Campy.Runtime.
+                // ../../../../../Campy.Runtime/Corlib/bin/Debug/net20/
+                var path_of_campy = @"../../../../../Campy.Runtime/Corlib/bin/Debug/net20";
+                string full_path_assem = path_of_campy + Path.DirectorySeparatorChar + "corlib.dll";
+                full_path_assem = Path.GetFullPath(full_path_assem);
+                Stream stream = new FileStream(full_path_assem, FileMode.Open, FileAccess.Read, FileShare.Read);
+                stream.Close();
+                return full_path_assem;
+            }
+            catch (Exception e)
+            {
+            }
+
             // Fuck. I have no idea.
             return null;
         }
@@ -574,17 +449,88 @@ namespace Campy.Compiler
                     string gpu_bcl_ptx = reader.ReadToEnd();
                     // Parse the PTX for ".visible" functions, and enter each in
                     // the runtime table.
-                    string[] lines = gpu_bcl_ptx.Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-                    foreach (var line in lines)
-                    {
-                        Regex regex = new Regex(@"\.visible.*[ ](?<name>\w+)\($");
-                        Match m = regex.Match(line);
-                        if (m.Success)
-                        {
-                            var mangled_name = m.Groups["name"].Value;
 
-                            _ptx_functions.Add(new PtxFunction(mangled_name));
+                    // This should match ".visible" <spaces> ".func" <spaces> <function-return>? <function-name>
+                    // over many lines, many times.
+                    Regex regex = new Regex(
+          @"\.visible\s+\.func\s+(?<return>[(][^)]*[)]\s+)?(?<name>\w+)\s*(?<params>[(][^)]*[)]\s+)");
+                    foreach (Match match in regex.Matches(gpu_bcl_ptx))
+                    {
+                        Regex space = new Regex(@"\s\s+");
+                        string mangled_name = match.Groups["name"].Value.Trim();
+                        string return_type = match.Groups["return"].Value.Trim();
+                        return_type = space.Replace(return_type, " ");
+                        string parameters = match.Groups["params"].Value.Trim();
+                        parameters = space.Replace(parameters, " ");
+
+                        if (Campy.Utils.Options.IsOn("runtime_trace"))
+                            System.Console.WriteLine(mangled_name + " " + return_type + " " + parameters);
+
+                        if (JITER.built_in_functions.ContainsKey(mangled_name)) continue;
+
+                        TypeRef llvm_return_type = default(TypeRef);
+                        TypeRef[] args;
+
+                        // Construct LLVM extern that corresponds to type of function.
+                        // Parse return_type and parameters strings...
+                        Regex param_regex = new Regex(@"\.param(\s+\.align\s+\d+)?\s+(?<type>\S+)\s");
+
+                        {
+                            // parse return.
+                            if (return_type == "")
+                                llvm_return_type = LLVM.VoidType();
+                            else
+                            {
+                                foreach (Match ret in param_regex.Matches(return_type))
+                                {
+                                    var x = ret.Groups["type"].Value;
+                                    _ptx_type_to_llvm_typeref.TryGetValue(
+                                        x, out TypeRef y);
+                                    if (Campy.Utils.Options.IsOn("runtime_trace"))
+                                        System.Console.WriteLine("name " + x + "  value " + y.ToString());
+                                    llvm_return_type = y;
+                                }
+                            }
                         }
+
+                        {
+                            // parse parameters.
+                            List<TypeRef> args_list = new List<TypeRef>();
+                            foreach (Match ret in param_regex.Matches(parameters))
+                            {
+                                var x = ret.Groups["type"].Value;
+                                if (!_ptx_type_to_llvm_typeref.TryGetValue(
+                                    x, out TypeRef y))
+                                    throw new Exception("Unknown type syntax in ptx parameter.");
+                                if (Campy.Utils.Options.IsOn("runtime_trace"))
+                                {
+                                    System.Console.Write("parameter ");
+
+                                    System.Console.WriteLine("name " + x + "  value " + y.ToString());
+                                }
+                                args_list.Add(y);
+                            }
+                            args = args_list.ToArray();
+                        }
+
+                        var decl = LLVM.AddFunction(
+                            JITER.global_llvm_module,
+                            mangled_name,
+                            LLVM.FunctionType(
+                                llvm_return_type,
+                                args,
+                                false));
+
+                        PtxFunction ptxf = new PtxFunction(mangled_name, decl);
+                        if (Campy.Utils.Options.IsOn("runtime_trace"))
+                            System.Console.WriteLine(ptxf._mangled_name
+                                                 + " "
+                                                 + ptxf._short_name
+                                                 + " "
+                                                 + ptxf._valueref);
+
+                        JITER.built_in_functions.Add(mangled_name, decl);
+                        _ptx_functions.Add(ptxf);
                     }
                 }
             }
