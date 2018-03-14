@@ -192,8 +192,8 @@ namespace Campy
             }
             finally
             {
-                handle1.Free();
-                handle2.Free();
+                if (default(GCHandle) != handle1) handle1.Free();
+                if (default(GCHandle) != handle2) handle2.Free();
             }
         }
 

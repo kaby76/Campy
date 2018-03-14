@@ -1315,7 +1315,7 @@ namespace Campy.Compiler
                     LLVM.SetAlignment(param_buffer, 64);
                     //LLVM.PositionBuilderAtEnd(Builder, this.Block.BasicBlock);
                     var base_of_parameters = LLVM.BuildPointerCast(Builder, param_buffer,
-                    LLVM.PointerType(LLVM.Int64Type(), 0), "i" + instruction_id++);
+                        LLVM.PointerType(LLVM.Int64Type(), 0), "i" + instruction_id++);
                     for (int i = mr.Parameters.Count - 1; i >= 0; i--)
                     {
                         VALUE p = state._stack.Pop();
@@ -1341,12 +1341,16 @@ namespace Campy.Compiler
                     //LLVM.PositionBuilderAtEnd(Builder, this.Block.BasicBlock);
 
                     // Set up call.
-                    var pt = LLVM.BuildPointerCast(Builder, t.V,
-                        LLVM.PointerType(LLVM.VoidType(), 0), "i" + instruction_id++);
-                    var pp = LLVM.BuildPointerCast(Builder, param_buffer,
-                        LLVM.PointerType(LLVM.VoidType(), 0), "i" + instruction_id++);
-                    var pr = LLVM.BuildPointerCast(Builder, return_buffer,
-                        LLVM.PointerType(LLVM.VoidType(), 0), "i" + instruction_id++);
+                    var pt = LLVM.BuildPtrToInt(Builder, t.V, LLVM.Int64Type(), "i" + instruction_id++);
+                    var pp = LLVM.BuildPtrToInt(Builder, param_buffer, LLVM.Int64Type(), "i" + instruction_id++);
+                    var pr = LLVM.BuildPtrToInt(Builder, return_buffer, LLVM.Int64Type(), "i" + instruction_id++);
+
+                    //var pt = LLVM.BuildPointerCast(Builder, t.V,
+                    //    LLVM.PointerType(LLVM.VoidType(), 0), "i" + instruction_id++);
+                    //var pp = LLVM.BuildPointerCast(Builder, param_buffer,
+                    //    LLVM.PointerType(LLVM.VoidType(), 0), "i" + instruction_id++);
+                    //var pr = LLVM.BuildPointerCast(Builder, return_buffer,
+                    //    LLVM.PointerType(LLVM.VoidType(), 0), "i" + instruction_id++);
 
                     args[0] = pt;
                     args[1] = pp;
