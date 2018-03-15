@@ -44,6 +44,13 @@ namespace Campy
             Singleton().Buffer.SynchDataStructures();
         }
 
+        public static void Synch(object obj)
+        {
+            // Note to runtime to copy specific object, not all.
+            Singleton().Buffer.Delay = false;
+            Singleton().Buffer.SynchSpecificDataStructures();
+        }
+
         public static void Managed(ManagedMemoryBlock block)
         {
             block();
@@ -195,36 +202,6 @@ namespace Campy
                 if (default(GCHandle) != handle1) handle1.Free();
                 if (default(GCHandle) != handle2) handle2.Free();
             }
-        }
-
-        private static void Finish(BUFFERS buffer, KernelType kernel, IntPtr ptr)
-        {
-            try
-            {
-                unsafe
-                {
-                    var stopwatch_deep_copy_back = new Stopwatch();
-                    stopwatch_deep_copy_back.Reset();
-                    stopwatch_deep_copy_back.Start();
-
-                    buffer.DeepCopyFromImplementation(ptr, out object to, kernel.Target.GetType());
-
-                    stopwatch_deep_copy_back.Stop();
-                    var elapse_deep_copy_back = stopwatch_deep_copy_back.Elapsed;
-
-                    if (Campy.Utils.Options.IsOn("jit_trace"))
-                        System.Console.WriteLine("deep copy out " + elapse_deep_copy_back);
-                }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                throw e;
-            }
-            finally
-            {
-            }
-
         }
     }
 }

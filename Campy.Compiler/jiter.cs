@@ -187,6 +187,8 @@ namespace Campy.Compiler
                     foreach (var a in additional)
                         new_list.Add(a.Key, a.Value);
 
+                    // This code should use this:  BUFFERS.Padding((long)ip, BUFFERS.Alignment(typeof(IntPtr))
+
                     List<TypeRef> list = new List<TypeRef>();
                     int offset = 0;
                     var fields = td.Fields;
@@ -504,7 +506,7 @@ namespace Campy.Compiler
 
             basic_llvm_types_created.Add(
                 typeof(bool).ToMonoTypeReference(),
-                LLVM.Int8Type()); // Asking for trouble if one tries to map directly to 1 bit.
+                LLVM.Int32Type()); // Asking for trouble if one tries to map directly to 1 bit.
 
             basic_llvm_types_created.Add(
                 typeof(char).ToMonoTypeReference(),

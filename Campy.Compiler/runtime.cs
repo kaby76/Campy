@@ -313,8 +313,8 @@ namespace Campy.Compiler
                 // for Campy source/object. It should have actually copied the damn corlib.dll to the output executable directory,
                 // but someone set up the test wrong. Anyways, assume that the project is up to date, and load from Campy.Runtime.
                 // ../../../../../Campy.Runtime/Corlib/bin/Debug/net20/
-                var path_of_campy = @"../../../../../Campy.Runtime/Corlib/bin/Debug/net20";
-                string full_path_assem = path_of_campy + Path.DirectorySeparatorChar + "corlib.dll";
+                var path_of_campy = @"../../../../../x64/Debug";
+                string full_path_assem = path_of_campy + Path.DirectorySeparatorChar + "Campy.Runtime.Native.lib";
                 full_path_assem = Path.GetFullPath(full_path_assem);
                 Stream stream = new FileStream(full_path_assem, FileMode.Open, FileAccess.Read, FileShare.Read);
                 stream.Close();

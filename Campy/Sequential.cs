@@ -30,7 +30,7 @@ namespace Campy
             }
         }
 
-        public static void SetBaseIndex(int base_index)
+        private static void SetBaseIndex(int base_index)
         {
             unsafe
             {

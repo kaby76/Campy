@@ -20,39 +20,31 @@ namespace ConsoleApp4
 
         public static void Sort(int[] a)
         {
-            //Campy.Parallel.Delay();
+            Campy.Parallel.Delay();
             int N = a.Length;
-            int global_gap = N;
-            int swaps = 1;
+            int gap = N;
+            bool swaps = true;
             float gap_factor = (float)1.25;
-            while (global_gap > 1 || swaps > 0)
+
+            while (gap > 1 && swaps)
             {
-                System.Console.WriteLine(String.Join(" ", a));
-                int local_gap = (int)(global_gap / gap_factor);
+                int local_gap = (int)(gap / gap_factor);
                 if (local_gap < 1) local_gap = 1;
-                System.Console.WriteLine(local_gap);
-                System.Console.WriteLine(swaps);
-                global_gap = local_gap;
-                swaps = 0;
-                KernelType k = i =>
+                gap = local_gap;
+                swaps = false;
+                Campy.KernelType de = i =>
                 {
                     if (a[i] > a[i + local_gap])
                     {
-                        {
-                            int t = a[i];
-                            a[i] = a[i + local_gap];
-                            a[i + local_gap] = t;
-                        }
-                        swaps = 1;
+                        swap(ref a[i], ref a[i + local_gap]);
+                        swaps = true;
                     }
                 };
-                if (local_gap != 1)
-                    Campy.Parallel.For(N - local_gap, k);
-                else
-                    Campy.Sequential.For(N - local_gap, k);
-                System.Console.WriteLine(String.Join(" ", a));
+                if (gap != 1) Campy.Parallel.For(N - local_gap, de);
+                else Campy.Sequential.For(N - gap, de);
+                Campy.Parallel.Synch(swaps);
             }
-            //Campy.Parallel.Synch();
+            Campy.Parallel.Synch(a);
         }
     }
 
@@ -73,7 +65,7 @@ namespace ConsoleApp4
         }
         static void Main(string[] args)
         {
-            //StartDebugging();
+            StartDebugging();
             Random rnd = new Random();
             int N = Bithacks.Power2(4);
             var a = Enumerable.Range(0, N).ToArray().OrderBy(x => rnd.Next()).ToArray();

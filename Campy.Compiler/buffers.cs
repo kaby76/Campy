@@ -406,6 +406,30 @@
             return result;
         }
 
+        public void SynchDataStructures(ref object obj)
+        {
+            // Copy all pointers from shared global or device memory back to C# space.
+            // As this is a deep copy, and because it is performed bottom-up, do only
+            // "top level" data structures.
+            foreach (var k in _copied_to_gpu)
+            {
+                if (obj != null && k != obj)
+                    continue;
+                if (!_allocated_object_level.ContainsKey(k))
+                    throw new Exception();
+                if (_allocated_object_level[k] > 1)
+                    continue;
+                var v = _allocated_objects[k];
+                DeepCopyFromImplementation(v, out object to, k.GetType());
+            }
+            ResetDataStructures();
+        }
+
+        public void SynchSpecificDataStructures()
+        {
+
+        }
+
         public void SynchDataStructures()
         {
             // Copy all pointers from shared global or device memory back to C# space.

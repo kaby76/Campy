@@ -250,15 +250,19 @@ namespace CombSort
 
             public static void Sort(int[] a)
             {
-                Campy.Parallel.Delay();
+                // Delay and Synch should really work for specific data, not all.
+                // For now, copy everything back to CPU.
+                //Campy.Parallel.Delay();
+                System.Console.WriteLine(String.Join(" ", a));
                 int N = a.Length;
                 int gap = N;
                 bool swaps = true;
                 float gap_factor = (float)1.25;
-
-                while (gap > 1 && swaps)
+                while (gap > 1 || swaps)
                 {
-                    int local_gap = (int) (gap / gap_factor);
+                    int local_gap = (int)(gap / gap_factor);
+                    if (local_gap < 1) local_gap = 1;
+                    gap = local_gap;
                     swaps = false;
                     Campy.KernelType de = i =>
                     {
@@ -268,10 +272,16 @@ namespace CombSort
                             swaps = true;
                         }
                     };
-                    if (gap != 1) Campy.Parallel.For(N - gap, de);
-                    else Campy.Sequential.For(N - gap, de);
+                    System.Console.WriteLine("bswaps " + swaps);
+                    System.Console.WriteLine(String.Join(" ", a));
+                    System.Console.WriteLine("blocal_gap " + local_gap);
+                    if (local_gap != 1) Campy.Parallel.For(N - local_gap, de);
+                    else Campy.Sequential.For(N - local_gap, de);
+                    System.Console.WriteLine("aswaps " + swaps);
+                    System.Console.WriteLine("alocal_gap " + local_gap);
+                    System.Console.WriteLine(String.Join(" ", a));
                 }
-                Campy.Parallel.Synch();
+                //Campy.Parallel.Synch();
             }
         }
 
@@ -280,7 +290,8 @@ namespace CombSort
         {
             Random rnd = new Random();
             int N = 8;
-            int[] a = Enumerable.Range(0, N).ToArray().OrderBy(x => rnd.Next()).ToArray();
+            //int[] a = Enumerable.Range(0, N).ToArray().OrderBy(x => rnd.Next()).ToArray();
+            int[] a = new int[]{ 1, 7, 3, 0, 6, 5, 4, 2 };
             CombSorter.Sort(a);
             for (int i = 0; i < N; ++i)
                 if (a[i] != i)
