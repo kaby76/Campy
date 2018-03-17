@@ -33,22 +33,14 @@ namespace Campy
             return _singleton;
         }
 
-        public static void Delay()
+        public static void Delay(object obj)
         {
-            Singleton().Buffer.Delay = true;
+            Singleton().Buffer.Delay(obj);
         }
 
         public static void Synch()
         {
-            Singleton().Buffer.Delay = false;
-            Singleton().Buffer.SynchDataStructures();
-        }
-
-        public static void Synch(object obj)
-        {
-            // Note to runtime to copy specific object, not all.
-            Singleton().Buffer.Delay = false;
-            Singleton().Buffer.SynchSpecificDataStructures();
+            Singleton().Buffer.FullSynch();
         }
 
         public static void Managed(ManagedMemoryBlock block)
@@ -123,7 +115,7 @@ namespace Campy
                     }
 
                     {
-                        Type btype = buffer.CreateImplementationType(typeof(int));
+                        Type btype = typeof(int);
                         var s = BUFFERS.SizeOf(btype);
                         var ptr2 = buffer.New(s);
                         // buffer.DeepCopyToImplementation(index, ptr2);
@@ -182,8 +174,7 @@ namespace Campy
                         stopwatch_deep_copy_back.Reset();
                         stopwatch_deep_copy_back.Start();
 
-                        if (!buffer.Delay)
-                            buffer.SynchDataStructures();
+                        buffer.SynchDataStructures();
                         
                         stopwatch_deep_copy_back.Stop();
                         var elapse_deep_copy_back = stopwatch_deep_copy_back.Elapsed;

@@ -20,13 +20,13 @@ namespace ConsoleApp4
 
         public static void Sort(int[] a)
         {
-            Campy.Parallel.Delay();
+            Campy.Parallel.Delay(a);
             int N = a.Length;
             int gap = N;
             bool swaps = true;
             float gap_factor = (float)1.25;
 
-            while (gap > 1 && swaps)
+            while (gap > 1 || swaps)
             {
                 int local_gap = (int)(gap / gap_factor);
                 if (local_gap < 1) local_gap = 1;
@@ -42,9 +42,8 @@ namespace ConsoleApp4
                 };
                 if (gap != 1) Campy.Parallel.For(N - local_gap, de);
                 else Campy.Sequential.For(N - gap, de);
-                Campy.Parallel.Synch(swaps);
             }
-            Campy.Parallel.Synch(a);
+            Campy.Parallel.Synch();
         }
     }
 

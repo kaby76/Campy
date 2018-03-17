@@ -252,7 +252,7 @@ namespace BitonicSort
 
         public static void BitonicSort1(int[] a)
         {
-            Parallel.Delay();
+            Parallel.Delay(a);
             uint N = (uint)a.Length;
             int term = Bithacks.FloorLog2(N);
             for (int kk = 2; kk <= N; kk *= 2)

@@ -1,12 +1,11 @@
 ﻿namespace Campy.Compiler
 {
-    using Campy.Utils;
+    using Utils;
     using Swigged.Cuda;
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Reflection;
-    using System.Reflection.Emit;
     using System.Runtime.InteropServices;
     using System.Runtime.Serialization;
     using System.Text;
@@ -32,6 +31,12 @@
         // A list of object that have been copied from GPU space back to C#.
         private List<object> _copied_from_gpu = new List<object>();
 
+        // A list of object that should not be copied back to the CPU after a For loop call.
+        private List<object> _delayed_from_gpu = new List<object>();
+
+        // A list of object that should not be copied back to the CPU after a For loop call.
+        private List<object> _never_copy_from_gpu = new List<object>();
+
         // A list of object that have been copied to GPU space.
         private List<object> _copied_to_gpu
         {
@@ -40,16 +45,17 @@
         } = new List<object>();
 
         private int _level = 0;
-        private bool _delay = false;
+        public bool _delay = false;
 
         public void Synchronize()
         {
         }
 
-        public bool Delay
+        public void Delay(object obj)
         {
-            get;
-            set;
+            if (_delayed_from_gpu.Contains(obj))
+                return;
+            _delayed_from_gpu.Add(obj);
         }
 
         public void ClearAllocatedObjects()
@@ -94,202 +100,6 @@
         private static class IsBlittableCache<T>
         {
             public static readonly bool Value = IsBlittable(typeof(T));
-        }
-
-        public System.Type CreateImplementationType(System.Type hostType, bool declare_parent_chain = true, bool declare_flatten_structure = false)
-        {
-            return hostType;
-            //try
-            //{
-            //    // Let's start with basic types.
-            //    if (hostType.FullName.Equals("System.Object")) return typeof(System.Object);
-            //    if (hostType.FullName.Equals("System.Int16")) return typeof(System.Int16);
-            //    if (hostType.FullName.Equals("System.Int32")) return typeof(System.Int32);
-            //    if (hostType.FullName.Equals("System.Int64")) return typeof(System.Int64);
-            //    if (hostType.FullName.Equals("System.UInt16")) return typeof(System.UInt16);
-            //    if (hostType.FullName.Equals("System.UInt32")) return typeof(System.UInt32);
-            //    if (hostType.FullName.Equals("System.UInt64")) return typeof(System.UInt64);
-            //    if (hostType.FullName.Equals("System.IntPtr")) return typeof(System.IntPtr);
-            //    // Map boolean into byte.
-            //    if (hostType.FullName.Equals("System.Boolean")) return typeof(System.Byte);
-            //    // Map char into uint16.
-            //    if (hostType.FullName.Equals("System.Char")) return typeof(System.UInt16);
-            //    if (hostType.FullName.Equals("System.Single")) return typeof(System.Single);
-            //    if (hostType.FullName.Equals("System.Double")) return typeof(System.Double);
-
-            //    String name;
-            //    System.Reflection.TypeFilter tf;
-            //    System.Type bbt = null;
-
-            //    // Declare inheritance types.
-            //    if (declare_parent_chain)
-            //    {
-            //        // First, declare base type
-            //        System.Type bt = hostType.BaseType;
-            //        bbt = bt;
-            //        if (bt != null && !bt.FullName.Equals("System.Object") && !bt.FullName.Equals("System.ValueType"))
-            //        {
-            //            bbt = CreateImplementationType(bt, declare_parent_chain, declare_flatten_structure);
-            //        }
-            //    }
-
-            //    name = hostType.FullName;
-            //    _type_name_map.TryGetValue(name, out string alt);
-            //    tf = new System.Reflection.TypeFilter((System.Type t, object o) =>
-            //    {
-            //        return t.FullName == name || t.FullName == alt;
-            //    });
-
-            //    // Find if blittable type for hostType was already performed.
-            //    System.Type[] types = _asm.mb.FindTypes(tf, null);
-
-            //    // If blittable type was not created, create one with all fields corresponding
-            //    // to that in host, with special attention to arrays.
-            //    if (types.Length != 0)
-            //        return types[0];
-
-            //    if (hostType.IsArray)
-            //    {
-            //        int rank = hostType.GetArrayRank();
-
-            //        System.Type elementType = CreateImplementationType(hostType.GetElementType(),
-            //            declare_parent_chain,
-            //            declare_flatten_structure);
-
-            //        // Create an array of the type given. We need this because
-            //        // the element type must exist PRIOR to the definition of the array.
-            //        // Great going Micrsoft! (Not!)
-            //        int[] dims = new int[rank];
-            //        for (int kk = 0; kk < rank; ++kk) dims[kk] = 1;
-            //        object array_obj = Array.CreateInstance(elementType, dims);
-            //        var array_type = array_obj.GetType();
-
-            //        // For arrays, convert into the internal representation for runtime.
-            //        // See Runtime.cs, struct A.
-
-            //        var tb = _asm.mb.DefineType(
-            //            array_type.FullName,
-            //            System.Reflection.TypeAttributes.Public
-            //            | System.Reflection.TypeAttributes.SequentialLayout
-            //            | System.Reflection.TypeAttributes.Serializable);
-            //        _type_name_map[hostType.FullName] = tb.FullName;
-            //        // Convert byte, int, etc., in host type to pointer in blittable type.
-            //        // With array, we need to also encode the length.
-            //        tb.DefineField("ptr", typeof(IntPtr), System.Reflection.FieldAttributes.Public);
-            //        tb.DefineField("rank", typeof(Int64), System.Reflection.FieldAttributes.Public);
-            //        tb.DefineField("len", typeof(Int64), System.Reflection.FieldAttributes.Public);
-
-            //        return tb.CreateType();
-            //    }
-            //    else if (hostType.IsStruct())
-            //    {
-            //        TypeBuilder tb = null;
-            //        if (bbt != null)
-            //        {
-            //            tb = _asm.mb.DefineType(
-            //                name,
-            //                System.Reflection.TypeAttributes.Public
-            //                | System.Reflection.TypeAttributes.SequentialLayout
-            //                | System.Reflection.TypeAttributes.Serializable,
-            //                bbt);
-            //        }
-            //        else
-            //        {
-            //            tb = _asm.mb.DefineType(
-            //                name,
-            //                System.Reflection.TypeAttributes.Public
-            //                | System.Reflection.TypeAttributes.SequentialLayout
-            //                | System.Reflection.TypeAttributes.Serializable);
-            //        }
-            //        _type_name_map[name] = tb.FullName;
-            //        System.Type ht = hostType;
-            //        while (ht != null)
-            //        {
-            //            var fields = ht.GetFields(
-            //                System.Reflection.BindingFlags.Instance
-            //                | System.Reflection.BindingFlags.NonPublic
-            //                | System.Reflection.BindingFlags.Public
-            //                //| System.Reflection.BindingFlags.Static
-            //            );
-            //            foreach (var field in fields)
-            //            {
-            //                // For non-array type fields, just define the field as is.
-            //                // Recurse
-            //                System.Type elementType = CreateImplementationType(field.FieldType, declare_parent_chain,
-            //                    declare_flatten_structure);
-            //                // If elementType is a reference or array, then we need to convert it to a IntPtr.
-            //                if (elementType.IsClass || elementType.IsArray)
-            //                    elementType = typeof(System.IntPtr);
-            //                tb.DefineField(field.Name, elementType, System.Reflection.FieldAttributes.Public);
-            //            }
-            //            if (declare_flatten_structure)
-            //                ht = ht.BaseType;
-            //            else
-            //                ht = null;
-            //        }
-            //        // Base type will be used.
-            //        return tb.CreateType();
-            //    }
-            //    else if (hostType.IsClass)
-            //    {
-            //        TypeBuilder tb = null;
-            //        if (bbt != null)
-            //        {
-            //            tb = _asm.mb.DefineType(
-            //                name,
-            //                System.Reflection.TypeAttributes.Public
-            //                | System.Reflection.TypeAttributes.SequentialLayout
-            //                | System.Reflection.TypeAttributes.Serializable,
-            //                bbt);
-            //        }
-            //        else
-            //        {
-            //            tb = _asm.mb.DefineType(
-            //                name,
-            //                System.Reflection.TypeAttributes.Public
-            //                | System.Reflection.TypeAttributes.SequentialLayout
-            //                | System.Reflection.TypeAttributes.Serializable);
-            //        }
-            //        _type_name_map[name] = tb.FullName;
-            //        System.Type ht = hostType;
-            //        while (ht != null)
-            //        {
-            //            var fields = ht.GetFields(
-            //                System.Reflection.BindingFlags.Instance
-            //                | System.Reflection.BindingFlags.NonPublic
-            //                | System.Reflection.BindingFlags.Public
-            //                //  | System.Reflection.BindingFlags.Static
-            //            );
-            //            foreach (var field in fields)
-            //            {
-            //                // For non-array type fields, just define the field as is.
-            //                // Recurse
-            //                System.Type elementType = CreateImplementationType(field.FieldType, declare_parent_chain,
-            //                    declare_flatten_structure);
-            //                // If elementType is a reference or array, then we need to convert it to a IntPtr.
-            //                if (elementType.IsClass || elementType.IsArray)
-            //                    elementType = typeof(System.IntPtr);
-            //                tb.DefineField(field.Name, elementType, System.Reflection.FieldAttributes.Public);
-            //            }
-            //            if (declare_flatten_structure)
-            //                ht = ht.BaseType;
-            //            else
-            //                ht = null;
-            //        }
-            //        // Base type will be used.
-            //        return tb.CreateType();
-            //    }
-            //    else return null;
-            //}
-            //catch (Exception e)
-            //{
-            //    System.Console.WriteLine("Exception");
-            //    System.Console.WriteLine(e);
-            //    throw e;
-            //}
-            //finally
-            //{
-            //}
         }
 
         public static int Alignment(System.Type type)
@@ -385,7 +195,7 @@
         {
             IntPtr result = IntPtr.Zero;
             var type = to_gpu.GetType();
-            var btype = CreateImplementationType(type);
+            var btype = type;
 
             result = _allocated_objects.Where(p => p.Key == to_gpu).FirstOrDefault().Value;
 
@@ -406,30 +216,6 @@
             return result;
         }
 
-        public void SynchDataStructures(ref object obj)
-        {
-            // Copy all pointers from shared global or device memory back to C# space.
-            // As this is a deep copy, and because it is performed bottom-up, do only
-            // "top level" data structures.
-            foreach (var k in _copied_to_gpu)
-            {
-                if (obj != null && k != obj)
-                    continue;
-                if (!_allocated_object_level.ContainsKey(k))
-                    throw new Exception();
-                if (_allocated_object_level[k] > 1)
-                    continue;
-                var v = _allocated_objects[k];
-                DeepCopyFromImplementation(v, out object to, k.GetType());
-            }
-            ResetDataStructures();
-        }
-
-        public void SynchSpecificDataStructures()
-        {
-
-        }
-
         public void SynchDataStructures()
         {
             // Copy all pointers from shared global or device memory back to C# space.
@@ -437,14 +223,37 @@
             // "top level" data structures.
             foreach (var k in _copied_to_gpu)
             {
+                if (_never_copy_from_gpu.Contains(k))
+                    continue;
+
+                if (_delayed_from_gpu.Contains(k))
+                    continue;
+
+                if (!_allocated_objects.ContainsKey(k))
+                    continue; // Honestly, this is actually a problem as the object was somehow lost.
+
                 if (!_allocated_object_level.ContainsKey(k))
                     throw new Exception();
-                if (_allocated_object_level[k] > 1)
-                    continue;
+
                 var v = _allocated_objects[k];
+
                 DeepCopyFromImplementation(v, out object to, k.GetType());
             }
-            ResetDataStructures();
+        }
+
+        public void FullSynch()
+        {
+            // Reset any delayed object copies. In other words, copy the objects
+            // on this list back to the CPU.
+            _delayed_from_gpu = new List<object>();
+
+            // Copy objects from GPU to CPU.
+            SynchDataStructures();
+
+            // Reset list of objects that it thinks it has copied, because
+            // SynchDataStructures tries hard to only copy objects once.
+            _copied_from_gpu = new List<object>();
+            _copied_to_gpu = new List<object>();
         }
 
         public int SizeOf(object obj)
@@ -455,7 +264,7 @@
                 Array array = (Array)obj;
                 var bytes = 0;
                 int rank = array.Rank;
-                var blittable_element_type = CreateImplementationType(array.GetType().GetElementType());
+                var blittable_element_type = array.GetType().GetElementType();
                 if (array.GetType().GetElementType().IsClass)
                 {
                     // We create a buffer for the class, and stuff a pointer in the array.
@@ -647,7 +456,7 @@
                         Cp(df_rank, rank);
                         for (int i = 0; i < rank; ++i)
                             Cp(df_length + i * BUFFERS.SizeOf(typeof(Int64)), a.GetLength(i));
-                        CpToGpu(df_elements, a);
+                        CpArrayToGpu(df_elements, a);
                     }
                     return;
                 }
@@ -811,7 +620,7 @@
                 _level++;
 
                 System.Type t_type = target_type;
-                System.Type f_type = CreateImplementationType(t_type);
+                System.Type f_type = t_type;
 
                 if (t_type.FullName.Equals("System.Object"))
                 {
@@ -907,12 +716,33 @@
 
                 if (t_type.IsArray)
                 {
+                    if (from_gpu == IntPtr.Zero)
+                    {
+                        to_cpu = null;
+                        return;
+                    }
+
+                    Array to_array = (Array)_allocated_objects.Where(p => p.Value == from_gpu).Select(p => p.Key)
+                        .FirstOrDefault();
+
+                    to_cpu = to_array;
+
+                    if (to_cpu != default(Array))
+                    {
+                        if (_delayed_from_gpu.Contains(to_cpu))
+                            return;
+                        if (_never_copy_from_gpu.Contains(to_cpu))
+                            return;
+                        if (_copied_from_gpu.Contains(to_cpu))
+                            return;
+                    }
+
                     // "from" is assumed to be a unmanaged buffer
                     // with record Runtime.A used.
                     long* long_ptr = (long*)((long)(byte*)from_gpu);
                     long_ptr++;
                     int rank = (int)*long_ptr++;
-                    Array to_array;
+
                     System.Type to_element_type = t_type.GetElementType();
                     System.Type from_element_type = to_element_type;
                     if (to_element_type.IsArray || to_element_type.IsClass)
@@ -921,15 +751,11 @@
                     for (int kk = 0; kk < rank; ++kk)
                         dims[kk] = (int)*long_ptr++;
 
-                    to_array = (Array)_allocated_objects.Where(p => p.Value == from_gpu).Select(p => p.Key)
-                        .FirstOrDefault();
+                    _allocated_buffers[from_gpu] = to_cpu;
 
-                    _allocated_buffers[(IntPtr)long_ptr] = to_array;
-                    to_cpu = to_array;
-                    if (_copied_from_gpu.Contains(to_array))
-                        return;
                     _copied_from_gpu.Add(to_array);
-                    Cp((void*)long_ptr, to_array, from_element_type);
+
+                    CpArraytoCpu((void*)long_ptr, to_array, from_element_type);
                     if (Campy.Utils.Options.IsOn("copy_trace"))
                         System.Console.WriteLine("Copy from GPU " + to_cpu);
                     return;
@@ -938,7 +764,7 @@
                 if (t_type.IsClass)
                 {
                     IntPtr ip = from_gpu;
-                    if (ip == IntPtr.Zero)
+                    if (from_gpu == IntPtr.Zero)
                     {
                         to_cpu = null;
                         return;
@@ -946,7 +772,18 @@
 
                     to_cpu = _allocated_objects.Where(p => p.Value == ip).Select(p => p.Key)
                         .FirstOrDefault();
-                    _allocated_buffers[ip] = to_cpu;
+
+                    _allocated_buffers[from_gpu] = to_cpu;
+
+                    if (to_cpu != default(Array))
+                    {
+                        if (_delayed_from_gpu.Contains(to_cpu))
+                            return;
+                        if (_never_copy_from_gpu.Contains(to_cpu))
+                            return;
+                        if (_copied_from_gpu.Contains(to_cpu))
+                            return;
+                    }
 
                     FieldInfo[] all_from_fieldinfo = f_type.GetFields(
                         System.Reflection.BindingFlags.Instance
@@ -993,10 +830,6 @@
                             int field_size = BUFFERS.SizeOf(typeof(IntPtr));
                             IntPtr ipv = (IntPtr)Marshal.PtrToStructure<IntPtr>(ip);
                             DeepCopyFromImplementation(ipv, out object tooo, to_fieldinfo.FieldType);
-                            //if (_allocated_buffers.ContainsKey(ipv))
-                            //{
-                            //    object tooo = _allocated_buffers[ipv];
-                            //}
                             to_fieldinfo.SetValue(to_cpu, tooo);
                             ip = (IntPtr)((long)ip + field_size);
                         }
@@ -1112,7 +945,7 @@
             }
         }
 
-        private unsafe void CpToGpu(byte* to_gpu, Array from_cpu)
+        private unsafe void CpArrayToGpu(byte* to_gpu, Array from_cpu)
         {
             System.Type orig_element_type = from_cpu.GetType().GetElementType();
 
@@ -1216,7 +1049,7 @@
             }
         }
 
-        private unsafe void Cp(void* from_gpu, Array to_cpu, System.Type from_element_type)
+        private unsafe void CpArraytoCpu(void* from_gpu, Array to_cpu, System.Type from_element_type)
         {
             var to_type = to_cpu.GetType();
             if (!to_type.IsArray)
@@ -1352,19 +1185,6 @@
                 {
                     dest[i] = src[i];
                 }
-            }
-        }
-
-        public static unsafe void Cp(byte* dest, byte* src, int size)
-        {
-            for (int i = 0; i < size; i++) dest[i] = src[i];
-        }
-
-        public static void Cp(IntPtr destPtr, object src)
-        {
-            unsafe
-            {
-                Marshal.StructureToPtr(src, destPtr, false);
             }
         }
 
