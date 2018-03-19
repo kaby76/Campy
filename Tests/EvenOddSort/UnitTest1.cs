@@ -3,9 +3,9 @@ using System.Linq;
 using Xunit;
 using Campy;
 
-namespace CombSort
+namespace EvenOddSort
 {
-    public class CombSort
+    public class UnitTest1
     {
         public class Bithacks
         {
@@ -239,7 +239,7 @@ namespace CombSort
             }
         }
 
-        class CombSorter
+        class EvenOddSorter
         {
             public static void swap(ref int i, ref int j)
             {
@@ -253,45 +253,42 @@ namespace CombSort
                 // Delay and Synch should really work for specific data, not all.
                 // For now, copy everything back to CPU.
                 Campy.Parallel.Delay(a);
-                System.Console.WriteLine(String.Join(" ", a));
                 int N = a.Length;
-                int gap = N;
-                bool swaps = true;
-                float gap_factor = (float)1.25;
-                while (gap > 1 || swaps)
+                bool sorted = false;
+                while (!sorted)
                 {
-                    int local_gap = (int)(gap / gap_factor);
-                    if (local_gap < 1) local_gap = 1;
-                    gap = local_gap;
-                    swaps = false;
-                    Campy.KernelType de = i =>
+                    sorted = true;
+                    int n2 = N / 2;
+                    Campy.Parallel.For(n2, i =>
                     {
-                        if (a[i] > a[i + local_gap])
+                        int j = i * 2;
+                        if (a[j] > a[j + 1])
                         {
-                            swap(ref a[i], ref a[i + local_gap]);
-                            swaps = true;
+                            swap(ref a[j], ref a[j + 1]);
+                            sorted = false;
                         }
-                    };
-                    System.Console.WriteLine("bswaps " + swaps);
-                    System.Console.WriteLine(String.Join(" ", a));
-                    System.Console.WriteLine("blocal_gap " + local_gap);
-                    if (local_gap != 1) Campy.Parallel.For(N - local_gap, de);
-                    else Campy.Sequential.For(N - local_gap, de);
-                    System.Console.WriteLine("aswaps " + swaps);
-                    System.Console.WriteLine("alocal_gap " + local_gap);
-                    System.Console.WriteLine(String.Join(" ", a));
+                    });
+                    Campy.Parallel.For(n2, i =>
+                    {
+                        int j = i * 2;
+                        if (a[j] > a[j + 1])
+                        {
+                            swap(ref a[j], ref a[j + 1]);
+                            sorted = false;
+                        }
+                    });
                 }
                 Campy.Parallel.Synch();
             }
         }
 
         [Fact]
-        public void CombSortT()
+        public void Test1()
         {
             Random rnd = new Random();
             int N = 8;
             int[] a = Enumerable.Range(0, N).ToArray().OrderBy(x => rnd.Next()).ToArray();
-            CombSorter.Sort(a);
+            EvenOddSorter.Sort(a);
             for (int i = 0; i < N; ++i)
                 if (a[i] != i)
                     throw new Exception();
