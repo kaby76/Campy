@@ -5,7 +5,7 @@
     <id>Campy</id>
     <title>Campy</title>
 
-    <version>0.0.5</version>
+    <version>0.0.6</version>
 
     <!-- Authors contain text that appears directly on the gallery -->
     <authors>Ken Domino</authors>
@@ -23,8 +23,9 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>An API for GP-GPU computing using C# or any other NET language, for Windows x64.</description>
     <releaseNotes>
-* Version 0.0.5
-Fixing code that tries to find GPU base class layer .DLL and .LIB files.
+* Version 0.0.6 -- Stability fixes. Adding API for better data structure copying (Camyp.Parallel.Delay/Synch).
+
+* Version 0.0.5 -- Fixing code that tries to find GPU base class layer .DLL and .LIB files.
 
 For further information, see https://github.com/kaby76/campy and http://campynet.com.
     </releaseNotes>

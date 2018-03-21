@@ -582,7 +582,6 @@ namespace Campy.Compiler
                             }
                             else if (fi.FieldType.IsClass)
                             {
-                                System.Console.WriteLine("field type is " + fi.FieldType.FullName);
                                 // Allocate a whole new buffer, copy to that, place buffer pointer into field at ip.
                                 if (field_value != null)
                                 {

@@ -1,1 +1,1 @@
-nuget pack Campy.nuspec -Version 0.0.5 -Properties 'Configuration=Release;Platform=x86;'
+nuget pack Campy.nuspec -Version 0.0.6 -Properties 'Configuration=Release;Platform=x86;'
