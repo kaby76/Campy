@@ -268,9 +268,9 @@ namespace EvenOddSort
                             sorted = false;
                         }
                     });
-                    Campy.Parallel.For(n2, i =>
+                    Campy.Parallel.For(n2 - 1, i =>
                     {
-                        int j = i * 2;
+                        int j = i * 2 + 1;
                         if (a[j] > a[j + 1])
                         {
                             swap(ref a[j], ref a[j + 1]);
