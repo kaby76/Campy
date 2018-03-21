@@ -9,7 +9,7 @@ using Campy.Graphs;
 
 namespace ConsoleApp4
 {
-    class CombSorter
+    class EvenOddSorter
     {
         public static void swap(ref int i, ref int j)
         {
@@ -20,30 +20,38 @@ namespace ConsoleApp4
 
         public static void Sort(int[] a)
         {
-            Campy.Parallel.Delay(a);
+            // Delay and Synch should really work for specific data, not all.
+            // For now, copy everything back to CPU.
+            //Campy.Parallel.Delay(a);
             int N = a.Length;
-            int gap = N;
-            bool swaps = true;
-            float gap_factor = (float)1.25;
-
-            while (gap > 1 || swaps)
+            bool sorted = false;
+            while (!sorted)
             {
-                int local_gap = (int)(gap / gap_factor);
-                if (local_gap < 1) local_gap = 1;
-                gap = local_gap;
-                swaps = false;
-                Campy.KernelType de = i =>
+                sorted = true;
+                int n2 = N / 2;
+                System.Console.WriteLine(String.Join(" ", a));
+                Campy.Parallel.For(n2, i =>
                 {
-                    if (a[i] > a[i + local_gap])
+                    int j = i * 2;
+                    if (a[j] > a[j + 1])
                     {
-                        swap(ref a[i], ref a[i + local_gap]);
-                        swaps = true;
+                        swap(ref a[j], ref a[j + 1]);
+                        sorted = false;
                     }
-                };
-                if (gap != 1) Campy.Parallel.For(N - local_gap, de);
-                else Campy.Sequential.For(N - gap, de);
+                });
+                System.Console.WriteLine(String.Join(" ", a));
+                Campy.Parallel.For(n2 - 1, i =>
+                {
+                    int j = i * 2 + 1;
+                    if (a[j] > a[j + 1])
+                    {
+                        swap(ref a[j], ref a[j + 1]);
+                        sorted = false;
+                    }
+                });
+                System.Console.WriteLine(String.Join(" ", a));
             }
-            Campy.Parallel.Synch();
+            //Campy.Parallel.Synch();
         }
     }
 
@@ -61,6 +69,8 @@ namespace ConsoleApp4
             Campy.Utils.Options.Set("ptx_trace");
             Campy.Utils.Options.Set("state_computation_trace");
             Campy.Utils.Options.Set("continue_with_no_resolve");
+            Campy.Utils.Options.Set("copy_trace");
+
         }
         static void Main(string[] args)
         {
@@ -68,7 +78,7 @@ namespace ConsoleApp4
             Random rnd = new Random();
             int N = Bithacks.Power2(4);
             var a = Enumerable.Range(0, N).ToArray().OrderBy(x => rnd.Next()).ToArray();
-            CombSorter.Sort(a);
+            EvenOddSorter.Sort(a);
             for (int i = 0; i < N; ++i)
                 if (a[i] != i)
                     throw new Exception();

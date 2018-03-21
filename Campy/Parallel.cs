@@ -85,15 +85,19 @@ namespace Campy
             {
                 unsafe
                 {
-                    IntPtr image = Singleton()._converter.JitCodeToImage(kernel.Method, kernel.Target);
-                    CUfunction ptr_to_kernel = Singleton()._converter.GetCudaFunction(kernel.Method, image);
                     var stopwatch_cuda_compile = new Stopwatch();
                     stopwatch_cuda_compile.Start();
+
+                    IntPtr image = Singleton()._converter.JitCodeToImage(kernel.Method, kernel.Target);
+                    CUfunction ptr_to_kernel = Singleton()._converter.GetCudaFunction(kernel.Method, image);
+
                     var elapse_cuda_compile = stopwatch_cuda_compile.Elapsed;
-                    BUFFERS buffer = Singleton().Buffer;
+
                     var stopwatch_deep_copy_to = new Stopwatch();
                     stopwatch_deep_copy_to.Reset();
                     stopwatch_deep_copy_to.Start();
+
+                    BUFFERS buffer = Singleton().Buffer;
 
                     // Set up parameters.
                     int count = kernel.Method.GetParameters().Length;

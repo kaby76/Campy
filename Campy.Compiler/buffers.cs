@@ -1,4 +1,6 @@
-﻿namespace Campy.Compiler
+﻿using System.Runtime.CompilerServices;
+
+namespace Campy.Compiler
 {
     using Utils;
     using Swigged.Cuda;
@@ -221,7 +223,9 @@
             // Copy all pointers from shared global or device memory back to C# space.
             // As this is a deep copy, and because it is performed bottom-up, do only
             // "top level" data structures.
-            foreach (var k in _copied_to_gpu)
+            Stack<object> nuke = new Stack<object>();
+
+            foreach (object k in _copied_to_gpu)
             {
                 if (_never_copy_from_gpu.Contains(k))
                     continue;
@@ -235,10 +239,26 @@
                 if (!_allocated_object_level.ContainsKey(k))
                     throw new Exception();
 
-                var v = _allocated_objects[k];
+                IntPtr v = _allocated_objects[k];
 
                 DeepCopyFromImplementation(v, out object to, k.GetType());
+
+                nuke.Push(k);
             }
+
+            // After copying object back to CPU, we need to delete the GPU copy
+            // and remove it from the list.
+            while (nuke.Count > 0)
+            {
+                object k = nuke.Pop();
+                IntPtr v = _allocated_objects[k];
+
+                _copied_to_gpu.Remove(k);
+                _allocated_objects.Remove(k);
+                _copied_from_gpu.Remove(k);
+                Free(v);
+            }
+
         }
 
         public void FullSynch()
@@ -249,11 +269,6 @@
 
             // Copy objects from GPU to CPU.
             SynchDataStructures();
-
-            // Reset list of objects that it thinks it has copied, because
-            // SynchDataStructures tries hard to only copy objects once.
-            _copied_from_gpu = new List<object>();
-            _copied_to_gpu = new List<object>();
         }
 
         public int SizeOf(object obj)
@@ -508,6 +523,15 @@
                         foreach (System.Reflection.FieldInfo fi in ffi)
                         {
                             object field_value = fi.GetValue(from_cpu);
+                            if (Campy.Utils.Options.IsOn("copy_trace"))
+                                System.Console.WriteLine("Copying field "
+                                                         + field_value
+                                                         + " "
+                                                         + RuntimeHelpers.GetHashCode(field_value));
+                            if (field_value != null && Campy.Utils.Options.IsOn("copy_trace"))
+                                    System.Console.WriteLine("Copying field type "
+                                                             + field_value.GetType().FullName);
+
                             String na = fi.Name;
                             var tfield = tfi.Where(k => k.Name == fi.Name).FirstOrDefault();
                             if (tfield == null) throw new ArgumentException("Field not found.");
@@ -543,8 +567,14 @@
                                 ip = (void*)((long)ip
                                              + BUFFERS.SizeOf(typeof(IntPtr)));
                             }
+                            else if (field_value as Delegate != null)
+                            {
+                                ip = (void*)((long)ip
+                                             + BUFFERS.SizeOf(typeof(IntPtr)));
+                            }
                             else if (fi.FieldType.IsClass)
                             {
+                                System.Console.WriteLine("field type is " + fi.FieldType.FullName);
                                 // Allocate a whole new buffer, copy to that, place buffer pointer into field at ip.
                                 if (field_value != null)
                                 {
@@ -609,6 +639,9 @@
         {
             unsafe
             {
+                if (Campy.Utils.Options.IsOn("copy_trace"))
+                    System.Console.WriteLine("Copy from CPU " + from_cpu + " TYPE = "
+                                             + from_cpu.GetType().FullName);
                 DeepCopyToImplementation(from_cpu, (void*)to_buffer);
             }
         }
@@ -730,12 +763,43 @@
                     if (to_cpu != default(Array))
                     {
                         if (_delayed_from_gpu.Contains(to_cpu))
+                        {
+                            if (Campy.Utils.Options.IsOn("copy_trace"))
+                                System.Console.WriteLine("Not copying to CPU "
+                                                         + to_cpu
+                                                         + " "
+                                                         + RuntimeHelpers.GetHashCode(to_cpu)
+                                                         + " because it is delayed.");
                             return;
+                        }
                         if (_never_copy_from_gpu.Contains(to_cpu))
+                        {
+                            if (Campy.Utils.Options.IsOn("copy_trace"))
+                                System.Console.WriteLine("Not copying to CPU "
+                                                         + to_cpu
+                                                         + " "
+                                                         + RuntimeHelpers.GetHashCode(to_cpu)
+                                                         + " because it never copied to GPU.");
                             return;
+                        }
                         if (_copied_from_gpu.Contains(to_cpu))
+                        {
+                            if (Campy.Utils.Options.IsOn("copy_trace"))
+                                System.Console.WriteLine("Not copying to CPU "
+                                                         + to_cpu
+                                                         + " "
+                                                         + RuntimeHelpers.GetHashCode(to_cpu)
+                                                         + " because it was copied back before.");
                             return;
+                        }
                     }
+
+                    if (Campy.Utils.Options.IsOn("copy_trace"))
+                        System.Console.WriteLine("Copying to CPU "
+                                                 + to_cpu
+                                                 + " "
+                                                 + RuntimeHelpers.GetHashCode(to_cpu)
+                                                 + " because it was copied back before.");
 
                     // "from" is assumed to be a unmanaged buffer
                     // with record Runtime.A used.
@@ -778,12 +842,43 @@
                     if (to_cpu != default(Array))
                     {
                         if (_delayed_from_gpu.Contains(to_cpu))
+                        {
+                            if (Campy.Utils.Options.IsOn("copy_trace"))
+                                System.Console.WriteLine("Not copying to CPU "
+                                                         + to_cpu
+                                                         + " "
+                                                         + RuntimeHelpers.GetHashCode(to_cpu)
+                                                         + " because it is delayed.");
                             return;
+                        }
                         if (_never_copy_from_gpu.Contains(to_cpu))
+                        {
+                            if (Campy.Utils.Options.IsOn("copy_trace"))
+                                System.Console.WriteLine("Not copying to CPU "
+                                                         + to_cpu
+                                                         + " "
+                                                         + RuntimeHelpers.GetHashCode(to_cpu)
+                                                         + " because it never copied to GPU.");
                             return;
+                        }
                         if (_copied_from_gpu.Contains(to_cpu))
+                        {
+                            if (Campy.Utils.Options.IsOn("copy_trace"))
+                                System.Console.WriteLine("Not copying to CPU "
+                                                         + to_cpu
+                                                         + " "
+                                                         + RuntimeHelpers.GetHashCode(to_cpu)
+                                                         + " because it was copied back before.");
                             return;
+                        }
                     }
+
+                    if (Campy.Utils.Options.IsOn("copy_trace"))
+                        System.Console.WriteLine("Copying to CPU "
+                                                 + to_cpu
+                                                 + " "
+                                                 + RuntimeHelpers.GetHashCode(to_cpu)
+                                                 + " because it was copied back before.");
 
                     FieldInfo[] all_from_fieldinfo = f_type.GetFields(
                         System.Reflection.BindingFlags.Instance
@@ -1130,6 +1225,8 @@
                 var size = bytes;
                 var res = Cuda.cuMemHostAlloc(out IntPtr pointer, (uint)size, (uint)Cuda.CU_MEMHOSTALLOC_DEVICEMAP);
                 CudaHelpers.CheckCudaError(res);
+                if (Campy.Utils.Options.IsOn("memory_trace"))
+                    System.Console.WriteLine("Cu Alloc (" + bytes + " bytes) {0:X}", pointer.ToInt64());
                 return pointer;
             }
 
@@ -1161,9 +1258,13 @@
             //}
         }
 
-        public void Free(IntPtr pointerToUnmanagedMemory)
+        public void Free(IntPtr pointer)
         {
-            Marshal.FreeHGlobal(pointerToUnmanagedMemory);
+            if (Campy.Utils.Options.IsOn("memory_trace"))
+                System.Console.WriteLine("Cu Free {0:X}", pointer.ToInt64());
+            var res = Cuda.cuMemFreeHost(pointer);
+            CudaHelpers.CheckCudaError(res);
+            //Marshal.FreeHGlobal(pointerToUnmanagedMemory);
         }
 
         public unsafe void* Resize<T>(void* oldPointer, int newElementCount)

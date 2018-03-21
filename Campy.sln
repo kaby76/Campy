@@ -55,6 +55,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Campy.Runtime.Native", "Cam
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{9106CABF-5CA2-46CC-9836-C67D9F2BDD9C}"
 	ProjectSection(SolutionItems) = preProject
+		Campy.Runtime\readme.markdown = Campy.Runtime\readme.markdown
 		README.md = README.md
 	EndProjectSection
 EndProject
