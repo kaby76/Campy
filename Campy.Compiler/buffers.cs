@@ -60,48 +60,19 @@ namespace Campy.Compiler
             _delayed_from_gpu.Add(obj);
         }
 
+        public void ReadOnly(object obj)
+        {
+            if (_never_copy_from_gpu.Contains(obj))
+                return;
+            _never_copy_from_gpu.Add(obj);
+        }
+
         public void ClearAllocatedObjects()
         {
         }
 
         public BUFFERS()
         {
-        }
-
-        /// <summary>
-        /// This code to check if a type is blittable.
-        /// See http://aakinshin.net/blog/post/blittable/
-        /// Original from https://stackoverflow.com/questions/10574645/the-fastest-way-to-check-if-a-type-is-blittable/31485271#31485271
-        /// Purportedly, System.Decimal is supposed to not be blittable, but appears on Windows 10, VS 2017, NF 4.6.
-        /// </summary>
-
-        public static bool IsBlittable<T>()
-        {
-            return IsBlittableCache<T>.Value;
-        }
-
-        public static bool IsBlittable(System.Type type)
-        {
-            if (type.IsArray)
-            {
-                var elem = type.GetElementType();
-                return elem.IsValueType && IsBlittable(elem);
-            }
-            try
-            {
-                object instance = FormatterServices.GetUninitializedObject(type);
-                GCHandle.Alloc(instance, GCHandleType.Pinned).Free();
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-        private static class IsBlittableCache<T>
-        {
-            public static readonly bool Value = IsBlittable(typeof(T));
         }
 
         public static int Alignment(System.Type type)

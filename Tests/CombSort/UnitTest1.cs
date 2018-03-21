@@ -252,7 +252,7 @@ namespace CombSort
             {
                 // Delay and Synch should really work for specific data, not all.
                 // For now, copy everything back to CPU.
-                Campy.Parallel.Delay(a);
+                Campy.Parallel.Sticky(a);
                 System.Console.WriteLine(String.Join(" ", a));
                 int N = a.Length;
                 int gap = N;
@@ -281,7 +281,7 @@ namespace CombSort
                     System.Console.WriteLine("alocal_gap " + local_gap);
                     System.Console.WriteLine(String.Join(" ", a));
                 }
-                Campy.Parallel.Synch();
+                Campy.Parallel.Sync();
             }
         }
 

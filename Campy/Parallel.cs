@@ -23,8 +23,7 @@ namespace Campy
             // var ok = GC.TryStartNoGCRegion(200000000);
         }
 
-
-        public static Parallel Singleton()
+        private static Parallel Singleton()
         {
             if (_singleton == null)
             {
@@ -33,29 +32,38 @@ namespace Campy
             return _singleton;
         }
 
-        public static void Delay(object obj)
+        /// <summary>
+        /// Make "obj" stay on the GPU until Sync() is called. In other words, do not
+        /// copy it back to the CPU until then. "obj" should be a reference type, and used
+        /// by the GPU kernel. Otherwise, it won't be copied to the GPU in the first place.
+        /// The closure object for the kernel delegate is always copied to and from the GPU
+        /// after each call.
+        /// </summary>
+        /// <param name="obj"></param>
+        public static void Sticky(object obj)
         {
             Singleton().Buffer.Delay(obj);
         }
 
-        public static void Synch()
+        /// <summary>
+        /// Make "obj" stay on the GPU, and do not copy it back to the CPU.
+        /// The closure object for the kernel delegate is always copied to and from the GPU
+        /// after each call.
+        /// </summary>
+        /// <param name="obj"></param>
+        public static void ReadOnly(object obj)
         {
-            Singleton().Buffer.FullSynch();
+            Singleton().Buffer.ReadOnly(obj);
         }
 
-        public static void Managed(ManagedMemoryBlock block)
+        /// <summary>
+        /// Copy all "sticky" objects used in the kernel back to the CPU from the GPU.
+        /// The closure object for the kernel delegate is always copied to and from the GPU
+        /// after each call.
+        /// </summary>
+        public static void Sync()
         {
-            block();
-            
-            var stopwatch_deep_copy_back = new Stopwatch();
-            stopwatch_deep_copy_back.Reset();
-            stopwatch_deep_copy_back.Start();
-
-            // Copy back all referenced.
-
-            stopwatch_deep_copy_back.Stop();
-            var elapse_deep_copy_back = stopwatch_deep_copy_back.Elapsed;
-            System.Console.WriteLine("deep copy out " + elapse_deep_copy_back);
+            Singleton().Buffer.FullSynch();
         }
 
         public static void For(int number_of_threads, KernelType kernel)

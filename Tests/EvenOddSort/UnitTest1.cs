@@ -252,7 +252,7 @@ namespace EvenOddSort
             {
                 // Delay and Synch should really work for specific data, not all.
                 // For now, copy everything back to CPU.
-                Campy.Parallel.Delay(a);
+                Campy.Parallel.Sticky(a);
                 int N = a.Length;
                 bool sorted = false;
                 while (!sorted)
@@ -278,7 +278,7 @@ namespace EvenOddSort
                         }
                     });
                 }
-                Campy.Parallel.Synch();
+                Campy.Parallel.Sync();
             }
         }
 

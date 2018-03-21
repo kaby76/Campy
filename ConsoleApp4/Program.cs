@@ -23,7 +23,7 @@ namespace ConsoleApp4
         // Work inefficient sort, because half the threads are unused.
         public static void BitonicSort1(int[] a)
         {
-            Parallel.Delay(a);
+            Parallel.Sticky(a);
             uint N = (uint)a.Length;
             int term = Bithacks.FloorLog2(N);
             for (int kk = 2; kk <= N; kk *= 2)
@@ -49,12 +49,12 @@ namespace ConsoleApp4
                     });
                 }
             }
-            Parallel.Synch();
+            Parallel.Sync();
         }
 
         public static void BitonicSort2(int[] a)
         {
-            Parallel.Delay(a);
+            Parallel.Sticky(a);
             uint N = (uint)a.Length;
             int log2n = Bithacks.FloorLog2(N);
             for (int k = 0; k < log2n; ++k)
@@ -90,7 +90,7 @@ namespace ConsoleApp4
                     });
                 }
             }
-            Parallel.Synch();
+            Parallel.Sync();
         }
     }
 
