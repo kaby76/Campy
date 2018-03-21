@@ -225,25 +225,32 @@ namespace Campy.Compiler
             // "top level" data structures.
             Stack<object> nuke = new Stack<object>();
 
-            foreach (object k in _copied_to_gpu)
+            foreach (object back_to_cpu in _copied_to_gpu)
             {
-                if (_never_copy_from_gpu.Contains(k))
+                if (_never_copy_from_gpu.Contains(back_to_cpu))
                     continue;
 
-                if (_delayed_from_gpu.Contains(k))
+                if (_delayed_from_gpu.Contains(back_to_cpu))
                     continue;
 
-                if (!_allocated_objects.ContainsKey(k))
+                if (!_allocated_objects.ContainsKey(back_to_cpu))
                     continue; // Honestly, this is actually a problem as the object was somehow lost.
 
-                if (!_allocated_object_level.ContainsKey(k))
+                if (!_allocated_object_level.ContainsKey(back_to_cpu))
                     throw new Exception();
 
-                IntPtr v = _allocated_objects[k];
+                IntPtr gpu_buffer_pointer = _allocated_objects[back_to_cpu];
 
-                DeepCopyFromImplementation(v, out object to, k.GetType());
+                if (Campy.Utils.Options.IsOn("copy_trace"))
+                {
+                    System.Console.Write("Copying GPU buffer {0:X}", gpu_buffer_pointer.ToInt64());
+                    System.Console.Write(" back to CPU object " + back_to_cpu);
+                    System.Console.WriteLine();
+                }
 
-                nuke.Push(k);
+                DeepCopyFromImplementation(gpu_buffer_pointer, out object to, back_to_cpu.GetType());
+
+                nuke.Push(back_to_cpu);
             }
 
             // After copying object back to CPU, we need to delete the GPU copy
@@ -256,6 +263,7 @@ namespace Campy.Compiler
                 _copied_to_gpu.Remove(k);
                 _allocated_objects.Remove(k);
                 _copied_from_gpu.Remove(k);
+                _allocated_buffers.Remove(v);
                 Free(v);
             }
 
@@ -760,7 +768,7 @@ namespace Campy.Compiler
 
                     to_cpu = to_array;
 
-                    if (to_cpu != default(Array))
+                    if (to_cpu != null)
                     {
                         if (_delayed_from_gpu.Contains(to_cpu))
                         {
@@ -839,7 +847,7 @@ namespace Campy.Compiler
 
                     _allocated_buffers[from_gpu] = to_cpu;
 
-                    if (to_cpu != default(Array))
+                    if (to_cpu != null)
                     {
                         if (_delayed_from_gpu.Contains(to_cpu))
                         {

@@ -394,7 +394,7 @@ namespace Campy.Compiler
                 return;
             System.Console.WriteLine("Graph:");
             System.Console.WriteLine();
-            System.Console.WriteLine("List of entries blocks:");
+            System.Console.WriteLine("List of entry blocks:");
             System.Console.WriteLine(new String(' ', 4) + "Node" + new string(' ', 4) + "Method");
             foreach (Vertex n in this._entries)
             {
