@@ -30,11 +30,36 @@
 
 typedef struct tSystemArray_ tSystemArray;
 struct tSystemArray_ {
+	PTR ptr_elements;
+	U64 rank;
 	// How many elements in array
-	U32 length;
+	//U32[] lengths;
 	// The elements
-	U8 elements[0];
+	//U8 elements[0];
 };
+
+
+function_space_specifier tAsyncCall* System_Array_Internal_GetLength(PTR pThis_, PTR pParams, PTR pReturnValue) {
+	tSystemArray *pArray = (tSystemArray*)pThis_;
+	tMD_TypeDef *pArrayType;
+	U32 index, elementSize;
+	tMD_TypeDef *pElementType;
+	PTR pElement;
+
+	pArrayType = Heap_GetType(pThis_);
+	//pElementType = pArrayType->pArrayElementType;
+	//elementSize = pElementType->arrayElementSize;
+	U64* p_len = &pArray->rank;
+	p_len++;
+	U64 len = 1;
+	for (int i = 0; i < pArray->rank; ++i)
+		len = len * (*p_len);
+
+	*(U32*)pReturnValue = (U32)len;
+
+	return NULL;
+}
+
 
 // Must return a boxed version of value-types
 function_space_specifier tAsyncCall* System_Array_Internal_GetValue(PTR pThis_, PTR pParams, PTR pReturnValue) {
@@ -48,7 +73,8 @@ function_space_specifier tAsyncCall* System_Array_Internal_GetValue(PTR pThis_, 
 	pArrayType = Heap_GetType(pThis_);
 	pElementType = pArrayType->pArrayElementType;
 	elementSize = pElementType->arrayElementSize;
-	pElement = pArray->elements + elementSize * index;
+	PTR beginning_of_elements = pArray->ptr_elements;
+	pElement = beginning_of_elements + elementSize * index;
 	if (pElementType->isValueType) {
 		// If it's a value-type, then box it
 		HEAP_PTR boxedValue;
@@ -103,14 +129,16 @@ function_space_specifier tAsyncCall* System_Array_Internal_SetValue(PTR pThis_, 
 
 #if defined(WIN32) && defined(_DEBUG)
 	// Do a bounds-check
-	if (index >= pArray->length) {
+	U32 len = *((&(pArray->rank)) + 1);
+	if (index >= len) {
 //		printf("[Array] Internal_SetValue() Bounds-check failed\n");
 		__debugbreak();
 	}
 #endif
 
 	elementSize = pElementType->arrayElementSize;
-	pElement = pArray->elements + elementSize * index;
+	PTR beginning_of_elements = pArray->ptr_elements;
+	pElement = beginning_of_elements + elementSize * index;
 	if (pElementType->isValueType) {
 		if (pElementType->pGenericDefinition == _bcl_->types[TYPE_SYSTEM_NULLABLE]) {
 			// Nullable type, so treat specially
@@ -144,7 +172,8 @@ function_space_specifier tAsyncCall* System_Array_Clear(PTR pThis_, PTR pParams,
 	length = *(U32*)p++;
 	pArrayType = Heap_GetType((HEAP_PTR)pArray);
 	elementSize = pArrayType->pArrayElementType->arrayElementSize;
-	memset(pArray->elements + index * elementSize, 0, length * elementSize);
+	PTR beginning_of_elements = pArray->ptr_elements;
+	memset(beginning_of_elements + index * elementSize, 0, length * elementSize);
 
 	return NULL;
 }
@@ -170,7 +199,9 @@ function_space_specifier tAsyncCall* System_Array_Internal_Copy(PTR pThis_, PTR 
 
 #if defined(WIN32) && defined(_DEBUG)
 		// Do bounds check
-		if (srcIndex + length > pSrc->length || dstIndex + length > pDst->length) {
+		U32 slen = *((&(pSrc->rank)) + 1);
+		U32 dlen = *((&(pDst->rank)) + 1);
+		if (srcIndex + length > slen || dstIndex + length > dlen) {
 			//printf("[Array] Internal_Copy() Bounds check failed\n");
 			__debugbreak();
 		}
@@ -178,7 +209,9 @@ function_space_specifier tAsyncCall* System_Array_Internal_Copy(PTR pThis_, PTR 
 
 		elementSize = pSrcElementType->arrayElementSize;
 
-		memcpy(pDst->elements + dstIndex * elementSize, pSrc->elements + srcIndex * elementSize, length * elementSize);
+		PTR beginning_of_elements_dst = pDst->ptr_elements;
+		PTR beginning_of_elements_src = pSrc->ptr_elements;
+		memcpy(beginning_of_elements_dst + dstIndex * elementSize, beginning_of_elements_src + srcIndex * elementSize, length * elementSize);
 
 		*(U32*)pReturnValue = 1;
 	} else {
@@ -200,7 +233,8 @@ function_space_specifier tAsyncCall* System_Array_Resize(PTR pThis_, PTR pParams
 	newSize = *(U32*)p++;
 
 	pOldArray = (tSystemArray*)*ppArray_;
-	oldSize = pOldArray->length;
+	U32 len = *((&(pOldArray->rank)) + 1);
+	oldSize = len;
 
 	if (oldSize == newSize) {
 		// Do nothing if new length equals the current length.
@@ -211,7 +245,9 @@ function_space_specifier tAsyncCall* System_Array_Resize(PTR pThis_, PTR pParams
 	pHeap = SystemArray_NewVector(pArrayTypeDef, newSize);
 	pNewArray = (tSystemArray*)pHeap;
 	*ppArray_ = pHeap;
-	memcpy(pNewArray->elements, pOldArray->elements,
+	PTR beginning_of_elements = pNewArray->ptr_elements;
+	PTR beginning_of_elements_old = pOldArray->ptr_elements;
+	memcpy(beginning_of_elements, beginning_of_elements_old,
 		pArrayTypeDef->pArrayElementType->arrayElementSize * ((newSize<oldSize)?newSize:oldSize));
 
 	return NULL;
@@ -230,8 +266,9 @@ function_space_specifier tAsyncCall* System_Array_Reverse(PTR pThis_, PTR pParam
 	pArrayType = Heap_GetType((HEAP_PTR)pArray);
 	elementSize = pArrayType->pArrayElementType->arrayElementSize;
 	
-	pE1 = pArray->elements + index * elementSize;
-	pE2 = pArray->elements + (index + length - 1) * elementSize;
+	PTR beginning_of_elements = pArray->ptr_elements;
+	pE1 = beginning_of_elements + index * elementSize;
+	pE2 = beginning_of_elements + (index + length - 1) * elementSize;
 	dec = elementSize << 1;
 
 	while (pE2 > pE1) {
@@ -252,7 +289,7 @@ function_space_specifier HEAP_PTR SystemArray_NewVector(tMD_TypeDef *pArrayTypeD
 
 	heapSize = sizeof(tSystemArray) + length * pArrayTypeDef->pArrayElementType->arrayElementSize;
 	pArray = (tSystemArray*)Heap_Alloc(pArrayTypeDef, heapSize);
-	pArray->length = length;
+	*((&(pArray->rank)) + 1) = length;
 	return (HEAP_PTR)pArray;
 }
 
@@ -263,7 +300,8 @@ function_space_specifier void SystemArray_StoreElement(HEAP_PTR pThis_, U32 inde
 
 #if defined(WIN32) && defined(_DEBUG)
 	// Do a bounds check
-	if (index >= pArray->length) {
+	U32 len = *((&(pArray->rank)) + 1);
+	if (index >= len) {
 //		printf("SystemArray_StoreElement() Bounds check failed. Array length: %d  index: %d\n", pArray->length, index);
 		__debugbreak();
 	}
@@ -271,18 +309,19 @@ function_space_specifier void SystemArray_StoreElement(HEAP_PTR pThis_, U32 inde
 
 	pArrayTypeDef = Heap_GetType(pThis_);
 	elemSize = pArrayTypeDef->pArrayElementType->arrayElementSize;
+	PTR beginning_of_elements = pArray->ptr_elements;
 	switch (elemSize) {
 	case 1:
-		((U8*)(pArray->elements))[index] = *(U8*)value;
+		((U8*)(beginning_of_elements))[index] = *(U8*)value;
 		break;
 	case 2:
-		((U16*)(pArray->elements))[index] = *(U16*)value;
+		((U16*)(beginning_of_elements))[index] = *(U16*)value;
 		break;
 	case 4:
-		((U32*)(pArray->elements))[index] = *(U32*)value;
+		((U32*)(beginning_of_elements))[index] = *(U32*)value;
 		break;
 	default:
-		memcpy(&pArray->elements[index * elemSize], value, elemSize);
+		memcpy(&beginning_of_elements[index * elemSize], value, elemSize);
 		break;
 	}
 }
@@ -294,18 +333,19 @@ function_space_specifier void SystemArray_LoadElement(HEAP_PTR pThis_, U32 index
 
 	pArrayTypeDef = Heap_GetType(pThis_);
 	elemSize = pArrayTypeDef->pArrayElementType->arrayElementSize;
+	PTR beginning_of_elements = pArray->ptr_elements;
 	switch (elemSize) {
 	case 1:
-		*(U8*)value =((U8*)(pArray->elements))[index];
+		*(U8*)value =((U8*)(beginning_of_elements))[index];
 		break;
 	case 2:
-		*(U16*)value = ((U16*)(pArray->elements))[index];
+		*(U16*)value = ((U16*)(beginning_of_elements))[index];
 		break;
 	case 4:
-		*(U32*)value = ((U32*)(pArray->elements))[index];
+		*(U32*)value = ((U32*)(beginning_of_elements))[index];
 		break;
 	default:
-		memcpy(value, &pArray->elements[index * elemSize], elemSize);
+		memcpy(value, &beginning_of_elements[index * elemSize], elemSize);
 		break;
 	}
 }
@@ -315,16 +355,19 @@ function_space_specifier PTR SystemArray_LoadElementAddress(HEAP_PTR pThis_, U32
 	tMD_TypeDef *pArrayTypeDef;
 
 #if defined(WIN32) && defined(_DEBUG)
-	if (index >= pArray->length) {
+	U32 len = *((&(pArray->rank)) + 1);
+	if (index >= len) {
 //		printf("SystemArray_LoadElementAddress() Bounds check failed\n");
 		__debugbreak();
 	}
 #endif
 
 	pArrayTypeDef = Heap_GetType(pThis_);
-	return pArray->elements + pArrayTypeDef->pArrayElementType->arrayElementSize * index;
+	PTR beginning_of_elements = pArray->ptr_elements;
+	return beginning_of_elements + pArrayTypeDef->pArrayElementType->arrayElementSize * index;
 }
 
 function_space_specifier U32 SystemArray_GetNumBytes(HEAP_PTR pThis_, tMD_TypeDef *pElementType) {
-	return (((tSystemArray*)pThis_)->length * pElementType->arrayElementSize) + sizeof(tSystemArray);
+	U32 len = *((&(((tSystemArray*)pThis_)->rank)) + 1);
+	return (len * pElementType->arrayElementSize) + sizeof(tSystemArray);
 }

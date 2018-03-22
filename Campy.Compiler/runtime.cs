@@ -448,6 +448,9 @@ namespace Campy.Compiler
                     var x = m.ImplAttributes;
                     if ((x & MethodImplAttributes.InternalCall) != 0)
                     {
+                        if (Campy.Utils.Options.IsOn("runtime_trace"))
+                            System.Console.WriteLine("Internal call set up " + bcl_type + " " + m);
+
                         _internalCalls.Add(new BclNativeMethod(bcl_type, m));
                     }
                 }

@@ -36,7 +36,7 @@ namespace System {
 			public NonGenericEnumerator(Array array) {
 				this.array = array;
 				this.index = -1;
-				this.length = array.length;
+				this.length = array.Length;
 			}
 
 			public object Current {
@@ -70,7 +70,7 @@ namespace System {
 			public GenericEnumerator(Array array) {
 				this.array = array;
 				this.index = -1;
-				this.length = array.length;
+				this.length = array.Length;
 			}
 
 			public T Current {
@@ -123,7 +123,7 @@ namespace System {
 		}
 
 		private void Internal_GenericClear() {
-			Array.Clear(this, 0, this.length);
+			Array.Clear(this, 0, this.Length);
 		}
 
 		private bool Internal_GenericContains<T>(T item) {
@@ -131,7 +131,7 @@ namespace System {
 		}
 
 		private void Internal_GenericCopyTo<T>(T[] array, int arrayIndex) {
-			Array.Copy(this, 0, (Array)array, arrayIndex, this.length);
+			Array.Copy(this, 0, (Array)array, arrayIndex, this.Length);
 		}
 
 		private bool Internal_GenericRemove<T>(T item) {
@@ -160,24 +160,29 @@ namespace System {
 
 		#endregion
 
-        // This must be the only field, as it ties up with the Array definition in DNA
+        // Note, layout of fields is strict due to mapping with native code.
 #pragma warning disable 0169, 0649
-        private int length;
+	    private ulong ptr;
+        private int rank;
 #pragma warning restore 0169, 0649
 
         public int Length {
-			get {
-				return this.length;
+			get
+			{
+			    return Internal_GetLength();
 			}
 		}
 
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		extern private object Internal_GetValue(int index);
+	    [MethodImpl(MethodImplOptions.InternalCall)]
+	    extern private int Internal_GetLength();
+
+	    [MethodImpl(MethodImplOptions.InternalCall)]
+	    extern private object Internal_GetValue(int index);
 
 		/// <summary>
-		/// Returns true if the value set ok, returns false if the Type was wrong
-		/// </summary>
-		[MethodImpl(MethodImplOptions.InternalCall)]
+        /// Returns true if the value set ok, returns false if the Type was wrong
+        /// </summary>
+        [MethodImpl(MethodImplOptions.InternalCall)]
 		extern public bool Internal_SetValue(object value, int index);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -193,15 +198,15 @@ namespace System {
 		extern public static void Reverse(Array array, int index, int length);
 
 		public static void Reverse(Array array) {
-			Reverse(array, 0, array.length);
+			Reverse(array, 0, array.Length);
 		}
 
 		public static int IndexOf(Array array, object value) {
-			return IndexOf(array, value, 0, array.length);
+			return IndexOf(array, value, 0, array.Length);
 		}
 
 		public static int IndexOf(Array array, object value, int startIndex) {
-			return IndexOf(array, value, startIndex, array.length - startIndex);
+			return IndexOf(array, value, startIndex, array.Length - startIndex);
 		}
 
 		public static int IndexOf(Array array, object value, int startIndex, int count) {
@@ -209,7 +214,7 @@ namespace System {
 				throw new ArgumentNullException("array");
 			}
 			int max = startIndex + count;
-			if (startIndex < 0 || max > array.length) {
+			if (startIndex < 0 || max > array.Length) {
 				throw new ArgumentOutOfRangeException();
 			}
 			for (int i = startIndex; i < max; i++) {
@@ -227,7 +232,7 @@ namespace System {
 			if (srcIndex < 0 || dstIndex < 0 || length < 0) {
 				throw new ArgumentOutOfRangeException();
 			}
-			if (srcIndex + length > srcArray.length || dstIndex + length > dstArray.length) {
+			if (srcIndex + length > srcArray.Length || dstIndex + length > dstArray.Length) {
 				throw new ArgumentException();
 			}
 			if (Internal_Copy(srcArray, srcIndex, dstArray, dstIndex, length)) {
@@ -269,14 +274,14 @@ namespace System {
 		}
 
 		public object GetValue(int index) {
-			if (index < 0 || index >= this.length) {
+			if (index < 0 || index >= this.Length) {
 				throw new IndexOutOfRangeException();
 			}
 			return Internal_GetValue(index);
 		}
 
 		public void SetValue(object value, int index) {
-			if (index < 0 || index >= this.length) {
+			if (index < 0 || index >= this.Length) {
 				throw new IndexOutOfRangeException();
 			}
 			if (!Internal_SetValue(value, index)) {
@@ -286,7 +291,7 @@ namespace System {
 
 		public int Rank {
 			get {
-				return 1;
+				return rank;
 			}
 		}
 
@@ -294,7 +299,7 @@ namespace System {
 			if (dimension != 0) {
 				throw new IndexOutOfRangeException();
 			}
-			return this.length;
+			return this.Length;
 		}
 
 		public int GetLowerBound(int dimension) {
@@ -308,7 +313,7 @@ namespace System {
 			if (dimension != 0) {
 				throw new IndexOutOfRangeException();
 			}
-			return this.length - 1;
+			return this.Length - 1;
 		}
 
 		public static TOutput[] ConvertAll<TInput, TOutput>(TInput[] array, Converter<TInput, TOutput> converter) {
@@ -356,13 +361,13 @@ namespace System {
 
 		object IList.this[int index] {
 			get {
-				if (index < 0 || index >= this.length) {
+				if (index < 0 || index >= this.Length) {
 					throw new ArgumentOutOfRangeException("index");
 				}
 				return GetValue(index);
 			}
 			set {
-				if (index < 0 || index >= this.length) {
+				if (index < 0 || index >= this.Length) {
 					throw new ArgumentOutOfRangeException("index");
 				}
 				SetValue(value, index);
@@ -374,7 +379,7 @@ namespace System {
 		}
 
 		void IList.Clear() {
-			Array.Clear(this, 0, this.length);
+			Array.Clear(this, 0, this.Length);
 		}
 
 		bool IList.Contains(object value) {
@@ -399,7 +404,7 @@ namespace System {
 
 		int ICollection.Count {
 			get {
-				return this.length;
+				return this.Length;
 			}
 		}
 
@@ -416,7 +421,7 @@ namespace System {
 		}
 
 		public void CopyTo(Array array, int index) {
-			Copy(this, 0, array, index, this.length);
+			Copy(this, 0, array, index, this.Length);
 		}
 
 		public IEnumerator GetEnumerator() {

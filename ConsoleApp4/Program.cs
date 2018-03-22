@@ -109,27 +109,17 @@ namespace ConsoleApp4
             Campy.Utils.Options.Set("state_computation_trace");
             Campy.Utils.Options.Set("continue_with_no_resolve");
             Campy.Utils.Options.Set("copy_trace");
-
+            Campy.Utils.Options.Set("runtime_trace");
         }
         static void Main(string[] args)
         {
-            //StartDebugging();
+            StartDebugging();
             Random rnd = new Random();
-            int N = 8;
-            {
-                int[] a = Enumerable.Range(0, N).ToArray().OrderBy(x => rnd.Next()).ToArray();
-                BitonicSorter.BitonicSort1(a);
-                for (int i = 0; i < N; ++i)
-                    if (a[i] != i)
-                        throw new Exception();
-            }
-            {
-                int[] a = Enumerable.Range(0, N).ToArray().OrderBy(x => rnd.Next()).ToArray();
-                BitonicSorter.BitonicSort2(a);
-                for (int i = 0; i < N; ++i)
-                    if (a[i] != i)
-                        throw new Exception();
-            }
+            int n = 4;
+            int[] x = new int[n];
+            Campy.Parallel.For(n, i => x[i] = x.Length);
+            for (int i = 0; i < n; ++i) if (x[i] != x.Length)
+                throw new Exception();
         }
     }
 }
