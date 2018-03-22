@@ -4865,34 +4865,24 @@ namespace Campy.Compiler
 
         public override void ComputeStackLevel(JITER converter, ref int level_after)
         {
-        // Successor is fallthrough.
-            int args = 0;
-            int ret = 0;
-            object method = this.Operand;
-            if (method as Mono.Cecil.MethodReference != null)
-            {
-                Mono.Cecil.MethodReference mr = method as Mono.Cecil.MethodReference;
-                args += mr.Parameters.Count;
-                if (mr.MethodReturnType != null)
-                {
-                    Mono.Cecil.MethodReturnType rt = mr.MethodReturnType;
-                    Mono.Cecil.TypeReference tr = rt.ReturnType;
-                    // Get type, may contain modifiers.
-                    if (tr.FullName.Contains(' '))
-                    {
-                        String[] sp = tr.FullName.Split(' ');
-                        if (!sp[0].Equals("System.Void"))
-                            ret++;
-                    }
-                    else
-                    {
-                        if (!tr.FullName.Equals("System.Void"))
-                            ret++;
-                    }
-                }
-                ret++;
-            }
-            level_after = level_after + ret - args;
+            // No change in stack depth.
+        }
+
+        public override INST Convert(JITER converter, STATE state)
+        {
+            // Call meta system to get type and create array of the given type and size.
+            object operand = this.Operand;
+
+            // Get the type of object to create.
+            TypeReference type = operand as TypeReference;
+
+            // Convert to GPU BCL type.
+
+            // Create array.
+
+            // Return array.
+
+            return Next;
         }
     }
 

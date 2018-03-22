@@ -73,7 +73,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MetaLayoutTest", "Tests\Met
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EvenOddSort", "Tests\EvenOddSort\EvenOddSort.csproj", "{3F9F084B-A671-4637-991D-0B963AC48B0B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArrayOfRefs", "ArrayOfRefs\ArrayOfRefs.csproj", "{8C811F6E-C9AA-4797-8B23-188011C52FB1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArrayOfRefs", "Tests\ArrayOfRefs\ArrayOfRefs.csproj", "{8C811F6E-C9AA-4797-8B23-188011C52FB1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

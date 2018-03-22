@@ -162,8 +162,8 @@ namespace System {
 
         // Note, layout of fields is strict due to mapping with native code.
 #pragma warning disable 0169, 0649
-	    private ulong ptr;
-        private int rank;
+	    private UInt64 ptr;
+        private UInt64 rank;
 #pragma warning restore 0169, 0649
 
         public int Length {
@@ -291,7 +291,7 @@ namespace System {
 
 		public int Rank {
 			get {
-				return rank;
+				return (int)rank;
 			}
 		}
 
