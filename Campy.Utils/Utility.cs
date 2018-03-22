@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Microsoft.Win32;
 using System.Text.RegularExpressions;
 using System.IO;
 using Mono.Cecil;

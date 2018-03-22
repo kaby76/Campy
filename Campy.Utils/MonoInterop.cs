@@ -4,7 +4,6 @@ using System.IO;
 namespace Campy.Utils
 {
     using Mono.Cecil;
-    using Mono.Collections.Generic;
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;

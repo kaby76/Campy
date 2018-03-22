@@ -8,8 +8,8 @@ namespace Campy.Utils
 {
     /// <summary>
     /// A data type to encapsulate sections of a list, acting itself as a list. The reason is so you do not need
-    /// to keep track off offsets.
-    /// NB: At the moment, there is no adjustment of offsets if you DELETE an element in the list! So, don't do that.
+    /// to keep track of offsets into lists.
+    /// NB: At the moment, DO NOT MODIFY THE LIST! There is no adjustment of offsets!
     /// </summary>
     /// <typeparam name="T"></typeparam>
     public class ListSection<T>
