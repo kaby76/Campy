@@ -1,12 +1,61 @@
 using System;
 using System.Linq;
 using Xunit;
-using Campy;
 
 namespace CombSort
 {
     public class CombSort
     {
+        class CombSorter
+        {
+            public static void swap(ref int i, ref int j)
+            {
+                int t = i;
+                i = j;
+                j = t;
+            }
+
+            public static void Sort(int[] a)
+            {
+                Campy.Parallel.Sticky(a);
+                int N = a.Length;
+                int gap = N;
+                bool swaps = true;
+                float gap_factor = (float)1.25;
+                while (gap > 1 || swaps)
+                {
+                    int local_gap = (int)(gap / gap_factor);
+                    if (local_gap < 1) local_gap = 1;
+                    gap = local_gap;
+                    swaps = false;
+                    Campy.KernelType de = i =>
+                    {
+                        if (a[i] > a[i + local_gap])
+                        {
+                            swap(ref a[i], ref a[i + local_gap]);
+                            swaps = true;
+                        }
+                    };
+                    if (local_gap != 1) Campy.Parallel.For(N - local_gap, de);
+                    else Campy.Sequential.For(N - local_gap, de);
+                }
+                Campy.Parallel.Sync();
+            }
+        }
+
+        [Fact]
+        public void CombSortT()
+        {
+            Random rnd = new Random();
+            int N = 8;
+            int[] a = Enumerable.Range(0, N).ToArray().OrderBy(x => rnd.Next()).ToArray();
+            CombSorter.Sort(a);
+            for (int i = 0; i < N; ++i)
+                if (a[i] != i)
+                    throw new Exception();
+        }
+
+        // Support
         public class Bithacks
         {
             static bool preped;
@@ -237,64 +286,6 @@ namespace CombSort
             {
                 return FloorLog2((uint)x);
             }
-        }
-
-        class CombSorter
-        {
-            public static void swap(ref int i, ref int j)
-            {
-                int t = i;
-                i = j;
-                j = t;
-            }
-
-            public static void Sort(int[] a)
-            {
-                // Delay and Synch should really work for specific data, not all.
-                // For now, copy everything back to CPU.
-                Campy.Parallel.Sticky(a);
-                System.Console.WriteLine(String.Join(" ", a));
-                int N = a.Length;
-                int gap = N;
-                bool swaps = true;
-                float gap_factor = (float)1.25;
-                while (gap > 1 || swaps)
-                {
-                    int local_gap = (int)(gap / gap_factor);
-                    if (local_gap < 1) local_gap = 1;
-                    gap = local_gap;
-                    swaps = false;
-                    Campy.KernelType de = i =>
-                    {
-                        if (a[i] > a[i + local_gap])
-                        {
-                            swap(ref a[i], ref a[i + local_gap]);
-                            swaps = true;
-                        }
-                    };
-                    System.Console.WriteLine("bswaps " + swaps);
-                    System.Console.WriteLine(String.Join(" ", a));
-                    System.Console.WriteLine("blocal_gap " + local_gap);
-                    if (local_gap != 1) Campy.Parallel.For(N - local_gap, de);
-                    else Campy.Sequential.For(N - local_gap, de);
-                    System.Console.WriteLine("aswaps " + swaps);
-                    System.Console.WriteLine("alocal_gap " + local_gap);
-                    System.Console.WriteLine(String.Join(" ", a));
-                }
-                Campy.Parallel.Sync();
-            }
-        }
-
-        [Fact]
-        public void CombSortT()
-        {
-            Random rnd = new Random();
-            int N = 8;
-            int[] a = Enumerable.Range(0, N).ToArray().OrderBy(x => rnd.Next()).ToArray();
-            CombSorter.Sort(a);
-            for (int i = 0; i < N; ++i)
-                if (a[i] != i)
-                    throw new Exception();
         }
     }
 }

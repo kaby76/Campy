@@ -73,22 +73,6 @@ namespace Campy
             GCHandle handle1 = default(GCHandle);
             GCHandle handle2 = default(GCHandle);
 
-            //bool managed = false;
-            //StackTrace st = new StackTrace(true);
-            //for (int i = 0; i < st.FrameCount; i++)
-            //{
-            //    // Note that high up the call stack, there is only
-            //    // one stack frame.
-            //    StackFrame sf = st.GetFrame(i);
-            //    MethodBase met = sf.GetMethod();
-            //    string nae = met.Name;
-            //    if (nae.Contains("Managed"))
-            //    {
-            //        managed = true;
-            //        break;
-            //    }
-            //}
-
             try
             {
                 unsafe

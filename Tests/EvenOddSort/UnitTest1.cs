@@ -1,12 +1,65 @@
 using System;
 using System.Linq;
 using Xunit;
-using Campy;
 
 namespace EvenOddSort
 {
     public class UnitTest1
     {
+        class EvenOddSorter
+        {
+            public static void swap(ref int i, ref int j)
+            {
+                int t = i;
+                i = j;
+                j = t;
+            }
+
+            public static void Sort(int[] a)
+            {
+                Campy.Parallel.Sticky(a);
+                int N = a.Length;
+                bool sorted = false;
+                while (!sorted)
+                {
+                    sorted = true;
+                    int n2 = N / 2;
+                    Campy.Parallel.For(n2, i =>
+                    {
+                        int j = i * 2;
+                        if (a[j] > a[j + 1])
+                        {
+                            swap(ref a[j], ref a[j + 1]);
+                            sorted = false;
+                        }
+                    });
+                    Campy.Parallel.For(n2 - 1, i =>
+                    {
+                        int j = i * 2 + 1;
+                        if (a[j] > a[j + 1])
+                        {
+                            swap(ref a[j], ref a[j + 1]);
+                            sorted = false;
+                        }
+                    });
+                }
+                Campy.Parallel.Sync();
+            }
+        }
+
+        [Fact]
+        public void Test1()
+        {
+            Random rnd = new Random();
+            int N = 8;
+            int[] a = Enumerable.Range(0, N).ToArray().OrderBy(x => rnd.Next()).ToArray();
+            EvenOddSorter.Sort(a);
+            for (int i = 0; i < N; ++i)
+                if (a[i] != i)
+                    throw new Exception();
+        }
+
+        // Support
         public class Bithacks
         {
             static bool preped;
@@ -239,59 +292,5 @@ namespace EvenOddSort
             }
         }
 
-        class EvenOddSorter
-        {
-            public static void swap(ref int i, ref int j)
-            {
-                int t = i;
-                i = j;
-                j = t;
-            }
-
-            public static void Sort(int[] a)
-            {
-                // Delay and Synch should really work for specific data, not all.
-                // For now, copy everything back to CPU.
-                Campy.Parallel.Sticky(a);
-                int N = a.Length;
-                bool sorted = false;
-                while (!sorted)
-                {
-                    sorted = true;
-                    int n2 = N / 2;
-                    Campy.Parallel.For(n2, i =>
-                    {
-                        int j = i * 2;
-                        if (a[j] > a[j + 1])
-                        {
-                            swap(ref a[j], ref a[j + 1]);
-                            sorted = false;
-                        }
-                    });
-                    Campy.Parallel.For(n2 - 1, i =>
-                    {
-                        int j = i * 2 + 1;
-                        if (a[j] > a[j + 1])
-                        {
-                            swap(ref a[j], ref a[j + 1]);
-                            sorted = false;
-                        }
-                    });
-                }
-                Campy.Parallel.Sync();
-            }
-        }
-
-        [Fact]
-        public void Test1()
-        {
-            Random rnd = new Random();
-            int N = 8;
-            int[] a = Enumerable.Range(0, N).ToArray().OrderBy(x => rnd.Next()).ToArray();
-            EvenOddSorter.Sort(a);
-            for (int i = 0; i < N; ++i)
-                if (a[i] != i)
-                    throw new Exception();
-        }
     }
 }

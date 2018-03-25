@@ -834,7 +834,7 @@ namespace Campy.Compiler
                                                          + to_cpu
                                                          + " "
                                                          + RuntimeHelpers.GetHashCode(to_cpu)
-                                                         + " because it was copied back before.");
+                                                         + " because it never copied to GPU.");
                             return;
                         }
                     }
@@ -844,7 +844,7 @@ namespace Campy.Compiler
                                                  + to_cpu
                                                  + " "
                                                  + RuntimeHelpers.GetHashCode(to_cpu)
-                                                 + " because it was copied back before.");
+                                                 + " because it was copied to the GPU.");
 
                     // "from" is assumed to be a unmanaged buffer
                     // with record Runtime.A used.
@@ -923,7 +923,7 @@ namespace Campy.Compiler
                                                  + to_cpu
                                                  + " "
                                                  + RuntimeHelpers.GetHashCode(to_cpu)
-                                                 + " because it was copied back before.");
+                                                 + " because it was copied to GPU.");
 
                     FieldInfo[] all_from_fieldinfo = f_type.GetFields(
                         System.Reflection.BindingFlags.Instance
