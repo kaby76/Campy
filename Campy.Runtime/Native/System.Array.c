@@ -350,55 +350,56 @@ function_space_specifier void SystemArray_LoadElement(HEAP_PTR pThis_, U32 index
     }
 }
 
-function_space_specifier void SystemArray_LoadElementIndices(HEAP_PTR pThis_, U32 dim, U32 elemSize, U64* indices, U64* value) {
+function_space_specifier void SystemArray_LoadElementIndices(HEAP_PTR pThis_, U32 dim, U32 elemSize, U32* indices, U64* value)
+{
 	tSystemArray *pArray = (tSystemArray*)pThis_;
 	tMD_TypeDef *pArrayTypeDef;
 
 	//pArrayTypeDef = Heap_GetType(pThis_);
 	//elemSize = pArrayTypeDef->pArrayElementType->arrayElementSize;
+
 	PTR beginning_of_elements = pArray->ptr_elements;
-	U64 * beginning_of_lengths = ((&(pArray->rank)) + 1);
+	PTR b1 = (PTR)&pArray->rank;
+	U64 * beginning_of_lengths = ((U64*)b1) + 1;
+	int index = 0;
+	for (int i = 0; i < dim; ++i)
+	{
+		int k = 1;
+		for (int j = i + 1; j < dim; ++j)
+		{
+			U64 x = beginning_of_lengths[j];
+			U32 y = (U32)x;
+			k = k * y;
+		}
+		index += indices[i] * k;
+	}
+
 	switch (elemSize) {
-		case 1:
-		{
-			int index = 0;
-			for (int i = 0; i < dim; ++i)
-				index += indices[i] * (*beginning_of_lengths + i);
-			*(U8*)value = ((U8*)(beginning_of_elements))[index];
-			break;
-		}
-		case 2:
-		{
-			int index = 0;
-			for (int i = 0; i < dim; ++i)
-				index += indices[i] * (*beginning_of_lengths + i);
-			*(U16*)value = ((U16*)(beginning_of_elements))[index];
-			break;
-		}
-		case 4:
-		{
-			int index = 0;
-			for (int i = 0; i < dim; ++i)
-				index += indices[i] * (*beginning_of_lengths + i);
-			*(U32*)value = ((U32*)(beginning_of_elements))[index];
-			break;
-		}
-		case 8:
-		{
-			int index = 0;
-			for (int i = 0; i < dim; ++i)
-				index += indices[i] * (*beginning_of_lengths + i);
-			*(U64*)value = ((U64*)(beginning_of_elements))[index];
-			break;
-		}
-		default:
-		{
-			int index = 0;
-			for (int i = 0; i < dim; ++i)
-				index += indices[i] * (*beginning_of_lengths + i);
-			memcpy(value, &beginning_of_elements[index * elemSize], elemSize);
-			break;
-		}
+	case 1:
+	{
+		*(((U8*)(beginning_of_elements)) + index) = *(U8*)value;
+		break;
+	}
+	case 2:
+	{
+		*(((U16*)(beginning_of_elements)) + index) = *(U16*)value;
+		break;
+	}
+	case 4:
+	{
+		*(((U32*)(beginning_of_elements)) + index) = *(U32*)value;
+		break;
+	}
+	case 8:
+	{
+		*(((U64*)(beginning_of_elements)) + index) = *(U64*)value;
+		break;
+	}
+	default:
+	{
+		memcpy(&beginning_of_elements[index * elemSize], value, elemSize);
+		break;
+	}
 	}
 }
 
@@ -408,6 +409,7 @@ function_space_specifier void SystemArray_StoreElementIndices(HEAP_PTR pThis_, U
 
 	//pArrayTypeDef = Heap_GetType(pThis_);
 	//elemSize = pArrayTypeDef->pArrayElementType->arrayElementSize;
+
 	PTR beginning_of_elements = pArray->ptr_elements;
 	PTR b1 = (PTR) &pArray->rank;
 	U64 * beginning_of_lengths = ((U64*)b1) + 1;

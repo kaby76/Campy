@@ -1280,103 +1280,144 @@ namespace Campy.Compiler
                         Collection<ArrayDimension> dimensions = the_array_type.Dimensions;
                         var count = dimensions.Count;
 
-                        // Make "set" call
-                        unsafe
+                        if (mr.Name == "Set")
                         {
-                            ValueRef[] args = new ValueRef[1 // this
-                                                           + 1 // rank
-                                                           + 1 // element size in bytes
-                                                           + 1 // indices
-                                                           + 1 // val
-                            ];
-
-                            // val
-                            var val_type = element_type.ToTypeRef();
-                            var val_buffer = LLVM.BuildAlloca(Builder, val_type, "i" + instruction_id++);
-                            LLVM.SetAlignment(val_buffer, 64);
-                            LLVM.BuildStore(Builder, state._stack.Pop().V, val_buffer);
-                            args[4] = LLVM.BuildPtrToInt(Builder, val_buffer, LLVM.Int64Type(), "i" + instruction_id++);
-
-                            // indices, 32 bits each
-                            var ind_type = LLVM.Int32Type();
-                            var ind_buffer = LLVM.BuildAlloca(Builder, ind_type, "i" + instruction_id++);
-                            LLVM.SetAlignment(ind_buffer, 64);
-                            for (int i = count - 1; i >= 0; i--)
+                            // Make "set" call
+                            unsafe
                             {
-                                VALUE pp = state._stack.Pop();
+                                ValueRef[] args = new ValueRef[1 // this
+                                                               + 1 // rank
+                                                               + 1 // element size in bytes
+                                                               + 1 // indices
+                                                               + 1 // val
+                                ];
+
+                                // val
+                                var val_type = element_type.ToTypeRef();
+                                var val_buffer = LLVM.BuildAlloca(Builder, val_type, "i" + instruction_id++);
+                                LLVM.SetAlignment(val_buffer, 64);
+                                LLVM.BuildStore(Builder, state._stack.Pop().V, val_buffer);
+                                args[4] = LLVM.BuildPtrToInt(Builder, val_buffer, LLVM.Int64Type(),
+                                    "i" + instruction_id++);
+
+                                // indices, 32 bits each
+                                var ind_type = LLVM.Int32Type();
+                                var ind_buffer = LLVM.BuildAlloca(Builder, ind_type, "i" + instruction_id++);
+                                LLVM.SetAlignment(ind_buffer, 64);
+                                for (int i = count - 1; i >= 0; i--)
+                                {
+                                    VALUE pp = state._stack.Pop();
+                                    if (Campy.Utils.Options.IsOn("jit_trace"))
+                                        System.Console.WriteLine(pp);
+                                    ValueRef[] index = new ValueRef[1]
+                                        {LLVM.ConstInt(LLVM.Int32Type(), (ulong) i, true)};
+                                    var add = LLVM.BuildInBoundsGEP(Builder, ind_buffer, index, "i" + instruction_id++);
+                                    if (Campy.Utils.Options.IsOn("jit_trace"))
+                                        System.Console.WriteLine(new VALUE(add));
+                                    ValueRef v = LLVM.BuildPointerCast(Builder, add,
+                                        LLVM.PointerType(LLVM.TypeOf(pp.V), 0), "i" + instruction_id++);
+                                    if (Campy.Utils.Options.IsOn("jit_trace"))
+                                        System.Console.WriteLine(new VALUE(v));
+                                    ValueRef store = LLVM.BuildStore(Builder, pp.V, v);
+                                    if (Campy.Utils.Options.IsOn("jit_trace"))
+                                        System.Console.WriteLine(new VALUE(store));
+                                }
+
+                                args[3] = LLVM.BuildPtrToInt(Builder, ind_buffer, LLVM.Int64Type(),
+                                    "i" + instruction_id++);
+
+                                args[2] = LLVM.ConstInt(LLVM.Int32Type(),
+                                    (ulong) BUFFERS.SizeOfType(element_type),
+                                    false);
+
+                                args[1] = LLVM.ConstInt(LLVM.Int32Type(), (ulong) count, false);
+
+                                VALUE p = state._stack.Pop();
+                                args[0] = LLVM.BuildPtrToInt(Builder, p.V, LLVM.Int64Type(), "i" + instruction_id++);
+
+                                string nme = "_Z31SystemArray_StoreElementIndicesPhjjPjPy";
+                                var list = RUNTIME.BclNativeMethods.ToList();
+                                var list2 = RUNTIME.PtxFunctions.ToList();
+                                var f = list2.Where(t => t._mangled_name == nme).First();
+                                ValueRef fv = f._valueref;
+                                var call = LLVM.BuildCall(Builder, fv, args, "");
                                 if (Campy.Utils.Options.IsOn("jit_trace"))
-                                    System.Console.WriteLine(pp);
-                                ValueRef[] index = new ValueRef[1] { LLVM.ConstInt(LLVM.Int32Type(), (ulong)i, true) };
-                                var add = LLVM.BuildInBoundsGEP(Builder, ind_buffer, index, "i" + instruction_id++);
-                                if (Campy.Utils.Options.IsOn("jit_trace"))
-                                    System.Console.WriteLine(new VALUE(add));
-                                ValueRef v = LLVM.BuildPointerCast(Builder, add, LLVM.PointerType(LLVM.TypeOf(pp.V), 0), "i" + instruction_id++);
-                                if (Campy.Utils.Options.IsOn("jit_trace"))
-                                    System.Console.WriteLine(new VALUE(v));
-                                ValueRef store = LLVM.BuildStore(Builder, pp.V, v);
-                                if (Campy.Utils.Options.IsOn("jit_trace"))
-                                    System.Console.WriteLine(new VALUE(store));
+                                    System.Console.WriteLine(call.ToString());
                             }
-                            args[3] = LLVM.BuildPtrToInt(Builder, ind_buffer, LLVM.Int64Type(), "i" + instruction_id++);
-
-                            args[2] = LLVM.ConstInt(LLVM.Int32Type(),
-                                (ulong)BUFFERS.SizeOfType(element_type),
-                                false);
-
-                            args[1] = LLVM.ConstInt(LLVM.Int32Type(), (ulong)count, false);
-
-                            VALUE p = state._stack.Pop();
-                            args[0] = LLVM.BuildPtrToInt(Builder, p.V, LLVM.Int64Type(), "i" + instruction_id++);
-
-                            string nme = "_Z31SystemArray_StoreElementIndicesPhjjPjPy";
-                            var list = RUNTIME.BclNativeMethods.ToList();
-                            var list2 = RUNTIME.PtxFunctions.ToList();
-                            var f = list2.Where(t => t._mangled_name == nme).First();
-                            ValueRef fv = f._valueref;
-                            var call = LLVM.BuildCall(Builder, fv, args, "");
-                            if (Campy.Utils.Options.IsOn("jit_trace"))
-                                System.Console.WriteLine(call.ToString());
+                            return Next;
                         }
-                        if (false)
-                        unsafe
+                        else if (mr.Name == "Get")
                         {
-                            ValueRef[] args = new ValueRef[1 // this
-                                                           + 1 // rank
-                                                           + count // number of indices
-                                                           + 1 // pointer to return
-                            ];
-                            var return_type = element_type.ToTypeRef();
-                            var return_buffer = LLVM.BuildAlloca(Builder, return_type, "i" + instruction_id++);
-                            LLVM.SetAlignment(return_buffer, 64);
-                            args[1 + 1 + count] = return_buffer;
-                            for (int i = count - 1; i >= 0; i--)
+                            unsafe
                             {
-                                VALUE p2 = state._stack.Pop();
-                                args[i + 1 + 1] = p2.V;
-                            }
-                            args[1] = LLVM.ConstInt(LLVM.Int32Type(), (ulong)count, false);
-                            VALUE p = state._stack.Pop();
-                            args[0] = p.V; // This
+                                ValueRef[] args = new ValueRef[1 // this
+                                                               + 1 // rank
+                                                               + 1 // element size in bytes
+                                                               + 1 // indices
+                                                               + 1 // val
+                                ];
 
-                            string nme = "_Z30SystemArray_LoadElementIndicesPhjjPjS_";
-                            var list = RUNTIME.BclNativeMethods.ToList();
-                            var list2 = RUNTIME.PtxFunctions.ToList();
-                            var f = list2.Where(t => t._mangled_name == nme).First();
-                            ValueRef fv = f._valueref;
-                            var call = LLVM.BuildCall(Builder, fv, args, "");
-                            var load = LLVM.BuildLoad(Builder, return_buffer, "i" + instruction_id++);
-                            state._stack.Push(new VALUE(load));
-                            if (Campy.Utils.Options.IsOn("jit_trace"))
-                                System.Console.WriteLine(call.ToString());
+                                // val
+                                var val_type = element_type.ToTypeRef();
+                                var val_buffer = LLVM.BuildAlloca(Builder, val_type, "i" + instruction_id++);
+                                LLVM.SetAlignment(val_buffer, 64);
+                                args[4] = LLVM.BuildPtrToInt(Builder, val_buffer, LLVM.Int64Type(),
+                                    "i" + instruction_id++);
+
+                                // indices, 32 bits each
+                                var ind_type = LLVM.Int32Type();
+                                var ind_buffer = LLVM.BuildAlloca(Builder, ind_type, "i" + instruction_id++);
+                                LLVM.SetAlignment(ind_buffer, 64);
+                                for (int i = count - 1; i >= 0; i--)
+                                {
+                                    VALUE pp = state._stack.Pop();
+                                    if (Campy.Utils.Options.IsOn("jit_trace"))
+                                        System.Console.WriteLine(pp);
+                                    ValueRef[] index = new ValueRef[1]
+                                        {LLVM.ConstInt(LLVM.Int32Type(), (ulong) i, true)};
+                                    var add = LLVM.BuildInBoundsGEP(Builder, ind_buffer, index, "i" + instruction_id++);
+                                    if (Campy.Utils.Options.IsOn("jit_trace"))
+                                        System.Console.WriteLine(new VALUE(add));
+                                    ValueRef v = LLVM.BuildPointerCast(Builder, add,
+                                        LLVM.PointerType(LLVM.TypeOf(pp.V), 0), "i" + instruction_id++);
+                                    if (Campy.Utils.Options.IsOn("jit_trace"))
+                                        System.Console.WriteLine(new VALUE(v));
+                                    ValueRef store = LLVM.BuildStore(Builder, pp.V, v);
+                                    if (Campy.Utils.Options.IsOn("jit_trace"))
+                                        System.Console.WriteLine(new VALUE(store));
+                                }
+
+                                args[3] = LLVM.BuildPtrToInt(Builder, ind_buffer, LLVM.Int64Type(),
+                                    "i" + instruction_id++);
+
+                                args[2] = LLVM.ConstInt(LLVM.Int32Type(),
+                                    (ulong)BUFFERS.SizeOfType(element_type),
+                                    false);
+
+                                args[1] = LLVM.ConstInt(LLVM.Int32Type(), (ulong)count, false);
+
+                                VALUE p = state._stack.Pop();
+                                args[0] = LLVM.BuildPtrToInt(Builder, p.V, LLVM.Int64Type(), "i" + instruction_id++);
+
+                                string nme = "_Z30SystemArray_LoadElementIndicesPhjjPjPy";
+                                var list = RUNTIME.BclNativeMethods.ToList();
+                                var list2 = RUNTIME.PtxFunctions.ToList();
+                                var f = list2.Where(t => t._mangled_name == nme).First();
+                                ValueRef fv = f._valueref;
+                                var call = LLVM.BuildCall(Builder, fv, args, "i" + instruction_id++);
+                                var load = LLVM.BuildLoad(Builder, val_buffer, "i" + instruction_id++);
+                                var result = new VALUE(load);
+                                state._stack.Push(result);
+                                if (Campy.Utils.Options.IsOn("jit_trace"))
+                                    System.Console.WriteLine(result);
+                            }
+                            return Next;
                         }
                     }
-                    else
-                    {
-                        throw new Exception("Unknown, internal, function for which there is no body and no C/C++ code. "
-                                            + mangled_name
-                                            + " "
-                                            + full_name);
-                    }
+                    throw new Exception("Unknown, internal, function for which there is no body and no C/C++ code. "
+                                        + mangled_name
+                                        + " "
+                                        + full_name);
                 }
                 else
                 {
