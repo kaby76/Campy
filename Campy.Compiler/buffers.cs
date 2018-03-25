@@ -250,7 +250,7 @@ namespace Campy.Compiler
             SynchDataStructures();
         }
 
-        public int SizeOf(object obj)
+        public static int SizeOf(object obj)
         {
             System.Type type = obj.GetType();
             if (type.IsArray)
@@ -286,6 +286,73 @@ namespace Campy.Compiler
             }
             else
                 return SizeOf(type);
+        }
+
+        public static int SizeOfType(Mono.Cecil.TypeReference type)
+        {
+            if (type.IsArray)
+            {
+                return 8;
+            }
+            else if (!type.IsValueType)
+            {
+                return 8;
+            }
+            // Let's start with basic types.
+            else if (type.FullName.Equals("System.Object"))
+            {
+                return 8;
+            }
+            else if (type.FullName.Equals("System.Int16"))
+            {
+                return 2;
+            }
+            else if (type.FullName.Equals("System.Int32"))
+            {
+                return 4;
+            }
+            else if (type.FullName.Equals("System.Int64"))
+            {
+                return 8;
+            }
+            else if (type.FullName.Equals("System.UInt16"))
+            {
+                return 2;
+            }
+            if (type.FullName.Equals("System.UInt32"))
+            {
+                return 4;
+            }
+            else if (type.FullName.Equals("System.UInt64"))
+            {
+                return 8;
+            }
+            else if (type.FullName.Equals("System.IntPtr"))
+            {
+                return 8;
+            }
+
+            // Map boolean into byte.
+            else if (type.FullName.Equals("System.Boolean"))
+            {
+                return 1;
+            }
+
+            // Map char into uint16.
+            else if (type.FullName.Equals("System.Char"))
+            {
+                return 2;
+            }
+            else if (type.FullName.Equals("System.Single"))
+            {
+                return 4;
+            }
+            else if (type.FullName.Equals("System.Double"))
+            {
+                return 8;
+            }
+
+            return 0;
         }
 
         /// <summary>

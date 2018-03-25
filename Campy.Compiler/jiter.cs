@@ -438,7 +438,7 @@ namespace Campy.Compiler
         private static int _nn_id = 0;
         public static ModuleRef global_llvm_module;
         private List<ModuleRef> all_llvm_modules;
-        public static Dictionary<string, ValueRef> built_in_functions;
+        public static Dictionary<string, ValueRef> functions_in_internal_bcl_layer;
         Dictionary<Tuple<CFG.Vertex, Mono.Cecil.TypeReference, System.Type>, CFG.Vertex> mmap;
         internal static Dictionary<TypeReference, TypeRef> basic_llvm_types_created;
         internal static Dictionary<TypeReference, TypeRef> previous_llvm_types_created_global;
@@ -452,7 +452,7 @@ namespace Campy.Compiler
         {
             global_llvm_module = default(ModuleRef);
             all_llvm_modules = new List<ModuleRef>();
-            built_in_functions = new Dictionary<string, ValueRef>();
+            functions_in_internal_bcl_layer = new Dictionary<string, ValueRef>();
             mmap = new Dictionary<Tuple<CFG.Vertex, TypeReference, System.Type>, CFG.Vertex>(new Comparer());
             basic_llvm_types_created = new Dictionary<TypeReference, TypeRef>();
             previous_llvm_types_created_global = new Dictionary<TypeReference, TypeRef>();
@@ -530,76 +530,76 @@ namespace Campy.Compiler
 
 
 
-            built_in_functions.Add("llvm.nvvm.read.ptx.sreg.tid.x",
+            functions_in_internal_bcl_layer.Add("llvm.nvvm.read.ptx.sreg.tid.x",
                 LLVM.AddFunction(
                     global_llvm_module,
                     "llvm.nvvm.read.ptx.sreg.tid.x",
                     LLVM.FunctionType(LLVM.Int32Type(),
                         new TypeRef[] { }, false)));
-            built_in_functions.Add("llvm.nvvm.read.ptx.sreg.tid.y",
+            functions_in_internal_bcl_layer.Add("llvm.nvvm.read.ptx.sreg.tid.y",
                 LLVM.AddFunction(
                     global_llvm_module,
                     "llvm.nvvm.read.ptx.sreg.tid.y",
                     LLVM.FunctionType(LLVM.Int32Type(),
                         new TypeRef[] { }, false)));
-            built_in_functions.Add("llvm.nvvm.read.ptx.sreg.tid.z",
+            functions_in_internal_bcl_layer.Add("llvm.nvvm.read.ptx.sreg.tid.z",
                 LLVM.AddFunction(
                     global_llvm_module,
                     "llvm.nvvm.read.ptx.sreg.tid.z",
                     LLVM.FunctionType(LLVM.Int32Type(),
                         new TypeRef[] { }, false)));
 
-            built_in_functions.Add("llvm.nvvm.read.ptx.sreg.ctaid.x",
+            functions_in_internal_bcl_layer.Add("llvm.nvvm.read.ptx.sreg.ctaid.x",
                 LLVM.AddFunction(
                     global_llvm_module,
                     "llvm.nvvm.read.ptx.sreg.ctaid.x",
                     LLVM.FunctionType(LLVM.Int32Type(),
                         new TypeRef[] { }, false)));
-            built_in_functions.Add("llvm.nvvm.read.ptx.sreg.ctaid.y",
+            functions_in_internal_bcl_layer.Add("llvm.nvvm.read.ptx.sreg.ctaid.y",
                 LLVM.AddFunction(
                     global_llvm_module,
                     "llvm.nvvm.read.ptx.sreg.ctaid.y",
                     LLVM.FunctionType(LLVM.Int32Type(),
                         new TypeRef[] { }, false)));
-            built_in_functions.Add("llvm.nvvm.read.ptx.sreg.ctaid.z",
+            functions_in_internal_bcl_layer.Add("llvm.nvvm.read.ptx.sreg.ctaid.z",
                 LLVM.AddFunction(
                     global_llvm_module,
                     "llvm.nvvm.read.ptx.sreg.ctaid.z",
                     LLVM.FunctionType(LLVM.Int32Type(),
                         new TypeRef[] { }, false)));
 
-            built_in_functions.Add("llvm.nvvm.read.ptx.sreg.ntid.x",
+            functions_in_internal_bcl_layer.Add("llvm.nvvm.read.ptx.sreg.ntid.x",
                 LLVM.AddFunction(
                     global_llvm_module,
                     "llvm.nvvm.read.ptx.sreg.ntid.x",
                     LLVM.FunctionType(LLVM.Int32Type(),
                         new TypeRef[] { }, false)));
-            built_in_functions.Add("llvm.nvvm.read.ptx.sreg.ntid.y",
+            functions_in_internal_bcl_layer.Add("llvm.nvvm.read.ptx.sreg.ntid.y",
                 LLVM.AddFunction(
                     global_llvm_module,
                     "llvm.nvvm.read.ptx.sreg.ntid.y",
                     LLVM.FunctionType(LLVM.Int32Type(),
                         new TypeRef[] { }, false)));
-            built_in_functions.Add("llvm.nvvm.read.ptx.sreg.ntid.z",
+            functions_in_internal_bcl_layer.Add("llvm.nvvm.read.ptx.sreg.ntid.z",
                 LLVM.AddFunction(
                     global_llvm_module,
                     "llvm.nvvm.read.ptx.sreg.ntid.z",
                     LLVM.FunctionType(LLVM.Int32Type(),
                         new TypeRef[] { }, false)));
 
-            built_in_functions.Add("llvm.nvvm.read.ptx.sreg.nctaid.x",
+            functions_in_internal_bcl_layer.Add("llvm.nvvm.read.ptx.sreg.nctaid.x",
                 LLVM.AddFunction(
                     global_llvm_module,
                     "llvm.nvvm.read.ptx.sreg.nctaid.x",
                     LLVM.FunctionType(LLVM.Int32Type(),
                         new TypeRef[] { }, false)));
-            built_in_functions.Add("llvm.nvvm.read.ptx.sreg.nctaid.y",
+            functions_in_internal_bcl_layer.Add("llvm.nvvm.read.ptx.sreg.nctaid.y",
                 LLVM.AddFunction(
                     global_llvm_module,
                     "llvm.nvvm.read.ptx.sreg.nctaid.y",
                     LLVM.FunctionType(LLVM.Int32Type(),
                         new TypeRef[] { }, false)));
-            built_in_functions.Add("llvm.nvvm.read.ptx.sreg.nctaid.z",
+            functions_in_internal_bcl_layer.Add("llvm.nvvm.read.ptx.sreg.nctaid.z",
                 LLVM.AddFunction(
                     global_llvm_module,
                     "llvm.nvvm.read.ptx.sreg.nctaid.z",

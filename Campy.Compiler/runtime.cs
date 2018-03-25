@@ -490,7 +490,7 @@ namespace Campy.Compiler
                         if (Campy.Utils.Options.IsOn("runtime_trace"))
                             System.Console.WriteLine(mangled_name + " " + return_type + " " + parameters);
 
-                        if (JITER.built_in_functions.ContainsKey(mangled_name)) continue;
+                        if (JITER.functions_in_internal_bcl_layer.ContainsKey(mangled_name)) continue;
 
                         TypeRef llvm_return_type = default(TypeRef);
                         TypeRef[] args;
@@ -553,7 +553,7 @@ namespace Campy.Compiler
                                                  + " "
                                                  + ptxf._valueref);
 
-                        JITER.built_in_functions.Add(mangled_name, decl);
+                        JITER.functions_in_internal_bcl_layer.Add(mangled_name, decl);
                         _ptx_functions.Add(ptxf);
                     }
                 }

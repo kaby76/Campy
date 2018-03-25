@@ -10,90 +10,6 @@ using Campy.Graphs;
 namespace ConsoleApp4
 {
 
-    public class BitonicSorter
-    {
-        public static void swap(ref int i, ref int j)
-        {
-            int t = i;
-            i = j;
-            j = t;
-        }
-
-        // [Bat 68]	K.E. Batcher: Sorting Networks and their Applications. Proc. AFIPS Spring Joint Comput. Conf., Vol. 32, 307-314 (1968)
-        // Work inefficient sort, because half the threads are unused.
-        public static void BitonicSort1(int[] a)
-        {
-            Parallel.Sticky(a);
-            uint N = (uint)a.Length;
-            int term = Bithacks.FloorLog2(N);
-            for (int kk = 2; kk <= N; kk *= 2)
-            {
-                for (int jj = kk >> 1; jj > 0; jj = jj >> 1)
-                {
-                    int k = kk;
-                    int j = jj;
-                    Campy.Parallel.For((int)N, (i) =>
-                    {
-                        int ij = i ^ j;
-                        if (ij > i)
-                        {
-                            if ((i & k) == 0)
-                            {
-                                if (a[i] > a[ij]) swap(ref a[i], ref a[ij]);
-                            }
-                            else // ((i & k) != 0)
-                            {
-                                if (a[i] < a[ij]) swap(ref a[i], ref a[ij]);
-                            }
-                        }
-                    });
-                }
-            }
-            Parallel.Sync();
-        }
-
-        public static void BitonicSort2(int[] a)
-        {
-            Parallel.Sticky(a);
-            uint N = (uint)a.Length;
-            int log2n = Bithacks.FloorLog2(N);
-            for (int k = 0; k < log2n; ++k)
-            {
-                uint n2 = N / 2;
-                int twok = Bithacks.Power2(k);
-                Campy.Parallel.For((int)n2, i =>
-                {
-                    int imp2 = i % twok;
-                    int cross = imp2 + 2 * twok * (int)(i / twok);
-                    int paired = -1 - imp2 + 2 * twok * (int)((i + twok) / twok);
-                    if (a[cross] > a[paired])
-                    {
-                        int t = a[cross];
-                        a[cross] = a[paired];
-                        a[paired] = t;
-                    }
-                });
-                for (int j = k - 1; j >= 0; --j)
-                {
-                    int twoj = Bithacks.Power2(j);
-                    Campy.Parallel.For((int)n2, i =>
-                    {
-                        int imp2 = i % twoj;
-                        int cross = imp2 + 2 * twoj * (int)(i / twoj);
-                        int paired = cross + twoj;
-                        if (a[cross] > a[paired])
-                        {
-                            int t = a[cross];
-                            a[cross] = a[paired];
-                            a[paired] = t;
-                        }
-                    });
-                }
-            }
-            Parallel.Sync();
-        }
-    }
-
     class Program
     {
         static void StartDebugging()
@@ -114,16 +30,70 @@ namespace ConsoleApp4
         static void Main(string[] args)
         {
             StartDebugging();
-            Random rnd = new Random();
-
-            int n = 4;
-            int[][] jagged_array = new int[n][];
-
-            Campy.Parallel.For(n,
-                i =>
+            {
+                int ex0 = 3;
+                int ex1 = 5;
+                // three rows, five columns.
+                int[,] b = new int[ex0, ex1];
+                for (int d = 0; d < ex0 * ex1; ++d)
                 {
-                    jagged_array[i] = new int[i+1];
+                    int i = d / ex1;
+                    int j = d % ex1;
+                    b[i, j] = d;
+                }
+
+                int[,] c = new int[ex0, ex1];
+                Campy.Parallel.For(15, d =>
+                {
+                    int i = d / ex1;
+                    int j = d % ex1;
+                    c[i, j] = d;
                 });
+
+                for (int d = 0; d < ex0 * ex1; ++d)
+                {
+                    int i = d / ex1;
+                    int j = d % ex1;
+                    if (b[i, j] != c[i, j])
+                        throw new Exception();
+                }
+            }
+            {
+                int ex0 = 3;
+                int ex1 = 5;
+                int ex2 = 2;
+                int[,,] b = new int[ex0, ex1, ex2];
+                for (int d = 0; d < ex0 * ex1 * ex2; ++d)
+                {
+                    // long d = i2 + i1 * ex2 + i0 * ex2 * ex1;
+                    int i = d / (ex1 * ex2);
+                    int r = d % (ex1 * ex2);
+                    int j = r / ex2;
+                    int k = r % ex2;
+                    b[i, j, k] = d;
+                }
+
+                int[,,] c = new int[ex0, ex1, ex2];
+                Campy.Parallel.For(ex0 * ex1 * ex2, d =>
+                {
+                    int i = d / (ex1 * ex2);
+                    int r = d % (ex1 * ex2);
+                    int j = r / ex2;
+                    int k = r % ex2;
+                    c[i, j, k] = d;
+                });
+
+                for (int d = 0; d < ex0 * ex1 * ex2; ++d)
+                {
+                    // long d = i2 + i1 * ex2 + i0 * ex2 * ex1;
+                    int i = d / (ex1 * ex2);
+                    int r = d % (ex1 * ex2);
+                    int j = r / ex2;
+                    int k = r % ex2;
+                    if (b[i, j, k] != c[i, j, k])
+                        throw new Exception();
+                }
+            }
         }
     }
 }

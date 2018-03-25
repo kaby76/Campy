@@ -177,25 +177,31 @@ namespace System {
 	    extern private int Internal_GetLength();
 
 	    [MethodImpl(MethodImplOptions.InternalCall)]
-	    extern private object Internal_GetValue(int index);
+	    private extern object Internal_GetValue(int index);
 
 		/// <summary>
         /// Returns true if the value set ok, returns false if the Type was wrong
         /// </summary>
         [MethodImpl(MethodImplOptions.InternalCall)]
-		extern public bool Internal_SetValue(object value, int index);
+		private extern bool Internal_SetValue(object value, int index);
+
+	    [MethodImplAttribute(MethodImplOptions.InternalCall)]
+	    private extern object GetValue(params int[] indices);
+
+	    [MethodImplAttribute(MethodImplOptions.InternalCall)]
+	    private extern void SetValue(object value, params int[] indices);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern void Clear(Array array, int index, int length);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		extern public static void Clear(Array array, int index, int length);
+		private static extern bool Internal_Copy(Array src, int srcIndex, Array dst, int dstIndex, int length);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		extern private static bool Internal_Copy(Array src, int srcIndex, Array dst, int dstIndex, int length);
+		public static extern void Resize<T>(ref T[] array, int newSize);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		extern public static void Resize<T>(ref T[] array, int newSize);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		extern public static void Reverse(Array array, int index, int length);
+		public static extern void Reverse(Array array, int index, int length);
 
 		public static void Reverse(Array array) {
 			Reverse(array, 0, array.Length);
@@ -288,8 +294,9 @@ namespace System {
 				throw new InvalidCastException();
 			}
 		}
+        // System.Void System.Int32[0...,0...]::Set(System.Int32,System.Int32,System.Int32)
 
-		public int Rank {
+        public int Rank {
 			get {
 				return (int)rank;
 			}
