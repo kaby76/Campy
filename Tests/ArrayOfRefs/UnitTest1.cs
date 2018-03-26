@@ -22,6 +22,7 @@ namespace ArrayOfRefs
         public void Test1()
         {
             A[] array = new A[10];
+            for (int i = 0; i < 10; ++i) array[i] = new A();
 
             Campy.Parallel.For(10, i =>
             {
