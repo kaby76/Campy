@@ -105,6 +105,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy  "$(SolutionDir)Campy.Runtime\Corlib\bin\Debug\net20\*.*" &amp;&amp; copy  "$(SolutionDir)x64\Debug\*.*"</PostBuildEvent>
+    <PreBuildEvent>echo "hi" &amp;&amp; copy  "$(SolutionDir)Campy.Runtime\Corlib\bin\Debug\net20\*.*" &amp;&amp; copy  "$(SolutionDir)x64\Debug\*.*"</PreBuildEvent>
+    <PostBuildEvent>echo "hi" &amp;&amp; copy  "$(SolutionDir)Campy.Runtime\Corlib\bin\Debug\net20\*.*" &amp;&amp; copy  "$(SolutionDir)x64\Debug\*.*"</PostBuildEvent>
   </PropertyGroup>
 </Project>

@@ -352,6 +352,15 @@ function_space_specifier void SystemArray_LoadElement(HEAP_PTR pThis_, U32 index
 
 function_space_specifier void SystemArray_LoadElementIndices(HEAP_PTR pThis_, U32 dim, U32 elemSize, U32* indices, U64* value)
 {
+#ifdef  __CUDA_ARCH__
+	int blockId = blockIdx.x + blockIdx.y * gridDim.x
+		+ gridDim.x * gridDim.y * blockIdx.z;
+	int threadId = blockId * (blockDim.x * blockDim.y * blockDim.z)
+		+ (threadIdx.z * (blockDim.x * blockDim.y))
+		+ (threadIdx.y * blockDim.x) + threadIdx.x;
+#else
+	int threadId = 0;
+#endif
 	tSystemArray *pArray = (tSystemArray*)pThis_;
 	tMD_TypeDef *pArrayTypeDef;
 
@@ -377,33 +386,42 @@ function_space_specifier void SystemArray_LoadElementIndices(HEAP_PTR pThis_, U3
 	switch (elemSize) {
 	case 1:
 	{
-		*(((U8*)(beginning_of_elements)) + index) = *(U8*)value;
+		*(U8*)value = *(((U8*)(beginning_of_elements)) + index);
 		break;
 	}
 	case 2:
 	{
-		*(((U16*)(beginning_of_elements)) + index) = *(U16*)value;
+		*(U16*)value = *(((U16*)(beginning_of_elements)) + index);
 		break;
 	}
 	case 4:
 	{
-		*(((U32*)(beginning_of_elements)) + index) = *(U32*)value;
+		*(U32*)value = *(((U32*)(beginning_of_elements)) + index);
 		break;
 	}
 	case 8:
 	{
-		*(((U64*)(beginning_of_elements)) + index) = *(U64*)value;
+		*(U64*)value = *(((U64*)(beginning_of_elements)) + index);
 		break;
 	}
 	default:
 	{
-		memcpy(&beginning_of_elements[index * elemSize], value, elemSize);
+		memcpy(value, &beginning_of_elements[index * elemSize], elemSize);
 		break;
 	}
 	}
 }
 
 function_space_specifier void SystemArray_StoreElementIndices(HEAP_PTR pThis_, U32 dim, U32 elemSize, U32* indices, U64* value) {
+#ifdef  __CUDA_ARCH__
+	int blockId = blockIdx.x + blockIdx.y * gridDim.x
+		+ gridDim.x * gridDim.y * blockIdx.z;
+	int threadId = blockId * (blockDim.x * blockDim.y * blockDim.z)
+		+ (threadIdx.z * (blockDim.x * blockDim.y))
+		+ (threadIdx.y * blockDim.x) + threadIdx.x;
+#else
+	int threadId = 0;
+#endif
 	tSystemArray *pArray = (tSystemArray*)pThis_;
 	tMD_TypeDef *pArrayTypeDef;
 
@@ -439,7 +457,8 @@ function_space_specifier void SystemArray_StoreElementIndices(HEAP_PTR pThis_, U
 		}
 		case 4:
 		{
-			*(((U32*)(beginning_of_elements)) + index) = *(U32*)value;
+			U32 v = *(U32*)value;
+			*(((U32*)(beginning_of_elements)) + index) = v;
 			break;
 		}
 		case 8:

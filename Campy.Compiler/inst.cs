@@ -1292,37 +1292,35 @@ namespace Campy.Compiler
                                                                + 1 // val
                                 ];
 
-                                // val
+                                // Allocate space on stack for one value to be passed to function call.
                                 var val_type = element_type.ToTypeRef();
-                                var val_buffer = LLVM.BuildAlloca(Builder, val_type, "i" + instruction_id++);
+                                var val_buffer = LLVM.BuildAlloca(Builder,
+                                    val_type, "i" + instruction_id++);
                                 LLVM.SetAlignment(val_buffer, 64);
                                 LLVM.BuildStore(Builder, state._stack.Pop().V, val_buffer);
                                 args[4] = LLVM.BuildPtrToInt(Builder, val_buffer, LLVM.Int64Type(),
                                     "i" + instruction_id++);
 
-                                // indices, 32 bits each
-                                var ind_type = LLVM.Int32Type();
-                                var ind_buffer = LLVM.BuildAlloca(Builder, ind_type, "i" + instruction_id++);
+                                // Allocate space on stack for "count" indices, 32 bits each.
+                                var ind_buffer = LLVM.BuildAlloca(Builder,
+                                    LLVM.ArrayType(
+                                        LLVM.Int32Type(),
+                                        (uint)count), "i" + instruction_id++);
                                 LLVM.SetAlignment(ind_buffer, 64);
+                                var base_of_indices = LLVM.BuildPointerCast(Builder, ind_buffer,
+                                    LLVM.PointerType(LLVM.Int32Type(), 0), "i" + instruction_id++);
                                 for (int i = count - 1; i >= 0; i--)
                                 {
-                                    VALUE pp = state._stack.Pop();
+                                    VALUE index = state._stack.Pop();
                                     if (Campy.Utils.Options.IsOn("jit_trace"))
-                                        System.Console.WriteLine(pp);
-                                    ValueRef[] index = new ValueRef[1]
+                                        System.Console.WriteLine(index);
+                                    ValueRef[] id = new ValueRef[1]
                                         {LLVM.ConstInt(LLVM.Int32Type(), (ulong) i, true)};
-                                    var add = LLVM.BuildInBoundsGEP(Builder, ind_buffer, index, "i" + instruction_id++);
-                                    if (Campy.Utils.Options.IsOn("jit_trace"))
-                                        System.Console.WriteLine(new VALUE(add));
-                                    ValueRef v = LLVM.BuildPointerCast(Builder, add,
-                                        LLVM.PointerType(LLVM.TypeOf(pp.V), 0), "i" + instruction_id++);
-                                    if (Campy.Utils.Options.IsOn("jit_trace"))
-                                        System.Console.WriteLine(new VALUE(v));
-                                    ValueRef store = LLVM.BuildStore(Builder, pp.V, v);
+                                    var add = LLVM.BuildInBoundsGEP(Builder, base_of_indices, id, "i" + instruction_id++);
+                                    ValueRef store = LLVM.BuildStore(Builder, index.V, add);
                                     if (Campy.Utils.Options.IsOn("jit_trace"))
                                         System.Console.WriteLine(new VALUE(store));
                                 }
-
                                 args[3] = LLVM.BuildPtrToInt(Builder, ind_buffer, LLVM.Int64Type(),
                                     "i" + instruction_id++);
 
@@ -1357,44 +1355,42 @@ namespace Campy.Compiler
                                                                + 1 // val
                                 ];
 
-                                // val
-                                var val_type = element_type.ToTypeRef();
-                                var val_buffer = LLVM.BuildAlloca(Builder, val_type, "i" + instruction_id++);
-                                LLVM.SetAlignment(val_buffer, 64);
-                                args[4] = LLVM.BuildPtrToInt(Builder, val_buffer, LLVM.Int64Type(),
-                                    "i" + instruction_id++);
+				                // Allocate space on stack for one value to be passed to function call.
+                                                var val_type = element_type.ToTypeRef();
+				                var val_buffer = LLVM.BuildAlloca(Builder,
+					                val_type, "i" + instruction_id++);
+                                                LLVM.SetAlignment(val_buffer, 64);
+                                                args[4] = LLVM.BuildPtrToInt(Builder, val_buffer, LLVM.Int64Type(),
+                                                    "i" + instruction_id++);
 
-                                // indices, 32 bits each
-                                var ind_type = LLVM.Int32Type();
-                                var ind_buffer = LLVM.BuildAlloca(Builder, ind_type, "i" + instruction_id++);
-                                LLVM.SetAlignment(ind_buffer, 64);
-                                for (int i = count - 1; i >= 0; i--)
-                                {
-                                    VALUE pp = state._stack.Pop();
-                                    if (Campy.Utils.Options.IsOn("jit_trace"))
-                                        System.Console.WriteLine(pp);
-                                    ValueRef[] index = new ValueRef[1]
-                                        {LLVM.ConstInt(LLVM.Int32Type(), (ulong) i, true)};
-                                    var add = LLVM.BuildInBoundsGEP(Builder, ind_buffer, index, "i" + instruction_id++);
-                                    if (Campy.Utils.Options.IsOn("jit_trace"))
-                                        System.Console.WriteLine(new VALUE(add));
-                                    ValueRef v = LLVM.BuildPointerCast(Builder, add,
-                                        LLVM.PointerType(LLVM.TypeOf(pp.V), 0), "i" + instruction_id++);
-                                    if (Campy.Utils.Options.IsOn("jit_trace"))
-                                        System.Console.WriteLine(new VALUE(v));
-                                    ValueRef store = LLVM.BuildStore(Builder, pp.V, v);
-                                    if (Campy.Utils.Options.IsOn("jit_trace"))
-                                        System.Console.WriteLine(new VALUE(store));
-                                }
-
-                                args[3] = LLVM.BuildPtrToInt(Builder, ind_buffer, LLVM.Int64Type(),
-                                    "i" + instruction_id++);
+				                // Allocate space on stack for "count" indices, 32 bits each.
+				                var ind_buffer = LLVM.BuildAlloca(Builder,
+					                LLVM.ArrayType(
+					                LLVM.Int32Type(),
+					                (uint)count), "i" + instruction_id++);
+                                                LLVM.SetAlignment(ind_buffer, 64);
+				                var base_of_indices = LLVM.BuildPointerCast(Builder, ind_buffer,
+					                LLVM.PointerType(LLVM.Int32Type(), 0), "i" + instruction_id++);
+                                                for (int i = count - 1; i >= 0; i--)
+                                                {
+					                VALUE index = state._stack.Pop();
+					                if (Campy.Utils.Options.IsOn("jit_trace"))
+						                System.Console.WriteLine(index);
+					                ValueRef[] id = new ValueRef[1]
+						                {LLVM.ConstInt(LLVM.Int32Type(), (ulong) i, true)};
+					                var add = LLVM.BuildInBoundsGEP(Builder, base_of_indices, id, "i" + instruction_id++);
+					                ValueRef store = LLVM.BuildStore(Builder, index.V, add);
+					                if (Campy.Utils.Options.IsOn("jit_trace"))
+						                System.Console.WriteLine(new VALUE(store));
+                                                }
+				                args[3] = LLVM.BuildPtrToInt(Builder, ind_buffer, LLVM.Int64Type(),
+                                                    "i" + instruction_id++);
 
                                 args[2] = LLVM.ConstInt(LLVM.Int32Type(),
-                                    (ulong)BUFFERS.SizeOfType(element_type),
+                                    (ulong) BUFFERS.SizeOfType(element_type),
                                     false);
 
-                                args[1] = LLVM.ConstInt(LLVM.Int32Type(), (ulong)count, false);
+                                args[1] = LLVM.ConstInt(LLVM.Int32Type(), (ulong) count, false);
 
                                 VALUE p = state._stack.Pop();
                                 args[0] = LLVM.BuildPtrToInt(Builder, p.V, LLVM.Int64Type(), "i" + instruction_id++);
@@ -1404,7 +1400,9 @@ namespace Campy.Compiler
                                 var list2 = RUNTIME.PtxFunctions.ToList();
                                 var f = list2.Where(t => t._mangled_name == nme).First();
                                 ValueRef fv = f._valueref;
-                                var call = LLVM.BuildCall(Builder, fv, args, "i" + instruction_id++);
+                                var call = LLVM.BuildCall(Builder, fv, args, "");
+                                if (Campy.Utils.Options.IsOn("jit_trace"))
+                                    System.Console.WriteLine(call.ToString());
                                 var load = LLVM.BuildLoad(Builder, val_buffer, "i" + instruction_id++);
                                 var result = new VALUE(load);
                                 state._stack.Push(result);

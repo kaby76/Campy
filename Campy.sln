@@ -4,6 +4,10 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 15.0.27004.2010
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleApp4", "ConsoleApp4\ConsoleApp4.csproj", "{3854D42C-FBB7-4AA0-840D-89E2E6997DB5}"
+	ProjectSection(ProjectDependencies) = postProject
+		{D6F88E29-3257-4BCA-AEB2-B89E21CE331D} = {D6F88E29-3257-4BCA-AEB2-B89E21CE331D}
+		{1C06EB45-3235-4564-8A45-F553C34B19D6} = {1C06EB45-3235-4564-8A45-F553C34B19D6}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Campy.Utils", "Campy.Utils\Campy.Utils.csproj", "{ED3C7742-647C-44F9-B64B-29866044A54A}"
 EndProject
@@ -66,6 +70,10 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitonicSort", "Tests\BitonicSort\BitonicSort.csproj", "{0024A512-A88A-415D-99C2-FE7BA9EED092}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleApp1", "ConsoleApp1\ConsoleApp1.csproj", "{D08823DA-80D3-47E5-A91A-DF6B97F6732D}"
+	ProjectSection(ProjectDependencies) = postProject
+		{D6F88E29-3257-4BCA-AEB2-B89E21CE331D} = {D6F88E29-3257-4BCA-AEB2-B89E21CE331D}
+		{1C06EB45-3235-4564-8A45-F553C34B19D6} = {1C06EB45-3235-4564-8A45-F553C34B19D6}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CombSort", "Tests\CombSort\CombSort.csproj", "{2EE199B8-0956-483D-8E6B-F01FC2AA3098}"
 EndProject
@@ -73,7 +81,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MetaLayoutTest", "Tests\Met
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EvenOddSort", "Tests\EvenOddSort\EvenOddSort.csproj", "{3F9F084B-A671-4637-991D-0B963AC48B0B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArrayOfRefs", "Tests\ArrayOfRefs\ArrayOfRefs.csproj", "{8C811F6E-C9AA-4797-8B23-188011C52FB1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArrayOfRefs", "Tests\ArrayOfRefs\ArrayOfRefs.csproj", "{8C811F6E-C9AA-4797-8B23-188011C52FB1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
