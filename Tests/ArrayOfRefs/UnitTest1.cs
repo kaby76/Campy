@@ -31,10 +31,8 @@ namespace ArrayOfRefs
 
             for (int i = 0; i < 10; i++)
             {
-                Console.WriteLine(array[i].X);
                 if (array[i].X != i) throw new Exception();
             }
         }
-
     }
 }
