@@ -1761,40 +1761,45 @@ namespace Campy.Compiler
             if (t1.isIntegerTy() && t2.isIntegerTy())
             {
                 IntPredicate op;
-                if (IsSigned) op = _int_pred[(int)Predicate];
-                else op = _uint_pred[(int)Predicate];
+                if (IsSigned) op = _int_pred[(int) Predicate];
+                else op = _uint_pred[(int) Predicate];
 
                 cmp = LLVM.BuildICmp(Builder, op, v1.V, v2.V, "i" + instruction_id++);
-                if (Next == null) return null;
-                var t = Next.GetType();
-                if (t == typeof(i_brfalse))
+                if (Next != null)
                 {
-                    // Push, Pop, branch -> combine
+                    //var t = Next.GetType();
+                    //if (t == typeof(i_brfalse))
+                    //{
+                    //    // Push, Pop, branch -> combine
+                    //    return Next;
+                    //}
+                    //else if (t == typeof(i_brfalse_s))
+                    //{
+                    //    // Push, Pop, branch -> combine
+                    //    return Next;
+                    //}
+                    //else if (t == typeof(i_brtrue))
+                    //{
+                    //    // Push, Pop, branch -> combine
+                    //    return Next;
+                    //}
+                    //else if (t == typeof(i_brtrue_s))
+                    //{
+                    //    // Push, Pop, branch -> combine
+                    //    return Next;
+                    //}
                 }
-                else if (t == typeof(i_brfalse_s))
-                {
-                    // Push, Pop, branch -> combine
-                }
-                else if (t == typeof(i_brtrue))
-                {
-                    // Push, Pop, branch -> combine
-                }
-                else if (t == typeof(i_brtrue_s))
-                {
-                    // Push, Pop, branch -> combine
-                }
-                else
-                {
-                    // Set up for push of 0/1.
-                    var return_type = new TYPE(typeof(bool));
-                    var ret_llvm = LLVM.BuildZExt(Builder, cmp, return_type.IntermediateType, "");
-                    var ret = new VALUE(ret_llvm, return_type);
-                    if (Campy.Utils.Options.IsOn("jit_trace"))
-                        System.Console.WriteLine(ret);
 
-                    state._stack.Push(ret);
-                }
+                // Set up for push of 0/1.
+                var return_type = new TYPE(typeof(bool));
+                var ret_llvm = LLVM.BuildZExt(Builder, cmp, return_type.IntermediateType, "");
+                var ret = new VALUE(ret_llvm, return_type);
+                if (Campy.Utils.Options.IsOn("jit_trace"))
+                    System.Console.WriteLine(ret);
+
+                state._stack.Push(ret);
             }
+
             return Next;
         }
     }

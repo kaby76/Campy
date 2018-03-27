@@ -1478,8 +1478,8 @@ namespace Campy.Compiler
 
                     if (Campy.Utils.Options.IsOn("state_computation_trace"))
                     {
-                        System.Console.WriteLine("state in output");
-                        state_in.OutputTrace();
+                        System.Console.WriteLine("state in");
+                        state_in.OutputTrace(new String(' ', 4));
                     }
 
                     bb.StateIn = state_in;
@@ -1488,7 +1488,7 @@ namespace Campy.Compiler
                     if (Campy.Utils.Options.IsOn("state_computation_trace"))
                     {
                         bb.OutputEntireNode();
-                        state_in.OutputTrace();
+                        state_in.OutputTrace(new String(' ', 4));
                     }
 
                     INST last_inst = null;
@@ -1500,7 +1500,7 @@ namespace Campy.Compiler
                         last_inst = inst;
                         inst = inst.Convert(this, bb.StateOut);
                         if (Campy.Utils.Options.IsOn("state_computation_trace"))
-                            bb.StateOut.OutputTrace();
+                            bb.StateOut.OutputTrace(new String(' ', 4));
                     }
                     if (last_inst != null
                         && (
@@ -1519,6 +1519,8 @@ namespace Campy.Compiler
                 // Finally, update phi functions with "incoming" information from predecessors.
                 foreach (var ob in order)
                 {
+                    if (Campy.Utils.Options.IsOn("state_computation_trace"))
+                        System.Console.WriteLine("Working on phis for node " + ob.Name);
                     CFG.Vertex node = ob;
                     CFG.Vertex llvm_node = node;
                     int size = llvm_node.StateIn._stack.Count;
@@ -1526,6 +1528,9 @@ namespace Campy.Compiler
                     {
                         var count = llvm_node._graph.Predecessors(llvm_node).Count();
                         if (count < 2) continue;
+                        if (Campy.Utils.Options.IsOn("state_computation_trace"))
+                            System.Console.WriteLine("phi nodes need for "
+                                + ob.Name + " for stack depth " + i);
                         ValueRef res;
                         res = llvm_node.StateIn._stack[i].V;
                         if (!llvm_node.StateIn._phi.Contains(res)) continue;
@@ -1533,6 +1538,9 @@ namespace Campy.Compiler
                         for (int c = 0; c < count; ++c)
                         {
                             var p = llvm_node._graph.PredecessorEdges(llvm_node).ToList()[c].From;
+                            if (Campy.Utils.Options.IsOn("state_computation_trace"))
+                                System.Console.WriteLine("Adding in phi for pred state "
+                                    + p.Name);
                             var plm = p;
                             var vr = plm.StateOut._stack[i];
                             phi_vals[c] = vr.V;
@@ -1564,8 +1572,8 @@ namespace Campy.Compiler
                         CFG.Vertex llvm_node = node;
 
                         node.OutputEntireNode();
-                        llvm_node.StateIn.OutputTrace();
-                        llvm_node.StateOut.OutputTrace();
+                        llvm_node.StateIn.OutputTrace(new String(' ', 4));
+                        llvm_node.StateOut.OutputTrace(new String(' ', 4));
                     }
                 }
             }

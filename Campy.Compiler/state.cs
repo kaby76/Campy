@@ -277,55 +277,45 @@ namespace Campy.Compiler
             _locals = _stack.Section(other._locals.Base, other._locals.Len);
         }
 
-        public void OutputTrace()
+        public void OutputTrace(string indent)
         {
             int args = _arguments.Len;
             int locs = _locals.Len;
-            System.Console.WriteLine("This size = " + _this.Len);
-            System.Console.WriteLine("Args size = " + _arguments.Len);
-            System.Console.WriteLine("Locals size = " + _locals.Len);
-            System.Console.WriteLine("Stack size = " + _stack.Count);
+            System.Console.WriteLine(indent + "This size = " + _this.Len);
+            System.Console.WriteLine(indent + "Args size = " + _arguments.Len);
+            System.Console.WriteLine(indent + "Locals size = " + _locals.Len);
+            System.Console.WriteLine(indent + "Stack size = " + _stack.Count);
             if (_this.Len > 0)
             {
-                System.Console.WriteLine("[this (base " + _this.Base + ")");
-                System.Console.WriteLine(_this[0]);
-                System.Console.WriteLine();
-                System.Console.WriteLine("]");
-                System.Console.WriteLine();
+                System.Console.WriteLine(indent + "[this (base " + _this.Base + ")");
+                System.Console.WriteLine(indent + _this[0]);
+                System.Console.WriteLine(indent + "]");
             }
-            System.Console.WriteLine("[args (base " + _arguments.Base + ")");
+            System.Console.WriteLine(indent + "[args (base " + _arguments.Base + ")");
             for (int i = 0; i < args; ++i)
             {
-                System.Console.WriteLine(" " + _arguments[i]);
-                System.Console.WriteLine();
+                System.Console.WriteLine(indent + _arguments[i]);
             }
-            System.Console.WriteLine("]");
-            System.Console.WriteLine();
-            System.Console.WriteLine("[locs (base " + _locals.Base + ")");
+            System.Console.WriteLine(indent + "]");
+            System.Console.WriteLine(indent + "[locs (base " + _locals.Base + ")");
             for (int i = 0; i < locs; ++i)
             {
-                System.Console.WriteLine(" " + _locals[i]);
-                System.Console.WriteLine();
+                System.Console.WriteLine(indent + _locals[i]);
             }
-            System.Console.WriteLine("]");
-            System.Console.WriteLine();
-            System.Console.WriteLine("[rest of stack (base " + (args + locs) + ")");
+            System.Console.WriteLine(indent + "]");
+            System.Console.WriteLine(indent + "[rest of stack (base " + (args + locs) + ")");
             // NB. Args includes "this" pointer.
             for (int i = args + locs; i < _stack.Size(); ++i)
             {
-                System.Console.WriteLine(" " + _stack[i]);
-                System.Console.WriteLine();
+                System.Console.WriteLine(indent + _stack[i]);
             }
-            System.Console.WriteLine("]");
-            System.Console.WriteLine();
-            System.Console.WriteLine("[complete stack (base " + 0 + ")");
+            System.Console.WriteLine(indent + "]");
+            System.Console.WriteLine(indent + "[complete stack (base " + 0 + ")");
             for (int i = 0; i < _stack.Size(); ++i)
             {
-                System.Console.WriteLine(" " + _stack[i]);
-                System.Console.WriteLine();
+                System.Console.WriteLine(indent + _stack[i]);
             }
-            System.Console.WriteLine("]");
-            System.Console.WriteLine();
+            System.Console.WriteLine(indent + "]");
         }
     }
 }
