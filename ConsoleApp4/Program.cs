@@ -51,7 +51,7 @@ namespace ConsoleApp4
                     if (shift == 0 ? !move : move) // shift the 0's to old's head
                         e[i - j] = e[i];
                     else // move the 1's to tmp
-                        tmp[j++] = e[i]; // THIS IS UNSAFE CODE DUE TO J BEING INCREMENTED UNCONTROLLED AMONG VARIOUS THREADS.
+                        tmp[j++] = e[i]; // THIS IS UNSAFE CODE DUE TO J BEING INCREMENTED AMONG VARIOUS THREADS.
                 });
                 Array.Copy(tmp, 0, e, e.Length - j, j);
             }

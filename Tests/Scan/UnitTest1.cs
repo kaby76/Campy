@@ -1,10 +1,8 @@
-﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Campy;
-using System.Collections.Generic;
+using System;
 using System.Linq;
+using Xunit;
 
-namespace Reduction
+namespace Scan
 {
     public class Bithacks
     {
@@ -25,7 +23,7 @@ namespace Reduction
             prep_reverse_bits();
         }
 
-        public static int FloorLog2(uint v)
+        public static int FloorLog2(int v)
         {
             if (!preped)
             {
@@ -34,22 +32,23 @@ namespace Reduction
             }
             int r; // r will be lg(v)
             uint tt; // temporaries
+            uint uv = (uint) v;
 
-            if ((tt = v >> 24) != 0)
+            if ((tt = uv >> 24) != 0)
             {
                 r = (24 + LogTable256[tt]);
             }
-            else if ((tt = v >> 16) != 0)
+            else if ((tt = uv >> 16) != 0)
             {
                 r = (16 + LogTable256[tt]);
             }
-            else if ((tt = v >> 8) != 0)
+            else if ((tt = uv >> 8) != 0)
             {
                 r = (8 + LogTable256[tt]);
             }
             else
             {
-                r = LogTable256[v];
+                r = LogTable256[uv];
             }
             return r;
         }
@@ -99,7 +98,7 @@ namespace Reduction
             return r;
         }
 
-        public static int CeilingLog2(uint v)
+        public static int CeilingLog2(int v)
         {
             int r = Bithacks.FloorLog2(v);
             if (r < 0)
@@ -227,136 +226,72 @@ namespace Reduction
             return (Bithacks.Ones(x) - 1);
         }
 
-        public static int Log2(uint x)
+        public static int Log2(int x)
         {
             return FloorLog2(x);
         }
-
-        public static int Log2(int x)
-        {
-            return FloorLog2((uint)x);
-        }
-
-
     }
 
-    [TestClass]
-    public class Reduction
+    public class Prescan
     {
-
-        static int SequentialSum(int[] e)
+        public static void Parallel(int[] e)
         {
-            var sum = 0;
-            var n = e.Length;
-            for (int i = 0; i < n; ++i) sum = sum + e[i];
-            return sum;
-        }
-   
-        static int SequentialMax(int[] e)
-        {
-            var max = 0;
-            var n = e.Length;
-            for (int i = 0; i < n; ++i)
-                if (max < e[i]) max = e[i];
-            return max;
-        }
-
-        static int Sum(int[] data)
-        {
-            int n = data.Length;
-            int result = 0;
+            Campy.Parallel.Sticky(e);
+            int N = e.Length;
+            int log2n = Bithacks.FloorLog2(N);
+            for (int level = 1; level <= log2n; level++)
             {
-                for (int level = 1; level <= Bithacks.Log2(n); level++)
+                int step = Bithacks.Power2(level);
+                Campy.Parallel.For(N / step, idx =>
                 {
-                    int step = Bithacks.Power2(level);
-                    Campy.Parallel.For(n / step, idx =>
-                    {
-                        var i = step * idx;
-                        data[i] = data[i] + data[i + step / 2];
-                    });
-                }
-
-                result = data[0];
+                    var i = step * (idx + 1) - 1;
+                    e[i] = e[i - step / 2] + e[i];
+                });
             }
-            return result;
+            Campy.Sequential.For(1, idx => { e[N - 1] = 0; });
+            for (int level = log2n; level > 0; level--)
+            {
+                int step = Bithacks.Power2(level);
+                Campy.Parallel.For(N / step, idx =>
+                {
+                    var i = step * (idx + 1) - 1;
+                    var l = e[i - step / 2];
+                    var r = e[i];
+                    e[i] = r + l;
+                    e[i - step / 2] = r;
+                });
+            }
+            Campy.Parallel.Sync();
         }
 
-        static int Max(int[] data)
+        public static void Sequential(int[] e)
         {
-            int n = data.Length;
-            int result = 0;
+            int[] o = new int[e.Length];
+            int N = e.Length;
+            int sum = 0;
+            for (int i = 0; i < N; ++i)
             {
-                for (int level = 1; level <= Bithacks.Log2(n); level++)
-                {
-                    int step = Bithacks.Power2(level);
-                    Campy.Parallel.For(n / step, idx =>
-                    {
-                        var i = step * idx;
-                        data[i] = data[i] < data[i + step / 2] ? data[i+step/2] : data[i];
-                    });
-                }
-
-                result = data[0];
+                int t = e[i];
+                e[i] = sum;
+                sum = sum + t;
             }
-            return result;
         }
+    }
 
-        static void Sum2()
-        {
-            int n = Bithacks.Power2(10);
-            float result_gpu = 0;
-            float result_cpu = 0;
-            {
-                List<float> data = Enumerable.Range(0, n).Select(i => ((float)i) / 10).ToList();
-                for (int level = 1; level <= Bithacks.Log2(n); level++)
-                {
-                    int step = Bithacks.Power2(level);
-                    for (int idx = 0; idx < n / step; idx++)
-                    {
-                        var i = step * idx;
-                        data[i] = data[i] + data[i + step / 2];
-                    }
-                }
-                result_cpu = data[0];
-            }
-            {
-                List<float> data = Enumerable.Range(0, n).Select(i => ((float)i) / 10).ToList();
-                for (int level = 1; level <= Bithacks.Log2(n); level++)
-                {
-                    int step = Bithacks.Power2(level);
-                    Campy.Parallel.For(n / step, idx =>
-                    {
-                        var i = step * idx;
-                        data[i] = data[i] + data[i + step / 2];
-                    });
-                }
-                result_gpu = data[0];
-            }
-            if (result_gpu != result_cpu) throw new Exception();
-        }
-
-        [TestMethod]
-        public void Tests()
+    public class UnitTest1
+    {
+        [Fact]
+        public void Test1()
         {
             Random rnd = new Random();
             int N = 8;
-            {
-                int[] a = Enumerable.Range(0, N).ToArray().OrderBy(x => rnd.Next()).ToArray();
-                int result = Sum(a); // Note "a" modified.
-                // https://trans4mind.com/personal_development/mathematics/series/sumNaturalNumbers.htm
-                var nm1 = N - 1;
-                var v = nm1 * nm1 / 2 + nm1 / 2 + 1;
-                if (result != v)
+            int[] e = Enumerable.Range(0, N).ToArray().OrderBy(x => rnd.Next()).ToArray();
+            int[] o = e.ToArray();
+            Prescan.Parallel(e);
+            Prescan.Sequential(o);
+            for (int i = 0; i < N; ++i)
+                if (e[i] != o[i])
                     throw new Exception();
-            }
-            {
-                int[] a = Enumerable.Range(0, N).ToArray().OrderBy(x => rnd.Next()).ToArray();
-                int result = Max(a); // Note "a" modified.
-                var nm1 = N - 1;
-                if (result != nm1)
-                    throw new Exception();
-            }
-
         }
     }
 }
