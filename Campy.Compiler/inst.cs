@@ -36,6 +36,8 @@ namespace Campy.Compiler
         // Required instruction sequencing so we can translate groups of instructions.
         public virtual INST Next { get; set; }
 
+        public SequencePoint SeqPoint { get; set; }
+
         public virtual void ComputeStackLevel(JITER converter, ref int level_after)
         {
             throw new Exception("Must have an implementation for ComputeStackLevel! The instruction is: "

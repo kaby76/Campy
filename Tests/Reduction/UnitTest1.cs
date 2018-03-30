@@ -292,13 +292,17 @@ namespace Reduction
                     Campy.Parallel.For(n / step, idx =>
                     {
                         var i = step * idx;
-                        data[i] = data[i] < data[i + step / 2] ? data[i+step/2] : data[i];
+                        data[i] = data[i] < data[i + step / 2] ? data[i + step / 2] : data[i];
                     });
                 }
 
                 result = data[0];
             }
             return result;
+        }
+
+        static void Count(int[] e)
+        {
         }
 
         static void Sum2()

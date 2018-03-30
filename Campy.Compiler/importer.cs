@@ -60,7 +60,9 @@ namespace Campy.Compiler
             string p = Path.GetDirectoryName(kernel_assembly_file_name);
             var resolver = new DefaultAssemblyResolver();
             resolver.AddSearchDirectory(p);
-            Mono.Cecil.ModuleDefinition md = Mono.Cecil.ModuleDefinition.ReadModule(kernel_assembly_file_name, new ReaderParameters { AssemblyResolver = resolver });
+            Mono.Cecil.ModuleDefinition md = Mono.Cecil.ModuleDefinition.ReadModule(
+                kernel_assembly_file_name,
+                new ReaderParameters { AssemblyResolver = resolver, ReadSymbols = true});
             MethodReference method_reference = md.Import(method_info);
             Add(method_reference);
         }
@@ -129,7 +131,9 @@ namespace Campy.Compiler
             resolver.AddSearchDirectory(fucking_directory_path);
             if (File.Exists(full_frigging_path_of_assembly_file))
                 assembly_file_name = full_frigging_path_of_assembly_file;
-            ModuleDefinition module = ModuleDefinition.ReadModule(assembly_file_name, new ReaderParameters { AssemblyResolver = resolver });
+            ModuleDefinition module = ModuleDefinition.ReadModule(
+                assembly_file_name,
+                new ReaderParameters { AssemblyResolver = resolver, ReadSymbols = true});
             _loaded_modules.Add(module);
             return module;
         }
@@ -219,6 +223,7 @@ namespace Campy.Compiler
         private void ExtractBasicBlocksOfMethod(Tuple<MethodReference, List<TypeReference>> definition)
         {
             MethodReference original_method_reference = definition.Item1;
+
             List<TypeReference> item2 = definition.Item2;
             String full_name = original_method_reference.Module.FullyQualifiedName;
 
@@ -245,14 +250,19 @@ namespace Campy.Compiler
             v.Entry = v;
             _cfg.Entries.Add(v);
 
+            // Get debugging information on line/column/offset in method.
+            var sr = original_method_reference.Module.SymbolReader;
+            var mdi = sr?.Read(method_definition);
+            var sqps = mdi?.SequencePoints;
+
             // Add instructions to the basic block.
             for (int j = 0; j < instruction_count; ++j)
             {
                 Mono.Cecil.Cil.Instruction mi = method_definition.Body.Instructions[j];
                 INST i = INST.Wrap(mi);
                 i.Block = v;
-                Mono.Cecil.Cil.OpCode op = i.OpCode;
-                Mono.Cecil.Cil.FlowControl fc = op.FlowControl;
+                if (sqps != null)
+                    i.SeqPoint = sqps.Where(s => { return s.Offset == mi.Offset; }).FirstOrDefault();
                 v.Instructions.Add(i);
             }
 
