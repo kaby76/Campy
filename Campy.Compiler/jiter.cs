@@ -1498,6 +1498,7 @@ namespace Campy.Compiler
                         if (Campy.Utils.Options.IsOn("jit_trace"))
                             System.Console.WriteLine(inst);
                         last_inst = inst;
+                        inst.DebuggerInfo(this);
                         inst = inst.Convert(this, bb.StateOut);
                         if (Campy.Utils.Options.IsOn("state_computation_trace"))
                             bb.StateOut.OutputTrace(new String(' ', 4));
@@ -1588,6 +1589,8 @@ namespace Campy.Compiler
 
                 if (Campy.Utils.Options.IsOn("module_trace"))
                     LLVM.DumpModule(module);
+
+                LLVM.DIBuilderFinalize(INST.dib);
 
                 MyString error = new MyString();
                 LLVM.VerifyModule(module, VerifierFailureAction.PrintMessageAction, error);

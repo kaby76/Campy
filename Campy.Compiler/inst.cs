@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Campy.Graphs;
@@ -42,6 +43,89 @@ namespace Campy.Compiler
         {
             throw new Exception("Must have an implementation for ComputeStackLevel! The instruction is: "
                 + this.ToString());
+        }
+
+        private static Dictionary<string, MetadataRef> debug_files = new Dictionary<string, MetadataRef>();
+        private static Dictionary<string, MetadataRef> debug_compile_units = new Dictionary<string, MetadataRef>();
+        private static Dictionary<string, MetadataRef> debug_methods = new Dictionary<string, MetadataRef>();
+        public static DIBuilderRef dib;
+        private static bool done_this;
+
+        public virtual void DebuggerInfo(JITER converter)
+        {
+            if (this.SeqPoint == null)
+                return;
+
+            if (!done_this)
+            {
+                done_this = true;
+                dib = LLVM.CreateDIBuilder(JITER.global_llvm_module);
+            }
+            var doc = SeqPoint.Document;
+            string assembly_name = this.Block._original_method_reference.Module.FileName;
+            string loc = Path.GetDirectoryName(Path.GetFullPath(doc.Url));
+            string file_name = Path.GetFileName(doc.Url);
+            MetadataRef file;
+            if (!debug_files.ContainsKey(file_name))
+            {
+                file = LLVM.DIBuilderCreateFile(dib,
+                    file_name, (uint)file_name.Length, loc, (uint)loc.Length);
+                debug_files[file_name] = file;
+            }
+            else
+            {
+                file = debug_files[file_name];
+            }
+
+            string producer = "Campy Compiler";
+            MetadataRef compile_unit;
+            if (!debug_compile_units.ContainsKey(file_name))
+            {
+                compile_unit = LLVM.DIBuilderCreateCompileUnit(
+                    dib,
+                    DWARFSourceLanguage.DWARFSourceLanguageJava,
+                    file, producer, (uint)producer.Length,
+                    false, "", 0, 0, "", 0, DWARFEmissionKind.DWARFEmissionFull,
+                    0, false, false);
+                debug_compile_units[file_name] = compile_unit;
+            }
+            else
+            {
+                compile_unit = debug_compile_units[file_name];
+            }
+
+            ContextRef context_ref = LLVM.GetModuleContext(JITER.global_llvm_module);
+            var normalized_method_name = JITER.RenameToLegalLLVMName(
+                JITER.MethodName(this.Block._original_method_reference));
+            MetadataRef sub;
+            if (!debug_methods.ContainsKey(normalized_method_name))
+            {
+                var sub_type = LLVM.DIBuilderCreateSubroutineType(
+                    dib,
+                    file, new MetadataRef[0], 0, DIFlags.DIFlagNoReturn);
+                sub = LLVM.DIBuilderCreateFunction(dib, file,
+                    normalized_method_name,
+                    normalized_method_name,
+                    file,
+                    (uint) this.SeqPoint.StartLine,
+                    sub_type, 1, 1, (uint) this.SeqPoint.StartLine, 0, 0);
+
+                debug_methods[normalized_method_name] = sub;
+                LLVM.SetSubprogram(this.Block.MethodValueRef, sub);
+            }
+            else {
+                sub = debug_methods[normalized_method_name];
+            }
+
+            MetadataRef debug_location = LLVM.DIBuilderCreateDebugLocation(
+                LLVM.GetModuleContext(JITER.global_llvm_module),
+                (uint)this.SeqPoint.StartLine,
+                (uint)this.SeqPoint.StartColumn,
+                sub,
+                default(MetadataRef)
+                );
+            var dv = LLVM.MetadataAsValue(LLVM.GetModuleContext(JITER.global_llvm_module), debug_location);
+            LLVM.SetCurrentDebugLocation(Builder, dv);
         }
 
         public virtual INST Convert(JITER converter, STATE state)
