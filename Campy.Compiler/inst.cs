@@ -1,16 +1,14 @@
-﻿using System;
+﻿using Campy.Utils;
+using Mono.Cecil.Cil;
+using Mono.Cecil;
+using Mono.Collections.Generic;
+using Swigged.LLVM;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Campy.Graphs;
-using Campy.Utils;
-using Mono.Cecil;
-using Mono.Cecil.Cil;
-using Swigged.LLVM;
-using System.Runtime.InteropServices;
-using Mono.Collections.Generic;
+using System;
 
 namespace Campy.Compiler
 {
@@ -48,12 +46,15 @@ namespace Campy.Compiler
         private static Dictionary<string, MetadataRef> debug_files = new Dictionary<string, MetadataRef>();
         private static Dictionary<string, MetadataRef> debug_compile_units = new Dictionary<string, MetadataRef>();
         private static Dictionary<string, MetadataRef> debug_methods = new Dictionary<string, MetadataRef>();
+        private static Dictionary<string, MetadataRef> debug_blocks = new Dictionary<string, MetadataRef>();
         public static DIBuilderRef dib;
         private static bool done_this;
 
         public virtual void DebuggerInfo(JITER converter)
         {
             if (this.SeqPoint == null)
+                return;
+            if (this.SeqPoint.IsHidden)
                 return;
 
             if (!done_this)
@@ -117,15 +118,33 @@ namespace Campy.Compiler
                 sub = debug_methods[normalized_method_name];
             }
 
+            MetadataRef lexical_scope;
+            if (!debug_blocks.ContainsKey(this.Block.Name))
+            {
+                lexical_scope = LLVM.DIBuilderCreateLexicalBlock(
+                    dib, sub, file,
+                    (uint)this.SeqPoint.StartLine,
+                    (uint)this.SeqPoint.StartColumn);
+                debug_blocks[this.Block.Name] = lexical_scope;
+            }
+            else
+            {
+                lexical_scope = debug_blocks[this.Block.Name];
+            }
+
             MetadataRef debug_location = LLVM.DIBuilderCreateDebugLocation(
                 LLVM.GetModuleContext(JITER.global_llvm_module),
                 (uint)this.SeqPoint.StartLine,
                 (uint)this.SeqPoint.StartColumn,
-                sub,
+                lexical_scope,
                 default(MetadataRef)
                 );
             var dv = LLVM.MetadataAsValue(LLVM.GetModuleContext(JITER.global_llvm_module), debug_location);
             LLVM.SetCurrentDebugLocation(Builder, dv);
+
+            if (Campy.Utils.Options.IsOn("jit_trace"))
+                System.Console.WriteLine("Created debug loc " + dv);
+
         }
 
         public virtual INST Convert(JITER converter, STATE state)
@@ -148,7 +167,6 @@ namespace Campy.Compiler
         }
         public UInt32 TargetPointerSizeInBits = 64;
 
-
         public INST(Mono.Cecil.Cil.Instruction i)
         {
             Instruction = i;
@@ -157,455 +175,678 @@ namespace Campy.Compiler
                 INST.CallInstructions.Add(this);
             }
         }
-        static public INST Wrap(Mono.Cecil.Cil.Instruction i)
+
+        static public INST Wrap(Mono.Cecil.Cil.Instruction i, CFG.Vertex block, SequencePoint sp)
         {
             // Wrap instruction with semantics, def/use/kill properties.
             Mono.Cecil.Cil.OpCode op = i.OpCode;
+            INST wrapped_inst;
             switch (op.Code)
             {
                 case Mono.Cecil.Cil.Code.Add:
-                    return new i_add(i);
+                    wrapped_inst = new i_add(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Add_Ovf:
-                    return new i_add_ovf(i);
+                    wrapped_inst = new i_add_ovf(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Add_Ovf_Un:
-                    return new i_add_ovf_un(i);
+                    wrapped_inst = new i_add_ovf_un(i);
+                    break;
                 case Mono.Cecil.Cil.Code.And:
-                    return new i_and(i);
+                    wrapped_inst = new i_and(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Arglist:
-                    return new i_arglist(i);
+                    wrapped_inst = new i_arglist(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Beq:
-                    return new i_beq(i);
+                    wrapped_inst = new i_beq(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Beq_S:
-                    return new i_beq(i);
+                    wrapped_inst = new i_beq(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Bge:
-                    return new i_bge(i);
+                    wrapped_inst = new i_bge(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Bge_S:
-                    return new i_bge_s(i);
+                    wrapped_inst = new i_bge_s(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Bge_Un:
-                    return new i_bge_un(i);
+                    wrapped_inst = new i_bge_un(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Bge_Un_S:
-                    return new i_bge_un_s(i);
+                    wrapped_inst = new i_bge_un_s(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Bgt:
-                    return new i_bgt(i);
+                    wrapped_inst = new i_bgt(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Bgt_S:
-                    return new i_bgt_s(i);
+                    wrapped_inst = new i_bgt_s(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Bgt_Un:
-                    return new i_bgt_un(i);
+                    wrapped_inst = new i_bgt_un(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Bgt_Un_S:
-                    return new i_bgt_un_s(i);
+                    wrapped_inst = new i_bgt_un_s(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ble:
-                    return new i_ble(i);
+                    wrapped_inst = new i_ble(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ble_S:
-                    return new i_ble_s(i);
+                    wrapped_inst = new i_ble_s(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ble_Un:
-                    return new i_ble_un(i);
+                    wrapped_inst = new i_ble_un(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ble_Un_S:
-                    return new i_ble_un_s(i);
+                    wrapped_inst = new i_ble_un_s(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Blt:
-                    return new i_blt(i);
+                    wrapped_inst = new i_blt(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Blt_S:
-                    return new i_blt_s(i);
+                    wrapped_inst = new i_blt_s(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Blt_Un:
-                    return new i_blt_un(i);
+                    wrapped_inst = new i_blt_un(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Blt_Un_S:
-                    return new i_blt_un_s(i);
+                    wrapped_inst = new i_blt_un_s(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Bne_Un:
-                    return new i_bne_un(i);
+                    wrapped_inst = new i_bne_un(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Bne_Un_S:
-                    return new i_bne_un_s(i);
+                    wrapped_inst = new i_bne_un_s(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Box:
-                    return new i_box(i);
+                    wrapped_inst = new i_box(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Br:
-                    return new i_br(i);
+                    wrapped_inst = new i_br(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Br_S:
-                    return new i_br_s(i);
+                    wrapped_inst = new i_br_s(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Break:
-                    return new i_break(i);
+                    wrapped_inst = new i_break(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Brfalse:
-                    return new i_brfalse(i);
+                    wrapped_inst = new i_brfalse(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Brfalse_S:
-                    return new i_brfalse_s(i);
+                    wrapped_inst = new i_brfalse_s(i);
+                    break;
                 // Missing brnull
                 // Missing brzero
                 case Mono.Cecil.Cil.Code.Brtrue:
-                    return new i_brtrue(i);
+                    wrapped_inst = new i_brtrue(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Brtrue_S:
-                    return new i_brtrue_s(i);
+                    wrapped_inst = new i_brtrue_s(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Call:
-                    return new i_call(i);
+                    wrapped_inst = new i_call(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Calli:
-                    return new i_calli(i);
+                    wrapped_inst = new i_calli(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Callvirt:
-                    return new i_callvirt(i);
+                    wrapped_inst = new i_callvirt(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Castclass:
-                    return new i_castclass(i);
+                    wrapped_inst = new i_castclass(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ceq:
-                    return new i_ceq(i);
+                    wrapped_inst = new i_ceq(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Cgt:
-                    return new i_cgt(i);
+                    wrapped_inst = new i_cgt(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Cgt_Un:
-                    return new i_cgt_un(i);
+                    wrapped_inst = new i_cgt_un(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ckfinite:
-                    return new i_ckfinite(i);
+                    wrapped_inst = new i_ckfinite(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Clt:
-                    return new i_clt(i);
+                    wrapped_inst = new i_clt(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Clt_Un:
-                    return new i_clt_un(i);
+                    wrapped_inst = new i_clt_un(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Constrained:
-                    return new i_constrained(i);
+                    wrapped_inst = new i_constrained(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Conv_I1:
-                    return new i_conv_i1(i);
+                    wrapped_inst = new i_conv_i1(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Conv_I2:
-                    return new i_conv_i2(i);
+                    wrapped_inst = new i_conv_i2(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Conv_I4:
-                    return new i_conv_i4(i);
+                    wrapped_inst = new i_conv_i4(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Conv_I8:
-                    return new i_conv_i8(i);
+                    wrapped_inst = new i_conv_i8(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Conv_I:
-                    return new i_conv_i(i);
+                    wrapped_inst = new i_conv_i(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Conv_Ovf_I1:
-                    return new i_conv_ovf_i1(i);
+                    wrapped_inst = new i_conv_ovf_i1(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Conv_Ovf_I1_Un:
-                    return new i_conv_ovf_i1_un(i);
+                    wrapped_inst = new i_conv_ovf_i1_un(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Conv_Ovf_I2:
-                    return new i_conv_ovf_i2(i);
+                    wrapped_inst = new i_conv_ovf_i2(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Conv_Ovf_I2_Un:
-                    return new i_conv_ovf_i2_un(i);
+                    wrapped_inst = new i_conv_ovf_i2_un(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Conv_Ovf_I4:
-                    return new i_conv_ovf_i4(i);
+                    wrapped_inst = new i_conv_ovf_i4(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Conv_Ovf_I4_Un:
-                    return new i_conv_ovf_i4_un(i);
+                    wrapped_inst = new i_conv_ovf_i4_un(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Conv_Ovf_I8:
-                    return new i_conv_ovf_i8(i);
+                    wrapped_inst = new i_conv_ovf_i8(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Conv_Ovf_I8_Un:
-                    return new i_conv_ovf_i8_un(i);
+                    wrapped_inst = new i_conv_ovf_i8_un(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Conv_Ovf_I:
-                    return new i_conv_ovf_i(i);
+                    wrapped_inst = new i_conv_ovf_i(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Conv_Ovf_I_Un:
-                    return new i_conv_ovf_i_un(i);
+                    wrapped_inst = new i_conv_ovf_i_un(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Conv_Ovf_U1:
-                    return new i_conv_ovf_u1(i);
+                    wrapped_inst = new i_conv_ovf_u1(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Conv_Ovf_U1_Un:
-                    return new i_conv_ovf_u1_un(i);
+                    wrapped_inst = new i_conv_ovf_u1_un(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Conv_Ovf_U2:
-                    return new i_conv_ovf_u2(i);
+                    wrapped_inst = new i_conv_ovf_u2(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Conv_Ovf_U2_Un:
-                    return new i_conv_ovf_u2_un(i);
+                    wrapped_inst = new i_conv_ovf_u2_un(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Conv_Ovf_U4:
-                    return new i_conv_ovf_u4(i);
+                    wrapped_inst = new i_conv_ovf_u4(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Conv_Ovf_U4_Un:
-                    return new i_conv_ovf_u4_un(i);
+                    wrapped_inst = new i_conv_ovf_u4_un(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Conv_Ovf_U8:
-                    return new i_conv_ovf_u8(i);
+                    wrapped_inst = new i_conv_ovf_u8(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Conv_Ovf_U8_Un:
-                    return new i_conv_ovf_u8_un(i);
+                    wrapped_inst = new i_conv_ovf_u8_un(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Conv_Ovf_U:
-                    return new i_conv_ovf_u(i);
+                    wrapped_inst = new i_conv_ovf_u(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Conv_Ovf_U_Un:
-                    return new i_conv_ovf_u_un(i);
+                    wrapped_inst = new i_conv_ovf_u_un(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Conv_R4:
-                    return new i_conv_r4(i);
+                    wrapped_inst = new i_conv_r4(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Conv_R8:
-                    return new i_conv_r8(i);
+                    wrapped_inst = new i_conv_r8(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Conv_R_Un:
-                    return new i_conv_r_un(i);
+                    wrapped_inst = new i_conv_r_un(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Conv_U1:
-                    return new i_conv_u1(i);
+                    wrapped_inst = new i_conv_u1(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Conv_U2:
-                    return new i_conv_u2(i);
+                    wrapped_inst = new i_conv_u2(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Conv_U4:
-                    return new i_conv_u4(i);
+                    wrapped_inst = new i_conv_u4(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Conv_U8:
-                    return new i_conv_u8(i);
+                    wrapped_inst = new i_conv_u8(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Conv_U:
-                    return new i_conv_u(i);
+                    wrapped_inst = new i_conv_u(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Cpblk:
-                    return new i_cpblk(i);
+                    wrapped_inst = new i_cpblk(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Cpobj:
-                    return new i_cpobj(i);
+                    wrapped_inst = new i_cpobj(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Div:
-                    return new i_div(i);
+                    wrapped_inst = new i_div(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Div_Un:
-                    return new i_div_un(i);
+                    wrapped_inst = new i_div_un(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Dup:
-                    return new i_dup(i);
+                    wrapped_inst = new i_dup(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Endfilter:
-                    return new i_endfilter(i);
+                    wrapped_inst = new i_endfilter(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Endfinally:
-                    return new i_endfinally(i);
+                    wrapped_inst = new i_endfinally(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Initblk:
-                    return new i_initblk(i);
+                    wrapped_inst = new i_initblk(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Initobj:
-                    return new i_initobj(i);
+                    wrapped_inst = new i_initobj(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Isinst:
-                    return new i_isinst(i);
+                    wrapped_inst = new i_isinst(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Jmp:
-                    return new i_jmp(i);
+                    wrapped_inst = new i_jmp(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ldarg:
-                    return new i_ldarg(i);
+                    wrapped_inst = new i_ldarg(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ldarg_0:
-                    return new i_ldarg_0(i);
+                    wrapped_inst = new i_ldarg_0(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ldarg_1:
-                    return new i_ldarg_1(i);
+                    wrapped_inst = new i_ldarg_1(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ldarg_2:
-                    return new i_ldarg_2(i);
+                    wrapped_inst = new i_ldarg_2(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ldarg_3:
-                    return new i_ldarg_3(i);
+                    wrapped_inst = new i_ldarg_3(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ldarg_S:
-                    return new i_ldarg_s(i);
+                    wrapped_inst = new i_ldarg_s(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ldarga:
-                    return new i_ldarga(i);
+                    wrapped_inst = new i_ldarga(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ldarga_S:
-                    return new i_ldarga_s(i);
+                    wrapped_inst = new i_ldarga_s(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ldc_I4:
-                    return new i_ldc_i4(i);
+                    wrapped_inst = new i_ldc_i4(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ldc_I4_0:
-                    return new i_ldc_i4_0(i);
+                    wrapped_inst = new i_ldc_i4_0(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ldc_I4_1:
-                    return new i_ldc_i4_1(i);
+                    wrapped_inst = new i_ldc_i4_1(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ldc_I4_2:
-                    return new i_ldc_i4_2(i);
+                    wrapped_inst = new i_ldc_i4_2(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ldc_I4_3:
-                    return new i_ldc_i4_3(i);
+                    wrapped_inst = new i_ldc_i4_3(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ldc_I4_4:
-                    return new i_ldc_i4_4(i);
+                    wrapped_inst = new i_ldc_i4_4(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ldc_I4_5:
-                    return new i_ldc_i4_5(i);
+                    wrapped_inst = new i_ldc_i4_5(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ldc_I4_6:
-                    return new i_ldc_i4_6(i);
+                    wrapped_inst = new i_ldc_i4_6(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ldc_I4_7:
-                    return new i_ldc_i4_7(i);
+                    wrapped_inst = new i_ldc_i4_7(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ldc_I4_8:
-                    return new i_ldc_i4_8(i);
+                    wrapped_inst = new i_ldc_i4_8(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ldc_I4_M1:
-                    return new i_ldc_i4_m1(i);
+                    wrapped_inst = new i_ldc_i4_m1(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ldc_I4_S:
-                    return new i_ldc_i4_s(i);
+                    wrapped_inst = new i_ldc_i4_s(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ldc_I8:
-                    return new i_ldc_i8(i);
+                    wrapped_inst = new i_ldc_i8(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ldc_R4:
-                    return new i_ldc_r4(i);
+                    wrapped_inst = new i_ldc_r4(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ldc_R8:
-                    return new i_ldc_r8(i);
+                    wrapped_inst = new i_ldc_r8(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ldelem_Any:
-                    return new i_ldelem_any(i);
+                    wrapped_inst = new i_ldelem_any(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ldelem_I1:
-                    return new i_ldelem_i1(i);
+                    wrapped_inst = new i_ldelem_i1(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ldelem_I2:
-                    return new i_ldelem_i2(i);
+                    wrapped_inst = new i_ldelem_i2(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ldelem_I4:
-                    return new i_ldelem_i4(i);
+                    wrapped_inst = new i_ldelem_i4(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ldelem_I8:
-                    return new i_ldelem_i8(i);
+                    wrapped_inst = new i_ldelem_i8(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ldelem_I:
-                    return new i_ldelem_i(i);
+                    wrapped_inst = new i_ldelem_i(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ldelem_R4:
-                    return new i_ldelem_r4(i);
+                    wrapped_inst = new i_ldelem_r4(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ldelem_R8:
-                    return new i_ldelem_r8(i);
+                    wrapped_inst = new i_ldelem_r8(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ldelem_Ref:
-                    return new i_ldelem_ref(i);
+                    wrapped_inst = new i_ldelem_ref(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ldelem_U1:
-                    return new i_ldelem_u1(i);
+                    wrapped_inst = new i_ldelem_u1(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ldelem_U2:
-                    return new i_ldelem_u2(i);
+                    wrapped_inst = new i_ldelem_u2(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ldelem_U4:
-                    return new i_ldelem_u4(i);
+                    wrapped_inst = new i_ldelem_u4(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ldelema:
-                    return new i_ldelema(i);
+                    wrapped_inst = new i_ldelema(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ldfld:
-                    return new i_ldfld(i);
+                    wrapped_inst = new i_ldfld(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ldflda:
-                    return new i_ldflda(i);
+                    wrapped_inst = new i_ldflda(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ldftn:
-                    return new i_ldftn(i);
+                    wrapped_inst = new i_ldftn(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ldind_I1:
-                    return new i_ldind_i1(i);
+                    wrapped_inst = new i_ldind_i1(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ldind_I2:
-                    return new i_ldind_i2(i);
+                    wrapped_inst = new i_ldind_i2(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ldind_I4:
-                    return new i_ldind_i4(i);
+                    wrapped_inst = new i_ldind_i4(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ldind_I8:
-                    return new i_ldind_i8(i);
+                    wrapped_inst = new i_ldind_i8(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ldind_I:
-                    return new i_ldind_i(i);
+                    wrapped_inst = new i_ldind_i(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ldind_R4:
-                    return new i_ldind_r4(i);
+                    wrapped_inst = new i_ldind_r4(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ldind_R8:
-                    return new i_ldind_r8(i);
+                    wrapped_inst = new i_ldind_r8(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ldind_Ref:
-                    return new i_ldind_ref(i);
+                    wrapped_inst = new i_ldind_ref(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ldind_U1:
-                    return new i_ldind_u1(i);
+                    wrapped_inst = new i_ldind_u1(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ldind_U2:
-                    return new i_ldind_u2(i);
+                    wrapped_inst = new i_ldind_u2(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ldind_U4:
-                    return new i_ldind_u4(i);
+                    wrapped_inst = new i_ldind_u4(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ldlen:
-                    return new i_ldlen(i);
+                    wrapped_inst = new i_ldlen(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ldloc:
-                    return new i_ldloc(i);
+                    wrapped_inst = new i_ldloc(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ldloc_0:
-                    return new i_ldloc_0(i);
+                    wrapped_inst = new i_ldloc_0(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ldloc_1:
-                    return new i_ldloc_1(i);
+                    wrapped_inst = new i_ldloc_1(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ldloc_2:
-                    return new i_ldloc_2(i);
+                    wrapped_inst = new i_ldloc_2(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ldloc_3:
-                    return new i_ldloc_3(i);
+                    wrapped_inst = new i_ldloc_3(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ldloc_S:
-                    return new i_ldloc_s(i);
+                    wrapped_inst = new i_ldloc_s(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ldloca:
-                    return new i_ldloca(i);
+                    wrapped_inst = new i_ldloca(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ldloca_S:
-                    return new i_ldloca_s(i);
+                    wrapped_inst = new i_ldloca_s(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ldnull:
-                    return new i_ldnull(i);
+                    wrapped_inst = new i_ldnull(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ldobj:
-                    return new i_ldobj(i);
+                    wrapped_inst = new i_ldobj(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ldsfld:
-                    return new i_ldsfld(i);
+                    wrapped_inst = new i_ldsfld(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ldsflda:
-                    return new i_ldsflda(i);
+                    wrapped_inst = new i_ldsflda(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ldstr:
-                    return new i_ldstr(i);
+                    wrapped_inst = new i_ldstr(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ldtoken:
-                    return new i_ldtoken(i);
+                    wrapped_inst = new i_ldtoken(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ldvirtftn:
-                    return new i_ldvirtftn(i);
+                    wrapped_inst = new i_ldvirtftn(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Leave:
-                    return new i_leave(i);
+                    wrapped_inst = new i_leave(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Leave_S:
-                    return new i_leave_s(i);
+                    wrapped_inst = new i_leave_s(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Localloc:
-                    return new i_localloc(i);
+                    wrapped_inst = new i_localloc(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Mkrefany:
-                    return new i_mkrefany(i);
+                    wrapped_inst = new i_mkrefany(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Mul:
-                    return new i_mul(i);
+                    wrapped_inst = new i_mul(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Mul_Ovf:
-                    return new i_mul_ovf(i);
+                    wrapped_inst = new i_mul_ovf(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Mul_Ovf_Un:
-                    return new i_mul_ovf_un(i);
+                    wrapped_inst = new i_mul_ovf_un(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Neg:
-                    return new i_neg(i);
+                    wrapped_inst = new i_neg(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Newarr:
-                    return new i_newarr(i);
+                    wrapped_inst = new i_newarr(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Newobj:
-                    return new i_newobj(i);
+                    wrapped_inst = new i_newobj(i);
+                    break;
                 case Mono.Cecil.Cil.Code.No:
-                    return new i_no(i);
+                    wrapped_inst = new i_no(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Nop:
-                    return new i_nop(i);
+                    wrapped_inst = new i_nop(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Not:
-                    return new i_not(i);
+                    wrapped_inst = new i_not(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Or:
-                    return new i_or(i);
+                    wrapped_inst = new i_or(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Pop:
-                    return new i_pop(i);
+                    wrapped_inst = new i_pop(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Readonly:
-                    return new i_readonly(i);
+                    wrapped_inst = new i_readonly(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Refanytype:
-                    return new i_refanytype(i);
+                    wrapped_inst = new i_refanytype(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Refanyval:
-                    return new i_refanyval(i);
+                    wrapped_inst = new i_refanyval(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Rem:
-                    return new i_rem(i);
+                    wrapped_inst = new i_rem(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Rem_Un:
-                    return new i_rem_un(i);
+                    wrapped_inst = new i_rem_un(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Ret:
-                    return new i_ret(i);
+                    wrapped_inst = new i_ret(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Rethrow:
-                    return new i_rethrow(i);
+                    wrapped_inst = new i_rethrow(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Shl:
-                    return new i_shl(i);
+                    wrapped_inst = new i_shl(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Shr:
-                    return new i_shr(i);
+                    wrapped_inst = new i_shr(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Shr_Un:
-                    return new i_shr_un(i);
+                    wrapped_inst = new i_shr_un(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Sizeof:
-                    return new i_sizeof(i);
+                    wrapped_inst = new i_sizeof(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Starg:
-                    return new i_starg(i);
+                    wrapped_inst = new i_starg(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Starg_S:
-                    return new i_starg_s(i);
+                    wrapped_inst = new i_starg_s(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Stelem_Any:
-                    return new i_stelem_any(i);
+                    wrapped_inst = new i_stelem_any(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Stelem_I1:
-                    return new i_stelem_i1(i);
+                    wrapped_inst = new i_stelem_i1(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Stelem_I2:
-                    return new i_stelem_i2(i);
+                    wrapped_inst = new i_stelem_i2(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Stelem_I4:
-                    return new i_stelem_i4(i);
+                    wrapped_inst = new i_stelem_i4(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Stelem_I8:
-                    return new i_stelem_i8(i);
+                    wrapped_inst = new i_stelem_i8(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Stelem_I:
-                    return new i_stelem_i(i);
+                    wrapped_inst = new i_stelem_i(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Stelem_R4:
-                    return new i_stelem_r4(i);
+                    wrapped_inst = new i_stelem_r4(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Stelem_R8:
-                    return new i_stelem_r8(i);
+                    wrapped_inst = new i_stelem_r8(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Stelem_Ref:
-                    return new i_stelem_ref(i);
+                    wrapped_inst = new i_stelem_ref(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Stfld:
-                    return new i_stfld(i);
+                    wrapped_inst = new i_stfld(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Stind_I1:
-                    return new i_stind_i1(i);
+                    wrapped_inst = new i_stind_i1(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Stind_I2:
-                    return new i_stind_i2(i);
+                    wrapped_inst = new i_stind_i2(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Stind_I4:
-                    return new i_stind_i4(i);
+                    wrapped_inst = new i_stind_i4(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Stind_I8:
-                    return new i_stind_i8(i);
+                    wrapped_inst = new i_stind_i8(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Stind_I:
-                    return new i_stind_i(i);
+                    wrapped_inst = new i_stind_i(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Stind_R4:
-                    return new i_stind_r4(i);
+                    wrapped_inst = new i_stind_r4(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Stind_R8:
-                    return new i_stind_r8(i);
+                    wrapped_inst = new i_stind_r8(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Stind_Ref:
-                    return new i_stind_ref(i);
+                    wrapped_inst = new i_stind_ref(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Stloc:
-                    return new i_stloc(i);
+                    wrapped_inst = new i_stloc(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Stloc_0:
-                    return new i_stloc_0(i);
+                    wrapped_inst = new i_stloc_0(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Stloc_1:
-                    return new i_stloc_1(i);
+                    wrapped_inst = new i_stloc_1(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Stloc_2:
-                    return new i_stloc_2(i);
+                    wrapped_inst = new i_stloc_2(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Stloc_3:
-                    return new i_stloc_3(i);
+                    wrapped_inst = new i_stloc_3(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Stloc_S:
-                    return new i_stloc_s(i);
+                    wrapped_inst = new i_stloc_s(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Stobj:
-                    return new i_stobj(i);
+                    wrapped_inst = new i_stobj(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Stsfld:
-                    return new i_stsfld(i);
+                    wrapped_inst = new i_stsfld(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Sub:
-                    return new i_sub(i);
+                    wrapped_inst = new i_sub(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Sub_Ovf:
-                    return new i_sub_ovf(i);
+                    wrapped_inst = new i_sub_ovf(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Sub_Ovf_Un:
-                    return new i_sub_ovf_un(i);
+                    wrapped_inst = new i_sub_ovf_un(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Switch:
-                    return new i_switch(i);
+                    wrapped_inst = new i_switch(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Tail:
-                    return new i_tail(i);
+                    wrapped_inst = new i_tail(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Throw:
-                    return new i_throw(i);
+                    wrapped_inst = new i_throw(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Unaligned:
-                    return new i_unaligned(i);
+                    wrapped_inst = new i_unaligned(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Unbox:
-                    return new i_unbox(i);
+                    wrapped_inst = new i_unbox(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Unbox_Any:
-                    return new i_unbox_any(i);
+                    wrapped_inst = new i_unbox_any(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Volatile:
-                    return new i_volatile(i);
+                    wrapped_inst = new i_volatile(i);
+                    break;
                 case Mono.Cecil.Cil.Code.Xor:
-                    return new i_xor(i);
+                    wrapped_inst = new i_xor(i);
+                    break;
                 default:
                     throw new Exception("Unknown instruction type " + i);
-            }
+        }
+        wrapped_inst.SeqPoint = sp;
+        return wrapped_inst;
         }
     }
 
@@ -1441,35 +1682,35 @@ namespace Campy.Compiler
                                                                + 1 // val
                                 ];
 
-				                // Allocate space on stack for one value to be passed to function call.
-                                                var val_type = element_type.ToTypeRef();
-				                var val_buffer = LLVM.BuildAlloca(Builder,
-					                val_type, "i" + instruction_id++);
+                                // Allocate space on stack for one value to be passed to function call.
+                                var val_type = element_type.ToTypeRef();
+                                var val_buffer = LLVM.BuildAlloca(Builder,
+                                    val_type, "i" + instruction_id++);
                                                 LLVM.SetAlignment(val_buffer, 64);
                                                 args[4] = LLVM.BuildPtrToInt(Builder, val_buffer, LLVM.Int64Type(),
                                                     "i" + instruction_id++);
 
-				                // Allocate space on stack for "count" indices, 32 bits each.
-				                var ind_buffer = LLVM.BuildAlloca(Builder,
-					                LLVM.ArrayType(
-					                LLVM.Int32Type(),
-					                (uint)count), "i" + instruction_id++);
+                                // Allocate space on stack for "count" indices, 32 bits each.
+                                var ind_buffer = LLVM.BuildAlloca(Builder,
+                                    LLVM.ArrayType(
+                                    LLVM.Int32Type(),
+                                    (uint)count), "i" + instruction_id++);
                                                 LLVM.SetAlignment(ind_buffer, 64);
-				                var base_of_indices = LLVM.BuildPointerCast(Builder, ind_buffer,
-					                LLVM.PointerType(LLVM.Int32Type(), 0), "i" + instruction_id++);
+                                var base_of_indices = LLVM.BuildPointerCast(Builder, ind_buffer,
+                                    LLVM.PointerType(LLVM.Int32Type(), 0), "i" + instruction_id++);
                                                 for (int i = count - 1; i >= 0; i--)
                                                 {
-					                VALUE index = state._stack.Pop();
-					                if (Campy.Utils.Options.IsOn("jit_trace"))
-						                System.Console.WriteLine(index);
-					                ValueRef[] id = new ValueRef[1]
-						                {LLVM.ConstInt(LLVM.Int32Type(), (ulong) i, true)};
-					                var add = LLVM.BuildInBoundsGEP(Builder, base_of_indices, id, "i" + instruction_id++);
-					                ValueRef store = LLVM.BuildStore(Builder, index.V, add);
-					                if (Campy.Utils.Options.IsOn("jit_trace"))
-						                System.Console.WriteLine(new VALUE(store));
+                                    VALUE index = state._stack.Pop();
+                                    if (Campy.Utils.Options.IsOn("jit_trace"))
+                                        System.Console.WriteLine(index);
+                                    ValueRef[] id = new ValueRef[1]
+                                        {LLVM.ConstInt(LLVM.Int32Type(), (ulong) i, true)};
+                                    var add = LLVM.BuildInBoundsGEP(Builder, base_of_indices, id, "i" + instruction_id++);
+                                    ValueRef store = LLVM.BuildStore(Builder, index.V, add);
+                                    if (Campy.Utils.Options.IsOn("jit_trace"))
+                                        System.Console.WriteLine(new VALUE(store));
                                                 }
-				                args[3] = LLVM.BuildPtrToInt(Builder, ind_buffer, LLVM.Int64Type(),
+                                args[3] = LLVM.BuildPtrToInt(Builder, ind_buffer, LLVM.Int64Type(),
                                                     "i" + instruction_id++);
 
                                 args[2] = LLVM.ConstInt(LLVM.Int32Type(),
@@ -2843,20 +3084,20 @@ namespace Campy.Compiler
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(a);
 
-			TypeRef stype = LLVM.TypeOf(src.V);
-			TypeRef dtype = _dst.IntermediateType;
+            TypeRef stype = LLVM.TypeOf(src.V);
+            TypeRef dtype = _dst.IntermediateType;
 
-			/* Trunc */
-			if (stype == LLVM.Int64Type()
-				  && (dtype == LLVM.Int32Type() || dtype == LLVM.Int16Type() || dtype == LLVM.Int8Type() || dtype == LLVM.Int1Type()))
-				src = new VALUE(LLVM.BuildTrunc(Builder, src.V, dtype, "i" + instruction_id++));
-			else if (stype == LLVM.Int32Type()
-				  && (dtype == LLVM.Int16Type() || dtype == LLVM.Int8Type() || dtype == LLVM.Int1Type()))
+            /* Trunc */
+            if (stype == LLVM.Int64Type()
+                  && (dtype == LLVM.Int32Type() || dtype == LLVM.Int16Type() || dtype == LLVM.Int8Type() || dtype == LLVM.Int1Type()))
+                src = new VALUE(LLVM.BuildTrunc(Builder, src.V, dtype, "i" + instruction_id++));
+            else if (stype == LLVM.Int32Type()
+                  && (dtype == LLVM.Int16Type() || dtype == LLVM.Int8Type() || dtype == LLVM.Int1Type()))
                 src = new VALUE(LLVM.BuildTrunc(Builder, src.V, dtype, "i" + instruction_id++));
             else if (stype == LLVM.Int16Type()
-				  && (dtype == LLVM.Int8Type() || dtype == LLVM.Int1Type()))
+                  && (dtype == LLVM.Int8Type() || dtype == LLVM.Int1Type()))
                 src = new VALUE(LLVM.BuildTrunc(Builder, src.V, dtype, "i" + instruction_id++));
-			            
+                        
             var zz = LLVM.BuildStore(Builder, src.V, a.V);
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine("Store = " + new VALUE(zz).ToString());

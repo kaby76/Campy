@@ -251,18 +251,16 @@ namespace Campy.Compiler
             _cfg.Entries.Add(v);
 
             // Get debugging information on line/column/offset in method.
+            original_method_reference.Module.ReadSymbols();
             var sr = original_method_reference.Module.SymbolReader;
             var mdi = sr?.Read(method_definition);
-            var sqps = mdi?.SequencePoints;
+            Collection<SequencePoint> sqps = mdi != null ? mdi.SequencePoints : new Collection<SequencePoint>();
 
             // Add instructions to the basic block.
             for (int j = 0; j < instruction_count; ++j)
             {
                 Mono.Cecil.Cil.Instruction mi = method_definition.Body.Instructions[j];
-                INST i = INST.Wrap(mi);
-                i.Block = v;
-                if (sqps != null)
-                    i.SeqPoint = sqps.Where(s => { return s.Offset == mi.Offset; }).FirstOrDefault();
+                INST i = INST.Wrap(mi, v, sqps.Where(s => { return s.Offset == mi.Offset; }).FirstOrDefault());
                 v.Instructions.Add(i);
             }
 

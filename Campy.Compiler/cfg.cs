@@ -1,4 +1,5 @@
-﻿using Swigged.LLVM;
+﻿using Mono.Collections.Generic;
+using Swigged.LLVM;
 
 namespace Campy.Compiler
 {
@@ -328,12 +329,18 @@ namespace Campy.Compiler
                     System.Console.WriteLine("New node is " + result.Name);
                 }
 
+                var sr = result._original_method_reference.Module.SymbolReader;
+                var mdi = sr?.Read(result._method_definition);
+                Collection<SequencePoint> sqps = mdi != null ? mdi.SequencePoints : new Collection<SequencePoint>();
+
                 // Add instructions from split point to new block.
                 for (int j = i; j < count; ++j)
                 {
-                    INST inst_to_move = INST.Wrap(Instructions[j].Instruction);
-                    CFG.Vertex v = inst_to_move.Block;
-                    inst_to_move.Block = (CFG.Vertex) result;
+                    var offset = Instructions[j].Instruction.Offset;
+                    INST inst_to_move = INST.Wrap(
+                        Instructions[j].Instruction,
+                        result,
+                        sqps.Where(s => { return s.Offset == offset; }).FirstOrDefault());
                     result.Instructions.Add(inst_to_move);
                 }
 
