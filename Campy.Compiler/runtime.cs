@@ -361,9 +361,7 @@
 
             // Set up _system_type_to_mono_type_for_bcl.
             // There really isn't any good way to set this up because NET Core System.Reflection does not work
-            // on things like System.Int32. We will manually set up it here, checking then to see if we miss
-            // something.
-
+            // on .LIB files. So begins the kludge...
             // Parse PTX files for all "visible" functions, and create LLVM declarations.
             // For "Internal Calls", these functions appear here, but also on the _internalCalls list.
             var assembly = Assembly.GetAssembly(typeof(Campy.Compiler.RUNTIME));
