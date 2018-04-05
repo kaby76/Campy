@@ -239,7 +239,7 @@ namespace Campy.Compiler
             _methods_done.Add(method_definition.FullName);
 
             int change_set = _cfg.StartChangeSet();
-
+            
             int instruction_count = method_definition.Body.Instructions.Count;
             List<Mono.Cecil.Cil.Instruction> split_point = new List<Mono.Cecil.Cil.Instruction>();
 
@@ -260,7 +260,8 @@ namespace Campy.Compiler
             for (int j = 0; j < instruction_count; ++j)
             {
                 Mono.Cecil.Cil.Instruction mi = method_definition.Body.Instructions[j];
-                INST i = INST.Wrap(mi, v, sqps.Where(s => { return s.Offset == mi.Offset; }).FirstOrDefault());
+                var sp = sqps.Where(s => { return s.Offset == mi.Offset; }).FirstOrDefault();
+                INST i = INST.Wrap(mi, v, sp);
                 v.Instructions.Add(i);
             }
 

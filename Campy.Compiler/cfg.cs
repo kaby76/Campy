@@ -337,10 +337,11 @@ namespace Campy.Compiler
                 for (int j = i; j < count; ++j)
                 {
                     var offset = Instructions[j].Instruction.Offset;
+                    var sp = sqps.Where(s => { return s.Offset == offset; }).FirstOrDefault();
                     INST inst_to_move = INST.Wrap(
                         Instructions[j].Instruction,
                         result,
-                        sqps.Where(s => { return s.Offset == offset; }).FirstOrDefault());
+                        sp);
                     result.Instructions.Add(inst_to_move);
                 }
 

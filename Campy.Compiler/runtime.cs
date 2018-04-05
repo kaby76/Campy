@@ -988,6 +988,7 @@ namespace Campy.Compiler
                         body.Instructions.RemoveAt(j);
                         var worker = body.GetILProcessor();
                         Instruction new_inst = worker.Create(i.OpCode, bcl_substitute);
+                        new_inst.Offset = i.Offset;
                         body.Instructions.Insert(j, new_inst);
                     }
                 }

@@ -1,7 +1,7 @@
-﻿using System;
-using System.Linq;
+﻿using Campy;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Campy;
+using System.Linq;
+using System;
 
 namespace BitonicSort
 {
@@ -16,6 +16,35 @@ namespace BitonicSort
 
         // [Bat 68]	K.E. Batcher: Sorting Networks and their Applications. Proc. AFIPS Spring Joint Comput. Conf., Vol. 32, 307-314 (1968)
         // Work inefficient sort, because half the threads are unused.
+        public static void SeqBitonicSort1(int[] a)
+        {
+            uint N = (uint)a.Length;
+            int term = Bithacks.FloorLog2(N);
+            for (int kk = 2; kk <= N; kk *= 2)
+            {
+                for (int jj = kk >> 1; jj > 0; jj = jj >> 1)
+                {
+                    int k = kk;
+                    int j = jj;
+                    for(int i = 0; i < N; ++i)
+                    {
+                        int ij = i ^ j;
+                        if (ij > i)
+                        {
+                            if ((i & k) == 0)
+                            {
+                                if (a[i] > a[ij]) swap(ref a[i], ref a[ij]);
+                            }
+                            else // ((i & k) != 0)
+                            {
+                                if (a[i] < a[ij]) swap(ref a[i], ref a[ij]);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         public static void BitonicSort1(int[] a)
         {
             Parallel.Sticky(a);
@@ -45,6 +74,45 @@ namespace BitonicSort
                 }
             }
             Parallel.Sync();
+        }
+
+        public static void SeqBitonicSort2(int[] a)
+        {
+            uint N = (uint)a.Length;
+            int log2n = Bithacks.FloorLog2(N);
+            for (int k = 0; k < log2n; ++k)
+            {
+                uint n2 = N / 2;
+                int twok = Bithacks.Power2(k);
+                for(int i = 0; i < n2; ++i)
+                {
+                    int imp2 = i % twok;
+                    int cross = imp2 + 2 * twok * (int)(i / twok);
+                    int paired = -1 - imp2 + 2 * twok * (int)((i + twok) / twok);
+                    if (a[cross] > a[paired])
+                    {
+                        int t = a[cross];
+                        a[cross] = a[paired];
+                        a[paired] = t;
+                    }
+                }
+                for (int j = k - 1; j >= 0; --j)
+                {
+                    int twoj = Bithacks.Power2(j);
+                    for (int i = 0; i < n2; ++i)
+                    {
+                        int imp2 = i % twoj;
+                        int cross = imp2 + 2 * twoj * (int)(i / twoj);
+                        int paired = cross + twoj;
+                        if (a[cross] > a[paired])
+                        {
+                            int t = a[cross];
+                            a[cross] = a[paired];
+                            a[paired] = t;
+                        }
+                    }
+                }
+            }
         }
 
         public static void BitonicSort2(int[] a)
@@ -97,6 +165,20 @@ namespace BitonicSort
         {
             Random rnd = new Random();
             int N = 8;
+            {
+                int[] a = Enumerable.Range(0, N).ToArray().OrderBy(x => rnd.Next()).ToArray();
+                BitonicSorter.SeqBitonicSort1(a);
+                for (int i = 0; i < N; ++i)
+                    if (a[i] != i)
+                        throw new Exception();
+            }
+            {
+                int[] a = Enumerable.Range(0, N).ToArray().OrderBy(x => rnd.Next()).ToArray();
+                BitonicSorter.SeqBitonicSort2(a);
+                for (int i = 0; i < N; ++i)
+                    if (a[i] != i)
+                        throw new Exception();
+            }
             {
                 int[] a = Enumerable.Range(0, N).ToArray().OrderBy(x => rnd.Next()).ToArray();
                 BitonicSorter.BitonicSort1(a);
