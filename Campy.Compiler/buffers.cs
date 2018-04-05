@@ -1,20 +1,18 @@
-﻿using System.Runtime.CompilerServices;
-
-namespace Campy.Compiler
+﻿namespace Campy.Compiler
 {
-    using Utils;
     using Swigged.Cuda;
-    using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Reflection;
+    using System.Runtime.CompilerServices;
     using System.Runtime.InteropServices;
-    using System.Runtime.Serialization;
     using System.Text;
+    using System;
+    using Utils;
 
     /// <summary>
-    /// This code marshals C#/Net data structures that have an unknown implementation to/from
-    /// the implementation for NVIDIA GPUs.
+    /// This code marshals C#/Net data structures to/from the GPU implementation.
+    /// It also performs memory allocation and disposal for the GPU.
     /// </summary>
     public class BUFFERS
     {
@@ -26,9 +24,6 @@ namespace Campy.Compiler
 
         // The above mapping in reverse.
         private Dictionary<IntPtr, object> _allocated_buffers = new Dictionary<IntPtr, object>();
-
-        // A list of objects with deep copy level.
-        private Dictionary<object, int> _allocated_object_level = new Dictionary<object, int>();
 
         // A list of object that have been copied from GPU space back to C#.
         private List<object> _copied_from_gpu = new List<object>();
@@ -179,7 +174,6 @@ namespace Campy.Compiler
                     System.Console.WriteLine("Allocating GPU buf " + to_gpu);
                 result = New(BUFFERS.SizeOf(btype));
                 _allocated_objects[to_gpu] = result;
-                _allocated_object_level[to_gpu] = _level + 1;
             }
 
             // Copy to GPU if it hasn't been done before.
@@ -206,9 +200,6 @@ namespace Campy.Compiler
 
                 if (!_allocated_objects.ContainsKey(back_to_cpu))
                     continue; // Honestly, this is actually a problem as the object was somehow lost.
-
-                if (!_allocated_object_level.ContainsKey(back_to_cpu))
-                    throw new Exception();
 
                 IntPtr gpu_buffer_pointer = _allocated_objects[back_to_cpu];
 
@@ -600,7 +591,6 @@ namespace Campy.Compiler
                                             System.Console.WriteLine("Allocating GPU buf " + field_value);
                                         gp = New(field_size);
                                         _allocated_objects[field_value] = (IntPtr)gp;
-                                        _allocated_object_level[field_value] = _level + 1;
                                     }
                                     DeepCopyToImplementation(gp, ip);
                                     DeepCopyToImplementation(field_value, gp);
@@ -636,7 +626,6 @@ namespace Campy.Compiler
                                             System.Console.WriteLine("Allocating GPU buf " + field_value);
                                         gp = New(field_size);
                                         _allocated_objects[field_value] = (IntPtr)gp;
-                                        _allocated_object_level[field_value] = _level + 1;
                                     }
                                     // Copy pointer to field.
                                     DeepCopyToImplementation(gp, ip);
@@ -1160,7 +1149,6 @@ namespace Campy.Compiler
                                 System.Console.WriteLine("Allocating GPU buf " + size_element);
                             gp = New(size_element);
                             _allocated_objects[from_element_value] = (IntPtr)gp;
-                            _allocated_object_level[from_element_value] = _level + 1;
                         }
                         DeepCopyToImplementation(gp, to_gpu);
                         DeepCopyToImplementation(from_element_value, gp);
