@@ -1,18 +1,17 @@
 ﻿
-using System.IO;
-
 namespace Campy.Compiler
 {
-    using Campy.Utils;
-    using Mono.Cecil;
+    using Mono.Cecil.Cil;
     using Mono.Cecil.Rocks;
+    using Mono.Cecil;
     using Mono.Collections.Generic;
-    using System;
     using System.Collections.Generic;
     using System.Diagnostics;
+    using System.IO;
     using System.Linq;
     using System.Reflection;
-    using Mono.Cecil.Cil;
+    using System;
+    using Utils;
 
     public class IMPORTER
     {
@@ -223,75 +222,63 @@ namespace Campy.Compiler
         private void ExtractBasicBlocksOfMethod(Tuple<MethodReference, List<TypeReference>> definition)
         {
             MethodReference original_method_reference = definition.Item1;
-
-            List<TypeReference> item2 = definition.Item2;
-            String full_name = original_method_reference.Module.FullyQualifiedName;
-
             _methods_done.Add(original_method_reference.FullName);
-
-            // Resolve() tends to turn anything into mush. It removes type information
-            // per instruction. Set up for analysis for resolved method reference or a substituted
-            // method reforence for inscrutible NET runtime.
-
             MethodDefinition method_definition = Rewrite(original_method_reference);
-            if (method_definition == null) return;
-
+            if (method_definition == null)
+                return;
             _methods_done.Add(method_definition.FullName);
-
             int change_set = _cfg.StartChangeSet();
-            
             int instruction_count = method_definition.Body.Instructions.Count;
             List<Mono.Cecil.Cil.Instruction> split_point = new List<Mono.Cecil.Cil.Instruction>();
-
             // Each method is a leader of a block.
-            CFG.Vertex v = (CFG.Vertex)_cfg.AddVertex(new CFG.Vertex(){Name = _cfg.NewNodeNumber().ToString()});
-            v._method_definition = method_definition;
-            v._original_method_reference = original_method_reference;
-            v.Entry = v;
-            _cfg.Entries.Add(v);
+            CFG.Vertex basic_block = (CFG.Vertex)_cfg.AddVertex(new CFG.Vertex(){Name = _cfg.NewNodeNumber().ToString()});
+            basic_block._method_definition = method_definition;
+            basic_block._original_method_reference = original_method_reference;
+            basic_block.Entry = basic_block;
+            _cfg.Entries.Add(basic_block);
 
             // Get debugging information on line/column/offset in method.
-            original_method_reference.Module.ReadSymbols();
-            var sr = original_method_reference.Module.SymbolReader;
-            var mdi = sr?.Read(method_definition);
-            Collection<SequencePoint> sqps = mdi != null ? mdi.SequencePoints : new Collection<SequencePoint>();
+            if (!original_method_reference.Module.HasSymbols)
+                original_method_reference.Module.ReadSymbols();
+            var symbol_reader = original_method_reference.Module.SymbolReader;
+            var method_debug_information = symbol_reader?.Read(method_definition);
+            Collection<SequencePoint> sequence_points = method_debug_information != null ? method_debug_information.SequencePoints : new Collection<SequencePoint>();
 
             // Add instructions to the basic block.
             for (int j = 0; j < instruction_count; ++j)
             {
-                Mono.Cecil.Cil.Instruction mi = method_definition.Body.Instructions[j];
-                var sp = sqps.Where(s => { return s.Offset == mi.Offset; }).FirstOrDefault();
-                INST i = INST.Wrap(mi, v, sp);
-                v.Instructions.Add(i);
+                Mono.Cecil.Cil.Instruction instruction = method_definition.Body.Instructions[j];
+                INST wrapped_instruction = INST.Wrap(instruction, basic_block, sequence_points.Where(sp => { return sp.Offset == instruction.Offset; }).FirstOrDefault());
+                basic_block.Instructions.Add(wrapped_instruction);
             }
 
             // Accumulate targets of jumps. These are split points for block "v".
             // Accumalated splits are in "leader_list" following this for-loop.
             for (int j = 0; j < instruction_count; ++j)
             {
-                INST i = v.Instructions[j];
-                Mono.Cecil.Cil.OpCode op = i.OpCode;
-                Mono.Cecil.Cil.FlowControl fc = op.FlowControl;
+                INST wrapped_instruction = basic_block.Instructions[j];
+                Mono.Cecil.Cil.OpCode opcode = wrapped_instruction.OpCode;
+                Mono.Cecil.Cil.FlowControl flow_control = opcode.FlowControl;
 
-                switch (fc)
+                switch (flow_control)
                 {
                     case Mono.Cecil.Cil.FlowControl.Branch:
                     case Mono.Cecil.Cil.FlowControl.Cond_Branch:
                         {
-                            object o = i.Operand;
+                            object operand = wrapped_instruction.Operand;
                             // Two cases of branches:
                             // 1) operand is a single instruction;
                             // 2) operand is an array of instructions via a switch instruction.
-                            Mono.Cecil.Cil.Instruction single_instruction = o as Mono.Cecil.Cil.Instruction;
-                            Mono.Cecil.Cil.Instruction[] list_of_instructions = o as Mono.Cecil.Cil.Instruction[];
+                            Mono.Cecil.Cil.Instruction single_instruction = operand as Mono.Cecil.Cil.Instruction;
+                            Mono.Cecil.Cil.Instruction[] array_of_instructions = operand as Mono.Cecil.Cil.Instruction[];
                             if (single_instruction != null)
                             {
                                 if (!split_point.Contains(single_instruction))
                                     split_point.Add(single_instruction);
                             }
-                            else if (list_of_instructions != null)
+                            else if (array_of_instructions != null)
                             {
-                                foreach (var ins in list_of_instructions)
+                                foreach (var ins in array_of_instructions)
                                 {
                                     Debug.Assert(ins != null);
                                     if (!split_point.Contains(single_instruction))
@@ -305,7 +292,7 @@ namespace Campy.Compiler
                 }
 
                 // Split blocks after certain instructions, too.
-                switch (fc)
+                switch (flow_control)
                 {
                     case Mono.Cecil.Cil.FlowControl.Branch:
                     case Mono.Cecil.Cil.FlowControl.Call:
@@ -313,11 +300,11 @@ namespace Campy.Compiler
                     case Mono.Cecil.Cil.FlowControl.Return:
                     case Mono.Cecil.Cil.FlowControl.Throw:
                         {
-                            if (fc == Mono.Cecil.Cil.FlowControl.Call && ! Campy.Utils.Options.IsOn("split_at_calls"))
+                            if (flow_control == Mono.Cecil.Cil.FlowControl.Call && ! Campy.Utils.Options.IsOn("split_at_calls"))
                                 break;
                             if (j + 1 < instruction_count)
                             {
-                                var ins = v.Instructions[j + 1].Instruction;
+                                var ins = basic_block.Instructions[j + 1].Instruction;
                                 if (!split_point.Contains(ins))
                                     split_point.Add(ins);
                             }
@@ -361,11 +348,11 @@ namespace Campy.Compiler
                 int node_instruction_count = node.Instructions.Count;
                 INST last_instruction = node.Instructions[node_instruction_count - 1];
 
-                Mono.Cecil.Cil.OpCode op = last_instruction.OpCode;
-                Mono.Cecil.Cil.FlowControl fc = op.FlowControl;
+                Mono.Cecil.Cil.OpCode opcode = last_instruction.OpCode;
+                Mono.Cecil.Cil.FlowControl flow_control = opcode.FlowControl;
 
                 // Add jump edge.
-                switch (fc)
+                switch (flow_control)
                 {
                     case Mono.Cecil.Cil.FlowControl.Branch:
                     case Mono.Cecil.Cil.FlowControl.Cond_Branch:
@@ -406,7 +393,7 @@ namespace Campy.Compiler
                 }
 
                 // Add fall through edge.
-                switch (fc)
+                switch (flow_control)
                 {
                     //case Mono.Cecil.Cil.FlowControl.Branch:
                     //case Mono.Cecil.Cil.FlowControl.Break:
@@ -463,6 +450,5 @@ namespace Campy.Compiler
 
             return method_definition;
         }
-
     }
 }

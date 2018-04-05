@@ -329,19 +329,18 @@ namespace Campy.Compiler
                     System.Console.WriteLine("New node is " + result.Name);
                 }
 
-                var sr = result._original_method_reference.Module.SymbolReader;
-                var mdi = sr?.Read(result._method_definition);
-                Collection<SequencePoint> sqps = mdi != null ? mdi.SequencePoints : new Collection<SequencePoint>();
+                if (!result._original_method_reference.Module.HasSymbols)
+                    result._original_method_reference.Module.ReadSymbols();
+                var symbol_reader = result._original_method_reference.Module.SymbolReader;
+                var method_debug_information = symbol_reader?.Read(result._method_definition);
+                Collection<SequencePoint> sequence_points = method_debug_information != null ? method_debug_information.SequencePoints : new Collection<SequencePoint>();
 
-                // Add instructions from split point to new block.
+                // Add instructions from split point to new block, including any debugging information.
                 for (int j = i; j < count; ++j)
                 {
                     var offset = Instructions[j].Instruction.Offset;
-                    var sp = sqps.Where(s => { return s.Offset == offset; }).FirstOrDefault();
-                    INST inst_to_move = INST.Wrap(
-                        Instructions[j].Instruction,
-                        result,
-                        sp);
+                    INST inst_to_move = INST.Wrap(Instructions[j].Instruction, result,
+                        sequence_points.Where(sp => { return sp.Offset == offset; }).FirstOrDefault());
                     result.Instructions.Add(inst_to_move);
                 }
 
