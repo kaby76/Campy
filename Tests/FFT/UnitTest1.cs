@@ -1,12 +1,11 @@
-﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Linq;
 using System.Numerics;
+using System;
 
 namespace FFTNS
 {
-    [TestClass]
-    public class FFTC
+    public class FFT
     {
         /* Performs a Bit Reversal Algorithm on a postive integer 
          * for given number of bits
@@ -30,9 +29,8 @@ namespace FFTNS
 
         /* Uses Cooley-Tukey iterative in-place algorithm with radix-2 DIT case
          * assumes no of points provided are a power of 2 */
-        public static void FFT(Complex[] buffer)
+        public static void Seq(Complex[] buffer)
         {
-
             int bits = (int)Math.Log(buffer.Length, 2);
             for (int j = 1; j < buffer.Length / 2; j++)
             {
@@ -63,10 +61,11 @@ namespace FFTNS
             }
         }
 
-        public static void FFTGPU(Complex[] buffer)
+        public static void Par(Complex[] buffer)
         {
-            int bits = (int)Math.Log(buffer.Length, 2);
+            Campy.Parallel.Sticky(buffer);
 
+            int bits = (int)Math.Log(buffer.Length, 2);
             Campy.Parallel.For(buffer.Length / 2 - 1, k =>
             {
                 int j = k + 1;
@@ -79,11 +78,9 @@ namespace FFTNS
             for (int N = 2; N <= buffer.Length; N <<= 1)
             {
                 int step = N / 2;
-                int bstep = N;
                 Campy.Parallel.For(buffer.Length / 2, d =>
                 {
                     var k = d % step;
-                    var i = N * (d / step);
                     var t = d % step + N * (d / step);
                     int evenIndex = t;
                     int oddIndex = t + step;
@@ -98,14 +95,16 @@ namespace FFTNS
                     buffer[oddIndex] = even - exp;
                 });
             }
+            Campy.Parallel.Sync();
         }
+    }
 
-        bool ApproxEqual(double a, double b)
+    [TestClass]
+    public class Test
+    {
+        static bool ApproxEqual(double a, double b)
         {
-            if (b > a)
-                return (b - a) < 0.01;
-            else
-                return (a - b) < 0.01;
+            return b - a < 0.0001 || a - b < 0.0001;
         }
 
         [TestMethod]
@@ -114,8 +113,8 @@ namespace FFTNS
             Complex[] input = { 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
             var copy = input.ToArray();
 
-            FFTGPU(input);
-            FFT(copy);
+            FFT.Par(input);
+            FFT.Seq(copy);
 
             for (int i = 0; i < input.Length; ++i)
             {
