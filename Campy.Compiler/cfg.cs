@@ -330,7 +330,10 @@ namespace Campy.Compiler
                 }
 
                 if (!result._original_method_reference.Module.HasSymbols)
-                    result._original_method_reference.Module.ReadSymbols();
+                {
+                    // Try to get symbols, but if none available, don't worry about it.
+                    try { result._original_method_reference.Module.ReadSymbols(); } catch { }
+                }
                 var symbol_reader = result._original_method_reference.Module.SymbolReader;
                 var method_debug_information = symbol_reader?.Read(result._method_definition);
                 Collection<SequencePoint> sequence_points = method_debug_information != null ? method_debug_information.SequencePoints : new Collection<SequencePoint>();

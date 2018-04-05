@@ -1,17 +1,17 @@
-﻿using Campy.Utils;
-using Mono.Cecil.Cil;
-using Mono.Cecil;
-using Mono.Collections.Generic;
-using Swigged.LLVM;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Text.RegularExpressions;
-using System;
-
-namespace Campy.Compiler
+﻿namespace Campy.Compiler
 {
+    using Mono.Cecil.Cil;
+    using Mono.Cecil;
+    using Mono.Collections.Generic;
+    using Swigged.LLVM;
+    using System.Collections.Generic;
+    using System.Diagnostics;
+    using System.IO;
+    using System.Linq;
+    using System.Text.RegularExpressions;
+    using System;
+    using Utils;
+
     /// <summary>
     /// Wrapper for CIL instructions that are implemented using Mono.Cecil.Cil.
     /// This class adds basic block graph structure on top of these instructions. There
@@ -19,36 +19,33 @@ namespace Campy.Compiler
     /// </summary>
     public class INST
     {
-        // Required for Mono to bb conversion.
         public Mono.Cecil.Cil.Instruction Instruction { get; private set; }
         public static List<INST> CallInstructions { get; private set; } = new List<INST>();
         public override string ToString() { return Instruction.ToString(); }
         public Mono.Cecil.Cil.OpCode OpCode { get { return Instruction.OpCode; } }
         public object Operand { get { return Instruction.Operand; } }
         public static int instruction_id = 1;
-
-        // Required for LLVM conversion.
         public BuilderRef Builder { get { return Block.Builder; } }
         public ContextRef LLVMContext { get; set; }
         public List<VALUE> LLVMInstructions { get; private set; }
         public CFG.Vertex Block { get; set; }
-        // Required instruction sequencing so we can translate groups of instructions.
         public virtual INST Next { get; set; }
-
         public SequencePoint SeqPoint { get; set; }
-
-        public virtual void ComputeStackLevel(JITER converter, ref int level_after)
-        {
-            throw new Exception("Must have an implementation for ComputeStackLevel! The instruction is: "
-                + this.ToString());
-        }
-
         private static Dictionary<string, MetadataRef> debug_files = new Dictionary<string, MetadataRef>();
         private static Dictionary<string, MetadataRef> debug_compile_units = new Dictionary<string, MetadataRef>();
         private static Dictionary<string, MetadataRef> debug_methods = new Dictionary<string, MetadataRef>();
         private static Dictionary<string, MetadataRef> debug_blocks = new Dictionary<string, MetadataRef>();
         public static DIBuilderRef dib;
         private static bool done_this;
+        public STATE StateIn { get; set; }
+        public STATE StateOut { get; set; }
+        public UInt32 TargetPointerSizeInBits = 64;
+
+        public virtual void ComputeStackLevel(JITER converter, ref int level_after)
+        {
+            throw new Exception("Must have an implementation for ComputeStackLevel! The instruction is: "
+                + this.ToString());
+        }
 
         public virtual void DebuggerInfo(JITER converter)
         {
@@ -152,20 +149,6 @@ namespace Campy.Compiler
             throw new Exception("Must have an implementation for Convert! The instruction is: "
                                 + this.ToString());
         }
-
-        private STATE _state_in;
-        public STATE StateIn
-        {
-            get { return _state_in; }
-            set { _state_in = value; }
-        }
-        private STATE _state_out;
-        public STATE StateOut
-        {
-            get { return _state_out; }
-            set { _state_out = value; }
-        }
-        public UInt32 TargetPointerSizeInBits = 64;
 
         public INST(Mono.Cecil.Cil.Instruction i)
         {

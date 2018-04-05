@@ -15,31 +15,22 @@ namespace Campy.Compiler
 
     public class IMPORTER
     {
-        private CFG _cfg;
-        private static List<ModuleDefinition> _loaded_modules;
-
-        // After studying this for a while, I've come to the conclusion that decompiling methods
-        // requires type information, as methods/"this" could be generic. So, we create a list of
-        // Tuple<MethodDefition, List<TypeReference>> that indicates the method, and generic parameters.
         private StackQueue<Tuple<MethodReference, List<TypeReference>>> _methods_to_do;
         private List<string> _methods_done;
 
         public bool Failed
         {
-            get;
-            internal set;
+            get; internal set;
         }
 
         public CFG Cfg
         {
-            get { return _cfg; }
-            set { _cfg = value; }
+            get; internal set;
         }
 
         public IMPORTER()
         {
-            _cfg = new CFG();
-            _loaded_modules = new List<ModuleDefinition>();
+            Cfg = new CFG();
             _methods_to_do = new StackQueue<Tuple<MethodReference, List<TypeReference>>>();
             _methods_done = new List<string>();
         }
@@ -49,8 +40,8 @@ namespace Campy.Compiler
             Failed = false; // Might be dubious to reset here.
             this.Add(methodInfo);
             this.ExtractBasicBlocks();
-            _cfg.OutputEntireGraph();
-            _cfg.OutputDotGraph();
+            Cfg.OutputEntireGraph();
+            Cfg.OutputDotGraph();
         }
 
         public void Add(MethodInfo method_info)
@@ -71,7 +62,7 @@ namespace Campy.Compiler
             // Do not analyze if nonsense.
             if (method_reference == null) return;
             // Do not analyze if already being or has been considered.
-            if (_cfg.MethodAvoid(method_reference.FullName)) return;
+            if (Cfg.MethodAvoid(method_reference.FullName)) return;
             if (_methods_done.Contains(method_reference.FullName)) return;
             foreach (var tuple in _methods_to_do)
             {
@@ -133,7 +124,6 @@ namespace Campy.Compiler
             ModuleDefinition module = ModuleDefinition.ReadModule(
                 assembly_file_name,
                 new ReaderParameters { AssemblyResolver = resolver, ReadSymbols = true});
-            _loaded_modules.Add(module);
             return module;
         }
 
@@ -227,24 +217,26 @@ namespace Campy.Compiler
             if (method_definition == null)
                 return;
             _methods_done.Add(method_definition.FullName);
-            int change_set = _cfg.StartChangeSet();
+            int change_set = Cfg.StartChangeSet();
             int instruction_count = method_definition.Body.Instructions.Count;
             List<Mono.Cecil.Cil.Instruction> split_point = new List<Mono.Cecil.Cil.Instruction>();
             // Each method is a leader of a block.
-            CFG.Vertex basic_block = (CFG.Vertex)_cfg.AddVertex(new CFG.Vertex(){Name = _cfg.NewNodeNumber().ToString()});
+            CFG.Vertex basic_block = (CFG.Vertex)Cfg.AddVertex(new CFG.Vertex(){Name = Cfg.NewNodeNumber().ToString()});
             basic_block._method_definition = method_definition;
             basic_block._original_method_reference = original_method_reference;
             basic_block.Entry = basic_block;
-            _cfg.Entries.Add(basic_block);
+            Cfg.Entries.Add(basic_block);
 
-            // Get debugging information on line/column/offset in method.
+            // Add instructions to the basic block, including debugging information.
+            // First, get debugging information on line/column/offset in method.
             if (!original_method_reference.Module.HasSymbols)
-                original_method_reference.Module.ReadSymbols();
+            {
+                // Try to get symbols, but if none available, don't worry about it.
+                try { original_method_reference.Module.ReadSymbols(); } catch { }
+            }
             var symbol_reader = original_method_reference.Module.SymbolReader;
             var method_debug_information = symbol_reader?.Read(method_definition);
             Collection<SequencePoint> sequence_points = method_debug_information != null ? method_debug_information.SequencePoints : new Collection<SequencePoint>();
-
-            // Add instructions to the basic block.
             for (int j = 0; j < instruction_count; ++j)
             {
                 Mono.Cecil.Cil.Instruction instruction = method_definition.Body.Instructions[j];
@@ -330,7 +322,7 @@ namespace Campy.Compiler
             // Split block at all jump targets.
             foreach (var i in ordered_leader_list)
             {
-                var owner = _cfg.Vertices.Where(
+                var owner = Cfg.Vertices.Where(
                     n => n.Instructions.Where(ins => ins.Instruction == i).Any()).ToList();
                 // Check if there are multiple nodes with the same instruction or if there isn't
                 // any node found containing the instruction. Either way, it's a programming error.
@@ -342,7 +334,7 @@ namespace Campy.Compiler
             }
 
             // Add in all edges.
-            var list_new_nodes = _cfg.PopChangeSet(change_set);
+            var list_new_nodes = Cfg.PopChangeSet(change_set);
             foreach (var node in list_new_nodes)
             {
                 int node_instruction_count = node.Instructions.Count;
@@ -362,28 +354,28 @@ namespace Campy.Compiler
                             {
                                 Mono.Cecil.Cil.Instruction target_instruction =
                                     last_instruction.Operand as Mono.Cecil.Cil.Instruction;
-                                CFG.Vertex target_node = _cfg.Vertices.First(
+                                CFG.Vertex target_node = Cfg.Vertices.First(
                                     (CFG.Vertex x) =>
                                     {
                                         if (!x.Instructions.First().Instruction.Equals(target_instruction))
                                             return false;
                                         return true;
                                     });
-                                _cfg.AddEdge(new CFG.Edge(){From = node, To = target_node});
+                                Cfg.AddEdge(new CFG.Edge(){From = node, To = target_node});
                             }
                             else if (last_instruction.Operand as Mono.Cecil.Cil.Instruction[] != null)
                             {
                                 foreach (Mono.Cecil.Cil.Instruction target_instruction in
                                     (last_instruction.Operand as Mono.Cecil.Cil.Instruction[]))
                                 {
-                                    CFG.Vertex target_node = _cfg.Vertices.First(
+                                    CFG.Vertex target_node = Cfg.Vertices.First(
                                         (CFG.Vertex x) =>
                                         {
                                             if (!x.Instructions.First().Instruction.Equals(target_instruction))
                                                 return false;
                                             return true;
                                         });
-                                    _cfg.AddEdge(new CFG.Edge(){From = node, To = target_node});
+                                    Cfg.AddEdge(new CFG.Edge(){From = node, To = target_node});
                                 }
                             }
                             else
@@ -420,18 +412,18 @@ namespace Campy.Compiler
                             if (next >= method_definition.Body.Instructions.Count)
                                 break;
                             var next_instruction = method_definition.Body.Instructions[next];
-                            var owner = _cfg.Vertices.Where(
+                            var owner = Cfg.Vertices.Where(
                                 n => n.Instructions.Where(ins => ins.Instruction == next_instruction).Any()).ToList();
                             if (owner.Count != 1)
                                 throw new Exception("Cannot find instruction!");
                             CFG.Vertex target_node = owner.FirstOrDefault();
-                            _cfg.AddEdge(new CFG.Edge(){From = node, To = target_node});
+                            Cfg.AddEdge(new CFG.Edge(){From = node, To = target_node});
                         }
                         break;
                 }
             }
-            _cfg.OutputDotGraph();
-            _cfg.OutputEntireGraph();
+            Cfg.OutputDotGraph();
+            Cfg.OutputEntireGraph();
         }
 
         /// <summary>
