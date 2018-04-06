@@ -414,6 +414,18 @@ function_space_specifier HEAP_PTR SystemString_FromCharPtrUTF16(U16 *pStr) {
 	return (HEAP_PTR)pSystemString;
 }
 
+host_space_specifier gpu_space_specifier void Global_SystemString_FromCharPtrUTF16(U16 *pStr, HEAP_PTR* ptr) {
+	tSystemString *pSystemString;
+	int strLen = 0;
+
+	while (pStr[strLen] != 0) {
+		strLen++;
+	}
+	pSystemString = CreateStringHeapObj(strLen);
+	memcpy(pSystemString->chars, pStr, strLen << 1);
+	*ptr = (HEAP_PTR)pSystemString;
+}
+
 function_space_specifier STRING2 SystemString_GetString(HEAP_PTR pThis_, U32 *pLength) {
 	tSystemString *pThis = (tSystemString*)pThis_;
 

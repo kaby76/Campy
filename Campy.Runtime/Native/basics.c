@@ -287,3 +287,49 @@ global_space_specifier void set_kernel_base_index(int i)
 {
 	_bcl_->kernel_base_index = i;
 }
+
+
+//function_space_specifier void store_static_field(char * type, char * field)
+//{
+//	tMD_FieldDef *pFieldDef;
+//	tMD_TypeDef *pParentType;
+//
+//	pFieldDef = (tMD_FieldDef*)GET_OP();
+//	pParentType = pFieldDef->pParentType;
+//	// Check that any type (static) constructor has been called
+//	if (pParentType->isTypeInitialised == 0) {
+//		// Set the state to initialised
+//		pParentType->isTypeInitialised = 1;
+//		// Initialise the type (if there is a static constructor)
+//		if (pParentType->pStaticConstructor != NULL) {
+//			tMethodState *pCallMethodState;
+//
+//			// Call static constructor
+//			// Need to re-run this instruction when we return from static constructor call
+//			//pCurrentMethodState->ipOffset -= 2;
+//			pCurOp -= 2;
+//			pCallMethodState = MethodState_Direct(pThread, pParentType->pStaticConstructor, pCurrentMethodState, 0);
+//			// There can be no parameters, so don't need to set them up
+//			CHANGE_METHOD_STATE(pCallMethodState);
+//			GO_NEXT_CHECK();
+//		}
+//	}
+//	if (op == JIT_LOADSTATICFIELD_CHECKTYPEINIT_F64) {
+//		U64 value;
+//		value = *(U64*)(pFieldDef->pMemory);
+//		PUSH_U64(value);
+//	}
+//	else if (op == JIT_LOADSTATICFIELD_CHECKTYPEINIT_VALUETYPE) {
+//		PUSH_VALUETYPE(pFieldDef->pMemory, pFieldDef->memSize, pFieldDef->memSize);
+//	}
+//	else {
+//		U32 value;
+//		if (op == JIT_LOADSTATICFIELDADDRESS_CHECKTYPEINIT) {
+//			value = (U32)(pFieldDef->pMemory);
+//		}
+//		else {
+//			value = *(U32*)pFieldDef->pMemory;
+//		}
+//		PUSH_U32(value);
+//	}
+//}

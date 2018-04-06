@@ -3336,6 +3336,23 @@
             : base(i)
         {
         }
+
+        public override void ComputeStackLevel(JITER converter, ref int level_after)
+        {
+            // No change in stack size with box.
+        }
+
+        public override INST Convert(JITER converter, STATE state)
+        {
+            var operand = this.Operand;
+            System.Type t = operand.GetType();
+            if (t.FullName == "Mono.Cecil.PointerType")
+                state._stack.Push(new VALUE(LLVM.ConstInt(LLVM.Int32Type(), 8, false)));
+            else
+                throw new Exception("Unimplemented sizeof");
+
+            return Next;
+        }
     }
 
     public class i_br : INST
@@ -5062,6 +5079,19 @@
         {
             level_after++;
         }
+
+        public override INST Convert(JITER converter, STATE state)
+        {
+            ValueRef nul = LLVM.ConstPointerNull(LLVM.PointerType(LLVM.VoidType(), 0));
+            var v = new VALUE(nul);
+
+            if (Campy.Utils.Options.IsOn("jit_trace"))
+                System.Console.WriteLine(v);
+            
+            state._stack.Push(v);
+
+            return Next;
+        }
     }
 
     public class i_ldobj : INST
@@ -5082,6 +5112,11 @@
         public override void ComputeStackLevel(JITER converter, ref int level_after)
         {
             level_after++;
+        }
+
+        public override INST Convert(JITER converter, STATE state)
+        {
+            return Next;
         }
     }
 
@@ -5737,10 +5772,16 @@
         {
         }
 
-    public override void ComputeStackLevel(JITER converter, ref int level_after)
-    {
-        level_after--;
-    }
+        public override void ComputeStackLevel(JITER converter, ref int level_after)
+        {
+            level_after--;
+        }
+
+        public override INST Convert(JITER converter, STATE state)
+        {
+            state._stack.Pop();
+            return Next;
+        }
     }
 
     public class i_readonly : INST
