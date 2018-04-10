@@ -1,10 +1,10 @@
-using System;
+﻿using System;
 using System.Linq;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace OddEvenSort
+namespace BatcherEvenOddMerge
 {
-    class OddEvenSort
+    public class BatcherOddEvenMergeSort
     {
         public static void swap(ref int i, ref int j)
         {
@@ -13,119 +13,77 @@ namespace OddEvenSort
             j = t;
         }
 
-        public static void Seq(int[] a)
+        // Adapted from http://www.iti.fh-flensburg.de/lang/algorithmen/sortieren/networks/oemen.htm
+
+        /** sorts a piece of length n of the array
+         * starting at position lo
+         */
+        public static void OddEvenMergeSort(int[] a, int lo, int n)
         {
-            int N = a.Length;
-            bool sorted = false;
-            while (!sorted)
+            if (n > 1)
             {
-                sorted = true;
-                int n2 = N / 2;
-                for (int i = 0; i < n2; ++i)
+                int m = n / 2;
+                OddEvenMergeSort(a, lo, m);
+                OddEvenMergeSort(a, lo + m, m);
+                OddEvenMerge(a, lo, n, 1);
+            }
+        }
+
+        /** lo is the starting position and
+         * n is the length of the piece to be merged,
+         * r is the distance of the elements to be compared
+         */
+        public static void OddEvenMerge(int[] a, int lo, int n, int r)
+        {
+            int m = r * 2;
+            if (m < n)
+            {
+                OddEvenMerge(a, lo, n, m); // even subsequence
+                OddEvenMerge(a, lo + r, n, m); // odd subsequence
+                for (int i = lo + r; i + r < lo + n; i += m)
+                    if (a[i] > a[i + r])
+                        swap(ref a[i], ref a[i + r]);
+            }
+            else if (a[lo] > a[lo + r])
+                swap(ref a[lo], ref a[lo + r]);
+        }
+
+        public static void show_pairs(int n)
+        {
+            for (int p = 1; p < n; p += p)
+            {
+                System.Console.WriteLine("p " + p);
+                for (int k = p; k > 0; k /= 2)
                 {
-                    int j = i * 2;
-                    if (a[j] > a[j + 1])
+                    System.Console.WriteLine("k " + k);
+                    for (int j = 0; j < k; j++)
                     {
-                        swap(ref a[j], ref a[j + 1]);
-                        sorted = false;
-                    }
-                }
-                for (int i = 0; i < n2 - 1; ++i)
-                {
-                    int j = i * 2 + 1;
-                    if (a[j] > a[j + 1])
-                    {
-                        swap(ref a[j], ref a[j + 1]);
-                        sorted = false;
+                        System.Console.WriteLine("j " + j);
+                        for (int i = k % p; i + k < n; i += k + k)
+                        {
+                            System.Console.WriteLine("i " + i);
+                            if ((i + j) / (p + p) == (i + j + k) / (p + p))
+                                System.Console.WriteLine((i + j).ToString() + " cmp " + (i + j + k).ToString());
+                        }
                     }
                 }
             }
         }
-
-        public static void Par(int[] a)
-        {
-            Campy.Parallel.Sticky(a);
-            int N = a.Length;
-            bool sorted = false;
-            while (!sorted)
-            {
-                sorted = true;
-                int n2 = N / 2;
-                Campy.Parallel.For(n2, i =>
-                {
-                    int j = i * 2;
-                    if (a[j] > a[j + 1])
-                    {
-                        swap(ref a[j], ref a[j + 1]);
-                        sorted = false;
-                    }
-                });
-                Campy.Parallel.For(n2 - 1, i =>
-                {
-                    int j = i * 2 + 1;
-                    if (a[j] > a[j + 1])
-                    {
-                        swap(ref a[j], ref a[j + 1]);
-                        sorted = false;
-                    }
-                });
-            }
-            Campy.Parallel.Sync();
-        }
-
-// Adapted from http://www.iti.fh-flensburg.de/lang/algorithmen/sortieren/networks/oemen.htm
-
-/** sorts a piece of length n of the array
- * starting at position lo
- */
-public static void Rec(int[] a, int lo, int n)
-{
-    if (n > 1)
-    {
-        int m = n / 2;
-        Rec(a, lo, m);
-        Rec(a, lo + m, m);
-        RecMerge(a, lo, n, 1);
-    }
-}
-
-/** lo is the starting position and
- * n is the length of the piece to be merged,
- * r is the distance of the elements to be compared
- */
-public static void RecMerge(int[] a, int lo, int n, int r)
-{
-    int m = r * 2;
-    if (m < n)
-    {
-        RecMerge(a, lo, n, m); // even subsequence
-        RecMerge(a, lo + r, n, m); // odd subsequence
-        for (int i = lo + r; i + r < lo + n; i += m)
-            if (a[i] > a[i + r])
-                swap(ref a[i], ref a[i + r]);
-    }
-    else if (a[lo] > a[lo + r])
-        swap(ref a[lo], ref a[lo + r]);
-}
     }
 
+
+    [TestClass]
     public class UnitTest1
     {
-        [Fact]
-        public void Test1()
+        [TestMethod]
+        public void TestMethod1()
         {
             Random rnd = new Random();
             int N = 8;
+            BatcherOddEvenMergeSort.show_pairs(N);
             {
                 int[] a = Enumerable.Range(0, N).ToArray().OrderBy(x => rnd.Next()).ToArray();
-                OddEvenSort.Seq(a);
-                for (int i = 0; i < N; ++i)
-                    if (a[i] != i)
-                        throw new Exception();
-            }
-            {
-                int[] a = Enumerable.Range(0, N).ToArray().OrderBy(x => rnd.Next()).ToArray();
-                OddEvenSort.Par(a);
+                BatcherOddEvenMergeSort.OddEvenMergeSort(a, 0, N);
                 for (int i = 0; i < N; ++i)
                     if (a[i] != i)
                         throw new Exception();

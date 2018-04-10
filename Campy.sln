@@ -79,15 +79,17 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CombSort", "Tests\CombSort\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MetaLayoutTest", "Tests\MetaLayoutTest\MetaLayoutTest.csproj", "{5D45630B-29A4-4196-9A31-C27B193EF1A4}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EvenOddSort", "Tests\EvenOddSort\EvenOddSort.csproj", "{3F9F084B-A671-4637-991D-0B963AC48B0B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OddEvenSort", "Tests\EvenOddSort\OddEvenSort.csproj", "{3F9F084B-A671-4637-991D-0B963AC48B0B}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArrayOfRefs", "Tests\ArrayOfRefs\ArrayOfRefs.csproj", "{8C811F6E-C9AA-4797-8B23-188011C52FB1}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Scan", "Tests\Scan\Scan.csproj", "{E41667EC-8255-4C39-8DEA-E31FCF2A38FF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TwoDimArrayGetAndSet", "Tests\TwoDimArrayGetAndSet\TwoDimArrayGetAndSet.csproj", "{832A493B-775F-472D-A93F-0A48006554DA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TwoDimArrayGetAndSet", "Tests\TwoDimArrayGetAndSet\TwoDimArrayGetAndSet.csproj", "{832A493B-775F-472D-A93F-0A48006554DA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RadixSort", "Tests\RadixSort\RadixSort.csproj", "{6C5CF2D2-310E-4BB7-85FF-32A585C15162}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RadixSort", "Tests\RadixSort\RadixSort.csproj", "{6C5CF2D2-310E-4BB7-85FF-32A585C15162}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BatcherEvenOddMerge", "Tests\BatcherEvenOddMerge\BatcherEvenOddMerge.csproj", "{B20E485A-CEB8-4D20-8E8D-82761CE5CF80}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -496,6 +498,18 @@ Global
 		{6C5CF2D2-310E-4BB7-85FF-32A585C15162}.Release|x64.Build.0 = Release|Any CPU
 		{6C5CF2D2-310E-4BB7-85FF-32A585C15162}.Release|x86.ActiveCfg = Release|Any CPU
 		{6C5CF2D2-310E-4BB7-85FF-32A585C15162}.Release|x86.Build.0 = Release|Any CPU
+		{B20E485A-CEB8-4D20-8E8D-82761CE5CF80}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B20E485A-CEB8-4D20-8E8D-82761CE5CF80}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B20E485A-CEB8-4D20-8E8D-82761CE5CF80}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{B20E485A-CEB8-4D20-8E8D-82761CE5CF80}.Debug|x64.Build.0 = Debug|Any CPU
+		{B20E485A-CEB8-4D20-8E8D-82761CE5CF80}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B20E485A-CEB8-4D20-8E8D-82761CE5CF80}.Debug|x86.Build.0 = Debug|Any CPU
+		{B20E485A-CEB8-4D20-8E8D-82761CE5CF80}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B20E485A-CEB8-4D20-8E8D-82761CE5CF80}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B20E485A-CEB8-4D20-8E8D-82761CE5CF80}.Release|x64.ActiveCfg = Release|Any CPU
+		{B20E485A-CEB8-4D20-8E8D-82761CE5CF80}.Release|x64.Build.0 = Release|Any CPU
+		{B20E485A-CEB8-4D20-8E8D-82761CE5CF80}.Release|x86.ActiveCfg = Release|Any CPU
+		{B20E485A-CEB8-4D20-8E8D-82761CE5CF80}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -526,6 +540,7 @@ Global
 		{E41667EC-8255-4C39-8DEA-E31FCF2A38FF} = {FD8F0C87-ED6C-498A-BE3A-B3B7F5B035C6}
 		{832A493B-775F-472D-A93F-0A48006554DA} = {FD8F0C87-ED6C-498A-BE3A-B3B7F5B035C6}
 		{6C5CF2D2-310E-4BB7-85FF-32A585C15162} = {FD8F0C87-ED6C-498A-BE3A-B3B7F5B035C6}
+		{B20E485A-CEB8-4D20-8E8D-82761CE5CF80} = {FD8F0C87-ED6C-498A-BE3A-B3B7F5B035C6}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {7839B59F-A0C2-4484-BEC1-39F0DAEE8A8D}
