@@ -24,7 +24,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-function_space_specifier void Gfs_init();
+function_space_specifier void CommonInitFileSystem();
 function_space_specifier void Gfs_add_file(char * name, char * file, size_t length, int * result);
 function_space_specifier void Gfs_remove_file(char * name, int * result);
 function_space_specifier void Gfs_open_file(char * name, int * result);

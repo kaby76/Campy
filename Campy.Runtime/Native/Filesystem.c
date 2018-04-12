@@ -31,12 +31,8 @@
 //function_space_specifier static boolean init;
 //function_space_specifier static int initial_size;
 
-__global__ void Bcl_Gfs_init()
-{
-	Gfs_init();
-}
 
-function_space_specifier void Gfs_init()
+function_space_specifier void CommonInitFileSystem()
 {
 	_bcl_->initial_size = 10;
 	_bcl_->names = (char**)Gmalloc(_bcl_->initial_size * sizeof(char*));
@@ -48,6 +44,21 @@ function_space_specifier void Gfs_init()
 	_bcl_->init = 1;
 }
 
+function_space_specifier void InternalInitFileSystem()
+{
+	CommonInitFileSystem();
+}
+
+__global__ void Bcl_Gfs_init()
+{
+	CommonInitFileSystem();
+}
+
+function_space_specifier void InternalGfsAddFile(void * name, void * file, size_t length, void * result)
+{
+	Gfs_add_file((char*)name, (char*)file, length, (int*)result);
+}
+
 __global__ void Bcl_Gfs_add_file(char * name, char * file, size_t length, int * result)
 {
 	Gfs_add_file(name, file, length, result);
@@ -55,7 +66,7 @@ __global__ void Bcl_Gfs_add_file(char * name, char * file, size_t length, int * 
 
 function_space_specifier void Gfs_add_file(char * name, char * file, size_t length, int * result)
 {
-	if (_bcl_->init == 0) Gfs_init();
+	if (_bcl_->init == 0) CommonInitFileSystem();
 	char ** ptr_name = _bcl_->names;
 	char ** ptr_file = _bcl_->files;
 	size_t * ptr_length = _bcl_->lengths;
@@ -88,7 +99,7 @@ __global__ void Bcl_Gfs_remove_file(char * name, int * result)
 function_space_specifier void Gfs_remove_file(char * name, int * result)
 {
 	// Delete a pseudo file system for the meta system to work,
-	if (_bcl_->init == 0) Gfs_init();
+	if (_bcl_->init == 0) CommonInitFileSystem();
 	char ** ptr_name = _bcl_->names;
 	char ** ptr_file = _bcl_->files;
 	size_t * ptr_length = _bcl_->lengths;
@@ -121,7 +132,7 @@ __global__ void Bcl_Gfs_open_file(char * name, int * result)
 
 function_space_specifier void Gfs_open_file(char * name, int * result)
 {
-	if (_bcl_->init == 0) Gfs_init();
+	if (_bcl_->init == 0) CommonInitFileSystem();
 	char ** ptr_name = _bcl_->names;
 	char ** ptr_file = _bcl_->files;
 	size_t * ptr_length = _bcl_->lengths;
@@ -149,7 +160,7 @@ __global__ void Bcl_Gfs_close_file(int file, int * result)
 
 function_space_specifier void Gfs_close_file(int file, int * result)
 {
-	if (_bcl_->init == 0) Gfs_init();
+	if (_bcl_->init == 0) CommonInitFileSystem();
 	*result = 0;
 }
 
@@ -160,7 +171,7 @@ __global__ void Bcl_Gfs_read(int file, char ** result)
 
 function_space_specifier void Gfs_read(int file, char ** result)
 {
-	if (_bcl_->init == 0) Gfs_init();
+	if (_bcl_->init == 0) CommonInitFileSystem();
 	*result = _bcl_->files[file];
 }
 
@@ -171,7 +182,7 @@ __global__ void Bcl_Gfs_length(int file, size_t * result)
 
 function_space_specifier void Gfs_length(int file, size_t * result)
 {
-	if (_bcl_->init == 0) Gfs_init();
+	if (_bcl_->init == 0) CommonInitFileSystem();
 	*result = _bcl_->lengths[file];
 }
 

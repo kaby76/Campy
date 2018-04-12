@@ -14,7 +14,8 @@
 gpu_space_specifier struct _BCL_t * _bcl_;
 function_space_specifier void Initialize_BCL0(void * g, size_t size, int count);
 
-global_space_specifier void Initialize_BCL_Globals(void * g, size_t size, int count, struct _BCL_t ** pbcl)
+
+function_space_specifier void CommonInitTheBcl(void * g, size_t size, int count, struct _BCL_t ** pbcl)
 {
 	// Erase the structure, then afterwards set everything up.
 	struct _BCL_t * bcl = (struct _BCL_t*)g;
@@ -63,7 +64,7 @@ global_space_specifier void Initialize_BCL_Globals(void * g, size_t size, int co
 	memset(bcl->jitCodeGoNext, 0, 1 * sizeof(struct tJITCodeInfo_));
 
 	// MetaData
-	bcl->tableRowSize = (unsigned int *) malloc(MAX_TABLES * sizeof(unsigned int));
+	bcl->tableRowSize = (unsigned int *)malloc(MAX_TABLES * sizeof(unsigned int));
 
 	// Pinvoke
 	bcl->pLoadedLibs = NULL;
@@ -90,6 +91,16 @@ global_space_specifier void Initialize_BCL_Globals(void * g, size_t size, int co
 
 	// Type
 	bcl->CorLibDone = 0;
+}
+
+function_space_specifier void __cdecl InternalInitTheBcl(void * g, size_t size, int count, void * s)
+{
+	CommonInitTheBcl(g, size, count, (_BCL_t**)s);
+}
+
+global_space_specifier void Initialize_BCL_Globals(void * g, size_t size, int count, struct _BCL_t ** pbcl)
+{
+	CommonInitTheBcl(g, size, count, pbcl);
 }
 
 global_space_specifier void Set_BCL_Globals(struct _BCL_t * bcl)
@@ -258,9 +269,21 @@ function_space_specifier void Gfree(void*  _Block)
 {
 }
 
+function_space_specifier void InternalInitializeBCL1()
+{
+	MetaData_Init();
+}
+
 global_space_specifier void Initialize_BCL1()
 {
 	MetaData_Init();
+}
+
+function_space_specifier void InternalInitializeBCL2()
+{
+	Type_Init();
+	Heap_Init();
+	Finalizer_Init();
 }
 
 global_space_specifier void Initialize_BCL2()
