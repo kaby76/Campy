@@ -28,6 +28,7 @@
 #include "Heap.h"
 #include "Type.h"
 
+// This structure must be kept consistent with code in Campy.Compiler, Campy.Runtime.Corlib, as well as this module.
 typedef struct tSystemArray_ tSystemArray;
 struct tSystemArray_ {
     PTR ptr_elements;
@@ -286,12 +287,21 @@ function_space_specifier tAsyncCall* System_Array_Reverse(PTR pThis_, PTR pParam
 function_space_specifier HEAP_PTR SystemArray_NewVector(tMD_TypeDef *pArrayTypeDef, U32 length) {
     U32 heapSize;
     tSystemArray *pArray;
-
-    heapSize = sizeof(tSystemArray) + length * pArrayTypeDef->pArrayElementType->arrayElementSize;
-    pArray = (tSystemArray*)Heap_Alloc(pArrayTypeDef, heapSize);
+	// The size of an array depends on the rank.
+	heapSize = sizeof(void*); // ptr to first element.
+	int next = sizeof(INT64); // size of rank = 1
+	heapSize += next;
+	next = sizeof(INT64) * 1; // assume rank = 1.
+	heapSize += next;
+	next = length * pArrayTypeDef->pArrayElementType->arrayElementSize;
+	heapSize += next;
+	pArray = (tSystemArray*)Heap_Alloc(pArrayTypeDef, heapSize);
+	pArray->ptr_elements = (PTR)((&(pArray->rank)) + 2);
+	pArray->rank = 1;
     *((&(pArray->rank)) + 1) = length;
     return (HEAP_PTR)pArray;
 }
+
 
 function_space_specifier void SystemArray_StoreElement(HEAP_PTR pThis_, U32 index, PTR value) {
     tSystemArray *pArray = (tSystemArray*)pThis_;

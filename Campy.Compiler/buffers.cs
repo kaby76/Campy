@@ -499,6 +499,7 @@
                         int rank = a.Rank;
                         int len = a.Length;
                         int bytes = SizeOf(a);
+
                         var destIntPtr = (byte*)to_gpu;
                         byte* df_ptr = destIntPtr;
                         byte* df_rank = df_ptr + BUFFERS.SizeOf(typeof(IntPtr));
@@ -589,7 +590,7 @@
                                     {
                                         if (Campy.Utils.Options.IsOn("copy_trace"))
                                             System.Console.WriteLine("Allocating GPU buf " + field_value);
-                                        gp = New(field_size);
+                                        gp = New(ff);
                                         _allocated_objects[field_value] = (IntPtr)gp;
                                     }
                                     DeepCopyToImplementation(gp, ip);
@@ -624,7 +625,8 @@
                                         var field_size = SizeOf(field_value);
                                         if (Campy.Utils.Options.IsOn("copy_trace"))
                                             System.Console.WriteLine("Allocating GPU buf " + field_value);
-                                        gp = New(field_size);
+//                                      gp = New(field_size);
+                                        gp = New(fi.FieldType);
                                         _allocated_objects[field_value] = (IntPtr)gp;
                                     }
                                     // Copy pointer to field.
@@ -1289,6 +1291,46 @@
             //{
             //    return Marshal.AllocHGlobal(bytes);
             //}
+        }
+
+        [global::System.Runtime.InteropServices.DllImport(
+            @"C:\Users\kenne\Documents\Campy2\ConsoleApp4\bin\Debug\Campy.Runtime.Wrapper.dll", EntryPoint =
+                "?GfsAddFile@@YAXPEAX0_K0@Z")]
+        public static extern System.IntPtr BclHeapAlloc(
+            [MarshalAs(UnmanagedType.LPStr)]string assemblyName,
+            [MarshalAs(UnmanagedType.LPStr)]string nameSpace,
+            [MarshalAs(UnmanagedType.LPStr)]string name);
+
+        public IntPtr New(Type type)
+        {
+            var assembly_name = type.Assembly.FullName;
+            var name_space = type.Namespace;
+            var name = type.FullName;
+            return BclHeapAlloc(assembly_name, name_space, name);
+        }
+
+
+        [global::System.Runtime.InteropServices.DllImport(
+            @"C:\Users\kenne\Documents\Campy2\ConsoleApp4\bin\Debug\Campy.Runtime.Wrapper.dll", EntryPoint =
+                "?BclArrayAlloc@@YAPEAXPEAD00H@Z")]
+        public static extern System.IntPtr BclArrayAlloc(
+            [MarshalAs(UnmanagedType.LPStr)]string assemblyName,
+            [MarshalAs(UnmanagedType.LPStr)]string nameSpace,
+            [MarshalAs(UnmanagedType.LPStr)]string name,
+            int length);
+
+        public IntPtr New(Array array)
+        {
+            Type type = array.GetType().GetElementType();
+
+            var tr = type.ToMonoTypeReference();
+            tr = RUNTIME.RewriteType(tr);
+
+            var assembly_name = tr.Module.Name;
+            var name_space = tr.Namespace;
+            var name = tr.Name;
+
+            return BclArrayAlloc(assembly_name, name_space, name, array.Length);
         }
 
         public void Free(IntPtr pointer)

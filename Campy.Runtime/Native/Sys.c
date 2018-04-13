@@ -40,14 +40,14 @@ function_space_specifier void Crash(const char *pMsg, ...) {
 	va_end(va);
 
 	Gprintf("\n\n");
-//
-//#ifdef WIN32
-//	{
-//		// Cause a delibrate exception, to get into debugger
-//		__debugbreak();
-//	}
-//#endif
-//
+
+#ifdef WIN32
+	{
+		// Cause a delibrate exception, to get into debugger
+		__debugbreak();
+	}
+#endif
+
 //	gpuexit(1);
 }
 

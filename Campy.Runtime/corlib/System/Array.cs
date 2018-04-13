@@ -160,7 +160,7 @@ namespace System {
 
 		#endregion
 
-        // Note, layout of fields is strict due to mapping with native code.
+        // Note, layout of fields is strict due to mapping with native code and higher up in Campy.Compiler.
 #pragma warning disable 0169, 0649
 	    private UInt64 ptr;
         private UInt64 rank;

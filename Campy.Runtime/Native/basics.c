@@ -5,6 +5,8 @@
 #include "JIT.h"
 #include "Type.h"
 #include "Finalizer.h"
+#include "Heap.h"
+#include "System.Array.h"
 #include "System.Net.Sockets.Socket.h"
 #include "Gprintf.h"
 #include <stdarg.h>
@@ -300,6 +302,12 @@ function_space_specifier void* Bcl_Heap_Alloc(STRING assemblyName, STRING nameSp
 	return result;
 }
 
+function_space_specifier void* Bcl_Array_Alloc(STRING assemblyName, STRING nameSpace, STRING name, int length)
+{
+	tMD_TypeDef* type_def = MetaData_GetTypeDefFromFullName(assemblyName, nameSpace, name);
+	type_def = Type_GetArrayTypeDef(type_def, NULL, NULL);
+	return (void*)SystemArray_NewVector(type_def, length);
+}
 
 function_space_specifier int get_kernel_base_index()
 {

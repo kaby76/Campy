@@ -33,3 +33,17 @@ __declspec(dllexport) void InitializeBCL2()
 {
 	InternalInitializeBCL2();
 }
+
+__device__ __host__ void* Bcl_Heap_Alloc(char* assemblyName, char* nameSpace, char* name);
+
+__declspec(dllexport) void* BclHeapAlloc(char* assemblyName, char* nameSpace, char* name)
+{
+	return Bcl_Heap_Alloc(assemblyName, nameSpace, name);
+}
+
+__device__ __host__ void* Bcl_Array_Alloc(char* assemblyName, char* nameSpace, char* name, int length);
+
+__declspec(dllexport) void* BclArrayAlloc(char* assemblyName, char* nameSpace, char* name, int length)
+{
+	return Bcl_Array_Alloc(assemblyName, nameSpace, name, length);
+}

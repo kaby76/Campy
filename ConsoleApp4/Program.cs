@@ -421,7 +421,7 @@ namespace ConsoleApp4
                         throw new Exception();
             }
 
-            FFT.FFT_Test();
+            //FFT.FFT_Test();
         }
     }
 }
