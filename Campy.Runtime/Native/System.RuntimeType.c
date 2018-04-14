@@ -134,7 +134,8 @@ function_space_specifier tAsyncCall* System_RuntimeType_GetGenericArguments(PTR 
 		}
 	}
 
-	ret = SystemArray_NewVector(_bcl_->types[TYPE_SYSTEM_ARRAY_TYPE], argCount);
+	U32 v = argCount;
+	ret = SystemArray_NewVector(_bcl_->types[TYPE_SYSTEM_ARRAY_TYPE], 1, &v);
 	// Allocate to return value straight away, so it cannot be GCed
 	*(HEAP_PTR*)pReturnValue = ret;
 

@@ -50,7 +50,8 @@ function_space_specifier tAsyncCall* System_ValueType_GetFields(PTR pThis_, PTR 
 		}
 	}
 
-	ret = SystemArray_NewVector(_bcl_->types[TYPE_SYSTEM_ARRAY_OBJECT], numInstanceFields << ((o2 == NULL)?0:1));
+	U32 v = numInstanceFields << ((o2 == NULL) ? 0 : 1);
+	ret = SystemArray_NewVector(_bcl_->types[TYPE_SYSTEM_ARRAY_OBJECT], 1, &v);
 
 	retOfs = 0;
 	for (i=0; i<pType->numFields; i++) {

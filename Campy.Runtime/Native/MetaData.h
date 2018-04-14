@@ -171,6 +171,7 @@ function_space_specifier PTR MetaData_GetTypeMethodField(tMetaData *pMetaData, I
 
 function_space_specifier tMD_TypeDef* MetaData_GetTypeDefFromName(tMetaData *pMetaData, STRING nameSpace, STRING name, tMD_TypeDef *pInNestedClass);
 function_space_specifier tMD_TypeDef* MetaData_GetTypeDefFromFullName(STRING assemblyName, STRING nameSpace, STRING name);
+function_space_specifier tMD_TypeDef* MetaData_GetTypeDefFromFullNameAndNestedType(STRING assemblyName, STRING nameSpace, STRING name, tMD_TypeDef* nested);
 function_space_specifier tMD_TypeDef* MetaData_GetTypeDefFromDefRefOrSpec(tMetaData *pMetaData, IDX_TABLE token, tMD_TypeDef **ppClassTypeArgs, tMD_TypeDef **ppMethodTypeArgs);
 function_space_specifier tMD_TypeDef* MetaData_GetTypeDefFromMethodDef(tMD_MethodDef *pMethodDef);
 function_space_specifier tMD_TypeDef* MetaData_GetTypeDefFromFieldDef(tMD_FieldDef *pFieldDef);

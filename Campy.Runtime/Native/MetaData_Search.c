@@ -201,6 +201,16 @@ function_space_specifier tMD_TypeDef* MetaData_GetTypeDefFromFullName(STRING ass
 	return MetaData_GetTypeDefFromName(pTypeMetaData, nameSpace, name, NULL);
 }
 
+function_space_specifier tMD_TypeDef* MetaData_GetTypeDefFromFullNameAndNestedType(STRING assemblyName, STRING nameSpace, STRING name, tMD_TypeDef* nested) {
+	tMetaData *pTypeMetaData;
+
+	pTypeMetaData = CLIFile_GetMetaDataForAssembly(assemblyName);
+
+	// Note that this cannot get a nested class, as this final parameter is always NULL
+	return MetaData_GetTypeDefFromName(pTypeMetaData, nameSpace, name, nested);
+}
+
+
 __global__
 void Bcl_MetaData_GetTypeDefFromDefRefOrSpec(tMetaData *pMetaData, IDX_TABLE token, tMD_TypeDef **ppClassTypeArgs, tMD_TypeDef **ppMethodTypeArgs, tMD_TypeDef** result)
 {

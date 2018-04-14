@@ -17,7 +17,7 @@ namespace Campy
 
         private Parallel()
         {
-            _converter = new Campy.Compiler.JITER();
+            _converter = JITER.Singleton;
             Buffer = new BUFFERS();
             //InitCuda();
             // var ok = GC.TryStartNoGCRegion(200000000);
@@ -77,18 +77,21 @@ namespace Campy
             {
                 unsafe
                 {
+
+                    //////// COMPILE KERNEL INTO GPU CODE ///////
+                    /////////////////////////////////////////////
                     var stopwatch_cuda_compile = new Stopwatch();
                     stopwatch_cuda_compile.Start();
-
                     IntPtr image = Singleton()._converter.JitCodeToImage(kernel.Method, kernel.Target);
                     CUfunction ptr_to_kernel = Singleton()._converter.GetCudaFunction(kernel.Method, image);
-
                     var elapse_cuda_compile = stopwatch_cuda_compile.Elapsed;
 
+
+                    //////// COPY DATA INTO GPU /////////////////
+                    /////////////////////////////////////////////
                     var stopwatch_deep_copy_to = new Stopwatch();
                     stopwatch_deep_copy_to.Reset();
                     stopwatch_deep_copy_to.Start();
-
                     BUFFERS buffer = Singleton().Buffer;
 
                     // Set up parameters.

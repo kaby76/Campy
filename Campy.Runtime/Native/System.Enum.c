@@ -42,8 +42,9 @@ function_space_specifier tAsyncCall* System_Enum_Internal_GetInfo(PTR pThis_, PT
 	HEAP_PTR names, values;
 
 	// An enum type always has just one non-literal field, with all other fields being the values.
-	names = SystemArray_NewVector(_bcl_->types[TYPE_SYSTEM_ARRAY_STRING], pEnumType->numFields - 1);
-	values = SystemArray_NewVector(_bcl_->types[TYPE_SYSTEM_ARRAY_INT32], pEnumType->numFields - 1);
+	U32 v = pEnumType->numFields - 1;
+	names = SystemArray_NewVector(_bcl_->types[TYPE_SYSTEM_ARRAY_STRING], 1, &v);
+	values = SystemArray_NewVector(_bcl_->types[TYPE_SYSTEM_ARRAY_INT32], 1, &v);
 	
 	for (i=0, retIndex=0; i<pEnumType->numFields; i++) {
 		tMD_FieldDef *pField = pEnumType->ppFields[i];

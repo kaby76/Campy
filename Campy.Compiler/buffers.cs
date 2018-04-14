@@ -163,18 +163,17 @@
         {
             IntPtr result = IntPtr.Zero;
             var type = to_gpu.GetType();
-            var btype = type;
-
-            result = _allocated_objects.Where(p => p.Key == to_gpu).FirstOrDefault().Value;
+            var find_object = _allocated_objects.Where(p => p.Key == to_gpu);
 
             // Allocate new buffer for object on GPU.
-            if (result == IntPtr.Zero)
+            if (!find_object.Any())
             {
                 if (Campy.Utils.Options.IsOn("copy_trace"))
                     System.Console.WriteLine("Allocating GPU buf " + to_gpu);
-                result = New(BUFFERS.SizeOf(btype));
+                result = New(BUFFERS.SizeOf(type));
                 _allocated_objects[to_gpu] = result;
             }
+            else result = find_object.First().Value;
 
             // Copy to GPU if it hasn't been done before.
             if (!_copied_to_gpu.Contains(result))
@@ -1293,44 +1292,65 @@
             //}
         }
 
-        [global::System.Runtime.InteropServices.DllImport(
-            @"C:\Users\kenne\Documents\Campy2\ConsoleApp4\bin\Debug\Campy.Runtime.Wrapper.dll", EntryPoint =
-                "?GfsAddFile@@YAXPEAX0_K0@Z")]
-        public static extern System.IntPtr BclHeapAlloc(
-            [MarshalAs(UnmanagedType.LPStr)]string assemblyName,
-            [MarshalAs(UnmanagedType.LPStr)]string nameSpace,
-            [MarshalAs(UnmanagedType.LPStr)]string name);
+        [global::System.Runtime.InteropServices.DllImport(@"C:\Users\kenne\Documents\Campy2\ConsoleApp4\bin\Debug\Campy.Runtime.Wrapper.dll", EntryPoint = "?BclHeapAlloc@@YAPEAXPEAX@Z")]
+        public static extern System.IntPtr BclHeapAlloc(System.IntPtr bcl_type);
+
+        [global::System.Runtime.InteropServices.DllImport(@"C:\Users\kenne\Documents\Campy2\ConsoleApp4\bin\Debug\Campy.Runtime.Wrapper.dll", EntryPoint = "?BclGetMetaOfType@@YAPEAXPEAD00PEAX@Z")]
+        public static extern System.IntPtr BclGetMetaOfType(
+            [MarshalAs(UnmanagedType.LPStr)] string assemblyName,
+            [MarshalAs(UnmanagedType.LPStr)] string nameSpace,
+            [MarshalAs(UnmanagedType.LPStr)] string name,
+            System.IntPtr nested);
+
+        private IntPtr GetBclType(Type type)
+        {
+            Stack<Type> chain = new Stack<Type>();
+            while (type != null)
+            {
+                chain.Push(type);
+                type = type.DeclaringType;
+            }
+
+            System.IntPtr result = System.IntPtr.Zero;
+
+            while (chain.Any())
+            {
+                type = chain.Pop();
+                var tr = type.ToMonoTypeReference();
+                tr = RUNTIME.RewriteType(tr);
+                var assembly_name = tr.Module.Name;
+                var name_space = tr.Namespace;
+                var name = tr.Name;
+                // Make sure assembly is placed in GPU BCL file system.
+                JITER.Singleton.AddAssemblyToFileSystem(tr.Module);
+                result = BclGetMetaOfType(assembly_name, name_space, name, result);
+            }
+
+            return result;
+        }
 
         public IntPtr New(Type type)
         {
-            var assembly_name = type.Assembly.FullName;
-            var name_space = type.Namespace;
-            var name = type.FullName;
-            return BclHeapAlloc(assembly_name, name_space, name);
+            var bcl_type = GetBclType(type);
+            return BclHeapAlloc(bcl_type);
         }
 
 
-        [global::System.Runtime.InteropServices.DllImport(
-            @"C:\Users\kenne\Documents\Campy2\ConsoleApp4\bin\Debug\Campy.Runtime.Wrapper.dll", EntryPoint =
-                "?BclArrayAlloc@@YAPEAXPEAD00H@Z")]
+        [global::System.Runtime.InteropServices.DllImport(@"C:\Users\kenne\Documents\Campy2\ConsoleApp4\bin\Debug\Campy.Runtime.Wrapper.dll", EntryPoint = "?BclArrayAlloc@@YAPEAXPEAXHPEAI@Z")]
         public static extern System.IntPtr BclArrayAlloc(
-            [MarshalAs(UnmanagedType.LPStr)]string assemblyName,
-            [MarshalAs(UnmanagedType.LPStr)]string nameSpace,
-            [MarshalAs(UnmanagedType.LPStr)]string name,
-            int length);
+            System.IntPtr bcl_type,
+            int rank,
+            uint[] lengths);
 
         public IntPtr New(Array array)
         {
             Type type = array.GetType().GetElementType();
+            var bcl_type = GetBclType(type);
 
-            var tr = type.ToMonoTypeReference();
-            tr = RUNTIME.RewriteType(tr);
+            uint[] lengths = new uint[array.Rank];
+            for (int i = 0; i < array.Rank; ++i) lengths[i] = (uint)array.GetLength(i);
 
-            var assembly_name = tr.Module.Name;
-            var name_space = tr.Namespace;
-            var name = tr.Name;
-
-            return BclArrayAlloc(assembly_name, name_space, name, array.Length);
+            return BclArrayAlloc(bcl_type, array.Rank, lengths);
         }
 
         public void Free(IntPtr pointer)

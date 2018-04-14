@@ -371,6 +371,16 @@ namespace ConsoleApp4
             Campy.Utils.Options.Set("runtime_trace");
         }
 
+        class A
+        {
+            public int X { get; set; }
+
+            public int Score(A b)
+            {
+                return X + b.X;
+            }
+        }
+
         static void Main(string[] args)
         {
             //{
@@ -390,6 +400,21 @@ namespace ConsoleApp4
             //}
 
             StartDebugging();
+
+            {
+                A[] array = new A[10];
+                for (int i = 0; i < 10; ++i) array[i] = new A();
+
+                Campy.Parallel.For(10, i =>
+                {
+                    array[i].X = i;
+                });
+
+                for (int i = 0; i < 10; i++)
+                {
+                    if (array[i].X != i) throw new Exception();
+                }
+            }
 
             //string[] strings = new string[] {"a", "bb", "ccc"};
             //int[] len = new int[strings.Length];

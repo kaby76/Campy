@@ -1,3 +1,7 @@
+#include "_BCL_.h"
+#include "MetaData.h"
+#include "System.Array.h"
+#include "Type.h"
 
 __device__  __host__ void __cdecl InternalInitTheBcl(void * g, size_t size, int count, void * s);
 
@@ -34,16 +38,21 @@ __declspec(dllexport) void InitializeBCL2()
 	InternalInitializeBCL2();
 }
 
-__device__ __host__ void* Bcl_Heap_Alloc(char* assemblyName, char* nameSpace, char* name);
 
-__declspec(dllexport) void* BclHeapAlloc(char* assemblyName, char* nameSpace, char* name)
+__declspec(dllexport) void* BclHeapAlloc(void* type_def)
 {
-	return Bcl_Heap_Alloc(assemblyName, nameSpace, name);
+	void * result = (void*)Heap_AllocType((tMD_TypeDef *)type_def);
+	return result;
 }
 
-__device__ __host__ void* Bcl_Array_Alloc(char* assemblyName, char* nameSpace, char* name, int length);
-
-__declspec(dllexport) void* BclArrayAlloc(char* assemblyName, char* nameSpace, char* name, int length)
+__declspec(dllexport) void* BclArrayAlloc(void* element_type_def, int rank, unsigned int* lengths)
 {
-	return Bcl_Array_Alloc(assemblyName, nameSpace, name, length);
+	tMD_TypeDef* array_type_def = Type_GetArrayTypeDef((tMD_TypeDef*)element_type_def, NULL, NULL);
+	return (void*)SystemArray_NewVector(array_type_def, rank, lengths);
 }
+
+__declspec(dllexport) void* BclGetMetaOfType(char* assemblyName, char* nameSpace, char* name, void* nested)
+{
+	return (void*)MetaData_GetTypeDefFromFullNameAndNestedType(assemblyName, nameSpace, name, (tMD_TypeDef*)nested);
+}
+

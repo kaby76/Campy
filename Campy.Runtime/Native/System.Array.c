@@ -234,7 +234,8 @@ function_space_specifier tAsyncCall* System_Array_Resize(PTR pThis_, PTR pParams
     newSize = *(U32*)p++;
 
     pOldArray = (tSystemArray*)*ppArray_;
-    U32 len = *((&(pOldArray->rank)) + 1);
+    U32 rank = *((&(pOldArray->rank)) + 1);
+	int len = *((&(pOldArray->rank)) + 2);;
     oldSize = len;
 
     if (oldSize == newSize) {
@@ -243,7 +244,7 @@ function_space_specifier tAsyncCall* System_Array_Resize(PTR pThis_, PTR pParams
     }
 
     pArrayTypeDef = Heap_GetType(*ppArray_);
-    pHeap = SystemArray_NewVector(pArrayTypeDef, newSize);
+    pHeap = SystemArray_NewVector(pArrayTypeDef, rank, &newSize);
     pNewArray = (tSystemArray*)pHeap;
     *ppArray_ = pHeap;
     PTR beginning_of_elements = pNewArray->ptr_elements;
@@ -284,21 +285,26 @@ function_space_specifier tAsyncCall* System_Array_Reverse(PTR pThis_, PTR pParam
     return NULL;
 }
 
-function_space_specifier HEAP_PTR SystemArray_NewVector(tMD_TypeDef *pArrayTypeDef, U32 length) {
+function_space_specifier HEAP_PTR SystemArray_NewVector(tMD_TypeDef *pArrayTypeDef, U32 rank, U32* lengths) {
     U32 heapSize;
     tSystemArray *pArray;
 	// The size of an array depends on the rank.
 	heapSize = sizeof(void*); // ptr to first element.
-	int next = sizeof(INT64); // size of rank = 1
+	int next = sizeof(INT64); // for rank
 	heapSize += next;
-	next = sizeof(INT64) * 1; // assume rank = 1.
+	next = sizeof(INT64) * rank;
 	heapSize += next;
-	next = length * pArrayTypeDef->pArrayElementType->arrayElementSize;
+	next = 1;
+	for (int i = 0; i < rank; ++i) next *= lengths[i];
+	next = next * pArrayTypeDef->pArrayElementType->arrayElementSize;
 	heapSize += next;
 	pArray = (tSystemArray*)Heap_Alloc(pArrayTypeDef, heapSize);
-	pArray->ptr_elements = (PTR)((&(pArray->rank)) + 2);
-	pArray->rank = 1;
-    *((&(pArray->rank)) + 1) = length;
+	pArray->ptr_elements = (PTR)((&(pArray->rank)) + 1 + rank);
+	pArray->rank = rank;
+	for (int i = 0; i < rank; ++i)
+	{
+		*((&(pArray->rank)) + 1 + i) = *lengths;
+	}
     return (HEAP_PTR)pArray;
 }
 

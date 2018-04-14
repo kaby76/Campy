@@ -447,8 +447,18 @@ namespace Campy.Compiler
         private static bool init;
         private Dictionary<MethodInfo, IntPtr> method_to_image;
         private bool done_init;
+        private static JITER _singleton;
 
-        public JITER()
+        public static JITER Singleton
+        {
+            get
+            {
+                if (_singleton == null) _singleton = new JITER();
+                return _singleton;
+            }
+        }
+
+        private JITER()
         {
             global_llvm_module = default(ModuleRef);
             all_llvm_modules = new List<ModuleRef>();
@@ -693,8 +703,7 @@ namespace Campy.Compiler
             return current;
         }
 
-        private bool TypeUsingGeneric()
-        { return false; }
+        private bool TypeUsingGeneric() { return false; }
 
         public List<CFG.Vertex> InstantiateGenerics(IEnumerable<CFG.Vertex> change_set, List<System.Type> list_of_data_types_used, List<Mono.Cecil.TypeReference> list_of_mono_data_types_used)
         {
@@ -2008,8 +2017,6 @@ namespace Campy.Compiler
             return helloWorld;
         }
 
-        private bool all_new = true;
-
         [global::System.Runtime.InteropServices.DllImport(@"C:\Users\kenne\Documents\Campy2\ConsoleApp4\bin\Debug\Campy.Runtime.Wrapper.dll", EntryPoint = "?InitTheBcl@@YAXPEAX_KH0@Z")]
         public static extern void InitTheBcl(System.IntPtr a1, long a2, int a3, System.IntPtr a4);
 
@@ -2024,6 +2031,28 @@ namespace Campy.Compiler
 
         [global::System.Runtime.InteropServices.DllImport(@"C:\Users\kenne\Documents\Campy2\ConsoleApp4\bin\Debug\Campy.Runtime.Wrapper.dll", EntryPoint = "?InitializeBCL2@@YAXXZ")]
         public static extern void InitializeBCL2();
+
+    
+        public void AddAssemblyToFileSystem(Mono.Cecil.ModuleDefinition module)
+        {
+            // Set up corlib.dll in file system.
+            string full_path_assem = module.FileName;
+            string assem = Path.GetFileName(full_path_assem);
+            Stream stream = new FileStream(full_path_assem, FileMode.Open, FileAccess.Read, FileShare.Read);
+            var corlib_bytes_handle_len = stream.Length;
+            var corlib_bytes = new byte[corlib_bytes_handle_len];
+            stream.Read(corlib_bytes, 0, (int)corlib_bytes_handle_len);
+            var corlib_bytes_handle = GCHandle.Alloc(corlib_bytes, GCHandleType.Pinned);
+            var corlib_bytes_intptr = corlib_bytes_handle.AddrOfPinnedObject();
+            stream.Close();
+            stream.Dispose();
+            var ptrx = Marshal.StringToHGlobalAnsi(assem);
+            BUFFERS buffers = new BUFFERS();
+            IntPtr pointer1 = buffers.New(assem.Length + 1);
+            BUFFERS.Cp(pointer1, ptrx, assem.Length + 1);
+            var pointer4 = buffers.New(sizeof(int));
+            GfsAddFile(pointer1, corlib_bytes_intptr, corlib_bytes_handle_len, pointer4);
+        }
 
         public void InitBCL(CUmodule mod)
         {
@@ -2045,27 +2074,30 @@ namespace Campy.Compiler
                 {
                     InitFileSystem();
 
-                    // Set up corlib.dll in file system.
-                    string full_path_assem = RUNTIME.FindCoreLib();
-                    string assem = Path.GetFileName(full_path_assem);
-                    Stream stream = new FileStream(full_path_assem, FileMode.Open, FileAccess.Read, FileShare.Read);
-                    var corlib_bytes_handle_len = stream.Length;
-                    var corlib_bytes = new byte[corlib_bytes_handle_len];
-                    stream.Read(corlib_bytes, 0, (int) corlib_bytes_handle_len);
-                    var corlib_bytes_handle = GCHandle.Alloc(corlib_bytes, GCHandleType.Pinned);
-                    var corlib_bytes_intptr = corlib_bytes_handle.AddrOfPinnedObject();
-                    stream.Close();
-                    stream.Dispose();
-                    var ptrx = Marshal.StringToHGlobalAnsi(assem);
-                    BUFFERS buffers = new BUFFERS();
-                    IntPtr pointer1 = buffers.New(assem.Length + 1);
-                    BUFFERS.Cp(pointer1, ptrx, assem.Length + 1);
-                    var pointer4 = buffers.New(sizeof(int));
-
-                    GfsAddFile(pointer1, corlib_bytes_intptr, corlib_bytes_handle_len, pointer4);
+                    {
+                        // Set up corlib.dll in file system.
+                        string full_path_assem = RUNTIME.FindCoreLib();
+                        string assem = Path.GetFileName(full_path_assem);
+                        Stream stream = new FileStream(full_path_assem, FileMode.Open, FileAccess.Read, FileShare.Read);
+                        var corlib_bytes_handle_len = stream.Length;
+                        var corlib_bytes = new byte[corlib_bytes_handle_len];
+                        stream.Read(corlib_bytes, 0, (int)corlib_bytes_handle_len);
+                        var corlib_bytes_handle = GCHandle.Alloc(corlib_bytes, GCHandleType.Pinned);
+                        var corlib_bytes_intptr = corlib_bytes_handle.AddrOfPinnedObject();
+                        stream.Close();
+                        stream.Dispose();
+                        var ptrx = Marshal.StringToHGlobalAnsi(assem);
+                        BUFFERS buffers = new BUFFERS();
+                        IntPtr pointer1 = buffers.New(assem.Length + 1);
+                        BUFFERS.Cp(pointer1, ptrx, assem.Length + 1);
+                        var pointer4 = buffers.New(sizeof(int));
+                        GfsAddFile(pointer1, corlib_bytes_intptr, corlib_bytes_handle_len, pointer4);
+                    }
 
                     InitializeBCL1();
+
                     InitializeBCL2();
+
                     done_init = true;
                 }
             }

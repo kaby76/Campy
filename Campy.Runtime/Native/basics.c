@@ -295,18 +295,11 @@ global_space_specifier void Initialize_BCL2()
 	Finalizer_Init();
 }
 
-function_space_specifier void* Bcl_Heap_Alloc(STRING assemblyName, STRING nameSpace, STRING name)
-{
-	tMD_TypeDef* type_def = MetaData_GetTypeDefFromFullName(assemblyName, nameSpace, name);
-	void * result = Heap_AllocType(type_def);
-	return result;
-}
 
-function_space_specifier void* Bcl_Array_Alloc(STRING assemblyName, STRING nameSpace, STRING name, int length)
+function_space_specifier void* Bcl_Array_Alloc(tMD_TypeDef* element_type_def, int rank, unsigned int* lengths)
 {
-	tMD_TypeDef* type_def = MetaData_GetTypeDefFromFullName(assemblyName, nameSpace, name);
-	type_def = Type_GetArrayTypeDef(type_def, NULL, NULL);
-	return (void*)SystemArray_NewVector(type_def, length);
+	tMD_TypeDef* array_type_def = Type_GetArrayTypeDef(element_type_def, NULL, NULL);
+	return (void*)SystemArray_NewVector(array_type_def, rank, lengths);
 }
 
 function_space_specifier int get_kernel_base_index()

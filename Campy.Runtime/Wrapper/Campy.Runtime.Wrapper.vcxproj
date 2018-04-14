@@ -304,7 +304,9 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
     </CudaCompile>
     <CudaCompile Include="..\Native\Filesystem.c" />
     <CudaCompile Include="kernel.cu" />
-    <CudaCompile Include="_wrapper.cu" />
+    <CudaCompile Include="_wrapper.cu">
+      <Include Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">..\Native</Include>
+    </CudaCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
