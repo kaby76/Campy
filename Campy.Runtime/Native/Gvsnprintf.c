@@ -568,10 +568,12 @@ function_space_specifier int Gsprintf(
 
 function_space_specifier int Gprintf(const char * _Format, ...)
 {
-	va_list arg;
-	va_start(arg, _Format);
-	int done = printf(_Format, arg);
-	va_end(arg);
+	va_list va;
+	va_start(va, _Format);
+	char buf[10000];
+	Gvsprintf(buf, _Format, va);
+	va_end(va);
+	int done = printf(buf); // Native CUDA.
 	return done;
 }
 

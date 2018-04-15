@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 
 namespace BatcherEvenOddMerge
 {
@@ -72,10 +72,9 @@ namespace BatcherEvenOddMerge
     }
 
 
-    [TestClass]
     public class UnitTest1
     {
-        [TestMethod]
+        [Fact]
         public void TestMethod1()
         {
             Random rnd = new Random();

@@ -20,4 +20,8 @@
   <PropertyGroup>
     <PostBuildEvent>copy  "$(SolutionDir)Campy.Runtime\Corlib\bin\Debug\net20\*.*" &amp;&amp; copy  "$(SolutionDir)x64\Debug\*.*"</PostBuildEvent>
   </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
 </Project>

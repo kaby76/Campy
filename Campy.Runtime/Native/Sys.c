@@ -31,14 +31,12 @@ function_space_specifier void Crash(const char *pMsg, ...) {
 	va_list va;
 
 	Gprintf("\n\n*** CRASH ***\n");
-	printf("%s\n", pMsg);
 
 	va_start(va, pMsg);
 	char buf[10000];
 	Gvsprintf(buf, pMsg, va);
-	Gprintf("%s", buf);
 	va_end(va);
-
+	Gprintf(buf);
 	Gprintf("\n\n");
 
 #ifdef WIN32
