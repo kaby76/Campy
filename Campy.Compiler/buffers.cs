@@ -182,6 +182,9 @@
             return result;
         }
 
+        [global::System.Runtime.InteropServices.DllImport(@"C:\Users\kenne\Documents\Campy2\x64\Debug\Campy.Runtime.Wrapper.dll", EntryPoint = "?GcCollect@@YAXXZ")]
+        public static extern void GcCollect();
+
         public void SynchDataStructures()
         {
             // Copy all pointers from shared global or device memory back to C# space.
@@ -227,6 +230,8 @@
                 _allocated_buffers.Remove(v);
                 Free(v);
             }
+            // GC.
+            //GcCollect();
 
         }
 
@@ -1148,7 +1153,8 @@
                         {
                             if (Campy.Utils.Options.IsOn("copy_trace"))
                                 System.Console.WriteLine("Allocating GPU buf " + size_element);
-                            gp = New(size_element);
+                            gp = New(from_element_value.GetType());
+                            //gp = New(size_element);
                             _allocated_objects[from_element_value] = (IntPtr)gp;
                         }
                         DeepCopyToImplementation(gp, to_gpu);
@@ -1292,10 +1298,10 @@
             //}
         }
 
-        [global::System.Runtime.InteropServices.DllImport(@"C:\Users\kenne\Documents\Campy2\ConsoleApp4\bin\Debug\Campy.Runtime.Wrapper.dll", EntryPoint = "?BclHeapAlloc@@YAPEAXPEAX@Z")]
+        [global::System.Runtime.InteropServices.DllImport(@"C:\Users\kenne\Documents\Campy2\x64\Debug\Campy.Runtime.Wrapper.dll", EntryPoint = "?BclHeapAlloc@@YAPEAXPEAX@Z")]
         public static extern System.IntPtr BclHeapAlloc(System.IntPtr bcl_type);
 
-        [global::System.Runtime.InteropServices.DllImport(@"C:\Users\kenne\Documents\Campy2\ConsoleApp4\bin\Debug\Campy.Runtime.Wrapper.dll", EntryPoint = "?BclGetMetaOfType@@YAPEAXPEAD00PEAX@Z")]
+        [global::System.Runtime.InteropServices.DllImport(@"C:\Users\kenne\Documents\Campy2\x64\Debug\Campy.Runtime.Wrapper.dll", EntryPoint = "?BclGetMetaOfType@@YAPEAXPEAD00PEAX@Z")]
         public static extern System.IntPtr BclGetMetaOfType(
             [MarshalAs(UnmanagedType.LPStr)] string assemblyName,
             [MarshalAs(UnmanagedType.LPStr)] string nameSpace,
@@ -1336,7 +1342,7 @@
         }
 
 
-        [global::System.Runtime.InteropServices.DllImport(@"C:\Users\kenne\Documents\Campy2\ConsoleApp4\bin\Debug\Campy.Runtime.Wrapper.dll", EntryPoint = "?BclArrayAlloc@@YAPEAXPEAXHPEAI@Z")]
+        [global::System.Runtime.InteropServices.DllImport(@"C:\Users\kenne\Documents\Campy2\x64\Debug\Campy.Runtime.Wrapper.dll", EntryPoint = "?BclArrayAlloc@@YAPEAXPEAXHPEAI@Z")]
         public static extern System.IntPtr BclArrayAlloc(
             System.IntPtr bcl_type,
             int rank,
@@ -1355,6 +1361,14 @@
 
         public void Free(IntPtr pointer)
         {
+            // There are two buffer types: one for straight unmanaged buffers shared between CPU and GPU,
+            // and the other for BCL managed object. We need to nuke each appropriately.
+            ulong p = (ulong) pointer;
+            ulong l = (ulong) RUNTIME.BclPtr;
+            ulong h = l + RUNTIME.BclPtrSize;
+            if (p >= l && p < h)
+                return;
+
             if (Campy.Utils.Options.IsOn("memory_trace"))
                 System.Console.WriteLine("Cu Free {0:X}", pointer.ToInt64());
             var res = Cuda.cuMemFreeHost(pointer);

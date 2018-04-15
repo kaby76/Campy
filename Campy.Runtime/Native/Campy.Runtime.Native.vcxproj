@@ -91,8 +91,6 @@
     </ClCompile>
     <CudaCompile>
       <TargetMachinePlatform>64</TargetMachinePlatform>
-      <NvccCompilation>compile</NvccCompilation>
-      <CudaRuntime>Static</CudaRuntime>
       <GenerateRelocatableDeviceCode>true</GenerateRelocatableDeviceCode>
       <AdditionalCompilerOptions>
       </AdditionalCompilerOptions>
@@ -138,6 +136,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="basics.h" />
     <ClInclude Include="CIL_OpCodes.h" />
     <ClInclude Include="CLIFile.h" />
     <ClInclude Include="Compat.h" />

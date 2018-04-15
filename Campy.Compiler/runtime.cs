@@ -796,8 +796,9 @@
             CudaHelpers.CheckCudaError(Cuda.cuModuleGetFunction(out CUfunction function, module, "_Z15Set_BCL_GlobalsP6_BCL_t"));
             return function;
         }
-        
+
         public static IntPtr BclPtr { get; set; }
+        public static ulong BclPtrSize { get; set; }
 
         public static TypeReference RewriteType(TypeReference tr)
         {

@@ -616,15 +616,7 @@ namespace Campy.Compiler
                     LLVM.FunctionType(LLVM.Int32Type(),
                         new TypeRef[] { }, false)));
 
-            InitializeBCLRewrites();
-
             RUNTIME.Initialize();
-
-        }
-
-        private void InitializeBCLRewrites()
-        {
-
         }
 
         public static void InitCuda()
@@ -2017,19 +2009,19 @@ namespace Campy.Compiler
             return helloWorld;
         }
 
-        [global::System.Runtime.InteropServices.DllImport(@"C:\Users\kenne\Documents\Campy2\ConsoleApp4\bin\Debug\Campy.Runtime.Wrapper.dll", EntryPoint = "?InitTheBcl@@YAXPEAX_KH0@Z")]
+        [global::System.Runtime.InteropServices.DllImport(@"C:\Users\kenne\Documents\Campy2\x64\Debug\Campy.Runtime.Wrapper.dll", EntryPoint = "?InitTheBcl@@YAXPEAX_KH0@Z")]
         public static extern void InitTheBcl(System.IntPtr a1, long a2, int a3, System.IntPtr a4);
 
-        [global::System.Runtime.InteropServices.DllImport(@"C:\Users\kenne\Documents\Campy2\ConsoleApp4\bin\Debug\Campy.Runtime.Wrapper.dll", EntryPoint = "?InitFileSystem@@YAXXZ")]
+        [global::System.Runtime.InteropServices.DllImport(@"C:\Users\kenne\Documents\Campy2\x64\Debug\Campy.Runtime.Wrapper.dll", EntryPoint = "?InitFileSystem@@YAXXZ")]
         public static extern void InitFileSystem();
 
-        [global::System.Runtime.InteropServices.DllImport(@"C:\Users\kenne\Documents\Campy2\ConsoleApp4\bin\Debug\Campy.Runtime.Wrapper.dll", EntryPoint = "?GfsAddFile@@YAXPEAX0_K0@Z")]
+        [global::System.Runtime.InteropServices.DllImport(@"C:\Users\kenne\Documents\Campy2\x64\Debug\Campy.Runtime.Wrapper.dll", EntryPoint = "?GfsAddFile@@YAXPEAX0_K0@Z")]
         public static extern void GfsAddFile(System.IntPtr name, System.IntPtr file, long length, System.IntPtr result);
 
-        [global::System.Runtime.InteropServices.DllImport(@"C:\Users\kenne\Documents\Campy2\ConsoleApp4\bin\Debug\Campy.Runtime.Wrapper.dll", EntryPoint = "?InitializeBCL1@@YAXXZ")]
+        [global::System.Runtime.InteropServices.DllImport(@"C:\Users\kenne\Documents\Campy2\x64\Debug\Campy.Runtime.Wrapper.dll", EntryPoint = "?InitializeBCL1@@YAXXZ")]
         public static extern void InitializeBCL1();
 
-        [global::System.Runtime.InteropServices.DllImport(@"C:\Users\kenne\Documents\Campy2\ConsoleApp4\bin\Debug\Campy.Runtime.Wrapper.dll", EntryPoint = "?InitializeBCL2@@YAXXZ")]
+        [global::System.Runtime.InteropServices.DllImport(@"C:\Users\kenne\Documents\Campy2\x64\Debug\Campy.Runtime.Wrapper.dll", EntryPoint = "?InitializeBCL2@@YAXXZ")]
         public static extern void InitializeBCL2();
 
     
@@ -2064,6 +2056,7 @@ namespace Campy.Compiler
                     int the_size = 536870912;
                     IntPtr b = buffers.New(the_size);
                     RUNTIME.BclPtr = b;
+                    RUNTIME.BclPtrSize = (ulong)the_size;
                     int max_threads = 16;
                     IntPtr b2 = buffers.New(sizeof(int*));
 
@@ -2116,7 +2109,8 @@ namespace Campy.Compiler
                     // Set up parameters.
                     int count = 1;
                     IntPtr parm1;
-                    IntPtr[] x1 = new IntPtr[] {RUNTIME.BclPtr};
+                    var bcl_ptr = RUNTIME.BclPtr;
+                    IntPtr[] x1 = new IntPtr[] { bcl_ptr };
                     GCHandle handle1 = GCHandle.Alloc(x1, GCHandleType.Pinned);
                     parm1 = handle1.AddrOfPinnedObject();
 

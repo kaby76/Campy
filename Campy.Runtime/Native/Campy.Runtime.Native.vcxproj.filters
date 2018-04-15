@@ -165,6 +165,9 @@
     <ClInclude Include="_BCL_.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="basics.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="basics.c">

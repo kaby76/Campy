@@ -4,6 +4,16 @@ using System.Numerics;
 
 namespace ConsoleApp4
 {
+    class A
+    {
+        public int X { get; set; }
+
+        public int Score(A b)
+        {
+            return X + b.X;
+        }
+    }
+
     public class BatcherOddEvenMergeSort
     {
         public static void swap(ref int i, ref int j)
@@ -369,16 +379,6 @@ namespace ConsoleApp4
             Campy.Utils.Options.Set("continue_with_no_resolve");
             Campy.Utils.Options.Set("copy_trace");
             Campy.Utils.Options.Set("runtime_trace");
-        }
-
-        class A
-        {
-            public int X { get; set; }
-
-            public int Score(A b)
-            {
-                return X + b.X;
-            }
         }
 
         static void Main(string[] args)
