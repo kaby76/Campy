@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <PostBuildEvent>copy  "$(SolutionDir)Campy.Runtime\Corlib\bin\Debug\net20\*.*" &amp;&amp; copy  "$(SolutionDir)x64\Debug\*.*"</PostBuildEvent>
+    <PostBuildEvent>copy  "$(SolutionDir)Campy.Runtime\Corlib\bin\Debug\netstandard2.0\*.*" &amp;&amp; copy  "$(SolutionDir)x64\Debug\*.*"</PostBuildEvent>
   </PropertyGroup>
 
 </Project>

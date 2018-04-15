@@ -27,6 +27,12 @@
 #include "Gprintf.h"
 #include <stdio.h>
 
+
+namespace dbg {
+	void fail(const char* func, const char* msg);
+}
+
+
 function_space_specifier void Crash(const char *pMsg, ...) {
 	va_list va;
 
@@ -45,7 +51,7 @@ function_space_specifier void Crash(const char *pMsg, ...) {
 		__debugbreak();
 	}
 #endif
-
+	dbg::fail("crash", "crash");
 //	gpuexit(1);
 }
 

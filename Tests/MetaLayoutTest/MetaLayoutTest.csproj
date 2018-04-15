@@ -10,7 +10,6 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.6.2" />
     <PackageReference Include="MSTest.TestAdapter" Version="1.2.0" />
     <PackageReference Include="MSTest.TestFramework" Version="1.2.0" />
-    <PackageReference Include="swigged.cuda" Version="9.185.3" />
     <PackageReference Include="swigged.llvm" Version="6.0.4" />
   </ItemGroup>
 

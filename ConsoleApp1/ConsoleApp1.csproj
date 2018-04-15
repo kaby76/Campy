@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="swigged.cuda" Version="9.185.3" />
+    <PackageReference Include="swigged.cuda" Version="9.185.4" />
     <PackageReference Include="swigged.llvm" Version="6.0.4" />
   </ItemGroup>
 
@@ -15,7 +15,11 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <PostBuildEvent>copy  "$(SolutionDir)Campy.Runtime\Corlib\bin\Debug\net20\*.*" &amp;&amp; copy  "$(SolutionDir)x64\Debug\*.*"</PostBuildEvent>
+    <PostBuildEvent>copy  "$(SolutionDir)Campy.Runtime\Corlib\bin\Debug\netstandard2.0\*.*" &amp;&amp; copy  "$(SolutionDir)x64\Debug\*.*"</PostBuildEvent>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
 </Project>

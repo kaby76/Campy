@@ -355,6 +355,9 @@
   <ItemGroup>
     <CudaCompile Include="Filesystem.c" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="Source.cpp" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 9.0.targets" />

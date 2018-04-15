@@ -94,7 +94,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="swigged.cuda">
-      <Version>9.185.3</Version>
+      <Version>9.185.4</Version>
     </PackageReference>
     <PackageReference Include="swigged.llvm">
       <Version>6.0.4</Version>
@@ -105,7 +105,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PreBuildEvent>echo "hi" &amp;&amp; copy  "$(SolutionDir)Campy.Runtime\Corlib\bin\Debug\net20\*.*" &amp;&amp; copy  "$(SolutionDir)x64\Debug\*.*"</PreBuildEvent>
-    <PostBuildEvent>echo "hi" &amp;&amp; copy  "$(SolutionDir)Campy.Runtime\Corlib\bin\Debug\net20\*.*" &amp;&amp; copy  "$(SolutionDir)x64\Debug\*.*"</PostBuildEvent>
+    <PreBuildEvent>copy  "$(SolutionDir)Campy.Runtime\Corlib\bin\Debug\netstandard2.0\*.*" &amp;&amp; copy  "$(SolutionDir)x64\Debug\*.*"</PreBuildEvent>
+    <PostBuildEvent>copy  "$(SolutionDir)Campy.Runtime\Corlib\bin\Debug\netstandard2.0\*.*" &amp;&amp; copy  "$(SolutionDir)x64\Debug\*.*"</PostBuildEvent>
   </PropertyGroup>
 </Project>

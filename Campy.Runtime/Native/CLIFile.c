@@ -48,11 +48,15 @@ struct tFilesLoaded_ {
 
 __global__ void BCL_CLIFile_GetMetaDataForAssembly(char * fileName)
 {
+	printf("BCL_CLIFile_GetMetaDataForAssembly %s\n", fileName);
 	tMetaData* result;
 	result = CLIFile_GetMetaDataForAssembly(fileName);
 }
 
 function_space_specifier tMetaData* CLIFile_GetMetaDataForAssembly(char * fileName) {
+	
+	printf("CLIFile_GetMetaDataForAssembly file %s\n", fileName);
+	
 	tFilesLoaded *pFiles;
 	char * pAssemblyName;
 	char assemblyName[250];
@@ -282,6 +286,9 @@ function_space_specifier tCLIFile* CLIFile_Load(char *pFileName) {
 	void *pRawFile;
 	tCLIFile *pRet;
 	tFilesLoaded *pNewFile;
+
+	printf("damn file is %s\n", pFileName);
+
 	pRawFile = LoadFileFromDisk(pFileName);
 
 	if (pRawFile == NULL) {

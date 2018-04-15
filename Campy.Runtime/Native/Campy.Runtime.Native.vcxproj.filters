@@ -303,4 +303,9 @@
       <Filter>Source Files</Filter>
     </CudaCompile>
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="Source.cpp">
+      <Filter>Source Files</Filter>
+    </Text>
+  </ItemGroup>
 </Project>

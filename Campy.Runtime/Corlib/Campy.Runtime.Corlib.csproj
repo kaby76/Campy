@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <TargetFrameworks>netstandard1.3;net20</TargetFrameworks>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>corlib</RootNamespace>
     <AssemblyName>corlib</AssemblyName>
     <NoStdLib>true</NoStdLib>

@@ -7,8 +7,6 @@ namespace Campy.Graphs
     public class GraphAdjList<NODE, EDGE> : IGraph<NODE, EDGE>
         where EDGE : IEdge<NODE>
     {
-        bool allow_duplicates = false;
-
         public Dictionary<NODE, NODE> VertexSpace = new Dictionary<NODE, NODE>();
         public MultiMap<NODE, EDGE> ForwardEdgeSpace = new MultiMap<NODE, EDGE>();
         public MultiMap<NODE, EDGE> ReverseEdgeSpace = new MultiMap<NODE, EDGE>();
