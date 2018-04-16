@@ -6,7 +6,7 @@
 
   <ItemGroup>
     <PackageReference Include="Mono.Cecil" Version="0.10.0" />
-    <PackageReference Include="swigged.cuda" Version="9.185.4" />
+    <PackageReference Include="swigged.cuda" Version="9.185.5" />
   </ItemGroup>
 
   <ItemGroup>

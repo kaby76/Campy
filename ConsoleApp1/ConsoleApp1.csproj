@@ -6,20 +6,21 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="swigged.cuda" Version="9.185.4" />
-    <PackageReference Include="swigged.llvm" Version="6.0.4" />
+    <PackageReference Include="swigged.cuda" Version="9.185.5" />
+    <PackageReference Include="swigged.llvm" Version="6.0.5" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Campy\Campy.csproj" />
   </ItemGroup>
 
-  <PropertyGroup>
-    <PostBuildEvent>copy  "$(SolutionDir)Campy.Runtime\Corlib\bin\Debug\netstandard2.0\*.*" &amp;&amp; copy  "$(SolutionDir)x64\Debug\*.*"</PostBuildEvent>
-  </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PreBuildEvent>copy  "$(SolutionDir)Campy.Runtime\Corlib\bin\Debug\netstandard2.0\*.*" &amp;&amp; copy  "$(SolutionDir)x64\Debug\*.*"</PreBuildEvent>
+    <PostBuildEvent>copy  "$(SolutionDir)Campy.Runtime\Corlib\bin\Debug\netstandard2.0\*.*" &amp;&amp; copy  "$(SolutionDir)x64\Debug\*.*"</PostBuildEvent>
   </PropertyGroup>
 
 </Project>
