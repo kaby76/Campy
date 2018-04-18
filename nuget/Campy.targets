@@ -5,24 +5,23 @@
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
   </PropertyGroup>
 
-  <PropertyGroup>  
-    <BuildDependsOn>
-      CampyPreBuildEvent;
-      $(BuildDependsOn);  
-    </BuildDependsOn>  
-  </PropertyGroup>
-  <Target
-      Name="CampyPreBuildEvent"
-      Condition="'$(CampyPreBuildEvent)'!=''"
-      DependsOnTargets="$(PreBuildEventDependsOn)">
-    <Exec WorkingDirectory="$(OutDir)" Command="$(CampyPreBuildEvent)" />
-  </Target>
-  <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
-    <CampyPreBuildEvent Condition="'$(Prefer32Bit)' == 'true'">
-      <ErrorText>This project requires 'Prefer 32-bit' to be unset/unchecked (i.e., 64-bit target). NVIDIA GPU Toolkit version 9+ no longer supports 32-bit targets.</ErrorText>
-    </CampyPreBuildEvent>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
-    <CampyPreBuildEvent Condition="'$(Prefer32Bit)' == 'false'">copy "$(userprofile)\.nuget\packages\Campy\0.0.7\content\*.*"</CampyPreBuildEvent>
-  </PropertyGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)\..\lib\native\Campy.Runtime.Native.lib">
+      <Link>Campy.Runtime.Native.lib</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)\..\lib\native\Campy.Runtime.Wrapper.dll">
+      <Link>Campy.Runtime.Wrapper.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)\..\lib\native\corlib.dll">
+      <Link>corlib.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
