@@ -38,6 +38,8 @@ function_space_specifier void Crash(const char *pMsg, ...) {
 
 	Gprintf("\n\n*** CRASH ***\n");
 
+	dbg::fail("crash", "crash");
+
 	va_start(va, pMsg);
 	char buf[10000];
 	Gvsprintf(buf, pMsg, va);
@@ -51,7 +53,6 @@ function_space_specifier void Crash(const char *pMsg, ...) {
 		__debugbreak();
 	}
 #endif
-	dbg::fail("crash", "crash");
 //	gpuexit(1);
 }
 

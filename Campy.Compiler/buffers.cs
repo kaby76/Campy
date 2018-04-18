@@ -370,7 +370,7 @@
                         if (from_cpu == null) is_null = true;
                         else if (from_cpu.Equals(null)) is_null = true;
                     }
-                    catch (Exception e)
+                    catch (Exception)
                     {
                     }
                     if (is_null)
@@ -524,18 +524,19 @@
                     // if it isn't a closure object. Normally, we wouldn't copy anything,
                     // but it turns out some algorithms modify the closure, which has
                     // nested closure. So, we copy these objects.
-                    if (from_cpu_type.Name.StartsWith("<>c__DisplayClass") ||
+                    if (!(from_cpu_type.Name.StartsWith("<>c__DisplayClass") ||
                         from_cpu_type
                             .GetCustomAttributes(typeof(System.Runtime.CompilerServices.CompilerGeneratedAttribute),
-                                false).Length > 0)
-                        ;
-                    else if (_copied_to_gpu.Contains(from_cpu) && !from_cpu_type.IsStruct())
-                    {
-                        if (Campy.Utils.Options.IsOn("copy_trace"))
-                            System.Console.WriteLine("Not copying object to GPU -- already done.' " + from_cpu);
-                        // Full object already stuffed into implementation buffer.
-                        return;
-                    }
+			    false).Length > 0))
+		    {
+			    if (_copied_to_gpu.Contains(from_cpu) && !from_cpu_type.IsStruct())
+			    {
+				if (Campy.Utils.Options.IsOn("copy_trace"))
+				    System.Console.WriteLine("Not copying object to GPU -- already done.' " + from_cpu);
+				// Full object already stuffed into implementation buffer.
+				return;
+			    }
+		    }
                     {
                         if (!from_cpu_type.IsStruct())
                         {
@@ -1282,15 +1283,15 @@
             //    else System.Console.WriteLine("Did not work.");
             //}
 
-            {
-                // Allocate Unified Memory.
-                var size = bytes;
-                var res = Cuda.cuMemAllocManaged(out IntPtr pointer, (uint)size, (uint)Swigged.Cuda.CUmemAttach_flags.CU_MEM_ATTACH_GLOBAL);
-                if (Campy.Utils.Options.IsOn("memory_trace"))
-                    System.Console.WriteLine("Cu Alloc (" + bytes + " bytes) " + pointer);
-                Utils.CudaHelpers.CheckCudaError(res);
-                return pointer;
-            }
+//            {
+//                // Allocate Unified Memory.
+//                var size = bytes;
+//                var res = Cuda.cuMemAllocManaged(out IntPtr pointer, (uint)size, (uint)Swigged.Cuda.CUmemAttach_flags.CU_MEM_ATTACH_GLOBAL);
+//                if (Campy.Utils.Options.IsOn("memory_trace"))
+//                    System.Console.WriteLine("Cu Alloc (" + bytes + " bytes) " + pointer);
+//                Utils.CudaHelpers.CheckCudaError(res);
+//                return pointer;
+//            }
 
             //if (false)
             //{

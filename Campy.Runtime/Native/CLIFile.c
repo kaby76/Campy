@@ -48,15 +48,18 @@ struct tFilesLoaded_ {
 
 __global__ void BCL_CLIFile_GetMetaDataForAssembly(char * fileName)
 {
-	printf("BCL_CLIFile_GetMetaDataForAssembly %s\n", fileName);
 	tMetaData* result;
 	result = CLIFile_GetMetaDataForAssembly(fileName);
 }
 
-function_space_specifier tMetaData* CLIFile_GetMetaDataForAssembly(char * fileName) {
-	
-	printf("CLIFile_GetMetaDataForAssembly file %s\n", fileName);
-	
+function_space_specifier void CLIFile_PrintMetaData(tMetaData * meta)
+{
+
+
+}
+
+function_space_specifier tMetaData* CLIFile_GetMetaDataForAssembly(char * fileName)
+{
 	tFilesLoaded *pFiles;
 	char * pAssemblyName;
 	char assemblyName[250];
@@ -68,7 +71,12 @@ function_space_specifier tMetaData* CLIFile_GetMetaDataForAssembly(char * fileNa
 	pAssemblyName = assemblyName;
 
 	// Convert "mscorlib" to "corlib"
-	if (Gstrcmp(pAssemblyName, "mscorlib") == 0) {
+	if (Gstrcmp(pAssemblyName, "mscorlib") == 0) // Net Framework rewrite.
+	{
+		pAssemblyName = "corlib";
+	}
+	else if (Gstrcmp(pAssemblyName, "System.Runtime") == 0) // Net Core rewrite.
+	{
 		pAssemblyName = "corlib";
 	}
 
@@ -287,15 +295,11 @@ function_space_specifier tCLIFile* CLIFile_Load(char *pFileName) {
 	tCLIFile *pRet;
 	tFilesLoaded *pNewFile;
 
-	printf("damn file is %s\n", pFileName);
-
 	pRawFile = LoadFileFromDisk(pFileName);
 
 	if (pRawFile == NULL) {
 		Crash("Cannot load file: %s", pFileName);
 	}
-
-	log_f(1, "\nLoading file: %s\n", pFileName);
 
 	pRet = LoadPEFile(pRawFile);
 	pRet->pFileName = (char*)mallocForever((U32)Gstrlen(pFileName) + 1);

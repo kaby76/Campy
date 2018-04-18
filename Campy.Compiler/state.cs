@@ -64,9 +64,6 @@ namespace Campy.Compiler
                 _stack.Push(par);
             }
 
-            if (scalar_ret)
-                ; // No parameter to use for return value, just return directly in LLVM.
-
             int offset = 0;
             _struct_ret = _stack.Section(struct_ret ? offset++ : offset, struct_ret ? 1 : 0);
             _this = _stack.Section(has_this ? offset++ : offset, has_this ? 1 : 0);
@@ -151,9 +148,6 @@ namespace Campy.Compiler
                         System.Console.WriteLine(par);
                     _stack.Push(par);
                 }
-
-                if (scalar_ret)
-                    ; // No parameter to use for return value, just return directly in LLVM.
 
                 int offset = 0;
                 _struct_ret = _stack.Section(struct_ret ? offset++ : offset, struct_ret ? 1 : 0);

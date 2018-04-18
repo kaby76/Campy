@@ -17,7 +17,7 @@ namespace Campy.Compiler
         private readonly Mono.Cecil.TypeReference _cil_type;
         private readonly Mono.Cecil.TypeReference _verification_type;
         private readonly Mono.Cecil.TypeReference _stack_verification_type;
-        private readonly Mono.Cecil.TypeReference _intermediate_type;
+//      private readonly Mono.Cecil.TypeReference _intermediate_type;
         private readonly TypeRef _intermediate_type_ref;
 
         public TYPE(TypeRef intermediate_type, bool signed = true)
@@ -276,6 +276,11 @@ namespace Campy.Compiler
         {
             return LLVM.VoidTypeInContext(C);
         }
+
+	public override int GetHashCode()
+	{
+		return this.IntermediateType.GetHashCode();
+	}
 
         public override bool Equals(object obj)
         {

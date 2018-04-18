@@ -1366,7 +1366,6 @@
                     ValueRef[] args = new ValueRef[0];
 
                     string name = "_Z21get_kernel_base_indexv";
-                    var list = RUNTIME.BclNativeMethods.ToList();
                     var list2 = RUNTIME.PtxFunctions.ToList();
                     var f = list2.Where(t => t._mangled_name == name).First();
                     ValueRef fv = f._valueref;

@@ -4,6 +4,7 @@
 #include "Type.h"
 #include "basics.h"
 #include "Heap.h"
+#include "CLIFile.h"
 
 __declspec(dllexport) void InitTheBcl(void * g, size_t size, int count, void * s)
 {
@@ -50,4 +51,16 @@ __declspec(dllexport) void* BclGetMetaOfType(char* assemblyName, char* nameSpace
 __declspec(dllexport) void GcCollect()
 {
 	Heap_GarbageCollect();
+}
+
+
+__declspec(dllexport) void * BclGetMeta(char * file_name)
+{
+	tMetaData* result = CLIFile_GetMetaDataForAssembly(file_name);
+	return (void*)result;
+}
+
+__declspec(dllexport) void BclPrintMeta(void* meta)
+{
+	CLIFile_PrintMetaData((tMetaData*)meta);
 }

@@ -164,7 +164,7 @@
                 stream.Close();
                 return full_path_assem;
             }
-            catch (Exception e)
+            catch (Exception)
             {
             }
 
@@ -187,7 +187,7 @@
                 stream.Close();
                 return full_path_assem;
             }
-            catch (Exception e)
+            catch (Exception)
             {
             }
 
@@ -204,7 +204,7 @@
                 stream.Close();
                 return full_path_assem;
             }
-            catch (Exception e)
+            catch (Exception)
             {
             }
 
@@ -223,7 +223,7 @@
                 stream.Close();
                 return full_path_assem;
             }
-            catch (Exception e)
+            catch (Exception)
             {
             }
 
@@ -242,7 +242,7 @@
                 stream.Close();
                 return full_path_assem;
             }
-            catch (Exception e)
+            catch (Exception)
             {
             }
 
@@ -265,7 +265,7 @@
                 stream.Close();
                 return full_path_assem;
             }
-            catch (Exception e)
+            catch (Exception)
             {
             }
 
@@ -280,7 +280,7 @@
                 stream.Close();
                 return full_path_assem;
             }
-            catch (Exception e)
+            catch (Exception)
             {
             }
 
@@ -299,7 +299,7 @@
                 stream.Close();
                 return full_path_assem;
             }
-            catch (Exception e)
+            catch (Exception)
             {
             }
 
@@ -471,7 +471,7 @@
             // BCL_CLIFile_GetMetaDataForAssembly("ConsoleApp1.exe", &pTypeMetaDatanew FileStream();
 
             // Set up the type's assembly in file system.
-            String assembly_location = Path.GetFullPath(type.Resolve().Module.FullyQualifiedName);
+            String assembly_location = Path.GetFullPath(type.Resolve().Module.FileName);
             string assem = Path.GetFileName(assembly_location);
             string full_path_assem = assembly_location;
             Stream stream = new FileStream(full_path_assem, FileMode.Open, FileAccess.Read, FileShare.Read);
@@ -486,7 +486,6 @@
             unsafe
             {
                 // Set up parameters.
-                int count = 4;
                 IntPtr parm1; // Name of assembly.
                 IntPtr parm2; // Contents
                 IntPtr parm3; // Length
@@ -542,7 +541,6 @@
             unsafe
             {
                 // Set up parameters.
-                int count = 1;
                 IntPtr parm1; // Name of assembly.
 
                 var ptr = Marshal.StringToHGlobalAnsi(assem);
@@ -589,7 +587,7 @@
             // BCL_CLIFile_GetMetaDataForAssembly("ConsoleApp1.exe", &pTypeMetaDatanew FileStream();
 
             // Set up the type's assembly in file system.
-            String assembly_location = Path.GetFullPath(type.Resolve().Module.FullyQualifiedName);
+            String assembly_location = Path.GetFullPath(type.Resolve().Module.FileName);
             string assem = Path.GetFileName(assembly_location);
             string full_path_assem = assembly_location;
             Stream stream = new FileStream(full_path_assem, FileMode.Open, FileAccess.Read, FileShare.Read);
@@ -604,7 +602,6 @@
             unsafe
             {
                 // Set up parameters.
-                int count = 4;
                 IntPtr parm1; // Name of assembly.
                 IntPtr parm2; // Contents
                 IntPtr parm3; // Length
@@ -660,7 +657,6 @@
             unsafe
             {
                 // Set up parameters.
-                int count = 1;
                 IntPtr parm1; // Name of assembly.
 
                 var ptr = Marshal.StringToHGlobalAnsi(assem);

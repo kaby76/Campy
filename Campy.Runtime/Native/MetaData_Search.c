@@ -156,7 +156,6 @@ function_space_specifier tMetaData* MetaData_GetResolutionScopeMetaData(tMetaDat
 
 				pAssemblyRef = (tMD_AssemblyRef*)MetaData_GetTableRow(pMetaData, resolutionScopeToken);
 				*ppInNestedType = NULL;
-				printf("MetaData_GetResolutionScopeMetaData %s\n", pAssemblyRef->name);
 				return CLIFile_GetMetaDataForAssembly(pAssemblyRef->name);
 			}
 		case MD_TABLE_TYPEREF:
@@ -187,7 +186,6 @@ function_space_specifier tMD_TypeDef* MetaData_GetTypeDefFromName(tMetaData *pMe
 			return pTypeDef;
 		}
 	}
-	printf("crash\n");
 	Crash("MetaData_GetTypeDefFromName(): Cannot find type %s.%s", nameSpace, name);
 	FAKE_RETURN;
 	return NULL;
@@ -195,7 +193,6 @@ function_space_specifier tMD_TypeDef* MetaData_GetTypeDefFromName(tMetaData *pMe
 
 function_space_specifier tMD_TypeDef* MetaData_GetTypeDefFromFullName(STRING assemblyName, STRING nameSpace, STRING name) {
 	tMetaData *pTypeMetaData;
-	printf("MetaData_GetTypeDefFromFullName %s\n", assemblyName);
 
 	pTypeMetaData = CLIFile_GetMetaDataForAssembly(assemblyName);
 
@@ -205,7 +202,6 @@ function_space_specifier tMD_TypeDef* MetaData_GetTypeDefFromFullName(STRING ass
 
 function_space_specifier tMD_TypeDef* MetaData_GetTypeDefFromFullNameAndNestedType(STRING assemblyName, STRING nameSpace, STRING name, tMD_TypeDef* nested) {
 	tMetaData *pTypeMetaData;
-	printf("MetaData_GetTypeDefFromFullNameAndNestedType %s\n", assemblyName);
 
 	pTypeMetaData = CLIFile_GetMetaDataForAssembly(assemblyName);
 
@@ -222,6 +218,7 @@ void Bcl_MetaData_GetTypeDefFromDefRefOrSpec(tMetaData *pMetaData, IDX_TABLE tok
 
 function_space_specifier tMD_TypeDef* MetaData_GetTypeDefFromDefRefOrSpec(tMetaData *pMetaData, IDX_TABLE token, tMD_TypeDef **ppClassTypeArgs, tMD_TypeDef **ppMethodTypeArgs) {
 	void *pTableEntry;
+
 	pTableEntry = MetaData_GetTableRow(pMetaData, token);
 	if (pTableEntry == NULL) {
 		return NULL;

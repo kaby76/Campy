@@ -34,6 +34,9 @@ namespace ConsoleApp1
 
         static void Main(string[] args)
         {
+for (int jjj = 0; jjj < 10; ++jjj) System.Threading.Thread.Sleep(1000);
+
+
             StartDebugging();
             {
                 A[] array = new A[10];

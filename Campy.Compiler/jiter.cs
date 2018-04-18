@@ -258,7 +258,6 @@ namespace Campy.Compiler
                                     list.Add(LLVM.Int8Type());
                             }
                             var field_converted_type = ToTypeRef(instantiated_field_type, new_list, level + 1);
-                            field_converted_type = field_converted_type;
                             list.Add(field_converted_type);
                         }
                         else
@@ -393,7 +392,6 @@ namespace Campy.Compiler
                                     list.Add(LLVM.Int8Type());
                             }
                             var field_converted_type = ToTypeRef(instantiated_field_type, new_list, level + 1);
-                            field_converted_type = field_converted_type;
                             list.Add(field_converted_type);
                         }
                         else
@@ -1279,22 +1277,6 @@ namespace Campy.Compiler
         public static string MethodName(MethodReference mr)
         {
             return mr.FullName;
-
-            // Method names for a method reference are sometimes not the
-            // same, even though they are in principle referring to the same
-            // method, especially for methods that contain generics. This function
-            // returns a normalized name for the method reference so that there
-            // is equivalence.
-            var declaring_type = mr.DeclaringType;
-            if (declaring_type == null) throw new Exception("Cannot get declaring type for method.");
-            var r = declaring_type.Resolve();
-            var methods = r.Methods;
-            foreach (var method in methods)
-            {
-                if (method.Name == mr.Name)
-                    return method.FullName;
-            }
-            return null;
         }
 
         private void CompilePart6(IEnumerable<CFG.Vertex> basic_blocks_to_compile,
@@ -1363,12 +1345,10 @@ namespace Campy.Compiler
                     // Verify return node that it makes sense.
                     if (node.IsReturn && !unreachable.Contains(node))
                     {
-                        if (node.StackLevelOut ==
+                        if (!(node.StackLevelOut ==
                             node.StackNumberOfArguments
                             + node.StackNumberOfLocals
-                            + (node.HasScalarReturnValue ? 1 : 0))
-                            ;
-                        else
+                            + (node.HasScalarReturnValue ? 1 : 0)))
                         {
                             throw new Exception("Failed stack level out check");
                         }
@@ -2107,7 +2087,6 @@ namespace Campy.Compiler
                 unsafe
                 {
                     // Set up parameters.
-                    int count = 1;
                     IntPtr parm1;
                     var bcl_ptr = RUNTIME.BclPtr;
                     IntPtr[] x1 = new IntPtr[] { bcl_ptr };

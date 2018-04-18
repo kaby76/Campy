@@ -71,10 +71,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitonicSort", "Tests\BitonicSort\BitonicSort.csproj", "{0024A512-A88A-415D-99C2-FE7BA9EED092}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleApp1", "ConsoleApp1\ConsoleApp1.csproj", "{D08823DA-80D3-47E5-A91A-DF6B97F6732D}"
-	ProjectSection(ProjectDependencies) = postProject
-		{D6F88E29-3257-4BCA-AEB2-B89E21CE331D} = {D6F88E29-3257-4BCA-AEB2-B89E21CE331D}
-		{1C06EB45-3235-4564-8A45-F553C34B19D6} = {1C06EB45-3235-4564-8A45-F553C34B19D6}
-	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CombSort", "Tests\CombSort\CombSort.csproj", "{2EE199B8-0956-483D-8E6B-F01FC2AA3098}"
 EndProject
@@ -90,7 +86,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TwoDimArrayGetAndSet", "Tes
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RadixSort", "Tests\RadixSort\RadixSort.csproj", "{6C5CF2D2-310E-4BB7-85FF-32A585C15162}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BatcherEvenOddMerge", "Tests\BatcherEvenOddMerge\BatcherEvenOddMerge.csproj", "{B20E485A-CEB8-4D20-8E8D-82761CE5CF80}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BatcherEvenOddMerge", "Tests\BatcherEvenOddMerge\BatcherEvenOddMerge.csproj", "{B20E485A-CEB8-4D20-8E8D-82761CE5CF80}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Campy.Runtime.Wrapper", "Campy.Runtime\Wrapper\Campy.Runtime.Wrapper.vcxproj", "{54D13628-3646-4D67-92B7-821E78910C8A}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -99,7 +95,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Campy.Runtime.Wrapper", "Ca
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BoyerMore", "Tests\BoyerMore\BoyerMore.csproj", "{E1A743EB-AA42-415E-81CF-B7A146541581}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XUnitTestProject1", "Tests\XUnitTestProject1\XUnitTestProject1.csproj", "{034E6C4A-9DAC-4AD8-86AB-D59813F25C22}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XUnitTestProject1", "Tests\XUnitTestProject1\XUnitTestProject1.csproj", "{034E6C4A-9DAC-4AD8-86AB-D59813F25C22}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CampyPeek", "CampyPeek\CampyPeek.csproj", "{0D8392C1-5E1A-4B20-B95A-87C44F7A77E4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -553,6 +551,18 @@ Global
 		{034E6C4A-9DAC-4AD8-86AB-D59813F25C22}.Release|x64.Build.0 = Release|Any CPU
 		{034E6C4A-9DAC-4AD8-86AB-D59813F25C22}.Release|x86.ActiveCfg = Release|Any CPU
 		{034E6C4A-9DAC-4AD8-86AB-D59813F25C22}.Release|x86.Build.0 = Release|Any CPU
+		{0D8392C1-5E1A-4B20-B95A-87C44F7A77E4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0D8392C1-5E1A-4B20-B95A-87C44F7A77E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0D8392C1-5E1A-4B20-B95A-87C44F7A77E4}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{0D8392C1-5E1A-4B20-B95A-87C44F7A77E4}.Debug|x64.Build.0 = Debug|Any CPU
+		{0D8392C1-5E1A-4B20-B95A-87C44F7A77E4}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{0D8392C1-5E1A-4B20-B95A-87C44F7A77E4}.Debug|x86.Build.0 = Debug|Any CPU
+		{0D8392C1-5E1A-4B20-B95A-87C44F7A77E4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0D8392C1-5E1A-4B20-B95A-87C44F7A77E4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0D8392C1-5E1A-4B20-B95A-87C44F7A77E4}.Release|x64.ActiveCfg = Release|Any CPU
+		{0D8392C1-5E1A-4B20-B95A-87C44F7A77E4}.Release|x64.Build.0 = Release|Any CPU
+		{0D8392C1-5E1A-4B20-B95A-87C44F7A77E4}.Release|x86.ActiveCfg = Release|Any CPU
+		{0D8392C1-5E1A-4B20-B95A-87C44F7A77E4}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

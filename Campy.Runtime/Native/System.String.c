@@ -90,12 +90,8 @@ function_space_specifier tAsyncCall* System_String_ctor_StringIntInt(PTR pThis_,
 	U32 startIndex, length;
 
 	void **p = (void**)pParams;
-	printf("%llx\n", p);
 	pStr = *(tSystemString**)p;
-	printf("%llx\n", pStr);
 	void * ppp = *p;
-	printf("%llx\n", ppp);
-
 
 	p++;
 	startIndex = *(U32*)p++;
@@ -104,8 +100,6 @@ function_space_specifier tAsyncCall* System_String_ctor_StringIntInt(PTR pThis_,
 	pThis = CreateStringHeapObj(length);
 	memcpy(pThis->chars, &pStr->chars[startIndex], length << 1);
 
-	printf("start = %d\n", startIndex);
-	printf("len = %d\n", length);
 	unsigned char * pc = (unsigned char *)&pThis->chars;
 	for (int i = 0; i < length << 1; ++i)
 	{
@@ -113,8 +107,6 @@ function_space_specifier tAsyncCall* System_String_ctor_StringIntInt(PTR pThis_,
 		printf("c[%d] = %x\n", i, c);
 	}
 	*(HEAP_PTR*)pReturnValue = (HEAP_PTR)pThis;
-	printf("ptr returned = %llx\n", pThis);
-	printf("length = %x\n", pThis->length);
 	return NULL;
 }
 

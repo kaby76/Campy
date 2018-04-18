@@ -53,7 +53,7 @@ namespace Campy.Compiler
             Mono.Cecil.ModuleDefinition md = Mono.Cecil.ModuleDefinition.ReadModule(
                 kernel_assembly_file_name,
                 new ReaderParameters { AssemblyResolver = resolver, ReadSymbols = true});
-            MethodReference method_reference = md.Import(method_info);
+            MethodReference method_reference = md.ImportReference(method_info);
             Add(method_reference);
         }
 

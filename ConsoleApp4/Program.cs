@@ -399,7 +399,7 @@ namespace ConsoleApp4
             //    }
             //}
 
-            StartDebugging();
+            //StartDebugging();
 
             {
                 A[] array = new A[10];

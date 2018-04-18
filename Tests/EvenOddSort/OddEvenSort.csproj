@@ -17,4 +17,26 @@
     <ProjectReference Include="..\..\Campy\Campy.csproj" />
   </ItemGroup>
 
+  <Target Name="CopyCustomContent" AfterTargets="AfterBuild">
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\..\..\Campy.Runtime\Corlib\bin\Debug\netstandard2.0\corlib.dll" DestinationFolder="$(OutDir)" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\..\..\Campy.Runtime\Corlib\bin\Debug\netstandard2.0\corlib.pdb" DestinationFolder="$(OutDir)" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\..\..\Campy.Runtime\Corlib\bin\Debug\netstandard2.0\corlib.deps.json" DestinationFolder="$(OutDir)" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\..\..\x64\Debug\Campy.Runtime.Native.lib" DestinationFolder="$(OutDir)" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\..\..\x64\Debug\Campy.Runtime.Wrapper.lib" DestinationFolder="$(OutDir)" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\..\..\x64\Debug\Campy.Runtime.Wrapper.dll" DestinationFolder="$(OutDir)" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\..\..\x64\Debug\Campy.Runtime.Wrapper.pdb" DestinationFolder="$(OutDir)" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\..\..\x64\Debug\cudart32_91.dll" DestinationFolder="$(OutDir)" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\..\..\x64\Debug\cudart64_91.dll" DestinationFolder="$(OutDir)" />
+  </Target>
+  <Target Name="CopyCustomContentOnPublish" AfterTargets="Publish">
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\..\..\Campy.Runtime\Corlib\bin\Debug\netstandard2.0\corlib.dll" DestinationFolder="$(PublishDir)" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\..\..\Campy.Runtime\Corlib\bin\Debug\netstandard2.0\corlib.pdb" DestinationFolder="$(PublishDir)" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\..\..\Campy.Runtime\Corlib\bin\Debug\netstandard2.0\corlib.deps.json" DestinationFolder="$(PublishDir)" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\..\..\x64\Debug\Campy.Runtime.Native.lib" DestinationFolder="$(PublishDir)" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\..\..\x64\Debug\Campy.Runtime.Wrapper.lib" DestinationFolder="$(PublishDir)" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\..\..\x64\Debug\Campy.Runtime.Wrapper.dll" DestinationFolder="$(PublishDir)" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\..\..\x64\Debug\Campy.Runtime.Wrapper.pdb" DestinationFolder="$(PublishDir)" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\..\..\x64\Debug\cudart32_91.dll" DestinationFolder="$(PublishDir)" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\..\..\x64\Debug\cudart64_91.dll" DestinationFolder="$(PublishDir)" />
+  </Target>
 </Project>

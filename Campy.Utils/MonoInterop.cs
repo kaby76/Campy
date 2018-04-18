@@ -15,7 +15,7 @@ namespace Campy.Utils
         {
             String kernel_assembly_file_name = type.Assembly.Location;
             Mono.Cecil.ModuleDefinition md = Mono.Cecil.ModuleDefinition.ReadModule(kernel_assembly_file_name);
-            var reference = md.Import(type);
+            var reference = md.ImportReference(type);
             return reference;
         }
 
@@ -29,57 +29,6 @@ namespace Campy.Utils
         public static System.Type ToSystemType2(this Mono.Cecil.TypeReference tr)
         {
             return Type.GetType(tr.FullName);
-
-            Type result = null;
-            TypeReference element_type = null;
-
-            // Find equivalent to type definition in Mono to System Reflection type.
-            var td = tr.Resolve();
-
-            // If the type isn't defined, can't do much about it. Just return null.
-            if (td == null)
-                return null;
-
-            if (tr.IsArray)
-            {
-                // Get element type, and work on that first.
-                var array_type = tr as ArrayType;
-                element_type = array_type.ElementType;
-                //element_type = tr.GetElementType();
-                result = element_type.ToSystemType();
-                // Create array type.
-                if (result == null) return null;
-                return result.MakeArrayType();
-            }
-            else if (tr.Resolve().Module.FullyQualifiedName.Contains("\\corlib.dll"))
-            {
-                throw new Exception();
-            }
-            else
-            {
-                String assembly_location = Path.GetFullPath(tr.Resolve().Module.FullyQualifiedName);
-                System.Reflection.Assembly assembly = System.Reflection.Assembly.LoadFile(assembly_location);
-                List<Type> types = new List<Type>();
-                StackQueue<Type> type_definitions = new StackQueue<Type>();
-                StackQueue<Type> type_definitions_closure = new StackQueue<Type>();
-                foreach (Type t in assembly.GetTypes())
-                    type_definitions.Push(t);
-                while (type_definitions.Count > 0)
-                {
-                    Type t = type_definitions.Pop();
-                    if (Campy.Utils.Utility.IsSimilarType(t, td))
-                        return t;
-                    type_definitions_closure.Push(t);
-                    foreach (Type ntd in t.GetNestedTypes())
-                        type_definitions.Push(ntd);
-                }
-                foreach (Type t in type_definitions_closure)
-                {
-                    if (Campy.Utils.Utility.IsSimilarType(t, td))
-                        return t;
-                }
-            }
-            return null;
         }
 
 

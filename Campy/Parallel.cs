@@ -11,7 +11,6 @@ namespace Campy
     public class Parallel
     {
         private static Parallel _singleton;
-        private CFG _graph;
         private JITER _converter;
         private BUFFERS Buffer { get; }
 

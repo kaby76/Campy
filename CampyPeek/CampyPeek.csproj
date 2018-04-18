@@ -2,20 +2,15 @@
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
-    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
-  </PropertyGroup>
-  <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{3854D42C-FBB7-4AA0-840D-89E2E6997DB5}</ProjectGuid>
+    <ProjectGuid>{0D8392C1-5E1A-4B20-B95A-87C44F7A77E4}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>ConsoleApp4</RootNamespace>
-    <AssemblyName>ConsoleApp4</AssemblyName>
+    <RootNamespace>CampyPeek</RootNamespace>
+    <AssemblyName>CampyPeek</AssemblyName>
     <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
     <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -27,8 +22,8 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -39,57 +34,27 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\x64\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <Prefer32Bit>true</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
-    <OutputPath>bin\x64\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <Prefer32Bit>true</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup />
-  <PropertyGroup>
-    <NoWin32Manifest>true</NoWin32Manifest>
-  </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Bithacks.cs" />
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <None Include="packages.config">
-      <SubType>Designer</SubType>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Campy.Compiler\Campy.Compiler.csproj">
-      <Project>{CED2299A-4F97-4FB7-BFA8-A61B50E9986D}</Project>
+      <Project>{ced2299a-4f97-4fb7-bfa8-a61b50e9986d}</Project>
       <Name>Campy.Compiler</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Campy.Graphs\Campy.Graphs.csproj">
-      <Project>{a71ce04f-f0d2-46e0-bae8-06cf1ea50f96}</Project>
-      <Name>Campy.Graphs</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Campy.Utils\Campy.Utils.csproj">
-      <Project>{ed3c7742-647c-44f9-b64b-29866044a54a}</Project>
-      <Name>Campy.Utils</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Campy\Campy.csproj">
-      <Project>{453aba79-5380-48a0-8c93-53a814977448}</Project>
-      <Name>Campy</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
@@ -99,9 +64,6 @@
     <PackageReference Include="swigged.llvm">
       <Version>6.0.5</Version>
     </PackageReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="System.Numerics" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="CopyCustomContent" AfterTargets="AfterBuild">
@@ -126,4 +88,5 @@
     <Copy SourceFiles="$(MSBuildProjectDirectory)\..\x64\Debug\cudart32_91.dll" DestinationFolder="$(PublishDir)" />
     <Copy SourceFiles="$(MSBuildProjectDirectory)\..\x64\Debug\cudart64_91.dll" DestinationFolder="$(PublishDir)" />
   </Target>
+
 </Project>
