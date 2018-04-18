@@ -1989,19 +1989,19 @@ namespace Campy.Compiler
             return helloWorld;
         }
 
-        [global::System.Runtime.InteropServices.DllImport(@"C:\Users\kenne\Documents\Campy2\x64\Debug\Campy.Runtime.Wrapper.dll", EntryPoint = "?InitTheBcl@@YAXPEAX_KH0@Z")]
+        [global::System.Runtime.InteropServices.DllImport(@"Campy.Runtime.Wrapper.dll", EntryPoint = "?InitTheBcl@@YAXPEAX_KH0@Z")]
         public static extern void InitTheBcl(System.IntPtr a1, long a2, int a3, System.IntPtr a4);
 
-        [global::System.Runtime.InteropServices.DllImport(@"C:\Users\kenne\Documents\Campy2\x64\Debug\Campy.Runtime.Wrapper.dll", EntryPoint = "?InitFileSystem@@YAXXZ")]
+        [global::System.Runtime.InteropServices.DllImport(@"Campy.Runtime.Wrapper.dll", EntryPoint = "?InitFileSystem@@YAXXZ")]
         public static extern void InitFileSystem();
 
-        [global::System.Runtime.InteropServices.DllImport(@"C:\Users\kenne\Documents\Campy2\x64\Debug\Campy.Runtime.Wrapper.dll", EntryPoint = "?GfsAddFile@@YAXPEAX0_K0@Z")]
+        [global::System.Runtime.InteropServices.DllImport(@"Campy.Runtime.Wrapper.dll", EntryPoint = "?GfsAddFile@@YAXPEAX0_K0@Z")]
         public static extern void GfsAddFile(System.IntPtr name, System.IntPtr file, long length, System.IntPtr result);
 
-        [global::System.Runtime.InteropServices.DllImport(@"C:\Users\kenne\Documents\Campy2\x64\Debug\Campy.Runtime.Wrapper.dll", EntryPoint = "?InitializeBCL1@@YAXXZ")]
+        [global::System.Runtime.InteropServices.DllImport(@"Campy.Runtime.Wrapper.dll", EntryPoint = "?InitializeBCL1@@YAXXZ")]
         public static extern void InitializeBCL1();
 
-        [global::System.Runtime.InteropServices.DllImport(@"C:\Users\kenne\Documents\Campy2\x64\Debug\Campy.Runtime.Wrapper.dll", EntryPoint = "?InitializeBCL2@@YAXXZ")]
+        [global::System.Runtime.InteropServices.DllImport(@"Campy.Runtime.Wrapper.dll", EntryPoint = "?InitializeBCL2@@YAXXZ")]
         public static extern void InitializeBCL2();
 
     
