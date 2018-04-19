@@ -828,8 +828,8 @@
                 default:
                     throw new Exception("Unknown instruction type " + i);
         }
-        wrapped_inst.SeqPoint = sp;
-        return wrapped_inst;
+            wrapped_inst.SeqPoint = sp;
+            return wrapped_inst;
         }
     }
 

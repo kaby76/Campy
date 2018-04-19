@@ -342,9 +342,16 @@ namespace Campy.Compiler
                 for (int j = i; j < count; ++j)
                 {
                     var offset = Instructions[j].Instruction.Offset;
-                    INST inst_to_move = INST.Wrap(Instructions[j].Instruction, result,
-                        sequence_points.Where(sp => { return sp.Offset == offset; }).FirstOrDefault());
-                    result.Instructions.Add(inst_to_move);
+
+                    // Do not re-wrap the instruction, simply move wrapped instructions.
+                    INST old_inst = Instructions[j];
+
+                    //INST inst_to_move = INST.Wrap(
+                    //    Instructions[j].Instruction,
+                    //    result,
+                    //    sequence_points.Where(sp => { return sp.Offset == offset; }).FirstOrDefault());
+
+                    result.Instructions.Add(old_inst);
                 }
 
                 // Remove instructions from this block.
