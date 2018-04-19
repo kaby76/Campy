@@ -383,6 +383,18 @@ namespace ConsoleApp4
 
         static void Main(string[] args)
         {
+            {
+                StartDebugging();
+                int n = 4;
+                int[] x = new int[n];
+                Campy.Parallel.For(n, i =>
+                {
+                    x[i] = i;
+                    System.Console.WriteLine(i);
+                });
+                for (int i = 0; i < n; ++i)
+                    System.Console.WriteLine(x[i]);
+            }
             //{
             //    Random rnd = new Random();
             //    for (; ; )

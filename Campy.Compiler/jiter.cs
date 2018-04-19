@@ -140,6 +140,26 @@ namespace Campy.Compiler
                     }
                     throw new Exception("Cannot convert " + tr.Name);
                 }
+                else if (td != null && td.IsEnum)
+                {
+                    // Enums are any underlying type, e.g., one of { bool, char, int8,
+                    // unsigned int8, int16, unsigned int16, int32, unsigned int32, int64, unsigned int64, native int,
+                    // unsigned native int }.
+                    var bas = td.BaseType;
+                    Collection<FieldDefinition> fields = td.Fields;
+                    if (fields == null)
+                        throw new Exception("Cannot convert " + tr.Name);
+                    if (fields.Count == 0)
+                        throw new Exception("Cannot convert " + tr.Name);
+                    FieldDefinition field = fields[0];
+                    if (field == null)
+                        throw new Exception("Cannot convert " + tr.Name);
+                    var field_type = field.FieldType;
+                    if (field_type == null)
+                        throw new Exception("Cannot convert " + tr.Name);
+                    var va = ToTypeRef(field_type, generic_type_rewrite_rules, level + 1);
+                    return va;
+                }
                 else if (td != null && td.IsValueType)
                 {
                     // Struct!!!!!

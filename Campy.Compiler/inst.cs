@@ -1290,11 +1290,11 @@
     /// The LoadArgInst is a class for representing Load Arg instructions. The purpose to
     /// provide a representation of the arg operand of the instruction.
     /// </summary>
-    public class LoadArgInst : INST
+    public class ConvertLdArgInst : INST
     {
         public int _arg;
 
-        public LoadArgInst(Mono.Cecil.Cil.Instruction i) : base(i)
+        public ConvertLdArgInst(Mono.Cecil.Cil.Instruction i) : base(i)
         {
         }
 
@@ -1388,11 +1388,11 @@
         }
     }
 
-    public class StoreArgInst : INST
+    public class ConvertStArgInst : INST
     {
         public int _arg;
 
-        public StoreArgInst(Mono.Cecil.Cil.Instruction i) : base(i)
+        public ConvertStArgInst(Mono.Cecil.Cil.Instruction i) : base(i)
         {
         }
 
@@ -1417,11 +1417,11 @@
     /// The LDCInstI4 and LDCInstI8 are classes for representing load constant instructions. The constant
     /// of the instruction is encoded here.
     /// </summary>
-    public class LDCInstI4 : INST
+    public class ConvertLDCInstI4 : INST
     {
         public Int32 _arg;
 
-        public LDCInstI4(Instruction i) : base(i)
+        public ConvertLDCInstI4(Instruction i) : base(i)
         {
         }
 
@@ -1438,11 +1438,11 @@
         }
     }
 
-    public class LDCInstI8 : INST
+    public class ConvertLDCInstI8 : INST
     {
         public Int64 _arg;
 
-        public LDCInstI8(Instruction i) : base(i)
+        public ConvertLDCInstI8(Instruction i) : base(i)
         {
         }
 
@@ -1459,11 +1459,11 @@
         }
     }
 
-    public class LDCInstR4 : INST
+    public class ConvertLDCInstR4 : INST
     {
         public double _arg;
 
-        public LDCInstR4(Instruction i) : base(i)
+        public ConvertLDCInstR4(Instruction i) : base(i)
         {
         }
 
@@ -1480,11 +1480,11 @@
         }
     }
 
-    public class LDCInstR8 : INST
+    public class ConvertLDCInstR8 : INST
     {
         public double _arg;
 
-        public LDCInstR8(Instruction i) : base(i)
+        public ConvertLDCInstR8(Instruction i) : base(i)
         {
         }
 
@@ -1501,9 +1501,9 @@
         }
     }
 
-    public class CallInst : INST
+    public class ConvertCallInst : INST
     {
-        public CallInst(Instruction i) : base(i)
+        public ConvertCallInst(Instruction i) : base(i)
         {
         }
 
@@ -1968,11 +1968,11 @@
     /// <summary>
     /// The LdLoc is a class for representing load local instructions.
     /// </summary>
-    public class LdLoc : INST
+    public class ConvertLdLoc : INST
     {
         public int _arg;
 
-        public LdLoc(Instruction i) : base(i)
+        public ConvertLdLoc(Instruction i) : base(i)
         {
         }
 
@@ -1992,11 +1992,11 @@
     /// <summary>
     /// The StLoc is a class for representing store local instructions.
     /// </summary>
-    public class StLoc : INST
+    public class ConvertStLoc : INST
     {
         public int _arg;
 
-        public StLoc(Instruction i) : base(i)
+        public ConvertStLoc(Instruction i) : base(i)
         {
         }
 
@@ -2014,9 +2014,9 @@
     }
 
 
-    public class CompareInst : INST
+    public class ConvertCompareInst : INST
     {
-        public CompareInst(Mono.Cecil.Cil.Instruction i) : base(i)
+        public ConvertCompareInst(Mono.Cecil.Cil.Instruction i) : base(i)
         {
         }
 
@@ -2113,9 +2113,9 @@
         }
     }
 
-    public class CompareAndBranchInst : INST
+    public class ConvertCompareAndBranchInst : INST
     {
-        public CompareAndBranchInst(Mono.Cecil.Cil.Instruction i) : base(i)
+        public ConvertCompareAndBranchInst(Mono.Cecil.Cil.Instruction i) : base(i)
         {
         }
 
@@ -2242,8 +2242,7 @@
         }
     }
 
-
-    public class ConvertInst : INST
+    public class ConvertConvInst : INST
     {
         protected TYPE _dst;
         protected bool _check_overflow;
@@ -2333,7 +2332,7 @@
             }
         }
 
-        public ConvertInst(Mono.Cecil.Cil.Instruction i)
+        public ConvertConvInst(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -2358,18 +2357,18 @@
         }
     }
 
-    public class ConvertOvfInst : ConvertInst
+    public class ConvertConvOvfInst : ConvertConvInst
     {
-        public ConvertOvfInst(Mono.Cecil.Cil.Instruction i)
+        public ConvertConvOvfInst(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
             _check_overflow = true;
         }
     }
 
-    public class ConvertOvfUnsInst : ConvertInst
+    public class ConvertConvOvfUnsInst : ConvertConvInst
     {
-        public ConvertOvfUnsInst(Mono.Cecil.Cil.Instruction i)
+        public ConvertConvOvfUnsInst(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
             _check_overflow = true;
@@ -2377,7 +2376,7 @@
         }
     }
 
-    public class ConvertUnsInst : ConvertInst
+    public class ConvertUnsInst : ConvertConvInst
     {
         public ConvertUnsInst(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3130,7 +3129,7 @@
         }
     }
 
-    public class i_beq : CompareAndBranchInst
+    public class i_beq : ConvertCompareAndBranchInst
     {
         public i_beq(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3140,7 +3139,7 @@
         }
     }
 
-    public class i_beq_s : CompareAndBranchInst
+    public class i_beq_s : ConvertCompareAndBranchInst
     {
         public i_beq_s(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3150,7 +3149,7 @@
         }
     }
 
-    public class i_bge : CompareAndBranchInst
+    public class i_bge : ConvertCompareAndBranchInst
     {
         public i_bge(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3160,7 +3159,7 @@
         }
     }
 
-    public class i_bge_un : CompareAndBranchInst
+    public class i_bge_un : ConvertCompareAndBranchInst
     {
         public i_bge_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3170,7 +3169,7 @@
         }
     }
 
-    public class i_bge_un_s : CompareAndBranchInst
+    public class i_bge_un_s : ConvertCompareAndBranchInst
     {
         public i_bge_un_s(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3180,7 +3179,7 @@
         }
     }
 
-    public class i_bge_s : CompareAndBranchInst
+    public class i_bge_s : ConvertCompareAndBranchInst
     {
         public i_bge_s(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3190,7 +3189,7 @@
         }
     }
 
-    public class i_bgt : CompareAndBranchInst
+    public class i_bgt : ConvertCompareAndBranchInst
     {
         public i_bgt(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3200,7 +3199,7 @@
         }
     }
 
-    public class i_bgt_s : CompareAndBranchInst
+    public class i_bgt_s : ConvertCompareAndBranchInst
     {
         public i_bgt_s(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3210,7 +3209,7 @@
         }
     }
 
-    public class i_bgt_un : CompareAndBranchInst
+    public class i_bgt_un : ConvertCompareAndBranchInst
     {
         public i_bgt_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3220,7 +3219,7 @@
         }
     }
 
-    public class i_bgt_un_s : CompareAndBranchInst
+    public class i_bgt_un_s : ConvertCompareAndBranchInst
     {
         public i_bgt_un_s(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3230,7 +3229,7 @@
         }
     }
 
-    public class i_ble : CompareAndBranchInst
+    public class i_ble : ConvertCompareAndBranchInst
     {
         public i_ble(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3240,7 +3239,7 @@
         }
     }
 
-    public class i_ble_s : CompareAndBranchInst
+    public class i_ble_s : ConvertCompareAndBranchInst
     {
         public i_ble_s(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3249,7 +3248,7 @@
         }
     }
 
-    public class i_ble_un : CompareAndBranchInst
+    public class i_ble_un : ConvertCompareAndBranchInst
     {
         public i_ble_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3259,7 +3258,7 @@
         }
     }
 
-    public class i_ble_un_s : CompareAndBranchInst
+    public class i_ble_un_s : ConvertCompareAndBranchInst
     {
         public i_ble_un_s(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3269,7 +3268,7 @@
         }
     }
 
-    public class i_blt : CompareAndBranchInst
+    public class i_blt : ConvertCompareAndBranchInst
     {
         public i_blt(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3279,7 +3278,7 @@
         }
     }
 
-    public class i_blt_s : CompareAndBranchInst
+    public class i_blt_s : ConvertCompareAndBranchInst
     {
         public i_blt_s(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3289,7 +3288,7 @@
         }
     }
 
-    public class i_blt_un : CompareAndBranchInst
+    public class i_blt_un : ConvertCompareAndBranchInst
     {
         public i_blt_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3299,7 +3298,7 @@
         }
     }
 
-    public class i_blt_un_s : CompareAndBranchInst
+    public class i_blt_un_s : ConvertCompareAndBranchInst
     {
         public i_blt_un_s(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3309,7 +3308,7 @@
         }
     }
 
-    public class i_bne_un : CompareAndBranchInst
+    public class i_bne_un : ConvertCompareAndBranchInst
     {
         public i_bne_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3319,7 +3318,7 @@
         }
     }
 
-    public class i_bne_un_s : CompareAndBranchInst
+    public class i_bne_un_s : ConvertCompareAndBranchInst
     {
         public i_bne_un_s(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3576,7 +3575,7 @@
         }
     }
 
-    public class i_call : CallInst
+    public class i_call : ConvertCallInst
     {
         public i_call(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3584,7 +3583,7 @@
         }
     }
 
-    public class i_calli : CallInst
+    public class i_calli : ConvertCallInst
     {
         public i_calli(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3592,7 +3591,7 @@
         }
     }
 
-    public class i_callvirt : CallInst
+    public class i_callvirt : ConvertCallInst
     {
         public i_callvirt(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3600,7 +3599,7 @@
         }
     }
 
-    public class i_castclass : CallInst
+    public class i_castclass : ConvertCallInst
     {
         public i_castclass(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3608,7 +3607,7 @@
         }
     }
 
-    public class i_ceq : CompareInst
+    public class i_ceq : ConvertCompareInst
     {
         public i_ceq(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3618,7 +3617,7 @@
         }
     }
 
-    public class i_cgt : CompareInst
+    public class i_cgt : ConvertCompareInst
     {
         public i_cgt(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3628,7 +3627,7 @@
         }
     }
 
-    public class i_cgt_un : CompareInst
+    public class i_cgt_un : ConvertCompareInst
     {
         public i_cgt_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3646,7 +3645,7 @@
         }
     }
 
-    public class i_clt : CompareInst
+    public class i_clt : ConvertCompareInst
     {
         public i_clt(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3656,7 +3655,7 @@
         }
     }
 
-    public class i_clt_un : CompareInst
+    public class i_clt_un : ConvertCompareInst
     {
         public i_clt_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3674,7 +3673,7 @@
         }
     }
 
-    public class i_conv_i1 : ConvertInst
+    public class i_conv_i1 : ConvertConvInst
     {
         public i_conv_i1(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3683,7 +3682,7 @@
         }
     }
 
-    public class i_conv_i2 : ConvertInst
+    public class i_conv_i2 : ConvertConvInst
     {
         public i_conv_i2(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3692,7 +3691,7 @@
         }
     }
 
-    public class i_conv_i4 : ConvertInst
+    public class i_conv_i4 : ConvertConvInst
     {
         public i_conv_i4(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3701,7 +3700,7 @@
         }
     }
 
-    public class i_conv_i8 : ConvertInst
+    public class i_conv_i8 : ConvertConvInst
     {
         public i_conv_i8(Mono.Cecil.Cil.Instruction i)
                 : base(i)
@@ -3710,7 +3709,7 @@
         }
     }
 
-    public class i_conv_i : ConvertInst
+    public class i_conv_i : ConvertConvInst
     {
         public i_conv_i(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3719,7 +3718,7 @@
         }
     }
 
-    public class i_conv_ovf_i1 : ConvertOvfInst
+    public class i_conv_ovf_i1 : ConvertConvOvfInst
     {
         public i_conv_ovf_i1(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3728,7 +3727,7 @@
         }
     }
 
-    public class i_conv_ovf_i1_un : ConvertOvfUnsInst
+    public class i_conv_ovf_i1_un : ConvertConvOvfUnsInst
     {
         public i_conv_ovf_i1_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3737,7 +3736,7 @@
         }
     }
 
-    public class i_conv_ovf_i2 : ConvertOvfInst
+    public class i_conv_ovf_i2 : ConvertConvOvfInst
     {
         public i_conv_ovf_i2(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3746,7 +3745,7 @@
         }
     }
 
-    public class i_conv_ovf_i2_un : ConvertOvfUnsInst
+    public class i_conv_ovf_i2_un : ConvertConvOvfUnsInst
     {
         public i_conv_ovf_i2_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3755,7 +3754,7 @@
         }
     }
 
-    public class i_conv_ovf_i4 : ConvertOvfInst
+    public class i_conv_ovf_i4 : ConvertConvOvfInst
     {
         public i_conv_ovf_i4(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3764,7 +3763,7 @@
         }
     }
 
-    public class i_conv_ovf_i4_un : ConvertOvfUnsInst
+    public class i_conv_ovf_i4_un : ConvertConvOvfUnsInst
     {
         public i_conv_ovf_i4_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3773,7 +3772,7 @@
         }
     }
 
-    public class i_conv_ovf_i8 : ConvertOvfInst
+    public class i_conv_ovf_i8 : ConvertConvOvfInst
     {
         public i_conv_ovf_i8(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3782,7 +3781,7 @@
         }
     }
 
-    public class i_conv_ovf_i8_un : ConvertOvfUnsInst
+    public class i_conv_ovf_i8_un : ConvertConvOvfUnsInst
     {
         public i_conv_ovf_i8_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3791,7 +3790,7 @@
         }
     }
 
-    public class i_conv_ovf_i : ConvertOvfInst
+    public class i_conv_ovf_i : ConvertConvOvfInst
     {
         public i_conv_ovf_i(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3800,7 +3799,7 @@
         }
     }
 
-    public class i_conv_ovf_i_un : ConvertOvfUnsInst
+    public class i_conv_ovf_i_un : ConvertConvOvfUnsInst
     {
         public i_conv_ovf_i_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3809,7 +3808,7 @@
         }
     }
 
-    public class i_conv_ovf_u1 : ConvertOvfInst
+    public class i_conv_ovf_u1 : ConvertConvOvfInst
     {
         public i_conv_ovf_u1(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3818,7 +3817,7 @@
         }
     }
 
-    public class i_conv_ovf_u1_un : ConvertOvfUnsInst
+    public class i_conv_ovf_u1_un : ConvertConvOvfUnsInst
     {
         public i_conv_ovf_u1_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3827,7 +3826,7 @@
         }
     }
 
-    public class i_conv_ovf_u2 : ConvertOvfInst
+    public class i_conv_ovf_u2 : ConvertConvOvfInst
     {
         public i_conv_ovf_u2(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3836,7 +3835,7 @@
         }
     }
 
-    public class i_conv_ovf_u2_un : ConvertOvfUnsInst
+    public class i_conv_ovf_u2_un : ConvertConvOvfUnsInst
     {
         public i_conv_ovf_u2_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3845,7 +3844,7 @@
         }
     }
 
-    public class i_conv_ovf_u4 : ConvertOvfInst
+    public class i_conv_ovf_u4 : ConvertConvOvfInst
     {
         public i_conv_ovf_u4(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3854,7 +3853,7 @@
         }
     }
 
-    public class i_conv_ovf_u4_un : ConvertOvfUnsInst
+    public class i_conv_ovf_u4_un : ConvertConvOvfUnsInst
     {
         public i_conv_ovf_u4_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3863,7 +3862,7 @@
         }
     }
 
-    public class i_conv_ovf_u8 : ConvertOvfInst
+    public class i_conv_ovf_u8 : ConvertConvOvfInst
     {
         public i_conv_ovf_u8(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3872,7 +3871,7 @@
         }
     }
 
-    public class i_conv_ovf_u8_un : ConvertOvfUnsInst
+    public class i_conv_ovf_u8_un : ConvertConvOvfUnsInst
     {
         public i_conv_ovf_u8_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3881,7 +3880,7 @@
         }
     }
 
-    public class i_conv_ovf_u : ConvertOvfInst
+    public class i_conv_ovf_u : ConvertConvOvfInst
     {
         public i_conv_ovf_u(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3890,7 +3889,7 @@
         }
     }
 
-    public class i_conv_ovf_u_un : ConvertOvfUnsInst
+    public class i_conv_ovf_u_un : ConvertConvOvfUnsInst
     {
         public i_conv_ovf_u_un(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3899,7 +3898,7 @@
         }
     }
 
-    public class i_conv_r4 : ConvertInst
+    public class i_conv_r4 : ConvertConvInst
     {
         public i_conv_r4(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3908,7 +3907,7 @@
         }
     }
 
-    public class i_conv_r8 : ConvertInst
+    public class i_conv_r8 : ConvertConvInst
     {
         public i_conv_r8(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3926,7 +3925,7 @@
         }
     }
 
-    public class i_conv_u1 : ConvertInst
+    public class i_conv_u1 : ConvertConvInst
     {
         public i_conv_u1(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3935,7 +3934,7 @@
         }
     }
 
-    public class i_conv_u2 : ConvertInst
+    public class i_conv_u2 : ConvertConvInst
     {
         public i_conv_u2(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3944,7 +3943,7 @@
         }
     }
 
-    public class i_conv_u4 : ConvertInst
+    public class i_conv_u4 : ConvertConvInst
     {
         public i_conv_u4(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3953,7 +3952,7 @@
         }
     }
 
-    public class i_conv_u8 : ConvertInst
+    public class i_conv_u8 : ConvertConvInst
     {
         public i_conv_u8(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -3962,7 +3961,7 @@
         }
     }
 
-    public class i_conv_u : ConvertInst
+    public class i_conv_u : ConvertConvInst
     {
         public i_conv_u(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -4088,7 +4087,7 @@
         }
     }
 
-    public class i_ldarg : LoadArgInst
+    public class i_ldarg : ConvertLdArgInst
     {
         public i_ldarg(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -4099,7 +4098,7 @@
         }
     }
 
-    public class i_ldarg_0 : LoadArgInst
+    public class i_ldarg_0 : ConvertLdArgInst
     {
         public i_ldarg_0(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -4108,7 +4107,7 @@
         }
     }
 
-    public class i_ldarg_1 : LoadArgInst
+    public class i_ldarg_1 : ConvertLdArgInst
     {
         public i_ldarg_1(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -4117,7 +4116,7 @@
         }
     }
 
-    public class i_ldarg_2 : LoadArgInst
+    public class i_ldarg_2 : ConvertLdArgInst
     {
         public i_ldarg_2(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -4126,7 +4125,7 @@
         }
     }
 
-    public class i_ldarg_3 : LoadArgInst
+    public class i_ldarg_3 : ConvertLdArgInst
     {
 
         public i_ldarg_3(Mono.Cecil.Cil.Instruction i)
@@ -4136,7 +4135,7 @@
         }
     }
 
-    public class i_ldarg_s : LoadArgInst
+    public class i_ldarg_s : ConvertLdArgInst
     {
         public i_ldarg_s(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -4147,7 +4146,7 @@
         }
     }
 
-    public class i_ldarga : LoadArgInst
+    public class i_ldarga : ConvertLdArgInst
     {
         public i_ldarga(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -4158,7 +4157,7 @@
         }
     }
 
-    public class i_ldarga_s : LoadArgInst
+    public class i_ldarga_s : ConvertLdArgInst
     {
         public i_ldarga_s(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -4169,7 +4168,7 @@
         }
     }
 
-    public class i_ldc_i4 : LDCInstI4
+    public class i_ldc_i4 : ConvertLDCInstI4
     {
         public i_ldc_i4(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -4230,7 +4229,7 @@
         }
     }
 
-    public class i_ldc_i4_0 : LDCInstI4
+    public class i_ldc_i4_0 : ConvertLDCInstI4
     {
         public i_ldc_i4_0(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -4240,7 +4239,7 @@
         }
     }
 
-    public class i_ldc_i4_1 : LDCInstI4
+    public class i_ldc_i4_1 : ConvertLDCInstI4
     {
         public i_ldc_i4_1(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -4250,7 +4249,7 @@
         }
     }
 
-    public class i_ldc_i4_2 : LDCInstI4
+    public class i_ldc_i4_2 : ConvertLDCInstI4
     {
         public i_ldc_i4_2(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -4260,7 +4259,7 @@
         }
     }
 
-    public class i_ldc_i4_3 : LDCInstI4
+    public class i_ldc_i4_3 : ConvertLDCInstI4
     {
         public i_ldc_i4_3(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -4270,7 +4269,7 @@
         }
     }
 
-    public class i_ldc_i4_4 : LDCInstI4
+    public class i_ldc_i4_4 : ConvertLDCInstI4
     {
         public i_ldc_i4_4(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -4280,7 +4279,7 @@
         }
     }
 
-    public class i_ldc_i4_5 : LDCInstI4
+    public class i_ldc_i4_5 : ConvertLDCInstI4
     {
         public i_ldc_i4_5(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -4290,7 +4289,7 @@
         }
     }
 
-    public class i_ldc_i4_6 : LDCInstI4
+    public class i_ldc_i4_6 : ConvertLDCInstI4
     {
         public i_ldc_i4_6(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -4300,7 +4299,7 @@
         }
     }
 
-    public class i_ldc_i4_7 : LDCInstI4
+    public class i_ldc_i4_7 : ConvertLDCInstI4
     {
         public i_ldc_i4_7(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -4310,7 +4309,7 @@
         }
     }
 
-    public class i_ldc_i4_8 : LDCInstI4
+    public class i_ldc_i4_8 : ConvertLDCInstI4
     {
         public i_ldc_i4_8(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -4320,7 +4319,7 @@
         }
     }
 
-    public class i_ldc_i4_m1 : LDCInstI4
+    public class i_ldc_i4_m1 : ConvertLDCInstI4
     {
         public i_ldc_i4_m1(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -4330,7 +4329,7 @@
         }
     }
 
-    public class i_ldc_i4_s : LDCInstI4
+    public class i_ldc_i4_s : ConvertLDCInstI4
     {
         public i_ldc_i4_s(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -4391,7 +4390,7 @@
         }
     }
 
-    public class i_ldc_i8 : LDCInstI8
+    public class i_ldc_i8 : ConvertLDCInstI8
     {
         public i_ldc_i8(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -4452,7 +4451,7 @@
         }
     }
 
-    public class i_ldc_r4 : LDCInstR4
+    public class i_ldc_r4 : ConvertLDCInstR4
     {
         public i_ldc_r4(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -4521,7 +4520,7 @@
         }
     }
 
-    public class i_ldc_r8 : LDCInstR8
+    public class i_ldc_r8 : ConvertLDCInstR8
     {
         public i_ldc_r8(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -4983,7 +4982,7 @@
         }
     }
 
-    public class i_ldloc : LdLoc
+    public class i_ldloc : ConvertLdLoc
     {
         public i_ldloc(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -4994,7 +4993,7 @@
         }
     }
 
-    public class i_ldloc_0 : LdLoc
+    public class i_ldloc_0 : ConvertLdLoc
     {
         public i_ldloc_0(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -5004,7 +5003,7 @@
         }
     }
 
-    public class i_ldloc_1 : LdLoc
+    public class i_ldloc_1 : ConvertLdLoc
     {
         public i_ldloc_1(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -5014,7 +5013,7 @@
         }
     }
 
-    public class i_ldloc_2 : LdLoc
+    public class i_ldloc_2 : ConvertLdLoc
     {
         public i_ldloc_2(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -5024,7 +5023,7 @@
         }
     }
 
-    public class i_ldloc_3 : LdLoc
+    public class i_ldloc_3 : ConvertLdLoc
     {
         public i_ldloc_3(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -5034,7 +5033,7 @@
         }
     }
 
-    public class i_ldloc_s : LdLoc
+    public class i_ldloc_s : ConvertLdLoc
     {
         public i_ldloc_s(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -5045,7 +5044,7 @@
         }
     }
 
-    public class i_ldloca : LdLoc
+    public class i_ldloca : ConvertLdLoc
     {
         public i_ldloca(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -5056,7 +5055,7 @@
         }
     }
 
-    public class i_ldloca_s : LdLoc
+    public class i_ldloca_s : ConvertLdLoc
     {
         public i_ldloca_s(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -6000,7 +5999,7 @@
         }
     }
 
-    public class i_starg : StoreArgInst
+    public class i_starg : ConvertStArgInst
     {
         public i_starg(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -6011,7 +6010,7 @@
         }
     }
 
-    public class i_starg_s : StoreArgInst
+    public class i_starg_s : ConvertStArgInst
     {
         public i_starg_s(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -6178,7 +6177,7 @@
         }
     }
 
-    public class i_stloc : StLoc
+    public class i_stloc : ConvertStLoc
     {
         public i_stloc(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -6189,7 +6188,7 @@
         }
     }
 
-    public class i_stloc_0 : StLoc
+    public class i_stloc_0 : ConvertStLoc
     {
         public i_stloc_0(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -6199,7 +6198,7 @@
         }
     }
 
-    public class i_stloc_1 : StLoc
+    public class i_stloc_1 : ConvertStLoc
     {
         public i_stloc_1(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -6209,7 +6208,7 @@
         }
     }
 
-    public class i_stloc_2 : StLoc
+    public class i_stloc_2 : ConvertStLoc
     {
         public i_stloc_2(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -6219,7 +6218,7 @@
         }
     }
 
-    public class i_stloc_3 : StLoc
+    public class i_stloc_3 : ConvertStLoc
     {
         public i_stloc_3(Mono.Cecil.Cil.Instruction i)
             : base(i)
@@ -6229,7 +6228,7 @@
         }
     }
 
-    public class i_stloc_s : StLoc
+    public class i_stloc_s : ConvertStLoc
     {
         public i_stloc_s(Mono.Cecil.Cil.Instruction i)
             : base(i)
