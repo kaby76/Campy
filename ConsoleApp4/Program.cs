@@ -390,7 +390,7 @@ namespace ConsoleApp4
                 Campy.Parallel.For(n, i =>
                 {
                     x[i] = i;
-                    System.Console.WriteLine(i);
+                    System.Console.WriteLine(i.ToString());
                 });
                 for (int i = 0; i < n; ++i)
                     System.Console.WriteLine(x[i]);
