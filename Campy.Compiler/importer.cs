@@ -354,28 +354,30 @@ namespace Campy.Compiler
                             {
                                 Mono.Cecil.Cil.Instruction target_instruction =
                                     last_instruction.Operand as Mono.Cecil.Cil.Instruction;
-                                CFG.Vertex target_node = Cfg.Vertices.First(
+                                CFG.Vertex target_node = Cfg.Vertices.FirstOrDefault(
                                     (CFG.Vertex x) =>
                                     {
                                         if (!x.Instructions.First().Instruction.Equals(target_instruction))
                                             return false;
                                         return true;
                                     });
-                                Cfg.AddEdge(new CFG.Edge(){From = node, To = target_node});
+                                if (target_node != null)
+                                    Cfg.AddEdge(new CFG.Edge(){From = node, To = target_node});
                             }
                             else if (last_instruction.Operand as Mono.Cecil.Cil.Instruction[] != null)
                             {
                                 foreach (Mono.Cecil.Cil.Instruction target_instruction in
                                     (last_instruction.Operand as Mono.Cecil.Cil.Instruction[]))
                                 {
-                                    CFG.Vertex target_node = Cfg.Vertices.First(
+                                    CFG.Vertex target_node = Cfg.Vertices.FirstOrDefault(
                                         (CFG.Vertex x) =>
                                         {
                                             if (!x.Instructions.First().Instruction.Equals(target_instruction))
                                                 return false;
                                             return true;
                                         });
-                                    Cfg.AddEdge(new CFG.Edge(){From = node, To = target_node});
+                                    if (target_node != null)
+                                        Cfg.AddEdge(new CFG.Edge(){From = node, To = target_node});
                                 }
                             }
                             else
