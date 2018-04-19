@@ -755,7 +755,8 @@ namespace Campy.Compiler
                         if (type_to_consider.ContainsGenericParameter)
                         {
                             var declaring_type_of_considered_type = type_to_consider.DeclaringType;
-
+                            if (declaring_type_of_considered_type == null)
+                                continue;
                             // "type_to_consider" is generic, so find matching
                             // type, make mapping, and node copy.
                             for (int i = 0; i < list_of_data_types_used.Count; ++i)
@@ -827,6 +828,8 @@ namespace Campy.Compiler
                         if (type_to_consider.ContainsGenericParameter)
                         {
                             var declaring_type_of_considered_type = type_to_consider.DeclaringType;
+                            if (declaring_type_of_considered_type == null)
+                                continue;
 
                             // "type_to_consider" is generic, so find matching
                             // type, make mapping, and node copy.
