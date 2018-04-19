@@ -74,6 +74,25 @@
         {
             if (type.IsArray || type.IsClass)
                 return 8;
+            else if (type.IsEnum)
+            {
+                // Enums are any underlying type, e.g., one of { bool, char, int8,
+                // unsigned int8, int16, unsigned int16, int32, unsigned int32, int64, unsigned int64, native int,
+                // unsigned native int }.
+                var bas = type.BaseType;
+                var fields = type.GetFields();
+                if (fields == null)
+                    throw new Exception("Cannot convert " + type.Name);
+                if (fields.Count() == 0)
+                    throw new Exception("Cannot convert " + type.Name);
+                var field = fields[0];
+                if (field == null)
+                    throw new Exception("Cannot convert " + type.Name);
+                var field_type = field.FieldType;
+                if (field_type == null)
+                    throw new Exception("Cannot convert " + type.Name);
+                return Alignment(field_type);
+            }
             else if (type.IsStruct())
             {
                 if (SizeOf(type) > 4)
@@ -116,6 +135,25 @@
             if (type.IsArray)
             {
                 throw new Exception("Cannot determine size of array without data.");
+            }
+            else if (type.IsEnum)
+            {
+                // Enums are any underlying type, e.g., one of { bool, char, int8,
+                // unsigned int8, int16, unsigned int16, int32, unsigned int32, int64, unsigned int64, native int,
+                // unsigned native int }.
+                var bas = type.BaseType;
+                var fields = type.GetFields();
+                if (fields == null)
+                    throw new Exception("Cannot convert " + type.Name);
+                if (fields.Count() == 0)
+                    throw new Exception("Cannot convert " + type.Name);
+                var field = fields[0];
+                if (field == null)
+                    throw new Exception("Cannot convert " + type.Name);
+                var field_type = field.FieldType;
+                if (field_type == null)
+                    throw new Exception("Cannot convert " + type.Name);
+                return SizeOf(field_type);
             }
             else if (type.IsStruct() || type.IsClass)
             {
