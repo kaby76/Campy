@@ -556,6 +556,26 @@
                     return;
                 }
 
+                if (from_cpu_type.IsEnum)
+                {
+                    var bas = from_cpu_type.BaseType;
+                    var fields = from_cpu_type.GetFields();
+                    if (fields == null)
+                        throw new Exception("Cannot convert " + from_cpu_type.Name);
+                    if (fields.Count() == 0)
+                        throw new Exception("Cannot convert " + from_cpu_type.Name);
+                    var field = fields[0];
+                    if (field == null)
+                        throw new Exception("Cannot convert " + from_cpu_type.Name);
+                    var field_type = field.FieldType;
+                    if (field_type == null)
+                        throw new Exception("Cannot convert " + from_cpu_type.Name);
+                    // Cast to base type and call recursively to solve.
+                    var v = Convert.ChangeType(from_cpu, field_type);
+                    DeepCopyToImplementation(v, to_gpu);
+                    return;
+                }
+
                 if (from_cpu_type.IsStruct() || from_cpu_type.IsClass)
                 {
                     // Classes are not copied if already copied before, AND
@@ -565,16 +585,16 @@
                     if (!(from_cpu_type.Name.StartsWith("<>c__DisplayClass") ||
                         from_cpu_type
                             .GetCustomAttributes(typeof(System.Runtime.CompilerServices.CompilerGeneratedAttribute),
-			    false).Length > 0))
-		    {
-			    if (_copied_to_gpu.Contains(from_cpu) && !from_cpu_type.IsStruct())
-			    {
-				if (Campy.Utils.Options.IsOn("copy_trace"))
-				    System.Console.WriteLine("Not copying object to GPU -- already done.' " + from_cpu);
-				// Full object already stuffed into implementation buffer.
-				return;
-			    }
-		    }
+                        false).Length > 0))
+                    {
+                        if (_copied_to_gpu.Contains(from_cpu) && !from_cpu_type.IsStruct())
+                        {
+                            if (Campy.Utils.Options.IsOn("copy_trace"))
+                                System.Console.WriteLine("Not copying object to GPU -- already done.' " + from_cpu);
+                            // Full object already stuffed into implementation buffer.
+                            return;
+                        }
+                    }
                     {
                         if (!from_cpu_type.IsStruct())
                         {
@@ -823,6 +843,27 @@
                     to_cpu = new string((char*)intptr2);
                     if (Campy.Utils.Options.IsOn("copy_trace"))
                         System.Console.WriteLine("Copy from GPU " + to_cpu);
+                    return;
+                }
+
+                if (t_type.IsEnum)
+                {
+                    var bas = t_type.BaseType;
+                    var fields = t_type.GetFields();
+                    if (fields == null)
+                        throw new Exception("Cannot convert " + t_type.Name);
+                    if (fields.Count() == 0)
+                        throw new Exception("Cannot convert " + t_type.Name);
+                    var field = fields[0];
+                    if (field == null)
+                        throw new Exception("Cannot convert " + t_type.Name);
+                    var field_type = field.FieldType;
+                    if (field_type == null)
+                        throw new Exception("Cannot convert " + t_type.Name);
+                    DeepCopyFromImplementation(from_gpu, out object v, field_type);
+                    //var w = Convert.ChangeType(v, t_type);
+                    var w = Enum.Parse(t_type, v.ToString());
+                    to_cpu = w;
                     return;
                 }
 

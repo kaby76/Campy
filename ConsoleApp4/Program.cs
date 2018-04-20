@@ -363,6 +363,14 @@ namespace ConsoleApp4
         }
     }
 
+    enum Foo
+    {
+        f1,
+        f2,
+        f3,
+        f4
+    };
+
     class Program
     {
         static void StartDebugging()
@@ -386,11 +394,13 @@ namespace ConsoleApp4
             {
                 StartDebugging();
                 int n = 4;
-                int[] x = new int[n];
+                Foo[] x = new Foo[n];
                 Campy.Parallel.For(n, i =>
                 {
-                    x[i] = i;
-                    System.Console.WriteLine(i.ToString());
+                    if (i == 0) x[i] = Foo.f4;
+                    else if (i == 1) x[i] = Foo.f3;
+                    else if (i == 2) x[i] = Foo.f2;
+                    else if (i == 3) x[i] = Foo.f1;
                 });
                 for (int i = 0; i < n; ++i)
                     System.Console.WriteLine(x[i]);
