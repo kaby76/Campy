@@ -77,7 +77,7 @@ namespace Campy.Compiler
             if (bb._graph.PredecessorNodes(bb).Count() == 0)
             {
                 if (!bb.IsEntry) throw new Exception("Cannot handle dead code blocks.");
-                var fun = bb.MethodValueRef;
+                var fun = bb.LlvmInfo.MethodValueRef;
                 var t_fun = LLVM.TypeOf(fun);
                 var t_fun_con = LLVM.GetTypeContext(t_fun);
                 var context = LLVM.GetModuleContext(JITER.global_llvm_module);
@@ -117,11 +117,11 @@ namespace Campy.Compiler
                         value = new VALUE(LLVM.ConstInt(type.IntermediateType, (ulong)0, true));
                     else if (LLVM.GetTypeKind(type.IntermediateType) == TypeKind.StructTypeKind)
                     {
-                        var entry = bb.Entry.BasicBlock;
+                        var entry = bb.Entry.LlvmInfo.BasicBlock;
                         //var beginning = LLVM.GetFirstInstruction(entry);
                         //LLVM.PositionBuilderBefore(basic_block.Builder, beginning);
-                        var new_obj = LLVM.BuildAlloca(bb.Builder, type.IntermediateType, "i" + INST.instruction_id++); // Allocates struct on stack, but returns a pointer to struct.
-                        //LLVM.PositionBuilderAtEnd(bb.Builder, bb.BasicBlock);
+                        var new_obj = LLVM.BuildAlloca(bb.LlvmInfo.Builder, type.IntermediateType, "i" + INST.instruction_id++); // Allocates struct on stack, but returns a pointer to struct.
+                        //LLVM.PositionBuilderAtEnd(bb.LlvmInfo.Builder, bb.BasicBlock);
                         value = new VALUE(new_obj);
                     }
                     else
@@ -188,7 +188,7 @@ namespace Campy.Compiler
                     var value = p_llvm_node.StateOut._stack[i];
                     var v = value.V;
                     TypeRef tr = LLVM.TypeOf(v);
-                    ValueRef res = LLVM.BuildPhi(bb.Builder, tr, "i" + INST.instruction_id++);
+                    ValueRef res = LLVM.BuildPhi(bb.LlvmInfo.Builder, tr, "i" + INST.instruction_id++);
                     _phi.Add(res);
                     _stack[i] = new VALUE(res);
                 }

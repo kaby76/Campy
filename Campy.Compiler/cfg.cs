@@ -125,33 +125,32 @@ namespace Campy.Compiler
 
         public class Vertex
         {
+
+            public struct LLVMINFO
+            {
+                public BasicBlockRef BasicBlock { get; set; }
+                public ValueRef MethodValueRef { get; set; }
+                public BuilderRef Builder { get; set; }
+                public ModuleRef Module { get; set; }
+            }
+
             public string Name { get; set; }
             public override string ToString()
             {
                 return Name;
             }
-
             public CFG.Vertex OriginalVertex { get; set; }
             public Dictionary<Tuple<TypeReference, GenericParameter>, System.Type> OpsFromOriginal { get; set; } = new Dictionary<Tuple<TypeReference, GenericParameter>, System.Type>();
             public CFG.Vertex PreviousVertex { get; set; }
             public Tuple<Tuple<TypeReference, GenericParameter>, System.Type> OpFromPreviousNode { get; set; }
-            public Dictionary<TypeReference, TypeRef> LLVMTypeMap = new Dictionary<TypeReference, TypeRef>();
             public MethodReference RewrittenCalleeSignature { get; set; }
             public List<INST> Instructions { get; set; } = new List<INST>();
-
             public CFG _graph
             {
                 get;
                 set;
             }
-
-            public BasicBlockRef BasicBlock { get; set; }
-            public ValueRef MethodValueRef { get; set; }
-            public BuilderRef Builder { get; set; }
-            public ModuleRef Module {
-                get;
-                set;
-            }
+            public LLVMINFO LlvmInfo;
             public bool AlreadyCompiled { get; set; }
             public MethodDefinition _method_definition { get; set; }
             public MethodReference _original_method_reference { get; set; }
@@ -164,14 +163,12 @@ namespace Campy.Compiler
             public bool HasStructReturnValue { get; set; }
             public STATE StateIn { get; set; }
             public STATE StateOut { get; set; }
-
             private Vertex _entry;
             public Vertex Entry
             {
                 get { return _entry; }
                 set { _entry = value; }
             }
-
             public bool IsEntry
             {
                 get
@@ -179,67 +176,16 @@ namespace Campy.Compiler
                     return this.Entry == this;
                 }
             }
-
-            public bool IsCall
-            {
-                get
-                {
-                    INST last = Instructions[Instructions.Count - 1];
-                    switch (last.OpCode.FlowControl)
-                    {
-                        case FlowControl.Call:
-                            return true;
-                        default:
-                            return false;
-                    }
-                }
-            }
-
-            public bool IsNewobj
-            {
-                get
-                {
-                    INST last = Instructions[Instructions.Count - 1];
-                    return last.OpCode.Code == Code.Newobj;
-                }
-            }
-
-            public bool IsNewarr
-            {
-                get
-                {
-                    INST last = Instructions[Instructions.Count - 1];
-                    return last.OpCode.Code == Code.Newarr;
-                }
-            }
-
-            public bool IsReturn
-            {
-                get
-                {
-                    INST last = Instructions[Instructions.Count - 1];
-                    switch (last.OpCode.FlowControl)
-                    {
-                        case FlowControl.Return:
-                            return true;
-                        default:
-                            return false;
-                    }
-                }
-            }
-
             public int StackNumberOfLocals
             {
                 get;
                 set;
             }
-
             public int StackNumberOfArguments
             {
                 get;
                 set;
             }
-
             public Vertex Exit
             {
                 get
@@ -247,10 +193,6 @@ namespace Campy.Compiler
                     return null;
                 }
             }
-
-
-            // public Campy.Utils.MultiMap<Mono.Cecil.TypeReference, System.Type> node_type_map =
-            //     new Campy.Utils.MultiMap<TypeReference, System.Type>();
 
             public Vertex()
                 : base()
@@ -305,84 +247,6 @@ namespace Campy.Compiler
                     Console.WriteLine();
                 }
                 Console.WriteLine();
-            }
-
-            public Vertex Split(int i)
-            {
-                Debug.Assert(Instructions.Count != 0);
-                // Split this node into two nodes, with all instructions after "i" in new node.
-                var cfg = this._graph;
-                Vertex result = (Vertex)cfg.AddVertex(new Vertex() { Name = cfg.NewNodeNumber().ToString()});
-                result._entry = this._entry;
-                result._original_method_reference = this._original_method_reference;
-                result._method_definition = this._method_definition;
-
-                int count = Instructions.Count;
-
-                if (Campy.Utils.Options.IsOn("cfg_construction_trace"))
-                {
-                    System.Console.WriteLine("Split node " + this.Name + " at instruction " + Instructions[i].Instruction);
-                    System.Console.WriteLine("Node prior to split:");
-                    OutputEntireNode();
-                    System.Console.WriteLine("New node is " + result.Name);
-                }
-
-                if (!result._original_method_reference.Module.HasSymbols)
-                {
-                    // Try to get symbols, but if none available, don't worry about it.
-                    try { result._original_method_reference.Module.ReadSymbols(); } catch { }
-                }
-                var symbol_reader = result._original_method_reference.Module.SymbolReader;
-                var method_debug_information = symbol_reader?.Read(result._method_definition);
-                Collection<SequencePoint> sequence_points = method_debug_information != null ? method_debug_information.SequencePoints : new Collection<SequencePoint>();
-
-                // Add instructions from split point to new block, including any debugging information.
-                for (int j = i; j < count; ++j)
-                {
-                    var offset = Instructions[j].Instruction.Offset;
-
-                    // Do not re-wrap the instruction, simply move wrapped instructions.
-                    INST old_inst = Instructions[j];
-
-                    //INST inst_to_move = INST.Wrap(
-                    //    Instructions[j].Instruction,
-                    //    result,
-                    //    sequence_points.Where(sp => { return sp.Offset == offset; }).FirstOrDefault());
-
-                    result.Instructions.Add(old_inst);
-                }
-
-                // Remove instructions from this block.
-                for (int j = i; j < count; ++j)
-                {
-                    this.Instructions.RemoveAt(i);
-                }
-
-                Debug.Assert(this.Instructions.Count != 0);
-                Debug.Assert(result.Instructions.Count != 0);
-                Debug.Assert(this.Instructions.Count + result.Instructions.Count == count);
-
-                INST last_instruction = this.Instructions[
-                    this.Instructions.Count - 1];
-
-                // Transfer any out edges to pred block to new block.
-                while (cfg.SuccessorNodes(this).Count() > 0)
-                {
-                    CFG.Vertex succ = cfg.SuccessorNodes(this).First();
-                    cfg.DeleteEdge(new CFG.Edge(){From = this, To = succ});
-                    cfg.AddEdge(new CFG.Edge() { From = result, To = succ });
-                }
-
-                if (Campy.Utils.Options.IsOn("cfg_construction_trace"))
-                {
-                    System.Console.WriteLine("Node after split:");
-                    OutputEntireNode();
-                    System.Console.WriteLine("Newly created node:");
-                    result.OutputEntireNode();
-                    System.Console.WriteLine();
-                }
-
-                return result;
             }
         }
 

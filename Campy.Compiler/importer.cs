@@ -293,7 +293,7 @@ namespace Campy.Compiler
                     throw new Exception("Cannot find instruction!");
                 CFG.Vertex target_node = owner.FirstOrDefault();
                 var j = target_node.Instructions.FindIndex(a => a.Instruction == i);
-                CFG.Vertex new_node = target_node.Split(j);
+                CFG.Vertex new_node = Split(target_node, j);
             }
 
             // Add in all edges.
@@ -389,6 +389,77 @@ namespace Campy.Compiler
             }
             Cfg.OutputDotGraph();
             Cfg.OutputEntireGraph();
+        }
+
+        public CFG.Vertex Split(CFG.Vertex node, int i)
+        {
+
+            Debug.Assert(node.Instructions.Count != 0);
+            // Split this node into two nodes, with all instructions after "i" in new node.
+            var cfg = node._graph;
+            CFG.Vertex result = (CFG.Vertex)cfg.AddVertex(new CFG.Vertex() { Name = cfg.NewNodeNumber().ToString() });
+            result.Entry = node.Entry;
+            result._original_method_reference = node._original_method_reference;
+            result._method_definition = node._method_definition;
+
+            int count = node.Instructions.Count;
+
+            if (Campy.Utils.Options.IsOn("cfg_construction_trace"))
+            {
+                System.Console.WriteLine("Split node " + node.Name + " at instruction " + node.Instructions[i].Instruction);
+                System.Console.WriteLine("Node prior to split:");
+                node.OutputEntireNode();
+                System.Console.WriteLine("New node is " + result.Name);
+            }
+
+            if (!result._original_method_reference.Module.HasSymbols)
+            {
+                // Try to get symbols, but if none available, don't worry about it.
+                try { result._original_method_reference.Module.ReadSymbols(); } catch { }
+            }
+            var symbol_reader = result._original_method_reference.Module.SymbolReader;
+            var method_debug_information = symbol_reader?.Read(result._method_definition);
+            Collection<SequencePoint> sequence_points = method_debug_information != null ? method_debug_information.SequencePoints : new Collection<SequencePoint>();
+
+            // Add instructions from split point to new block, including any debugging information.
+            for (int j = i; j < count; ++j)
+            {
+                var offset = node.Instructions[j].Instruction.Offset;
+                // Do not re-wrap the instruction, simply move wrapped instructions.
+                INST old_inst = node.Instructions[j];
+                result.Instructions.Add(old_inst);
+            }
+
+            // Remove instructions from this block.
+            for (int j = i; j < count; ++j)
+            {
+                node.Instructions.RemoveAt(i);
+            }
+
+            Debug.Assert(node.Instructions.Count != 0);
+            Debug.Assert(result.Instructions.Count != 0);
+            Debug.Assert(node.Instructions.Count + result.Instructions.Count == count);
+
+            INST last_instruction = node.Instructions[node.Instructions.Count - 1];
+
+            // Transfer any out edges to pred block to new block.
+            while (cfg.SuccessorNodes(node).Count() > 0)
+            {
+                CFG.Vertex succ = cfg.SuccessorNodes(node).First();
+                cfg.DeleteEdge(new CFG.Edge() { From = node, To = succ });
+                cfg.AddEdge(new CFG.Edge() { From = result, To = succ });
+            }
+
+            if (Campy.Utils.Options.IsOn("cfg_construction_trace"))
+            {
+                System.Console.WriteLine("Node after split:");
+                node.OutputEntireNode();
+                System.Console.WriteLine("Newly created node:");
+                result.OutputEntireNode();
+                System.Console.WriteLine();
+            }
+
+            return result;
         }
 
         /// <summary>

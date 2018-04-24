@@ -698,7 +698,7 @@ namespace Campy.Compiler
                 List<ParameterReference> instantiated_parameters = new List<ParameterReference>();
 
                 ModuleRef mod = JITER.global_llvm_module; // LLVM.ModuleCreateWithName(mn);
-                bb.Module = mod;
+                bb.LlvmInfo.Module = mod;
 
                 uint count = (uint)bb.StackNumberOfArguments;
                 TypeRef[] param_types = new TypeRef[count];
@@ -762,15 +762,15 @@ namespace Campy.Compiler
                 ValueRef fun = LLVM.AddFunction(mod,
                     JITER.RenameToLegalLLVMName(JITER.MethodName(method)), met_type);
                 BasicBlockRef entry = LLVM.AppendBasicBlock(fun, bb.Name.ToString());
-                bb.BasicBlock = entry;
-                bb.MethodValueRef = fun;
+                bb.LlvmInfo.BasicBlock = entry;
+                bb.LlvmInfo.MethodValueRef = fun;
                 var t_fun = LLVM.TypeOf(fun);
                 var t_fun_con = LLVM.GetTypeContext(t_fun);
                 var context = LLVM.GetModuleContext(JITER.global_llvm_module);
                 if (t_fun_con != context) throw new Exception("not equal");
                 //////////LLVM.VerifyFunction(fun, VerifierFailureAction.PrintMessageAction);
                 BuilderRef builder = LLVM.CreateBuilder();
-                bb.Builder = builder;
+                bb.LlvmInfo.Builder = builder;
                 LLVM.PositionBuilderAtEnd(builder, entry);
             }
             return basic_blocks_to_compile;
@@ -790,17 +790,17 @@ namespace Campy.Compiler
                 {
                     var ent = bb.Entry;
                     var lvv_ent = ent;
-                    var fun = lvv_ent.MethodValueRef;
+                    var fun = lvv_ent.LlvmInfo.MethodValueRef;
                     var t_fun = LLVM.TypeOf(fun);
                     var t_fun_con = LLVM.GetTypeContext(t_fun);
                     var context = LLVM.GetModuleContext(JITER.global_llvm_module);
                     if (t_fun_con != context) throw new Exception("not equal");
                     //LLVM.VerifyFunction(fun, VerifierFailureAction.PrintMessageAction);
                     var llvm_bb = LLVM.AppendBasicBlock(fun, bb.Name.ToString());
-                    bb.BasicBlock = llvm_bb;
-                    bb.MethodValueRef = lvv_ent.MethodValueRef;
+                    bb.LlvmInfo.BasicBlock = llvm_bb;
+                    bb.LlvmInfo.MethodValueRef = lvv_ent.LlvmInfo.MethodValueRef;
                     BuilderRef builder = LLVM.CreateBuilder();
-                    bb.Builder = builder;
+                    bb.LlvmInfo.Builder = builder;
                     LLVM.PositionBuilderAtEnd(builder, llvm_bb);
                 }
             }
@@ -1264,7 +1264,7 @@ namespace Campy.Compiler
                         // Need to insert instruction to branch to fall through.
                         var edge = bb._graph.SuccessorEdges(bb).FirstOrDefault();
                         var s = edge.To;
-                        var br = LLVM.BuildBr(bb.Builder, s.BasicBlock);
+                        var br = LLVM.BuildBr(bb.LlvmInfo.Builder, s.LlvmInfo.BasicBlock);
                     }
                     visited[ob] = true;
                 }
@@ -1303,7 +1303,7 @@ namespace Campy.Compiler
                         {
                             var p = llvm_node._graph.PredecessorEdges(llvm_node).ToList()[c].From;
                             var plm = p;
-                            phi_blocks[c] = plm.BasicBlock;
+                            phi_blocks[c] = plm.LlvmInfo.BasicBlock;
                         }
                         //System.Console.WriteLine();
                         //System.Console.WriteLine("Node " + llvm_node.Name + " stack slot " + i + " types:");
@@ -1366,7 +1366,7 @@ namespace Campy.Compiler
                 ValueRef kernelMd = LLVM.MDNodeInContext(
                     context_ref, new ValueRef[3]
                 {
-                    basic_block.MethodValueRef,
+                    basic_block.LlvmInfo.MethodValueRef,
                     LLVM.MDStringInContext(context_ref, "kernel", 6),
                     LLVM.ConstInt(LLVM.Int32TypeInContext(context_ref), 1, false)
                 });

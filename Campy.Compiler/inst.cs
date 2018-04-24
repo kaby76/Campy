@@ -25,7 +25,7 @@
         public Mono.Cecil.Cil.OpCode OpCode { get { return Instruction.OpCode; } }
         public object Operand { get { return Instruction.Operand; } }
         public static int instruction_id = 1;
-        public BuilderRef Builder { get { return Block.Builder; } }
+        public BuilderRef Builder { get { return Block.LlvmInfo.Builder; } }
         public ContextRef LLVMContext { get; set; }
         public List<VALUE> LLVMInstructions { get; private set; }
         public CFG.Vertex Block { get; set; }
@@ -103,7 +103,7 @@
                     sub_type, 1, 1, (uint) this.SeqPoint.StartLine, 0, 0);
 
                 debug_methods[normalized_method_name] = sub;
-                LLVM.SetSubprogram(this.Block.MethodValueRef, sub);
+                LLVM.SetSubprogram(this.Block.LlvmInfo.MethodValueRef, sub);
             }
             else {
                 sub = debug_methods[normalized_method_name];
@@ -1317,13 +1317,13 @@
                 var nctaidy = JITER.functions_in_internal_bcl_layer["llvm.nvvm.read.ptx.sreg.nctaid.y"];
                 var nctaidz = JITER.functions_in_internal_bcl_layer["llvm.nvvm.read.ptx.sreg.nctaid.z"];
 
-                var v_tidx = LLVM.BuildCall(bb.Builder, tidx, new ValueRef[] { }, "tidx");
-                var v_tidy = LLVM.BuildCall(bb.Builder, tidy, new ValueRef[] { }, "tidy");
-                var v_ntidx = LLVM.BuildCall(bb.Builder, ntidx, new ValueRef[] { }, "ntidx");
-                var v_ntidy = LLVM.BuildCall(bb.Builder, ntidy, new ValueRef[] { }, "ntidy");
-                var v_ctaidx = LLVM.BuildCall(bb.Builder, ctaidx, new ValueRef[] { }, "ctaidx");
-                var v_ctaidy = LLVM.BuildCall(bb.Builder, ctaidy, new ValueRef[] { }, "ctaidx");
-                var v_nctaidx = LLVM.BuildCall(bb.Builder, nctaidx, new ValueRef[] { }, "nctaidx");
+                var v_tidx = LLVM.BuildCall(bb.LlvmInfo.Builder, tidx, new ValueRef[] { }, "tidx");
+                var v_tidy = LLVM.BuildCall(bb.LlvmInfo.Builder, tidy, new ValueRef[] { }, "tidy");
+                var v_ntidx = LLVM.BuildCall(bb.LlvmInfo.Builder, ntidx, new ValueRef[] { }, "ntidx");
+                var v_ntidy = LLVM.BuildCall(bb.LlvmInfo.Builder, ntidy, new ValueRef[] { }, "ntidy");
+                var v_ctaidx = LLVM.BuildCall(bb.LlvmInfo.Builder, ctaidx, new ValueRef[] { }, "ctaidx");
+                var v_ctaidy = LLVM.BuildCall(bb.LlvmInfo.Builder, ctaidy, new ValueRef[] { }, "ctaidx");
+                var v_nctaidx = LLVM.BuildCall(bb.LlvmInfo.Builder, nctaidx, new ValueRef[] { }, "nctaidx");
 
                 //int i = (threadIdx.x
                 //         + blockDim.x * blockIdx.x
@@ -1332,18 +1332,18 @@
 
                 var t1 = v_tidx;
 
-                var t2 = LLVM.BuildMul(bb.Builder, v_ntidx, v_ctaidx, "i" + instruction_id++);
+                var t2 = LLVM.BuildMul(bb.LlvmInfo.Builder, v_ntidx, v_ctaidx, "i" + instruction_id++);
 
-                var t3 = LLVM.BuildMul(bb.Builder, v_ntidx, v_nctaidx, "i" + instruction_id++);
-                t3 = LLVM.BuildMul(bb.Builder, t3, v_ntidy, "i" + instruction_id++);
-                t3 = LLVM.BuildMul(bb.Builder, t3, v_ctaidy, "i" + instruction_id++);
+                var t3 = LLVM.BuildMul(bb.LlvmInfo.Builder, v_ntidx, v_nctaidx, "i" + instruction_id++);
+                t3 = LLVM.BuildMul(bb.LlvmInfo.Builder, t3, v_ntidy, "i" + instruction_id++);
+                t3 = LLVM.BuildMul(bb.LlvmInfo.Builder, t3, v_ctaidy, "i" + instruction_id++);
 
-                var t4 = LLVM.BuildMul(bb.Builder, v_ntidx, v_nctaidx, "i" + instruction_id++);
-                t4 = LLVM.BuildMul(bb.Builder, t4, v_tidy, "i" + instruction_id++);
+                var t4 = LLVM.BuildMul(bb.LlvmInfo.Builder, v_ntidx, v_nctaidx, "i" + instruction_id++);
+                t4 = LLVM.BuildMul(bb.LlvmInfo.Builder, t4, v_tidy, "i" + instruction_id++);
 
-                var sum = LLVM.BuildAdd(bb.Builder, t1, t2, "i" + instruction_id++);
-                sum = LLVM.BuildAdd(bb.Builder, sum, t3, "i" + instruction_id++);
-                sum = LLVM.BuildAdd(bb.Builder, sum, t4, "i" + instruction_id++);
+                var sum = LLVM.BuildAdd(bb.LlvmInfo.Builder, t1, t2, "i" + instruction_id++);
+                sum = LLVM.BuildAdd(bb.LlvmInfo.Builder, sum, t3, "i" + instruction_id++);
+                sum = LLVM.BuildAdd(bb.LlvmInfo.Builder, sum, t4, "i" + instruction_id++);
 
                 unsafe
                 {
@@ -1354,7 +1354,7 @@
                     var f = list2.Where(t => t._mangled_name == name).First();
                     ValueRef fv = f._valueref;
                     var call = LLVM.BuildCall(Builder, fv, args, "");
-                    sum = LLVM.BuildAdd(bb.Builder, sum, call, "i" + instruction_id++);
+                    sum = LLVM.BuildAdd(bb.LlvmInfo.Builder, sum, call, "i" + instruction_id++);
                 }
 
                 if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -1704,7 +1704,7 @@
                         // Pop all parameters and stuff into params buffer. Note, "this" and
                         // "return" are separate parameters in GPU BCL runtime C-functions,
                         // unfortunately, reminates of the DNA runtime I decided to use.
-                        var entry = this.Block.Entry.BasicBlock;
+                        var entry = this.Block.Entry.LlvmInfo.BasicBlock;
                         var beginning = LLVM.GetFirstInstruction(entry);
                         //LLVM.PositionBuilderBefore(Builder, beginning);
                         var parameter_type = LLVM.ArrayType(LLVM.Int64Type(), (uint) mr.Parameters.Count);
@@ -1776,7 +1776,7 @@
 
                 var name = JITER.MethodName(mr);
                 BuilderRef bu = this.Builder;
-                ValueRef fv = entry_corresponding_to_method_called.MethodValueRef;
+                ValueRef fv = entry_corresponding_to_method_called.LlvmInfo.MethodValueRef;
                 var t_fun = LLVM.TypeOf(fv);
                 var t_fun_con = LLVM.GetTypeContext(t_fun);
                 var context = LLVM.GetModuleContext(JITER.global_llvm_module);
@@ -1793,7 +1793,7 @@
                     ValueRef ret_par = LLVM.GetParam(fv, (uint)0);
                     var alloc_type = LLVM.GetElementType(LLVM.TypeOf(ret_par));
 
-                    var entry = this.Block.Entry.BasicBlock;
+                    var entry = this.Block.Entry.LlvmInfo.BasicBlock;
                     var beginning = LLVM.GetFirstInstruction(entry);
                     //LLVM.PositionBuilderBefore(Builder, beginning);
 
@@ -2123,7 +2123,7 @@
                     s1 = s2;
                     s2 = true_node;
                 }
-                LLVM.BuildCondBr(Builder, cmp, s1.BasicBlock, s2.BasicBlock);
+                LLVM.BuildCondBr(Builder, cmp, s1.LlvmInfo.BasicBlock, s2.LlvmInfo.BasicBlock);
                 return Next;
             }
             if (t1.isFloatingPointTy() && t2.isFloatingPointTy())
@@ -2151,7 +2151,7 @@
                     s1 = s2;
                     s2 = true_node;
                 }
-                LLVM.BuildCondBr(Builder, cmp, s1.BasicBlock, s2.BasicBlock);
+                LLVM.BuildCondBr(Builder, cmp, s1.LlvmInfo.BasicBlock, s2.LlvmInfo.BasicBlock);
                 return Next;
             }
             throw new Exception("Unhandled compare and branch.");
@@ -3235,7 +3235,7 @@
         {
             var edge = Block._graph.SuccessorEdges(Block).ToList()[0];
             var s = edge.To;
-            var br = LLVM.BuildBr(Builder, s.BasicBlock);
+            var br = LLVM.BuildBr(Builder, s.LlvmInfo.BasicBlock);
             return Next;
         }
     }
@@ -3251,7 +3251,7 @@
         {
             var edge = Block._graph.SuccessorEdges(Block).ToList()[0];
             var s = edge.To;
-            var br = LLVM.BuildBr(Builder, s.BasicBlock);
+            var br = LLVM.BuildBr(Builder, s.LlvmInfo.BasicBlock);
             return Next;
         }
     }
@@ -3289,7 +3289,7 @@
                 s1 = s2;
                 s2 = true_node;
             }
-            LLVM.BuildCondBr(Builder, v3, s2.BasicBlock, s1.BasicBlock);
+            LLVM.BuildCondBr(Builder, v3, s2.LlvmInfo.BasicBlock, s1.LlvmInfo.BasicBlock);
             return Next;
         }
     }
@@ -3335,7 +3335,7 @@
                 s1 = s2;
                 s2 = true_node;
             }
-            LLVM.BuildCondBr(Builder, v3, s2.BasicBlock, s1.BasicBlock);
+            LLVM.BuildCondBr(Builder, v3, s2.LlvmInfo.BasicBlock, s1.LlvmInfo.BasicBlock);
             return Next;
         }
     }
@@ -3373,7 +3373,7 @@
                 s1 = s2;
                 s2 = true_node;
             }
-            LLVM.BuildCondBr(Builder, v3, s1.BasicBlock, s2.BasicBlock);
+            LLVM.BuildCondBr(Builder, v3, s1.LlvmInfo.BasicBlock, s2.LlvmInfo.BasicBlock);
             return Next;
         }
     }
@@ -3411,7 +3411,7 @@
                 s1 = s2;
                 s2 = true_node;
             }
-            LLVM.BuildCondBr(Builder, v3, s1.BasicBlock, s2.BasicBlock);
+            LLVM.BuildCondBr(Builder, v3, s1.LlvmInfo.BasicBlock, s2.LlvmInfo.BasicBlock);
             return Next;
         }
     }
@@ -4734,7 +4734,7 @@
                     // Pop all parameters and stuff into params buffer. Note, "this" and
                     // "return" are separate parameters in GPU BCL runtime C-functions,
                     // unfortunately, reminates of the DNA runtime I decided to use.
-                    var entry = this.Block.Entry.BasicBlock;
+                    var entry = this.Block.Entry.LlvmInfo.BasicBlock;
                     var beginning = LLVM.GetFirstInstruction(entry);
                     //LLVM.PositionBuilderBefore(Builder, beginning);
                     var parameter_type = LLVM.ArrayType(LLVM.Int64Type(), (uint)0);
@@ -5156,7 +5156,7 @@
                 int ret = the_entry.HasScalarReturnValue ? 1 : 0;
 
                 // First, create a struct.
-                var entry = this.Block.Entry.BasicBlock;
+                var entry = this.Block.Entry.LlvmInfo.BasicBlock;
                 var beginning = LLVM.GetFirstInstruction(entry);
                 //LLVM.PositionBuilderBefore(Builder, beginning);
                 var new_obj = LLVM.BuildAlloca(Builder, llvm_type, "i" + instruction_id++); // Allocates struct on stack, but returns a pointer to struct.
@@ -5165,7 +5165,7 @@
                     System.Console.WriteLine(new VALUE(new_obj));
 
                 BuilderRef bu = this.Builder;
-                ValueRef fv = the_entry.MethodValueRef;
+                ValueRef fv = the_entry.LlvmInfo.MethodValueRef;
                 var t_fun = LLVM.TypeOf(fv);
                 var t_fun_con = LLVM.GetTypeContext(t_fun);
                 var context = LLVM.GetModuleContext(JITER.global_llvm_module);
@@ -5261,7 +5261,7 @@
                     // Pop all parameters and stuff into params buffer. Note, "this" and
                     // "return" are separate parameters in GPU BCL runtime C-functions,
                     // unfortunately, reminates of the DNA runtime I decided to use.
-                    var entry = this.Block.Entry.BasicBlock;
+                    var entry = this.Block.Entry.LlvmInfo.BasicBlock;
                     var beginning = LLVM.GetFirstInstruction(entry);
                     //LLVM.PositionBuilderBefore(Builder, beginning);
                     var parameter_type = LLVM.ArrayType(
@@ -5391,7 +5391,7 @@
                     int ret = the_entry.HasScalarReturnValue ? 1 : 0;
 
                     BuilderRef bu = this.Builder;
-                    ValueRef fv = the_entry.MethodValueRef;
+                    ValueRef fv = the_entry.LlvmInfo.MethodValueRef;
                     var t_fun = LLVM.TypeOf(fv);
                     var t_fun_con = LLVM.GetTypeContext(t_fun);
                     var context = LLVM.GetModuleContext(JITER.global_llvm_module);
