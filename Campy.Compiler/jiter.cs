@@ -14,6 +14,7 @@ using Swigged.Cuda;
 using Mono.Cecil.Rocks;
 using Mono.Collections.Generic;
 using FieldAttributes = Mono.Cecil.FieldAttributes;
+using MethodBody = Mono.Cecil.Cil.MethodBody;
 
 namespace Campy.Compiler
 {
@@ -715,8 +716,41 @@ namespace Campy.Compiler
 
         private bool TypeUsingGeneric() { return false; }
 
-        public List<CFG.Vertex> InstantiateGenerics(IEnumerable<CFG.Vertex> change_set, List<System.Type> list_of_data_types_used, List<Mono.Cecil.TypeReference> list_of_mono_data_types_used)
+        public List<CFG.Vertex> InstantiateGenerics(IEnumerable<CFG.Vertex> change_set)
         {
+            return change_set.ToList();
+            HashSet<TypeReference> type_references = new HashSet<TypeReference>();
+            HashSet<MethodReference> method_references = new HashSet<MethodReference>();
+            foreach (var bb in change_set)
+            {
+                // Get every generic data type used, e.g., List<int>, Stack<A>, ...
+                foreach (var inst in bb.Instructions)
+                {
+                    if (inst.OpCode.Code == Code.Ldfld)
+                    {
+                        var ft = inst.Operand as FieldReference;
+                        if (ft.FieldType as TypeReference != null)
+                            type_references.Add(ft.FieldType as TypeReference);
+                    }
+                    var operand = inst.Operand;
+                    if (operand as TypeReference != null)
+                    {
+                        type_references.Add(operand as TypeReference);
+                    }
+                    if (operand as MethodReference != null) method_references.Add(operand as MethodReference);
+                }
+            }
+
+            // Whittle out generic parameter and generic parameter arrays, and of that, only generic type instances.
+            var type_references_list = type_references.Where(t => (!t.IsGenericParameter)
+                       && (bool) (!t.GetElementType()?.IsGenericParameter)).Where(t => t.IsGenericInstance).ToList();
+
+            // With list in hand, create new type definitions.
+            foreach (var t in type_references_list)
+            {
+                t.MakeGenericInstanceTypeDefinition();
+            }
+
             // Start a new change set so we can update edges and other properties for the new nodes
             // in the graph.
             int change_set_id2 = _mcfg.StartChangeSet();
@@ -744,245 +778,61 @@ namespace Campy.Compiler
                 MethodReference method = basic_block._original_method_reference;
                 var declaring_type = method.DeclaringType;
 
+
+                // If declaring type of method is generic, then look for look for instance type needed,
+                // then make copy of basic blocks with type infromation. Every instruction and type used is
+                // rewritten with generic instance data.
+                var matches =
+                    type_references_list.Where(t => t.Resolve().FullName == declaring_type.Resolve().FullName).ToList();
+                foreach (TypeReference match in matches)
                 {
-                    // Let's first consider the parameter types to the function.
-                    var parameters = method.Parameters;
-                    for (int k = 0; k < parameters.Count; ++k)
+                    // For every type, copy block, rewrite with generic parameter.
+                    int new_basic_block_id = _mcfg.NewNodeNumber();
+                    var new_basic_block = _mcfg.AddVertex(new CFG.Vertex() {Name = new_basic_block_id.ToString()});
+                    new_basic_block._original_method_reference = method;
+                    var mgit = match as GenericInstanceType;
+
+                    // Rewrite method definition.
+                    var r = match.Resolve();
+
+                    MethodBody body = new MethodBody(basic_block._method_definition);
+                    var instruction_count = basic_block.Instructions.Count;
+                    for (int j = 0; j < instruction_count; ++j)
                     {
-                        ParameterDefinition par = parameters[k];
-                        var type_to_consider = par.ParameterType;
-                        type_to_consider = JITER.FromGenericParameterToTypeReference(type_to_consider, method.DeclaringType as GenericInstanceType);
-                        if (type_to_consider.ContainsGenericParameter)
+                        var wi = basic_block.Instructions[j];
+                        Instruction i = wi.Instruction;
+                        var operand = i.Operand;
+                        var gp = operand as GenericParameter;
+                        if (gp != null)
                         {
-                            var declaring_type_of_considered_type = type_to_consider.DeclaringType;
-                            if (declaring_type_of_considered_type == null)
-                                continue;
-                            // "type_to_consider" is generic, so find matching
-                            // type, make mapping, and node copy.
-                            for (int i = 0; i < list_of_data_types_used.Count; ++i)
-                            {
-                                var data_type_used = list_of_mono_data_types_used[i];
-                                if (data_type_used == null) continue;
-                                var sys_data_type_used = list_of_data_types_used[i];
-                                if (declaring_type_of_considered_type.FullName.Equals(data_type_used.FullName))
-                                {
-                                    // Find generic parameter corresponding to par.ParameterType
-                                    System.Type xx = null;
-                                    for (int l = 0; l < sys_data_type_used.GetGenericArguments().Count(); ++l)
-                                    {
-                                        var pp = declaring_type.GenericParameters;
-                                        var ppp = pp[l];
-                                        if (ppp.Name == type_to_consider.Name)
-                                            xx = sys_data_type_used.GetGenericArguments()[l];
-                                    }
+                            var position = gp.Position;
+                            var sub = mgit.GenericArguments[position];
 
-                                    // Match. First find rewrite node if previous created.
-                                    var previous = basic_block;
-                                    for (; previous != null; previous = previous.PreviousVertex)
-                                    {
-                                        var old_node = FindInstantiatedBasicBlock(previous, type_to_consider, xx);
-                                        if (old_node != null)
-                                            break;
-                                    }
-                                    if (previous != null) continue;
-                                    // Rewrite node
-                                    int new_node_id = _mcfg.NewNodeNumber();
-                                    var new_node = _mcfg.AddVertex(new CFG.Vertex() { Name = new_node_id.ToString() });
-                                    var new_cfg_node = (CFG.Vertex)new_node;
-                                    new_cfg_node.Instructions = basic_block.Instructions;
-                                    new_cfg_node._original_method_reference = basic_block._original_method_reference;
-                                    new_cfg_node.RewrittenCalleeSignature = basic_block.RewrittenCalleeSignature;
-                                    new_cfg_node.PreviousVertex = basic_block;
-                                    var b = type_to_consider as GenericParameter;
-                                    var bb = new Tuple<TypeReference, GenericParameter>(type_to_consider, b);
-                                    new_cfg_node.OpFromPreviousNode = new Tuple<Tuple<TypeReference, GenericParameter>, System.Type>(bb, xx);
-                                    var previous_list = basic_block.OpsFromOriginal;
-                                    if (previous_list != null) new_cfg_node.OpsFromOriginal = new Dictionary<Tuple<TypeReference, GenericParameter>, System.Type>(previous_list);
-                                    else new_cfg_node.OpsFromOriginal = new Dictionary<Tuple<TypeReference, GenericParameter>, System.Type>();
+                            var est = IMPORTER.MakeHostInstanceGeneric(method, sub);
+                            var rest = est.Resolve();
+                            var asdf = basic_block._method_definition.Module.Import(method);
+                            //var rasdf = asdf.Resolve();
+                            var asdf2 = basic_block._method_definition.Module.Import(est);
+                            var rasdf2 = asdf2.Resolve();
 
-                                    var a = new_cfg_node.OpFromPreviousNode.Item1 as Tuple<TypeReference, GenericParameter>;
-
-                                    new_cfg_node.OpsFromOriginal.Add(
-                                        a,
-                                        new_cfg_node.OpFromPreviousNode.Item2);
-                                    if (basic_block.OriginalVertex == null) new_cfg_node.OriginalVertex = basic_block;
-                                    else new_cfg_node.OriginalVertex = basic_block.OriginalVertex;
-
-                                    // Add in rewrites.
-                                    //new_cfg_node.node_type_map = new MultiMap<TypeReference, System.Type>(lv.node_type_map);
-                                    //new_cfg_node.node_type_map.Add(type_to_consider, xx);
-                                    EnterInstantiatedBasicBlock(basic_block, type_to_consider, xx, new_cfg_node);
-                                    System.Console.WriteLine("Adding new node " + new_cfg_node.Name);
-
-                                    // Push this node back on the stack.
-                                    instantiated_nodes.Push(new_cfg_node);
-                                }
-                            }
+                            // Substitute for "operand" the type "sub" as the operand for the instruction.
+                            var worker = body.GetILProcessor();
+                            Instruction new_inst = worker.Create(i.OpCode, sub);
+                            new_inst.Offset = i.Offset;
+                            body.Instructions.Insert(j, new_inst);
+                        }
+                        else
+                        {
+                            body.Instructions.Insert(j, i);
                         }
                     }
-
-                    // Next, consider the return value.
+                    new_basic_block._method_definition = basic_block._method_definition;
+                    for (int j = 0; j < instruction_count; ++j)
                     {
-                        var return_type = method.ReturnType;
-                        var type_to_consider = return_type;
-                        if (type_to_consider.ContainsGenericParameter)
-                        {
-                            var declaring_type_of_considered_type = type_to_consider.DeclaringType;
-                            if (declaring_type_of_considered_type == null)
-                                continue;
-
-                            // "type_to_consider" is generic, so find matching
-                            // type, make mapping, and node copy.
-                            for (int i = 0; i < list_of_data_types_used.Count; ++i)
-                            {
-                                var data_type_used = list_of_mono_data_types_used[i];
-                                var sys_data_type_used = list_of_data_types_used[i];
-                                var sys_data_type_used_is_generic_type = sys_data_type_used.IsGenericType;
-                                if (sys_data_type_used_is_generic_type)
-                                {
-                                    var sys_data_type_used_get_generic_type_def = sys_data_type_used.GetGenericTypeDefinition();
-                                }
-
-                                if (declaring_type_of_considered_type.FullName.Equals(data_type_used.FullName))
-                                {
-                                    // Find generic parameter corresponding to par.ParameterType
-                                    System.Type xx = null;
-                                    for (int l = 0; l < sys_data_type_used.GetGenericArguments().Count(); ++l)
-                                    {
-                                        var pp = declaring_type.GenericParameters;
-                                        var ppp = pp[l];
-                                        if (ppp.Name == type_to_consider.Name)
-                                            xx = sys_data_type_used.GetGenericArguments()[l];
-                                    }
-
-                                    // Match. First find rewrite node if previous created.
-                                    var previous = basic_block;
-                                    for (; previous != null; previous = previous.PreviousVertex)
-                                    {
-                                        var old_node = FindInstantiatedBasicBlock(previous, type_to_consider, xx);
-                                        if (old_node != null)
-                                            break;
-                                    }
-                                    if (previous != null) continue;
-                                    // Rewrite node
-                                    int new_node_id = _mcfg.NewNodeNumber();
-                                    var new_node = _mcfg.AddVertex(new CFG.Vertex(){Name = new_node_id.ToString()});
-                                    var new_cfg_node = (CFG.Vertex)new_node;
-                                    new_cfg_node.Instructions = basic_block.Instructions;
-                                    new_cfg_node._original_method_reference = basic_block._original_method_reference;
-                                    new_cfg_node.RewrittenCalleeSignature = basic_block.RewrittenCalleeSignature;
-                                    new_cfg_node.PreviousVertex = basic_block;
-                                    var b = type_to_consider as GenericParameter;
-                                    var bb = new Tuple<TypeReference, GenericParameter>(type_to_consider, b);
-                                    new_cfg_node.OpFromPreviousNode = new Tuple<Tuple<TypeReference, GenericParameter>, System.Type>(bb, xx);
-                                    var previous_list = basic_block.OpsFromOriginal;
-                                    if (previous_list != null) new_cfg_node.OpsFromOriginal = new Dictionary<Tuple<TypeReference, GenericParameter>, System.Type>(previous_list);
-                                    else new_cfg_node.OpsFromOriginal = new Dictionary<Tuple<TypeReference, GenericParameter>, System.Type>();
-
-                                    var a = new_cfg_node.OpFromPreviousNode.Item1 as Tuple<TypeReference, GenericParameter>;
-                                    new_cfg_node.OpsFromOriginal.Add(
-                                        a,
-                                        new_cfg_node.OpFromPreviousNode.Item2);
-
-                                    if (basic_block.OriginalVertex == null) new_cfg_node.OriginalVertex = basic_block;
-                                    else new_cfg_node.OriginalVertex = basic_block.OriginalVertex;
-                                    
-                                    // Add in rewrites.
-                                    //new_cfg_node.node_type_map = new MultiMap<TypeReference, System.Type>(lv.node_type_map);
-                                    //new_cfg_node.node_type_map.Add(type_to_consider, xx);
-                                    EnterInstantiatedBasicBlock(basic_block, type_to_consider, xx, new_cfg_node);
-                                    System.Console.WriteLine("Adding new node " + new_cfg_node.Name);
-
-                                    // Push this node back on the stack.
-                                    instantiated_nodes.Push(new_cfg_node);
-                                }
-                            }
-                        }
-                    }
-                }
-
-                {
-                    // Let's consider "this" to the function.
-                    var has_this = method.HasThis;
-                    if (has_this)
-                    {
-                        var type_to_consider = method.DeclaringType;
-                        //var type_to_consider_system_type = type_to_consider.ToSystemType();
-                        if (type_to_consider.ContainsGenericParameter)
-                        {
-                            // "type_to_consider" is generic, so find matching
-                            // type, make mapping, and node copy.
-                            for (int i = 0; i < list_of_data_types_used.Count; ++i)
-                            {
-                                var data_type_used = list_of_mono_data_types_used[i];
-                                var sys_data_type_used = list_of_data_types_used[i];
-
-                                var data_type_used_has_generics = data_type_used.HasGenericParameters;
-                                var data_type_used_contains_generics = data_type_used.ContainsGenericParameter;
-                                var data_type_used_generic_instance = data_type_used.IsGenericInstance;
-
-                                var sys_data_type_used_is_generic_type = sys_data_type_used.IsGenericType;
-                                var sys_data_type_used_is_generic_parameter = sys_data_type_used.IsGenericParameter;
-                                var sys_data_type_used_contains_generics = sys_data_type_used.ContainsGenericParameters;
-                                if (sys_data_type_used_is_generic_type)
-                                {
-                                    var sys_data_type_used_get_generic_type_def = sys_data_type_used.GetGenericTypeDefinition();
-                                }
-
-                                if (type_to_consider.FullName.Equals(data_type_used.FullName))
-                                {
-                                    // Find generic parameter corresponding to par.ParameterType
-                                    System.Type xx = null;
-                                    for (int l = 0; l < sys_data_type_used.GetGenericArguments().Count(); ++l)
-                                    {
-                                        var pp = declaring_type.GenericParameters;
-                                        var ppp = pp[l];
-                                        if (ppp.Name == type_to_consider.Name)
-                                            xx = sys_data_type_used.GetGenericArguments()[l];
-                                    }
-
-                                    // Match. First find rewrite node if previous created.
-                                    var previous = basic_block;
-                                    for (; previous != null; previous = previous.PreviousVertex)
-                                    {
-                                        var old_node = FindInstantiatedBasicBlock(previous, type_to_consider, xx);
-                                        if (old_node != null)
-                                            break;
-                                    }
-                                    if (previous != null) continue;
-                                    // Rewrite node
-                                    int new_node_id = _mcfg.NewNodeNumber();
-                                    var new_node = _mcfg.AddVertex(new CFG.Vertex(){Name = new_node_id.ToString()});
-                                    var new_cfg_node = (CFG.Vertex)new_node;
-                                    new_cfg_node.Instructions = basic_block.Instructions;
-                                    new_cfg_node._original_method_reference = basic_block._original_method_reference;
-                                    new_cfg_node.RewrittenCalleeSignature = basic_block.RewrittenCalleeSignature;
-                                    new_cfg_node.PreviousVertex = basic_block;
-                                    var b = type_to_consider as GenericParameter;
-                                    var bb = new Tuple<TypeReference, GenericParameter>(type_to_consider, b);
-                                    new_cfg_node.OpFromPreviousNode = new Tuple<Tuple<TypeReference, GenericParameter>, System.Type>(bb, xx);
-                                    var previous_list = basic_block.OpsFromOriginal;
-                                    if (previous_list != null) new_cfg_node.OpsFromOriginal = new Dictionary<Tuple<TypeReference, GenericParameter>, System.Type>(previous_list);
-                                    else new_cfg_node.OpsFromOriginal = new Dictionary<Tuple<TypeReference, GenericParameter>, System.Type>();
-
-                                    Tuple<TypeReference, GenericParameter> a = new_cfg_node.OpFromPreviousNode.Item1;
-                                    new_cfg_node.OpsFromOriginal.Add(
-                                        a,
-                                        new_cfg_node.OpFromPreviousNode.Item2);
-                                    if (basic_block.OriginalVertex == null) new_cfg_node.OriginalVertex = basic_block;
-                                    else new_cfg_node.OriginalVertex = basic_block.OriginalVertex;
-
-                                    // Add in rewrites.
-                                    //new_cfg_node.node_type_map = new MultiMap<TypeReference, System.Type>(lv.node_type_map);
-                                    //new_cfg_node.node_type_map.Add(type_to_consider, xx);
-                                    EnterInstantiatedBasicBlock(basic_block, type_to_consider, xx, new_cfg_node);
-                                    System.Console.WriteLine("Adding new node " + new_cfg_node.Name);
-
-                                    // Push this node back on the stack.
-                                    instantiated_nodes.Push(new_cfg_node);
-                                }
-                            }
-                        }
+                        Mono.Cecil.Cil.Instruction instruction = body.Instructions[j];
+                        INST wrapped_instruction = INST.Wrap(instruction, basic_block,
+                            basic_block.Instructions[j].SeqPoint);
+                        new_basic_block.Instructions.Add(wrapped_instruction);
                     }
                 }
             }
@@ -1302,109 +1152,6 @@ namespace Campy.Compiler
             return mr.FullName;
         }
 
-        private void CompilePart6(IEnumerable<CFG.Vertex> basic_blocks_to_compile,
-            List<Mono.Cecil.TypeReference> list_of_data_types_used, List<CFG.Vertex> entries,
-            List<CFG.Vertex> unreachable, List<CFG.Vertex> change_set_minus_unreachable)
-        {
-            List<CFG.Vertex> work = new List<CFG.Vertex>(change_set_minus_unreachable);
-            while (work.Count != 0)
-            {
-                // Create DFT order of all nodes.
-                var ordered_list = new TarjanNoBackEdges<CFG.Vertex,CFG.Edge>(_mcfg).ToList();
-                ordered_list.Reverse();
-                List<CFG.Vertex> visited = new List<CFG.Vertex>();
-                // Compute stack size for each basic block, processing nodes on work list
-                // in DFT order.
-                foreach (CFG.Vertex node in ordered_list)
-                {
-                    visited.Add(node);
-                    if (!(work.Contains(node)))
-                    {
-                        continue;
-                    }
-                    work.Remove(node);
-
-                    // Use predecessor information to get initial stack size.
-                    if (node.IsEntry)
-                    {
-                        node.StackLevelIn =
-                            node.StackNumberOfLocals + node.StackNumberOfArguments;
-                    }
-                    else
-                    {
-                        int in_level = -1;
-                        foreach (CFG.Vertex pred in _mcfg.PredecessorNodes(node))
-                        {
-                            // Do not consider interprocedural edges when computing stack size.
-                            if (pred._original_method_reference != node._original_method_reference)
-                                continue;
-                            // If predecessor has not been visited, warn and do not consider.
-                            if (pred.StackLevelOut == null)
-                            {
-                                continue;
-                            }
-                            // Warn if predecessor does not concur with another predecessor.
-                            if (in_level != -1 && pred.StackLevelOut != node.StackLevelIn)
-                                throw new Exception("Miscalculation in stack size.");
-                            node.StackLevelIn = pred.StackLevelOut;
-                            in_level = (int)node.StackLevelIn;
-                        }
-                        // Warn if no predecessors have been visited.
-                        if (in_level == -1)
-                        {
-                            continue;
-                        }
-                    }
-                    int level_after = (int)node.StackLevelIn;
-                    int level_pre = level_after;
-                    foreach (var inst in node.Instructions)
-                    {
-                        level_pre = level_after;
-                        inst.ComputeStackLevel(this, ref level_after);
-                        if (!(level_after >= node.StackNumberOfLocals + node.StackNumberOfArguments))
-                            throw new Exception("Stack computation off. Internal error.");
-                    }
-                    node.StackLevelOut = level_after;
-                    // Verify return node that it makes sense.
-                    if (node.IsReturn && !unreachable.Contains(node))
-                    {
-                        if (!(node.StackLevelOut ==
-                            node.StackNumberOfArguments
-                            + node.StackNumberOfLocals
-                            + (node.HasScalarReturnValue ? 1 : 0)))
-                        {
-                            throw new Exception("Failed stack level out check");
-                        }
-                    }
-                    foreach (CFG.Vertex succ in node._graph.SuccessorNodes(node))
-                    {
-                        // If it's an interprocedural edge, nothing to pass on.
-                        if (succ._original_method_reference != node._original_method_reference)
-                            continue;
-                        // If it's recursive, nothing more to do.
-                        if (succ.IsEntry)
-                            continue;
-                        // If it's a return, nothing more to do also.
-                        if (node.Instructions.Last() as i_ret != null)
-                            continue;
-                        // Nothing to update if no change.
-                        if (node.StackLevelIn > level_after)
-                        {
-                            continue;
-                        }
-                        else if (node.StackLevelIn == level_after)
-                        {
-                            continue;
-                        }
-                        if (!work.Contains(succ))
-                        {
-                            work.Add(succ);
-                        }
-                    }
-                }
-            }
-        }
-
         private List<CFG.Vertex> RemoveBasicBlocksAlreadyCompiled(List<CFG.Vertex> basic_blocks_to_compile)
         {
             List<CFG.Vertex> weeded = new List<CFG.Vertex>();
@@ -1426,6 +1173,8 @@ namespace Campy.Compiler
         {
             basic_blocks_to_compile = RemoveBasicBlocksAlreadyCompiled(basic_blocks_to_compile);
 
+            basic_blocks_to_compile = InstantiateGenerics(basic_blocks_to_compile);
+
             ComputeBasicMethodProperties(basic_blocks_to_compile);
 
             CompilePart1(basic_blocks_to_compile, list_of_data_types_used);
@@ -1439,9 +1188,6 @@ namespace Campy.Compiler
             List<CFG.Vertex> unreachable;
             List<CFG.Vertex> change_set_minus_unreachable;
             CompilePart4(basic_blocks_to_compile, list_of_data_types_used, entries, out unreachable, out change_set_minus_unreachable);
-
-            CompilePart6(basic_blocks_to_compile, list_of_data_types_used, entries,
-                unreachable, change_set_minus_unreachable);
 
             {
                 // Get a list of nodes to compile.
@@ -1458,15 +1204,6 @@ namespace Campy.Compiler
 
                 // Eliminate all node names not in the work list.
                 var order = ordered_list.Where(v => work_names.Contains(v.Name)).ToList();
-
-                //// Set up the initial states associated with each node, that is, state into and state out of.
-                //foreach (int ob in order)
-                //{
-                //    CFG.Vertex node = _mcfg.VertexSpace[_mcfg.NameSpace.BijectFromBasetype(ob)];
-                //    CFG.Vertex llvm_node = node;
-                //    llvm_node.StateIn = new State(node, true);
-                //    llvm_node.StateOut = new State(node, false);
-                //}
 
                 Dictionary<CFG.Vertex, bool> visited = new Dictionary<CFG.Vertex, bool>();
 
@@ -1842,13 +1579,6 @@ namespace Campy.Compiler
                 list_of_mono_data_types_used.Add(
                     data_type_used.ToMonoTypeReference());
             }
-
-            // In the same, in-order discovery of all methods, we're going to pass on
-            // type information. As we spread the type info from basic block to successors,
-            // copy the node with the type information associated with it if the type info
-            // results in a different interpretation/compilation of the function.
-            cs = InstantiateGenerics(
-                cs, list_of_data_types_used, list_of_mono_data_types_used);
 
             // Associate "this" with entry.
             Dictionary<Tuple<TypeReference, GenericParameter>, System.Type> ops = bb.OpsFromOriginal;

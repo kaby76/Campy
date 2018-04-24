@@ -41,12 +41,6 @@
         public STATE StateOut { get; set; }
         public UInt32 TargetPointerSizeInBits = 64;
 
-        public virtual void ComputeStackLevel(JITER converter, ref int level_after)
-        {
-            throw new Exception("Must have an implementation for ComputeStackLevel! The instruction is: "
-                + this.ToString());
-        }
-
         public virtual void DebuggerInfo(JITER converter)
         {
             if (this.SeqPoint == null)
@@ -840,11 +834,6 @@
         {
         }
 
-        public override void ComputeStackLevel(JITER converter, ref int level_after)
-        {
-            level_after--;
-        }
-
         public override INST Convert(JITER converter, STATE state)
         {
             var rhs = state._stack.Pop();
@@ -1298,11 +1287,6 @@
         {
         }
 
-        public override void ComputeStackLevel(JITER converter, ref int level_after)
-        {
-            level_after++;
-        }
-
         public override INST Convert(JITER converter, STATE state)
         {
             // For ldarg.1 of a compiler generated closure method, generate code
@@ -1396,11 +1380,6 @@
         {
         }
 
-        public override void ComputeStackLevel(JITER converter, ref int level_after)
-        {
-            level_after--;
-        }
-
         public override INST Convert(JITER converter, STATE state)
         {
             VALUE value = state._stack.Pop();
@@ -1425,11 +1404,6 @@
         {
         }
 
-        public override void ComputeStackLevel(JITER converter, ref int level_after)
-        {
-            level_after++;
-        }
-
         public override INST Convert(JITER converter, STATE state)
         {
             VALUE value = new VALUE(LLVM.ConstInt(LLVM.Int32Type(), (ulong)_arg, true));
@@ -1444,11 +1418,6 @@
 
         public ConvertLDCInstI8(Instruction i) : base(i)
         {
-        }
-
-        public override void ComputeStackLevel(JITER converter, ref int level_after)
-        {
-            level_after++;
         }
 
         public override INST Convert(JITER converter, STATE state)
@@ -1467,11 +1436,6 @@
         {
         }
 
-        public override void ComputeStackLevel(JITER converter, ref int level_after)
-        {
-            level_after++;
-        }
-
         public override INST Convert(JITER converter, STATE state)
         {
             VALUE value = new VALUE(LLVM.ConstReal(LLVM.FloatType(), _arg));
@@ -1488,11 +1452,6 @@
         {
         }
 
-        public override void ComputeStackLevel(JITER converter, ref int level_after)
-        {
-            level_after++;
-        }
-
         public override INST Convert(JITER converter, STATE state)
         {
             VALUE value = new VALUE(LLVM.ConstReal(LLVM.DoubleType(), _arg));
@@ -1505,29 +1464,6 @@
     {
         public ConvertCallInst(Instruction i) : base(i)
         {
-        }
-
-        public override void ComputeStackLevel(JITER converter, ref int level_after)
-        {
-            object method = this.Operand;
-            if (method as Mono.Cecil.MethodReference == null)
-                throw new Exception();
-            Mono.Cecil.MethodReference mr = method as Mono.Cecil.MethodReference;
-            Mono.Cecil.MethodReturnType rt = mr.MethodReturnType;
-            Mono.Cecil.TypeReference tr = rt.ReturnType;
-            var HasReturnValue = tr.FullName != "System.Void";
-            var HasScalarReturnValue = HasReturnValue && !tr.IsStruct();
-            var HasStructReturnValue = HasReturnValue && tr.IsStruct();
-            var HasThis = mr.HasThis;
-            // The stack size after the call does not depend on whether there is
-            // a struct or scalar return--those are only for how the call is implemented.
-            // The effect on the stack after the call is the same.
-            var NumberOfArguments = mr.Parameters.Count
-                                    + (HasThis ? 1 : 0)
-                                    ;
-            int xret = HasReturnValue ? 1 : 0;
-            int xargs = NumberOfArguments;
-            level_after = level_after + xret - xargs;
         }
 
         public override INST Convert(JITER converter, STATE state)
@@ -1976,11 +1912,6 @@
         {
         }
 
-        public override void ComputeStackLevel(JITER converter, ref int level_after)
-        {
-            level_after++;
-        }
-
         public override INST Convert(JITER converter, STATE state)
         {
             VALUE v = state._locals[_arg];
@@ -2000,11 +1931,6 @@
         {
         }
 
-        public override void ComputeStackLevel(JITER converter, ref int level_after)
-        {
-            level_after--;
-        }
-
         public override INST Convert(JITER converter, STATE state)
         {
             VALUE v = state._stack.Pop();
@@ -2018,11 +1944,6 @@
     {
         public ConvertCompareInst(Mono.Cecil.Cil.Instruction i) : base(i)
         {
-        }
-
-        public override void ComputeStackLevel(JITER converter, ref int level_after)
-        {
-            level_after -= 1;
         }
 
         public enum PredicateType
@@ -2117,11 +2038,6 @@
     {
         public ConvertCompareAndBranchInst(Mono.Cecil.Cil.Instruction i) : base(i)
         {
-        }
-
-        public override void ComputeStackLevel(JITER converter, ref int level_after)
-        {
-            level_after -= 2;
         }
 
         public enum PredicateType
@@ -2337,11 +2253,6 @@
         {
         }
 
-        public override void ComputeStackLevel(JITER converter, ref int level_after)
-        {
-            // No change in stack level.
-        }
-
         public override INST Convert(JITER converter, STATE state)
         {
             VALUE s = state._stack.Pop();
@@ -2394,11 +2305,6 @@
         public ConvertLoadElement(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-        }
-
-        public override void ComputeStackLevel(JITER converter, ref int level_after)
-        {
-            level_after--;
         }
 
         public override INST Convert(JITER converter, STATE state)
@@ -2472,11 +2378,6 @@
         {
         }
 
-        public override void ComputeStackLevel(JITER converter, ref int level_after)
-        {
-            level_after = level_after - 3;
-        }
-
         public override INST Convert(JITER converter, STATE state)
         {
             VALUE v = state._stack.Pop();
@@ -2544,11 +2445,6 @@
         {
         }
 
-        public override void ComputeStackLevel(JITER converter, ref int level_after)
-        {
-            level_after--;
-        }
-
         public override INST Convert(JITER converter, STATE state)
         {
             VALUE i = state._stack.Pop();
@@ -2587,11 +2483,6 @@
         public ConvertLoadField(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-        }
-
-        public override void ComputeStackLevel(JITER converter, ref int level_after)
-        {
-            // Stack level remains unchanged through instruction.
         }
 
         public override INST Convert(JITER converter, STATE state)
@@ -2804,11 +2695,6 @@
         {
         }
 
-        public override void ComputeStackLevel(JITER converter, ref int level_after)
-        {
-            level_after = level_after - 2;
-        }
-
         public override INST Convert(JITER converter, STATE state)
         {
             {
@@ -2991,11 +2877,6 @@
         {
         }
 
-        public override void ComputeStackLevel(JITER converter, ref int level_after)
-        {
-            // No change in depth of stack.
-        }
-
         public override INST Convert(JITER converter, STATE state)
         {
             VALUE v = state._stack.Pop();
@@ -3048,11 +2929,6 @@
         public ConvertStoreIndirect(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-        }
-
-        public override void ComputeStackLevel(JITER converter, ref int level_after)
-        {
-            level_after -= 2;
         }
 
         public override INST Convert(JITER converter, STATE state)
@@ -3335,11 +3211,6 @@
         {
         }
 
-        public override void ComputeStackLevel(JITER converter, ref int level_after)
-        {
-            // No change in stack size with box.
-        }
-
         public override INST Convert(JITER converter, STATE state)
         {
             var operand = this.Operand;
@@ -3360,11 +3231,6 @@
         {
         }
 
-        public override void ComputeStackLevel(JITER converter, ref int level_after)
-        {
-            // No change.
-        }
-
         public override INST Convert(JITER converter, STATE state)
         {
             var edge = Block._graph.SuccessorEdges(Block).ToList()[0];
@@ -3381,11 +3247,6 @@
         {
         }
 
-        public override void ComputeStackLevel(JITER converter, ref int level_after)
-        {
-            // No change.
-        }
-
         public override INST Convert(JITER converter, STATE state)
         {
             var edge = Block._graph.SuccessorEdges(Block).ToList()[0];
@@ -3400,11 +3261,6 @@
         public i_brfalse(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-        }
-
-        public override void ComputeStackLevel(JITER converter, ref int level_after)
-        {
-            level_after--;
         }
 
         public override INST Convert(JITER converter, STATE state)
@@ -3453,11 +3309,6 @@
         {
         }
 
-        public override void ComputeStackLevel(JITER converter, ref int level_after)
-        {
-            level_after--;
-        }
-
         public override INST Convert(JITER converter, STATE state)
         {
             object operand = this.Operand;
@@ -3496,11 +3347,6 @@
         {
         }
 
-        public override void ComputeStackLevel(JITER converter, ref int level_after)
-        {
-            level_after--;
-        }
-
         public override INST Convert(JITER converter, STATE state)
         {
             object operand = this.Operand;
@@ -3537,11 +3383,6 @@
         public i_brtrue_s(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-        }
-
-        public override void ComputeStackLevel(JITER converter, ref int level_after)
-        {
-            level_after--;
         }
 
         public override INST Convert(JITER converter, STATE state)
@@ -4009,11 +3850,6 @@
         {
         }
 
-        public override void ComputeStackLevel(JITER converter, ref int level_after)
-        {
-            level_after++;
-        }
-
         public override INST Convert(JITER converter, STATE state)
         {
             var rhs = state._stack.Pop();
@@ -4029,11 +3865,6 @@
         public i_endfilter(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-        }
-
-        public override void ComputeStackLevel(JITER converter, ref int level_after)
-        {
-            level_after--;
         }
     }
 
@@ -4051,11 +3882,6 @@
             : base(i)
         {
         }
-
-        public override void ComputeStackLevel(JITER converter, ref int level_after)
-        {
-            level_after -= 3;
-        }
     }
 
     public class i_initobj : INST
@@ -4063,11 +3889,6 @@
         public i_initobj(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-        }
-
-        public override void ComputeStackLevel(JITER converter, ref int level_after)
-        {
-            level_after--;
         }
     }
 
@@ -4595,11 +4416,6 @@
             }
             _arg = arg;
         }
-
-        public override void ComputeStackLevel(JITER converter, ref int level_after)
-        {
-            level_after++;
-        }
     }
 
     public class i_ldelem_any : ConvertLoadElement
@@ -4737,11 +4553,6 @@
             : base(i)
         {
         }
-
-        public override void ComputeStackLevel(JITER converter, ref int level_after)
-        {
-            level_after++;
-        }
     }
 
     public class i_ldind_i1 : ConvertLoadIndirect
@@ -4849,10 +4660,6 @@
         }
 
         // For array implementation, see https://www.codeproject.com/Articles/3467/Arrays-UNDOCUMENTED
-        public override void ComputeStackLevel(JITER converter, ref int level_after)
-        {
-            // No effect change in stack size.
-        }
 
         public override INST Convert(JITER converter, STATE state)
         {
@@ -5073,11 +4880,6 @@
         {
         }
 
-        public override void ComputeStackLevel(JITER converter, ref int level_after)
-        {
-            level_after++;
-        }
-
         public override INST Convert(JITER converter, STATE state)
         {
             ValueRef nul = LLVM.ConstPointerNull(LLVM.PointerType(LLVM.VoidType(), 0));
@@ -5107,11 +4909,6 @@
         {
         }
 
-        public override void ComputeStackLevel(JITER converter, ref int level_after)
-        {
-            level_after++;
-        }
-
         public override INST Convert(JITER converter, STATE state)
         {
             return Next;
@@ -5124,11 +4921,6 @@
             : base(i)
         {
         }
-
-        public override void ComputeStackLevel(JITER converter, ref int level_after)
-        {
-            level_after++;
-        }
     }
 
     public class i_ldstr : INST
@@ -5136,11 +4928,6 @@
         public i_ldstr(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-        }
-
-        public override void ComputeStackLevel(JITER converter, ref int level_after)
-        {
-            level_after++;
         }
 
         public override INST Convert(JITER converter, STATE state)
@@ -5187,11 +4974,6 @@
             : base(i)
         {
         }
-
-    public override void ComputeStackLevel(JITER converter, ref int level_after)
-    {
-        level_after++;
-    }
     }
 
     public class i_ldvirtftn : INST
@@ -5265,11 +5047,6 @@
         {
         }
 
-        public override void ComputeStackLevel(JITER converter, ref int level_after)
-        {
-            // No change in stack depth.
-        }
-
         public override INST Convert(JITER converter, STATE state)
         {
             var rhs = state._stack.Pop();
@@ -5300,11 +5077,6 @@
         {
         }
 
-        public override void ComputeStackLevel(JITER converter, ref int level_after)
-        {
-            // No change in stack depth.
-        }
-
         public override INST Convert(JITER converter, STATE state)
         {
             // Call meta system to get type and create array of the given type and size.
@@ -5328,67 +5100,6 @@
         public i_newobj(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-        }
-
-        public override void ComputeStackLevel(JITER converter, ref int level_after)
-        {
-            // Stack level for new obj depends on the initializer called. Get that information.
-
-            // Create a new object of a reference type or a new instance of a value type.
-            object operand = this.Operand;
-
-            // Get the type of object to create.
-            MethodReference method = operand as MethodReference;
-            TypeReference type = method.DeclaringType;
-
-            if (type == null)
-                throw new Exception("Cannot get type of object/value for newobj instruction.");
-
-            CFG graph = (CFG)this.Block._graph;
-
-            var name = JITER.MethodName(method);
-            CFG.Vertex the_entry = this.Block._graph.Vertices.Where(node
-                =>
-            {
-                var g = this.Block._graph;
-                CFG.Vertex v = node;
-                JITER c = converter;
-                if (v.IsEntry && JITER.MethodName(v._original_method_reference) == name && c.IsFullyInstantiatedNode(v))
-                    return true;
-                else return false;
-            }).ToList().FirstOrDefault();
-
-            if (the_entry == null)
-            {
-                Mono.Cecil.MethodReference mr = method as Mono.Cecil.MethodReference;
-                Mono.Cecil.MethodReturnType rt = mr.MethodReturnType;
-                Mono.Cecil.TypeReference tr = rt.ReturnType;
-                var HasReturnValue = true; // this constructor has a return.
-                var HasScalarReturnValue = HasReturnValue && !tr.IsStruct();
-                var HasStructReturnValue = HasReturnValue && tr.IsStruct();
-                var HasThis = mr.HasThis;
-                // The stack size after the call does not depend on whether there is
-                // a struct or scalar return--those are only for how the call is implemented.
-                // The effect on the stack after the call is the same.
-                var NumberOfArguments = mr.Parameters.Count
-                                        //+ (HasThis ? 1 : 0)
-                    ;
-                int xret = HasReturnValue ? 1 : 0;
-                int xargs = NumberOfArguments;
-                level_after = level_after + xret - xargs;
-                return;
-
-            }
-
-            int args = the_entry.StackNumberOfArguments;
-            // Note we push a pointer to the new allocated struct, so that's why there +1 args.
-            // Adjust args.
-            //args -= 1;
-            
-            level_after = level_after
-                          + 1 /* creating new obj on stack */
-                          + 1 /* passing 'this' on stack from newobj */
-                          - args;
         }
 
         public override INST Convert(JITER converter, STATE state)
@@ -5736,11 +5447,6 @@
         {
         }
 
-        public override void ComputeStackLevel(JITER converter, ref int level_after)
-        {
-            // No change.
-        }
-
         public override INST Convert(JITER converter, STATE state)
         {
             return Next;
@@ -5768,11 +5474,6 @@
         public i_pop(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-        }
-
-        public override void ComputeStackLevel(JITER converter, ref int level_after)
-        {
-            level_after--;
         }
 
         public override INST Convert(JITER converter, STATE state)
@@ -5829,32 +5530,6 @@
         {
         }
 
-        public override void ComputeStackLevel(JITER converter, ref int level_after)
-        {
-            // There are really two different stacks here:
-            // one for the called method, and the other for the caller of the method.
-            // When returning, the stack of the method is pretty much unchanged.
-            // In fact the top of stack often contains the return value from the method.
-            // Back in the caller, the stack is popped of all arguments to the callee.
-            // And, the return value is pushed on the top of stack.
-            // This is handled by the call instruction.
-            if (!(this.Block.HasStructReturnValue || this.Block.HasScalarReturnValue))
-            {
-                // No change
-            }
-            else if (this.Block.HasScalarReturnValue)
-            {
-                // No change
-            }
-            else if (this.Block.HasStructReturnValue)
-            {
-                // With struct return, we don't actually return the value on the stack. It is returned
-                // by storing to a lvalue. But, the CIL looks like it's pushed a value for the return.
-                // So, during conversion, we'll pop the stack store the value.
-                level_after -= 1;
-            }
-        }
-
         public override INST Convert(JITER converter, STATE state)
         {
             // There are really two different stacks here:
@@ -5905,11 +5580,6 @@
         {
         }
 
-        public override void ComputeStackLevel(JITER converter, ref int level_after)
-        {
-            level_after--;
-        }
-
         public override INST Convert(JITER converter, STATE state)
         {
             var rhs = state._stack.Pop();
@@ -5935,11 +5605,6 @@
         public i_shr(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-        }
-
-        public override void ComputeStackLevel(JITER converter, ref int level_after)
-        {
-            level_after--;
         }
 
         public override INST Convert(JITER converter, STATE state)
@@ -5968,11 +5633,6 @@
             : base(i)
         {
         }
-
-        public override void ComputeStackLevel(JITER converter, ref int level_after)
-        {
-            level_after--;
-        }
     }
 
     public class i_sizeof : INST
@@ -5980,11 +5640,6 @@
         public i_sizeof(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-        }
-
-        public override void ComputeStackLevel(JITER converter, ref int level_after)
-        {
-            level_after++;
         }
 
         public override INST Convert(JITER converter, STATE state)
@@ -6245,11 +5900,6 @@
             : base(i)
         {
         }
-
-        public override void ComputeStackLevel(JITER converter, ref int level_after)
-        {
-            level_after -= 2;
-        }
     }
 
     public class i_stsfld : INST
@@ -6257,11 +5907,6 @@
         public i_stsfld(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-        }
-
-        public override void ComputeStackLevel(JITER converter, ref int level_after)
-        {
-            level_after--;
         }
     }
 
@@ -6295,11 +5940,6 @@
             : base(i)
         {
         }
-
-        public override void ComputeStackLevel(JITER converter, ref int level_after)
-        {
-            level_after--;
-        }
     }
 
     public class i_tail : INST
@@ -6315,11 +5955,6 @@
         public i_throw(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-        }
-
-        public override void ComputeStackLevel(JITER converter, ref int level_after)
-        {
-            level_after--;
         }
 
         public override INST Convert(JITER converter, STATE state)

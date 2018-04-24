@@ -172,43 +172,6 @@ namespace Campy.Compiler
             return reference;
         }
 
-        public static MethodReference MakeHostInstanceGeneric2(
-            GenericInstanceType declaring_type,
-            MethodReference self
-            )
-        {
-            var reference = new MethodReference(
-                self.Name,
-                self.ReturnType,
-                declaring_type)
-            {
-                HasThis = self.HasThis,
-                ExplicitThis = self.ExplicitThis,
-                CallingConvention = self.CallingConvention
-            };
-
-            foreach (ParameterDefinition parameter in self.Parameters)
-            {
-                TypeReference type_reference_of_parameter = parameter.ParameterType;
-
-                Collection<TypeReference> gp = declaring_type.GenericArguments;
-                // Map parameter to actual type.
-                if (type_reference_of_parameter.IsGenericParameter)
-                {
-                    // Get arg number.
-                    int num = Int32.Parse(type_reference_of_parameter.Name.Substring(1));
-                    var yo = gp.ToArray()[num];
-                    type_reference_of_parameter = yo;
-                }
-                reference.Parameters.Add(new ParameterDefinition(type_reference_of_parameter));
-            }
-
-            foreach (var genericParam in self.GenericParameters)
-                reference.GenericParameters.Add(new GenericParameter(genericParam.Name, reference));
-
-            return reference;
-        }
-
         private void ExtractBasicBlocksOfMethod(Tuple<MethodReference, List<TypeReference>> definition)
         {
             MethodReference original_method_reference = definition.Item1;

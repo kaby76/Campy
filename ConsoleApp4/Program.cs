@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 
@@ -391,20 +392,37 @@ namespace ConsoleApp4
 
         static void Main(string[] args)
         {
+            StartDebugging();
+            //{
+            //    // List of ints.
+            //    List<int> x = new List<int>();
+            //    int n = 4;
+            //    for (int i = 0; i < n; ++i) x.Add(0);
+            //    Campy.Parallel.For(n, i => x[i] = i);
+            //    for (int i = 0; i < n; ++i) if (x[i] != i)
+            //        throw new Exception();
+            //}
+
             {
-                StartDebugging();
                 int n = 4;
-                Foo[] x = new Foo[n];
+
+                int[] x = new int[n];
                 Campy.Parallel.For(n, i =>
                 {
-                    if (i == 0) x[i] = Foo.f4;
-                    else if (i == 1) x[i] = Foo.f3;
-                    else if (i == 2) x[i] = Foo.f2;
-                    else if (i == 3) x[i] = Foo.f1;
+                    x[i] = i;
                 });
-                for (int i = 0; i < n; ++i)
-                    System.Console.WriteLine(x[i]);
             }
+            //{
+            //    int n = 4;
+
+            //    int[] x = new int[n];
+            //    Campy.Parallel.For(n, i =>
+            //    {
+            //        x[i] = i;
+            //        System.Console.WriteLine(i.ToString());
+            //    });
+            //}
+
             //{
             //    Random rnd = new Random();
             //    for (; ; )
@@ -421,22 +439,6 @@ namespace ConsoleApp4
             //    }
             //}
 
-            //StartDebugging();
-
-            {
-                A[] array = new A[10];
-                for (int i = 0; i < 10; ++i) array[i] = new A();
-
-                Campy.Parallel.For(10, i =>
-                {
-                    array[i].X = i;
-                });
-
-                for (int i = 0; i < 10; i++)
-                {
-                    if (array[i].X != i) throw new Exception();
-                }
-            }
 
             //string[] strings = new string[] {"a", "bb", "ccc"};
             //int[] len = new int[strings.Length];
@@ -458,15 +460,15 @@ namespace ConsoleApp4
             //    System.Console.WriteLine("---------------------------");
             //    BatcherOddEvenMergeSort.show_pairs2(N);
             //}
-            {
-                Random rnd = new Random();
-                int N = 8;
-                int[] a = Enumerable.Range(0, N).ToArray().OrderBy(x => rnd.Next()).ToArray();
-                EvenOddSorter.Sort(a);
-                for (int i = 0; i < N; ++i)
-                    if (a[i] != i)
-                        throw new Exception();
-            }
+            //{
+            //    Random rnd = new Random();
+            //    int N = 8;
+            //    int[] a = Enumerable.Range(0, N).ToArray().OrderBy(x => rnd.Next()).ToArray();
+            //    EvenOddSorter.Sort(a);
+            //    for (int i = 0; i < N; ++i)
+            //        if (a[i] != i)
+            //            throw new Exception();
+            //}
 
             //FFT.FFT_Test();
         }

@@ -124,6 +124,37 @@ namespace Campy.Compiler
             bool struct_ret = bb.HasStructReturnValue;
             bool has_this = bb.HasThis;
             int locals = bb.StackNumberOfLocals;
+            // Use predecessor information to get initial stack size.
+            if (bb.IsEntry)
+            {
+                bb.StackLevelIn = bb.StackNumberOfLocals + bb.StackNumberOfArguments;
+            }
+            else
+            {
+                int in_level = -1;
+                foreach (CFG.Vertex pred in bb._graph.PredecessorNodes(bb))
+                {
+                    // Do not consider interprocedural edges when computing stack size.
+                    if (pred._original_method_reference != bb._original_method_reference)
+                        continue;
+                    // If predecessor has not been visited, warn and do not consider.
+                    if (pred.StackLevelOut == null)
+                    {
+                        continue;
+                    }
+                    // Warn if predecessor does not concur with another predecessor.
+                    if (in_level != -1 && pred.StackLevelOut != bb.StackLevelIn)
+                        throw new Exception("Miscalculation in stack size.");
+                    bb.StackLevelIn = pred.StackLevelOut;
+                    in_level = (int)bb.StackLevelIn;
+                }
+                // Warn if no predecessors have been visited.
+                if (in_level == -1)
+                {
+                    throw new Exception("Predecessor edge computation screwed up.");
+                }
+            }
+
             int level = (int)bb.StackLevelIn;
 
             // Set up list of phi functions in case there are multiple predecessors.
