@@ -31,93 +31,11 @@ namespace Campy.Compiler
             _phi = new List<ValueRef>();
         }
 
-        public STATE(CFG.Vertex basic_block, bool use_in = true)
-        {
-            int level = use_in ? (int)basic_block.StackLevelIn : (int)basic_block.StackLevelOut;
-            int args = basic_block.StackNumberOfArguments;
-            bool scalar_ret = basic_block.HasScalarReturnValue;
-            bool struct_ret = basic_block.HasStructReturnValue;
-            bool has_this = basic_block.HasThis;
-            int locals = basic_block.StackNumberOfLocals;
-
-            // Set up state with args, locals, basic stack initial value of 0xDEADBEEF.
-            // In addition, use type information from method to compute types for all args.
-            _stack = new StackQueue<VALUE>();
-
-            int begin = 0;
-
-            _arguments = _stack.Section(0 /* NB: args begin with "this" ptr. */, args + begin);
-            _locals = _stack.Section(args + begin, locals);
-            _phi = new List<ValueRef>();
-
-            var fun = basic_block.MethodValueRef;
-            var t_fun = LLVM.TypeOf(fun);
-            var t_fun_con = LLVM.GetTypeContext(t_fun);
-            var context = LLVM.GetModuleContext(JITER.global_llvm_module);
-            if (t_fun_con != context) throw new Exception("not equal");
-
-            for (uint i = 0; i < args; ++i)
-            {
-                var par = new VALUE(LLVM.GetParam(fun, i));
-                if (Campy.Utils.Options.IsOn("jit_trace"))
-                    System.Console.WriteLine(par);
-                _stack.Push(par);
-            }
-
-            int offset = 0;
-            _struct_ret = _stack.Section(struct_ret ? offset++ : offset, struct_ret ? 1 : 0);
-            _this = _stack.Section(has_this ? offset++ : offset, has_this ? 1 : 0);
-            // Set up args. NB: arg 0 is "this" pointer according to spec!!!!!
-            _arguments = _stack.Section(
-                has_this ? offset - 1 : offset,
-                args - (struct_ret ? 1 : 0));
-
-            // Set up locals. I'm making an assumption that there is a 
-            // one to one and in order mapping of the locals with that
-            // defined for the method body by Mono.
-            Collection<VariableDefinition> variables = basic_block.RewrittenCalleeSignature.Resolve().Body.Variables;
-            _locals = _stack.Section((int)_stack.Count, locals);
-            for (int i = 0; i < locals; ++i)
-            {
-                var tr = variables[i].VariableType;
-                TYPE type = new TYPE(tr);
-                VALUE value;
-                if (LLVM.GetTypeKind(type.IntermediateType) == TypeKind.PointerTypeKind)
-                    value = new VALUE(LLVM.ConstPointerNull(type.IntermediateType));
-                else if (LLVM.GetTypeKind(type.IntermediateType) == TypeKind.DoubleTypeKind)
-                    value = new VALUE(LLVM.ConstReal(LLVM.DoubleType(), 0));
-                else if (LLVM.GetTypeKind(type.IntermediateType) == TypeKind.IntegerTypeKind)
-                    value = new VALUE(LLVM.ConstInt(type.IntermediateType, (ulong)0, true));
-		        else if (LLVM.GetTypeKind(type.IntermediateType) == TypeKind.StructTypeKind)
-		        {
-			        var entry = basic_block.Entry.BasicBlock;
-			        //var beginning = LLVM.GetFirstInstruction(entry);
-			        //LLVM.PositionBuilderBefore(basic_block.Builder, beginning);
-			        var new_obj = LLVM.BuildAlloca(basic_block.Builder, type.IntermediateType, ""); // Allocates struct on stack, but returns a pointer to struct.
-			        //LLVM.PositionBuilderAtEnd(basic_block.Builder, basic_block.BasicBlock);
-			        value = new VALUE(new_obj);
-		        }
-                else
-                    throw new Exception("Unhandled type");
-                _stack.Push(value);
-                if (Campy.Utils.Options.IsOn("jit_trace"))
-                    System.Console.WriteLine(value);
-            }
-
-            // Set up any thing else.
-            for (int i = _stack.Size(); i < level; ++i)
-            {
-                VALUE value = new VALUE(LLVM.ConstInt(LLVM.Int32Type(), (ulong)0, true));
-                _stack.Push(value);
-                if (Campy.Utils.Options.IsOn("jit_trace"))
-                    System.Console.WriteLine(value);
-            }
-        }
-
         public STATE(Dictionary<CFG.Vertex, bool> visited, CFG.Vertex bb, List<Mono.Cecil.TypeReference> list_of_data_types_used)
         {
             // Set up a blank stack.
             _stack = new StackQueue<VALUE>();
+            int in_level = -1;
 
             int args = bb.StackNumberOfArguments;
             bool scalar_ret = bb.HasScalarReturnValue;
@@ -127,35 +45,28 @@ namespace Campy.Compiler
             // Use predecessor information to get initial stack size.
             if (bb.IsEntry)
             {
-                bb.StackLevelIn = bb.StackNumberOfLocals + bb.StackNumberOfArguments;
+                in_level = bb.StackNumberOfLocals + bb.StackNumberOfArguments;
             }
             else
             {
-                int in_level = -1;
                 foreach (CFG.Vertex pred in bb._graph.PredecessorNodes(bb))
                 {
                     // Do not consider interprocedural edges when computing stack size.
                     if (pred._original_method_reference != bb._original_method_reference)
-                        continue;
+                        throw new Exception("Interprocedural edge should not exist.");
                     // If predecessor has not been visited, warn and do not consider.
-                    if (pred.StackLevelOut == null)
-                    {
-                        continue;
-                    }
                     // Warn if predecessor does not concur with another predecessor.
-                    if (in_level != -1 && pred.StackLevelOut != bb.StackLevelIn)
+                    if (in_level != -1 && pred.StateOut._stack.Count != in_level)
                         throw new Exception("Miscalculation in stack size.");
-                    bb.StackLevelIn = pred.StackLevelOut;
-                    in_level = (int)bb.StackLevelIn;
-                }
-                // Warn if no predecessors have been visited.
-                if (in_level == -1)
-                {
-                    throw new Exception("Predecessor edge computation screwed up.");
+                    in_level = pred.StateOut._stack.Count;
                 }
             }
+            if (in_level == -1)
+            {
+                throw new Exception("Predecessor edge computation screwed up.");
+            }
 
-            int level = (int)bb.StackLevelIn;
+            int level = in_level;
 
             // Set up list of phi functions in case there are multiple predecessors.
             _phi = new List<ValueRef>();

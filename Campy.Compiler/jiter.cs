@@ -450,6 +450,365 @@ namespace Campy.Compiler
         }
     }
 
+    static class PHASES
+    {
+        public static List<CFG.Vertex> RemoveBasicBlocksAlreadyCompiled(this List<CFG.Vertex> basic_blocks_to_compile)
+        {
+            List<CFG.Vertex> weeded = new List<CFG.Vertex>();
+
+            // Remove any blocks already compiled.
+            foreach (var bb in basic_blocks_to_compile)
+            {
+                if (!bb.AlreadyCompiled)
+                {
+                    weeded.Add(bb);
+                    bb.AlreadyCompiled = true;
+                }
+            }
+            return weeded;
+        }
+
+        public static List<CFG.Vertex> InstantiateGenerics(this List<CFG.Vertex> change_set)
+        {
+            return change_set;
+            var _mcfg = change_set.First()._graph;
+
+            HashSet<TypeReference> type_references = new HashSet<TypeReference>();
+            HashSet<MethodReference> method_references = new HashSet<MethodReference>();
+            foreach (var bb in change_set)
+            {
+                // Get every generic data type used, e.g., List<int>, Stack<A>, ...
+                foreach (var inst in bb.Instructions)
+                {
+                    if (inst.OpCode.Code == Code.Ldfld)
+                    {
+                        var ft = inst.Operand as FieldReference;
+                        if (ft.FieldType as TypeReference != null)
+                            type_references.Add(ft.FieldType as TypeReference);
+                    }
+                    var operand = inst.Operand;
+                    if (operand as TypeReference != null)
+                    {
+                        type_references.Add(operand as TypeReference);
+                    }
+                    if (operand as MethodReference != null) method_references.Add(operand as MethodReference);
+                }
+            }
+
+            // Whittle out generic parameter and generic parameter arrays, and of that, only generic type instances.
+            var type_references_list = type_references.Where(t => (!t.IsGenericParameter)
+                       && (bool)(!t.GetElementType()?.IsGenericParameter)).Where(t => t.IsGenericInstance).ToList();
+
+            // With list in hand, create new type definitions.
+            foreach (var t in type_references_list)
+            {
+                t.MakeGenericInstanceTypeDefinition();
+            }
+
+            // Start a new change set so we can update edges and other properties for the new nodes
+            // in the graph.
+            int change_set_id2 = _mcfg.StartChangeSet();
+
+            // Perform in-order traversal to generate instantiated type information.
+            List<CFG.Vertex> reverse_change_set = new List<CFG.Vertex>(change_set);
+            reverse_change_set.Reverse();
+
+            // We need to do bookkeeping of what nodes to consider.
+            Stack<CFG.Vertex> instantiated_nodes = new Stack<CFG.Vertex>(reverse_change_set);
+
+            while (instantiated_nodes.Count > 0)
+            {
+                CFG.Vertex basic_block = instantiated_nodes.Pop();
+
+                if (Campy.Utils.Options.IsOn("jit_trace"))
+                    System.Console.WriteLine("Considering " + basic_block.Name);
+
+                // If a block associated with method contains generics,
+                // we need to duplicate the node and add in type information
+                // about the generic type with that is actually used.
+                // So, for example, if the method contains a parameter of type
+                // "T", then we add in a mapping of T to the actual data type
+                // used, e.g., Integer, or what have you. When it is compiled,
+                // to LLVM, the mapped data type will be used!
+                MethodReference method = basic_block._original_method_reference;
+                var declaring_type = method.DeclaringType;
+
+
+                // If declaring type of method is generic, then look for look for instance type needed,
+                // then make copy of basic blocks with type infromation. Every instruction and type used is
+                // rewritten with generic instance data.
+                var matches =
+                    type_references_list.Where(t => t.Resolve().FullName == declaring_type.Resolve().FullName).ToList();
+                foreach (TypeReference match in matches)
+                {
+                    // For every type, copy block, rewrite with generic parameter.
+                    int new_basic_block_id = _mcfg.NewNodeNumber();
+                    var new_basic_block = _mcfg.AddVertex(new CFG.Vertex() { Name = new_basic_block_id.ToString() });
+                    new_basic_block._original_method_reference = method;
+                    var mgit = match as GenericInstanceType;
+
+                    // Rewrite method definition.
+                    var r = match.Resolve();
+
+                    MethodBody body = new MethodBody(basic_block._method_definition);
+                    var instruction_count = basic_block.Instructions.Count;
+                    for (int j = 0; j < instruction_count; ++j)
+                    {
+                        var wi = basic_block.Instructions[j];
+                        Instruction i = wi.Instruction;
+                        var operand = i.Operand;
+                        var gp = operand as GenericParameter;
+                        if (gp != null)
+                        {
+                            var position = gp.Position;
+                            var sub = mgit.GenericArguments[position];
+
+                            var est = IMPORTER.MakeHostInstanceGeneric(method, sub);
+                            var rest = est.Resolve();
+                            var asdf = basic_block._method_definition.Module.Import(method);
+                            //var rasdf = asdf.Resolve();
+                            var asdf2 = basic_block._method_definition.Module.Import(est);
+                            var rasdf2 = asdf2.Resolve();
+
+                            // Substitute for "operand" the type "sub" as the operand for the instruction.
+                            var worker = body.GetILProcessor();
+                            Instruction new_inst = worker.Create(i.OpCode, sub);
+                            new_inst.Offset = i.Offset;
+                            body.Instructions.Insert(j, new_inst);
+                        }
+                        else
+                        {
+                            body.Instructions.Insert(j, i);
+                        }
+                    }
+                    new_basic_block._method_definition = basic_block._method_definition;
+                    for (int j = 0; j < instruction_count; ++j)
+                    {
+                        Mono.Cecil.Cil.Instruction instruction = body.Instructions[j];
+                        INST wrapped_instruction = INST.Wrap(instruction, basic_block,
+                            basic_block.Instructions[j].SeqPoint);
+                        new_basic_block.Instructions.Add(wrapped_instruction);
+                    }
+                }
+            }
+
+            _mcfg.OutputEntireGraph();
+
+            List<CFG.Vertex> new_change_set = _mcfg.PopChangeSet(change_set_id2);
+            Dictionary<CFG.Vertex, CFG.Vertex> map_to_new_block = new Dictionary<CFG.Vertex, CFG.Vertex>();
+            foreach (var v in new_change_set)
+            {
+                if (!JITER.Singleton.IsFullyInstantiatedNode(v)) continue;
+                var original = v.OriginalVertex;
+                var ops_list = v.OpsFromOriginal;
+                // Apply instance information from v onto predecessors and successors, and entry.
+                foreach (var vto in _mcfg.SuccessorNodes(original))
+                {
+                    var vto_mapped = JITER.Singleton.Eval(vto, ops_list);
+                    _mcfg.AddEdge(new CFG.Edge() { From = v, To = vto_mapped });
+                }
+            }
+            foreach (var v in new_change_set)
+            {
+                if (!JITER.Singleton.IsFullyInstantiatedNode(v)) continue;
+                var original = v.OriginalVertex;
+                var ops_list = v.OpsFromOriginal;
+                if (original.Entry != null)
+                    v.Entry = JITER.Singleton.Eval(original.Entry, ops_list);
+            }
+
+            _mcfg.OutputEntireGraph();
+
+            List<CFG.Vertex> result = new List<CFG.Vertex>();
+            result.AddRange(change_set);
+            result.AddRange(new_change_set);
+            return result;
+        }
+
+        public static List<CFG.Vertex> ThreadInstructions(this List<CFG.Vertex> basic_blocks_to_compile)
+        {
+            foreach (CFG.Vertex bb in basic_blocks_to_compile)
+            {
+                if (!JITER.Singleton.IsFullyInstantiatedNode(bb))
+                    continue;
+
+                INST prev = null;
+                foreach (var j in bb.Instructions)
+                {
+                    j.Block = bb;
+                    if (prev != null) prev.Next = j;
+                    prev = j;
+                }
+            }
+
+            return basic_blocks_to_compile;
+        }
+
+        // Method to denormalize information about the method this block is associated with,
+        // placing that information into the block for easier access.
+        public static List<CFG.Vertex> ComputeBasicMethodProperties(this List<CFG.Vertex> basic_blocks_to_compile)
+        {
+            foreach (CFG.Vertex bb in basic_blocks_to_compile)
+            {
+                if (Campy.Utils.Options.IsOn("jit_trace"))
+                    System.Console.WriteLine("Compile part 1, node " + bb);
+
+                Mono.Cecil.MethodReturnType rt = bb._method_definition.MethodReturnType;
+                Mono.Cecil.TypeReference tr = rt.ReturnType;
+                var ret = tr.FullName != "System.Void";
+                bb.HasScalarReturnValue = ret && !tr.IsStruct();
+                bb.HasStructReturnValue = ret && tr.IsStruct();
+                bb.RewrittenCalleeSignature = bb._method_definition;
+                bb.HasThis = bb._method_definition.HasThis;
+                bb.StackNumberOfArguments = bb._method_definition.Parameters.Count
+                                            + (bb.HasThis ? 1 : 0)
+                                            + (bb.HasStructReturnValue ? 1 : 0);
+                Mono.Cecil.MethodReference mr = bb.RewrittenCalleeSignature;
+                int locals = mr.Resolve().Body.Variables.Count;
+                bb.StackNumberOfLocals = locals;
+            }
+
+            return basic_blocks_to_compile;
+        }
+
+        public static List<CFG.Vertex> SetUpLLVMEntries(this List<CFG.Vertex> basic_blocks_to_compile)
+        {
+            foreach (CFG.Vertex bb in basic_blocks_to_compile)
+            {
+                if (Campy.Utils.Options.IsOn("jit_trace"))
+                    System.Console.WriteLine("Compile part 1, node " + bb);
+
+                // Skip all but entry blocks for now.
+                if (!bb.IsEntry)
+                {
+                    if (Campy.Utils.Options.IsOn("jit_trace"))
+                        System.Console.WriteLine("skipping -- not an entry.");
+                    continue;
+                }
+
+                if (!JITER.Singleton.IsFullyInstantiatedNode(bb))
+                {
+                    if (Campy.Utils.Options.IsOn("jit_trace"))
+                        System.Console.WriteLine("skipping -- not fully instantiated block the contains generics.");
+                    continue;
+                }
+
+                MethodReference method = bb._original_method_reference;
+                List<ParameterDefinition> parameters = method.Parameters.ToList();
+                List<ParameterReference> instantiated_parameters = new List<ParameterReference>();
+
+                ModuleRef mod = JITER.global_llvm_module; // LLVM.ModuleCreateWithName(mn);
+                bb.Module = mod;
+
+                uint count = (uint)bb.StackNumberOfArguments;
+                TypeRef[] param_types = new TypeRef[count];
+                int current = 0;
+                if (count > 0)
+                {
+                    if (bb.HasStructReturnValue)
+                    {
+                        TYPE t = new TYPE(method.ReturnType);
+                        param_types[current++] = LLVM.PointerType(t.IntermediateType, 0);
+                    }
+                    if (bb.HasThis)
+                    {
+                        TYPE t = new TYPE(method.DeclaringType);
+                        if (method.DeclaringType.IsValueType)
+                        {
+                            // Parameter "this" is a struct, but code in body of method assumes
+                            // a pointer is passed. Make the parameter a pointer.
+                            param_types[current++] = LLVM.PointerType(t.IntermediateType, 0);
+                        }
+                        else
+                        {
+                            param_types[current++] = t.IntermediateType;
+                        }
+                    }
+
+                    foreach (var p in parameters)
+                    {
+                        TypeReference type_reference_of_parameter = p.ParameterType;
+
+                        if (method.DeclaringType.IsGenericInstance && method.ContainsGenericParameter)
+                        {
+                            var git = method.DeclaringType as GenericInstanceType;
+                            type_reference_of_parameter = JITER.FromGenericParameterToTypeReference(
+                                type_reference_of_parameter, git);
+                        }
+                        TYPE t = new TYPE(type_reference_of_parameter);
+                        param_types[current++] = t.IntermediateType;
+                    }
+
+                    if (Campy.Utils.Options.IsOn("jit_trace"))
+                    {
+                        System.Console.WriteLine("Params for block " + bb.Name + " " + bb._original_method_reference.FullName);
+                        System.Console.WriteLine("(" + bb._method_definition.FullName + ")");
+                        foreach (var pp in param_types)
+                        {
+                            string a = LLVM.PrintTypeToString(pp);
+                            System.Console.WriteLine(" " + a);
+                        }
+                    }
+                }
+
+                //mi2 = FromGenericParameterToTypeReference(typeof(void).ToMonoTypeReference(), null);
+                TYPE t_ret = new TYPE(JITER.FromGenericParameterToTypeReference(method.ReturnType, method.DeclaringType as GenericInstanceType));
+                if (bb.HasStructReturnValue)
+                {
+                    t_ret = new TYPE(typeof(void).ToMonoTypeReference());
+                }
+                TypeRef ret_type = t_ret.IntermediateType;
+                TypeRef met_type = LLVM.FunctionType(ret_type, param_types, false);
+                ValueRef fun = LLVM.AddFunction(mod,
+                    JITER.RenameToLegalLLVMName(JITER.MethodName(method)), met_type);
+                BasicBlockRef entry = LLVM.AppendBasicBlock(fun, bb.Name.ToString());
+                bb.BasicBlock = entry;
+                bb.MethodValueRef = fun;
+                var t_fun = LLVM.TypeOf(fun);
+                var t_fun_con = LLVM.GetTypeContext(t_fun);
+                var context = LLVM.GetModuleContext(JITER.global_llvm_module);
+                if (t_fun_con != context) throw new Exception("not equal");
+                //////////LLVM.VerifyFunction(fun, VerifierFailureAction.PrintMessageAction);
+                BuilderRef builder = LLVM.CreateBuilder();
+                bb.Builder = builder;
+                LLVM.PositionBuilderAtEnd(builder, entry);
+            }
+            return basic_blocks_to_compile;
+        }
+
+        public static List<CFG.Vertex> SetupLLVMNonEntries(this List<CFG.Vertex> basic_blocks_to_compile)
+        {
+            var _mcfg = basic_blocks_to_compile.First()._graph;
+
+            foreach (var bb in basic_blocks_to_compile)
+            {
+                if (!JITER.Singleton.IsFullyInstantiatedNode(bb))
+                    continue;
+
+                IEnumerable<CFG.Vertex> successors = _mcfg.SuccessorNodes(bb);
+                if (!bb.IsEntry)
+                {
+                    var ent = bb.Entry;
+                    var lvv_ent = ent;
+                    var fun = lvv_ent.MethodValueRef;
+                    var t_fun = LLVM.TypeOf(fun);
+                    var t_fun_con = LLVM.GetTypeContext(t_fun);
+                    var context = LLVM.GetModuleContext(JITER.global_llvm_module);
+                    if (t_fun_con != context) throw new Exception("not equal");
+                    //LLVM.VerifyFunction(fun, VerifierFailureAction.PrintMessageAction);
+                    var llvm_bb = LLVM.AppendBasicBlock(fun, bb.Name.ToString());
+                    bb.BasicBlock = llvm_bb;
+                    bb.MethodValueRef = lvv_ent.MethodValueRef;
+                    BuilderRef builder = LLVM.CreateBuilder();
+                    bb.Builder = builder;
+                    LLVM.PositionBuilderAtEnd(builder, llvm_bb);
+                }
+            }
+            return basic_blocks_to_compile;
+        }
+    }
+
+
     public class JITER
     {
         private IMPORTER _importer;
@@ -691,7 +1050,7 @@ namespace Campy.Compiler
             mmap[k] = bb;
         }
 
-        private CFG.Vertex Eval(CFG.Vertex current, Dictionary<Tuple<TypeReference, GenericParameter>, System.Type> ops)
+        public CFG.Vertex Eval(CFG.Vertex current, Dictionary<Tuple<TypeReference, GenericParameter>, System.Type> ops)
         {
             // Start at current vertex, and find transition state given ops.
             CFG.Vertex result = current;
@@ -715,160 +1074,6 @@ namespace Campy.Compiler
         }
 
         private bool TypeUsingGeneric() { return false; }
-
-        public List<CFG.Vertex> InstantiateGenerics(IEnumerable<CFG.Vertex> change_set)
-        {
-            return change_set.ToList();
-            HashSet<TypeReference> type_references = new HashSet<TypeReference>();
-            HashSet<MethodReference> method_references = new HashSet<MethodReference>();
-            foreach (var bb in change_set)
-            {
-                // Get every generic data type used, e.g., List<int>, Stack<A>, ...
-                foreach (var inst in bb.Instructions)
-                {
-                    if (inst.OpCode.Code == Code.Ldfld)
-                    {
-                        var ft = inst.Operand as FieldReference;
-                        if (ft.FieldType as TypeReference != null)
-                            type_references.Add(ft.FieldType as TypeReference);
-                    }
-                    var operand = inst.Operand;
-                    if (operand as TypeReference != null)
-                    {
-                        type_references.Add(operand as TypeReference);
-                    }
-                    if (operand as MethodReference != null) method_references.Add(operand as MethodReference);
-                }
-            }
-
-            // Whittle out generic parameter and generic parameter arrays, and of that, only generic type instances.
-            var type_references_list = type_references.Where(t => (!t.IsGenericParameter)
-                       && (bool) (!t.GetElementType()?.IsGenericParameter)).Where(t => t.IsGenericInstance).ToList();
-
-            // With list in hand, create new type definitions.
-            foreach (var t in type_references_list)
-            {
-                t.MakeGenericInstanceTypeDefinition();
-            }
-
-            // Start a new change set so we can update edges and other properties for the new nodes
-            // in the graph.
-            int change_set_id2 = _mcfg.StartChangeSet();
-
-            // Perform in-order traversal to generate instantiated type information.
-            IEnumerable<CFG.Vertex> reverse_change_set = change_set.Reverse();
-
-            // We need to do bookkeeping of what nodes to consider.
-            Stack<CFG.Vertex> instantiated_nodes = new Stack<CFG.Vertex>(reverse_change_set);
-
-            while (instantiated_nodes.Count > 0)
-            {
-                CFG.Vertex basic_block = instantiated_nodes.Pop();
-
-                if (Campy.Utils.Options.IsOn("jit_trace"))
-                    System.Console.WriteLine("Considering " + basic_block.Name);
-
-                // If a block associated with method contains generics,
-                // we need to duplicate the node and add in type information
-                // about the generic type with that is actually used.
-                // So, for example, if the method contains a parameter of type
-                // "T", then we add in a mapping of T to the actual data type
-                // used, e.g., Integer, or what have you. When it is compiled,
-                // to LLVM, the mapped data type will be used!
-                MethodReference method = basic_block._original_method_reference;
-                var declaring_type = method.DeclaringType;
-
-
-                // If declaring type of method is generic, then look for look for instance type needed,
-                // then make copy of basic blocks with type infromation. Every instruction and type used is
-                // rewritten with generic instance data.
-                var matches =
-                    type_references_list.Where(t => t.Resolve().FullName == declaring_type.Resolve().FullName).ToList();
-                foreach (TypeReference match in matches)
-                {
-                    // For every type, copy block, rewrite with generic parameter.
-                    int new_basic_block_id = _mcfg.NewNodeNumber();
-                    var new_basic_block = _mcfg.AddVertex(new CFG.Vertex() {Name = new_basic_block_id.ToString()});
-                    new_basic_block._original_method_reference = method;
-                    var mgit = match as GenericInstanceType;
-
-                    // Rewrite method definition.
-                    var r = match.Resolve();
-
-                    MethodBody body = new MethodBody(basic_block._method_definition);
-                    var instruction_count = basic_block.Instructions.Count;
-                    for (int j = 0; j < instruction_count; ++j)
-                    {
-                        var wi = basic_block.Instructions[j];
-                        Instruction i = wi.Instruction;
-                        var operand = i.Operand;
-                        var gp = operand as GenericParameter;
-                        if (gp != null)
-                        {
-                            var position = gp.Position;
-                            var sub = mgit.GenericArguments[position];
-
-                            var est = IMPORTER.MakeHostInstanceGeneric(method, sub);
-                            var rest = est.Resolve();
-                            var asdf = basic_block._method_definition.Module.Import(method);
-                            //var rasdf = asdf.Resolve();
-                            var asdf2 = basic_block._method_definition.Module.Import(est);
-                            var rasdf2 = asdf2.Resolve();
-
-                            // Substitute for "operand" the type "sub" as the operand for the instruction.
-                            var worker = body.GetILProcessor();
-                            Instruction new_inst = worker.Create(i.OpCode, sub);
-                            new_inst.Offset = i.Offset;
-                            body.Instructions.Insert(j, new_inst);
-                        }
-                        else
-                        {
-                            body.Instructions.Insert(j, i);
-                        }
-                    }
-                    new_basic_block._method_definition = basic_block._method_definition;
-                    for (int j = 0; j < instruction_count; ++j)
-                    {
-                        Mono.Cecil.Cil.Instruction instruction = body.Instructions[j];
-                        INST wrapped_instruction = INST.Wrap(instruction, basic_block,
-                            basic_block.Instructions[j].SeqPoint);
-                        new_basic_block.Instructions.Add(wrapped_instruction);
-                    }
-                }
-            }
-
-            this._mcfg.OutputEntireGraph();
-
-            List<CFG.Vertex> new_change_set = _mcfg.PopChangeSet(change_set_id2);
-            Dictionary<CFG.Vertex, CFG.Vertex> map_to_new_block = new Dictionary<CFG.Vertex, CFG.Vertex>();
-            foreach (var v in new_change_set)
-            {
-                if (!IsFullyInstantiatedNode(v)) continue;
-                var original = v.OriginalVertex;
-                var ops_list = v.OpsFromOriginal;
-                // Apply instance information from v onto predecessors and successors, and entry.
-                foreach (var vto in _mcfg.SuccessorNodes(original))
-                {
-                    var vto_mapped = Eval(vto, ops_list);
-                    _mcfg.AddEdge(new CFG.Edge() {From = v, To = vto_mapped});
-                }
-            }
-            foreach (var v in new_change_set)
-            {
-                if (!IsFullyInstantiatedNode(v)) continue;
-                var original = v.OriginalVertex;
-                var ops_list = v.OpsFromOriginal;
-                if (original.Entry != null)
-                    v.Entry = Eval(original.Entry, ops_list);
-            }
-
-            this._mcfg.OutputEntireGraph();
-
-            List<CFG.Vertex> result = new List<CFG.Vertex>();
-            result.AddRange(change_set);
-            result.AddRange(new_change_set);
-            return result;
-        }
 
         public bool IsFullyInstantiatedNode(CFG.Vertex node)
         {
@@ -930,180 +1135,6 @@ namespace Campy.Compiler
             return type_reference_of_parameter;
         }
 
-        // Method to denormalize information about the method this block is associated with,
-        // placing that information into the block for easier access.
-        private void ComputeBasicMethodProperties(IEnumerable<CFG.Vertex> basic_blocks_to_compile)
-        {
-            foreach (CFG.Vertex bb in basic_blocks_to_compile)
-            {
-                if (Campy.Utils.Options.IsOn("jit_trace"))
-                    System.Console.WriteLine("Compile part 1, node " + bb);
-
-                Mono.Cecil.MethodReturnType rt = bb._method_definition.MethodReturnType;
-                Mono.Cecil.TypeReference tr = rt.ReturnType;
-                var ret = tr.FullName != "System.Void";
-                bb.HasScalarReturnValue = ret && !tr.IsStruct();
-                bb.HasStructReturnValue = ret && tr.IsStruct();
-                bb.RewrittenCalleeSignature = bb._method_definition;
-                bb.HasThis = bb._method_definition.HasThis;
-                bb.StackNumberOfArguments = bb._method_definition.Parameters.Count
-                                      + (bb.HasThis ? 1 : 0)
-                                      + (bb.HasStructReturnValue ? 1 : 0);
-                Mono.Cecil.MethodReference mr = bb.RewrittenCalleeSignature;
-                int locals = mr.Resolve().Body.Variables.Count;
-                bb.StackNumberOfLocals = locals;
-            }
-        }
-
-        private void CompilePart1(IEnumerable<CFG.Vertex> basic_blocks_to_compile, List<Mono.Cecil.TypeReference> list_of_data_types_used)
-        {
-            foreach (CFG.Vertex bb in basic_blocks_to_compile)
-            {
-                if (Campy.Utils.Options.IsOn("jit_trace"))
-                    System.Console.WriteLine("Compile part 1, node " + bb);
-
-                // Skip all but entry blocks for now.
-                if (!bb.IsEntry)
-                {
-                    if (Campy.Utils.Options.IsOn("jit_trace"))
-                        System.Console.WriteLine("skipping -- not an entry.");
-                    continue;
-                }
-
-                if (!IsFullyInstantiatedNode(bb))
-                {
-                    if (Campy.Utils.Options.IsOn("jit_trace"))
-                        System.Console.WriteLine("skipping -- not fully instantiated block the contains generics.");
-                    continue;
-                }
-
-                MethodReference method = bb._original_method_reference;
-                List<ParameterDefinition> parameters = method.Parameters.ToList();
-                List<ParameterReference> instantiated_parameters = new List<ParameterReference>();
-
-                ModuleRef mod = global_llvm_module; // LLVM.ModuleCreateWithName(mn);
-                bb.Module = mod;
-
-                uint count = (uint) bb.StackNumberOfArguments;
-                 TypeRef[] param_types = new TypeRef[count];
-                int current = 0;
-                if (count > 0)
-                {
-                    if (bb.HasStructReturnValue)
-                    {
-                        TYPE t = new TYPE(method.ReturnType);
-                        param_types[current++] = LLVM.PointerType(t.IntermediateType, 0);
-                    }
-                    if (bb.HasThis)
-                    {
-                        TYPE t = new TYPE(method.DeclaringType);
-                        if (method.DeclaringType.IsValueType)
-                        {
-                            // Parameter "this" is a struct, but code in body of method assumes
-                            // a pointer is passed. Make the parameter a pointer.
-                            param_types[current++] = LLVM.PointerType(t.IntermediateType, 0);
-                        }
-                        else
-                        {
-                            param_types[current++] = t.IntermediateType;
-                        }
-                    }
-
-                    foreach (var p in parameters)
-                    {
-                        TypeReference type_reference_of_parameter = p.ParameterType;
-
-                        if (method.DeclaringType.IsGenericInstance && method.ContainsGenericParameter)
-                        {
-                            var git = method.DeclaringType as GenericInstanceType;
-                            type_reference_of_parameter = FromGenericParameterToTypeReference(
-                                type_reference_of_parameter, git);
-                        }
-                        TYPE t = new TYPE(type_reference_of_parameter);
-                        param_types[current++] = t.IntermediateType;
-                    }
-
-                    if (Campy.Utils.Options.IsOn("jit_trace"))
-                    {
-                        System.Console.WriteLine("Params for block " + bb.Name + " " + bb._original_method_reference.FullName);
-                        System.Console.WriteLine("(" + bb._method_definition.FullName + ")");
-                        foreach (var pp in param_types)
-                        {
-                            string a = LLVM.PrintTypeToString(pp);
-                            System.Console.WriteLine(" " + a);
-                        }
-                    }
-                }
-
-                //mi2 = FromGenericParameterToTypeReference(typeof(void).ToMonoTypeReference(), null);
-                TYPE t_ret = new TYPE(FromGenericParameterToTypeReference(method.ReturnType, method.DeclaringType as GenericInstanceType));
-                if (bb.HasStructReturnValue)
-                {
-                    t_ret = new TYPE(typeof(void).ToMonoTypeReference());
-                }
-                TypeRef ret_type = t_ret.IntermediateType;
-                TypeRef met_type = LLVM.FunctionType(ret_type, param_types, false);
-                ValueRef fun = LLVM.AddFunction(mod,
-                    JITER.RenameToLegalLLVMName(JITER.MethodName(method)), met_type);
-                BasicBlockRef entry = LLVM.AppendBasicBlock(fun, bb.Name.ToString());
-                bb.BasicBlock = entry;
-                bb.MethodValueRef = fun;
-                var t_fun = LLVM.TypeOf(fun);
-                var t_fun_con = LLVM.GetTypeContext(t_fun);
-                var context = LLVM.GetModuleContext(JITER.global_llvm_module);
-                if (t_fun_con != context) throw new Exception("not equal");
-                //////////LLVM.VerifyFunction(fun, VerifierFailureAction.PrintMessageAction);
-                BuilderRef builder = LLVM.CreateBuilder();
-                bb.Builder = builder;
-                LLVM.PositionBuilderAtEnd(builder, entry);
-            }
-        }
-
-        private void CompilePart2(IEnumerable<CFG.Vertex> basic_blocks_to_compile, List<Mono.Cecil.TypeReference> list_of_data_types_used)
-        {
-            foreach (var bb in basic_blocks_to_compile)
-            {
-                if (!IsFullyInstantiatedNode(bb))
-                    continue;
-
-                IEnumerable<CFG.Vertex> successors = _mcfg.SuccessorNodes(bb);
-                if (!bb.IsEntry)
-                {
-                    var ent = bb.Entry;
-                    var lvv_ent = ent;
-                    var fun = lvv_ent.MethodValueRef;
-                    var t_fun = LLVM.TypeOf(fun);
-                    var t_fun_con = LLVM.GetTypeContext(t_fun);
-                    var context = LLVM.GetModuleContext(JITER.global_llvm_module);
-                    if (t_fun_con != context) throw new Exception("not equal");
-                    //LLVM.VerifyFunction(fun, VerifierFailureAction.PrintMessageAction);
-                    var llvm_bb = LLVM.AppendBasicBlock(fun, bb.Name.ToString());
-                    bb.BasicBlock = llvm_bb;
-                    bb.MethodValueRef = lvv_ent.MethodValueRef;
-                    BuilderRef builder = LLVM.CreateBuilder();
-                    bb.Builder = builder;
-                    LLVM.PositionBuilderAtEnd(builder, llvm_bb);
-                }
-            }
-        }
-
-        private void CompilePart3(IEnumerable<CFG.Vertex> basic_blocks_to_compile, List<Mono.Cecil.TypeReference> list_of_data_types_used)
-        {
-            foreach (CFG.Vertex bb in basic_blocks_to_compile)
-            {
-                if (!IsFullyInstantiatedNode(bb))
-                    continue;
-
-                INST prev = null;
-                foreach (var j in bb.Instructions)
-                {
-                    j.Block = bb;
-                    if (prev != null) prev.Next = j;
-                    prev = j;
-                }
-            }
-        }
-
         private void CompilePart4(IEnumerable<CFG.Vertex> basic_blocks_to_compile, List<Mono.Cecil.TypeReference> list_of_data_types_used, List<CFG.Vertex> entries,
             out List<CFG.Vertex> unreachable, out List<CFG.Vertex> change_set_minus_unreachable)
         {
@@ -1152,36 +1183,16 @@ namespace Campy.Compiler
             return mr.FullName;
         }
 
-        private List<CFG.Vertex> RemoveBasicBlocksAlreadyCompiled(List<CFG.Vertex> basic_blocks_to_compile)
-        {
-            List<CFG.Vertex> weeded = new List<CFG.Vertex>();
-
-            // Remove any blocks already compiled.
-            foreach (var bb in basic_blocks_to_compile)
-            {
-                if (!bb.AlreadyCompiled)
-                {
-                    weeded.Add(bb);
-                    bb.AlreadyCompiled = true;
-                }
-            }
-            return weeded;
-        }
-
         public string CompileToLLVM(List<CFG.Vertex> basic_blocks_to_compile, List<Mono.Cecil.TypeReference> list_of_data_types_used,
             string basic_block_id)
         {
-            basic_blocks_to_compile = RemoveBasicBlocksAlreadyCompiled(basic_blocks_to_compile);
-
-            basic_blocks_to_compile = InstantiateGenerics(basic_blocks_to_compile);
-
-            ComputeBasicMethodProperties(basic_blocks_to_compile);
-
-            CompilePart1(basic_blocks_to_compile, list_of_data_types_used);
-
-            CompilePart2(basic_blocks_to_compile, list_of_data_types_used);
-
-            CompilePart3(basic_blocks_to_compile, list_of_data_types_used);
+            basic_blocks_to_compile = basic_blocks_to_compile
+                .RemoveBasicBlocksAlreadyCompiled()
+                .InstantiateGenerics()
+                .ComputeBasicMethodProperties()
+                .SetUpLLVMEntries()
+                .SetupLLVMNonEntries()
+                .ThreadInstructions();
 
             List<CFG.Vertex> entries = _mcfg.Vertices.Where(node => node.IsEntry).ToList();
 

@@ -162,8 +162,6 @@ namespace Campy.Compiler
             }
             public bool HasScalarReturnValue { get; set; }
             public bool HasStructReturnValue { get; set; }
-            public int? StackLevelIn { get; set; }
-            public int? StackLevelOut { get; set; }
             public STATE StateIn { get; set; }
             public STATE StateOut { get; set; }
 
