@@ -37,12 +37,11 @@
         private static Dictionary<string, MetadataRef> debug_blocks = new Dictionary<string, MetadataRef>();
         public static DIBuilderRef dib;
         private static bool done_this;
-        public STATE StateIn { get; set; }
-        public STATE StateOut { get; set; }
         public UInt32 TargetPointerSizeInBits = 64;
 
-        public virtual void DebuggerInfo(JITER converter)
+        public virtual void DebuggerInfo()
         {
+            JITER converter = JITER.Singleton;
             if (this.SeqPoint == null)
                 return;
             if (this.SeqPoint.IsHidden)
@@ -138,7 +137,7 @@
 
         }
 
-        public virtual INST Convert(JITER converter, STATE state)
+        public virtual INST Convert(STATE state)
         {
             throw new Exception("Must have an implementation for Convert! The instruction is: "
                                 + this.ToString());
@@ -834,7 +833,7 @@
         {
         }
 
-        public override INST Convert(JITER converter, STATE state)
+        public override INST Convert(STATE state)
         {
             var rhs = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -1287,7 +1286,7 @@
         {
         }
 
-        public override INST Convert(JITER converter, STATE state)
+        public override INST Convert(STATE state)
         {
             // For ldarg.1 of a compiler generated closure method, generate code
             // to create an int index for the thread.
@@ -1380,7 +1379,7 @@
         {
         }
 
-        public override INST Convert(JITER converter, STATE state)
+        public override INST Convert(STATE state)
         {
             VALUE value = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -1404,7 +1403,7 @@
         {
         }
 
-        public override INST Convert(JITER converter, STATE state)
+        public override INST Convert(STATE state)
         {
             VALUE value = new VALUE(LLVM.ConstInt(LLVM.Int32Type(), (ulong)_arg, true));
             state._stack.Push(value);
@@ -1420,7 +1419,7 @@
         {
         }
 
-        public override INST Convert(JITER converter, STATE state)
+        public override INST Convert(STATE state)
         {
             VALUE value = new VALUE(LLVM.ConstInt(LLVM.Int64Type(), (ulong)_arg, true));
             state._stack.Push(value);
@@ -1436,7 +1435,7 @@
         {
         }
 
-        public override INST Convert(JITER converter, STATE state)
+        public override INST Convert(STATE state)
         {
             VALUE value = new VALUE(LLVM.ConstReal(LLVM.FloatType(), _arg));
             state._stack.Push(value);
@@ -1452,7 +1451,7 @@
         {
         }
 
-        public override INST Convert(JITER converter, STATE state)
+        public override INST Convert(STATE state)
         {
             VALUE value = new VALUE(LLVM.ConstReal(LLVM.DoubleType(), _arg));
             state._stack.Push(value);
@@ -1466,7 +1465,7 @@
         {
         }
 
-        public override INST Convert(JITER converter, STATE state)
+        public override INST Convert(STATE state)
         {
             // Successor is fallthrough.
             object method = this.Operand;
@@ -1485,7 +1484,7 @@
             {
                 var g = this.Block._graph;
                 CFG.Vertex v = node;
-                JITER c = converter;
+                JITER c = JITER.Singleton;
                 if (v.IsEntry && JITER.MethodName(v._original_method_reference) == mr.FullName &&
                     c.IsFullyInstantiatedNode(v))
                     return true;
@@ -1912,7 +1911,7 @@
         {
         }
 
-        public override INST Convert(JITER converter, STATE state)
+        public override INST Convert(STATE state)
         {
             VALUE v = state._locals[_arg];
             state._stack.Push(v);
@@ -1931,7 +1930,7 @@
         {
         }
 
-        public override INST Convert(JITER converter, STATE state)
+        public override INST Convert(STATE state)
         {
             VALUE v = state._stack.Pop();
             state._locals[_arg] = v;
@@ -1979,7 +1978,7 @@
         public virtual PredicateType Predicate { get; set; }
         public virtual bool IsSigned { get; set; }
 
-        public override INST Convert(JITER converter, STATE state)
+        public override INST Convert(STATE state)
         {
             VALUE v2 = state._stack.Pop();
             VALUE v1 = state._stack.Pop();
@@ -2083,7 +2082,7 @@
         public virtual PredicateType Predicate { get; set; }
         public virtual bool IsSigned { get; set; }
 
-        public override INST Convert(JITER converter, STATE state)
+        public override INST Convert(STATE state)
         {
             VALUE v2 = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -2253,7 +2252,7 @@
         {
         }
 
-        public override INST Convert(JITER converter, STATE state)
+        public override INST Convert(STATE state)
         {
             VALUE s = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -2307,7 +2306,7 @@
         {
         }
 
-        public override INST Convert(JITER converter, STATE state)
+        public override INST Convert(STATE state)
         {
             VALUE i = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -2378,7 +2377,7 @@
         {
         }
 
-        public override INST Convert(JITER converter, STATE state)
+        public override INST Convert(STATE state)
         {
             VALUE v = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -2445,7 +2444,7 @@
         {
         }
 
-        public override INST Convert(JITER converter, STATE state)
+        public override INST Convert(STATE state)
         {
             VALUE i = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -2485,7 +2484,7 @@
         {
         }
 
-        public override INST Convert(JITER converter, STATE state)
+        public override INST Convert(STATE state)
         {
             {
                 VALUE v = state._stack.Pop();
@@ -2695,7 +2694,7 @@
         {
         }
 
-        public override INST Convert(JITER converter, STATE state)
+        public override INST Convert(STATE state)
         {
             {
                 VALUE v = state._stack.Pop();
@@ -2877,7 +2876,7 @@
         {
         }
 
-        public override INST Convert(JITER converter, STATE state)
+        public override INST Convert(STATE state)
         {
             VALUE v = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -2931,7 +2930,7 @@
         {
         }
 
-        public override INST Convert(JITER converter, STATE state)
+        public override INST Convert(STATE state)
         {
             VALUE src = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -3211,7 +3210,7 @@
         {
         }
 
-        public override INST Convert(JITER converter, STATE state)
+        public override INST Convert(STATE state)
         {
             var operand = this.Operand;
             System.Type t = operand.GetType();
@@ -3231,7 +3230,7 @@
         {
         }
 
-        public override INST Convert(JITER converter, STATE state)
+        public override INST Convert(STATE state)
         {
             var edge = Block._graph.SuccessorEdges(Block).ToList()[0];
             var s = edge.To;
@@ -3247,7 +3246,7 @@
         {
         }
 
-        public override INST Convert(JITER converter, STATE state)
+        public override INST Convert(STATE state)
         {
             var edge = Block._graph.SuccessorEdges(Block).ToList()[0];
             var s = edge.To;
@@ -3263,7 +3262,7 @@
         {
         }
 
-        public override INST Convert(JITER converter, STATE state)
+        public override INST Convert(STATE state)
         {
             object operand = this.Operand;
             Instruction instruction = operand as Instruction;
@@ -3309,7 +3308,7 @@
         {
         }
 
-        public override INST Convert(JITER converter, STATE state)
+        public override INST Convert(STATE state)
         {
             object operand = this.Operand;
             Instruction instruction = operand as Instruction;
@@ -3347,7 +3346,7 @@
         {
         }
 
-        public override INST Convert(JITER converter, STATE state)
+        public override INST Convert(STATE state)
         {
             object operand = this.Operand;
             Instruction instruction = operand as Instruction;
@@ -3385,7 +3384,7 @@
         {
         }
 
-        public override INST Convert(JITER converter, STATE state)
+        public override INST Convert(STATE state)
         {
             object operand = this.Operand;
             Instruction instruction = operand as Instruction;
@@ -3850,7 +3849,7 @@
         {
         }
 
-        public override INST Convert(JITER converter, STATE state)
+        public override INST Convert(STATE state)
         {
             var rhs = state._stack.Pop();
             state._stack.Push(rhs);
@@ -4661,7 +4660,7 @@
 
         // For array implementation, see https://www.codeproject.com/Articles/3467/Arrays-UNDOCUMENTED
 
-        public override INST Convert(JITER converter, STATE state)
+        public override INST Convert(STATE state)
         {
             //VALUE v = state._stack.Pop();
             //if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -4880,7 +4879,7 @@
         {
         }
 
-        public override INST Convert(JITER converter, STATE state)
+        public override INST Convert(STATE state)
         {
             ValueRef nul = LLVM.ConstPointerNull(LLVM.PointerType(LLVM.VoidType(), 0));
             var v = new VALUE(nul);
@@ -4909,7 +4908,7 @@
         {
         }
 
-        public override INST Convert(JITER converter, STATE state)
+        public override INST Convert(STATE state)
         {
             return Next;
         }
@@ -4930,7 +4929,7 @@
         {
         }
 
-        public override INST Convert(JITER converter, STATE state)
+        public override INST Convert(STATE state)
         {
             // Call SystemString_FromCharPtrASCII and push new string object on the stack.
             // _Z29SystemString_FromCharPtrASCIIPc
@@ -5047,7 +5046,7 @@
         {
         }
 
-        public override INST Convert(JITER converter, STATE state)
+        public override INST Convert(STATE state)
         {
             var rhs = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -5077,7 +5076,7 @@
         {
         }
 
-        public override INST Convert(JITER converter, STATE state)
+        public override INST Convert(STATE state)
         {
             // Call meta system to get type and create array of the given type and size.
             object operand = this.Operand;
@@ -5102,7 +5101,7 @@
         {
         }
 
-        public override INST Convert(JITER converter, STATE state)
+        public override INST Convert(STATE state)
         {
             // The JIT of a call instructure requires a little explanation. The operand
             // for the instruction is a MethodReference, which is a C# method of some type.
@@ -5129,7 +5128,7 @@
             {
                 var g = inst.Block._graph;
                 CFG.Vertex v = node;
-                JITER c = converter;
+                JITER c = JITER.Singleton;
                 if (v.IsEntry && JITER.MethodName(v._original_method_reference) == name && c.IsFullyInstantiatedNode(v))
                     return true;
                 else return false;
@@ -5447,7 +5446,7 @@
         {
         }
 
-        public override INST Convert(JITER converter, STATE state)
+        public override INST Convert(STATE state)
         {
             return Next;
         }
@@ -5476,7 +5475,7 @@
         {
         }
 
-        public override INST Convert(JITER converter, STATE state)
+        public override INST Convert(STATE state)
         {
             state._stack.Pop();
             return Next;
@@ -5530,7 +5529,7 @@
         {
         }
 
-        public override INST Convert(JITER converter, STATE state)
+        public override INST Convert(STATE state)
         {
             // There are really two different stacks here:
             // one for the called method, and the other for the caller of the method.
@@ -5580,7 +5579,7 @@
         {
         }
 
-        public override INST Convert(JITER converter, STATE state)
+        public override INST Convert(STATE state)
         {
             var rhs = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -5607,7 +5606,7 @@
         {
         }
 
-        public override INST Convert(JITER converter, STATE state)
+        public override INST Convert(STATE state)
         {
             var rhs = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -5642,7 +5641,7 @@
         {
         }
 
-        public override INST Convert(JITER converter, STATE state)
+        public override INST Convert(STATE state)
         {
             object operand = this.Operand;
             System.Type t = operand.GetType();
@@ -5957,7 +5956,7 @@
         {
         }
 
-        public override INST Convert(JITER converter, STATE state)
+        public override INST Convert(STATE state)
         {
             var rhs = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))

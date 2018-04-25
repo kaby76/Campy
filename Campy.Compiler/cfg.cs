@@ -161,8 +161,8 @@ namespace Campy.Compiler
             }
             public bool HasScalarReturnValue { get; set; }
             public bool HasStructReturnValue { get; set; }
-            public STATE StateIn { get; set; }
-            public STATE StateOut { get; set; }
+            //public STATE StateIn { get; set; }
+            //public STATE StateOut { get; set; }
             private Vertex _entry;
             public Vertex Entry
             {

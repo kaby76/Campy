@@ -468,160 +468,234 @@ namespace Campy.Compiler
             return weeded;
         }
 
-        public static List<CFG.Vertex> InstantiateGenerics(this List<CFG.Vertex> change_set)
+        public static List<CFG.Vertex> InstantiateGenerics(this List<CFG.Vertex> basic_blocks_to_compile)
         {
-            return change_set;
-            var _mcfg = change_set.First()._graph;
+            if (basic_blocks_to_compile.Count == 0)
+                return basic_blocks_to_compile;
 
-            HashSet<TypeReference> type_references = new HashSet<TypeReference>();
-            HashSet<MethodReference> method_references = new HashSet<MethodReference>();
-            foreach (var bb in change_set)
+            var _mcfg = basic_blocks_to_compile.First()._graph;
+
+            // Get a list of nodes to compile.
+            List<CFG.Vertex> work = new List<CFG.Vertex>(basic_blocks_to_compile);
+
+            // Get a list of the name of nodes to compile.
+            var work_names = work.Select(v => v.Name);
+
+            // Get a Tarjan DFS/SCC order of the nodes. Reverse it because we want to
+            // proceed from entry basic block.
+            //var ordered_list = new TarjanNoBackEdges<int>(_mcfg).GetEnumerable().Reverse();
+            var ordered_list = new TarjanNoBackEdges<CFG.Vertex, CFG.Edge>(_mcfg).ToList();
+            ordered_list.Reverse();
+
+            // Eliminate all node names not in the work list.
+            var order = ordered_list.Where(v => work_names.Contains(v.Name)).ToList();
+
+            Dictionary<CFG.Vertex, bool> visited = new Dictionary<CFG.Vertex, bool>();
+
+            // propagate type information and create new basic blocks for nodes that have
+            // specific generic type information.
+            foreach (var ob in order)
             {
-                // Get every generic data type used, e.g., List<int>, Stack<A>, ...
-                foreach (var inst in bb.Instructions)
-                {
-                    if (inst.OpCode.Code == Code.Ldfld)
-                    {
-                        var ft = inst.Operand as FieldReference;
-                        if (ft.FieldType as TypeReference != null)
-                            type_references.Add(ft.FieldType as TypeReference);
-                    }
-                    var operand = inst.Operand;
-                    if (operand as TypeReference != null)
-                    {
-                        type_references.Add(operand as TypeReference);
-                    }
-                    if (operand as MethodReference != null) method_references.Add(operand as MethodReference);
-                }
+                CFG.Vertex bb = ob;
+
+                //if (Campy.Utils.Options.IsOn("state_computation_trace"))
+                //    System.Console.WriteLine("State computations for node " + bb.Name);
+
+                //var state_in = new STATE(visited, bb);
+
+                //if (Campy.Utils.Options.IsOn("state_computation_trace"))
+                //{
+                //    System.Console.WriteLine("state in");
+                //    state_in.OutputTrace(new String(' ', 4));
+                //}
+
+                //bb.StateIn = state_in;
+                //bb.StateOut = new STATE(state_in);
+
+                //if (Campy.Utils.Options.IsOn("state_computation_trace"))
+                //{
+                //    bb.OutputEntireNode();
+                //    state_in.OutputTrace(new String(' ', 4));
+                //}
+
+                //INST last_inst = null;
+                //for (int i = 0; i < bb.Instructions.Count; ++i)
+                //{
+                //    var inst = bb.Instructions[i];
+                //    if (Campy.Utils.Options.IsOn("jit_trace"))
+                //        System.Console.WriteLine(inst);
+                //    last_inst = inst;
+                //    inst.DebuggerInfo();
+                //    inst = inst.Convert(bb.StateOut);
+                //    if (Campy.Utils.Options.IsOn("state_computation_trace"))
+                //        bb.StateOut.OutputTrace(new String(' ', 4));
+                //}
+
+                //if (last_inst != null
+                //    && (
+                //        last_inst.OpCode.FlowControl == Mono.Cecil.Cil.FlowControl.Next
+                //        || last_inst.OpCode.FlowControl == FlowControl.Call
+                //        || last_inst.OpCode.FlowControl == FlowControl.Throw))
+                //{
+                //    // Need to insert instruction to branch to fall through.
+                //    var edge = bb._graph.SuccessorEdges(bb).FirstOrDefault();
+                //    var s = edge.To;
+                //    var br = LLVM.BuildBr(bb.LlvmInfo.Builder, s.LlvmInfo.BasicBlock);
+                //}
+
+                visited[ob] = true;
             }
 
-            // Whittle out generic parameter and generic parameter arrays, and of that, only generic type instances.
-            var type_references_list = type_references.Where(t => (!t.IsGenericParameter)
-                       && (bool)(!t.GetElementType()?.IsGenericParameter)).Where(t => t.IsGenericInstance).ToList();
 
-            // With list in hand, create new type definitions.
-            foreach (var t in type_references_list)
-            {
-                t.MakeGenericInstanceTypeDefinition();
-            }
+            //HashSet<TypeReference> type_references = new HashSet<TypeReference>();
+            //HashSet<MethodReference> method_references = new HashSet<MethodReference>();
+            //foreach (var bb in change_set)
+            //{
+            //    // Get every generic data type used, e.g., List<int>, Stack<A>, ...
+            //    foreach (var inst in bb.Instructions)
+            //    {
+            //        if (inst.OpCode.Code == Code.Ldfld)
+            //        {
+            //            var ft = inst.Operand as FieldReference;
+            //            if (ft.FieldType as TypeReference != null)
+            //                type_references.Add(ft.FieldType as TypeReference);
+            //        }
+            //        var operand = inst.Operand;
+            //        if (operand as TypeReference != null)
+            //        {
+            //            type_references.Add(operand as TypeReference);
+            //        }
+            //        if (operand as MethodReference != null) method_references.Add(operand as MethodReference);
+            //    }
+            //}
+
+            //// Whittle out generic parameter and generic parameter arrays, and of that, only generic type instances.
+            //var type_references_list = type_references.Where(t => (!t.IsGenericParameter)
+            //           && (bool)(!t.GetElementType()?.IsGenericParameter)).Where(t => t.IsGenericInstance).ToList();
+
+            //// With list in hand, create new type definitions.
+            //foreach (var t in type_references_list)
+            //{
+            //    t.MakeGenericInstanceTypeDefinition();
+            //}
 
             // Start a new change set so we can update edges and other properties for the new nodes
             // in the graph.
-            int change_set_id2 = _mcfg.StartChangeSet();
+            //int change_set_id2 = _mcfg.StartChangeSet();
 
-            // Perform in-order traversal to generate instantiated type information.
-            List<CFG.Vertex> reverse_change_set = new List<CFG.Vertex>(change_set);
-            reverse_change_set.Reverse();
+            //// Perform in-order traversal to generate instantiated type information.
+            //List<CFG.Vertex> reverse_change_set = new List<CFG.Vertex>(change_set);
+            //reverse_change_set.Reverse();
 
-            // We need to do bookkeeping of what nodes to consider.
-            Stack<CFG.Vertex> instantiated_nodes = new Stack<CFG.Vertex>(reverse_change_set);
+            //// We need to do bookkeeping of what nodes to consider.
+            //Stack<CFG.Vertex> instantiated_nodes = new Stack<CFG.Vertex>(reverse_change_set);
 
-            while (instantiated_nodes.Count > 0)
-            {
-                CFG.Vertex basic_block = instantiated_nodes.Pop();
+            //while (instantiated_nodes.Count > 0)
+            //{
+            //    CFG.Vertex basic_block = instantiated_nodes.Pop();
 
-                if (Campy.Utils.Options.IsOn("jit_trace"))
-                    System.Console.WriteLine("Considering " + basic_block.Name);
+            //    if (Campy.Utils.Options.IsOn("jit_trace"))
+            //        System.Console.WriteLine("Considering " + basic_block.Name);
 
-                // If a block associated with method contains generics,
-                // we need to duplicate the node and add in type information
-                // about the generic type with that is actually used.
-                // So, for example, if the method contains a parameter of type
-                // "T", then we add in a mapping of T to the actual data type
-                // used, e.g., Integer, or what have you. When it is compiled,
-                // to LLVM, the mapped data type will be used!
-                MethodReference method = basic_block._original_method_reference;
-                var declaring_type = method.DeclaringType;
+            //    // If a block associated with method contains generics,
+            //    // we need to duplicate the node and add in type information
+            //    // about the generic type with that is actually used.
+            //    // So, for example, if the method contains a parameter of type
+            //    // "T", then we add in a mapping of T to the actual data type
+            //    // used, e.g., Integer, or what have you. When it is compiled,
+            //    // to LLVM, the mapped data type will be used!
+            //    MethodReference method = basic_block._original_method_reference;
+            //    var declaring_type = method.DeclaringType;
 
 
-                // If declaring type of method is generic, then look for look for instance type needed,
-                // then make copy of basic blocks with type infromation. Every instruction and type used is
-                // rewritten with generic instance data.
-                var matches =
-                    type_references_list.Where(t => t.Resolve().FullName == declaring_type.Resolve().FullName).ToList();
-                foreach (TypeReference match in matches)
-                {
-                    // For every type, copy block, rewrite with generic parameter.
-                    int new_basic_block_id = _mcfg.NewNodeNumber();
-                    var new_basic_block = _mcfg.AddVertex(new CFG.Vertex() { Name = new_basic_block_id.ToString() });
-                    new_basic_block._original_method_reference = method;
-                    var mgit = match as GenericInstanceType;
+            //    // If declaring type of method is generic, then look for look for instance type needed,
+            //    // then make copy of basic blocks with type infromation. Every instruction and type used is
+            //    // rewritten with generic instance data.
+            //    var matches =
+            //        type_references_list.Where(t => t.Resolve().FullName == declaring_type.Resolve().FullName).ToList();
+            //    foreach (TypeReference match in matches)
+            //    {
+            //        // For every type, copy block, rewrite with generic parameter.
+            //        int new_basic_block_id = _mcfg.NewNodeNumber();
+            //        var new_basic_block = _mcfg.AddVertex(new CFG.Vertex() { Name = new_basic_block_id.ToString() });
+            //        new_basic_block._original_method_reference = method;
+            //        var mgit = match as GenericInstanceType;
 
-                    // Rewrite method definition.
-                    var r = match.Resolve();
+            //        // Rewrite method definition.
+            //        var r = match.Resolve();
 
-                    MethodBody body = new MethodBody(basic_block._method_definition);
-                    var instruction_count = basic_block.Instructions.Count;
-                    for (int j = 0; j < instruction_count; ++j)
-                    {
-                        var wi = basic_block.Instructions[j];
-                        Instruction i = wi.Instruction;
-                        var operand = i.Operand;
-                        var gp = operand as GenericParameter;
-                        if (gp != null)
-                        {
-                            var position = gp.Position;
-                            var sub = mgit.GenericArguments[position];
+            //        MethodBody body = new MethodBody(basic_block._method_definition);
+            //        var instruction_count = basic_block.Instructions.Count;
+            //        for (int j = 0; j < instruction_count; ++j)
+            //        {
+            //            var wi = basic_block.Instructions[j];
+            //            Instruction i = wi.Instruction;
+            //            var operand = i.Operand;
+            //            var gp = operand as GenericParameter;
+            //            if (gp != null)
+            //            {
+            //                var position = gp.Position;
+            //                var sub = mgit.GenericArguments[position];
 
-                            var est = IMPORTER.MakeHostInstanceGeneric(method, sub);
-                            var rest = est.Resolve();
-                            var asdf = basic_block._method_definition.Module.Import(method);
-                            //var rasdf = asdf.Resolve();
-                            var asdf2 = basic_block._method_definition.Module.Import(est);
-                            var rasdf2 = asdf2.Resolve();
+            //                var est = IMPORTER.MakeHostInstanceGeneric(method, sub);
+            //                var rest = est.Resolve();
+            //                var asdf = basic_block._method_definition.Module.Import(method);
+            //                //var rasdf = asdf.Resolve();
+            //                var asdf2 = basic_block._method_definition.Module.Import(est);
+            //                var rasdf2 = asdf2.Resolve();
 
-                            // Substitute for "operand" the type "sub" as the operand for the instruction.
-                            var worker = body.GetILProcessor();
-                            Instruction new_inst = worker.Create(i.OpCode, sub);
-                            new_inst.Offset = i.Offset;
-                            body.Instructions.Insert(j, new_inst);
-                        }
-                        else
-                        {
-                            body.Instructions.Insert(j, i);
-                        }
-                    }
-                    new_basic_block._method_definition = basic_block._method_definition;
-                    for (int j = 0; j < instruction_count; ++j)
-                    {
-                        Mono.Cecil.Cil.Instruction instruction = body.Instructions[j];
-                        INST wrapped_instruction = INST.Wrap(instruction, basic_block,
-                            basic_block.Instructions[j].SeqPoint);
-                        new_basic_block.Instructions.Add(wrapped_instruction);
-                    }
-                }
-            }
+            //                // Substitute for "operand" the type "sub" as the operand for the instruction.
+            //                var worker = body.GetILProcessor();
+            //                Instruction new_inst = worker.Create(i.OpCode, sub);
+            //                new_inst.Offset = i.Offset;
+            //                body.Instructions.Insert(j, new_inst);
+            //            }
+            //            else
+            //            {
+            //                body.Instructions.Insert(j, i);
+            //            }
+            //        }
+            //        new_basic_block._method_definition = basic_block._method_definition;
+            //        for (int j = 0; j < instruction_count; ++j)
+            //        {
+            //            Mono.Cecil.Cil.Instruction instruction = body.Instructions[j];
+            //            INST wrapped_instruction = INST.Wrap(instruction, basic_block,
+            //                basic_block.Instructions[j].SeqPoint);
+            //            new_basic_block.Instructions.Add(wrapped_instruction);
+            //        }
+            //    }
+            //}
 
             _mcfg.OutputEntireGraph();
 
-            List<CFG.Vertex> new_change_set = _mcfg.PopChangeSet(change_set_id2);
-            Dictionary<CFG.Vertex, CFG.Vertex> map_to_new_block = new Dictionary<CFG.Vertex, CFG.Vertex>();
-            foreach (var v in new_change_set)
-            {
-                if (!JITER.Singleton.IsFullyInstantiatedNode(v)) continue;
-                var original = v.OriginalVertex;
-                var ops_list = v.OpsFromOriginal;
-                // Apply instance information from v onto predecessors and successors, and entry.
-                foreach (var vto in _mcfg.SuccessorNodes(original))
-                {
-                    var vto_mapped = JITER.Singleton.Eval(vto, ops_list);
-                    _mcfg.AddEdge(new CFG.Edge() { From = v, To = vto_mapped });
-                }
-            }
-            foreach (var v in new_change_set)
-            {
-                if (!JITER.Singleton.IsFullyInstantiatedNode(v)) continue;
-                var original = v.OriginalVertex;
-                var ops_list = v.OpsFromOriginal;
-                if (original.Entry != null)
-                    v.Entry = JITER.Singleton.Eval(original.Entry, ops_list);
-            }
+            //List<CFG.Vertex> new_change_set = _mcfg.PopChangeSet(change_set_id2);
+            //Dictionary<CFG.Vertex, CFG.Vertex> map_to_new_block = new Dictionary<CFG.Vertex, CFG.Vertex>();
+            //foreach (var v in new_change_set)
+            //{
+            //    if (!JITER.Singleton.IsFullyInstantiatedNode(v)) continue;
+            //    var original = v.OriginalVertex;
+            //    var ops_list = v.OpsFromOriginal;
+            //    // Apply instance information from v onto predecessors and successors, and entry.
+            //    foreach (var vto in _mcfg.SuccessorNodes(original))
+            //    {
+            //        var vto_mapped = JITER.Singleton.Eval(vto, ops_list);
+            //        _mcfg.AddEdge(new CFG.Edge() { From = v, To = vto_mapped });
+            //    }
+            //}
+            //foreach (var v in new_change_set)
+            //{
+            //    if (!JITER.Singleton.IsFullyInstantiatedNode(v)) continue;
+            //    var original = v.OriginalVertex;
+            //    var ops_list = v.OpsFromOriginal;
+            //    if (original.Entry != null)
+            //        v.Entry = JITER.Singleton.Eval(original.Entry, ops_list);
+            //}
 
             _mcfg.OutputEntireGraph();
 
             List<CFG.Vertex> result = new List<CFG.Vertex>();
-            result.AddRange(change_set);
-            result.AddRange(new_change_set);
+            result.AddRange(basic_blocks_to_compile);
+           // result.AddRange(new_change_set);
             return result;
         }
 
@@ -629,9 +703,6 @@ namespace Campy.Compiler
         {
             foreach (CFG.Vertex bb in basic_blocks_to_compile)
             {
-                if (!JITER.Singleton.IsFullyInstantiatedNode(bb))
-                    continue;
-
                 INST prev = null;
                 foreach (var j in bb.Instructions)
                 {
@@ -805,6 +876,153 @@ namespace Campy.Compiler
                 }
             }
             return basic_blocks_to_compile;
+        }
+
+        public static void TranslateToLLVMInstructions(this List<CFG.Vertex> basic_blocks_to_compile)
+        {
+            if (basic_blocks_to_compile.Count == 0)
+                return;
+
+            var _mcfg = basic_blocks_to_compile.First()._graph;
+
+            // Get a list of nodes to compile.
+            List<CFG.Vertex> work = new List<CFG.Vertex>(basic_blocks_to_compile);
+
+            // Get a list of the name of nodes to compile.
+            var work_names = work.Select(v => v.Name);
+
+            // Get a Tarjan DFS/SCC order of the nodes. Reverse it because we want to
+            // proceed from entry basic block.
+            //var ordered_list = new TarjanNoBackEdges<int>(_mcfg).GetEnumerable().Reverse();
+            var ordered_list = new TarjanNoBackEdges<CFG.Vertex, CFG.Edge>(_mcfg).ToList();
+            ordered_list.Reverse();
+
+            // Eliminate all node names not in the work list.
+            var order = ordered_list.Where(v => work_names.Contains(v.Name)).ToList();
+
+            Dictionary<CFG.Vertex, bool> visited = new Dictionary<CFG.Vertex, bool>();
+            Dictionary<CFG.Vertex, STATE> states_in = new Dictionary<CFG.Vertex, STATE>();
+            Dictionary<CFG.Vertex, STATE> states_out = new Dictionary<CFG.Vertex, STATE>();
+
+            // Emit LLVM IR code, based on state and per-instruction simulation on that state.
+            foreach (var ob in order)
+            {
+                CFG.Vertex bb = ob;
+
+                if (Campy.Utils.Options.IsOn("state_computation_trace"))
+                    System.Console.WriteLine("State computations for node " + bb.Name);
+
+                var state_in = new STATE(visited,
+                    states_in, states_out, bb);
+
+                if (Campy.Utils.Options.IsOn("state_computation_trace"))
+                {
+                    System.Console.WriteLine("state in");
+                    state_in.OutputTrace(new String(' ', 4));
+                }
+
+                // bb.StateIn = state_in;
+                // bb.StateOut = new STATE(state_in);
+                var state_out = new STATE(state_in);
+                states_in[bb] = state_in;
+                states_out[bb] = state_out;
+
+                if (Campy.Utils.Options.IsOn("state_computation_trace"))
+                {
+                    bb.OutputEntireNode();
+                    state_in.OutputTrace(new String(' ', 4));
+                }
+
+                INST last_inst = null;
+                for (int i = 0; i < bb.Instructions.Count; ++i)
+                {
+                    var inst = bb.Instructions[i];
+                    if (Campy.Utils.Options.IsOn("jit_trace"))
+                        System.Console.WriteLine(inst);
+                    last_inst = inst;
+                    inst.DebuggerInfo();
+                    inst = inst.Convert(state_out);
+                    if (Campy.Utils.Options.IsOn("state_computation_trace"))
+                        state_out.OutputTrace(new String(' ', 4));
+                }
+
+                if (last_inst != null
+                    && (
+                        last_inst.OpCode.FlowControl == Mono.Cecil.Cil.FlowControl.Next
+                        || last_inst.OpCode.FlowControl == FlowControl.Call
+                        || last_inst.OpCode.FlowControl == FlowControl.Throw))
+                {
+                    // Need to insert instruction to branch to fall through.
+                    var edge = bb._graph.SuccessorEdges(bb).FirstOrDefault();
+                    var s = edge.To;
+                    var br = LLVM.BuildBr(bb.LlvmInfo.Builder, s.LlvmInfo.BasicBlock);
+                }
+
+                visited[ob] = true;
+            }
+
+            // Finally, update phi functions with "incoming" information from predecessors.
+            foreach (var ob in order)
+            {
+                if (Campy.Utils.Options.IsOn("state_computation_trace"))
+                    System.Console.WriteLine("Working on phis for node " + ob.Name);
+                CFG.Vertex node = ob;
+                CFG.Vertex llvm_node = node;
+                int size = states_in[llvm_node]._stack.Count;
+                for (int i = 0; i < size; ++i)
+                {
+                    var count = llvm_node._graph.Predecessors(llvm_node).Count();
+                    if (count < 2) continue;
+                    if (Campy.Utils.Options.IsOn("state_computation_trace"))
+                        System.Console.WriteLine("phi nodes need for "
+                                                 + ob.Name + " for stack depth " + i);
+                    ValueRef res;
+                    res = states_in[llvm_node]._stack[i].V;
+                    if (!states_in[llvm_node]._phi.Contains(res)) continue;
+                    ValueRef[] phi_vals = new ValueRef[count];
+                    for (int c = 0; c < count; ++c)
+                    {
+                        var p = llvm_node._graph.PredecessorEdges(llvm_node).ToList()[c].From;
+                        if (Campy.Utils.Options.IsOn("state_computation_trace"))
+                            System.Console.WriteLine("Adding in phi for pred state "
+                                                     + p.Name);
+                        var plm = p;
+                        var vr = states_out[plm]._stack[i];
+                        phi_vals[c] = vr.V;
+                    }
+
+                    BasicBlockRef[] phi_blocks = new BasicBlockRef[count];
+                    for (int c = 0; c < count; ++c)
+                    {
+                        var p = llvm_node._graph.PredecessorEdges(llvm_node).ToList()[c].From;
+                        var plm = p;
+                        phi_blocks[c] = plm.LlvmInfo.BasicBlock;
+                    }
+
+                    //System.Console.WriteLine();
+                    //System.Console.WriteLine("Node " + llvm_node.Name + " stack slot " + i + " types:");
+                    for (int c = 0; c < count; ++c)
+                    {
+                        var vr = phi_vals[c];
+                        //System.Console.WriteLine(GetStringTypeOf(vr));
+                    }
+
+                    LLVM.AddIncoming(res, phi_vals, phi_blocks);
+                }
+            }
+
+            if (Campy.Utils.Options.IsOn("state_computation_trace"))
+            {
+                foreach (var ob in order)
+                {
+                    CFG.Vertex node = ob;
+                    CFG.Vertex llvm_node = node;
+
+                    node.OutputEntireNode();
+                    states_in[llvm_node].OutputTrace(new String(' ', 4));
+                    states_out[llvm_node].OutputTrace(new String(' ', 4));
+                }
+            }
         }
     }
 
@@ -1135,53 +1353,11 @@ namespace Campy.Compiler
             return type_reference_of_parameter;
         }
 
-        private void CompilePart4(IEnumerable<CFG.Vertex> basic_blocks_to_compile, List<Mono.Cecil.TypeReference> list_of_data_types_used, List<CFG.Vertex> entries,
-            out List<CFG.Vertex> unreachable, out List<CFG.Vertex> change_set_minus_unreachable)
-        {
-            unreachable = new List<CFG.Vertex>();
-            change_set_minus_unreachable = new List<CFG.Vertex>(basic_blocks_to_compile);
-            {
-                // Create DFT order of all nodes from entries.
-                var objs = entries.Select(x => x.Name);
-                var ordered_list =  new TarjanNoBackEdges<CFG.Vertex,CFG.Edge>(_mcfg).ToList();
-                ordered_list.Reverse();
-
-                //Graphs.DFSPreorder<int>
-                //    ordered_list = new Graphs.DFSPreorder<int>(
-                //        _mcfg,
-                //        objs
-                //    );
-
-                List<CFG.Vertex> visited = new List<CFG.Vertex>();
-                foreach (var ob in ordered_list)
-                {
-                    CFG.Vertex node = ob;
-                    if (!IsFullyInstantiatedNode(node))
-                        continue;
-                    if (visited.Contains(node))
-                        continue;
-                    visited.Add(node);
-                }
-                foreach (CFG.Vertex v in basic_blocks_to_compile)
-                {
-                    if (!visited.Contains(v))
-                        unreachable.Add(v);
-                }
-
-                foreach (CFG.Vertex v in unreachable)
-                {
-                    if (change_set_minus_unreachable.Contains(v))
-                    {
-                        change_set_minus_unreachable.Remove(v);
-                    }
-                }
-            }
-        }
-
         public static string MethodName(MethodReference mr)
         {
             return mr.FullName;
         }
+
 
         public string CompileToLLVM(List<CFG.Vertex> basic_blocks_to_compile, List<Mono.Cecil.TypeReference> list_of_data_types_used,
             string basic_block_id)
@@ -1189,151 +1365,17 @@ namespace Campy.Compiler
             basic_blocks_to_compile = basic_blocks_to_compile
                 .RemoveBasicBlocksAlreadyCompiled()
                 .InstantiateGenerics()
+                .ThreadInstructions()
                 .ComputeBasicMethodProperties()
                 .SetUpLLVMEntries()
                 .SetupLLVMNonEntries()
-                .ThreadInstructions();
+                ;
 
-            List<CFG.Vertex> entries = _mcfg.Vertices.Where(node => node.IsEntry).ToList();
-
-            List<CFG.Vertex> unreachable;
-            List<CFG.Vertex> change_set_minus_unreachable;
-            CompilePart4(basic_blocks_to_compile, list_of_data_types_used, entries, out unreachable, out change_set_minus_unreachable);
-
-            {
-                // Get a list of nodes to compile.
-                List<CFG.Vertex> work = new List<CFG.Vertex>(change_set_minus_unreachable);
-
-                // Get a list of the name of nodes to compile.
-                var work_names = work.Select(v => v.Name);
-
-                // Get a Tarjan DFS/SCC order of the nodes. Reverse it because we want to
-                // proceed from entry basic block.
-                //var ordered_list = new TarjanNoBackEdges<int>(_mcfg).GetEnumerable().Reverse();
-                var ordered_list = new TarjanNoBackEdges<CFG.Vertex,CFG.Edge>(_mcfg).ToList();
-                ordered_list.Reverse();
-
-                // Eliminate all node names not in the work list.
-                var order = ordered_list.Where(v => work_names.Contains(v.Name)).ToList();
-
-                Dictionary<CFG.Vertex, bool> visited = new Dictionary<CFG.Vertex, bool>();
-
-                // Emit LLVM IR code, based on state and per-instruction simulation on that state.
-                foreach (var ob in order)
-                {
-                    CFG.Vertex bb = ob;
-
-                    if (Campy.Utils.Options.IsOn("state_computation_trace"))
-                        System.Console.WriteLine("State computations for node " + bb.Name);
-
-                    var state_in = new STATE(visited, bb, list_of_data_types_used);
-
-                    if (Campy.Utils.Options.IsOn("state_computation_trace"))
-                    {
-                        System.Console.WriteLine("state in");
-                        state_in.OutputTrace(new String(' ', 4));
-                    }
-
-                    bb.StateIn = state_in;
-                    bb.StateOut = new STATE(state_in);
-
-                    if (Campy.Utils.Options.IsOn("state_computation_trace"))
-                    {
-                        bb.OutputEntireNode();
-                        state_in.OutputTrace(new String(' ', 4));
-                    }
-
-                    INST last_inst = null;
-                    for (int i = 0; i < bb.Instructions.Count; ++i)
-                    {
-                        var inst = bb.Instructions[i];
-                        if (Campy.Utils.Options.IsOn("jit_trace"))
-                            System.Console.WriteLine(inst);
-                        last_inst = inst;
-                        inst.DebuggerInfo(this);
-                        inst = inst.Convert(this, bb.StateOut);
-                        if (Campy.Utils.Options.IsOn("state_computation_trace"))
-                            bb.StateOut.OutputTrace(new String(' ', 4));
-                    }
-                    if (last_inst != null
-                        && (
-                            last_inst.OpCode.FlowControl == Mono.Cecil.Cil.FlowControl.Next
-                            || last_inst.OpCode.FlowControl == FlowControl.Call
-                            || last_inst.OpCode.FlowControl == FlowControl.Throw))
-                    {
-                        // Need to insert instruction to branch to fall through.
-                        var edge = bb._graph.SuccessorEdges(bb).FirstOrDefault();
-                        var s = edge.To;
-                        var br = LLVM.BuildBr(bb.LlvmInfo.Builder, s.LlvmInfo.BasicBlock);
-                    }
-                    visited[ob] = true;
-                }
-
-                // Finally, update phi functions with "incoming" information from predecessors.
-                foreach (var ob in order)
-                {
-                    if (Campy.Utils.Options.IsOn("state_computation_trace"))
-                        System.Console.WriteLine("Working on phis for node " + ob.Name);
-                    CFG.Vertex node = ob;
-                    CFG.Vertex llvm_node = node;
-                    int size = llvm_node.StateIn._stack.Count;
-                    for (int i = 0; i < size; ++i)
-                    {
-                        var count = llvm_node._graph.Predecessors(llvm_node).Count();
-                        if (count < 2) continue;
-                        if (Campy.Utils.Options.IsOn("state_computation_trace"))
-                            System.Console.WriteLine("phi nodes need for "
-                                + ob.Name + " for stack depth " + i);
-                        ValueRef res;
-                        res = llvm_node.StateIn._stack[i].V;
-                        if (!llvm_node.StateIn._phi.Contains(res)) continue;
-                        ValueRef[] phi_vals = new ValueRef[count];
-                        for (int c = 0; c < count; ++c)
-                        {
-                            var p = llvm_node._graph.PredecessorEdges(llvm_node).ToList()[c].From;
-                            if (Campy.Utils.Options.IsOn("state_computation_trace"))
-                                System.Console.WriteLine("Adding in phi for pred state "
-                                    + p.Name);
-                            var plm = p;
-                            var vr = plm.StateOut._stack[i];
-                            phi_vals[c] = vr.V;
-                        }
-                        BasicBlockRef[] phi_blocks = new BasicBlockRef[count];
-                        for (int c = 0; c < count; ++c)
-                        {
-                            var p = llvm_node._graph.PredecessorEdges(llvm_node).ToList()[c].From;
-                            var plm = p;
-                            phi_blocks[c] = plm.LlvmInfo.BasicBlock;
-                        }
-                        //System.Console.WriteLine();
-                        //System.Console.WriteLine("Node " + llvm_node.Name + " stack slot " + i + " types:");
-                        for (int c = 0; c < count; ++c)
-                        {
-                            var vr = phi_vals[c];
-                            //System.Console.WriteLine(GetStringTypeOf(vr));
-                        }
-
-                        LLVM.AddIncoming(res, phi_vals, phi_blocks);
-                    }
-                }
-
-                if (Campy.Utils.Options.IsOn("state_computation_trace"))
-                {
-                    foreach (var ob in order)
-                    {
-                        CFG.Vertex node = ob;
-                        CFG.Vertex llvm_node = node;
-
-                        node.OutputEntireNode();
-                        llvm_node.StateIn.OutputTrace(new String(' ', 4));
-                        llvm_node.StateOut.OutputTrace(new String(' ', 4));
-                    }
-                }
-            }
-
+            basic_blocks_to_compile
+                .TranslateToLLVMInstructions();
+            
             if (Utils.Options.IsOn("name_trace"))
                 NameTableTrace();
-
 
             {
                 var module = JITER.global_llvm_module;

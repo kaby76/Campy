@@ -17,7 +17,6 @@ namespace Campy.Compiler
         public ListSection<VALUE> _this; // Pointer to _stack, if there is a "this" pointer.
         public ListSection<VALUE> _arguments; // Pointer to _stack, if there are parameters for the method.
         public ListSection<VALUE> _locals; // Pointer to _stack, if there are local variables to the method.
-        public Dictionary<String, VALUE> _memory;
         public List<ValueRef> _phi;
 
         public STATE()
@@ -27,13 +26,15 @@ namespace Campy.Compiler
             _arguments = null;
             _locals = null;
             _struct_ret = null;
-            _memory = new Dictionary<string, VALUE>();
             _phi = new List<ValueRef>();
         }
 
-        public STATE(Dictionary<CFG.Vertex, bool> visited, CFG.Vertex bb, List<Mono.Cecil.TypeReference> list_of_data_types_used)
+        public STATE(Dictionary<CFG.Vertex, bool> visited,
+            Dictionary<CFG.Vertex, STATE> states_in,
+            Dictionary<CFG.Vertex, STATE> states_out,
+            CFG.Vertex bb)
         {
-            // Set up a blank stack.
+            // Set up a state that is a copy of another state.
             _stack = new StackQueue<VALUE>();
             int in_level = -1;
 
@@ -56,9 +57,9 @@ namespace Campy.Compiler
                         throw new Exception("Interprocedural edge should not exist.");
                     // If predecessor has not been visited, warn and do not consider.
                     // Warn if predecessor does not concur with another predecessor.
-                    if (in_level != -1 && pred.StateOut._stack.Count != in_level)
+                    if (in_level != -1 && states_out[pred]._stack.Count != in_level)
                         throw new Exception("Miscalculation in stack size.");
-                    in_level = pred.StateOut._stack.Count;
+                    in_level = states_out[pred]._stack.Count;
                 }
             }
             if (in_level == -1)
@@ -144,8 +145,8 @@ namespace Campy.Compiler
 
                 var pred = bb._graph.PredecessorEdges(bb).ToList()[0].From;
                 var p_llvm_node = pred;
-                var other = p_llvm_node.StateOut;
-                var size = p_llvm_node.StateOut._stack.Count;
+                var other = states_out[p_llvm_node];
+                var size = other._stack.Count;
                 for (int i = 0; i < size; ++i)
                 {
                     var vx = other._stack[i];
@@ -158,7 +159,7 @@ namespace Campy.Compiler
             }
             else // node._Predecessors.Count > 0
             {
-                // As we cannot guarentee whether all predecessors are fulfilled,
+                // As we cannot guarantee whether all predecessors are fulfilled,
                 // make up something so we don't have problems.
                 // Now, for every arg, local, stack, set up for merge.
                 // Find a predecessor that has some definition.
@@ -168,16 +169,18 @@ namespace Campy.Compiler
                     var to_check = bb._graph.PredecessorEdges(bb).ToList()[pred_ind].From;
                     if (!visited.ContainsKey(to_check)) continue;
                     CFG.Vertex check_llvm_node = to_check;
-                    if (check_llvm_node.StateOut == null)
+                    if (!states_out.ContainsKey(check_llvm_node))
                         continue;
-                    if (check_llvm_node.StateOut._stack == null)
+                    if (states_out[check_llvm_node] == null)
+                        continue;
+                    if (states_out[check_llvm_node]._stack == null)
                         continue;
                     pred = to_check;
                     break;
                 }
 
                 CFG.Vertex p_llvm_node = pred;
-                int size = p_llvm_node.StateOut._stack.Count;
+                int size = states_out[p_llvm_node]._stack.Count;
                 for (int i = 0; i < size; ++i)
                 {
                     {
@@ -185,14 +188,14 @@ namespace Campy.Compiler
                         _stack.Push(f);
                     }
                     var count = bb._graph.Predecessors(bb).Count();
-                    var value = p_llvm_node.StateOut._stack[i];
+                    var value = states_out[p_llvm_node]._stack[i];
                     var v = value.V;
                     TypeRef tr = LLVM.TypeOf(v);
                     ValueRef res = LLVM.BuildPhi(bb.LlvmInfo.Builder, tr, "i" + INST.instruction_id++);
                     _phi.Add(res);
                     _stack[i] = new VALUE(res);
                 }
-                var other = p_llvm_node.StateOut;
+                var other = states_out[p_llvm_node];
                 _struct_ret = _stack.Section(other._struct_ret.Base, other._struct_ret.Len);
                 _this = _stack.Section(other._this.Base, other._this.Len);
                 _arguments = _stack.Section(other._arguments.Base, other._arguments.Len);
