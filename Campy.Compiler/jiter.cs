@@ -1454,121 +1454,6 @@ namespace Campy.Compiler
             }
         }
 
-        public List<System.Type> FindAllTargets(Delegate obj)
-        {
-            List<System.Type> data_used = new List<System.Type>();
-
-            Dictionary<Delegate, object> delegate_to_instance = new Dictionary<Delegate, object>();
-
-            Delegate lambda_delegate = (Delegate)obj;
-
-            BindingFlags findFlags = BindingFlags.NonPublic |
-                                     BindingFlags.Public |
-                                     BindingFlags.Static |
-                                     BindingFlags.Instance |
-                                     BindingFlags.InvokeMethod |
-                                     BindingFlags.OptionalParamBinding |
-                                     BindingFlags.DeclaredOnly;
-
-            List<object> processed = new List<object>();
-
-            // Construct list of generic methods with types that will be JIT'ed.
-            StackQueue<object> stack = new StackQueue<object>();
-            stack.Push(lambda_delegate);
-
-            while (stack.Count > 0)
-            {
-                object node = stack.Pop();
-                if (processed.Contains(node)) continue;
-
-                processed.Add(node);
-
-                // Case 1: object is multicast delegate.
-                // A multicast delegate is a list of delegates called in the order
-                // they appear in the list.
-                System.MulticastDelegate multicast_delegate = node as System.MulticastDelegate;
-                if (multicast_delegate != null)
-                {
-                    foreach (System.Delegate node2 in multicast_delegate.GetInvocationList())
-                    {
-                        if ((object) node2 != (object) node)
-                        {
-                            stack.Push(node2);
-                        }
-                    }
-                }
-
-                // Case 2: object is plain delegate.
-                System.Delegate plain_delegate = node as System.Delegate;
-                if (plain_delegate != null)
-                {
-                    object target = plain_delegate.Target;
-                    if (target == null)
-                    {
-                        // If target is null, then the delegate is a function that
-                        // uses either static data, or does not require any additional
-                        // data. If target isn't null, then it's probably a class.
-                        target = Activator.CreateInstance(plain_delegate.Method.DeclaringType);
-                        if (target != null)
-                        {
-                            stack.Push(target);
-                        }
-                    }
-                    else
-                    {
-                        // Target isn't null for delegate. Most likely, the method
-                        // is part of the target, so let's assert that.
-                        bool found = false;
-                        foreach (System.Reflection.MethodInfo mi in target.GetType().GetMethods(findFlags))
-                        {
-                            if (mi == plain_delegate.Method)
-                            {
-                                found = true;
-                                break;
-                            }
-                        }
-                        Debug.Assert(found);
-                        stack.Push(target);
-                    }
-                    continue;
-                }
-
-                if (node != null && (multicast_delegate == null || plain_delegate == null))
-                {
-                    // This is just a closure object, represented as a class. Go through
-                    // the class and record instances of generic types.
-                    data_used.Add(node.GetType());
-
-                    // Case 3: object is a class, and potentially could point to delegate.
-                    // Examine all fields, looking for list_of_targets.
-
-                    System.Type target_type = node.GetType();
-
-                    FieldInfo[] target_type_fieldinfo = target_type.GetFields(
-                        System.Reflection.BindingFlags.Instance
-                        | System.Reflection.BindingFlags.NonPublic
-                        | System.Reflection.BindingFlags.Public
-                        //| System.Reflection.BindingFlags.Static
-                    );
-                    var rffi = target_type.GetRuntimeFields();
-
-                    foreach (var field in target_type_fieldinfo)
-                    {
-                        var value = field.GetValue(node);
-                        if (value != null)
-                        {
-                            if (field.FieldType.IsValueType)
-                                continue;
-                            // chase pointer type.
-                            stack.Push(value);
-                        }
-                    }
-                }
-            }
-
-            return data_used;
-        }
-
         public CFG.Vertex GetBasicBlock(string block_id)
         {
             return _mcfg.Vertices.Where(i => i.IsEntry && i.Name == block_id).FirstOrDefault();
@@ -1623,7 +1508,6 @@ namespace Campy.Compiler
             // Create a list of generics called with types passed.
             List<System.Type> list_of_data_types_used = new List<System.Type>();
             list_of_data_types_used.Add(kernel_target.GetType());
-            //Singleton._converter.FindAllTargets(kernel));
 
             // Convert list into Mono data types.
             List<Mono.Cecil.TypeReference> list_of_mono_data_types_used = new List<TypeReference>();
