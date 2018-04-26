@@ -137,7 +137,7 @@
 
         }
 
-        public virtual INST Convert(STATE state)
+        public virtual INST Convert(STATE<VALUE> state)
         {
             throw new Exception("Must have an implementation for Convert! The instruction is: "
                                 + this.ToString());
@@ -833,7 +833,7 @@
         {
         }
 
-        public override INST Convert(STATE state)
+        public override INST Convert(STATE<VALUE> state)
         {
             var rhs = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -1286,7 +1286,7 @@
         {
         }
 
-        public override INST Convert(STATE state)
+        public override INST Convert(STATE<VALUE> state)
         {
             // For ldarg.1 of a compiler generated closure method, generate code
             // to create an int index for the thread.
@@ -1379,7 +1379,7 @@
         {
         }
 
-        public override INST Convert(STATE state)
+        public override INST Convert(STATE<VALUE> state)
         {
             VALUE value = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -1403,7 +1403,7 @@
         {
         }
 
-        public override INST Convert(STATE state)
+        public override INST Convert(STATE<VALUE> state)
         {
             VALUE value = new VALUE(LLVM.ConstInt(LLVM.Int32Type(), (ulong)_arg, true));
             state._stack.Push(value);
@@ -1419,7 +1419,7 @@
         {
         }
 
-        public override INST Convert(STATE state)
+        public override INST Convert(STATE<VALUE> state)
         {
             VALUE value = new VALUE(LLVM.ConstInt(LLVM.Int64Type(), (ulong)_arg, true));
             state._stack.Push(value);
@@ -1435,7 +1435,7 @@
         {
         }
 
-        public override INST Convert(STATE state)
+        public override INST Convert(STATE<VALUE> state)
         {
             VALUE value = new VALUE(LLVM.ConstReal(LLVM.FloatType(), _arg));
             state._stack.Push(value);
@@ -1451,7 +1451,7 @@
         {
         }
 
-        public override INST Convert(STATE state)
+        public override INST Convert(STATE<VALUE> state)
         {
             VALUE value = new VALUE(LLVM.ConstReal(LLVM.DoubleType(), _arg));
             state._stack.Push(value);
@@ -1465,7 +1465,7 @@
         {
         }
 
-        public override INST Convert(STATE state)
+        public override INST Convert(STATE<VALUE> state)
         {
             // Successor is fallthrough.
             object method = this.Operand;
@@ -1911,7 +1911,7 @@
         {
         }
 
-        public override INST Convert(STATE state)
+        public override INST Convert(STATE<VALUE> state)
         {
             VALUE v = state._locals[_arg];
             state._stack.Push(v);
@@ -1930,7 +1930,7 @@
         {
         }
 
-        public override INST Convert(STATE state)
+        public override INST Convert(STATE<VALUE> state)
         {
             VALUE v = state._stack.Pop();
             state._locals[_arg] = v;
@@ -1978,7 +1978,7 @@
         public virtual PredicateType Predicate { get; set; }
         public virtual bool IsSigned { get; set; }
 
-        public override INST Convert(STATE state)
+        public override INST Convert(STATE<VALUE> state)
         {
             VALUE v2 = state._stack.Pop();
             VALUE v1 = state._stack.Pop();
@@ -2082,7 +2082,7 @@
         public virtual PredicateType Predicate { get; set; }
         public virtual bool IsSigned { get; set; }
 
-        public override INST Convert(STATE state)
+        public override INST Convert(STATE<VALUE> state)
         {
             VALUE v2 = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -2252,7 +2252,7 @@
         {
         }
 
-        public override INST Convert(STATE state)
+        public override INST Convert(STATE<VALUE> state)
         {
             VALUE s = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -2306,7 +2306,7 @@
         {
         }
 
-        public override INST Convert(STATE state)
+        public override INST Convert(STATE<VALUE> state)
         {
             VALUE i = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -2377,7 +2377,7 @@
         {
         }
 
-        public override INST Convert(STATE state)
+        public override INST Convert(STATE<VALUE> state)
         {
             VALUE v = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -2444,7 +2444,7 @@
         {
         }
 
-        public override INST Convert(STATE state)
+        public override INST Convert(STATE<VALUE> state)
         {
             VALUE i = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -2484,7 +2484,7 @@
         {
         }
 
-        public override INST Convert(STATE state)
+        public override INST Convert(STATE<VALUE> state)
         {
             {
                 VALUE v = state._stack.Pop();
@@ -2694,7 +2694,7 @@
         {
         }
 
-        public override INST Convert(STATE state)
+        public override INST Convert(STATE<VALUE> state)
         {
             {
                 VALUE v = state._stack.Pop();
@@ -2876,7 +2876,7 @@
         {
         }
 
-        public override INST Convert(STATE state)
+        public override INST Convert(STATE<VALUE> state)
         {
             VALUE v = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -2930,7 +2930,7 @@
         {
         }
 
-        public override INST Convert(STATE state)
+        public override INST Convert(STATE<VALUE> state)
         {
             VALUE src = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -3210,7 +3210,7 @@
         {
         }
 
-        public override INST Convert(STATE state)
+        public override INST Convert(STATE<VALUE> state)
         {
             var operand = this.Operand;
             System.Type t = operand.GetType();
@@ -3230,7 +3230,7 @@
         {
         }
 
-        public override INST Convert(STATE state)
+        public override INST Convert(STATE<VALUE> state)
         {
             var edge = Block._graph.SuccessorEdges(Block).ToList()[0];
             var s = edge.To;
@@ -3246,7 +3246,7 @@
         {
         }
 
-        public override INST Convert(STATE state)
+        public override INST Convert(STATE<VALUE> state)
         {
             var edge = Block._graph.SuccessorEdges(Block).ToList()[0];
             var s = edge.To;
@@ -3262,7 +3262,7 @@
         {
         }
 
-        public override INST Convert(STATE state)
+        public override INST Convert(STATE<VALUE> state)
         {
             object operand = this.Operand;
             Instruction instruction = operand as Instruction;
@@ -3308,7 +3308,7 @@
         {
         }
 
-        public override INST Convert(STATE state)
+        public override INST Convert(STATE<VALUE> state)
         {
             object operand = this.Operand;
             Instruction instruction = operand as Instruction;
@@ -3346,7 +3346,7 @@
         {
         }
 
-        public override INST Convert(STATE state)
+        public override INST Convert(STATE<VALUE> state)
         {
             object operand = this.Operand;
             Instruction instruction = operand as Instruction;
@@ -3384,7 +3384,7 @@
         {
         }
 
-        public override INST Convert(STATE state)
+        public override INST Convert(STATE<VALUE> state)
         {
             object operand = this.Operand;
             Instruction instruction = operand as Instruction;
@@ -3849,7 +3849,7 @@
         {
         }
 
-        public override INST Convert(STATE state)
+        public override INST Convert(STATE<VALUE> state)
         {
             var rhs = state._stack.Pop();
             state._stack.Push(rhs);
@@ -4660,7 +4660,7 @@
 
         // For array implementation, see https://www.codeproject.com/Articles/3467/Arrays-UNDOCUMENTED
 
-        public override INST Convert(STATE state)
+        public override INST Convert(STATE<VALUE> state)
         {
             //VALUE v = state._stack.Pop();
             //if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -4879,7 +4879,7 @@
         {
         }
 
-        public override INST Convert(STATE state)
+        public override INST Convert(STATE<VALUE> state)
         {
             ValueRef nul = LLVM.ConstPointerNull(LLVM.PointerType(LLVM.VoidType(), 0));
             var v = new VALUE(nul);
@@ -4908,7 +4908,7 @@
         {
         }
 
-        public override INST Convert(STATE state)
+        public override INST Convert(STATE<VALUE> state)
         {
             return Next;
         }
@@ -4929,7 +4929,7 @@
         {
         }
 
-        public override INST Convert(STATE state)
+        public override INST Convert(STATE<VALUE> state)
         {
             // Call SystemString_FromCharPtrASCII and push new string object on the stack.
             // _Z29SystemString_FromCharPtrASCIIPc
@@ -5046,7 +5046,7 @@
         {
         }
 
-        public override INST Convert(STATE state)
+        public override INST Convert(STATE<VALUE> state)
         {
             var rhs = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -5076,7 +5076,7 @@
         {
         }
 
-        public override INST Convert(STATE state)
+        public override INST Convert(STATE<VALUE> state)
         {
             // Call meta system to get type and create array of the given type and size.
             object operand = this.Operand;
@@ -5101,7 +5101,7 @@
         {
         }
 
-        public override INST Convert(STATE state)
+        public override INST Convert(STATE<VALUE> state)
         {
             // The JIT of a call instructure requires a little explanation. The operand
             // for the instruction is a MethodReference, which is a C# method of some type.
@@ -5446,7 +5446,7 @@
         {
         }
 
-        public override INST Convert(STATE state)
+        public override INST Convert(STATE<VALUE> state)
         {
             return Next;
         }
@@ -5475,7 +5475,7 @@
         {
         }
 
-        public override INST Convert(STATE state)
+        public override INST Convert(STATE<VALUE> state)
         {
             state._stack.Pop();
             return Next;
@@ -5529,7 +5529,7 @@
         {
         }
 
-        public override INST Convert(STATE state)
+        public override INST Convert(STATE<VALUE> state)
         {
             // There are really two different stacks here:
             // one for the called method, and the other for the caller of the method.
@@ -5579,7 +5579,7 @@
         {
         }
 
-        public override INST Convert(STATE state)
+        public override INST Convert(STATE<VALUE> state)
         {
             var rhs = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -5606,7 +5606,7 @@
         {
         }
 
-        public override INST Convert(STATE state)
+        public override INST Convert(STATE<VALUE> state)
         {
             var rhs = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -5641,7 +5641,7 @@
         {
         }
 
-        public override INST Convert(STATE state)
+        public override INST Convert(STATE<VALUE> state)
         {
             object operand = this.Operand;
             System.Type t = operand.GetType();
@@ -5956,7 +5956,7 @@
         {
         }
 
-        public override INST Convert(STATE state)
+        public override INST Convert(STATE<VALUE> state)
         {
             var rhs = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))

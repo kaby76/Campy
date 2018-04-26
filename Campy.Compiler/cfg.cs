@@ -132,6 +132,16 @@ namespace Campy.Compiler
                 public ValueRef MethodValueRef { get; set; }
                 public BuilderRef Builder { get; set; }
                 public ModuleRef Module { get; set; }
+                private List<ValueRef> ph;
+                public List<ValueRef> Phi
+                {
+                    get
+                    {
+                        if (ph == null)
+                            ph = new List<ValueRef>();
+                        return ph;
+                    }
+                }
             }
 
             public string Name { get; set; }
