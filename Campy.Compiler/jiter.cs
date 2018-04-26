@@ -1811,10 +1811,15 @@ namespace Campy.Compiler
         public static extern void InitializeBCL2();
 
     
+        private HashSet<string> _added_module_already = new HashSet<string>();
+
         public void AddAssemblyToFileSystem(Mono.Cecil.ModuleDefinition module)
         {
-            // Set up corlib.dll in file system.
             string full_path_assem = module.FileName;
+            if (_added_module_already.Contains(full_path_assem))
+                return;
+            _added_module_already.Add(full_path_assem);
+            // Set up corlib.dll in file system.
             string assem = Path.GetFileName(full_path_assem);
             Stream stream = new FileStream(full_path_assem, FileMode.Open, FileAccess.Read, FileShare.Read);
             var corlib_bytes_handle_len = stream.Length;
