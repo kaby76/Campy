@@ -173,19 +173,29 @@ function_space_specifier tMetaData* MetaData_GetResolutionScopeMetaData(tMetaDat
 	return NULL;
 }
 
-function_space_specifier tMD_TypeDef* MetaData_GetTypeDefFromName(tMetaData *pMetaData, STRING nameSpace, STRING name, tMD_TypeDef *pInNestedClass) {
-	U32 i;
+function_space_specifier tMD_TypeDef* MetaData_GetTypeDefFromName(tMetaData *pMetaData, STRING nameSpace, STRING name, tMD_TypeDef *pInNestedClass) 
+{
+//	printf("looking for %s in ns %s\n", name, nameSpace);
+    U32 i;
+	tMD_TypeDef* result = 0;
 	for (i=1; i<=pMetaData->tables.numRows[MD_TABLE_TYPEDEF]; i++) {
 		tMD_TypeDef *pTypeDef;
 
 		pTypeDef = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_TYPEDEF, i));
 		
+//		printf("checking %s in %s\n", pTypeDef->name, pTypeDef->nameSpace);
+		
 		if (pInNestedClass == pTypeDef->pNestedIn &&
 			Gstrcmp(name, pTypeDef->name) == 0 &&
-			(pInNestedClass != NULL || Gstrcmp(nameSpace, pTypeDef->nameSpace) == 0)) {
-			return pTypeDef;
+			(pInNestedClass != NULL || Gstrcmp(nameSpace, pTypeDef->nameSpace) == 0))
+		{
+			result = pTypeDef;
+			
+//			return pTypeDef;
 		}
 	}
+	if (result != 0) return result;
+
 	Crash("MetaData_GetTypeDefFromName(): Cannot find type %s.%s", nameSpace, name);
 	FAKE_RETURN;
 	return NULL;
