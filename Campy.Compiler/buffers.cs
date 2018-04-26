@@ -688,7 +688,7 @@
                                         var field_size = SizeOf(field_value);
                                         if (Campy.Utils.Options.IsOn("copy_trace"))
                                             System.Console.WriteLine("Allocating GPU buf " + field_value);
-//                                      gp = New(field_size);
+//                                     // gp = New(field_size);
                                         gp = New(fi.FieldType);
                                         _allocated_objects[field_value] = (IntPtr)gp;
                                     }
