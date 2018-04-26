@@ -231,23 +231,81 @@ function_space_specifier void * simple_malloc(size_t size)
 		return NULL;
 	size = roundUp(size, 8);
 	header = get_free_block(size);
+
+//	printf("simple_malloc %d\n", size);
+//	printf("dump of entire blocks\n");
+//	struct header_t *curr = &_bcl_->head[0];
+//	while (curr) {
+//		printf("curr %llx\n", curr);
+//		printf("curr next %llx\n", curr->next);
+//		printf("curr prev %llx\n", curr->prev);
+//		printf("curr size %d\n", curr->size);
+//		printf("curr free %d\n", curr->is_free);
+//		curr = curr->next;
+//	}
+//	printf("------------------\n");
+
 	if (header)
 	{
+//		printf("simple_malloc allocating\n");
 		// split block if big enough.
 		if (header->size > (size + sizeof(struct header_t)))
 		{
+//			printf("header big enough\n");
+//			printf("header %llx\n", header);
+//			printf("header next %llx\n", header->next);
+//			printf("header prev %llx\n", header->prev);
+//			printf("header size %d\n", header->size);
+//			printf("header free %d\n", header->is_free);
 			int original_size = header->size;
 			int skip = size + sizeof(struct header_t);
+//			printf("skip %d\n", skip);
 			unsigned char * ptr = ((unsigned char *)header) + skip;
 			struct header_t * new_free = (struct header_t *)ptr;
 			new_free->is_free = 1;
 			new_free->size = original_size - skip;
 			new_free->prev = header->prev;
 			new_free->next = header->next;
-			if (new_free->prev != NULL) new_free->prev->next = new_free;
+//			printf("header %llx\n", header);
+//			printf("header next %llx\n", header->next);
+//			printf("header prev %llx\n", header->prev);
+//			printf("header size %d\n", header->size);
+//			printf("header free %d\n", header->is_free);
+//			printf("new_free %llx\n", new_free);
+//			printf("new_free next %llx\n", new_free->next);
+//			printf("new_free prev %llx\n", new_free->prev);
+//			printf("new_free size %d\n", new_free->size);
+//			printf("new_free free %d\n", new_free->is_free);
+//			printf("----\n");
+			if (new_free->prev != NULL)
+			{
+				new_free->prev->next = new_free;
+//				printf("updated\n");
+			}
 			header->size = size;
+//			printf("header next %llx\n", header->next);
+//			printf("header prev %llx\n", header->prev);
+//			printf("header size %d\n", header->size);
+//			printf("header free %d\n", header->is_free);
+//			printf("new_free %llx\n", new_free);
+//			printf("new_free next %llx\n", new_free->next);
+//			printf("new_free prev %llx\n", new_free->prev);
+//			printf("new_free size %d\n", new_free->size);
+//			printf("new_free free %d\n", new_free->is_free);
+//			printf("++++\n");
 		}
 		header->is_free = 0;
+//		printf("dump of entire blocks after\n");
+//		struct header_t *curr2 = &_bcl_->head[0];
+//		while (curr2) {
+//			printf("curr %llx\n", curr2);
+//			printf("curr next %llx\n", curr2->next);
+//			printf("curr prev %llx\n", curr2->prev);
+//			printf("curr size %d\n", curr2->size);
+//			printf("curr free %d\n", curr2->is_free);
+//			curr2 = curr2->next;
+//		}
+//		printf("------------------\n");
 		return (void*)(header + 1);
 	}
 	return NULL;
