@@ -264,7 +264,7 @@ function_space_specifier static void GarbageCollect() {
 #ifdef DIAG_GC
 	U64 startTime;
 #endif
-
+	printf("GARBAGE COLLECT!\n");
 	_bcl_->numCollections++;
 
 #ifdef DIAG_GC
@@ -451,6 +451,11 @@ function_space_specifier void Heap_SetRoots(tHeapRoots *pHeapRoots, void *pRoots
 function_space_specifier HEAP_PTR Heap_Alloc(tMD_TypeDef *pTypeDef, U32 size) {
 	tHeapEntry *pHeapEntry;
 	U32 totalSize;
+
+	if (size == 0)
+	{
+		printf("WARNING: Heap_Alloc called with size request of 0 bytes. Resulting pointer may not work as expected (e.g., memory overruns).\n");
+	}
 
 	totalSize = sizeof(tHeapEntry) + size;
 
