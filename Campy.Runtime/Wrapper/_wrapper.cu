@@ -45,7 +45,9 @@ __declspec(dllexport) void* BclArrayAlloc(void* element_type_def, int rank, unsi
 
 __declspec(dllexport) void* BclGetMetaOfType(char* assemblyName, char* nameSpace, char* name, void* nested)
 {
-	return (void*)MetaData_GetTypeDefFromFullNameAndNestedType(assemblyName, nameSpace, name, (tMD_TypeDef*)nested);
+	tMD_TypeDef* result = MetaData_GetTypeDefFromFullNameAndNestedType(assemblyName, nameSpace, name, (tMD_TypeDef*)nested);
+	MetaData_Fill_TypeDef(result, NULL, NULL);
+	return (void*)result;
 }
 
 __declspec(dllexport) void GcCollect()
