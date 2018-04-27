@@ -468,8 +468,18 @@ namespace Campy.Compiler
             return weeded;
         }
 
+        private static void InitStateGenerics(STATE<TypeReference> state,
+           Dictionary<CFG.Vertex, STATE<TypeReference>> states_in,
+           Dictionary<CFG.Vertex, STATE<TypeReference>> states_out,
+           CFG.Vertex bb)
+        {
+        }
+
         public static List<CFG.Vertex> InstantiateGenerics(this List<CFG.Vertex> basic_blocks_to_compile)
         {
+            return basic_blocks_to_compile;
+
+
             if (basic_blocks_to_compile.Count == 0)
                 return basic_blocks_to_compile;
 
@@ -491,6 +501,8 @@ namespace Campy.Compiler
             var order = ordered_list.Where(v => work_names.Contains(v.Name)).ToList();
 
             Dictionary<CFG.Vertex, bool> visited = new Dictionary<CFG.Vertex, bool>();
+            Dictionary<CFG.Vertex, STATE<TypeReference>> states_in = new Dictionary<CFG.Vertex, STATE<TypeReference>>();
+            Dictionary<CFG.Vertex, STATE<TypeReference>> states_out = new Dictionary<CFG.Vertex, STATE<TypeReference>>();
 
             // propagate type information and create new basic blocks for nodes that have
             // specific generic type information.
@@ -498,50 +510,53 @@ namespace Campy.Compiler
             {
                 CFG.Vertex bb = ob;
 
-                //if (Campy.Utils.Options.IsOn("state_computation_trace"))
-                //    System.Console.WriteLine("State computations for node " + bb.Name);
+                if (Campy.Utils.Options.IsOn("state_computation_trace"))
+                    System.Console.WriteLine("Generic computations for node " + bb.Name);
 
-                //var state_in = new STATE(visited, bb);
+                // Create new stack state with predecessor information, basic block/function
+                // information.
+                var state_in = new STATE<TypeReference>(visited, states_in, states_out, bb, InitStateGenerics);
 
-                //if (Campy.Utils.Options.IsOn("state_computation_trace"))
-                //{
-                //    System.Console.WriteLine("state in");
-                //    state_in.OutputTrace(new String(' ', 4));
-                //}
+                if (Campy.Utils.Options.IsOn("state_computation_trace"))
+                {
+                    System.Console.WriteLine("state in");
+                    state_in.OutputTrace(new String(' ', 4));
+                }
 
-                //bb.StateIn = state_in;
-                //bb.StateOut = new STATE(state_in);
+                var state_out = new STATE<TypeReference>(state_in);
+                states_in[bb] = state_in;
+                states_out[bb] = state_out;
 
-                //if (Campy.Utils.Options.IsOn("state_computation_trace"))
-                //{
-                //    bb.OutputEntireNode();
-                //    state_in.OutputTrace(new String(' ', 4));
-                //}
+                if (Campy.Utils.Options.IsOn("state_computation_trace"))
+                {
+                    bb.OutputEntireNode();
+                    state_in.OutputTrace(new String(' ', 4));
+                }
 
-                //INST last_inst = null;
-                //for (int i = 0; i < bb.Instructions.Count; ++i)
-                //{
-                //    var inst = bb.Instructions[i];
-                //    if (Campy.Utils.Options.IsOn("jit_trace"))
-                //        System.Console.WriteLine(inst);
-                //    last_inst = inst;
-                //    inst.DebuggerInfo();
-                //    inst = inst.Convert(bb.StateOut);
-                //    if (Campy.Utils.Options.IsOn("state_computation_trace"))
-                //        bb.StateOut.OutputTrace(new String(' ', 4));
-                //}
+                INST last_inst = null;
+                for (int i = 0; i < bb.Instructions.Count; ++i)
+                {
+                    var inst = bb.Instructions[i];
+                    if (Campy.Utils.Options.IsOn("jit_trace"))
+                        System.Console.WriteLine(inst);
+                    last_inst = inst;
+                    inst.DebuggerInfo();
+                    inst = inst.GenerateGenerics(state_out);
+                    if (Campy.Utils.Options.IsOn("state_computation_trace"))
+                        state_out.OutputTrace(new String(' ', 4));
+                }
 
-                //if (last_inst != null
-                //    && (
-                //        last_inst.OpCode.FlowControl == Mono.Cecil.Cil.FlowControl.Next
-                //        || last_inst.OpCode.FlowControl == FlowControl.Call
-                //        || last_inst.OpCode.FlowControl == FlowControl.Throw))
-                //{
-                //    // Need to insert instruction to branch to fall through.
-                //    var edge = bb._graph.SuccessorEdges(bb).FirstOrDefault();
-                //    var s = edge.To;
-                //    var br = LLVM.BuildBr(bb.LlvmInfo.Builder, s.LlvmInfo.BasicBlock);
-                //}
+                if (last_inst != null
+                    && (
+                        last_inst.OpCode.FlowControl == Mono.Cecil.Cil.FlowControl.Next
+                        || last_inst.OpCode.FlowControl == FlowControl.Call
+                        || last_inst.OpCode.FlowControl == FlowControl.Throw))
+                {
+                    // Need to insert instruction to branch to fall through.
+                    var edge = bb._graph.SuccessorEdges(bb).FirstOrDefault();
+                    var s = edge.To;
+                    var br = LLVM.BuildBr(bb.LlvmInfo.Builder, s.LlvmInfo.BasicBlock);
+                }
 
                 visited[ob] = true;
             }
