@@ -290,9 +290,9 @@ function_space_specifier HEAP_PTR SystemArray_NewVector(tMD_TypeDef *pArrayTypeD
     tSystemArray *pArray;
 	// The size of an array depends on the rank.
 	heapSize = sizeof(void*); // ptr to first element.
-	int next = sizeof(INT64); // for rank
+	int next = sizeof(I64); // for rank
 	heapSize += next;
-	next = sizeof(INT64) * rank;
+	next = sizeof(I64) * rank;
 	heapSize += next;
 	next = 1;
 	for (int i = 0; i < rank; ++i) next *= lengths[i];

@@ -53,7 +53,7 @@ function_space_specifier static tLoadedLib* GetLib(STRING name) {
 //		}
 //	}
 //	sprintf(libName, "%s%s", LIB_PREFIX, name);
-//	if (strlen(libName) >= 4) {
+//	if (Gstrlen(libName) >= 4) {
 //		if (strcmp(".dll", libName + strlen(libName) - 4) == 0) {
 //			// Cut off the ".dll" suffix if it's there
 //			libName[strlen(libName) - 4] = 0;

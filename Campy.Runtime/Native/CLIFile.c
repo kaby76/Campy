@@ -18,7 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "_bcl_.h"
+#include "_BCL_.h"
 #include "Sys.h"
 #include "CLIFile.h"
 #include "RVA.h"

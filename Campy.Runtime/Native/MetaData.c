@@ -34,7 +34,8 @@
 
 function_space_specifier unsigned int MetaData_DecodeSigEntry(SIG *pSig) {
 	unsigned char a,b,c,d;
-	a = *((unsigned char*)*pSig)++;
+	unsigned char* ptr = ((unsigned char*)*pSig);
+	a = *ptr++;
 	if ((a & 0x80) == 0) {
 		// 1-byte entry
 		return a;
@@ -44,14 +45,14 @@ function_space_specifier unsigned int MetaData_DecodeSigEntry(SIG *pSig) {
 		return 0;
 	}
 
-	b = *((unsigned char*)*pSig)++;
+	b = *ptr++;
 	if ((a & 0xc0) == 0x80) {
 		// 2-byte entry
 		return ((int)(a & 0x3f)) << 8 | b;
 	}
 	// 4-byte entry
-	c = *((unsigned char*)*pSig)++;
-	d = *((unsigned char*)*pSig)++;
+	c = *ptr++;
+	d = *ptr++;
 	return ((int)(a & 0x1f)) << 24 | ((int)b) << 16 | ((int)c) << 8 | d;
 }
 

@@ -17,7 +17,7 @@
 // Gfs_read()
 // Gfs_length()
 
-#include "_bcl_.h"
+#include "_BCL_.h"
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdlib.h>

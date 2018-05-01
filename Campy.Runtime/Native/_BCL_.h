@@ -28,7 +28,7 @@ struct _BCL_t {
 	char** names;
 	char** files;
 	size_t* lengths;
-	boolean init;
+	bool init;
 	int initial_size;
 
 	// Finalizer

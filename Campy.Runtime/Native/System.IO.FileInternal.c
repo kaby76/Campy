@@ -141,7 +141,8 @@ function_space_specifier tAsyncCall* System_IO_FileInternal_GetCurrentDirectory(
 	return NULL;
 }
 
-#ifndef WIN32
+#ifdef XXXXXXXXXXX
+//#ifndef WIN32
 // Get attributes of file and map from UNIX to .NET attribute flags
 static U32 Attrs(unsigned char *pPath, U32 *pError) {
 	struct stat info;

@@ -15,7 +15,7 @@
 *    reentrant and should be faster). Use only strsep() in new code, please.
 */
 
-#include "_bcl_.h"
+#include "_BCL_.h"
 #include "Gstring.h"
 
 /**
@@ -249,7 +249,7 @@ function_space_specifier char * Gstrrchr(const char * s, int c)
 * strlen - Find the length of a string
 * @s: The string to be sized
 */
-function_space_specifier size_t strlen(const char * s)
+function_space_specifier size_t Gstrlen(const char * s)
 {
 	const char *sc;
 
@@ -559,7 +559,7 @@ function_space_specifier char * Gstrstr(const char * s1, const char * s2)
 {
 	size_t l1, l2;
 
-	l2 = strlen(s2);
+	l2 = Gstrlen(s2);
 	if (!l2)
 		return (char *)s1;
 	l1 = Gstrlen(s1);

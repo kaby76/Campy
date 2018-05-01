@@ -1,5 +1,5 @@
 
-#include "_bcl_.h"
+#include "_BCL_.h"
 #include "Sys.h"
 #include "MetaData.h"
 #include "JIT.h"
@@ -117,16 +117,6 @@ gpu_space_specifier void Get_BCL_Globals(struct _BCL_t ** bcl)
 
 
 function_space_specifier  void gpuexit(int _Code) {}
-
-function_space_specifier size_t Gstrlen(
-	char const* _Str
-)
-{
-    size_t r = 0;
-    for (size_t l = 0; _Str[l] != 0; r = ++l)
-        ;
-    return r;
-}
 
 
 // No good way to do mutex.

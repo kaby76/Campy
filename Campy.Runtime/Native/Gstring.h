@@ -10,7 +10,7 @@ function_space_specifier int Gstrcmp(const char * cs, const char * ct);
 function_space_specifier int Gstrncmp(const char * cs, const char * ct, size_t count);
 function_space_specifier char * Gstrchr(const char * s, int c);
 function_space_specifier char * Gstrrchr(const char * s, int c);
-function_space_specifier size_t strlen(const char * s);
+function_space_specifier size_t Gstrlen(const char * s);
 function_space_specifier size_t Gstrnlen(const char * s, size_t count);
 function_space_specifier char * Gstrdup(const char *s);
 function_space_specifier size_t Gstrspn(const char *s, const char *accept);

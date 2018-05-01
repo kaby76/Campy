@@ -48,6 +48,19 @@
 #include <stdio.h>
 #include <stdarg.h>
 //#include <fcntl.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <sys/types.h>
+
+#ifdef XXXXXXX
+#include <strings.h>
+#include <sys/uio.h>
+#include <unistd.h>
+#include <termios.h>
+#include <sys/ioctl.h>
+#include <dlfcn.h>
+#include <glob.h>
+#endif
 
 #ifdef WIN32
 #include <winsock2.h> // winsock2.h must be included before windows.h
@@ -99,9 +112,9 @@
 #include <termios.h>
 #include <sys/ioctl.h>
 #include <sys/types.h>
-#include <dev/wscons/wsconsio.h>
 #include <dlfcn.h>
 #include <glob.h>
+#include <stdint.h>
 
 #define O_BINARY 0
 #define LIB_PREFIX "./"
@@ -109,6 +122,7 @@
 #define STDCALL
 
 #endif // WIN32
+
 
 #define TMALLOC(t) (t*)Gmalloc(sizeof(t))
 #define TMALLOCFOREVER(t) (t*)mallocForever(sizeof(t))
@@ -125,7 +139,7 @@ function_space_specifier int Gsprintf(
 	char const* const _Format,
 	...);
 
-function_space_specifier void* __cdecl Grealloc(
+function_space_specifier void* Grealloc(
 	void*  _Block,
 	size_t _Size
 	);
