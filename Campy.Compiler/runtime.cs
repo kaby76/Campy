@@ -159,7 +159,7 @@
             {
                 // Let's try the obvious, in the same directory as Campy.Utils.dll.
                 var path_of_campy = Campy.Utils.CampyInfo.PathOfCampy();
-                string full_path_assem = path_of_campy + Path.DirectorySeparatorChar + "Campy.Runtime.Native.lib";
+                string full_path_assem = path_of_campy + Path.DirectorySeparatorChar + "campy-runtime-native.lib";
                 Stream stream = new FileStream(full_path_assem, FileMode.Open, FileAccess.Read, FileShare.Read);
                 stream.Close();
                 return full_path_assem;
@@ -181,7 +181,7 @@
                                                        + ".." + Path.DirectorySeparatorChar
                                                        + ".." + Path.DirectorySeparatorChar
                                                        + "content" + Path.DirectorySeparatorChar
-                                                       + "Campy.Runtime.Native.lib";
+                                                       + "campy-runtime-native.lib";
                 full_path_assem = Path.GetFullPath(full_path_assem);
                 Stream stream = new FileStream(full_path_assem, FileMode.Open, FileAccess.Read, FileShare.Read);
                 stream.Close();
@@ -198,7 +198,7 @@
                 // Let's try the calling executable directory.
                 var dir = Path.GetDirectoryName(Path.GetFullPath(System.Reflection.Assembly.GetEntryAssembly().Location));
                 string full_path_assem = dir + Path.DirectorySeparatorChar
-                                                       + "Campy.Runtime.Native.lib";
+                                                       + "campy-runtime-native.lib";
                 full_path_assem = Path.GetFullPath(full_path_assem);
                 Stream stream = new FileStream(full_path_assem, FileMode.Open, FileAccess.Read, FileShare.Read);
                 stream.Close();
@@ -217,7 +217,7 @@
                 // but someone set up the test wrong. Anyways, assume that the project is up to date, and load from Campy.Runtime.
                 // ../../../../../Campy.Runtime/Corlib/bin/Debug/net20/
                 var path_of_campy = @"../../../../../x64/Debug";
-                string full_path_assem = path_of_campy + Path.DirectorySeparatorChar + "Campy.Runtime.Native.lib";
+                string full_path_assem = path_of_campy + Path.DirectorySeparatorChar + "campy-runtime-native.lib";
                 full_path_assem = Path.GetFullPath(full_path_assem);
                 Stream stream = new FileStream(full_path_assem, FileMode.Open, FileAccess.Read, FileShare.Read);
                 stream.Close();
