@@ -220,7 +220,7 @@
             return result;
         }
 
-        [global::System.Runtime.InteropServices.DllImport(@"Campy.Runtime.Wrapper.dll", EntryPoint = "?GcCollect@@YAXXZ")]
+        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "?GcCollect@@YAXXZ")]
         public static extern void GcCollect();
 
         public void SynchDataStructures()
@@ -1378,10 +1378,10 @@
             //}
         }
 
-        [global::System.Runtime.InteropServices.DllImport(@"Campy.Runtime.Wrapper.dll", EntryPoint = "?BclHeapAlloc@@YAPEAXPEAX@Z")]
+        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "?BclHeapAlloc@@YAPEAXPEAX@Z")]
         public static extern System.IntPtr BclHeapAlloc(System.IntPtr bcl_type);
 
-        [global::System.Runtime.InteropServices.DllImport(@"Campy.Runtime.Wrapper.dll", EntryPoint = "?BclGetMetaOfType@@YAPEAXPEAD00PEAX@Z")]
+        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "?BclGetMetaOfType@@YAPEAXPEAD00PEAX@Z")]
         public static extern System.IntPtr BclGetMetaOfType(
             [MarshalAs(UnmanagedType.LPStr)] string assemblyName,
             [MarshalAs(UnmanagedType.LPStr)] string nameSpace,
@@ -1422,7 +1422,7 @@
         }
 
 
-        [global::System.Runtime.InteropServices.DllImport(@"Campy.Runtime.Wrapper.dll", EntryPoint = "?BclArrayAlloc@@YAPEAXPEAXHPEAI@Z")]
+        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "?BclArrayAlloc@@YAPEAXPEAXHPEAI@Z")]
         public static extern System.IntPtr BclArrayAlloc(
             System.IntPtr bcl_type,
             int rank,
