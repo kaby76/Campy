@@ -129,6 +129,7 @@
     <ClInclude Include="..\Native\Filesystem.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\_wrapper.c" />
     <ClCompile Include="..\Native\basics.c" />
     <ClCompile Include="..\Native\CLIFile.c" />
     <ClCompile Include="..\Native\corlib.c" />

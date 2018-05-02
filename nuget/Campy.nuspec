@@ -5,7 +5,7 @@
     <id>Campy</id>
     <title>Campy</title>
 
-    <version>0.0.8</version>
+    <version>0.0.9</version>
 
     <!-- Authors contain text that appears directly on the gallery -->
     <authors>Ken Domino</authors>
@@ -22,7 +22,7 @@
 
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>An API for GP-GPU computing using C# or any other NET language, for Windows x64.</description>
-    <releaseNotes>Version 0.0.8 -- http://campynet.com/?p=533</releaseNotes>
+    <releaseNotes>Version 0.0.9 -- http://campynet.com/?p=533</releaseNotes>
 
     <!-- Copyright information -->
     <copyright>Copyright © 2017-2018</copyright>
@@ -40,38 +40,38 @@
     <dependencies>
       <group targetFramework="net461" >
 	 <dependency id="NETStandard.Library" version="[2.0.0,)" />
-	 <dependency id="swigged.llvm" version="[6.0.5,)" />
-	 <dependency id="swigged.cuda" version="[9.185.5,)" />
+	 <dependency id="swigged.llvm" version="[6.0.6,)" />
+	 <dependency id="swigged.cuda" version="[9.185.6,)" />
 	 <dependency id="Mono.Cecil" version="[0.10.0,)" />
       </group>
       <group targetFramework="net462" >
 	 <dependency id="NETStandard.Library" version="[2.0.0,)" />
-	 <dependency id="swigged.llvm" version="[6.0.5,)" />
-	 <dependency id="swigged.cuda" version="[9.185.5,)" />
+	 <dependency id="swigged.llvm" version="[6.0.6,)" />
+	 <dependency id="swigged.cuda" version="[9.185.6,)" />
 	 <dependency id="Mono.Cecil" version="[0.10.0,)" />
       </group>
       <group targetFramework="net47" >
 	 <dependency id="NETStandard.Library" version="[2.0.0,)" />
-	 <dependency id="swigged.llvm" version="[6.0.5,)" />
-	 <dependency id="swigged.cuda" version="[9.185.5,)" />
+	 <dependency id="swigged.llvm" version="[6.0.6,)" />
+	 <dependency id="swigged.cuda" version="[9.185.6,)" />
 	 <dependency id="Mono.Cecil" version="[0.10.0,)" />
       </group>
       <group targetFramework="net471" >
 	 <dependency id="NETStandard.Library" version="[2.0.0,)" />
-	 <dependency id="swigged.llvm" version="[6.0.5,)" />
-	 <dependency id="swigged.cuda" version="[9.185.5,)" />
+	 <dependency id="swigged.llvm" version="[6.0.6,)" />
+	 <dependency id="swigged.cuda" version="[9.185.6,)" />
 	 <dependency id="Mono.Cecil" version="[0.10.0,)" />
       </group>
       <group targetFramework="netstandard2.0" >
 	 <dependency id="NETStandard.Library" version="[2.0.0,)" />
-	 <dependency id="swigged.llvm" version="[6.0.5,)" />
-	 <dependency id="swigged.cuda" version="[9.185.5,)" />
+	 <dependency id="swigged.llvm" version="[6.0.6,)" />
+	 <dependency id="swigged.cuda" version="[9.185.6,)" />
 	 <dependency id="Mono.Cecil" version="[0.10.0,)" />
       </group>
       <group targetFramework="netcoreapp2.0" >
 	 <dependency id="NETStandard.Library" version="[2.0.0,)" />
-	 <dependency id="swigged.llvm" version="[6.0.5,)" />
-	 <dependency id="swigged.cuda" version="[9.185.5,)" />
+	 <dependency id="swigged.llvm" version="[6.0.6,)" />
+	 <dependency id="swigged.cuda" version="[9.185.6,)" />
 	 <dependency id="Mono.Cecil" version="[0.10.0,)" />
       </group>
     </dependencies>
@@ -81,8 +81,10 @@
   <files>
     <file src="Campy.targets" target="build\Campy.targets" />
 
-    <file src="..\x64\Debug\Campy.Runtime.Native.lib" target="lib\native\" />
-    <file src="..\x64\Debug\Campy.Runtime.Wrapper.dll" target="lib\native\" />
+    <file src="..\x64\Debug\campy-runtime-native.lib" target="lib\native\" />
+    <file src="..\Campy.Runtime\Native\bin\x64\Debug\campy-runtime-native.a" target="lib\native\" />
+    <file src="..\x64\Debug\campy-runtime-wrapper.dll" target="lib\native\" />
+    <file src="..\Campy.Runtime\Wrapper\bin\x64\Debug\campy-runtime-wrapper.so" target="lib\native\" />
     <file src="..\Campy.Runtime\Corlib\bin\Debug\netstandard2.0\corlib.dll" target="lib\native\" />
 
     <file src="..\Campy\bin\Debug\netstandard2.0\Campy.dll" target="lib/net461" />

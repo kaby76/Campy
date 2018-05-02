@@ -307,8 +307,7 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
       <FileType>Document</FileType>
     </CudaCompile>
     <CudaCompile Include="..\Native\Filesystem.c" />
-    <CudaCompile Include="kernel.cu" />
-    <CudaCompile Include="_wrapper.cu">
+    <CudaCompile Include="_wrapper.c">
       <Include Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">..\Native</Include>
     </CudaCompile>
     <CudaCompile Include="..\Native\Source.cpp" />

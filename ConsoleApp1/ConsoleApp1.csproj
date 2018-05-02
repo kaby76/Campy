@@ -7,7 +7,7 @@
 
   <ItemGroup>
     <PackageReference Include="swigged.cuda" Version="9.185.6" />
-    <PackageReference Include="swigged.llvm" Version="6.0.5" />
+    <PackageReference Include="swigged.llvm" Version="6.0.6" />
   </ItemGroup>
 
   <ItemGroup>

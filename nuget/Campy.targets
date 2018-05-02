@@ -6,14 +6,26 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)\..\lib\native\Campy.Runtime.Native.lib">
-      <Link>Campy.Runtime.Native.lib</Link>
+    <None Include="$(MSBuildThisFileDirectory)\..\lib\native\campy-runtime-native.lib">
+      <Link>campy-runtime-native.lib</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)\..\lib\native\Campy.Runtime.Wrapper.dll">
-      <Link>Campy.Runtime.Wrapper.dll</Link>
+    <None Include="$(MSBuildThisFileDirectory)\..\lib\native\campy-runtime-native.a">
+      <Link>campy-runtime-native.a</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)\..\lib\native\campy-runtime-wrapper.dll">
+      <Link>campy-runtime-wrapper.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)\..\lib\native\campy-runtime-wrapper.so">
+      <Link>campy-runtime-wrapper.so</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
