@@ -2,6 +2,7 @@
 
 #include "Compat.h"
 #include "Types.h"
+#include <stdbool.h>
 
 struct tJITCodeInfo_;
 // struct tMD_TypeDef;

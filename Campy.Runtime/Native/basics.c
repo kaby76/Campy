@@ -95,9 +95,9 @@ function_space_specifier void CommonInitTheBcl(void * g, size_t size, int count,
 	bcl->CorLibDone = 0;
 }
 
-function_space_specifier void __cdecl InternalInitTheBcl(void * g, size_t size, int count, void * s)
+function_space_specifier void InternalInitTheBcl(void * g, size_t size, int count, void * s)
 {
-	CommonInitTheBcl(g, size, count, (_BCL_t**)s);
+	CommonInitTheBcl(g, size, count, (struct _BCL_t**)s);
 }
 
 global_space_specifier void Initialize_BCL_Globals(void * g, size_t size, int count, struct _BCL_t ** pbcl)
@@ -301,7 +301,7 @@ function_space_specifier void * simple_malloc(size_t size)
 	return NULL;
 }
 
-function_space_specifier void* __cdecl Grealloc(void*  _Block, size_t _Size)
+function_space_specifier void* Grealloc(void*  _Block, size_t _Size)
 {
 	void * result = simple_malloc(_Size);
 	memcpy(result, _Block, _Size);

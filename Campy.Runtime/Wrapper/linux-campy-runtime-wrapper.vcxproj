@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|ARM">
+      <Configuration>Debug</Configuration>
+      <Platform>ARM</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|ARM">
+      <Configuration>Release</Configuration>
+      <Platform>ARM</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x86">
+      <Configuration>Debug</Configuration>
+      <Platform>x86</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x86">
+      <Configuration>Release</Configuration>
+      <Platform>x86</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{BB85E864-7482-4FB8-BF52-C988C365D599}</ProjectGuid>
+    <Keyword>Linux</Keyword>
+    <RootNamespace>LinuxConsoleApplication2</RootNamespace>
+    <MinimumVisualStudioVersion>15.0</MinimumVisualStudioVersion>
+    <ApplicationType>Linux</ApplicationType>
+    <ApplicationTypeRevision>1.0</ApplicationTypeRevision>
+    <TargetLinuxPlatform>Generic</TargetLinuxPlatform>
+    <LinuxProjectType>{D51BCBC9-82E9-4017-911E-C93873C4EA2B}</LinuxProjectType>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'" Label="Configuration">
+    <UseDebugLibraries>true</UseDebugLibraries>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'" Label="Configuration">
+    <UseDebugLibraries>false</UseDebugLibraries>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'" Label="Configuration">
+    <UseDebugLibraries>true</UseDebugLibraries>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'" Label="Configuration">
+    <UseDebugLibraries>false</UseDebugLibraries>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings" />
+  <ImportGroup Label="Shared" />
+  <ImportGroup Label="PropertySheets" />
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <IncludePath>./;/usr/local/cuda-9.1/include/;$(IncludePath)</IncludePath>
+    <LibraryPath>/usr/local/cuda-9.1/lib64</LibraryPath>
+    <TargetName>campy-runtime-wrapper</TargetName>
+    <TargetExt>.so</TargetExt>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IncludePath>./;/usr/local/cuda-9.1/include/;$(IncludePath)</IncludePath>
+    <LibraryPath>/usr/local/cuda-9.1/lib64</LibraryPath>
+    <TargetName>campy-runtime-wrapper</TargetName>
+    <TargetExt>.so</TargetExt>
+  </PropertyGroup>
+  <ItemGroup>
+    <ClInclude Include="..\Native\basics.h" />
+    <ClInclude Include="..\Native\CIL_OpCodes.h" />
+    <ClInclude Include="..\Native\CLIFile.h" />
+    <ClInclude Include="..\Native\Compat.h" />
+    <ClInclude Include="..\Native\Config.h" />
+    <ClInclude Include="..\Native\Delegate.h" />
+    <ClInclude Include="..\Native\EvalStack.h" />
+    <ClInclude Include="..\Native\Finalizer.h" />
+    <ClInclude Include="..\Native\Generics.h" />
+    <ClInclude Include="..\Native\Gstring.h" />
+    <ClInclude Include="..\Native\Gprintf.h" />
+    <ClInclude Include="..\Native\Heap.h" />
+    <ClInclude Include="..\Native\InternalCall.h" />
+    <ClInclude Include="..\Native\JIT.h" />
+    <ClInclude Include="..\Native\JIT_OpCodes.h" />
+    <ClInclude Include="..\Native\MetaData.h" />
+    <ClInclude Include="..\Native\MetaDataTables.h" />
+    <ClInclude Include="..\Native\MethodState.h" />
+    <ClInclude Include="..\Native\PInvoke.h" />
+    <ClInclude Include="..\Native\PInvoke_CaseCode.h" />
+    <ClInclude Include="..\Native\PInvoke_TypeDef.h" />
+    <ClInclude Include="..\Native\RVA.h" />
+    <ClInclude Include="..\Native\Sys.h" />
+    <ClInclude Include="..\Native\System.Array.h" />
+    <ClInclude Include="..\Native\System.Char.CaseConversion.h" />
+    <ClInclude Include="..\Native\System.Char.h" />
+    <ClInclude Include="..\Native\System.Char.UC_IndexRuns.h" />
+    <ClInclude Include="..\Native\System.Console.h" />
+    <ClInclude Include="..\Native\System.DateTime.h" />
+    <ClInclude Include="..\Native\System.Diagnostics.Debugger.h" />
+    <ClInclude Include="..\Native\System.Enum.h" />
+    <ClInclude Include="..\Native\System.Environment.h" />
+    <ClInclude Include="..\Native\System.GC.h" />
+    <ClInclude Include="..\Native\System.IO.FileInternal.h" />
+    <ClInclude Include="..\Native\System.Math.h" />
+    <ClInclude Include="..\Native\System.Net.Dns.h" />
+    <ClInclude Include="..\Native\System.Net.Sockets.Socket.h" />
+    <ClInclude Include="..\Native\System.Object.h" />
+    <ClInclude Include="..\Native\System.Runtime.CompilerServices.RuntimeHelpers.h" />
+    <ClInclude Include="..\Native\System.RuntimeType.h" />
+    <ClInclude Include="..\Native\System.String.h" />
+    <ClInclude Include="..\Native\System.Threading.Interlocked.h" />
+    <ClInclude Include="..\Native\System.Threading.Monitor.h" />
+    <ClInclude Include="..\Native\System.Threading.Thread.h" />
+    <ClInclude Include="..\Native\System.Type.h" />
+    <ClInclude Include="..\Native\System.ValueType.h" />
+    <ClInclude Include="..\Native\System.WeakReference.h" />
+    <ClInclude Include="..\Native\Thread.h" />
+    <ClInclude Include="..\Native\Type.h" />
+    <ClInclude Include="..\Native\Types.h" />
+    <ClInclude Include="..\Native\_BCL_.h" />
+    <ClInclude Include="..\Native\Filesystem.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\Native\basics.c" />
+    <ClCompile Include="..\Native\CLIFile.c" />
+    <ClCompile Include="..\Native\corlib.c" />
+    <ClCompile Include="..\Native\Delegate.c" />
+    <ClCompile Include="..\Native\Finalizer.c" />
+    <ClCompile Include="..\Native\Generics.c" />
+    <ClCompile Include="..\Native\Gstring.c" />
+    <ClCompile Include="..\Native\Heap.c" />
+    <ClCompile Include="..\Native\InternalCall.c" />
+    <ClCompile Include="..\Native\MetaData.c" />
+    <ClCompile Include="..\Native\MetaData_Fill.c" />
+    <ClCompile Include="..\Native\MetaData_Search.c" />
+    <ClCompile Include="..\Native\MethodState.c" />
+    <ClCompile Include="..\Native\PInvoke.c" />
+    <ClCompile Include="..\Native\RVA.c" />
+    <ClCompile Include="..\Native\Sys.c" />
+    <ClCompile Include="..\Native\System.Array.c" />
+    <ClCompile Include="..\Native\System.Char.c" />
+    <ClCompile Include="..\Native\System.Console.c" />
+    <ClCompile Include="..\Native\System.DateTime.c" />
+    <ClCompile Include="..\Native\System.Diagnostics.Debugger.c" />
+    <ClCompile Include="..\Native\System.Enum.c" />
+    <ClCompile Include="..\Native\System.Environment.c" />
+    <ClCompile Include="..\Native\System.GC.c" />
+    <ClCompile Include="..\Native\System.IO.FileInternal.c" />
+    <ClCompile Include="..\Native\System.Math.c" />
+    <ClCompile Include="..\Native\System.Net.Dns.c" />
+    <ClCompile Include="..\Native\System.Net.Sockets.Socket.c" />
+    <ClCompile Include="..\Native\System.Object.c" />
+    <ClCompile Include="..\Native\System.Runtime.CompilerServices.RuntimeHelpers.c" />
+    <ClCompile Include="..\Native\System.RuntimeType.c" />
+    <ClCompile Include="..\Native\System.String.c" />
+    <ClCompile Include="..\Native\System.Threading.Interlocked.c" />
+    <ClCompile Include="..\Native\System.Threading.Monitor.c" />
+    <ClCompile Include="..\Native\System.Threading.Thread.c" />
+    <ClCompile Include="..\Native\System.Type.c" />
+    <ClCompile Include="..\Native\System.ValueType.c" />
+    <ClCompile Include="..\Native\System.WeakReference.c" />
+    <ClCompile Include="..\Native\Thread.c" />
+    <ClCompile Include="..\Native\Type.c" />
+    <ClCompile Include="..\Native\Gvsnprintf.c" />
+    <ClCompile Include="..\Native\Filesystem.c" />
+  </ItemGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Link />
+    <ClCompile>
+      <PositionIndependentCode>true</PositionIndependentCode>
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Link>
+      <AdditionalOptions>
+      </AdditionalOptions>
+      <VerboseOutput>true</VerboseOutput>
+    </Link>
+    <ClCompile>
+      <AdditionalOptions>
+      </AdditionalOptions>
+      <PositionIndependentCode>true</PositionIndependentCode>
+      <PreprocessorDefinitions>CUDA;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets" />
+</Project>

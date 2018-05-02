@@ -27,19 +27,20 @@
 #include "Gprintf.h"
 #include <stdio.h>
 
-
+#ifdef WIN32
 namespace dbg {
 	void fail(const char* func, const char* msg);
 }
-
+#endif
 
 function_space_specifier void Crash(const char *pMsg, ...) {
 	va_list va;
 
 	Gprintf("\n\n*** CRASH ***\n");
 
+#ifdef WIN32
 	dbg::fail("crash", "crash");
-
+#endif
 	va_start(va, pMsg);
 	char buf[10000];
 	Gvsprintf(buf, pMsg, va);
