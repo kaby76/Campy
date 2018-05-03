@@ -67,6 +67,7 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
       <TargetMachinePlatform>64</TargetMachinePlatform>
       <Defines>CUDA</Defines>
       <GenerateRelocatableDeviceCode>true</GenerateRelocatableDeviceCode>
+      <Include>..\Native;%(Include)</Include>
     </CudaCompile>
     <CudaLink />
   </ItemDefinitionGroup>
@@ -91,6 +92,7 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
     </PostBuildEvent>
     <CudaCompile>
       <TargetMachinePlatform>64</TargetMachinePlatform>
+      <Include>..\Native;%(Include)</Include>
     </CudaCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -307,9 +309,7 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
       <FileType>Document</FileType>
     </CudaCompile>
     <CudaCompile Include="..\Native\Filesystem.c" />
-    <CudaCompile Include="_wrapper.c">
-      <Include Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">..\Native</Include>
-    </CudaCompile>
+    <CudaCompile Include="_wrapper.c" />
     <CudaCompile Include="..\Native\Source.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -21,28 +21,23 @@
 #if !defined (__COMPAT_H)
 #define __COMPAT_H
 
+
+// Define CUDA spaces. Sometimes we don't want to compile under Cuda.
+// But, if you do, #define CUDA
 #if defined(CUDA)
 #include <cuda.h>
-
 #define gpu_space_specifier __device__
 #define host_space_specifier __host__
 #define global_space_specifier __global__
-
 #define function_space_specifier gpu_space_specifier host_space_specifier
-
-
 #else
-
 #define gpu_space_specifier __device__
 #define host_space_specifier __host__
 #define global_space_specifier __global__
-
 #define function_space_specifier gpu_space_specifier host_space_specifier
-
 #define __device__
 #define __global__
 #define __host__
-
 #endif
 
 #include <stdio.h>
@@ -100,7 +95,6 @@
 
 #define LIB_PREFIX ""
 #define LIB_SUFFIX "dll"
-#define STDCALL __stdcall
 
 #else // WIN32
 
@@ -119,7 +113,6 @@
 #define O_BINARY 0
 #define LIB_PREFIX "./"
 #define LIB_SUFFIX "so"
-#define STDCALL
 
 #endif // WIN32
 

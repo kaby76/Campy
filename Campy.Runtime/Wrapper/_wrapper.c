@@ -8,6 +8,11 @@
 #include "Heap.h"
 #include "CLIFile.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 EXPORT void InitTheBcl(void * g, size_t size, int count, void * s)
 {
 	InternalInitTheBcl(g, size, count, s);
@@ -58,13 +63,17 @@ EXPORT void GcCollect()
 }
 
 
-EXPORT void * BclGetMeta(char * file_name)
+EXPORT void * STDCALL BclGetMeta(char * file_name)
 {
 	tMetaData* result = CLIFile_GetMetaDataForAssembly(file_name);
 	return (void*)result;
 }
 
-EXPORT void BclPrintMeta(void* meta)
+EXPORT void STDCALL BclPrintMeta(void* meta)
 {
 	CLIFile_PrintMetaData((tMetaData*)meta);
 }
+
+#ifdef __cplusplus
+}
+#endif

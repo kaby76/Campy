@@ -22,7 +22,7 @@
 
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>An API for GP-GPU computing using C# or any other NET language, for Windows x64.</description>
-    <releaseNotes>Version 0.0.9 -- http://campynet.com/?p=533</releaseNotes>
+    <releaseNotes>Version 0.0.9 -- http://campynet.com/?page_id=2</releaseNotes>
 
     <!-- Copyright information -->
     <copyright>Copyright © 2017-2018</copyright>

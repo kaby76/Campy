@@ -21,6 +21,7 @@
 #if !defined(__TYPES_H)
 #define __TYPES_H
 
+
 #if defined(_MSC_VER)
 //  Microsoft 
 #define EXPORT __declspec(dllexport)
@@ -34,6 +35,14 @@
 #define EXPORT
 #define IMPORT
 #pragma warning Unknown dynamic link import/export semantics.
+#endif
+
+#ifndef STDCALL
+# if defined(_MSC_VER)
+#   define STDCALL __stdcall
+# else
+#   define STDCALL
+# endif
 #endif
 
 

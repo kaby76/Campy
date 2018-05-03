@@ -11,25 +11,25 @@ namespace CampyPeek
 {
     class Program
     {
-        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "?InitTheBcl@@YAXPEAX_KH0@Z")]
+        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "InitTheBcl")]
         public static extern void InitTheBcl(System.IntPtr a1, long a2, int a3, System.IntPtr a4);
 
-        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "?InitFileSystem@@YAXXZ")]
+        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "InitFileSystem")]
         public static extern void InitFileSystem();
 
-        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "?GfsAddFile@@YAXPEAX0_K0@Z")]
+        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "GfsAddFile")]
         public static extern void GfsAddFile(System.IntPtr name, System.IntPtr file, long length, System.IntPtr result);
 
-        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "?InitializeBCL1@@YAXXZ")]
+        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "InitializeBCL1")]
         public static extern void InitializeBCL1();
 
-        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "?InitializeBCL2@@YAXXZ")]
+        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "InitializeBCL2")]
         public static extern void InitializeBCL2();
 
-        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "?BclGetMeta@@YAPEAXPEAD@Z")]
+        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclGetMeta")]
         public static extern System.IntPtr BclGetMeta([MarshalAs(UnmanagedType.LPStr)] string file_name);
 
-        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "?BclPrintMeta@@YAXPEAX@Z")]
+        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclPrintMeta")]
         public static extern void BclPrintMeta(System.IntPtr meta);
 
 

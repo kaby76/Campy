@@ -129,7 +129,7 @@
     <ClInclude Include="..\Native\Filesystem.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\_wrapper.c" />
+    <ClCompile Include="_wrapper.c" />
     <ClCompile Include="..\Native\basics.c" />
     <ClCompile Include="..\Native\CLIFile.c" />
     <ClCompile Include="..\Native\corlib.c" />
@@ -178,6 +178,7 @@
     <ClCompile>
       <PositionIndependentCode>true</PositionIndependentCode>
       <CompileAs>CompileAsC</CompileAs>
+      <AdditionalIncludeDirectories>..\Native;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -192,6 +193,7 @@
       <PositionIndependentCode>true</PositionIndependentCode>
       <PreprocessorDefinitions>CUDA;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <CompileAs>CompileAsC</CompileAs>
+      <AdditionalIncludeDirectories>..\Native;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
