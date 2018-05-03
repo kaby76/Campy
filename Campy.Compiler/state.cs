@@ -52,7 +52,9 @@ namespace Campy.Compiler
                     // If predecessor has not been visited, warn and do not consider.
                     // Warn if predecessor does not concur with another predecessor.
                     if (in_level != -1 && states_out[pred]._stack.Count != in_level)
-                        throw new Exception("Miscalculation in stack size.");
+                        throw new Exception("Miscalculation in stack size "
+                                            + "for basic block " + bb
+                                            + " or predecessor " + pred);
                     in_level = states_out[pred]._stack.Count;
                 }
             }

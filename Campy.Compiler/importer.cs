@@ -102,6 +102,8 @@ namespace Campy.Compiler
 
                 var blocks = this.Cfg.PopChangeSet(change_set_id);
 
+                blocks.ThreadInstructions();
+
                 // Get closure of calls, if possible.
                 foreach (var b in blocks)
                 {

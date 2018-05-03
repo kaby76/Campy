@@ -469,17 +469,147 @@ namespace Campy.Compiler
         }
 
         private static void InitStateGenerics(STATE<TypeReference> state,
-           Dictionary<CFG.Vertex, STATE<TypeReference>> states_in,
-           Dictionary<CFG.Vertex, STATE<TypeReference>> states_out,
-           CFG.Vertex bb)
+            Dictionary<CFG.Vertex, STATE<TypeReference>> states_in,
+            Dictionary<CFG.Vertex, STATE<TypeReference>> states_out,
+            CFG.Vertex bb)
         {
+            int in_level = -1;
+            int args = bb.StackNumberOfArguments;
+            bool scalar_ret = bb.HasScalarReturnValue;
+            bool struct_ret = bb.HasStructReturnValue;
+            bool has_this = bb.HasThis;
+            int locals = bb.StackNumberOfLocals;
+            // Use predecessor information to get initial stack size.
+            if (bb.IsEntry)
+            {
+                in_level = bb.StackNumberOfLocals + bb.StackNumberOfArguments;
+            }
+            else
+            {
+                foreach (CFG.Vertex pred in bb._graph.PredecessorNodes(bb))
+                {
+                    // Do not consider interprocedural edges when computing stack size.
+                    if (pred._original_method_reference != bb._original_method_reference)
+                        throw new Exception("Interprocedural edge should not exist.");
+                    // If predecessor has not been visited, warn and do not consider.
+                    // Warn if predecessor does not concur with another predecessor.
+                    if (in_level != -1 && states_out[pred]._stack.Count != in_level)
+                        throw new Exception("Miscalculation in stack size "
+                        + "for basic block " + bb
+                        + " or predecessor " + pred);
+                    in_level = states_out[pred]._stack.Count;
+                }
+            }
+
+            if (in_level == -1)
+            {
+                throw new Exception("Predecessor edge computation screwed up.");
+            }
+
+            int level = in_level;
+            // State depends on predecessors. Unlike in compilation, we are
+            // only propagating type information. So, chose the first predecessor.
+            if (bb._graph.PredecessorNodes(bb).Count() == 0)
+            {
+                if (!bb.IsEntry) throw new Exception("Cannot handle dead code blocks.");
+                if (has_this)
+                    state._stack.Push(bb._method_definition.DeclaringType);
+
+                for (int i = 0; i < bb._method_definition.Parameters.Count; ++i)
+                {
+                    var par = bb._method_definition.Parameters[i];
+                    var type = par.ParameterType;
+                    if (Campy.Utils.Options.IsOn("jit_trace"))
+                        System.Console.WriteLine(par);
+                    state._stack.Push(type);
+                }
+
+                int offset = 0;
+                state._struct_ret = state._stack.Section(struct_ret ? offset++ : offset, struct_ret ? 1 : 0);
+                state._this = state._stack.Section(has_this ? offset++ : offset, has_this ? 1 : 0);
+                // Set up args. NB: arg 0 is "this" pointer according to spec!!!!!
+                state._arguments = state._stack.Section(
+                    has_this ? offset - 1 : offset,
+                    args - (struct_ret ? 1 : 0));
+
+                // Set up locals. I'm making an assumption that there is a 
+                // one to one and in order mapping of the locals with that
+                // defined for the method body by Mono.
+                Collection<VariableDefinition> variables = bb.RewrittenCalleeSignature.Resolve().Body.Variables;
+                state._locals = state._stack.Section((int) state._stack.Count, locals);
+                for (int i = 0; i < locals; ++i)
+                {
+                    var tr = variables[i].VariableType;
+                    state._stack.Push(tr);
+                }
+
+                // Set up any thing else.
+                for (int i = state._stack.Size(); i < level; ++i)
+                {
+                    var value = typeof(System.Int32).ToMonoTypeReference();
+                    state._stack.Push(value);
+                }
+            }
+            else if (bb._graph.Predecessors(bb).Count() == 1)
+            {
+                // We don't need phi functions--and can't with LLVM--
+                // if there is only one predecessor. If it hasn't been
+                // converted before this node, just create basic state.
+
+                var pred = bb._graph.PredecessorEdges(bb).ToList()[0].From;
+                var other = states_out[pred];
+                var size = other._stack.Count;
+                for (int i = 0; i < size; ++i)
+                {
+                    var vx = other._stack[i];
+                    state._stack.Push(vx);
+                }
+
+                state._struct_ret = state._stack.Section(other._struct_ret.Base, other._struct_ret.Len);
+                state._this = state._stack.Section(other._this.Base, other._this.Len);
+                state._arguments = state._stack.Section(other._arguments.Base, other._arguments.Len);
+                state._locals = state._stack.Section(other._locals.Base, other._locals.Len);
+            }
+            else // node._Predecessors.Count > 0
+            {
+                var pred = bb._graph.PredecessorEdges(bb).ToList()[0].From;
+                for (int pred_ind = 0; pred_ind < bb._graph.Predecessors(bb).ToList().Count; ++pred_ind)
+                {
+                    var to_check = bb._graph.PredecessorEdges(bb).ToList()[pred_ind].From;
+                    CFG.Vertex check_llvm_node = to_check;
+                    if (!states_out.ContainsKey(check_llvm_node))
+                        continue;
+                    if (states_out[check_llvm_node] == null)
+                        continue;
+                    if (states_out[check_llvm_node]._stack == null)
+                        continue;
+                    pred = to_check;
+                    break;
+                }
+
+                CFG.Vertex p_llvm_node = pred;
+                int size = states_out[pred]._stack.Count;
+                for (int i = 0; i < size; ++i)
+                {
+                    {
+                        var f = typeof(System.Int32).ToMonoTypeReference();
+                        state._stack.Push(f);
+                    }
+                    var count = bb._graph.Predecessors(bb).Count();
+                    var value = states_out[pred]._stack[i];
+                    state._stack[i] = value;
+                }
+
+                var other = states_out[p_llvm_node];
+                state._struct_ret = state._stack.Section(other._struct_ret.Base, other._struct_ret.Len);
+                state._this = state._stack.Section(other._this.Base, other._this.Len);
+                state._arguments = state._stack.Section(other._arguments.Base, other._arguments.Len);
+                state._locals = state._stack.Section(other._locals.Base, other._locals.Len);
+            }
         }
 
         public static List<CFG.Vertex> InstantiateGenerics(this List<CFG.Vertex> basic_blocks_to_compile)
         {
-            return basic_blocks_to_compile;
-
-
             if (basic_blocks_to_compile.Count == 0)
                 return basic_blocks_to_compile;
 
@@ -506,10 +636,8 @@ namespace Campy.Compiler
 
             // propagate type information and create new basic blocks for nodes that have
             // specific generic type information.
-            foreach (var ob in order)
+            foreach (var bb in order)
             {
-                CFG.Vertex bb = ob;
-
                 if (Campy.Utils.Options.IsOn("state_computation_trace"))
                     System.Console.WriteLine("Generic computations for node " + bb.Name);
 
@@ -540,28 +668,14 @@ namespace Campy.Compiler
                     if (Campy.Utils.Options.IsOn("jit_trace"))
                         System.Console.WriteLine(inst);
                     last_inst = inst;
-                    inst.DebuggerInfo();
                     inst = inst.GenerateGenerics(state_out);
                     if (Campy.Utils.Options.IsOn("state_computation_trace"))
                         state_out.OutputTrace(new String(' ', 4));
                 }
-
-                if (last_inst != null
-                    && (
-                        last_inst.OpCode.FlowControl == Mono.Cecil.Cil.FlowControl.Next
-                        || last_inst.OpCode.FlowControl == FlowControl.Call
-                        || last_inst.OpCode.FlowControl == FlowControl.Throw))
-                {
-                    // Need to insert instruction to branch to fall through.
-                    var edge = bb._graph.SuccessorEdges(bb).FirstOrDefault();
-                    var s = edge.To;
-                    var br = LLVM.BuildBr(bb.LlvmInfo.Builder, s.LlvmInfo.BasicBlock);
-                }
-
-                visited[ob] = true;
+                visited[bb] = true;
             }
 
-
+            ;
             //HashSet<TypeReference> type_references = new HashSet<TypeReference>();
             //HashSet<MethodReference> method_references = new HashSet<MethodReference>();
             //foreach (var bb in change_set)
@@ -919,7 +1033,9 @@ namespace Campy.Compiler
                     // If predecessor has not been visited, warn and do not consider.
                     // Warn if predecessor does not concur with another predecessor.
                     if (in_level != -1 && states_out[pred]._stack.Count != in_level)
-                        throw new Exception("Miscalculation in stack size.");
+                        throw new Exception("Miscalculation in stack size "
+                                            + "for basic block " + bb
+                                            + " or predecessor " + pred);
                     in_level = states_out[pred]._stack.Count;
                 }
             }
@@ -1546,9 +1662,8 @@ namespace Campy.Compiler
         {
             basic_blocks_to_compile = basic_blocks_to_compile
                 .RemoveBasicBlocksAlreadyCompiled()
-                .InstantiateGenerics()
-                .ThreadInstructions()
                 .ComputeBasicMethodProperties()
+                .InstantiateGenerics()
                 .SetUpLLVMEntries()
                 .SetupLLVMNonEntries()
                 ;

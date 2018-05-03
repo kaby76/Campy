@@ -626,39 +626,18 @@ namespace ConsoleApp4
         static void Main(string[] args)
         {
             StartDebugging();
-            {
-                int n = 4;
-
-                var t1 = new int[n];
-                Campy.Parallel.For(n, i =>
-                {
-                    if (i % 2 == 0)
-                        t1[i] = i * 20;
-                    else
-                        t1[i] = i * 30;
-                });
-                for (int i = 0; i < n; ++i)
-                    if (i % 2 == 0)
-                    {
-                        if (t1[i] != i * 20) throw new Exception();
-                    }
-                    else
-                    {
-                        if (t1[i] != i * 30) throw new Exception();
-                    }
-            }
             //BitonicSortT t = new BitonicSortT();
             //t.BitonicSort();
 
-            //{
-            //    // List of ints.
-            //    List<int> x = new List<int>();
-            //    int n = 4;
-            //    for (int i = 0; i < n; ++i) x.Add(0);
-            //    Campy.Parallel.For(n, i => x[i] = i);
-            //    for (int i = 0; i < n; ++i) if (x[i] != i)
-            //        throw new Exception();
-            //}
+            {
+                // List of ints.
+                List<int> x = new List<int>();
+                int n = 4;
+                for (int i = 0; i < n; ++i) x.Add(0);
+                Campy.Parallel.For(n, i => x[i] = i);
+                for (int i = 0; i < n; ++i) if (x[i] != i)
+                        throw new Exception();
+            }
 
             {
                 int n = 4;

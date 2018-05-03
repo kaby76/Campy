@@ -139,7 +139,8 @@
 
         public virtual INST GenerateGenerics(STATE<TypeReference> state)
         {
-            return Next;
+            throw new Exception("Must have an implementation for GenerateGenerics! The instruction is: "
+                                + this.ToString());
         }
 
         public virtual INST Convert(STATE<VALUE> state)
@@ -2851,11 +2852,12 @@
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(v.ToString());
 
-            var i = state._stack.Pop();
-            if (Campy.Utils.Options.IsOn("jit_trace"))
-                System.Console.WriteLine(i.ToString());
+            var yy = this.Instruction.Operand;
+            var field = yy as Mono.Cecil.FieldReference;
+            if (yy == null) throw new Exception("Cannot convert.");
+            var value = field.FieldType;
 
-            state._stack.Push(default(TypeReference));
+            state._stack.Push(value);
             return Next;
         }
 
@@ -3685,6 +3687,12 @@
         {
         }
 
+        public override INST GenerateGenerics(STATE<TypeReference> state)
+        {
+            var v = state._stack.Pop();
+            return Next;
+        }
+
         public override INST Convert(STATE<VALUE> state)
         {
             object operand = this.Operand;
@@ -3729,6 +3737,12 @@
         public i_brfalse_s(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+        }
+
+        public override INST GenerateGenerics(STATE<TypeReference> state)
+        {
+            var v = state._stack.Pop();
+            return Next;
         }
 
         public override INST Convert(STATE<VALUE> state)
@@ -5352,6 +5366,18 @@
         {
         }
 
+        public override INST GenerateGenerics(STATE<TypeReference> state)
+        {
+            var v = typeof(string).ToMonoTypeReference();
+            
+            if (Campy.Utils.Options.IsOn("jit_trace"))
+                System.Console.WriteLine(v.ToString());
+
+            state._stack.Push(v);
+
+            return Next;
+        }
+
         public override INST Convert(STATE<VALUE> state)
         {
             // Call SystemString_FromCharPtrASCII and push new string object on the stack.
@@ -5522,6 +5548,134 @@
         public i_newobj(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+        }
+
+        public override INST GenerateGenerics(STATE<TypeReference> state)
+        {
+            // Get some basic information about the instruction, method, and type of object to create.
+            var inst = this;
+            object operand = this.Operand;
+            MethodReference method = operand as MethodReference;
+
+			CFG graph = (CFG)this.Block._graph;
+			TypeReference type = method.DeclaringType;
+			if (type == null)
+				throw new Exception("Cannot get type of object/value for newobj instruction.");
+			bool is_type_value_type = type.IsValueType;
+			var name = JITER.MethodName(method);
+			CFG.Vertex the_entry = this.Block._graph.Vertices.Where(node
+				=>
+			{
+				var g = inst.Block._graph;
+				CFG.Vertex v = node;
+				JITER c = JITER.Singleton;
+				if (v.IsEntry && JITER.MethodName(v._original_method_reference) == name && c.IsFullyInstantiatedNode(v))
+					return true;
+				else return false;
+			}).ToList().FirstOrDefault();
+			var td = type.Resolve();
+
+			// There four basic cases for newobj:
+			// 1) type is a value type
+			//   The object must be allocated on the stack, and the contrustor called with a pointer to that.
+			//   a) the_entry is null, which means the constructor is a C function.
+			//   b) the_entry is NOT null, which means the constructor is further CIL code.
+			// 2) type is a reference_type.
+			//   The object will be allocated on the heap, but done according to a convention of DNA.
+			//   b) the_entry is null, which means the constructor is a C function, and it performs the allocation.
+			//   c) the_entry is NOT null, which means we must allocate the object, then call the constructor, which is further CIL code.
+			if (is_type_value_type && the_entry == null)
+			{
+            }
+            else if (is_type_value_type && the_entry != null)
+            {
+                int nargs = the_entry.StackNumberOfArguments;
+                int ret = the_entry.HasScalarReturnValue ? 1 : 0;
+
+                // Set up args, type casting if required.
+                for (int k = nargs - 1; k >= 1; --k)
+                {
+                    var v = state._stack.Pop();
+                }
+                state._stack.Push(the_entry._method_definition.ReturnType);
+            }
+            else if (!is_type_value_type && the_entry == null)
+            {
+                Mono.Cecil.MethodReturnType cs_method_return_type_aux = method.MethodReturnType;
+                Mono.Cecil.TypeReference cs_method_return_type = cs_method_return_type_aux.ReturnType;
+                var cs_has_ret = cs_method_return_type.FullName != "System.Void";
+                var cs_HasScalarReturnValue = cs_has_ret && !cs_method_return_type.IsStruct();
+                var cs_HasStructReturnValue = cs_has_ret && cs_method_return_type.IsStruct();
+                var cs_HasThis = method.HasThis;
+                var cs_NumberOfArguments = method.Parameters.Count
+                                        + (cs_HasThis ? 1 : 0)
+                                        + (cs_HasStructReturnValue ? 1 : 0);
+                int locals = 0;
+                var NumberOfLocals = locals;
+                int cs_xret = (cs_HasScalarReturnValue || cs_HasStructReturnValue) ? 1 : 0;
+                int cs_xargs = cs_NumberOfArguments;
+                // Search for native function in loaded libraries.
+                name = method.Name;
+                var full_name = method.FullName;
+                Regex regex = new Regex(@"^[^\s]+\s+(?<name>[^\(]+).+$");
+                Match m = regex.Match(full_name);
+                if (!m.Success) throw new Exception();
+                var demangled_name = m.Groups["name"].Value;
+                demangled_name = demangled_name.Replace("::", "_");
+                demangled_name = demangled_name.Replace(".", "_");
+                demangled_name = demangled_name.Replace("__", "_");
+                BuilderRef bu = this.Builder;
+                var as_name = method.Module.Assembly.Name;
+                var xx = RUNTIME.BclNativeMethods
+                    .Where(t =>
+                    {
+                        return t._full_name == full_name;
+                    });
+                var xxx = xx.ToList();
+                RUNTIME.BclNativeMethod first_kv_pair = xx.FirstOrDefault();
+                if (first_kv_pair == null)
+                    throw new Exception("Yikes.");
+
+                RUNTIME.PtxFunction fffv = RUNTIME.PtxFunctions.Where(t => t._short_name == first_kv_pair._native_name).First();
+                {
+                    var entry = this.Block.Entry.LlvmInfo.BasicBlock;
+                    for (int i = method.Parameters.Count - 1; i >= 0; i--)
+                    {
+                        var p = state._stack.Pop();
+                    }
+
+                    var native_return_type2 = first_kv_pair._returnType;
+                    state._stack.Push(native_return_type2);
+                }
+            }
+            else if (!is_type_value_type && the_entry != null)
+            {
+                var xx1 = RUNTIME.BclNativeMethods.ToList();
+                var xx2 = RUNTIME.PtxFunctions.ToList();
+
+                var xx = xx2
+                    .Where(t => { return t._mangled_name == "_Z14Bcl_Heap_AllocPcS_S_"; });
+                var xxx = xx.ToList();
+                RUNTIME.PtxFunction first_kv_pair = xx.FirstOrDefault();
+                if (first_kv_pair == null)
+                    throw new Exception("Yikes.");
+
+                string type_name = type.Resolve().Name;
+                string type_namespace = type.Resolve().Namespace;
+                string type_assembly = type.Resolve().Module.Name;
+                int nargs = the_entry.StackNumberOfArguments;
+                int ret = the_entry.HasScalarReturnValue ? 1 : 0;
+
+                for (int k = nargs - 1; k >= 1; --k)
+                {
+                    var v = state._stack.Pop();
+                }
+
+                var dt = method.DeclaringType;
+                state._stack.Push(dt);
+            }
+
+            return Next;
         }
 
         public override INST Convert(STATE<VALUE> state)
@@ -5869,6 +6023,11 @@
         {
         }
 
+        public override INST GenerateGenerics(STATE<TypeReference> state)
+        {
+            return Next;
+        }
+
         public override INST Convert(STATE<VALUE> state)
         {
             return Next;
@@ -5896,6 +6055,12 @@
         public i_pop(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+        }
+
+        public override INST GenerateGenerics(STATE<TypeReference> state)
+        {
+            state._stack.Pop();
+            return Next;
         }
 
         public override INST Convert(STATE<VALUE> state)
@@ -5952,6 +6117,32 @@
         {
         }
 
+        public override INST GenerateGenerics(STATE<TypeReference> state)
+        {
+            // There are really two different stacks here:
+            // one for the called method, and the other for the caller of the method.
+            // When returning, the stack of the method is pretty much unchanged.
+            // In fact the top of stack often contains the return value from the method.
+            // Back in the caller, the stack is popped of all arguments to the callee.
+            // And, the return value is pushed on the top of stack.
+            // This is handled by the call instruction.
+
+            if (!(this.Block.HasStructReturnValue || this.Block.HasScalarReturnValue))
+            {
+            }
+            else if (this.Block.HasScalarReturnValue)
+            {
+                // See this on struct return--https://groups.google.com/forum/#!topic/llvm-dev/RSnV-Vr17nI
+                // The following fails for structs, so do not do this for struct returns.
+                var v = state._stack.Pop();
+                state._stack.Push(v);
+            }
+            else if (this.Block.HasStructReturnValue)
+            {
+            }
+            return Next;
+        }
+
         public override INST Convert(STATE<VALUE> state)
         {
             // There are really two different stacks here:
@@ -6002,6 +6193,25 @@
         {
         }
 
+        public override INST GenerateGenerics(STATE<TypeReference> state)
+        {
+            var rhs = state._stack.Pop();
+            if (Campy.Utils.Options.IsOn("jit_trace"))
+                System.Console.WriteLine(rhs);
+
+            var lhs = state._stack.Pop();
+            if (Campy.Utils.Options.IsOn("jit_trace"))
+                System.Console.WriteLine(lhs);
+
+            var result = lhs;
+            if (Campy.Utils.Options.IsOn("jit_trace"))
+                System.Console.WriteLine(result);
+
+            state._stack.Push(result);
+
+            return Next;
+        }
+
         public override INST Convert(STATE<VALUE> state)
         {
             var rhs = state._stack.Pop();
@@ -6027,6 +6237,25 @@
         public i_shr(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+        }
+
+        public override INST GenerateGenerics(STATE<TypeReference> state)
+        {
+            var rhs = state._stack.Pop();
+            if (Campy.Utils.Options.IsOn("jit_trace"))
+                System.Console.WriteLine(rhs);
+
+            var lhs = state._stack.Pop();
+            if (Campy.Utils.Options.IsOn("jit_trace"))
+                System.Console.WriteLine(lhs);
+
+            var result = lhs;
+            if (Campy.Utils.Options.IsOn("jit_trace"))
+                System.Console.WriteLine(result);
+
+            state._stack.Push(result);
+
+            return Next;
         }
 
         public override INST Convert(STATE<VALUE> state)
@@ -6062,6 +6291,18 @@
         public i_sizeof(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+        }
+
+        public override INST GenerateGenerics(STATE<TypeReference> state)
+        {
+            var value = typeof(System.IntPtr).ToMonoTypeReference();
+            object operand = this.Operand;
+            System.Type t = operand.GetType();
+            if (t.FullName == "Mono.Cecil.PointerType")
+                state._stack.Push(value);
+            else
+                throw new Exception("Unimplemented sizeof");
+            return Next;
         }
 
         public override INST Convert(STATE<VALUE> state)
@@ -6377,6 +6618,15 @@
         public i_throw(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+        }
+
+        public override INST GenerateGenerics(STATE<TypeReference> state)
+        {
+            var rhs = state._stack.Pop();
+            if (Campy.Utils.Options.IsOn("jit_trace"))
+                System.Console.WriteLine(rhs);
+
+            return Next;
         }
 
         public override INST Convert(STATE<VALUE> state)
