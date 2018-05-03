@@ -1248,7 +1248,7 @@ namespace Campy.Compiler
             method_to_image = new Dictionary<MethodInfo, IntPtr>();
             done_init = false;
 
-            _importer = new IMPORTER();
+            _importer = IMPORTER.Singleton();
             _mcfg = _importer.Cfg;
             global_llvm_module = CreateModule("global");
             LLVM.EnablePrettyStackTrace();

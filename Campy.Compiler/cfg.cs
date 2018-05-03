@@ -14,15 +14,6 @@ namespace Campy.Compiler
     public class CFG : GraphAdjList<CFG.Vertex, CFG.Edge>
     {
         private static int _node_number = 1;
-        private List<string> _methods_avoid = new List<string>();
-        public bool MethodAvoid(string full_name)
-        {
-            if (_methods_avoid.Contains(full_name))
-                return true;
-            else
-                return false;
-        }
-
 
         public int NewNodeNumber()
         {
@@ -39,9 +30,6 @@ namespace Campy.Compiler
         public CFG()
             : base()
         {
-            _methods_avoid.Add("System.Void System.ThrowHelper::ThrowArgumentOutOfRangeException()");
-            _methods_avoid.Add("System.Void System.ThrowHelper::ThrowArgumentOutOfRangeException()");
-            _methods_avoid.Add("System.Void System.ArgumentOutOfRangeException::.ctor(System.String, System.String)");
         }
 
         private Dictionary<int, List<CFG.Vertex>> _change_set = new Dictionary<int, List<Vertex>>();

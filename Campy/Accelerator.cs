@@ -3,12 +3,10 @@ using System.Linq;
 
 namespace Campy
 {
-    public class Accelerator
+    internal class Accelerator
     {
         public static string DefaultAccelerator { get; internal set; }
         public static string CpuAccelerator { get; internal set; }
-        public static string Direct3dWarp { get; internal set; }
-        public static string Direct3dRef { get; internal set; }
 
         public Accelerator()
         {

@@ -13,7 +13,7 @@ namespace Campy.Compiler
     using System;
     using Utils;
 
-    public class IMPORTER
+    internal class IMPORTER
     {
         private StackQueue<Tuple<MethodReference, List<TypeReference>>> _methods_to_do;
         private List<string> _methods_done;
@@ -28,11 +28,25 @@ namespace Campy.Compiler
             get; internal set;
         }
 
-        public IMPORTER()
+        private static IMPORTER _instance;
+
+        public static IMPORTER Singleton()
+        {
+            if (_instance == null)
+            {
+                _instance = new IMPORTER();
+            }
+            return _instance;
+        }
+
+        private IMPORTER()
         {
             Cfg = new CFG();
             _methods_to_do = new StackQueue<Tuple<MethodReference, List<TypeReference>>>();
             _methods_done = new List<string>();
+            _methods_avoid.Add("System.Void System.ThrowHelper::ThrowArgumentOutOfRangeException()");
+            _methods_avoid.Add("System.Void System.ThrowHelper::ThrowArgumentOutOfRangeException()");
+            _methods_avoid.Add("System.Void System.ArgumentOutOfRangeException::.ctor(System.String, System.String)");
         }
 
         public void AnalyzeMethod(MethodInfo methodInfo)
@@ -44,7 +58,7 @@ namespace Campy.Compiler
             Cfg.OutputDotGraph();
         }
 
-        public void Add(MethodInfo method_info)
+        private void Add(MethodInfo method_info)
         {
             String kernel_assembly_file_name = method_info.DeclaringType.Assembly.Location;
             string p = Path.GetDirectoryName(kernel_assembly_file_name);
@@ -57,12 +71,12 @@ namespace Campy.Compiler
             Add(method_reference);
         }
 
-        public void Add(MethodReference method_reference)
+        private void Add(MethodReference method_reference)
         {
             // Do not analyze if nonsense.
             if (method_reference == null) return;
             // Do not analyze if already being or has been considered.
-            if (Cfg.MethodAvoid(method_reference.FullName)) return;
+            if (MethodAvoid(method_reference.FullName)) return;
             if (_methods_done.Contains(method_reference.FullName)) return;
             foreach (var tuple in _methods_to_do)
             {
@@ -71,7 +85,18 @@ namespace Campy.Compiler
             _methods_to_do.Push(new Tuple<MethodReference, List<TypeReference>>(method_reference, new List<TypeReference>()));
         }
 
-        public void ExtractBasicBlocks()
+        private List<string> _methods_avoid = new List<string>();
+
+        public bool MethodAvoid(string full_name)
+        {
+            if (_methods_avoid.Contains(full_name))
+                return true;
+            else
+                return false;
+        }
+
+
+        private void ExtractBasicBlocks()
         {
             while (_methods_to_do.Count > 0)
             {
@@ -391,7 +416,7 @@ namespace Campy.Compiler
             Cfg.OutputEntireGraph();
         }
 
-        public CFG.Vertex Split(CFG.Vertex node, int i)
+        private CFG.Vertex Split(CFG.Vertex node, int i)
         {
 
             Debug.Assert(node.Instructions.Count != 0);
@@ -469,7 +494,7 @@ namespace Campy.Compiler
         /// </summary>
         /// <param name="method_reference"></param>
         /// <returns></returns>
-        public MethodDefinition Rewrite(MethodReference method_reference)
+        private MethodDefinition Rewrite(MethodReference method_reference)
         {
             var method_definition = RUNTIME.SubstituteMethod(method_reference);
 
