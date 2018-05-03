@@ -76,7 +76,7 @@ namespace Campy.Compiler
             // Do not analyze if nonsense.
             if (method_reference == null) return;
             // Do not analyze if already being or has been considered.
-            if (MethodAvoid(method_reference.FullName)) return;
+            if (_methods_avoid.Contains(method_reference.FullName)) return;
             if (_methods_done.Contains(method_reference.FullName)) return;
             foreach (var tuple in _methods_to_do)
             {
@@ -86,15 +86,6 @@ namespace Campy.Compiler
         }
 
         private List<string> _methods_avoid = new List<string>();
-
-        public bool MethodAvoid(string full_name)
-        {
-            if (_methods_avoid.Contains(full_name))
-                return true;
-            else
-                return false;
-        }
-
 
         private void ExtractBasicBlocks()
         {
@@ -130,12 +121,7 @@ namespace Campy.Compiler
             }
         }
 
-        private static MethodInfo GetMethodInfo(Action a)
-        {
-            return a.Method;
-        }
-
-        public static ModuleDefinition LoadAssembly(String assembly_file_name)
+        private static ModuleDefinition LoadAssembly(String assembly_file_name)
         {
             // Microsoft keeps screwing and changing the code that finds assemblies all the damn time.
             // Get the type of Importer. Assume that it's in the same directory as everything else.
@@ -152,7 +138,7 @@ namespace Campy.Compiler
             return module;
         }
 
-        static MethodReference MakeGeneric(MethodReference method, TypeReference declaringType)
+        private static MethodReference MakeGeneric(MethodReference method, TypeReference declaringType)
         {
             var reference = new MethodReference(method.Name, method.ReturnType, declaringType);
 
@@ -161,7 +147,7 @@ namespace Campy.Compiler
             return reference;
         }
 
-        static TypeReference MakeGenericType(TypeReference type, params
+        private static TypeReference MakeGenericType(TypeReference type, params
             TypeReference[] arguments)
         {
             if (type.GenericParameters.Count != arguments.Length)
@@ -174,7 +160,7 @@ namespace Campy.Compiler
             return instance;
         }
 
-        public static MethodReference MakeHostInstanceGeneric(
+        private static MethodReference MakeHostInstanceGeneric(
             MethodReference self,
             params TypeReference[] args)
         {
