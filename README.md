@@ -21,9 +21,9 @@ public delegate void Campy.Types._Kernel_type(Index idx);
 
 # Targets
 
-* Windows 10 (x64), Net Framework >= 4.6.1, Net Core 2.0; CUDA GPU Toolkit 9.1.85, Maxwell or better GPU.
+* Windows 10 (x64), Ubuntu 16.04 (x64), Net Framework >= 4.6.1, Net Core 2.0; CUDA GPU Toolkit 9.1.85; Maxwell or better GPU.
 
-# Campy in literally 1 minute #
+# Campy under a minute #
 (Make sure to install Net Core 2.0, https://www.microsoft.com/net/learn/get-started/windows.)
 ~~~~
 mkdir test
@@ -33,6 +33,7 @@ dotnet add package Campy
 # copy the example code below into test.cs.
 dotnet build
 dotnet publish -r win10-x64
+# for Ubuntu, dotnet publish -r ubuntu.16.04-x64
 cd bin/Debug/netcoreapp2.0/win10-x64/publish/
 ./test.exe
 # output should be four lines of integers, 0 to 3.
