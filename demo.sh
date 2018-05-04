@@ -23,25 +23,27 @@ dotnet build
 unameOut="$(uname -s)"
 case "${unameOut}" in
     Linux*)
-	dotnet publish -r ubuntu.16.04-x64
-	cd bin/Debug/netcoreapp2.0/ubuntu.16.04-x64/publish/
-	;;
+        dotnet publish -r ubuntu.16.04-x64
+        cd bin/Debug/netcoreapp2.0/ubuntu.16.04-x64/publish/
+        ./test
+        ;;
     Darwin*)
-	echo Cannot target Mac yet.
-	exit 1
-	;;
+        echo Cannot target Mac yet.
+        exit 1
+        ;;
     CYGWIN*)
-	dotnet publish -r win10-x64
-	cd bin/Debug/netcoreapp2.0/win10-x64/publish/
-	;;
+        dotnet publish -r win10-x64
+        cd bin/Debug/netcoreapp2.0/win10-x64/publish/
+        ./test.exe
+        ;;
     MINGW*)
-	dotnet publish -r win10-x64
-	cd bin/Debug/netcoreapp2.0/win10-x64/publish/
-	;;
+        dotnet publish -r win10-x64
+        cd bin/Debug/netcoreapp2.0/win10-x64/publish/
+        ./test.exe
+        ;;
     *)
-	echo Unknown machine.
-	exit 1
-	;;
+        echo Unknown machine.
+        exit 1
+        ;;
 esac
-./test.exe
 echo Output should be four lines of integers, 0 to 3.
