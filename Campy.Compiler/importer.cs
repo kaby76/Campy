@@ -71,7 +71,7 @@ namespace Campy.Compiler
             Add(method_reference);
         }
 
-        private void Add(MethodReference method_reference)
+        internal void Add(MethodReference method_reference)
         {
             // Do not analyze if nonsense.
             if (method_reference == null) return;
@@ -102,24 +102,13 @@ namespace Campy.Compiler
 
                 var blocks = this.Cfg.PopChangeSet(change_set_id);
 
+                blocks.ComputeBasicMethodProperties();
+
                 blocks.ThreadInstructions();
 
-                // Get closure of calls, if possible.
-                foreach (var b in blocks)
-                {
-                    foreach (INST i in b.Instructions)
-                    {
-                        var fc = i.OpCode.FlowControl;
-                        if (fc != Mono.Cecil.Cil.FlowControl.Call)
-                            continue;
-                        object method = i.Operand;
-                        if (method as MethodReference != null)
-                        {
-                            MethodReference mr = method as MethodReference;
-                            Add(mr);
-                        }
-                    }
-                }
+                // Perform type propagation on blocks, and get call targets
+                // for new methods to analyze.
+                blocks.InstantiateGenerics();
             }
         }
 
@@ -139,6 +128,21 @@ namespace Campy.Compiler
                 new ReaderParameters { AssemblyResolver = resolver, ReadSymbols = true});
             return module;
         }
+
+        public static TypeReference InstantiateGenericTypeReference(TypeReference type)
+        {
+            TypeReference result = type;
+
+            if (type.IsGenericInstance)
+            {
+                // Create non-generic type out of a generic type instance.
+                var git = type as GenericInstanceType;
+                result = git.ConvertGenericInstanceTypeToNonGenericInstanceType();
+            }
+
+            return result;
+        }
+
 
         private static MethodReference MakeGeneric(MethodReference method, TypeReference declaringType)
         {
@@ -213,10 +217,13 @@ namespace Campy.Compiler
             var symbol_reader = original_method_reference.Module.SymbolReader;
             var method_debug_information = symbol_reader?.Read(method_definition);
             Collection<SequencePoint> sequence_points = method_debug_information != null ? method_debug_information.SequencePoints : new Collection<SequencePoint>();
+            Mono.Cecil.Cil.MethodBody body = method_definition.Body;
             for (int j = 0; j < instruction_count; ++j)
             {
-                Mono.Cecil.Cil.Instruction instruction = method_definition.Body.Instructions[j];
-                INST wrapped_instruction = INST.Wrap(instruction, basic_block, sequence_points.Where(sp => { return sp.Offset == instruction.Offset; }).FirstOrDefault());
+                Mono.Cecil.Cil.Instruction instruction = body.Instructions[j];
+                INST wrapped_instruction = INST.Wrap(instruction,
+                    body,
+                    basic_block, sequence_points.Where(sp => { return sp.Offset == instruction.Offset; }).FirstOrDefault());
                 basic_block.Instructions.Add(wrapped_instruction);
             }
 

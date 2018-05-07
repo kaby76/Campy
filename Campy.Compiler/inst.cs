@@ -20,6 +20,7 @@
     public class INST
     {
         public Mono.Cecil.Cil.Instruction Instruction { get; private set; }
+        public Mono.Cecil.Cil.MethodBody Body { get; private set; }
         public static List<INST> CallInstructions { get; private set; } = new List<INST>();
         public override string ToString() { return Instruction.ToString(); }
         public Mono.Cecil.Cil.OpCode OpCode { get { return Instruction.OpCode; } }
@@ -149,7 +150,7 @@
                                 + this.ToString());
         }
 
-        public INST(Mono.Cecil.Cil.Instruction i)
+        protected INST(Mono.Cecil.Cil.Instruction i)
         {
             Instruction = i;
             if (i.OpCode.FlowControl == Mono.Cecil.Cil.FlowControl.Call)
@@ -158,7 +159,7 @@
             }
         }
 
-        static public INST Wrap(Mono.Cecil.Cil.Instruction i, CFG.Vertex block, SequencePoint sp)
+        static public INST Wrap(Mono.Cecil.Cil.Instruction i, Mono.Cecil.Cil.MethodBody body, CFG.Vertex block, SequencePoint sp)
         {
             // Wrap instruction with semantics, def/use/kill properties.
             Mono.Cecil.Cil.OpCode op = i.OpCode;
@@ -826,8 +827,9 @@
                     break;
                 default:
                     throw new Exception("Unknown instruction type " + i);
-        }
+            }
             wrapped_inst.SeqPoint = sp;
+            wrapped_inst.Body = body;
             return wrapped_inst;
         }
     }
@@ -852,7 +854,8 @@
             var result = lhs;
 
             state._stack.Push(result);
-            return Next;
+
+            return this;
         }
 
         public override INST Convert(STATE<VALUE> state)
@@ -1315,7 +1318,7 @@
                 System.Console.WriteLine(value.ToString());
             state._stack.Push(value);
 
-            return Next;
+            return this;
         }
 
         public override INST Convert(STATE<VALUE> state)
@@ -1419,7 +1422,7 @@
 
             state._arguments[_arg] = value;
 
-            return Next;
+            return this;
         }
 
         public override INST Convert(STATE<VALUE> state)
@@ -1454,7 +1457,7 @@
 
             state._stack.Push(value);
 
-            return Next;
+            return this;
         }
 
         public override INST Convert(STATE<VALUE> state)
@@ -1481,7 +1484,7 @@
 
             state._stack.Push(value);
 
-            return Next;
+            return this;
         }
 
         public override INST Convert(STATE<VALUE> state)
@@ -1508,7 +1511,7 @@
 
             state._stack.Push(value);
 
-            return Next;
+            return this;
         }
 
         public override INST Convert(STATE<VALUE> state)
@@ -1535,7 +1538,7 @@
 
             state._stack.Push(value);
 
-            return Next;
+            return this;
         }
 
         public override INST Convert(STATE<VALUE> state)
@@ -1554,6 +1557,8 @@
 
         public override INST GenerateGenerics(STATE<TypeReference> state)
         {
+            INST new_inst = this;
+
             // Successor is fallthrough.
             object method = this.Operand;
 
@@ -1561,198 +1566,55 @@
                 throw new Exception();
 
             Mono.Cecil.MethodReference mr = method as Mono.Cecil.MethodReference;
+            int xargs = (mr.HasThis ? 1 : 0) + mr.Parameters.Count;
 
-            // Two general cases here: (1) Calling a method that is in CIL. (2) calling
-            // a BCL method that has no CIL body.
-
-            // Find bb entry.
-            CFG.Vertex entry_corresponding_to_method_called = this.Block._graph.Vertices.Where(node
-                =>
+            if (mr.DeclaringType != null && mr.DeclaringType.HasGenericParameters)
             {
-                var g = this.Block._graph;
-                CFG.Vertex v = node;
-                JITER c = JITER.Singleton;
-                if (v.IsEntry && JITER.MethodName(v._original_method_reference) == mr.FullName &&
-                    c.IsFullyInstantiatedNode(v))
-                    return true;
-                else return false;
-            }).ToList().FirstOrDefault();
-
-            if (entry_corresponding_to_method_called == null)
-            {
-                // If there is no entry block discovered, so this function is probably to a BCL for GPU method.
-                var name = mr.Name;
-                var full_name = mr.FullName;
-                // For now, look for qualified name not including parameters.
-                Regex regex = new Regex(@"^[^\s]+\s+(?<name>[^\(]+).+$");
-                Match m = regex.Match(full_name);
-                if (!m.Success)
-                    throw new Exception();
-                var mangled_name = m.Groups["name"].Value;
-                mangled_name = mangled_name.Replace("::", "_");
-                mangled_name = mangled_name.Replace(".", "_");
-                
-                BuilderRef bu = this.Builder;
-
-                // Find the specific function called in BCL.
-                var xx = JITER.functions_in_internal_bcl_layer.Where(t => t.Key.Contains(mangled_name) || mangled_name.Contains(t.Key));
-                var first_kv_pair = xx.FirstOrDefault();
-                if (first_kv_pair.Key == null)
+                // Instantiate a generic type and rewrite the
+                // instruction with new target.
+                // Try "this".
+                if (mr.HasThis)
                 {
-                    // No direct entry in the BCL--we don't have a direct implementation.
-                    // This can happen with arrays, e.g.,
-                    // "System.Void System.Int32[0...,0...]::Set(System.Int32,System.Int32,System.Int32)"
-                    TypeReference declaring_type = mr.DeclaringType;
-                    if (declaring_type != null && declaring_type.IsArray)
+                    // Grab "this" from stack and generate the type.
+                    var this_parameter = state._stack.PeekTop(xargs-1);
+                    var declaring_type = mr.DeclaringType;
+                    var new_type = this_parameter.ConvertGenericInstanceTypeToNonGenericInstanceType();
+
+                    // Get the method from the non-generic (real instance) type.
+                    mr = new_type.Resolve().Methods.Where(j =>
                     {
-                        // Handle array calls with special code.
-                        var the_array_type = declaring_type as Mono.Cecil.ArrayType;
-                        TypeReference element_type = declaring_type.GetElementType();
-                        Collection<ArrayDimension> dimensions = the_array_type.Dimensions;
-                        var count = dimensions.Count;
+                        if (j.Name != mr.Name) return false;
+                        if (j.Parameters.Count != mr.Parameters.Count) return false;
+                        return true;
+                    }).First();
 
-                        if (mr.Name == "Set")
-                        {
-                            // Make "set" call
-                            unsafe
-                            {
-                                ValueRef[] args = new ValueRef[1 // this
-                                                               + 1 // rank
-                                                               + 1 // element size in bytes
-                                                               + 1 // indices
-                                                               + 1 // val
-                                ];
-
-                                // Allocate space on stack for one value to be passed to function call.
-                                var val_type = element_type.ToTypeRef();
-                                state._stack.Pop();
-
-                                for (int i = count - 1; i >= 0; i--)
-                                {
-                                    var index = state._stack.Pop();
-                                    if (Campy.Utils.Options.IsOn("jit_trace"))
-                                        System.Console.WriteLine(index);
-                                }
-
-                                var p = state._stack.Pop();
-
-                                string nme = "_Z31SystemArray_StoreElementIndicesPhjjPjPy";
-                            }
-                            return Next;
-                        }
-                        else if (mr.Name == "Get")
-                        {
-                            unsafe
-                            {
-                                for (int i = count - 1; i >= 0; i--)
-                                {
-                                    var index = state._stack.Pop();
-                                    if (Campy.Utils.Options.IsOn("jit_trace"))
-                                        System.Console.WriteLine(index);
-                                }
-                                var p = state._stack.Pop();
-                                string nme = "_Z30SystemArray_LoadElementIndicesPhjjPjPy";
-                                state._stack.Push(default(TypeReference));
-                            }
-                            return Next;
-                        }
-                    }
-                    throw new Exception("Unknown, internal, function for which there is no body and no C/C++ code. "
-                                        + mangled_name
-                                        + " "
-                                        + full_name);
-                }
-                else
-                {
-
-                    Mono.Cecil.MethodReturnType rt = mr.MethodReturnType;
-                    Mono.Cecil.TypeReference tr = rt.ReturnType;
-                    var ret = tr.FullName != "System.Void";
-                    var HasScalarReturnValue = ret && !tr.IsStruct();
-                    var HasStructReturnValue = ret && tr.IsStruct();
-                    var HasThis = mr.HasThis;
-                    var NumberOfArguments = mr.Parameters.Count
-                                            + (HasThis ? 1 : 0)
-                                            + (HasStructReturnValue ? 1 : 0);
-                    int locals = 0;
-                    var NumberOfLocals = locals;
-                    int xret = (HasScalarReturnValue || HasStructReturnValue) ? 1 : 0;
-                    int xargs = NumberOfArguments;
-
-                    RUNTIME.BclNativeMethod mat = null;
-                    foreach (RUNTIME.BclNativeMethod ci in RUNTIME.BclNativeMethods)
-                    {
-                        if (ci._full_name == full_name)
-                        {
-                            mat = ci;
-                            break;
-                        }
-                    }
-
-                    {
-                        // Pop all parameters and stuff into params buffer. Note, "this" and
-                        // "return" are separate parameters in GPU BCL runtime C-functions,
-                        // unfortunately, reminates of the DNA runtime I decided to use.
-                        var entry = this.Block.Entry.LlvmInfo.BasicBlock;
-                        var beginning = LLVM.GetFirstInstruction(entry);
-                        for (int i = mr.Parameters.Count - 1; i >= 0; i--)
-                        {
-                            var p = state._stack.Pop();
-                        }
-
-                        if (HasThis)
-                        {
-                            var t = state._stack.Pop();
-                        }
-
-                        // Set up return. For now, always allocate buffer.
-                        // Note function return is type of third parameter.
-
-                        if (ret)
-                        {
-                            state._stack.Push(default(TypeReference));
-                        }
-                    }
+                    // Create new instruction to replace this one.
+                    var worker = this.Body.GetILProcessor();
+                    Instruction new_mono_inst = worker.Create(
+                        this.OpCode, mr);
+                    new_mono_inst.Offset = this.Instruction.Offset;
+                    new_inst = Wrap(new_mono_inst, this.Body, this.Block, this.SeqPoint);
                 }
             }
-            else
+
             {
-                // There is an entry block discovered for this call.
-                // For return, we need to leave something on the damn stack regardless of how it's implmented.
-                int xret = (entry_corresponding_to_method_called.HasScalarReturnValue || entry_corresponding_to_method_called.HasStructReturnValue) ? 1 : 0;
-                int xargs = entry_corresponding_to_method_called.StackNumberOfArguments;
                 var name = JITER.MethodName(mr);
 
                 // Set up args, type casting if required.
-                if (entry_corresponding_to_method_called.HasStructReturnValue)
+                for (int k = xargs - 1; k >= 1; --k)
                 {
-                    var entry = this.Block.Entry.LlvmInfo.BasicBlock;
-                    for (int k = xargs - 1; k >= 1; --k)
-                    {
-                        var v = state._stack.Pop();
-                    }
-                    // Push the return on the stack. Note, it's not the call, but the new obj dereferenced.
-                    state._stack.Push(default(TypeReference));
+                    var v = state._stack.Pop();
                 }
-                else if (entry_corresponding_to_method_called.HasScalarReturnValue)
+
+                if (mr.ReturnType.FullName != "System.Void")
                 {
-                    for (int k = xargs - 1; k >= 0; --k)
-                    {
-                        var v = state._stack.Pop();
-                    }
-                    state._stack.Push(default(TypeReference));
-                }
-                else
-                {
-                    // No return.
-                    for (int k = xargs - 1; k >= 0; --k)
-                    {
-                        var v = state._stack.Pop();
-                    }
+                    state._stack.Push(mr.ReturnType);
                 }
             }
 
-            return Next;
+            IMPORTER.Singleton().Add(mr);
+
+            return new_inst;
         }
 
         public override INST Convert(STATE<VALUE> state)
@@ -2205,7 +2067,7 @@
         {
             var v = state._locals[_arg];
             state._stack.Push(v);
-            return Next;
+            return this;
         }
 
         public override INST Convert(STATE<VALUE> state)
@@ -2231,7 +2093,7 @@
         {
             var v = state._stack.Pop();
             state._locals[_arg] = v;
-            return Next;
+            return this;
         }
 
         public override INST Convert(STATE<VALUE> state)
@@ -2287,7 +2149,7 @@
             var v2 = state._stack.Pop();
             var v1 = state._stack.Pop();
             state._stack.Push(v1);
-            return Next;
+            return this;
         }
 
         public override INST Convert(STATE<VALUE> state)
@@ -2398,7 +2260,7 @@
         {
             var v2 = state._stack.Pop();
             var v1 = state._stack.Pop();
-            return Next;
+            return this;
         }
 
         public override INST Convert(STATE<VALUE> state)
@@ -2575,7 +2437,7 @@
         {
             var s = state._stack.Pop();
             state._stack.Push(s);
-            return Next;
+            return this;
         }
 
         public override INST Convert(STATE<VALUE> state)
@@ -2637,7 +2499,7 @@
             var i = state._stack.Pop();
             var a = state._stack.Pop();
             state._stack.Push(default(TypeReference));
-            return Next;
+            return this;
         }
 
         public override INST Convert(STATE<VALUE> state)
@@ -2722,9 +2584,9 @@
                 System.Console.WriteLine(i.ToString());
 
             var a = state._stack.Pop();
-            return Next;
+            return this;
         }
-        
+
         public override INST Convert(STATE<VALUE> state)
         {
             VALUE v = state._stack.Pop();
@@ -2803,7 +2665,7 @@
                 System.Console.WriteLine(i.ToString());
 
             state._stack.Push(default(TypeReference));
-            return Next;
+            return this;
         }
 
         public override INST Convert(STATE<VALUE> state)
@@ -2852,13 +2714,17 @@
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(v.ToString());
 
+           // v = IMPORTER.InstantiateGenericTypeReference(v);
+
             var yy = this.Instruction.Operand;
             var field = yy as Mono.Cecil.FieldReference;
             if (yy == null) throw new Exception("Cannot convert.");
             var value = field.FieldType;
 
+            //value = IMPORTER.InstantiateGenericTypeReference(value);
+
             state._stack.Push(value);
-            return Next;
+            return this;
         }
 
         public override INST Convert(STATE<VALUE> state)
@@ -3081,7 +2947,7 @@
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(o.ToString());
 
-            return Next;
+            return this;
         }
 
         public override INST Convert(STATE<VALUE> state)
@@ -3330,7 +3196,7 @@
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(o.ToString());
 
-            return Next;
+            return this;
         }
 
         public override INST Convert(STATE<VALUE> state)
@@ -3622,7 +3488,7 @@
             else
                 throw new Exception("Unimplemented sizeof");
 
-            return Next;
+            return this;
         }
 
         public override INST Convert(STATE<VALUE> state)
@@ -3647,7 +3513,7 @@
 
         public override INST GenerateGenerics(STATE<TypeReference> state)
         {
-            return Next;
+            return this;
         }
 
         public override INST Convert(STATE<VALUE> state)
@@ -3668,7 +3534,7 @@
 
         public override INST GenerateGenerics(STATE<TypeReference> state)
         {
-            return Next;
+            return this;
         }
 
         public override INST Convert(STATE<VALUE> state)
@@ -3690,7 +3556,7 @@
         public override INST GenerateGenerics(STATE<TypeReference> state)
         {
             var v = state._stack.Pop();
-            return Next;
+            return this;
         }
 
         public override INST Convert(STATE<VALUE> state)
@@ -3742,7 +3608,7 @@
         public override INST GenerateGenerics(STATE<TypeReference> state)
         {
             var v = state._stack.Pop();
-            return Next;
+            return this;
         }
 
         public override INST Convert(STATE<VALUE> state)
@@ -5345,6 +5211,17 @@
         {
         }
 
+        public override INST GenerateGenerics(STATE<TypeReference> state)
+        {
+            var operand = this.Operand;
+            var operand_field_reference = operand as FieldReference;
+            if (operand_field_reference == null)
+                throw new Exception("Unknown field type");
+            var ft = operand_field_reference.FieldType;
+            state._stack.Push(ft);
+            return this;
+        }
+
         public override INST Convert(STATE<VALUE> state)
         {
             return Next;
@@ -5375,7 +5252,7 @@
 
             state._stack.Push(v);
 
-            return Next;
+            return this;
         }
 
         public override INST Convert(STATE<VALUE> state)
@@ -5675,7 +5552,7 @@
                 state._stack.Push(dt);
             }
 
-            return Next;
+            return this;
         }
 
         public override INST Convert(STATE<VALUE> state)
@@ -6025,7 +5902,7 @@
 
         public override INST GenerateGenerics(STATE<TypeReference> state)
         {
-            return Next;
+            return this;
         }
 
         public override INST Convert(STATE<VALUE> state)
@@ -6060,7 +5937,7 @@
         public override INST GenerateGenerics(STATE<TypeReference> state)
         {
             state._stack.Pop();
-            return Next;
+            return this;
         }
 
         public override INST Convert(STATE<VALUE> state)
@@ -6140,7 +6017,7 @@
             else if (this.Block.HasStructReturnValue)
             {
             }
-            return Next;
+            return this;
         }
 
         public override INST Convert(STATE<VALUE> state)
@@ -6209,7 +6086,7 @@
 
             state._stack.Push(result);
 
-            return Next;
+            return this;
         }
 
         public override INST Convert(STATE<VALUE> state)
@@ -6255,7 +6132,7 @@
 
             state._stack.Push(result);
 
-            return Next;
+            return this;
         }
 
         public override INST Convert(STATE<VALUE> state)
@@ -6302,7 +6179,7 @@
                 state._stack.Push(value);
             else
                 throw new Exception("Unimplemented sizeof");
-            return Next;
+            return this;
         }
 
         public override INST Convert(STATE<VALUE> state)
@@ -6626,7 +6503,7 @@
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(rhs);
 
-            return Next;
+            return this;
         }
 
         public override INST Convert(STATE<VALUE> state)
