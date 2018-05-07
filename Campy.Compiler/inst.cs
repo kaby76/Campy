@@ -3496,12 +3496,9 @@
         public override INST GenerateGenerics(STATE<TypeReference> state)
         {
             var operand = this.Operand;
-            System.Type t = operand.GetType();
-            if (t.FullName == "Mono.Cecil.PointerType")
-                state._stack.Push(default(TypeReference));
-            else
-                throw new Exception("Unimplemented sizeof");
-
+            var tr = operand as TypeReference;
+            var v = state._stack.Pop();
+            state._stack.Push(tr);
             return this;
         }
 
@@ -6577,3 +6574,4 @@
         }
     }
 }
+

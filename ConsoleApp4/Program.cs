@@ -626,8 +626,11 @@ namespace ConsoleApp4
         static void Main(string[] args)
         {
             StartDebugging();
-            BitonicSortT t = new BitonicSortT();
-            t.BitonicSort();
+
+            FFT.FFT_Test();
+
+            //BitonicSortT t = new BitonicSortT();
+            //t.BitonicSort();
 
             //{
             //    // List of ints.
