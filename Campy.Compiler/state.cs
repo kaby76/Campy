@@ -52,9 +52,17 @@ namespace Campy.Compiler
                     // If predecessor has not been visited, warn and do not consider.
                     // Warn if predecessor does not concur with another predecessor.
                     if (in_level != -1 && states_out[pred]._stack.Count != in_level)
+                    {
+                        System.Console.Error.WriteLine("Inconsistent stack size on inputs to basic block " + bb);
+                        foreach (CFG.Vertex error_pred in bb._graph.PredecessorNodes(bb))
+                        {
+                            System.Console.Error.WriteLine("Predecessor " + error_pred
+                                                           + " has stack size on exit of "
+                                + states_out[error_pred]._stack.Count);
+                        }
                         throw new Exception("Miscalculation in stack size "
-                                            + "for basic block " + bb
-                                            + " or predecessor " + pred);
+                                            + "for basic block " + bb);
+                    }
                     in_level = states_out[pred]._stack.Count;
                 }
             }

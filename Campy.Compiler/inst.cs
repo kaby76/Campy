@@ -1601,7 +1601,7 @@
                 var name = JITER.MethodName(mr);
 
                 // Set up args, type casting if required.
-                for (int k = xargs - 1; k >= 1; --k)
+                for (int k = 0; k < xargs; ++k)
                 {
                     var v = state._stack.Pop();
                 }
@@ -2498,7 +2498,8 @@
         {
             var i = state._stack.Pop();
             var a = state._stack.Pop();
-            state._stack.Push(default(TypeReference));
+            var e = a.GetElementType();
+            state._stack.Push(e);
             return this;
         }
 
@@ -2656,15 +2657,20 @@
 
         public override INST GenerateGenerics(STATE<TypeReference> state)
         {
-            var v = state._stack.Pop();
-            if (Campy.Utils.Options.IsOn("jit_trace"))
-                System.Console.WriteLine(v.ToString());
-
             var i = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(i.ToString());
 
-            state._stack.Push(default(TypeReference));
+            var a = state._stack.Pop();
+            if (Campy.Utils.Options.IsOn("jit_trace"))
+                System.Console.WriteLine(a.ToString());
+
+            var e = a.GetElementType();
+
+            // Create reference type of element type.
+            var v = new Mono.Cecil.ByReferenceType(e);
+
+            state._stack.Push(v);
             return this;
         }
 
@@ -3130,6 +3136,14 @@
         public ConvertLoadIndirect(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+        }
+
+        public override INST GenerateGenerics(STATE<TypeReference> state)
+        {
+            var i = state._stack.Pop();
+            var v = i.GetElementType();
+            state._stack.Push(v);
+            return this;
         }
 
         public override INST Convert(STATE<VALUE> state)
