@@ -3660,6 +3660,12 @@
         {
         }
 
+        public override INST GenerateGenerics(STATE<TypeReference> state)
+        {
+            var v = state._stack.Pop();
+            return this;
+        }
+
         public override INST Convert(STATE<VALUE> state)
         {
             object operand = this.Operand;
@@ -3696,6 +3702,12 @@
         public i_brtrue_s(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+        }
+
+        public override INST GenerateGenerics(STATE<TypeReference> state)
+        {
+            var v = state._stack.Pop();
+            return this;
         }
 
         public override INST Convert(STATE<VALUE> state)
@@ -5198,6 +5210,12 @@
         public i_ldnull(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+        }
+
+        public override INST GenerateGenerics(STATE<TypeReference> state)
+        {
+            state._stack.Push(typeof(System.Object).ToMonoTypeReference());
+            return this;
         }
 
         public override INST Convert(STATE<VALUE> state)
