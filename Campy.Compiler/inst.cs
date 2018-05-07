@@ -4975,6 +4975,13 @@
         {
         }
 
+		public override INST GenerateGenerics(STATE<TypeReference> state)
+		{
+			var a = state._stack.Pop();
+		    state._stack.Push(typeof(System.UInt32).ToMonoTypeReference());
+			return this;
+		}
+
         // For array implementation, see https://www.codeproject.com/Articles/3467/Arrays-UNDOCUMENTED
 
         public override INST Convert(STATE<VALUE> state)
@@ -5448,35 +5455,35 @@
             object operand = this.Operand;
             MethodReference method = operand as MethodReference;
 
-			CFG graph = (CFG)this.Block._graph;
-			TypeReference type = method.DeclaringType;
-			if (type == null)
-				throw new Exception("Cannot get type of object/value for newobj instruction.");
-			bool is_type_value_type = type.IsValueType;
-			var name = JITER.MethodName(method);
-			CFG.Vertex the_entry = this.Block._graph.Vertices.Where(node
-				=>
-			{
-				var g = inst.Block._graph;
-				CFG.Vertex v = node;
-				JITER c = JITER.Singleton;
-				if (v.IsEntry && JITER.MethodName(v._original_method_reference) == name && c.IsFullyInstantiatedNode(v))
-					return true;
-				else return false;
-			}).ToList().FirstOrDefault();
-			var td = type.Resolve();
+            CFG graph = (CFG)this.Block._graph;
+            TypeReference type = method.DeclaringType;
+            if (type == null)
+                throw new Exception("Cannot get type of object/value for newobj instruction.");
+            bool is_type_value_type = type.IsValueType;
+            var name = JITER.MethodName(method);
+            CFG.Vertex the_entry = this.Block._graph.Vertices.Where(node
+                =>
+            {
+                var g = inst.Block._graph;
+                CFG.Vertex v = node;
+                JITER c = JITER.Singleton;
+                if (v.IsEntry && JITER.MethodName(v._original_method_reference) == name && c.IsFullyInstantiatedNode(v))
+                    return true;
+                else return false;
+            }).ToList().FirstOrDefault();
+            var td = type.Resolve();
 
-			// There four basic cases for newobj:
-			// 1) type is a value type
-			//   The object must be allocated on the stack, and the contrustor called with a pointer to that.
-			//   a) the_entry is null, which means the constructor is a C function.
-			//   b) the_entry is NOT null, which means the constructor is further CIL code.
-			// 2) type is a reference_type.
-			//   The object will be allocated on the heap, but done according to a convention of DNA.
-			//   b) the_entry is null, which means the constructor is a C function, and it performs the allocation.
-			//   c) the_entry is NOT null, which means we must allocate the object, then call the constructor, which is further CIL code.
-			if (is_type_value_type && the_entry == null)
-			{
+            // There four basic cases for newobj:
+            // 1) type is a value type
+            //   The object must be allocated on the stack, and the contrustor called with a pointer to that.
+            //   a) the_entry is null, which means the constructor is a C function.
+            //   b) the_entry is NOT null, which means the constructor is further CIL code.
+            // 2) type is a reference_type.
+            //   The object will be allocated on the heap, but done according to a convention of DNA.
+            //   b) the_entry is null, which means the constructor is a C function, and it performs the allocation.
+            //   c) the_entry is NOT null, which means we must allocate the object, then call the constructor, which is further CIL code.
+            if (is_type_value_type && the_entry == null)
+            {
             }
             else if (is_type_value_type && the_entry != null)
             {
