@@ -65,7 +65,7 @@ namespace Campy
             Singleton().Buffer.FullSynch();
         }
 
-        public static void For(int number_of_threads, KernelType kernel)
+        public static void For(int number_of_threads, SimpleKernel simpleKernel)
         {
             JITER.InitCuda();
 
@@ -81,8 +81,8 @@ namespace Campy
                     /////////////////////////////////////////////
                     var stopwatch_cuda_compile = new Stopwatch();
                     stopwatch_cuda_compile.Start();
-                    IntPtr image = Singleton()._converter.JitCodeToImage(kernel.Method, kernel.Target);
-                    CUfunction ptr_to_kernel = Singleton()._converter.GetCudaFunction(kernel.Method, image);
+                    IntPtr image = Singleton()._converter.JitCodeToImage(simpleKernel.Method, simpleKernel.Target);
+                    CUfunction ptr_to_kernel = Singleton()._converter.GetCudaFunction(simpleKernel.Method, image);
                     var elapse_cuda_compile = stopwatch_cuda_compile.Elapsed;
 
 
@@ -94,8 +94,8 @@ namespace Campy
                     BUFFERS buffer = Singleton().Buffer;
 
                     // Set up parameters.
-                    int count = kernel.Method.GetParameters().Length;
-                    var bb = Singleton()._converter.GetBasicBlock(kernel.Method);
+                    int count = simpleKernel.Method.GetParameters().Length;
+                    var bb = Singleton()._converter.GetBasicBlock(simpleKernel.Method);
                     if (bb.HasThis) count++;
                     if (!(count == 1 || count == 2))
                         throw new Exception("Expecting at least one parameter for kernel.");
@@ -108,7 +108,7 @@ namespace Campy
                     // object.
                     if (bb.HasThis)
                     {
-                        ptr = buffer.AddDataStructure(kernel.Target);
+                        ptr = buffer.AddDataStructure(simpleKernel.Target);
                         parm1[0] = ptr;
                     }
 

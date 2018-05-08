@@ -1,4 +1,4 @@
 ﻿namespace Campy
 {
-    public delegate void KernelType(int idx);
+    public delegate void SimpleKernel(int idx);
 }

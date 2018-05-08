@@ -48,7 +48,7 @@ namespace CombSort
                 if (local_gap < 1) local_gap = 1;
                 gap = local_gap;
                 swaps = false;
-                Campy.KernelType de = i =>
+                Campy.SimpleKernel de = i =>
                 {
                     if (a[i] > a[i + local_gap])
                     {

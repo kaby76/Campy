@@ -13,7 +13,7 @@ namespace Campy
 {
     public class Sequential
     {
-        public static void For(int number_of_threads, KernelType kernel)
+        public static void For(int number_of_threads, SimpleKernel simpleKernel)
         {
             // Semantics of this method: run the kernel number_of_threads times on
             // the given accelerator. It is not simply running it on a
@@ -26,7 +26,7 @@ namespace Campy
             for (int i = 0; i < number_of_threads; ++i)
             {
                 SetBaseIndex(i);
-                Campy.Parallel.For(1, kernel);
+                Campy.Parallel.For(1, simpleKernel);
             }
         }
 

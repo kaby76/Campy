@@ -2202,6 +2202,18 @@
 
                 state._stack.Push(ret);
             }
+            else if (t1.isPointerTy() && t2.isPointerTy())
+            {
+                // Cast pointers to integer, then compare.
+                var diff = LLVM.BuildPtrDiff(Builder, v1.V, v2.V, "i" + instruction_id++);
+                var ret = new VALUE(diff);
+                if (Campy.Utils.Options.IsOn("jit_trace"))
+                    System.Console.WriteLine(ret);
+                state._stack.Push(ret);
+            }
+            else
+                throw new Exception("Unhandled binary operation for given types. "
+                                    + t1 + " " + t2);
 
             return Next;
         }
@@ -3504,12 +3516,51 @@
 
         public override INST Convert(STATE<VALUE> state)
         {
-            var operand = this.Operand;
-            System.Type t = operand.GetType();
-            if (t.FullName == "Mono.Cecil.PointerType")
-                state._stack.Push(new VALUE(LLVM.ConstInt(LLVM.Int32Type(), 8, false)));
-            else
-                throw new Exception("Unimplemented sizeof");
+            ValueRef new_obj;
+
+            // Allocate an object of the correct type, then copy to pointer returned.
+            // This boxes the value.
+            var xx1 = RUNTIME.BclNativeMethods.ToList();
+            var xx2 = RUNTIME.PtxFunctions.ToList();
+            var xx = xx2
+                .Where(t => { return t._mangled_name == "_Z14Bcl_Heap_AllocPcS_S_"; });
+            var xxx = xx.ToList();
+            RUNTIME.PtxFunction first_kv_pair = xx.FirstOrDefault();
+            if (first_kv_pair == null)
+                throw new Exception("Yikes.");
+
+            ValueRef fv2 = first_kv_pair._valueref;
+            ValueRef[] args = new ValueRef[3];
+            // Get type.
+            var type = this.Operand as TypeReference;
+            string type_name = type.Resolve().Name;
+            string type_namespace = type.Resolve().Namespace;
+            string type_assembly = type.Resolve().Module.Name;
+
+            var p0 = LLVM.BuildGlobalString(Builder, type_assembly, "i" + instruction_id++);
+            var p1 = LLVM.BuildGlobalString(Builder, type_namespace, "i" + instruction_id++);
+            var p2 = LLVM.BuildGlobalString(Builder, type_name, "i" + instruction_id++);
+            System.Console.WriteLine(new VALUE(p0));
+
+            var pp0 = LLVM.BuildBitCast(Builder, p0, LLVM.PointerType(LLVM.Int8Type(), 0), "i" + instruction_id++);
+            var pp1 = LLVM.BuildBitCast(Builder, p1, LLVM.PointerType(LLVM.Int8Type(), 0), "i" + instruction_id++);
+            var pp2 = LLVM.BuildBitCast(Builder, p2, LLVM.PointerType(LLVM.Int8Type(), 0), "i" + instruction_id++);
+            System.Console.WriteLine(new VALUE(pp0));
+
+            args[0] = pp0;
+            args[1] = pp1;
+            args[2] = pp2;
+            var call = LLVM.BuildCall(Builder, fv2, args, "i" + instruction_id++);
+            new_obj = call;
+
+            //new_obj = LLVM.BuildBitCast(Builder,
+            //    call,
+            //    llvm_type, "i" + instruction_id++);
+
+            if (Campy.Utils.Options.IsOn("jit_trace"))
+                System.Console.WriteLine(new VALUE(new_obj));
+
+            state._stack.Push(new VALUE(new_obj));
 
             return Next;
         }
@@ -4173,6 +4224,14 @@
         public i_dup(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+        }
+
+        public override INST GenerateGenerics(STATE<TypeReference> state)
+        {
+            var rhs = state._stack.Pop();
+            state._stack.Push(rhs);
+            state._stack.Push(rhs);
+            return this;
         }
 
         public override INST Convert(STATE<VALUE> state)
@@ -5260,6 +5319,14 @@
 
         public override INST Convert(STATE<VALUE> state)
         {
+            var operand = this.Operand;
+            var operand_field_reference = operand as FieldReference;
+            if (operand_field_reference == null)
+                throw new Exception("Unknown field type");
+            var ft = operand_field_reference.FieldType;
+            
+            state._stack.Push(new VALUE(LLVM.ConstInt(LLVM.Int32Type(), 0, false)));
+
             return Next;
         }
     }
