@@ -503,7 +503,6 @@ namespace ConsoleApp4
             Campy.Parallel.For(buffer.Length / 2 - 1, k =>
             {
                 int j = k + 1;
-                System.Console.WriteLine(k + " " + j);
                 int swapPos = BitReverse(j, bits);
                 var temp = buffer[j];
                 buffer[j] = buffer[swapPos];

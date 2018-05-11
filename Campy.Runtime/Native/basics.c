@@ -14,10 +14,10 @@
 #include <string.h>
 
 gpu_space_specifier struct _BCL_t * _bcl_;
-function_space_specifier void Initialize_BCL0(void * g, size_t size, int count);
+function_space_specifier void Initialize_BCL0(void * g, size_t size, size_t first_overhead, int count);
 
 
-function_space_specifier void CommonInitTheBcl(void * g, size_t size, int count, struct _BCL_t ** pbcl)
+function_space_specifier void CommonInitTheBcl(void * g, size_t size, size_t first_overhead, int count, struct _BCL_t ** pbcl)
 {
 	// Erase the structure, then afterwards set everything up.
 	struct _BCL_t * bcl = (struct _BCL_t*)g;
@@ -31,7 +31,7 @@ function_space_specifier void CommonInitTheBcl(void * g, size_t size, int count,
 	_bcl_->kernel_base_index = 0;
 
 	// Init memory allocation.
-	Initialize_BCL0(g, size, count);
+	Initialize_BCL0(g, size, first_overhead, count);
 
 	// CLIFile.
 	bcl->pFilesLoaded = NULL;
@@ -95,14 +95,14 @@ function_space_specifier void CommonInitTheBcl(void * g, size_t size, int count,
 	bcl->CorLibDone = 0;
 }
 
-function_space_specifier void InternalInitTheBcl(void * g, size_t size, int count, void * s)
+function_space_specifier void InternalInitTheBcl(void * g, size_t size, size_t first_overhead, int count, void * s)
 {
-	CommonInitTheBcl(g, size, count, (struct _BCL_t**)s);
+	CommonInitTheBcl(g, size, first_overhead, count, (struct _BCL_t**)s);
 }
 
-global_space_specifier void Initialize_BCL_Globals(void * g, size_t size, int count, struct _BCL_t ** pbcl)
+global_space_specifier void Initialize_BCL_Globals(void * g, size_t size, size_t first_overhead, int count, struct _BCL_t ** pbcl)
 {
-	CommonInitTheBcl(g, size, count, pbcl);
+	CommonInitTheBcl(g, size, first_overhead, count, pbcl);
 }
 
 global_space_specifier void Set_BCL_Globals(struct _BCL_t * bcl)
@@ -133,21 +133,21 @@ struct header_t {
 };
 
 
-function_space_specifier void Initialize_BCL0(void * g, size_t size, int count)
+function_space_specifier void Initialize_BCL0(void * g, size_t size, size_t first_overhead, int count)
 {
 	// Initialize memory allocation / malloc. Nothing can be done until this is done.
 	// Layout
 	//
 	//  ==================================
-	//  0                         bcl
-	//  0x1000                    headers
+	//  0                         bcl, the struct _BCL_t
+	//  0x1000                    headers, an array of pointers to heaps.
 	//  0x1000+size_for_headers   ptr
 	//  ==================================
 	int size_for_bcl = 0x1000;
 	_bcl_->head = (struct header_t*)(size_for_bcl + (unsigned char*)g);
 	int size_for_headers = sizeof(struct header_t) * count;
 	unsigned char * ptr = size_for_bcl + size_for_headers + (unsigned char *)_bcl_->head;
-	int overhead_for_first = 16777216;
+	int overhead_for_first = first_overhead;
 	long long s = (long long) ptr;
 	long long e = s + size;
 
@@ -186,18 +186,8 @@ function_space_specifier void Initialize_BCL0(void * g, size_t size, int count)
 	}
 }
 
-function_space_specifier struct header_t *get_free_block(size_t size)
+function_space_specifier struct header_t *get_free_block(int threadId, size_t size)
 {
-#ifdef  __CUDA_ARCH__
-	int blockId = blockIdx.x + blockIdx.y * gridDim.x
-		+ gridDim.x * gridDim.y * blockIdx.z;
-	int threadId = blockId * (blockDim.x * blockDim.y * blockDim.z)
-		+ (threadIdx.z * (blockDim.x * blockDim.y))
-		+ (threadIdx.y * blockDim.x) + threadIdx.x;
-#else
-	int threadId = 0;
-#endif
-
 	struct header_t *curr = &_bcl_->head[threadId];
 	while (curr) {
 		if (curr->is_free && curr->size >= size)
@@ -214,90 +204,56 @@ function_space_specifier int roundUp(int numToRound, int multiple)
 
 function_space_specifier void * simple_malloc(size_t size)
 {
+#ifdef  __CUDA_ARCH__
+	int blockId = blockIdx.x + blockIdx.y * gridDim.x
+		+ gridDim.x * gridDim.y * blockIdx.z;
+	int threadId = blockId * (blockDim.x * blockDim.y * blockDim.z)
+		+ (threadIdx.z * (blockDim.x * blockDim.y))
+		+ (threadIdx.y * blockDim.x) + threadIdx.x;
+#else
+	int threadId = 0;
+#endif
+
 	size_t total_size;
 	void *block;
 	struct header_t *header;
 	if (!size)
 		return NULL;
 	size = roundUp(size, 8);
-	header = get_free_block(size);
-
-//	printf("simple_malloc %d\n", size);
-//	printf("dump of entire blocks\n");
-//	struct header_t *curr = &_bcl_->head[0];
-//	while (curr) {
-//		printf("curr %llx\n", curr);
-//		printf("curr next %llx\n", curr->next);
-//		printf("curr prev %llx\n", curr->prev);
-//		printf("curr size %d\n", curr->size);
-//		printf("curr free %d\n", curr->is_free);
-//		curr = curr->next;
-//	}
-//	printf("------------------\n");
+	header = get_free_block(threadId, size);
 
 	if (header)
 	{
-//		printf("simple_malloc allocating\n");
+		printf("simple_malloc allocating\n");
 		// split block if big enough.
 		if (header->size > (size + sizeof(struct header_t)))
 		{
-//			printf("header big enough\n");
-//			printf("header %llx\n", header);
-//			printf("header next %llx\n", header->next);
-//			printf("header prev %llx\n", header->prev);
-//			printf("header size %d\n", header->size);
-//			printf("header free %d\n", header->is_free);
+			printf("split\n");
 			int original_size = header->size;
 			int skip = size + sizeof(struct header_t);
-//			printf("skip %d\n", skip);
 			unsigned char * ptr = ((unsigned char *)header) + skip;
 			struct header_t * new_free = (struct header_t *)ptr;
 			new_free->is_free = 1;
 			new_free->size = original_size - skip;
 			new_free->prev = header->prev;
 			new_free->next = header->next;
-//			printf("header %llx\n", header);
-//			printf("header next %llx\n", header->next);
-//			printf("header prev %llx\n", header->prev);
-//			printf("header size %d\n", header->size);
-//			printf("header free %d\n", header->is_free);
-//			printf("new_free %llx\n", new_free);
-//			printf("new_free next %llx\n", new_free->next);
-//			printf("new_free prev %llx\n", new_free->prev);
-//			printf("new_free size %d\n", new_free->size);
-//			printf("new_free free %d\n", new_free->is_free);
-//			printf("----\n");
 			if (new_free->prev != NULL)
 			{
 				new_free->prev->next = new_free;
-//				printf("updated\n");
 			}
 			header->size = size;
-//			printf("header next %llx\n", header->next);
-//			printf("header prev %llx\n", header->prev);
-//			printf("header size %d\n", header->size);
-//			printf("header free %d\n", header->is_free);
-//			printf("new_free %llx\n", new_free);
-//			printf("new_free next %llx\n", new_free->next);
-//			printf("new_free prev %llx\n", new_free->prev);
-//			printf("new_free size %d\n", new_free->size);
-//			printf("new_free free %d\n", new_free->is_free);
-//			printf("++++\n");
 		}
 		header->is_free = 0;
-//		printf("dump of entire blocks after\n");
-//		struct header_t *curr2 = &_bcl_->head[0];
-//		while (curr2) {
-//			printf("curr %llx\n", curr2);
-//			printf("curr next %llx\n", curr2->next);
-//			printf("curr prev %llx\n", curr2->prev);
-//			printf("curr size %d\n", curr2->size);
-//			printf("curr free %d\n", curr2->is_free);
-//			curr2 = curr2->next;
-//		}
-//		printf("------------------\n");
+		size_t free = 0;
+		struct header_t *curr2 = &_bcl_->head[0];
+		while (curr2) {
+			if (curr2->is_free) free += (curr2->size);
+			curr2 = curr2->next;
+		}
+		printf("Memory of heap %d left %lld\n", threadId, free);
 		return (void*)(header + 1);
 	}
+	Crash("No memory left.");
 	return NULL;
 }
 

@@ -3518,44 +3518,36 @@
         {
             ValueRef new_obj;
 
-            // Allocate an object of the correct type, then copy to pointer returned.
+            // Get meta of object--right now.
+            var operand = this.Operand;
+            var tr = operand as TypeReference;
+            var meta = RUNTIME.GetBclType(tr);
+
+            // Generate code to allocate object and stuff.
             // This boxes the value.
             var xx1 = RUNTIME.BclNativeMethods.ToList();
             var xx2 = RUNTIME.PtxFunctions.ToList();
             var xx = xx2
-                .Where(t => { return t._mangled_name == "_Z14Bcl_Heap_AllocPcS_S_"; });
+                .Where(t => { return t._mangled_name == "_Z23Heap_AllocTypeVoidStarsPv"; });
             var xxx = xx.ToList();
             RUNTIME.PtxFunction first_kv_pair = xx.FirstOrDefault();
             if (first_kv_pair == null)
                 throw new Exception("Yikes.");
 
             ValueRef fv2 = first_kv_pair._valueref;
-            ValueRef[] args = new ValueRef[3];
-            // Get type.
-            var type = this.Operand as TypeReference;
-            string type_name = type.Resolve().Name;
-            string type_namespace = type.Resolve().Namespace;
-            string type_assembly = type.Resolve().Module.Name;
+            ValueRef[] args = new ValueRef[1];
 
-            var p0 = LLVM.BuildGlobalString(Builder, type_assembly, "i" + instruction_id++);
-            var p1 = LLVM.BuildGlobalString(Builder, type_namespace, "i" + instruction_id++);
-            var p2 = LLVM.BuildGlobalString(Builder, type_name, "i" + instruction_id++);
-            System.Console.WriteLine(new VALUE(p0));
-
-            var pp0 = LLVM.BuildBitCast(Builder, p0, LLVM.PointerType(LLVM.Int8Type(), 0), "i" + instruction_id++);
-            var pp1 = LLVM.BuildBitCast(Builder, p1, LLVM.PointerType(LLVM.Int8Type(), 0), "i" + instruction_id++);
-            var pp2 = LLVM.BuildBitCast(Builder, p2, LLVM.PointerType(LLVM.Int8Type(), 0), "i" + instruction_id++);
-            System.Console.WriteLine(new VALUE(pp0));
-
-            args[0] = pp0;
-            args[1] = pp1;
-            args[2] = pp2;
+            args[0] = LLVM.BuildIntToPtr(Builder,
+                LLVM.ConstInt(LLVM.Int64Type(), (ulong) meta.ToInt64(), false),
+                LLVM.PointerType(LLVM.VoidType(), 0),
+                "i" + instruction_id++);
             var call = LLVM.BuildCall(Builder, fv2, args, "i" + instruction_id++);
             new_obj = call;
 
-            //new_obj = LLVM.BuildBitCast(Builder,
-            //    call,
-            //    llvm_type, "i" + instruction_id++);
+            // Stuff value on stack to pointer object.
+            var v = state._stack.Pop();
+
+
 
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(new VALUE(new_obj));
@@ -5532,128 +5524,62 @@
 
         public override INST GenerateGenerics(STATE<TypeReference> state)
         {
-            // Get some basic information about the instruction, method, and type of object to create.
-            var inst = this;
-            object operand = this.Operand;
-            MethodReference method = operand as MethodReference;
+			INST new_inst = this;
 
-            CFG graph = (CFG)this.Block._graph;
-            TypeReference type = method.DeclaringType;
-            if (type == null)
-                throw new Exception("Cannot get type of object/value for newobj instruction.");
-            bool is_type_value_type = type.IsValueType;
-            var name = JITER.MethodName(method);
-            CFG.Vertex the_entry = this.Block._graph.Vertices.Where(node
-                =>
-            {
-                var g = inst.Block._graph;
-                CFG.Vertex v = node;
-                JITER c = JITER.Singleton;
-                if (v.IsEntry && JITER.MethodName(v._original_method_reference) == name && c.IsFullyInstantiatedNode(v))
-                    return true;
-                else return false;
-            }).ToList().FirstOrDefault();
-            var td = type.Resolve();
+			// Successor is fallthrough.
+			object method = this.Operand;
 
-            // There four basic cases for newobj:
-            // 1) type is a value type
-            //   The object must be allocated on the stack, and the contrustor called with a pointer to that.
-            //   a) the_entry is null, which means the constructor is a C function.
-            //   b) the_entry is NOT null, which means the constructor is further CIL code.
-            // 2) type is a reference_type.
-            //   The object will be allocated on the heap, but done according to a convention of DNA.
-            //   b) the_entry is null, which means the constructor is a C function, and it performs the allocation.
-            //   c) the_entry is NOT null, which means we must allocate the object, then call the constructor, which is further CIL code.
-            if (is_type_value_type && the_entry == null)
-            {
-            }
-            else if (is_type_value_type && the_entry != null)
-            {
-                int nargs = the_entry.StackNumberOfArguments;
-                int ret = the_entry.HasScalarReturnValue ? 1 : 0;
+			if (method as Mono.Cecil.MethodReference == null)
+				throw new Exception();
 
-                // Set up args, type casting if required.
-                for (int k = nargs - 1; k >= 1; --k)
-                {
-                    var v = state._stack.Pop();
-                }
-                state._stack.Push(the_entry._method_definition.ReturnType);
-            }
-            else if (!is_type_value_type && the_entry == null)
-            {
-                Mono.Cecil.MethodReturnType cs_method_return_type_aux = method.MethodReturnType;
-                Mono.Cecil.TypeReference cs_method_return_type = cs_method_return_type_aux.ReturnType;
-                var cs_has_ret = cs_method_return_type.FullName != "System.Void";
-                var cs_HasScalarReturnValue = cs_has_ret && !cs_method_return_type.IsStruct();
-                var cs_HasStructReturnValue = cs_has_ret && cs_method_return_type.IsStruct();
-                var cs_HasThis = method.HasThis;
-                var cs_NumberOfArguments = method.Parameters.Count
-                                        + (cs_HasThis ? 1 : 0)
-                                        + (cs_HasStructReturnValue ? 1 : 0);
-                int locals = 0;
-                var NumberOfLocals = locals;
-                int cs_xret = (cs_HasScalarReturnValue || cs_HasStructReturnValue) ? 1 : 0;
-                int cs_xargs = cs_NumberOfArguments;
-                // Search for native function in loaded libraries.
-                name = method.Name;
-                var full_name = method.FullName;
-                Regex regex = new Regex(@"^[^\s]+\s+(?<name>[^\(]+).+$");
-                Match m = regex.Match(full_name);
-                if (!m.Success) throw new Exception();
-                var demangled_name = m.Groups["name"].Value;
-                demangled_name = demangled_name.Replace("::", "_");
-                demangled_name = demangled_name.Replace(".", "_");
-                demangled_name = demangled_name.Replace("__", "_");
-                BuilderRef bu = this.Builder;
-                var as_name = method.Module.Assembly.Name;
-                var xx = RUNTIME.BclNativeMethods
-                    .Where(t =>
-                    {
-                        return t._full_name == full_name;
-                    });
-                var xxx = xx.ToList();
-                RUNTIME.BclNativeMethod first_kv_pair = xx.FirstOrDefault();
-                if (first_kv_pair == null)
-                    throw new Exception("Yikes.");
+			Mono.Cecil.MethodReference mr = method as Mono.Cecil.MethodReference;
+			int xargs = (mr.HasThis ? 1 : 0) + mr.Parameters.Count;
 
-                RUNTIME.PtxFunction fffv = RUNTIME.PtxFunctions.Where(t => t._short_name == first_kv_pair._native_name).First();
-                {
-                    var entry = this.Block.Entry.LlvmInfo.BasicBlock;
-                    for (int i = method.Parameters.Count - 1; i >= 0; i--)
-                    {
-                        var p = state._stack.Pop();
-                    }
+			if (mr.DeclaringType != null && mr.DeclaringType.HasGenericParameters)
+			{
+				// Instantiate a generic type and rewrite the
+				// instruction with new target.
+				// Try "this".
+				if (mr.HasThis)
+				{
+					// Grab "this" from stack and generate the type.
+					var this_parameter = state._stack.PeekTop(xargs-1);
+					var declaring_type = mr.DeclaringType;
+					var new_type = this_parameter.ConvertGenericInstanceTypeToNonGenericInstanceType();
 
-                    var native_return_type2 = first_kv_pair._returnType;
-                    state._stack.Push(native_return_type2);
-                }
-            }
-            else if (!is_type_value_type && the_entry != null)
-            {
-                var xx1 = RUNTIME.BclNativeMethods.ToList();
-                var xx2 = RUNTIME.PtxFunctions.ToList();
+					// Get the method from the non-generic (real instance) type.
+					mr = new_type.Resolve().Methods.Where(j =>
+					{
+						if (j.Name != mr.Name) return false;
+						if (j.Parameters.Count != mr.Parameters.Count) return false;
+						return true;
+					}).First();
 
-                var xx = xx2
-                    .Where(t => { return t._mangled_name == "_Z14Bcl_Heap_AllocPcS_S_"; });
-                var xxx = xx.ToList();
-                RUNTIME.PtxFunction first_kv_pair = xx.FirstOrDefault();
-                if (first_kv_pair == null)
-                    throw new Exception("Yikes.");
+					// Create new instruction to replace this one.
+					var worker = this.Body.GetILProcessor();
+					Instruction new_mono_inst = worker.Create(
+						this.OpCode, mr);
+					new_mono_inst.Offset = this.Instruction.Offset;
+					new_inst = Wrap(new_mono_inst, this.Body, this.Block, this.SeqPoint);
+				}
+			}
 
-                string type_name = type.Resolve().Name;
-                string type_namespace = type.Resolve().Namespace;
-                string type_assembly = type.Resolve().Module.Name;
-                int nargs = the_entry.StackNumberOfArguments;
-                int ret = the_entry.HasScalarReturnValue ? 1 : 0;
+			{
+				var name = JITER.MethodName(mr);
 
-                for (int k = nargs - 1; k >= 1; --k)
-                {
-                    var v = state._stack.Pop();
-                }
+				// Set up args, type casting if required.
+				for (int k = 0; k < xargs; ++k)
+				{
+					var v = state._stack.Pop();
+				}
 
-                var dt = method.DeclaringType;
-                state._stack.Push(dt);
-            }
+				if (mr.ReturnType.FullName != "System.Void")
+				{
+					state._stack.Push(mr.ReturnType);
+				}
+			}
+
+			IMPORTER.Singleton().Add(mr);
 
             return this;
         }

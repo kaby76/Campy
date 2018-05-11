@@ -251,40 +251,51 @@ function_space_specifier static tCLIFile* LoadPEFile(void *pData) {
 	}
 
 	// Mark all generic definition types and methods as such
-	//for (i=pMetaData->tables.numRows[MD_TABLE_GENERICPARAM]; i>0; i--) {
-	//	tMD_GenericParam *pGenericParam;
-	//	IDX_TABLE ownerIdx;
+	for (i=pMetaData->tables.numRows[MD_TABLE_GENERICPARAM]; i>0; i--) {
+		tMD_GenericParam *pGenericParam;
+		IDX_TABLE ownerIdx;
 
-	//	pGenericParam = (tMD_GenericParam*)MetaData_GetTableRow
-	//		(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_GENERICPARAM, i));
-	//	ownerIdx = pGenericParam->owner;
-	//	switch (TABLE_ID(ownerIdx)) {
-	//		case MD_TABLE_TYPEDEF:
-	//			{
-	//				tMD_TypeDef *pTypeDef = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, ownerIdx);
-	//				pTypeDef->isGenericDefinition = 1;
-	//			}
-	//			break;
-	//		case MD_TABLE_METHODDEF:
-	//			{
-	//				tMD_MethodDef *pMethodDef = (tMD_MethodDef*)MetaData_GetTableRow(pMetaData, ownerIdx);
-	//				pMethodDef->isGenericDefinition = 1;
-	//			}
-	//			break;
-	//		default:
-	//			Crash("Wrong generic parameter owner: 0x%08x", ownerIdx);
-	//	}
-	//}
+		pGenericParam = (tMD_GenericParam*)MetaData_GetTableRow
+			(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_GENERICPARAM, i));
+		ownerIdx = pGenericParam->owner;
+		switch (TABLE_ID(ownerIdx)) {
+			case MD_TABLE_TYPEDEF:
+				{
+					tMD_TypeDef *pTypeDef = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, ownerIdx);
+					pTypeDef->isGenericDefinition = 1;
+				}
+				break;
+			case MD_TABLE_METHODDEF:
+				{
+					tMD_MethodDef *pMethodDef = (tMD_MethodDef*)MetaData_GetTableRow(pMetaData, ownerIdx);
+					pMethodDef->isGenericDefinition = 1;
+				}
+				break;
+			default:
+				Crash("Wrong generic parameter owner: 0x%08x", ownerIdx);
+		}
+	}
 
 	// Mark all nested classes as such
 	for (i=pMetaData->tables.numRows[MD_TABLE_NESTEDCLASS]; i>0; i--) {
 		tMD_NestedClass *pNested;
 		tMD_TypeDef *pParent, *pChild;
 
+		long long int vvv = MAKE_TABLE_INDEX(MD_TABLE_NESTEDCLASS, i);
+
+		// There seems to be some bugs here....
+		// For now, if there's a problem, just warn.
 		pNested = (tMD_NestedClass*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_NESTEDCLASS, i));
 		pParent = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->enclosingClass);
 		pChild = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->nestedClass);
-		pChild->pNestedIn = pParent;
+		if (pChild == NULL)
+		{
+			printf("Warning--meta reading is messed up.\n");
+		}
+		else
+		{
+			pChild->pNestedIn = pParent;
+		}
 	}
 
 	return pRet;

@@ -486,6 +486,13 @@ function_space_specifier HEAP_PTR Heap_Alloc(tMD_TypeDef *pTypeDef, U32 size) {
 	return pHeapEntry->memory;
 }
 
+
+function_space_specifier void* Heap_AllocTypeVoidStars(void *pTypeDef)
+{
+	return Heap_AllocType((tMD_TypeDef *)pTypeDef);
+}
+
+
 function_space_specifier HEAP_PTR Heap_AllocType(tMD_TypeDef *pTypeDef) {
 	//printf("Heap_AllocType('%s')\n", pTypeDef->name);
 	return Heap_Alloc(pTypeDef, pTypeDef->instanceMemSize);

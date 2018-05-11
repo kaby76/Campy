@@ -655,6 +655,42 @@
                 }
             }
         }
+
+
+        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclGetMetaOfType")]
+        public static extern System.IntPtr BclGetMetaOfType(
+            [MarshalAs(UnmanagedType.LPStr)] string assemblyName,
+            [MarshalAs(UnmanagedType.LPStr)] string nameSpace,
+            [MarshalAs(UnmanagedType.LPStr)] string name,
+            System.IntPtr nested);
+
+        public static IntPtr GetBclType(TypeReference type)
+        {
+            Stack<TypeReference> chain = new Stack<TypeReference>();
+            while (type != null)
+            {
+                chain.Push(type);
+                type = type.DeclaringType;
+            }
+
+            System.IntPtr result = System.IntPtr.Zero;
+
+            while (chain.Any())
+            {
+                var tr = chain.Pop();
+                tr = RUNTIME.RewriteType(tr);
+                var assembly_name = tr.Module.Name;
+                var name_space = tr.Namespace;
+                var name = tr.Name;
+                // Make sure assembly is placed in GPU BCL file system.
+                JITER.Singleton.AddAssemblyToFileSystem(tr.Module);
+                result = BclGetMetaOfType(assembly_name, name_space, name, result);
+            }
+
+            return result;
+        }
+
+
     }
 }
 

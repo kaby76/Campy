@@ -16,6 +16,14 @@
 	.param .b64 _Z7Gmallocy_param_0
 )
 ;
+.visible .func _Z12Gfs_add_filePcS_yPi
+(
+	.param .b64 _Z12Gfs_add_filePcS_yPi_param_0,
+	.param .b64 _Z12Gfs_add_filePcS_yPi_param_1,
+	.param .b64 _Z12Gfs_add_filePcS_yPi_param_2,
+	.param .b64 _Z12Gfs_add_filePcS_yPi_param_3
+)
+;
 .extern .func  (.param .b64 func_retval0) _Z7GstrdupPKc
 (
 	.param .b64 _Z7GstrdupPKc_param_0
@@ -272,8 +280,8 @@ tmp11:
 func_end5:
 }
 
-	// .globl	_Z8Gfs_initv
-.visible .func _Z8Gfs_initv(
+	// .globl	_Z20CommonInitFileSystemv
+.visible .func _Z20CommonInitFileSystemv(
 
 )
 {
@@ -282,31 +290,31 @@ func_end5:
 	.reg .b64 	%rd<38>;
 
 
-	.loc 1 39 1
+	.loc 1 35 1
 func_begin6:
 	.loc	1 0 0
 
-	.loc 1 39 1
+	.loc 1 35 1
 
 func_exec_begin6:
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:41 	_bcl_->initial_size = 10;
-	.loc	1 41 2
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:37 	_bcl_->initial_size = 10;
+	.loc	1 37 2
 	mov.u64 	%rd1, _bcl_;
 	cvta.global.u64 	%rd2, %rd1;
 	ld.u64 	%rd3, [%rd2];
 	mov.u32 	%r1, 10;
 	st.u32 	[%rd3+60], %r1;
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:42 	_bcl_->names = (char**)Gmalloc(_bcl_->initial_size * sizeof(char*));
-	.loc	1 42 2
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:38 	_bcl_->names = (char**)Gmalloc(_bcl_->initial_size * sizeof(char*));
+	.loc	1 38 2
 	ld.u64 	%rd4, [%rd2];
 	ld.u32 	%r2, [%rd4+60];
 	cvt.s64.s32	%rd5, %r2;
 	mul.lo.s64 	%rd6, %rd5, 8;
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:42 	_bcl_->names = (char**)Gmalloc(_bcl_->initial_size * sizeof(char*));
-	.loc	1 42 25
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:38 	_bcl_->names = (char**)Gmalloc(_bcl_->initial_size * sizeof(char*));
+	.loc	1 38 25
 	// Callseq Start 0
 	{
 	.reg .b32 temp_param_reg;
@@ -326,8 +334,8 @@ func_exec_begin6:
 	ld.u64 	%rd8, [%rd2];
 	st.u64 	[%rd8+32], %rd7;
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:43 	memset(_bcl_->names, 0, _bcl_->initial_size * sizeof(char*));
-	.loc	1 43 2
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:39 	memset(_bcl_->names, 0, _bcl_->initial_size * sizeof(char*));
+	.loc	1 39 2
 	ld.u64 	%rd9, [%rd2];
 	ld.u64 	%rd10, [%rd9+32];
 	ld.u64 	%rd11, [%rd2];
@@ -358,15 +366,15 @@ func_exec_begin6:
 	//{
 	}// Callseq End 1
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:44 	_bcl_->files = (char**)Gmalloc(_bcl_->initial_size * sizeof(char*));
-	.loc	1 44 2
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:40 	_bcl_->files = (char**)Gmalloc(_bcl_->initial_size * sizeof(char*));
+	.loc	1 40 2
 	ld.u64 	%rd15, [%rd2];
 	ld.u32 	%r5, [%rd15+60];
 	cvt.s64.s32	%rd16, %r5;
 	mul.lo.s64 	%rd17, %rd16, 8;
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:44 	_bcl_->files = (char**)Gmalloc(_bcl_->initial_size * sizeof(char*));
-	.loc	1 44 25
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:40 	_bcl_->files = (char**)Gmalloc(_bcl_->initial_size * sizeof(char*));
+	.loc	1 40 25
 	// Callseq Start 2
 	{
 	.reg .b32 temp_param_reg;
@@ -386,8 +394,8 @@ func_exec_begin6:
 	ld.u64 	%rd19, [%rd2];
 	st.u64 	[%rd19+40], %rd18;
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:45 	memset(_bcl_->files, 0, _bcl_->initial_size * sizeof(char*));
-	.loc	1 45 2
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:41 	memset(_bcl_->files, 0, _bcl_->initial_size * sizeof(char*));
+	.loc	1 41 2
 	ld.u64 	%rd20, [%rd2];
 	ld.u64 	%rd21, [%rd20+40];
 	ld.u64 	%rd22, [%rd2];
@@ -417,15 +425,15 @@ func_exec_begin6:
 	//{
 	}// Callseq End 3
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:46 	_bcl_->lengths = (size_t*)Gmalloc(_bcl_->initial_size * sizeof(size_t));
-	.loc	1 46 2
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:42 	_bcl_->lengths = (size_t*)Gmalloc(_bcl_->initial_size * sizeof(size_t));
+	.loc	1 42 2
 	ld.u64 	%rd26, [%rd2];
 	ld.u32 	%r7, [%rd26+60];
 	cvt.s64.s32	%rd27, %r7;
 	mul.lo.s64 	%rd28, %rd27, 8;
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:46 	_bcl_->lengths = (size_t*)Gmalloc(_bcl_->initial_size * sizeof(size_t));
-	.loc	1 46 28
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:42 	_bcl_->lengths = (size_t*)Gmalloc(_bcl_->initial_size * sizeof(size_t));
+	.loc	1 42 28
 	// Callseq Start 4
 	{
 	.reg .b32 temp_param_reg;
@@ -445,8 +453,8 @@ func_exec_begin6:
 	ld.u64 	%rd30, [%rd2];
 	st.u64 	[%rd30+48], %rd29;
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:47 	memset(_bcl_->lengths, 0, _bcl_->initial_size * sizeof(size_t));
-	.loc	1 47 2
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:43 	memset(_bcl_->lengths, 0, _bcl_->initial_size * sizeof(size_t));
+	.loc	1 43 2
 	ld.u64 	%rd31, [%rd2];
 	ld.u64 	%rd32, [%rd31+48];
 	ld.u64 	%rd33, [%rd2];
@@ -476,1053 +484,83 @@ func_exec_begin6:
 	//{
 	}// Callseq End 5
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:48 	_bcl_->init = 1;
-	.loc	1 48 2
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:44 	_bcl_->init = 1;
+	.loc	1 44 2
 	ld.u64 	%rd37, [%rd2];
 	mov.u16 	%rs1, 1;
 	st.u8 	[%rd37+56], %rs1;
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:49 }
-	.loc	1 49 1
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:45 }
+	.loc	1 45 1
 	ret;
 tmp12:
 func_end6:
 }
 
-	// .globl	_Z12Gfs_add_filePcS_yPi
-.visible .func _Z12Gfs_add_filePcS_yPi(
-	.param .b64 _Z12Gfs_add_filePcS_yPi_param_0,
-	.param .b64 _Z12Gfs_add_filePcS_yPi_param_1,
-	.param .b64 _Z12Gfs_add_filePcS_yPi_param_2,
-	.param .b64 _Z12Gfs_add_filePcS_yPi_param_3
+	// .globl	_Z22InternalInitFileSystemv
+.visible .func _Z22InternalInitFileSystemv(
+
 )
 {
-	.local .align 8 .b8 	__local_depot7[16];
-	.reg .b64 	%SP;
-	.reg .b64 	%SPL;
-	.reg .pred 	%p<7>;
-	.reg .b16 	%rs<2>;
-	.reg .b32 	%r<10>;
-	.reg .b64 	%rd<39>;
 
 
-	.loc 1 56 1
+
+	.loc 1 47 1
 func_begin7:
 	.loc	1 0 0
 
-	.loc 1 56 1
+	.loc 1 47 1
 
-	mov.u64 	%rd38, __local_depot7;
-	cvta.local.u64 	%SP, %rd38;
-	ld.param.u64 	%rd4, [_Z12Gfs_add_filePcS_yPi_param_0];
-	ld.param.u64 	%rd5, [_Z12Gfs_add_filePcS_yPi_param_1];
-	ld.param.u64 	%rd6, [_Z12Gfs_add_filePcS_yPi_param_2];
-	ld.param.u64 	%rd7, [_Z12Gfs_add_filePcS_yPi_param_3];
-tmp13:
 func_exec_begin7:
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:58 	if (_bcl_->init == 0) Gfs_init();
-	.loc	1 58 2
-	mov.u64 	%rd8, _bcl_;
-	cvta.global.u64 	%rd9, %rd8;
-	ld.u64 	%rd10, [%rd9];
-	ld.u8 	%rs1, [%rd10+56];
-	cvt.u32.u16	%r4, %rs1;
-	and.b32  	%r5, %r4, 255;
-	setp.eq.s32	%p1, %r5, 0;
-	not.pred 	%p2, %p1;
-	@%p2 bra 	BB7_2;
-	bra.uni 	BB7_1;
-
-BB7_1:
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:58 	if (_bcl_->init == 0) Gfs_init();
-	.loc	1 58 24
-tmp14:
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:49 	CommonInitFileSystem();
+	.loc	1 49 2
 	// Callseq Start 6
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
 	call.uni 
-	_Z8Gfs_initv, 
+	_Z20CommonInitFileSystemv, 
 	(
 	);
 	
 	//{
 	}// Callseq End 6
-tmp15:
 
-BB7_2:
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:59 	char ** ptr_name = _bcl_->names;
-	.loc	1 59 19
-	mov.u64 	%rd11, _bcl_;
-	cvta.global.u64 	%rd12, %rd11;
-	ld.u64 	%rd13, [%rd12];
-	ld.u64 	%rd14, [%rd13+32];
-	mov.u64 	%rd15, %rd14;
-	st.u64 	[%SP+0], %rd15;
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:60 	char ** ptr_file = _bcl_->files;
-	.loc	1 60 19
-	ld.u64 	%rd16, [%rd12];
-	ld.u64 	%rd17, [%rd16+40];
-	mov.u64 	%rd18, %rd17;
-	st.u64 	[%SP+8], %rd18;
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:61 	size_t * ptr_length = _bcl_->lengths;
-	.loc	1 61 22
-	ld.u64 	%rd19, [%rd12];
-	ld.u64 	%rd20, [%rd19+48];
-	mov.u64 	%rd1, %rd20;
-tmp16:
-	mov.u32 	%r6, 0;
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:62 	for (int i = 0; i < _bcl_->initial_size; ++i)
-	.loc	1 62 13
-tmp17:
-	mov.b32 	%r1, %r6;
-tmp18:
-	mov.u64 	%rd37, %rd1;
-tmp19:
-	mov.u32 	%r9, %r1;
-tmp20:
-
-BB7_3:
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:62 	for (int i = 0; i < _bcl_->initial_size; ++i)
-	.loc	1 62 2
-	mov.u32 	%r2, %r9;
-	mov.u64 	%rd2, %rd37;
-tmp21:
-	mov.u64 	%rd21, _bcl_;
-	cvta.global.u64 	%rd22, %rd21;
-	ld.u64 	%rd23, [%rd22];
-	ld.u32 	%r7, [%rd23+60];
-	setp.lt.s32	%p3, %r2, %r7;
-	not.pred 	%p4, %p3;
-	@%p4 bra 	BB7_9;
-	bra.uni 	BB7_4;
-
-BB7_4:
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:64 		if (*ptr_name == NULL)
-	.loc	1 64 3
-tmp22:
-	ld.u64 	%rd24, [%SP+0];
-	ld.u64 	%rd25, [%rd24];
-	setp.eq.s64	%p5, %rd25, 0;
-	not.pred 	%p6, %p5;
-	@%p6 bra 	BB7_6;
-	bra.uni 	BB7_5;
-
-BB7_5:
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:66 			*ptr_name = Gstrdup(name);
-	.loc	1 66 16
-tmp23:
-	// Callseq Start 7
-	{
-	.reg .b32 temp_param_reg;
-	// <end>}
-	.param .b64 param0;
-	st.param.b64	[param0+0], %rd4;
-	.param .b64 retval0;
-	call.uni (retval0), 
-	_Z7GstrdupPKc, 
-	(
-	param0
-	);
-	ld.param.b64	%rd30, [retval0+0];
-	
-	//{
-	}// Callseq End 7
-	ld.u64 	%rd31, [%SP+0];
-	st.u64 	[%rd31], %rd30;
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:67 			*ptr_file = (char *)Gmalloc(length);
-	.loc	1 67 24
-	// Callseq Start 8
-	{
-	.reg .b32 temp_param_reg;
-	// <end>}
-	.param .b64 param0;
-	st.param.b64	[param0+0], %rd6;
-	.param .b64 retval0;
-	call.uni (retval0), 
-	_Z7Gmallocy, 
-	(
-	param0
-	);
-	ld.param.b64	%rd32, [retval0+0];
-	
-	//{
-	}// Callseq End 8
-	ld.u64 	%rd33, [%SP+8];
-	st.u64 	[%rd33], %rd32;
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:68 			memcpy(*ptr_file, file, length);
-	.loc	1 68 4
-	ld.u64 	%rd34, [%SP+8];
-	ld.u64 	%rd35, [%rd34];
-	// Callseq Start 9
-	{
-	.reg .b32 temp_param_reg;
-	// <end>}
-	.param .b64 param0;
-	st.param.b64	[param0+0], %rd35;
-	.param .b64 param1;
-	st.param.b64	[param1+0], %rd5;
-	.param .b64 param2;
-	st.param.b64	[param2+0], %rd6;
-	.param .b64 retval0;
-	call.uni (retval0), 
-	memcpy, 
-	(
-	param0, 
-	param1, 
-	param2
-	);
-	ld.param.b64	%rd36, [retval0+0];
-	
-	//{
-	}// Callseq End 9
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:69 			*ptr_length = length;
-	.loc	1 69 4
-	st.u64 	[%rd2], %rd6;
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:70 			*result = i;
-	.loc	1 70 4
-	st.u32 	[%rd7], %r2;
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:71 			return;
-	.loc	1 71 4
-	bra.uni 	BB7_10;
-tmp24:
-
-BB7_6:
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:75 			ptr_name++;
-	.loc	1 75 4
-	ld.u64 	%rd26, [%SP+0];
-	add.s64 	%rd27, %rd26, 8;
-	st.u64 	[%SP+0], %rd27;
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:76 			ptr_file++;
-	.loc	1 76 4
-	ld.u64 	%rd28, [%SP+8];
-	add.s64 	%rd29, %rd28, 8;
-	st.u64 	[%SP+8], %rd29;
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:77 			ptr_length++;
-	.loc	1 77 4
-	add.s64 	%rd3, %rd2, 8;
-tmp25:
-
-
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:62 	for (int i = 0; i < _bcl_->initial_size; ++i)
-	.loc	1 62 43
-	add.s32 	%r3, %r2, 1;
-tmp26:
-	mov.u64 	%rd37, %rd3;
-tmp27:
-	mov.u32 	%r9, %r3;
-tmp28:
-	bra.uni 	BB7_3;
-tmp29:
-
-BB7_9:
-	mov.u32 	%r8, -1;
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:80 	*result = -1;
-	.loc	1 80 2
-	st.u32 	[%rd7], %r8;
-
-BB7_10:
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:81 }
-	.loc	1 81 1
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:50 }
+	.loc	1 50 1
 	ret;
-tmp30:
+tmp13:
 func_end7:
 }
 
-	// .globl	_Z15Gfs_remove_filePcPi
-.visible .func _Z15Gfs_remove_filePcPi(
-	.param .b64 _Z15Gfs_remove_filePcPi_param_0,
-	.param .b64 _Z15Gfs_remove_filePcPi_param_1
+	// .globl	_Z18InternalGfsAddFilePvS_yS_
+.visible .func _Z18InternalGfsAddFilePvS_yS_(
+	.param .b64 _Z18InternalGfsAddFilePvS_yS__param_0,
+	.param .b64 _Z18InternalGfsAddFilePvS_yS__param_1,
+	.param .b64 _Z18InternalGfsAddFilePvS_yS__param_2,
+	.param .b64 _Z18InternalGfsAddFilePvS_yS__param_3
 )
 {
-	.local .align 8 .b8 	__local_depot8[16];
-	.reg .b64 	%SP;
-	.reg .b64 	%SPL;
-	.reg .pred 	%p<12>;
-	.reg .b16 	%rs<2>;
-	.reg .b32 	%r<11>;
-	.reg .b64 	%rd<39>;
+	.reg .b64 	%rd<5>;
 
 
-	.loc 1 88 1
+	.loc 1 57 1
 func_begin8:
 	.loc	1 0 0
 
-	.loc 1 88 1
+	.loc 1 57 1
 
-	mov.u64 	%rd38, __local_depot8;
-	cvta.local.u64 	%SP, %rd38;
-	ld.param.u64 	%rd4, [_Z15Gfs_remove_filePcPi_param_0];
-	ld.param.u64 	%rd5, [_Z15Gfs_remove_filePcPi_param_1];
-tmp31:
+	ld.param.u64 	%rd1, [_Z18InternalGfsAddFilePvS_yS__param_0];
+	ld.param.u64 	%rd2, [_Z18InternalGfsAddFilePvS_yS__param_1];
+	ld.param.u64 	%rd3, [_Z18InternalGfsAddFilePvS_yS__param_2];
+	ld.param.u64 	%rd4, [_Z18InternalGfsAddFilePvS_yS__param_3];
 func_exec_begin8:
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:91 	if (_bcl_->init == 0) Gfs_init();
-	.loc	1 91 2
-	mov.u64 	%rd6, _bcl_;
-	cvta.global.u64 	%rd7, %rd6;
-	ld.u64 	%rd8, [%rd7];
-	ld.u8 	%rs1, [%rd8+56];
-	cvt.u32.u16	%r4, %rs1;
-	and.b32  	%r5, %r4, 255;
-	setp.eq.s32	%p3, %r5, 0;
-	not.pred 	%p4, %p3;
-	@%p4 bra 	BB8_2;
-	bra.uni 	BB8_1;
-
-BB8_1:
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:91 	if (_bcl_->init == 0) Gfs_init();
-	.loc	1 91 24
-tmp32:
-	// Callseq Start 10
-	{
-	.reg .b32 temp_param_reg;
-	// <end>}
-	call.uni 
-	_Z8Gfs_initv, 
-	(
-	);
-	
-	//{
-	}// Callseq End 10
-tmp33:
-
-BB8_2:
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:92 	char ** ptr_name = _bcl_->names;
-	.loc	1 92 19
-	mov.u64 	%rd9, _bcl_;
-	cvta.global.u64 	%rd10, %rd9;
-	ld.u64 	%rd11, [%rd10];
-	ld.u64 	%rd12, [%rd11+32];
-	mov.u64 	%rd13, %rd12;
-	st.u64 	[%SP+0], %rd13;
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:93 	char ** ptr_file = _bcl_->files;
-	.loc	1 93 19
-	ld.u64 	%rd14, [%rd10];
-	ld.u64 	%rd15, [%rd14+40];
-	mov.u64 	%rd16, %rd15;
-	st.u64 	[%SP+8], %rd16;
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:94 	size_t * ptr_length = _bcl_->lengths;
-	.loc	1 94 22
-	ld.u64 	%rd17, [%rd10];
-	ld.u64 	%rd18, [%rd17+48];
-	mov.u64 	%rd1, %rd18;
-tmp34:
-	mov.u32 	%r6, 0;
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:95 	for (int i = 0; i < _bcl_->initial_size; ++i)
-	.loc	1 95 13
-tmp35:
-	mov.b32 	%r1, %r6;
-tmp36:
-	mov.u64 	%rd37, %rd1;
-tmp37:
-	mov.u32 	%r10, %r1;
-tmp38:
-
-BB8_3:
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:95 	for (int i = 0; i < _bcl_->initial_size; ++i)
-	.loc	1 95 2
-	mov.u32 	%r2, %r10;
-	mov.u64 	%rd2, %rd37;
-tmp39:
-	mov.u64 	%rd19, _bcl_;
-	cvta.global.u64 	%rd20, %rd19;
-	ld.u64 	%rd21, [%rd20];
-	ld.u32 	%r7, [%rd21+60];
-	setp.lt.s32	%p5, %r2, %r7;
-	not.pred 	%p6, %p5;
-	@%p6 bra 	BB8_11;
-	bra.uni 	BB8_4;
-
-BB8_4:
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:97 		if (*ptr_name != NULL && Gstrcmp(*ptr_name, name) == 0)
-	.loc	1 97 3
-tmp40:
-	ld.u64 	%rd22, [%SP+0];
-	ld.u64 	%rd23, [%rd22];
-	setp.ne.s64	%p8, %rd23, 0;
-	mov.pred 	%p7, 0;
-	not.pred 	%p9, %p8;
-	mov.pred 	%p11, %p7;
-	@%p9 bra 	BB8_6;
-	bra.uni 	BB8_5;
-
-BB8_5:
-	ld.u64 	%rd24, [%SP+0];
-	ld.u64 	%rd25, [%rd24];
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:97 		if (*ptr_name != NULL && Gstrcmp(*ptr_name, name) == 0)
-	.loc	1 97 25
-	// Callseq Start 11
-	{
-	.reg .b32 temp_param_reg;
-	// <end>}
-	.param .b64 param0;
-	st.param.b64	[param0+0], %rd25;
-	.param .b64 param1;
-	st.param.b64	[param1+0], %rd4;
-	.param .b32 retval0;
-	call.uni (retval0), 
-	_Z7GstrcmpPKcS0_, 
-	(
-	param0, 
-	param1
-	);
-	ld.param.b32	%r9, [retval0+0];
-	
-	//{
-	}// Callseq End 11
-	setp.eq.s32	%p1, %r9, 0;
-	mov.pred 	%p11, %p1;
-
-BB8_6:
-	mov.pred 	%p2, %p11;
-	not.pred 	%p10, %p2;
-	@%p10 bra 	BB8_8;
-	bra.uni 	BB8_7;
-
-BB8_7:
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:99 			Gfree(*ptr_name);
-	.loc	1 99 4
-tmp41:
-	ld.u64 	%rd30, [%SP+0];
-	ld.u64 	%rd31, [%rd30];
-	// Callseq Start 12
-	{
-	.reg .b32 temp_param_reg;
-	// <end>}
-	.param .b64 param0;
-	st.param.b64	[param0+0], %rd31;
-	call.uni 
-	_Z5GfreePv, 
-	(
-	param0
-	);
-	
-	//{
-	}// Callseq End 12
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:100 			*ptr_name = NULL;
-	.loc	1 100 4
-	ld.u64 	%rd32, [%SP+0];
-	mov.u64 	%rd33, 0;
-	st.u64 	[%rd32], %rd33;
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:101 			Gfree(*ptr_file);
-	.loc	1 101 4
-	ld.u64 	%rd34, [%SP+8];
-	ld.u64 	%rd35, [%rd34];
-	// Callseq Start 13
-	{
-	.reg .b32 temp_param_reg;
-	// <end>}
-	.param .b64 param0;
-	st.param.b64	[param0+0], %rd35;
-	call.uni 
-	_Z5GfreePv, 
-	(
-	param0
-	);
-	
-	//{
-	}// Callseq End 13
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:102 			*ptr_file = NULL;
-	.loc	1 102 4
-	ld.u64 	%rd36, [%SP+8];
-	st.u64 	[%rd36], %rd33;
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:103 			*ptr_length = 0;
-	.loc	1 103 4
-	st.u64 	[%rd2], %rd33;
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:104 			*result = i;
-	.loc	1 104 4
-	st.u32 	[%rd5], %r2;
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:105 			return;
-	.loc	1 105 4
-	bra.uni 	BB8_12;
-tmp42:
-
-BB8_8:
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:109 			ptr_name++;
-	.loc	1 109 4
-	ld.u64 	%rd26, [%SP+0];
-	add.s64 	%rd27, %rd26, 8;
-	st.u64 	[%SP+0], %rd27;
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:110 			ptr_file++;
-	.loc	1 110 4
-	ld.u64 	%rd28, [%SP+8];
-	add.s64 	%rd29, %rd28, 8;
-	st.u64 	[%SP+8], %rd29;
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:111 			ptr_length++;
-	.loc	1 111 4
-	add.s64 	%rd3, %rd2, 8;
-tmp43:
-
-
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:95 	for (int i = 0; i < _bcl_->initial_size; ++i)
-	.loc	1 95 43
-	add.s32 	%r3, %r2, 1;
-tmp44:
-	mov.u64 	%rd37, %rd3;
-tmp45:
-	mov.u32 	%r10, %r3;
-tmp46:
-	bra.uni 	BB8_3;
-tmp47:
-
-BB8_11:
-	mov.u32 	%r8, -1;
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:114 	*result = -1;
-	.loc	1 114 2
-	st.u32 	[%rd5], %r8;
-
-BB8_12:
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:115 }
-	.loc	1 115 1
-	ret;
-tmp48:
-func_end8:
-}
-
-	// .globl	_Z13Gfs_open_filePcPi
-.visible .func _Z13Gfs_open_filePcPi(
-	.param .b64 _Z13Gfs_open_filePcPi_param_0,
-	.param .b64 _Z13Gfs_open_filePcPi_param_1
-)
-{
-	.local .align 8 .b8 	__local_depot9[16];
-	.reg .b64 	%SP;
-	.reg .b64 	%SPL;
-	.reg .pred 	%p<12>;
-	.reg .b16 	%rs<2>;
-	.reg .b32 	%r<11>;
-	.reg .b64 	%rd<32>;
-
-
-	.loc 1 122 1
-func_begin9:
-	.loc	1 0 0
-
-	.loc 1 122 1
-
-	mov.u64 	%rd31, __local_depot9;
-	cvta.local.u64 	%SP, %rd31;
-	ld.param.u64 	%rd4, [_Z13Gfs_open_filePcPi_param_0];
-	ld.param.u64 	%rd5, [_Z13Gfs_open_filePcPi_param_1];
-tmp49:
-func_exec_begin9:
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:124 	if (_bcl_->init == 0) Gfs_init();
-	.loc	1 124 2
-	mov.u64 	%rd6, _bcl_;
-	cvta.global.u64 	%rd7, %rd6;
-	ld.u64 	%rd8, [%rd7];
-	ld.u8 	%rs1, [%rd8+56];
-	cvt.u32.u16	%r4, %rs1;
-	and.b32  	%r5, %r4, 255;
-	setp.eq.s32	%p3, %r5, 0;
-	not.pred 	%p4, %p3;
-	@%p4 bra 	BB9_2;
-	bra.uni 	BB9_1;
-
-BB9_1:
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:124 	if (_bcl_->init == 0) Gfs_init();
-	.loc	1 124 24
-tmp50:
-	// Callseq Start 14
-	{
-	.reg .b32 temp_param_reg;
-	// <end>}
-	call.uni 
-	_Z8Gfs_initv, 
-	(
-	);
-	
-	//{
-	}// Callseq End 14
-tmp51:
-
-BB9_2:
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:125 	char ** ptr_name = _bcl_->names;
-	.loc	1 125 19
-	mov.u64 	%rd9, _bcl_;
-	cvta.global.u64 	%rd10, %rd9;
-	ld.u64 	%rd11, [%rd10];
-	ld.u64 	%rd12, [%rd11+32];
-	mov.u64 	%rd13, %rd12;
-	st.u64 	[%SP+0], %rd13;
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:126 	char ** ptr_file = _bcl_->files;
-	.loc	1 126 19
-	ld.u64 	%rd14, [%rd10];
-	ld.u64 	%rd15, [%rd14+40];
-	mov.u64 	%rd16, %rd15;
-	st.u64 	[%SP+8], %rd16;
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:127 	size_t * ptr_length = _bcl_->lengths;
-	.loc	1 127 22
-	ld.u64 	%rd17, [%rd10];
-	ld.u64 	%rd18, [%rd17+48];
-	mov.u64 	%rd1, %rd18;
-tmp52:
-	mov.u32 	%r6, 0;
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:128 	for (int i = 0; i < _bcl_->initial_size; ++i)
-	.loc	1 128 13
-tmp53:
-	mov.b32 	%r1, %r6;
-tmp54:
-	mov.u64 	%rd30, %rd1;
-tmp55:
-	mov.u32 	%r10, %r1;
-tmp56:
-
-BB9_3:
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:128 	for (int i = 0; i < _bcl_->initial_size; ++i)
-	.loc	1 128 2
-	mov.u32 	%r2, %r10;
-	mov.u64 	%rd2, %rd30;
-tmp57:
-	mov.u64 	%rd19, _bcl_;
-	cvta.global.u64 	%rd20, %rd19;
-	ld.u64 	%rd21, [%rd20];
-	ld.u32 	%r7, [%rd21+60];
-	setp.lt.s32	%p5, %r2, %r7;
-	not.pred 	%p6, %p5;
-	@%p6 bra 	BB9_11;
-	bra.uni 	BB9_4;
-
-BB9_4:
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:130 		if (*ptr_name != NULL && Gstrcmp(*ptr_name, name) == 0)
-	.loc	1 130 3
-tmp58:
-	ld.u64 	%rd22, [%SP+0];
-	ld.u64 	%rd23, [%rd22];
-	setp.ne.s64	%p8, %rd23, 0;
-	mov.pred 	%p7, 0;
-	not.pred 	%p9, %p8;
-	mov.pred 	%p11, %p7;
-	@%p9 bra 	BB9_6;
-	bra.uni 	BB9_5;
-
-BB9_5:
-	ld.u64 	%rd24, [%SP+0];
-	ld.u64 	%rd25, [%rd24];
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:130 		if (*ptr_name != NULL && Gstrcmp(*ptr_name, name) == 0)
-	.loc	1 130 25
-	// Callseq Start 15
-	{
-	.reg .b32 temp_param_reg;
-	// <end>}
-	.param .b64 param0;
-	st.param.b64	[param0+0], %rd25;
-	.param .b64 param1;
-	st.param.b64	[param1+0], %rd4;
-	.param .b32 retval0;
-	call.uni (retval0), 
-	_Z7GstrcmpPKcS0_, 
-	(
-	param0, 
-	param1
-	);
-	ld.param.b32	%r9, [retval0+0];
-	
-	//{
-	}// Callseq End 15
-	setp.eq.s32	%p1, %r9, 0;
-	mov.pred 	%p11, %p1;
-
-BB9_6:
-	mov.pred 	%p2, %p11;
-	not.pred 	%p10, %p2;
-	@%p10 bra 	BB9_8;
-	bra.uni 	BB9_7;
-
-BB9_7:
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:132 			*result = i;
-	.loc	1 132 4
-tmp59:
-	st.u32 	[%rd5], %r2;
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:133 			return;
-	.loc	1 133 4
-	bra.uni 	BB9_12;
-tmp60:
-
-BB9_8:
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:137 			ptr_name++;
-	.loc	1 137 4
-	ld.u64 	%rd26, [%SP+0];
-	add.s64 	%rd27, %rd26, 8;
-	st.u64 	[%SP+0], %rd27;
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:138 			ptr_file++;
-	.loc	1 138 4
-	ld.u64 	%rd28, [%SP+8];
-	add.s64 	%rd29, %rd28, 8;
-	st.u64 	[%SP+8], %rd29;
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:139 			ptr_length++;
-	.loc	1 139 4
-	add.s64 	%rd3, %rd2, 8;
-tmp61:
-
-
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:128 	for (int i = 0; i < _bcl_->initial_size; ++i)
-	.loc	1 128 43
-	add.s32 	%r3, %r2, 1;
-tmp62:
-	mov.u64 	%rd30, %rd3;
-tmp63:
-	mov.u32 	%r10, %r3;
-tmp64:
-	bra.uni 	BB9_3;
-tmp65:
-
-BB9_11:
-	mov.u32 	%r8, -1;
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:142 	*result = -1;
-	.loc	1 142 2
-	st.u32 	[%rd5], %r8;
-
-BB9_12:
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:143 }
-	.loc	1 143 1
-	ret;
-tmp66:
-func_end9:
-}
-
-	// .globl	_Z14Gfs_close_fileiPi
-.visible .func _Z14Gfs_close_fileiPi(
-	.param .b32 _Z14Gfs_close_fileiPi_param_0,
-	.param .b64 _Z14Gfs_close_fileiPi_param_1
-)
-{
-	.reg .pred 	%p<3>;
-	.reg .b16 	%rs<2>;
-	.reg .b32 	%r<6>;
-	.reg .b64 	%rd<5>;
-
-
-	.loc 1 150 1
-func_begin10:
-	.loc	1 0 0
-
-	.loc 1 150 1
-
-	ld.param.u32 	%r1, [_Z14Gfs_close_fileiPi_param_0];
-	ld.param.u64 	%rd1, [_Z14Gfs_close_fileiPi_param_1];
-	mov.b32 	%r2, %r1;
-func_exec_begin10:
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:152 	if (_bcl_->init == 0) Gfs_init();
-	.loc	1 152 2
-tmp67:
-	mov.u64 	%rd2, _bcl_;
-	cvta.global.u64 	%rd3, %rd2;
-	ld.u64 	%rd4, [%rd3];
-	ld.u8 	%rs1, [%rd4+56];
-	cvt.u32.u16	%r3, %rs1;
-	and.b32  	%r4, %r3, 255;
-	setp.eq.s32	%p1, %r4, 0;
-	not.pred 	%p2, %p1;
-	@%p2 bra 	BB10_2;
-	bra.uni 	BB10_1;
-
-BB10_1:
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:152 	if (_bcl_->init == 0) Gfs_init();
-	.loc	1 152 24
-tmp68:
-	// Callseq Start 16
-	{
-	.reg .b32 temp_param_reg;
-	// <end>}
-	call.uni 
-	_Z8Gfs_initv, 
-	(
-	);
-	
-	//{
-	}// Callseq End 16
-tmp69:
-
-BB10_2:
-	mov.u32 	%r5, 0;
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:153 	*result = 0;
-	.loc	1 153 2
-	st.u32 	[%rd1], %r5;
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:154 }
-	.loc	1 154 1
-	ret;
-tmp70:
-func_end10:
-}
-
-	// .globl	_Z8Gfs_readiPPc
-.visible .func _Z8Gfs_readiPPc(
-	.param .b32 _Z8Gfs_readiPPc_param_0,
-	.param .b64 _Z8Gfs_readiPPc_param_1
-)
-{
-	.reg .pred 	%p<3>;
-	.reg .b16 	%rs<2>;
-	.reg .b32 	%r<4>;
-	.reg .b64 	%rd<13>;
-
-
-	.loc 1 161 1
-func_begin11:
-	.loc	1 0 0
-
-	.loc 1 161 1
-
-	ld.param.u32 	%r1, [_Z8Gfs_readiPPc_param_0];
-	ld.param.u64 	%rd1, [_Z8Gfs_readiPPc_param_1];
-func_exec_begin11:
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:163 	if (_bcl_->init == 0) Gfs_init();
-	.loc	1 163 2
-tmp71:
-	mov.u64 	%rd2, _bcl_;
-	cvta.global.u64 	%rd3, %rd2;
-	ld.u64 	%rd4, [%rd3];
-	ld.u8 	%rs1, [%rd4+56];
-	cvt.u32.u16	%r2, %rs1;
-	and.b32  	%r3, %r2, 255;
-	setp.eq.s32	%p1, %r3, 0;
-	not.pred 	%p2, %p1;
-	@%p2 bra 	BB11_2;
-	bra.uni 	BB11_1;
-
-BB11_1:
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:163 	if (_bcl_->init == 0) Gfs_init();
-	.loc	1 163 24
-tmp72:
-	// Callseq Start 17
-	{
-	.reg .b32 temp_param_reg;
-	// <end>}
-	call.uni 
-	_Z8Gfs_initv, 
-	(
-	);
-	
-	//{
-	}// Callseq End 17
-tmp73:
-
-BB11_2:
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:164 	*result = _bcl_->files[file];
-	.loc	1 164 2
-	mov.u64 	%rd5, _bcl_;
-	cvta.global.u64 	%rd6, %rd5;
-	ld.u64 	%rd7, [%rd6];
-	ld.u64 	%rd8, [%rd7+40];
-	cvt.s64.s32	%rd9, %r1;
-	shl.b64 	%rd10, %rd9, 3;
-	add.s64 	%rd11, %rd8, %rd10;
-	ld.u64 	%rd12, [%rd11];
-	st.u64 	[%rd1], %rd12;
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:165 }
-	.loc	1 165 1
-	ret;
-tmp74:
-func_end11:
-}
-
-	// .globl	_Z10Gfs_lengthiPy
-.visible .func _Z10Gfs_lengthiPy(
-	.param .b32 _Z10Gfs_lengthiPy_param_0,
-	.param .b64 _Z10Gfs_lengthiPy_param_1
-)
-{
-	.reg .pred 	%p<3>;
-	.reg .b16 	%rs<2>;
-	.reg .b32 	%r<4>;
-	.reg .b64 	%rd<13>;
-
-
-	.loc 1 172 1
-func_begin12:
-	.loc	1 0 0
-
-	.loc 1 172 1
-
-	ld.param.u32 	%r1, [_Z10Gfs_lengthiPy_param_0];
-	ld.param.u64 	%rd1, [_Z10Gfs_lengthiPy_param_1];
-func_exec_begin12:
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:174 	if (_bcl_->init == 0) Gfs_init();
-	.loc	1 174 2
-tmp75:
-	mov.u64 	%rd2, _bcl_;
-	cvta.global.u64 	%rd3, %rd2;
-	ld.u64 	%rd4, [%rd3];
-	ld.u8 	%rs1, [%rd4+56];
-	cvt.u32.u16	%r2, %rs1;
-	and.b32  	%r3, %r2, 255;
-	setp.eq.s32	%p1, %r3, 0;
-	not.pred 	%p2, %p1;
-	@%p2 bra 	BB12_2;
-	bra.uni 	BB12_1;
-
-BB12_1:
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:174 	if (_bcl_->init == 0) Gfs_init();
-	.loc	1 174 24
-tmp76:
-	// Callseq Start 18
-	{
-	.reg .b32 temp_param_reg;
-	// <end>}
-	call.uni 
-	_Z8Gfs_initv, 
-	(
-	);
-	
-	//{
-	}// Callseq End 18
-tmp77:
-
-BB12_2:
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:175 	*result = _bcl_->lengths[file];
-	.loc	1 175 2
-	mov.u64 	%rd5, _bcl_;
-	cvta.global.u64 	%rd6, %rd5;
-	ld.u64 	%rd7, [%rd6];
-	ld.u64 	%rd8, [%rd7+48];
-	cvt.s64.s32	%rd9, %r1;
-	shl.b64 	%rd10, %rd9, 3;
-	add.s64 	%rd11, %rd8, %rd10;
-	ld.u64 	%rd12, [%rd11];
-	st.u64 	[%rd1], %rd12;
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:176 }
-	.loc	1 176 1
-	ret;
-tmp78:
-func_end12:
-}
-
-	// .globl	_Z12Bcl_Gfs_initv
-.visible .entry _Z12Bcl_Gfs_initv(
-
-)
-{
-
-
-
-	.loc 1 34 1
-func_begin13:
-	.loc	1 0 0
-
-	.loc 1 34 1
-
-func_exec_begin13:
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:36 	Gfs_init();
-	.loc	1 36 2
-	// Callseq Start 19
-	{
-	.reg .b32 temp_param_reg;
-	// <end>}
-	call.uni 
-	_Z8Gfs_initv, 
-	(
-	);
-	
-	//{
-	}// Callseq End 19
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:37 }
-	.loc	1 37 1
-	ret;
-tmp79:
-func_end13:
-}
-
-	// .globl	_Z16Bcl_Gfs_add_filePcS_yPi
-.visible .entry _Z16Bcl_Gfs_add_filePcS_yPi(
-	.param .u64 _Z16Bcl_Gfs_add_filePcS_yPi_param_0,
-	.param .u64 _Z16Bcl_Gfs_add_filePcS_yPi_param_1,
-	.param .u64 _Z16Bcl_Gfs_add_filePcS_yPi_param_2,
-	.param .u64 _Z16Bcl_Gfs_add_filePcS_yPi_param_3
-)
-{
-	.reg .b64 	%rd<5>;
-
-
-	.loc 1 51 1
-func_begin14:
-	.loc	1 0 0
-
-	.loc 1 51 1
-
-	ld.param.u64 	%rd1, [_Z16Bcl_Gfs_add_filePcS_yPi_param_0];
-	ld.param.u64 	%rd2, [_Z16Bcl_Gfs_add_filePcS_yPi_param_1];
-	ld.param.u64 	%rd3, [_Z16Bcl_Gfs_add_filePcS_yPi_param_2];
-	ld.param.u64 	%rd4, [_Z16Bcl_Gfs_add_filePcS_yPi_param_3];
-func_exec_begin14:
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:53 	Gfs_add_file(name, file, length, result);
-	.loc	1 53 2
-tmp80:
-	// Callseq Start 20
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:59 	Gfs_add_file((char*)name, (char*)file, length, (int*)result);
+	.loc	1 59 2
+tmp14:
+	// Callseq Start 7
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
@@ -1544,13 +582,1077 @@ tmp80:
 	);
 	
 	//{
-	}// Callseq End 20
+	}// Callseq End 7
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:54 }
-	.loc	1 54 1
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:60 }
+	.loc	1 60 1
+	ret;
+tmp15:
+func_end8:
+}
+
+	// .globl	_Z12Gfs_add_filePcS_yPi
+.visible .func _Z12Gfs_add_filePcS_yPi(
+	.param .b64 _Z12Gfs_add_filePcS_yPi_param_0,
+	.param .b64 _Z12Gfs_add_filePcS_yPi_param_1,
+	.param .b64 _Z12Gfs_add_filePcS_yPi_param_2,
+	.param .b64 _Z12Gfs_add_filePcS_yPi_param_3
+)
+{
+	.local .align 8 .b8 	__local_depot9[16];
+	.reg .b64 	%SP;
+	.reg .b64 	%SPL;
+	.reg .pred 	%p<7>;
+	.reg .b16 	%rs<2>;
+	.reg .b32 	%r<10>;
+	.reg .b64 	%rd<39>;
+
+
+	.loc 1 67 1
+func_begin9:
+	.loc	1 0 0
+
+	.loc 1 67 1
+
+	mov.u64 	%rd38, __local_depot9;
+	cvta.local.u64 	%SP, %rd38;
+	ld.param.u64 	%rd4, [_Z12Gfs_add_filePcS_yPi_param_0];
+	ld.param.u64 	%rd5, [_Z12Gfs_add_filePcS_yPi_param_1];
+	ld.param.u64 	%rd6, [_Z12Gfs_add_filePcS_yPi_param_2];
+	ld.param.u64 	%rd7, [_Z12Gfs_add_filePcS_yPi_param_3];
+tmp16:
+func_exec_begin9:
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:69 	if (_bcl_->init == 0) CommonInitFileSystem();
+	.loc	1 69 2
+	mov.u64 	%rd8, _bcl_;
+	cvta.global.u64 	%rd9, %rd8;
+	ld.u64 	%rd10, [%rd9];
+	ld.u8 	%rs1, [%rd10+56];
+	cvt.u32.u16	%r4, %rs1;
+	cvt.s32.s8 	%r5, %r4;
+	setp.eq.s32	%p1, %r5, 0;
+	not.pred 	%p2, %p1;
+	@%p2 bra 	BB9_2;
+	bra.uni 	BB9_1;
+
+BB9_1:
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:69 	if (_bcl_->init == 0) CommonInitFileSystem();
+	.loc	1 69 24
+tmp17:
+	// Callseq Start 8
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	call.uni 
+	_Z20CommonInitFileSystemv, 
+	(
+	);
+	
+	//{
+	}// Callseq End 8
+tmp18:
+
+BB9_2:
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:70 	char ** ptr_name = _bcl_->names;
+	.loc	1 70 19
+	mov.u64 	%rd11, _bcl_;
+	cvta.global.u64 	%rd12, %rd11;
+	ld.u64 	%rd13, [%rd12];
+	ld.u64 	%rd14, [%rd13+32];
+	mov.u64 	%rd15, %rd14;
+	st.u64 	[%SP+0], %rd15;
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:71 	char ** ptr_file = _bcl_->files;
+	.loc	1 71 19
+	ld.u64 	%rd16, [%rd12];
+	ld.u64 	%rd17, [%rd16+40];
+	mov.u64 	%rd18, %rd17;
+	st.u64 	[%SP+8], %rd18;
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:72 	size_t * ptr_length = _bcl_->lengths;
+	.loc	1 72 22
+	ld.u64 	%rd19, [%rd12];
+	ld.u64 	%rd20, [%rd19+48];
+	mov.u64 	%rd1, %rd20;
+tmp19:
+	mov.u32 	%r6, 0;
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:73 	for (int i = 0; i < _bcl_->initial_size; ++i)
+	.loc	1 73 13
+tmp20:
+	mov.b32 	%r1, %r6;
+tmp21:
+	mov.u64 	%rd37, %rd1;
+tmp22:
+	mov.u32 	%r9, %r1;
+tmp23:
+
+BB9_3:
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:73 	for (int i = 0; i < _bcl_->initial_size; ++i)
+	.loc	1 73 2
+	mov.u32 	%r2, %r9;
+	mov.u64 	%rd2, %rd37;
+tmp24:
+	mov.u64 	%rd21, _bcl_;
+	cvta.global.u64 	%rd22, %rd21;
+	ld.u64 	%rd23, [%rd22];
+	ld.u32 	%r7, [%rd23+60];
+	setp.lt.s32	%p3, %r2, %r7;
+	not.pred 	%p4, %p3;
+	@%p4 bra 	BB9_9;
+	bra.uni 	BB9_4;
+
+BB9_4:
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:75 		if (*ptr_name == NULL)
+	.loc	1 75 3
+tmp25:
+	ld.u64 	%rd24, [%SP+0];
+	ld.u64 	%rd25, [%rd24];
+	setp.eq.s64	%p5, %rd25, 0;
+	not.pred 	%p6, %p5;
+	@%p6 bra 	BB9_6;
+	bra.uni 	BB9_5;
+
+BB9_5:
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:77 			*ptr_name = Gstrdup(name);
+	.loc	1 77 16
+tmp26:
+	// Callseq Start 9
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b64 param0;
+	st.param.b64	[param0+0], %rd4;
+	.param .b64 retval0;
+	call.uni (retval0), 
+	_Z7GstrdupPKc, 
+	(
+	param0
+	);
+	ld.param.b64	%rd30, [retval0+0];
+	
+	//{
+	}// Callseq End 9
+	ld.u64 	%rd31, [%SP+0];
+	st.u64 	[%rd31], %rd30;
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:78 			*ptr_file = (char *)Gmalloc(length);
+	.loc	1 78 24
+	// Callseq Start 10
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b64 param0;
+	st.param.b64	[param0+0], %rd6;
+	.param .b64 retval0;
+	call.uni (retval0), 
+	_Z7Gmallocy, 
+	(
+	param0
+	);
+	ld.param.b64	%rd32, [retval0+0];
+	
+	//{
+	}// Callseq End 10
+	ld.u64 	%rd33, [%SP+8];
+	st.u64 	[%rd33], %rd32;
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:79 			memcpy(*ptr_file, file, length);
+	.loc	1 79 4
+	ld.u64 	%rd34, [%SP+8];
+	ld.u64 	%rd35, [%rd34];
+	// Callseq Start 11
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b64 param0;
+	st.param.b64	[param0+0], %rd35;
+	.param .b64 param1;
+	st.param.b64	[param1+0], %rd5;
+	.param .b64 param2;
+	st.param.b64	[param2+0], %rd6;
+	.param .b64 retval0;
+	call.uni (retval0), 
+	memcpy, 
+	(
+	param0, 
+	param1, 
+	param2
+	);
+	ld.param.b64	%rd36, [retval0+0];
+	
+	//{
+	}// Callseq End 11
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:80 			*ptr_length = length;
+	.loc	1 80 4
+	st.u64 	[%rd2], %rd6;
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:81 			*result = i;
+	.loc	1 81 4
+	st.u32 	[%rd7], %r2;
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:82 			return;
+	.loc	1 82 4
+	bra.uni 	BB9_10;
+tmp27:
+
+BB9_6:
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:86 			ptr_name++;
+	.loc	1 86 4
+	ld.u64 	%rd26, [%SP+0];
+	add.s64 	%rd27, %rd26, 8;
+	st.u64 	[%SP+0], %rd27;
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:87 			ptr_file++;
+	.loc	1 87 4
+	ld.u64 	%rd28, [%SP+8];
+	add.s64 	%rd29, %rd28, 8;
+	st.u64 	[%SP+8], %rd29;
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:88 			ptr_length++;
+	.loc	1 88 4
+	add.s64 	%rd3, %rd2, 8;
+tmp28:
+
+
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:73 	for (int i = 0; i < _bcl_->initial_size; ++i)
+	.loc	1 73 43
+	add.s32 	%r3, %r2, 1;
+tmp29:
+	mov.u64 	%rd37, %rd3;
+tmp30:
+	mov.u32 	%r9, %r3;
+tmp31:
+	bra.uni 	BB9_3;
+tmp32:
+
+BB9_9:
+	mov.u32 	%r8, -1;
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:91 	*result = -1;
+	.loc	1 91 2
+	st.u32 	[%rd7], %r8;
+
+BB9_10:
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:92 }
+	.loc	1 92 1
+	ret;
+tmp33:
+func_end9:
+}
+
+	// .globl	_Z15Gfs_remove_filePcPi
+.visible .func _Z15Gfs_remove_filePcPi(
+	.param .b64 _Z15Gfs_remove_filePcPi_param_0,
+	.param .b64 _Z15Gfs_remove_filePcPi_param_1
+)
+{
+	.local .align 8 .b8 	__local_depot10[16];
+	.reg .b64 	%SP;
+	.reg .b64 	%SPL;
+	.reg .pred 	%p<12>;
+	.reg .b16 	%rs<2>;
+	.reg .b32 	%r<11>;
+	.reg .b64 	%rd<39>;
+
+
+	.loc 1 99 1
+func_begin10:
+	.loc	1 0 0
+
+	.loc 1 99 1
+
+	mov.u64 	%rd38, __local_depot10;
+	cvta.local.u64 	%SP, %rd38;
+	ld.param.u64 	%rd4, [_Z15Gfs_remove_filePcPi_param_0];
+	ld.param.u64 	%rd5, [_Z15Gfs_remove_filePcPi_param_1];
+tmp34:
+func_exec_begin10:
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:102 	if (_bcl_->init == 0) CommonInitFileSystem();
+	.loc	1 102 2
+	mov.u64 	%rd6, _bcl_;
+	cvta.global.u64 	%rd7, %rd6;
+	ld.u64 	%rd8, [%rd7];
+	ld.u8 	%rs1, [%rd8+56];
+	cvt.u32.u16	%r4, %rs1;
+	cvt.s32.s8 	%r5, %r4;
+	setp.eq.s32	%p3, %r5, 0;
+	not.pred 	%p4, %p3;
+	@%p4 bra 	BB10_2;
+	bra.uni 	BB10_1;
+
+BB10_1:
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:102 	if (_bcl_->init == 0) CommonInitFileSystem();
+	.loc	1 102 24
+tmp35:
+	// Callseq Start 12
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	call.uni 
+	_Z20CommonInitFileSystemv, 
+	(
+	);
+	
+	//{
+	}// Callseq End 12
+tmp36:
+
+BB10_2:
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:103 	char ** ptr_name = _bcl_->names;
+	.loc	1 103 19
+	mov.u64 	%rd9, _bcl_;
+	cvta.global.u64 	%rd10, %rd9;
+	ld.u64 	%rd11, [%rd10];
+	ld.u64 	%rd12, [%rd11+32];
+	mov.u64 	%rd13, %rd12;
+	st.u64 	[%SP+0], %rd13;
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:104 	char ** ptr_file = _bcl_->files;
+	.loc	1 104 19
+	ld.u64 	%rd14, [%rd10];
+	ld.u64 	%rd15, [%rd14+40];
+	mov.u64 	%rd16, %rd15;
+	st.u64 	[%SP+8], %rd16;
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:105 	size_t * ptr_length = _bcl_->lengths;
+	.loc	1 105 22
+	ld.u64 	%rd17, [%rd10];
+	ld.u64 	%rd18, [%rd17+48];
+	mov.u64 	%rd1, %rd18;
+tmp37:
+	mov.u32 	%r6, 0;
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:106 	for (int i = 0; i < _bcl_->initial_size; ++i)
+	.loc	1 106 13
+tmp38:
+	mov.b32 	%r1, %r6;
+tmp39:
+	mov.u64 	%rd37, %rd1;
+tmp40:
+	mov.u32 	%r10, %r1;
+tmp41:
+
+BB10_3:
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:106 	for (int i = 0; i < _bcl_->initial_size; ++i)
+	.loc	1 106 2
+	mov.u32 	%r2, %r10;
+	mov.u64 	%rd2, %rd37;
+tmp42:
+	mov.u64 	%rd19, _bcl_;
+	cvta.global.u64 	%rd20, %rd19;
+	ld.u64 	%rd21, [%rd20];
+	ld.u32 	%r7, [%rd21+60];
+	setp.lt.s32	%p5, %r2, %r7;
+	not.pred 	%p6, %p5;
+	@%p6 bra 	BB10_11;
+	bra.uni 	BB10_4;
+
+BB10_4:
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:108 		if (*ptr_name != NULL && Gstrcmp(*ptr_name, name) == 0)
+	.loc	1 108 3
+tmp43:
+	ld.u64 	%rd22, [%SP+0];
+	ld.u64 	%rd23, [%rd22];
+	setp.ne.s64	%p8, %rd23, 0;
+	mov.pred 	%p7, 0;
+	not.pred 	%p9, %p8;
+	mov.pred 	%p11, %p7;
+	@%p9 bra 	BB10_6;
+	bra.uni 	BB10_5;
+
+BB10_5:
+	ld.u64 	%rd24, [%SP+0];
+	ld.u64 	%rd25, [%rd24];
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:108 		if (*ptr_name != NULL && Gstrcmp(*ptr_name, name) == 0)
+	.loc	1 108 25
+	// Callseq Start 13
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b64 param0;
+	st.param.b64	[param0+0], %rd25;
+	.param .b64 param1;
+	st.param.b64	[param1+0], %rd4;
+	.param .b32 retval0;
+	call.uni (retval0), 
+	_Z7GstrcmpPKcS0_, 
+	(
+	param0, 
+	param1
+	);
+	ld.param.b32	%r9, [retval0+0];
+	
+	//{
+	}// Callseq End 13
+	setp.eq.s32	%p1, %r9, 0;
+	mov.pred 	%p11, %p1;
+
+BB10_6:
+	mov.pred 	%p2, %p11;
+	not.pred 	%p10, %p2;
+	@%p10 bra 	BB10_8;
+	bra.uni 	BB10_7;
+
+BB10_7:
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:110 			Gfree(*ptr_name);
+	.loc	1 110 4
+tmp44:
+	ld.u64 	%rd30, [%SP+0];
+	ld.u64 	%rd31, [%rd30];
+	// Callseq Start 14
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b64 param0;
+	st.param.b64	[param0+0], %rd31;
+	call.uni 
+	_Z5GfreePv, 
+	(
+	param0
+	);
+	
+	//{
+	}// Callseq End 14
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:111 			*ptr_name = NULL;
+	.loc	1 111 4
+	ld.u64 	%rd32, [%SP+0];
+	mov.u64 	%rd33, 0;
+	st.u64 	[%rd32], %rd33;
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:112 			Gfree(*ptr_file);
+	.loc	1 112 4
+	ld.u64 	%rd34, [%SP+8];
+	ld.u64 	%rd35, [%rd34];
+	// Callseq Start 15
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b64 param0;
+	st.param.b64	[param0+0], %rd35;
+	call.uni 
+	_Z5GfreePv, 
+	(
+	param0
+	);
+	
+	//{
+	}// Callseq End 15
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:113 			*ptr_file = NULL;
+	.loc	1 113 4
+	ld.u64 	%rd36, [%SP+8];
+	st.u64 	[%rd36], %rd33;
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:114 			*ptr_length = 0;
+	.loc	1 114 4
+	st.u64 	[%rd2], %rd33;
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:115 			*result = i;
+	.loc	1 115 4
+	st.u32 	[%rd5], %r2;
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:116 			return;
+	.loc	1 116 4
+	bra.uni 	BB10_12;
+tmp45:
+
+BB10_8:
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:120 			ptr_name++;
+	.loc	1 120 4
+	ld.u64 	%rd26, [%SP+0];
+	add.s64 	%rd27, %rd26, 8;
+	st.u64 	[%SP+0], %rd27;
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:121 			ptr_file++;
+	.loc	1 121 4
+	ld.u64 	%rd28, [%SP+8];
+	add.s64 	%rd29, %rd28, 8;
+	st.u64 	[%SP+8], %rd29;
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:122 			ptr_length++;
+	.loc	1 122 4
+	add.s64 	%rd3, %rd2, 8;
+tmp46:
+
+
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:106 	for (int i = 0; i < _bcl_->initial_size; ++i)
+	.loc	1 106 43
+	add.s32 	%r3, %r2, 1;
+tmp47:
+	mov.u64 	%rd37, %rd3;
+tmp48:
+	mov.u32 	%r10, %r3;
+tmp49:
+	bra.uni 	BB10_3;
+tmp50:
+
+BB10_11:
+	mov.u32 	%r8, -1;
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:125 	*result = -1;
+	.loc	1 125 2
+	st.u32 	[%rd5], %r8;
+
+BB10_12:
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:126 }
+	.loc	1 126 1
+	ret;
+tmp51:
+func_end10:
+}
+
+	// .globl	_Z13Gfs_open_filePcPi
+.visible .func _Z13Gfs_open_filePcPi(
+	.param .b64 _Z13Gfs_open_filePcPi_param_0,
+	.param .b64 _Z13Gfs_open_filePcPi_param_1
+)
+{
+	.local .align 8 .b8 	__local_depot11[16];
+	.reg .b64 	%SP;
+	.reg .b64 	%SPL;
+	.reg .pred 	%p<12>;
+	.reg .b16 	%rs<2>;
+	.reg .b32 	%r<11>;
+	.reg .b64 	%rd<32>;
+
+
+	.loc 1 133 1
+func_begin11:
+	.loc	1 0 0
+
+	.loc 1 133 1
+
+	mov.u64 	%rd31, __local_depot11;
+	cvta.local.u64 	%SP, %rd31;
+	ld.param.u64 	%rd4, [_Z13Gfs_open_filePcPi_param_0];
+	ld.param.u64 	%rd5, [_Z13Gfs_open_filePcPi_param_1];
+tmp52:
+func_exec_begin11:
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:135 	if (_bcl_->init == 0) CommonInitFileSystem();
+	.loc	1 135 2
+	mov.u64 	%rd6, _bcl_;
+	cvta.global.u64 	%rd7, %rd6;
+	ld.u64 	%rd8, [%rd7];
+	ld.u8 	%rs1, [%rd8+56];
+	cvt.u32.u16	%r4, %rs1;
+	cvt.s32.s8 	%r5, %r4;
+	setp.eq.s32	%p3, %r5, 0;
+	not.pred 	%p4, %p3;
+	@%p4 bra 	BB11_2;
+	bra.uni 	BB11_1;
+
+BB11_1:
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:135 	if (_bcl_->init == 0) CommonInitFileSystem();
+	.loc	1 135 24
+tmp53:
+	// Callseq Start 16
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	call.uni 
+	_Z20CommonInitFileSystemv, 
+	(
+	);
+	
+	//{
+	}// Callseq End 16
+tmp54:
+
+BB11_2:
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:136 	char ** ptr_name = _bcl_->names;
+	.loc	1 136 19
+	mov.u64 	%rd9, _bcl_;
+	cvta.global.u64 	%rd10, %rd9;
+	ld.u64 	%rd11, [%rd10];
+	ld.u64 	%rd12, [%rd11+32];
+	mov.u64 	%rd13, %rd12;
+	st.u64 	[%SP+0], %rd13;
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:137 	char ** ptr_file = _bcl_->files;
+	.loc	1 137 19
+	ld.u64 	%rd14, [%rd10];
+	ld.u64 	%rd15, [%rd14+40];
+	mov.u64 	%rd16, %rd15;
+	st.u64 	[%SP+8], %rd16;
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:138 	size_t * ptr_length = _bcl_->lengths;
+	.loc	1 138 22
+	ld.u64 	%rd17, [%rd10];
+	ld.u64 	%rd18, [%rd17+48];
+	mov.u64 	%rd1, %rd18;
+tmp55:
+	mov.u32 	%r6, 0;
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:139 	for (int i = 0; i < _bcl_->initial_size; ++i)
+	.loc	1 139 13
+tmp56:
+	mov.b32 	%r1, %r6;
+tmp57:
+	mov.u64 	%rd30, %rd1;
+tmp58:
+	mov.u32 	%r10, %r1;
+tmp59:
+
+BB11_3:
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:139 	for (int i = 0; i < _bcl_->initial_size; ++i)
+	.loc	1 139 2
+	mov.u32 	%r2, %r10;
+	mov.u64 	%rd2, %rd30;
+tmp60:
+	mov.u64 	%rd19, _bcl_;
+	cvta.global.u64 	%rd20, %rd19;
+	ld.u64 	%rd21, [%rd20];
+	ld.u32 	%r7, [%rd21+60];
+	setp.lt.s32	%p5, %r2, %r7;
+	not.pred 	%p6, %p5;
+	@%p6 bra 	BB11_11;
+	bra.uni 	BB11_4;
+
+BB11_4:
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:141 		if (*ptr_name != NULL && Gstrcmp(*ptr_name, name) == 0)
+	.loc	1 141 3
+tmp61:
+	ld.u64 	%rd22, [%SP+0];
+	ld.u64 	%rd23, [%rd22];
+	setp.ne.s64	%p8, %rd23, 0;
+	mov.pred 	%p7, 0;
+	not.pred 	%p9, %p8;
+	mov.pred 	%p11, %p7;
+	@%p9 bra 	BB11_6;
+	bra.uni 	BB11_5;
+
+BB11_5:
+	ld.u64 	%rd24, [%SP+0];
+	ld.u64 	%rd25, [%rd24];
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:141 		if (*ptr_name != NULL && Gstrcmp(*ptr_name, name) == 0)
+	.loc	1 141 25
+	// Callseq Start 17
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b64 param0;
+	st.param.b64	[param0+0], %rd25;
+	.param .b64 param1;
+	st.param.b64	[param1+0], %rd4;
+	.param .b32 retval0;
+	call.uni (retval0), 
+	_Z7GstrcmpPKcS0_, 
+	(
+	param0, 
+	param1
+	);
+	ld.param.b32	%r9, [retval0+0];
+	
+	//{
+	}// Callseq End 17
+	setp.eq.s32	%p1, %r9, 0;
+	mov.pred 	%p11, %p1;
+
+BB11_6:
+	mov.pred 	%p2, %p11;
+	not.pred 	%p10, %p2;
+	@%p10 bra 	BB11_8;
+	bra.uni 	BB11_7;
+
+BB11_7:
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:143 			*result = i;
+	.loc	1 143 4
+tmp62:
+	st.u32 	[%rd5], %r2;
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:144 			return;
+	.loc	1 144 4
+	bra.uni 	BB11_12;
+tmp63:
+
+BB11_8:
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:148 			ptr_name++;
+	.loc	1 148 4
+	ld.u64 	%rd26, [%SP+0];
+	add.s64 	%rd27, %rd26, 8;
+	st.u64 	[%SP+0], %rd27;
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:149 			ptr_file++;
+	.loc	1 149 4
+	ld.u64 	%rd28, [%SP+8];
+	add.s64 	%rd29, %rd28, 8;
+	st.u64 	[%SP+8], %rd29;
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:150 			ptr_length++;
+	.loc	1 150 4
+	add.s64 	%rd3, %rd2, 8;
+tmp64:
+
+
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:139 	for (int i = 0; i < _bcl_->initial_size; ++i)
+	.loc	1 139 43
+	add.s32 	%r3, %r2, 1;
+tmp65:
+	mov.u64 	%rd30, %rd3;
+tmp66:
+	mov.u32 	%r10, %r3;
+tmp67:
+	bra.uni 	BB11_3;
+tmp68:
+
+BB11_11:
+	mov.u32 	%r8, -1;
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:153 	*result = -1;
+	.loc	1 153 2
+	st.u32 	[%rd5], %r8;
+
+BB11_12:
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:154 }
+	.loc	1 154 1
+	ret;
+tmp69:
+func_end11:
+}
+
+	// .globl	_Z14Gfs_close_fileiPi
+.visible .func _Z14Gfs_close_fileiPi(
+	.param .b32 _Z14Gfs_close_fileiPi_param_0,
+	.param .b64 _Z14Gfs_close_fileiPi_param_1
+)
+{
+	.reg .pred 	%p<3>;
+	.reg .b16 	%rs<2>;
+	.reg .b32 	%r<6>;
+	.reg .b64 	%rd<5>;
+
+
+	.loc 1 161 1
+func_begin12:
+	.loc	1 0 0
+
+	.loc 1 161 1
+
+	ld.param.u32 	%r1, [_Z14Gfs_close_fileiPi_param_0];
+	ld.param.u64 	%rd1, [_Z14Gfs_close_fileiPi_param_1];
+	mov.b32 	%r2, %r1;
+func_exec_begin12:
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:163 	if (_bcl_->init == 0) CommonInitFileSystem();
+	.loc	1 163 2
+tmp70:
+	mov.u64 	%rd2, _bcl_;
+	cvta.global.u64 	%rd3, %rd2;
+	ld.u64 	%rd4, [%rd3];
+	ld.u8 	%rs1, [%rd4+56];
+	cvt.u32.u16	%r3, %rs1;
+	cvt.s32.s8 	%r4, %r3;
+	setp.eq.s32	%p1, %r4, 0;
+	not.pred 	%p2, %p1;
+	@%p2 bra 	BB12_2;
+	bra.uni 	BB12_1;
+
+BB12_1:
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:163 	if (_bcl_->init == 0) CommonInitFileSystem();
+	.loc	1 163 24
+tmp71:
+	// Callseq Start 18
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	call.uni 
+	_Z20CommonInitFileSystemv, 
+	(
+	);
+	
+	//{
+	}// Callseq End 18
+tmp72:
+
+BB12_2:
+	mov.u32 	%r5, 0;
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:164 	*result = 0;
+	.loc	1 164 2
+	st.u32 	[%rd1], %r5;
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:165 }
+	.loc	1 165 1
+	ret;
+tmp73:
+func_end12:
+}
+
+	// .globl	_Z8Gfs_readiPPc
+.visible .func _Z8Gfs_readiPPc(
+	.param .b32 _Z8Gfs_readiPPc_param_0,
+	.param .b64 _Z8Gfs_readiPPc_param_1
+)
+{
+	.reg .pred 	%p<3>;
+	.reg .b16 	%rs<2>;
+	.reg .b32 	%r<4>;
+	.reg .b64 	%rd<13>;
+
+
+	.loc 1 172 1
+func_begin13:
+	.loc	1 0 0
+
+	.loc 1 172 1
+
+	ld.param.u32 	%r1, [_Z8Gfs_readiPPc_param_0];
+	ld.param.u64 	%rd1, [_Z8Gfs_readiPPc_param_1];
+func_exec_begin13:
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:174 	if (_bcl_->init == 0) CommonInitFileSystem();
+	.loc	1 174 2
+tmp74:
+	mov.u64 	%rd2, _bcl_;
+	cvta.global.u64 	%rd3, %rd2;
+	ld.u64 	%rd4, [%rd3];
+	ld.u8 	%rs1, [%rd4+56];
+	cvt.u32.u16	%r2, %rs1;
+	cvt.s32.s8 	%r3, %r2;
+	setp.eq.s32	%p1, %r3, 0;
+	not.pred 	%p2, %p1;
+	@%p2 bra 	BB13_2;
+	bra.uni 	BB13_1;
+
+BB13_1:
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:174 	if (_bcl_->init == 0) CommonInitFileSystem();
+	.loc	1 174 24
+tmp75:
+	// Callseq Start 19
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	call.uni 
+	_Z20CommonInitFileSystemv, 
+	(
+	);
+	
+	//{
+	}// Callseq End 19
+tmp76:
+
+BB13_2:
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:175 	*result = _bcl_->files[file];
+	.loc	1 175 2
+	mov.u64 	%rd5, _bcl_;
+	cvta.global.u64 	%rd6, %rd5;
+	ld.u64 	%rd7, [%rd6];
+	ld.u64 	%rd8, [%rd7+40];
+	cvt.s64.s32	%rd9, %r1;
+	shl.b64 	%rd10, %rd9, 3;
+	add.s64 	%rd11, %rd8, %rd10;
+	ld.u64 	%rd12, [%rd11];
+	st.u64 	[%rd1], %rd12;
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:176 }
+	.loc	1 176 1
+	ret;
+tmp77:
+func_end13:
+}
+
+	// .globl	_Z10Gfs_lengthiPy
+.visible .func _Z10Gfs_lengthiPy(
+	.param .b32 _Z10Gfs_lengthiPy_param_0,
+	.param .b64 _Z10Gfs_lengthiPy_param_1
+)
+{
+	.reg .pred 	%p<3>;
+	.reg .b16 	%rs<2>;
+	.reg .b32 	%r<4>;
+	.reg .b64 	%rd<13>;
+
+
+	.loc 1 183 1
+func_begin14:
+	.loc	1 0 0
+
+	.loc 1 183 1
+
+	ld.param.u32 	%r1, [_Z10Gfs_lengthiPy_param_0];
+	ld.param.u64 	%rd1, [_Z10Gfs_lengthiPy_param_1];
+func_exec_begin14:
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:185 	if (_bcl_->init == 0) CommonInitFileSystem();
+	.loc	1 185 2
+tmp78:
+	mov.u64 	%rd2, _bcl_;
+	cvta.global.u64 	%rd3, %rd2;
+	ld.u64 	%rd4, [%rd3];
+	ld.u8 	%rs1, [%rd4+56];
+	cvt.u32.u16	%r2, %rs1;
+	cvt.s32.s8 	%r3, %r2;
+	setp.eq.s32	%p1, %r3, 0;
+	not.pred 	%p2, %p1;
+	@%p2 bra 	BB14_2;
+	bra.uni 	BB14_1;
+
+BB14_1:
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:185 	if (_bcl_->init == 0) CommonInitFileSystem();
+	.loc	1 185 24
+tmp79:
+	// Callseq Start 20
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	call.uni 
+	_Z20CommonInitFileSystemv, 
+	(
+	);
+	
+	//{
+	}// Callseq End 20
+tmp80:
+
+BB14_2:
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:186 	*result = _bcl_->lengths[file];
+	.loc	1 186 2
+	mov.u64 	%rd5, _bcl_;
+	cvta.global.u64 	%rd6, %rd5;
+	ld.u64 	%rd7, [%rd6];
+	ld.u64 	%rd8, [%rd7+48];
+	cvt.s64.s32	%rd9, %r1;
+	shl.b64 	%rd10, %rd9, 3;
+	add.s64 	%rd11, %rd8, %rd10;
+	ld.u64 	%rd12, [%rd11];
+	st.u64 	[%rd1], %rd12;
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:187 }
+	.loc	1 187 1
 	ret;
 tmp81:
 func_end14:
+}
+
+	// .globl	_Z12Bcl_Gfs_initv
+.visible .entry _Z12Bcl_Gfs_initv(
+
+)
+{
+
+
+
+	.loc 1 52 1
+func_begin15:
+	.loc	1 0 0
+
+	.loc 1 52 1
+
+func_exec_begin15:
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:54 	CommonInitFileSystem();
+	.loc	1 54 2
+	// Callseq Start 21
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	call.uni 
+	_Z20CommonInitFileSystemv, 
+	(
+	);
+	
+	//{
+	}// Callseq End 21
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:55 }
+	.loc	1 55 1
+	ret;
+tmp82:
+func_end15:
+}
+
+	// .globl	_Z16Bcl_Gfs_add_filePcS_yPi
+.visible .entry _Z16Bcl_Gfs_add_filePcS_yPi(
+	.param .u64 _Z16Bcl_Gfs_add_filePcS_yPi_param_0,
+	.param .u64 _Z16Bcl_Gfs_add_filePcS_yPi_param_1,
+	.param .u64 _Z16Bcl_Gfs_add_filePcS_yPi_param_2,
+	.param .u64 _Z16Bcl_Gfs_add_filePcS_yPi_param_3
+)
+{
+	.reg .b64 	%rd<5>;
+
+
+	.loc 1 62 1
+func_begin16:
+	.loc	1 0 0
+
+	.loc 1 62 1
+
+	ld.param.u64 	%rd1, [_Z16Bcl_Gfs_add_filePcS_yPi_param_0];
+	ld.param.u64 	%rd2, [_Z16Bcl_Gfs_add_filePcS_yPi_param_1];
+	ld.param.u64 	%rd3, [_Z16Bcl_Gfs_add_filePcS_yPi_param_2];
+	ld.param.u64 	%rd4, [_Z16Bcl_Gfs_add_filePcS_yPi_param_3];
+func_exec_begin16:
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:64 	Gfs_add_file(name, file, length, result);
+	.loc	1 64 2
+tmp83:
+	// Callseq Start 22
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b64 param0;
+	st.param.b64	[param0+0], %rd1;
+	.param .b64 param1;
+	st.param.b64	[param1+0], %rd2;
+	.param .b64 param2;
+	st.param.b64	[param2+0], %rd3;
+	.param .b64 param3;
+	st.param.b64	[param3+0], %rd4;
+	call.uni 
+	_Z12Gfs_add_filePcS_yPi, 
+	(
+	param0, 
+	param1, 
+	param2, 
+	param3
+	);
+	
+	//{
+	}// Callseq End 22
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:65 }
+	.loc	1 65 1
+	ret;
+tmp84:
+func_end16:
 }
 
 	// .globl	_Z19Bcl_Gfs_remove_filePcPi
@@ -1562,20 +1664,20 @@ func_end14:
 	.reg .b64 	%rd<3>;
 
 
-	.loc 1 83 1
-func_begin15:
+	.loc 1 94 1
+func_begin17:
 	.loc	1 0 0
 
-	.loc 1 83 1
+	.loc 1 94 1
 
 	ld.param.u64 	%rd1, [_Z19Bcl_Gfs_remove_filePcPi_param_0];
 	ld.param.u64 	%rd2, [_Z19Bcl_Gfs_remove_filePcPi_param_1];
-func_exec_begin15:
+func_exec_begin17:
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:85 	Gfs_remove_file(name, result);
-	.loc	1 85 2
-tmp82:
-	// Callseq Start 21
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:96 	Gfs_remove_file(name, result);
+	.loc	1 96 2
+tmp85:
+	// Callseq Start 23
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
@@ -1591,13 +1693,13 @@ tmp82:
 	);
 	
 	//{
-	}// Callseq End 21
+	}// Callseq End 23
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:86 }
-	.loc	1 86 1
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:97 }
+	.loc	1 97 1
 	ret;
-tmp83:
-func_end15:
+tmp86:
+func_end17:
 }
 
 	// .globl	_Z17Bcl_Gfs_open_filePcPi
@@ -1609,20 +1711,20 @@ func_end15:
 	.reg .b64 	%rd<3>;
 
 
-	.loc 1 117 1
-func_begin16:
+	.loc 1 128 1
+func_begin18:
 	.loc	1 0 0
 
-	.loc 1 117 1
+	.loc 1 128 1
 
 	ld.param.u64 	%rd1, [_Z17Bcl_Gfs_open_filePcPi_param_0];
 	ld.param.u64 	%rd2, [_Z17Bcl_Gfs_open_filePcPi_param_1];
-func_exec_begin16:
+func_exec_begin18:
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:119 	Gfs_open_file(name, result);
-	.loc	1 119 2
-tmp84:
-	// Callseq Start 22
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:130 	Gfs_open_file(name, result);
+	.loc	1 130 2
+tmp87:
+	// Callseq Start 24
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
@@ -1638,13 +1740,13 @@ tmp84:
 	);
 	
 	//{
-	}// Callseq End 22
+	}// Callseq End 24
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:120 }
-	.loc	1 120 1
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:131 }
+	.loc	1 131 1
 	ret;
-tmp85:
-func_end16:
+tmp88:
+func_end18:
 }
 
 	// .globl	_Z18Bcl_Gfs_close_fileiPi
@@ -1657,20 +1759,20 @@ func_end16:
 	.reg .b64 	%rd<2>;
 
 
-	.loc 1 145 1
-func_begin17:
+	.loc 1 156 1
+func_begin19:
 	.loc	1 0 0
 
-	.loc 1 145 1
+	.loc 1 156 1
 
 	ld.param.u32 	%r1, [_Z18Bcl_Gfs_close_fileiPi_param_0];
 	ld.param.u64 	%rd1, [_Z18Bcl_Gfs_close_fileiPi_param_1];
-func_exec_begin17:
+func_exec_begin19:
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:147 	Gfs_close_file(file, result);
-	.loc	1 147 2
-tmp86:
-	// Callseq Start 23
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:158 	Gfs_close_file(file, result);
+	.loc	1 158 2
+tmp89:
+	// Callseq Start 25
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
@@ -1686,13 +1788,13 @@ tmp86:
 	);
 	
 	//{
-	}// Callseq End 23
+	}// Callseq End 25
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:148 }
-	.loc	1 148 1
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:159 }
+	.loc	1 159 1
 	ret;
-tmp87:
-func_end17:
+tmp90:
+func_end19:
 }
 
 	// .globl	_Z12Bcl_Gfs_readiPPc
@@ -1705,20 +1807,20 @@ func_end17:
 	.reg .b64 	%rd<2>;
 
 
-	.loc 1 156 1
-func_begin18:
+	.loc 1 167 1
+func_begin20:
 	.loc	1 0 0
 
-	.loc 1 156 1
+	.loc 1 167 1
 
 	ld.param.u32 	%r1, [_Z12Bcl_Gfs_readiPPc_param_0];
 	ld.param.u64 	%rd1, [_Z12Bcl_Gfs_readiPPc_param_1];
-func_exec_begin18:
+func_exec_begin20:
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:158 	Gfs_read(file, result);
-	.loc	1 158 2
-tmp88:
-	// Callseq Start 24
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:169 	Gfs_read(file, result);
+	.loc	1 169 2
+tmp91:
+	// Callseq Start 26
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
@@ -1734,13 +1836,13 @@ tmp88:
 	);
 	
 	//{
-	}// Callseq End 24
+	}// Callseq End 26
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:159 }
-	.loc	1 159 1
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:170 }
+	.loc	1 170 1
 	ret;
-tmp89:
-func_end18:
+tmp92:
+func_end20:
 }
 
 	// .globl	_Z14Bcl_Gfs_lengthiPy
@@ -1753,20 +1855,20 @@ func_end18:
 	.reg .b64 	%rd<2>;
 
 
-	.loc 1 167 1
-func_begin19:
+	.loc 1 178 1
+func_begin21:
 	.loc	1 0 0
 
-	.loc 1 167 1
+	.loc 1 178 1
 
 	ld.param.u32 	%r1, [_Z14Bcl_Gfs_lengthiPy_param_0];
 	ld.param.u64 	%rd1, [_Z14Bcl_Gfs_lengthiPy_param_1];
-func_exec_begin19:
+func_exec_begin21:
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:169 	Gfs_length(file, result);
-	.loc	1 169 2
-tmp90:
-	// Callseq Start 25
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:180 	Gfs_length(file, result);
+	.loc	1 180 2
+tmp93:
+	// Callseq Start 27
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
@@ -1782,13 +1884,13 @@ tmp90:
 	);
 	
 	//{
-	}// Callseq End 25
+	}// Callseq End 27
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:170 }
-	.loc	1 170 1
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c:181 }
+	.loc	1 181 1
 	ret;
-tmp91:
-func_end19:
+tmp94:
+func_end21:
 }
 
 .func  (.param .b64 func_retval0) memcpy(
@@ -1812,10 +1914,10 @@ func_end19:
 	mov.u64 	%rd9, 0;
 	not.pred 	%p2, %p1;
 	mov.u64 	%rd14, %rd9;
-	@%p2 bra 	BB20_2;
-	bra.uni 	BB20_1;
+	@%p2 bra 	BB22_2;
+	bra.uni 	BB22_1;
 
-BB20_1:
+BB22_1:
 	mov.u64 	%rd4, %rd14;
 	add.s64 	%rd10, %rd2, %rd4;
 	ld.u8 	%rs1, [%rd10];
@@ -1824,10 +1926,10 @@ BB20_1:
 	add.s64 	%rd5, %rd4, 1;
 	setp.lt.u64	%p3, %rd5, %rd3;
 	mov.u64 	%rd14, %rd5;
-	@%p3 bra 	BB20_1;
-	bra.uni 	BB20_2;
+	@%p3 bra 	BB22_1;
+	bra.uni 	BB22_2;
 
-BB20_2:
+BB22_2:
 	mov.u64 	%rd12, %rd1;
 	mov.u64 	%rd13, %rd12;
 	st.param.b64	[func_retval0+0], %rd13;
@@ -1857,33 +1959,33 @@ BB20_2:
 	mov.u64 	%rd7, 0;
 	not.pred 	%p2, %p1;
 	mov.u64 	%rd11, %rd7;
-	@%p2 bra 	BB21_2;
-	bra.uni 	BB21_1;
+	@%p2 bra 	BB23_2;
+	bra.uni 	BB23_1;
 
-BB21_1:
+BB23_1:
 	mov.u64 	%rd3, %rd11;
 	add.s64 	%rd8, %rd1, %rd3;
 	st.u8 	[%rd8], %rs1;
 	add.s64 	%rd4, %rd3, 1;
 	setp.lt.u64	%p3, %rd4, %rd2;
 	mov.u64 	%rd11, %rd4;
-	@%p3 bra 	BB21_1;
-	bra.uni 	BB21_2;
+	@%p3 bra 	BB23_1;
+	bra.uni 	BB23_2;
 
-BB21_2:
+BB23_2:
 	mov.u64 	%rd9, %rd1;
 	mov.u64 	%rd10, %rd9;
 	st.param.b64	[func_retval0+0], %rd10;
 	ret;
 }
 
-	.file	1 "C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c", 1520602382, 4253
-	.file	2 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\_bcl_.h", 1520869567, 1596
+	.file	1 "C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c", 1525140383, 4619
+	.file	2 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\_BCL_.h", 1525227101, 1615
 	.file	3 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v9.0\\include\\cuda_device_runtime_api.h", 1504359958, 14836
 	.file	4 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v9.0\\include\\driver_types.h", 1504359957, 76651
 
 .section .debug_info {
- .b32 11199
+ .b32 11539
  .b8 2
  .b8 0
  .b32 .debug_abbrev
@@ -2044,7 +2146,7 @@ BB21_2:
  .b32 198
  .b8 1
  .b32 2
- .b32 83
+ .b32 84
  .b8 9
  .b8 3
  .b64 _bcl_
@@ -2072,7 +2174,7 @@ BB21_2:
  .b8 0
  .b32 240
  .b32 2
- .b32 17
+ .b32 18
  .b8 5
 
  .b8 103
@@ -2097,7 +2199,7 @@ BB21_2:
  .b8 0
  .b32 1194
  .b32 2
- .b32 20
+ .b32 21
  .b8 0
 
  .b8 1
@@ -2111,7 +2213,7 @@ BB21_2:
  .b8 0
  .b32 1206
  .b32 2
- .b32 21
+ .b32 22
  .b8 8
 
  .b8 1
@@ -2138,7 +2240,7 @@ BB21_2:
  .b8 0
  .b32 1234
  .b32 2
- .b32 22
+ .b32 23
  .b8 16
 
  .b8 1
@@ -2160,7 +2262,7 @@ BB21_2:
  .b8 0
  .b32 1244
  .b32 2
- .b32 25
+ .b32 26
  .b8 24
 
  .b8 1
@@ -2175,7 +2277,7 @@ BB21_2:
  .b8 0
  .b32 1277
  .b32 2
- .b32 28
+ .b32 29
  .b8 32
 
  .b8 1
@@ -2190,7 +2292,7 @@ BB21_2:
  .b8 0
  .b32 1277
  .b32 2
- .b32 29
+ .b32 30
  .b8 40
 
  .b8 1
@@ -2207,7 +2309,7 @@ BB21_2:
  .b8 0
  .b32 1300
  .b32 2
- .b32 30
+ .b32 31
  .b8 48
 
  .b8 1
@@ -2221,7 +2323,7 @@ BB21_2:
  .b8 0
  .b32 1343
  .b32 2
- .b32 31
+ .b32 32
  .b8 56
 
  .b8 1
@@ -2243,7 +2345,7 @@ BB21_2:
  .b8 0
  .b32 1234
  .b32 2
- .b32 32
+ .b32 33
  .b8 60
 
  .b8 1
@@ -2263,9 +2365,9 @@ BB21_2:
  .b8 101
 
  .b8 0
- .b32 1376
+ .b32 1354
  .b32 2
- .b32 35
+ .b32 36
  .b8 64
 
  .b8 1
@@ -2288,7 +2390,7 @@ BB21_2:
  .b8 0
  .b32 1234
  .b32 2
- .b32 36
+ .b32 37
  .b8 72
 
  .b8 1
@@ -2316,7 +2418,7 @@ BB21_2:
  .b8 0
  .b32 1234
  .b32 2
- .b32 37
+ .b32 38
  .b8 76
 
  .b8 1
@@ -2335,7 +2437,7 @@ BB21_2:
  .b8 0
  .b32 1283
  .b32 2
- .b32 40
+ .b32 41
  .b8 80
 
  .b8 1
@@ -2356,9 +2458,9 @@ BB21_2:
  .b8 116
 
  .b8 0
- .b32 1402
+ .b32 1400
  .b32 2
- .b32 43
+ .b32 44
  .b8 88
 
  .b8 1
@@ -2369,9 +2471,9 @@ BB21_2:
  .b8 108
 
  .b8 0
- .b32 1402
+ .b32 1400
  .b32 2
- .b32 44
+ .b32 45
  .b8 96
 
  .b8 1
@@ -2392,9 +2494,9 @@ BB21_2:
  .b8 101
 
  .b8 0
- .b32 1433
+ .b32 1431
  .b32 2
- .b32 45
+ .b32 46
  .b8 104
 
  .b8 1
@@ -2413,9 +2515,9 @@ BB21_2:
  .b8 120
 
  .b8 0
- .b32 1433
+ .b32 1431
  .b32 2
- .b32 46
+ .b32 47
  .b8 108
 
  .b8 1
@@ -2431,9 +2533,9 @@ BB21_2:
  .b8 115
 
  .b8 0
- .b32 1433
+ .b32 1431
  .b32 2
- .b32 47
+ .b32 48
  .b8 112
 
  .b8 1
@@ -2455,9 +2557,9 @@ BB21_2:
  .b8 115
 
  .b8 0
- .b32 1433
+ .b32 1431
  .b32 2
- .b32 48
+ .b32 49
  .b8 116
 
  .b8 1
@@ -2476,9 +2578,9 @@ BB21_2:
  .b8 111
 
  .b8 0
- .b32 1461
+ .b32 1473
  .b32 2
- .b32 51
+ .b32 52
  .b8 120
 
  .b8 1
@@ -2499,9 +2601,9 @@ BB21_2:
  .b8 116
 
  .b8 0
- .b32 1461
+ .b32 1473
  .b32 2
- .b32 52
+ .b32 53
  .b8 128
  .b8 1
 
@@ -2522,9 +2624,9 @@ BB21_2:
  .b8 101
 
  .b8 0
- .b32 1494
+ .b32 1506
  .b32 2
- .b32 55
+ .b32 56
  .b8 136
  .b8 1
 
@@ -2544,9 +2646,9 @@ BB21_2:
  .b8 115
 
  .b8 0
- .b32 1500
+ .b32 1512
  .b32 2
- .b32 58
+ .b32 59
  .b8 144
  .b8 1
 
@@ -2563,9 +2665,9 @@ BB21_2:
  .b8 108
 
  .b8 0
- .b32 1433
+ .b32 1431
  .b32 2
- .b32 61
+ .b32 62
  .b8 152
  .b8 1
 
@@ -2586,7 +2688,7 @@ BB21_2:
  .b8 0
  .b32 1283
  .b32 2
- .b32 62
+ .b32 63
  .b8 160
  .b8 1
 
@@ -2612,9 +2714,9 @@ BB21_2:
  .b8 101
 
  .b8 0
- .b32 1433
+ .b32 1431
  .b32 2
- .b32 63
+ .b32 64
  .b8 168
  .b8 1
 
@@ -2630,9 +2732,9 @@ BB21_2:
  .b8 115
 
  .b8 0
- .b32 1531
+ .b32 1543
  .b32 2
- .b32 66
+ .b32 67
  .b8 176
  .b8 1
 
@@ -2666,9 +2768,9 @@ BB21_2:
  .b8 100
 
  .b8 0
- .b32 1566
+ .b32 1578
  .b32 2
- .b32 67
+ .b32 68
  .b8 184
  .b8 1
 
@@ -2698,9 +2800,9 @@ BB21_2:
  .b8 115
 
  .b8 0
- .b32 1574
+ .b32 1599
  .b32 2
- .b32 68
+ .b32 69
  .b8 192
  .b8 1
 
@@ -2714,9 +2816,9 @@ BB21_2:
  .b8 115
 
  .b8 0
- .b32 1614
+ .b32 1639
  .b32 2
- .b32 69
+ .b32 70
  .b8 200
  .b8 1
 
@@ -2737,9 +2839,9 @@ BB21_2:
  .b8 115
 
  .b8 0
- .b32 1433
+ .b32 1431
  .b32 2
- .b32 70
+ .b32 71
  .b8 208
  .b8 1
 
@@ -2757,9 +2859,9 @@ BB21_2:
  .b8 67
 
  .b8 0
- .b32 1433
+ .b32 1431
  .b32 2
- .b32 73
+ .b32 74
  .b8 212
  .b8 1
 
@@ -2779,9 +2881,9 @@ BB21_2:
  .b8 115
 
  .b8 0
- .b32 1652
+ .b32 1677
  .b32 2
- .b32 76
+ .b32 77
  .b8 216
  .b8 1
 
@@ -2804,9 +2906,9 @@ BB21_2:
  .b8 100
 
  .b8 0
- .b32 1652
+ .b32 1677
  .b32 2
- .b32 77
+ .b32 78
  .b8 224
  .b8 1
 
@@ -2827,7 +2929,7 @@ BB21_2:
  .b8 0
  .b32 1234
  .b32 2
- .b32 80
+ .b32 81
  .b8 232
  .b8 1
 
@@ -2863,7 +2965,7 @@ BB21_2:
  .b8 0
  .b32 0
  .b32 2
- .b32 8
+ .b32 9
  .b8 8
 
  .b8 105
@@ -2896,7 +2998,7 @@ BB21_2:
  .b8 0
  .b32 0
  .b32 2
- .b32 9
+ .b32 10
  .b8 3
 
  .b32 1283
@@ -2954,18 +3056,37 @@ BB21_2:
  .b8 0
  .b8 7
  .b32 8
- .b8 9
+ .b8 8
 
- .b32 1356
  .b8 98
  .b8 111
  .b8 111
  .b8 108
- .b8 101
- .b8 97
- .b8 110
 
  .b8 0
+ .b8 2
+ .b32 1
+ .b8 3
+
+ .b32 1360
+ .b8 12
+ .b8 9
+
+ .b32 1374
+ .b8 72
+ .b8 69
+ .b8 65
+ .b8 80
+ .b8 95
+ .b8 80
+ .b8 84
+ .b8 82
+
+ .b8 0
+ .b8 3
+
+ .b32 1380
+ .b8 12
  .b8 8
 
  .b8 117
@@ -2987,28 +3108,7 @@ BB21_2:
  .b32 1
  .b8 3
 
- .b32 1382
- .b8 12
- .b8 9
-
- .b32 1396
- .b8 72
- .b8 69
- .b8 65
- .b8 80
- .b8 95
- .b8 80
- .b8 84
- .b8 82
-
- .b8 0
- .b8 3
-
- .b32 1356
- .b8 12
- .b8 3
-
- .b32 1408
+ .b32 1406
  .b8 12
  .b8 7
 
@@ -3027,13 +3127,26 @@ BB21_2:
  .b8 0
  .b32 0
  .b32 2
- .b32 11
+ .b32 12
  .b8 9
 
- .b32 1442
+ .b32 1440
  .b8 85
  .b8 51
  .b8 50
+
+ .b8 0
+ .b8 9
+
+ .b32 1454
+ .b8 117
+ .b8 105
+ .b8 110
+ .b8 116
+ .b8 51
+ .b8 50
+ .b8 95
+ .b8 116
 
  .b8 0
  .b8 8
@@ -3056,7 +3169,7 @@ BB21_2:
  .b32 4
  .b8 3
 
- .b32 1467
+ .b32 1479
  .b8 12
  .b8 7
 
@@ -3077,14 +3190,14 @@ BB21_2:
  .b8 0
  .b32 0
  .b32 2
- .b32 6
+ .b32 7
  .b8 3
 
- .b32 1442
+ .b32 1454
  .b8 12
  .b8 3
 
- .b32 1506
+ .b32 1518
  .b8 12
  .b8 7
 
@@ -3103,10 +3216,10 @@ BB21_2:
  .b8 0
  .b32 0
  .b32 2
- .b32 12
+ .b32 13
  .b8 3
 
- .b32 1537
+ .b32 1549
  .b8 12
  .b8 7
 
@@ -3129,21 +3242,33 @@ BB21_2:
  .b8 0
  .b32 0
  .b32 2
- .b32 13
+ .b32 14
  .b8 9
 
- .b32 1356
+ .b32 1586
  .b8 85
  .b8 56
 
  .b8 0
+ .b8 9
+
+ .b32 1380
+ .b8 117
+ .b8 105
+ .b8 110
+ .b8 116
+ .b8 56
+ .b8 95
+ .b8 116
+
+ .b8 0
  .b8 3
 
- .b32 1580
+ .b32 1605
  .b8 12
  .b8 3
 
- .b32 1586
+ .b32 1611
  .b8 12
  .b8 7
 
@@ -3165,14 +3290,14 @@ BB21_2:
  .b8 0
  .b32 0
  .b32 2
- .b32 14
+ .b32 15
  .b8 3
 
- .b32 1620
+ .b32 1645
  .b8 12
  .b8 3
 
- .b32 1626
+ .b32 1651
  .b8 12
  .b8 7
 
@@ -3192,10 +3317,10 @@ BB21_2:
  .b8 0
  .b32 0
  .b32 2
- .b32 10
+ .b32 11
  .b8 3
 
- .b32 1658
+ .b32 1683
  .b8 12
  .b8 7
 
@@ -3211,7 +3336,7 @@ BB21_2:
  .b8 0
  .b32 0
  .b32 2
- .b32 15
+ .b32 16
  .b8 10
 
  .b8 99
@@ -3240,7 +3365,7 @@ BB21_2:
  .b8 0
  .b32 3
  .b32 75
- .b32 1786
+ .b32 1811
  .b8 1
  .b64 func_begin0
  .b64 func_end0
@@ -3253,7 +3378,7 @@ BB21_2:
  .b8 0
  .b32 3
  .b32 75
- .b32 11173
+ .b32 11513
  .b8 11
  .b8 3
  .b64 __local_depot0
@@ -3280,7 +3405,7 @@ BB21_2:
  .b8 0
  .b8 9
 
- .b32 1803
+ .b32 1828
  .b8 99
  .b8 117
  .b8 100
@@ -6099,7 +6224,7 @@ BB21_2:
  .b8 0
  .b32 3
  .b32 80
- .b32 1786
+ .b32 1811
  .b8 1
  .b64 func_begin1
  .b64 func_end1
@@ -6112,7 +6237,7 @@ BB21_2:
  .b8 0
  .b32 3
  .b32 80
- .b32 11179
+ .b32 11519
  .b8 11
  .b8 3
  .b64 __local_depot1
@@ -6127,7 +6252,7 @@ BB21_2:
  .b8 0
  .b32 3
  .b32 80
- .b32 11185
+ .b32 11525
  .b8 6
  .b8 144
  .b8 180
@@ -6189,7 +6314,7 @@ BB21_2:
  .b8 0
  .b32 3
  .b32 85
- .b32 1786
+ .b32 1811
  .b8 1
  .b64 func_begin2
  .b64 func_end2
@@ -6206,7 +6331,7 @@ BB21_2:
  .b8 0
  .b32 3
  .b32 85
- .b32 11196
+ .b32 11536
  .b8 6
  .b8 144
  .b8 178
@@ -6225,7 +6350,7 @@ BB21_2:
  .b8 0
  .b32 3
  .b32 85
- .b32 7563
+ .b32 7903
  .b8 5
  .b8 144
  .b8 179
@@ -6288,7 +6413,7 @@ BB21_2:
  .b8 0
  .b32 3
  .b32 90
- .b32 1786
+ .b32 1811
  .b8 1
  .b64 func_begin3
  .b64 func_end3
@@ -6306,7 +6431,7 @@ BB21_2:
  .b8 0
  .b32 3
  .b32 90
- .b32 11196
+ .b32 11536
  .b8 6
  .b8 144
  .b8 178
@@ -6414,7 +6539,7 @@ BB21_2:
  .b8 0
  .b32 3
  .b32 95
- .b32 1786
+ .b32 1811
  .b8 1
  .b64 func_begin4
  .b64 func_end4
@@ -6435,7 +6560,7 @@ BB21_2:
  .b8 0
  .b32 3
  .b32 95
- .b32 11196
+ .b32 11536
  .b8 6
  .b8 144
  .b8 180
@@ -6454,7 +6579,7 @@ BB21_2:
  .b8 0
  .b32 3
  .b32 95
- .b32 11185
+ .b32 11525
  .b8 6
  .b8 144
  .b8 181
@@ -6633,7 +6758,7 @@ BB21_2:
  .b8 0
  .b32 3
  .b32 100
- .b32 1786
+ .b32 1811
  .b8 1
  .b64 func_begin5
  .b64 func_end5
@@ -6654,7 +6779,7 @@ BB21_2:
  .b8 0
  .b32 3
  .b32 100
- .b32 11196
+ .b32 11536
  .b8 6
  .b8 144
  .b8 180
@@ -6673,7 +6798,7 @@ BB21_2:
  .b8 0
  .b32 3
  .b32 100
- .b32 11185
+ .b32 11525
  .b8 6
  .b8 144
  .b8 181
@@ -6746,7 +6871,7 @@ BB21_2:
  .b8 0
  .b32 3
  .b32 100
- .b32 1442
+ .b32 1454
  .b8 5
  .b8 144
  .b8 180
@@ -6759,40 +6884,287 @@ BB21_2:
 
  .b8 95
  .b8 90
- .b8 56
- .b8 71
- .b8 102
- .b8 115
- .b8 95
- .b8 105
+ .b8 50
+ .b8 48
+ .b8 67
+ .b8 111
+ .b8 109
+ .b8 109
+ .b8 111
+ .b8 110
+ .b8 73
  .b8 110
  .b8 105
  .b8 116
+ .b8 70
+ .b8 105
+ .b8 108
+ .b8 101
+ .b8 83
+ .b8 121
+ .b8 115
+ .b8 116
+ .b8 101
+ .b8 109
  .b8 118
 
  .b8 0
  .b8 95
  .b8 90
- .b8 56
- .b8 71
- .b8 102
- .b8 115
- .b8 95
- .b8 105
+ .b8 50
+ .b8 48
+ .b8 67
+ .b8 111
+ .b8 109
+ .b8 109
+ .b8 111
+ .b8 110
+ .b8 73
  .b8 110
  .b8 105
  .b8 116
+ .b8 70
+ .b8 105
+ .b8 108
+ .b8 101
+ .b8 83
+ .b8 121
+ .b8 115
+ .b8 116
+ .b8 101
+ .b8 109
  .b8 118
 
  .b8 0
  .b32 1
- .b32 39
+ .b32 35
  .b32 1200
  .b8 1
  .b64 func_begin6
  .b64 func_end6
  .b8 1
  .b8 156
+ .b8 14
+
+ .b8 95
+ .b8 90
+ .b8 50
+ .b8 50
+ .b8 73
+ .b8 110
+ .b8 116
+ .b8 101
+ .b8 114
+ .b8 110
+ .b8 97
+ .b8 108
+ .b8 73
+ .b8 110
+ .b8 105
+ .b8 116
+ .b8 70
+ .b8 105
+ .b8 108
+ .b8 101
+ .b8 83
+ .b8 121
+ .b8 115
+ .b8 116
+ .b8 101
+ .b8 109
+ .b8 118
+
+ .b8 0
+ .b8 95
+ .b8 90
+ .b8 50
+ .b8 50
+ .b8 73
+ .b8 110
+ .b8 116
+ .b8 101
+ .b8 114
+ .b8 110
+ .b8 97
+ .b8 108
+ .b8 73
+ .b8 110
+ .b8 105
+ .b8 116
+ .b8 70
+ .b8 105
+ .b8 108
+ .b8 101
+ .b8 83
+ .b8 121
+ .b8 115
+ .b8 116
+ .b8 101
+ .b8 109
+ .b8 118
+
+ .b8 0
+ .b32 1
+ .b32 47
+ .b32 1200
+ .b8 1
+ .b64 func_begin7
+ .b64 func_end7
+ .b8 1
+ .b8 156
+ .b8 10
+
+ .b8 95
+ .b8 90
+ .b8 49
+ .b8 56
+ .b8 73
+ .b8 110
+ .b8 116
+ .b8 101
+ .b8 114
+ .b8 110
+ .b8 97
+ .b8 108
+ .b8 71
+ .b8 102
+ .b8 115
+ .b8 65
+ .b8 100
+ .b8 100
+ .b8 70
+ .b8 105
+ .b8 108
+ .b8 101
+ .b8 80
+ .b8 118
+ .b8 83
+ .b8 95
+ .b8 121
+ .b8 83
+ .b8 95
+
+ .b8 0
+ .b8 95
+ .b8 90
+ .b8 49
+ .b8 56
+ .b8 73
+ .b8 110
+ .b8 116
+ .b8 101
+ .b8 114
+ .b8 110
+ .b8 97
+ .b8 108
+ .b8 71
+ .b8 102
+ .b8 115
+ .b8 65
+ .b8 100
+ .b8 100
+ .b8 70
+ .b8 105
+ .b8 108
+ .b8 101
+ .b8 80
+ .b8 118
+ .b8 83
+ .b8 95
+ .b8 121
+ .b8 83
+ .b8 95
+
+ .b8 0
+ .b32 1
+ .b32 57
+ .b32 1200
+ .b8 1
+ .b64 func_begin8
+ .b64 func_end8
+ .b8 1
+ .b8 156
+ .b8 11
+
+ .b8 110
+ .b8 97
+ .b8 109
+ .b8 101
+
+ .b8 0
+ .b32 1
+ .b32 57
+ .b32 1194
+ .b8 6
+ .b8 144
+ .b8 177
+ .b8 200
+ .b8 201
+ .b8 171
+ .b8 2
+ .b8 2
+ .b8 11
+
+ .b8 102
+ .b8 105
+ .b8 108
+ .b8 101
+
+ .b8 0
+ .b32 1
+ .b32 57
+ .b32 1194
+ .b8 6
+ .b8 144
+ .b8 178
+ .b8 200
+ .b8 201
+ .b8 171
+ .b8 2
+ .b8 2
+ .b8 11
+
+ .b8 108
+ .b8 101
+ .b8 110
+ .b8 103
+ .b8 116
+ .b8 104
+
+ .b8 0
+ .b32 1
+ .b32 57
+ .b32 1306
+ .b8 6
+ .b8 144
+ .b8 179
+ .b8 200
+ .b8 201
+ .b8 171
+ .b8 2
+ .b8 2
+ .b8 11
+
+ .b8 114
+ .b8 101
+ .b8 115
+ .b8 117
+ .b8 108
+ .b8 116
+
+ .b8 0
+ .b32 1
+ .b32 57
+ .b32 1194
+ .b8 6
+ .b8 144
+ .b8 180
+ .b8 200
+ .b8 201
+ .b8 171
+ .b8 2
+ .b8 2
+ .b8 0
  .b8 10
 
  .b8 95
@@ -6846,11 +7218,11 @@ BB21_2:
 
  .b8 0
  .b32 1
- .b32 56
+ .b32 67
  .b32 1200
  .b8 1
- .b64 func_begin7
- .b64 func_end7
+ .b64 func_begin9
+ .b64 func_end9
  .b8 1
  .b8 156
  .b8 11
@@ -6862,7 +7234,7 @@ BB21_2:
 
  .b8 0
  .b32 1
- .b32 56
+ .b32 67
  .b32 1283
  .b8 6
  .b8 144
@@ -6881,7 +7253,7 @@ BB21_2:
 
  .b8 0
  .b32 1
- .b32 56
+ .b32 67
  .b32 1283
  .b8 6
  .b8 144
@@ -6902,7 +7274,7 @@ BB21_2:
 
  .b8 0
  .b32 1
- .b32 56
+ .b32 67
  .b32 1306
  .b8 6
  .b8 144
@@ -6923,8 +7295,8 @@ BB21_2:
 
  .b8 0
  .b32 1
- .b32 56
- .b32 11196
+ .b32 67
+ .b32 11536
  .b8 6
  .b8 144
  .b8 183
@@ -6935,8 +7307,8 @@ BB21_2:
  .b8 2
  .b8 15
 
- .b64 tmp13
- .b64 tmp30
+ .b64 tmp16
+ .b64 tmp33
  .b8 16
 
  .b8 112
@@ -6950,11 +7322,11 @@ BB21_2:
 
  .b8 0
  .b32 1
- .b32 59
+ .b32 70
  .b32 1277
  .b8 11
  .b8 3
- .b64 __local_depot7
+ .b64 __local_depot9
  .b8 35
  .b8 0
 
@@ -6972,11 +7344,11 @@ BB21_2:
 
  .b8 0
  .b32 1
- .b32 60
+ .b32 71
  .b32 1277
  .b8 11
  .b8 3
- .b64 __local_depot7
+ .b64 __local_depot9
  .b8 35
  .b8 8
 
@@ -6996,20 +7368,20 @@ BB21_2:
 
  .b8 0
  .b32 1
- .b32 61
+ .b32 72
  .b32 1300
  .b32 .debug_loc
  .b8 15
 
- .b64 tmp17
- .b64 tmp29
+ .b64 tmp20
+ .b64 tmp32
  .b8 17
 
  .b8 105
 
  .b8 0
  .b32 1
- .b32 62
+ .b32 73
  .b32 1234
  .b32 .debug_loc+138
  .b8 0
@@ -7068,11 +7440,11 @@ BB21_2:
 
  .b8 0
  .b32 1
- .b32 88
+ .b32 99
  .b32 1200
  .b8 1
- .b64 func_begin8
- .b64 func_end8
+ .b64 func_begin10
+ .b64 func_end10
  .b8 1
  .b8 156
  .b8 11
@@ -7084,7 +7456,7 @@ BB21_2:
 
  .b8 0
  .b32 1
- .b32 88
+ .b32 99
  .b32 1283
  .b8 6
  .b8 144
@@ -7105,8 +7477,8 @@ BB21_2:
 
  .b8 0
  .b32 1
- .b32 88
- .b32 11196
+ .b32 99
+ .b32 11536
  .b8 6
  .b8 144
  .b8 181
@@ -7117,8 +7489,8 @@ BB21_2:
  .b8 2
  .b8 15
 
- .b64 tmp31
- .b64 tmp48
+ .b64 tmp34
+ .b64 tmp51
  .b8 16
 
  .b8 112
@@ -7132,11 +7504,11 @@ BB21_2:
 
  .b8 0
  .b32 1
- .b32 92
+ .b32 103
  .b32 1277
  .b8 11
  .b8 3
- .b64 __local_depot8
+ .b64 __local_depot10
  .b8 35
  .b8 0
 
@@ -7154,11 +7526,11 @@ BB21_2:
 
  .b8 0
  .b32 1
- .b32 93
+ .b32 104
  .b32 1277
  .b8 11
  .b8 3
- .b64 __local_depot8
+ .b64 __local_depot10
  .b8 35
  .b8 8
 
@@ -7178,20 +7550,20 @@ BB21_2:
 
  .b8 0
  .b32 1
- .b32 94
+ .b32 105
  .b32 1300
  .b32 .debug_loc+269
  .b8 15
 
- .b64 tmp35
- .b64 tmp47
+ .b64 tmp38
+ .b64 tmp50
  .b8 17
 
  .b8 105
 
  .b8 0
  .b32 1
- .b32 95
+ .b32 106
  .b32 1234
  .b32 .debug_loc+407
  .b8 0
@@ -7246,11 +7618,11 @@ BB21_2:
 
  .b8 0
  .b32 1
- .b32 122
+ .b32 133
  .b32 1200
  .b8 1
- .b64 func_begin9
- .b64 func_end9
+ .b64 func_begin11
+ .b64 func_end11
  .b8 1
  .b8 156
  .b8 11
@@ -7262,7 +7634,7 @@ BB21_2:
 
  .b8 0
  .b32 1
- .b32 122
+ .b32 133
  .b32 1283
  .b8 6
  .b8 144
@@ -7283,8 +7655,8 @@ BB21_2:
 
  .b8 0
  .b32 1
- .b32 122
- .b32 11196
+ .b32 133
+ .b32 11536
  .b8 6
  .b8 144
  .b8 181
@@ -7295,8 +7667,8 @@ BB21_2:
  .b8 2
  .b8 15
 
- .b64 tmp49
- .b64 tmp66
+ .b64 tmp52
+ .b64 tmp69
  .b8 16
 
  .b8 112
@@ -7310,11 +7682,11 @@ BB21_2:
 
  .b8 0
  .b32 1
- .b32 125
+ .b32 136
  .b32 1277
  .b8 11
  .b8 3
- .b64 __local_depot9
+ .b64 __local_depot11
  .b8 35
  .b8 0
 
@@ -7332,11 +7704,11 @@ BB21_2:
 
  .b8 0
  .b32 1
- .b32 126
+ .b32 137
  .b32 1277
  .b8 11
  .b8 3
- .b64 __local_depot9
+ .b64 __local_depot11
  .b8 35
  .b8 8
 
@@ -7356,20 +7728,20 @@ BB21_2:
 
  .b8 0
  .b32 1
- .b32 127
+ .b32 138
  .b32 1300
  .b32 .debug_loc+540
  .b8 15
 
- .b64 tmp53
- .b64 tmp65
+ .b64 tmp56
+ .b64 tmp68
  .b8 17
 
  .b8 105
 
  .b8 0
  .b32 1
- .b32 128
+ .b32 139
  .b32 1234
  .b32 .debug_loc+678
  .b8 0
@@ -7424,11 +7796,11 @@ BB21_2:
 
  .b8 0
  .b32 1
- .b32 150
+ .b32 161
  .b32 1200
  .b8 1
- .b64 func_begin10
- .b64 func_end10
+ .b64 func_begin12
+ .b64 func_end12
  .b8 1
  .b8 156
  .b8 11
@@ -7440,7 +7812,7 @@ BB21_2:
 
  .b8 0
  .b32 1
- .b32 150
+ .b32 161
  .b32 1234
  .b8 5
  .b8 144
@@ -7460,8 +7832,8 @@ BB21_2:
 
  .b8 0
  .b32 1
- .b32 150
- .b32 11196
+ .b32 161
+ .b32 11536
  .b8 6
  .b8 144
  .b8 177
@@ -7508,11 +7880,11 @@ BB21_2:
 
  .b8 0
  .b32 1
- .b32 161
+ .b32 172
  .b32 1200
  .b8 1
- .b64 func_begin11
- .b64 func_end11
+ .b64 func_begin13
+ .b64 func_end13
  .b8 1
  .b8 156
  .b8 11
@@ -7524,7 +7896,7 @@ BB21_2:
 
  .b8 0
  .b32 1
- .b32 161
+ .b32 172
  .b32 1234
  .b8 5
  .b8 144
@@ -7544,7 +7916,7 @@ BB21_2:
 
  .b8 0
  .b32 1
- .b32 161
+ .b32 172
  .b32 1277
  .b8 6
  .b8 144
@@ -7596,11 +7968,11 @@ BB21_2:
 
  .b8 0
  .b32 1
- .b32 172
+ .b32 183
  .b32 1200
  .b8 1
- .b64 func_begin12
- .b64 func_end12
+ .b64 func_begin14
+ .b64 func_end14
  .b8 1
  .b8 156
  .b8 11
@@ -7612,7 +7984,7 @@ BB21_2:
 
  .b8 0
  .b32 1
- .b32 172
+ .b32 183
  .b32 1234
  .b8 5
  .b8 144
@@ -7632,7 +8004,7 @@ BB21_2:
 
  .b8 0
  .b32 1
- .b32 172
+ .b32 183
  .b32 1300
  .b8 6
  .b8 144
@@ -7684,11 +8056,11 @@ BB21_2:
 
  .b8 0
  .b32 1
- .b32 34
+ .b32 52
  .b32 1200
  .b8 1
- .b64 func_begin13
- .b64 func_end13
+ .b64 func_begin15
+ .b64 func_end15
  .b8 1
  .b8 156
  .b8 10
@@ -7752,11 +8124,11 @@ BB21_2:
 
  .b8 0
  .b32 1
- .b32 51
+ .b32 62
  .b32 1200
  .b8 1
- .b64 func_begin14
- .b64 func_end14
+ .b64 func_begin16
+ .b64 func_end16
  .b8 1
  .b8 156
  .b8 11
@@ -7768,7 +8140,7 @@ BB21_2:
 
  .b8 0
  .b32 1
- .b32 51
+ .b32 62
  .b32 1283
  .b8 9
  .b8 3
@@ -7783,7 +8155,7 @@ BB21_2:
 
  .b8 0
  .b32 1
- .b32 51
+ .b32 62
  .b32 1283
  .b8 9
  .b8 3
@@ -7800,7 +8172,7 @@ BB21_2:
 
  .b8 0
  .b32 1
- .b32 51
+ .b32 62
  .b32 1306
  .b8 9
  .b8 3
@@ -7817,8 +8189,8 @@ BB21_2:
 
  .b8 0
  .b32 1
- .b32 51
- .b32 11196
+ .b32 62
+ .b32 11536
  .b8 9
  .b8 3
  .b64 _Z16Bcl_Gfs_add_filePcS_yPi_param_3
@@ -7885,11 +8257,11 @@ BB21_2:
 
  .b8 0
  .b32 1
- .b32 83
+ .b32 94
  .b32 1200
  .b8 1
- .b64 func_begin15
- .b64 func_end15
+ .b64 func_begin17
+ .b64 func_end17
  .b8 1
  .b8 156
  .b8 11
@@ -7901,7 +8273,7 @@ BB21_2:
 
  .b8 0
  .b32 1
- .b32 83
+ .b32 94
  .b32 1283
  .b8 9
  .b8 3
@@ -7918,8 +8290,8 @@ BB21_2:
 
  .b8 0
  .b32 1
- .b32 83
- .b32 11196
+ .b32 94
+ .b32 11536
  .b8 9
  .b8 3
  .b64 _Z19Bcl_Gfs_remove_filePcPi_param_1
@@ -7982,11 +8354,11 @@ BB21_2:
 
  .b8 0
  .b32 1
- .b32 117
+ .b32 128
  .b32 1200
  .b8 1
- .b64 func_begin16
- .b64 func_end16
+ .b64 func_begin18
+ .b64 func_end18
  .b8 1
  .b8 156
  .b8 11
@@ -7998,7 +8370,7 @@ BB21_2:
 
  .b8 0
  .b32 1
- .b32 117
+ .b32 128
  .b32 1283
  .b8 9
  .b8 3
@@ -8015,8 +8387,8 @@ BB21_2:
 
  .b8 0
  .b32 1
- .b32 117
- .b32 11196
+ .b32 128
+ .b32 11536
  .b8 9
  .b8 3
  .b64 _Z17Bcl_Gfs_open_filePcPi_param_1
@@ -8079,11 +8451,11 @@ BB21_2:
 
  .b8 0
  .b32 1
- .b32 145
+ .b32 156
  .b32 1200
  .b8 1
- .b64 func_begin17
- .b64 func_end17
+ .b64 func_begin19
+ .b64 func_end19
  .b8 1
  .b8 156
  .b8 11
@@ -8095,7 +8467,7 @@ BB21_2:
 
  .b8 0
  .b32 1
- .b32 145
+ .b32 156
  .b32 1234
  .b8 9
  .b8 3
@@ -8112,8 +8484,8 @@ BB21_2:
 
  .b8 0
  .b32 1
- .b32 145
- .b32 11196
+ .b32 156
+ .b32 11536
  .b8 9
  .b8 3
  .b64 _Z18Bcl_Gfs_close_fileiPi_param_1
@@ -8166,11 +8538,11 @@ BB21_2:
 
  .b8 0
  .b32 1
- .b32 156
+ .b32 167
  .b32 1200
  .b8 1
- .b64 func_begin18
- .b64 func_end18
+ .b64 func_begin20
+ .b64 func_end20
  .b8 1
  .b8 156
  .b8 11
@@ -8182,7 +8554,7 @@ BB21_2:
 
  .b8 0
  .b32 1
- .b32 156
+ .b32 167
  .b32 1234
  .b8 9
  .b8 3
@@ -8199,7 +8571,7 @@ BB21_2:
 
  .b8 0
  .b32 1
- .b32 156
+ .b32 167
  .b32 1277
  .b8 9
  .b8 3
@@ -8255,11 +8627,11 @@ BB21_2:
 
  .b8 0
  .b32 1
- .b32 167
+ .b32 178
  .b32 1200
  .b8 1
- .b64 func_begin19
- .b64 func_end19
+ .b64 func_begin21
+ .b64 func_end21
  .b8 1
  .b8 156
  .b8 11
@@ -8271,7 +8643,7 @@ BB21_2:
 
  .b8 0
  .b32 1
- .b32 167
+ .b32 178
  .b32 1234
  .b8 9
  .b8 3
@@ -8288,7 +8660,7 @@ BB21_2:
 
  .b8 0
  .b32 1
- .b32 167
+ .b32 178
  .b32 1300
  .b8 9
  .b8 3
@@ -12125,11 +12497,11 @@ BB21_2:
  .b8 12
  .b8 3
 
- .b32 10831
+ .b32 11171
  .b8 12
  .b8 3
 
- .b32 11191
+ .b32 11531
  .b8 12
  .b8 18
 
@@ -12648,8 +13020,8 @@ BB21_2:
 
 }
 .section .debug_loc {
- .b64 tmp16
  .b64 tmp19
+ .b64 tmp22
  .b8 6
  .b8 0
  .b8 144
@@ -12658,8 +13030,8 @@ BB21_2:
  .b8 201
  .b8 171
  .b8 2
- .b64 tmp19
- .b64 tmp21
+ .b64 tmp22
+ .b64 tmp24
  .b8 7
  .b8 0
  .b8 144
@@ -12669,8 +13041,8 @@ BB21_2:
  .b8 147
  .b8 215
  .b8 4
- .b64 tmp21
- .b64 tmp25
+ .b64 tmp24
+ .b64 tmp28
  .b8 6
  .b8 0
  .b8 144
@@ -12679,8 +13051,8 @@ BB21_2:
  .b8 201
  .b8 171
  .b8 2
- .b64 tmp25
- .b64 tmp27
+ .b64 tmp28
+ .b64 tmp30
  .b8 6
  .b8 0
  .b8 144
@@ -12689,8 +13061,8 @@ BB21_2:
  .b8 201
  .b8 171
  .b8 2
- .b64 tmp27
- .b64 func_end7
+ .b64 tmp30
+ .b64 func_end9
  .b8 7
  .b8 0
  .b8 144
@@ -12702,8 +13074,8 @@ BB21_2:
  .b8 4
  .b64 0
  .b64 0
- .b64 tmp18
- .b64 tmp20
+ .b64 tmp21
+ .b64 tmp23
  .b8 5
  .b8 0
  .b8 144
@@ -12711,8 +13083,8 @@ BB21_2:
  .b8 228
  .b8 149
  .b8 1
- .b64 tmp20
- .b64 tmp21
+ .b64 tmp23
+ .b64 tmp24
  .b8 5
  .b8 0
  .b8 144
@@ -12720,8 +13092,8 @@ BB21_2:
  .b8 228
  .b8 149
  .b8 1
- .b64 tmp21
- .b64 tmp26
+ .b64 tmp24
+ .b64 tmp29
  .b8 5
  .b8 0
  .b8 144
@@ -12729,8 +13101,8 @@ BB21_2:
  .b8 228
  .b8 149
  .b8 1
- .b64 tmp26
- .b64 tmp28
+ .b64 tmp29
+ .b64 tmp31
  .b8 5
  .b8 0
  .b8 144
@@ -12738,8 +13110,8 @@ BB21_2:
  .b8 228
  .b8 149
  .b8 1
- .b64 tmp28
- .b64 func_end7
+ .b64 tmp31
+ .b64 func_end9
  .b8 5
  .b8 0
  .b8 144
@@ -12749,8 +13121,8 @@ BB21_2:
  .b8 1
  .b64 0
  .b64 0
- .b64 tmp34
  .b64 tmp37
+ .b64 tmp40
  .b8 6
  .b8 0
  .b8 144
@@ -12759,8 +13131,8 @@ BB21_2:
  .b8 201
  .b8 171
  .b8 2
- .b64 tmp37
- .b64 tmp39
+ .b64 tmp40
+ .b64 tmp42
  .b8 7
  .b8 0
  .b8 144
@@ -12770,8 +13142,8 @@ BB21_2:
  .b8 147
  .b8 215
  .b8 4
- .b64 tmp39
- .b64 tmp43
+ .b64 tmp42
+ .b64 tmp46
  .b8 6
  .b8 0
  .b8 144
@@ -12780,8 +13152,8 @@ BB21_2:
  .b8 201
  .b8 171
  .b8 2
- .b64 tmp43
- .b64 tmp45
+ .b64 tmp46
+ .b64 tmp48
  .b8 6
  .b8 0
  .b8 144
@@ -12790,8 +13162,8 @@ BB21_2:
  .b8 201
  .b8 171
  .b8 2
- .b64 tmp45
- .b64 func_end8
+ .b64 tmp48
+ .b64 func_end10
  .b8 7
  .b8 0
  .b8 144
@@ -12803,8 +13175,8 @@ BB21_2:
  .b8 4
  .b64 0
  .b64 0
- .b64 tmp36
- .b64 tmp38
+ .b64 tmp39
+ .b64 tmp41
  .b8 5
  .b8 0
  .b8 144
@@ -12812,8 +13184,8 @@ BB21_2:
  .b8 228
  .b8 149
  .b8 1
- .b64 tmp38
- .b64 tmp39
+ .b64 tmp41
+ .b64 tmp42
  .b8 6
  .b8 0
  .b8 144
@@ -12822,8 +13194,8 @@ BB21_2:
  .b8 200
  .b8 171
  .b8 2
- .b64 tmp39
- .b64 tmp44
+ .b64 tmp42
+ .b64 tmp47
  .b8 5
  .b8 0
  .b8 144
@@ -12831,8 +13203,8 @@ BB21_2:
  .b8 228
  .b8 149
  .b8 1
- .b64 tmp44
- .b64 tmp46
+ .b64 tmp47
+ .b64 tmp49
  .b8 5
  .b8 0
  .b8 144
@@ -12840,8 +13212,8 @@ BB21_2:
  .b8 228
  .b8 149
  .b8 1
- .b64 tmp46
- .b64 func_end8
+ .b64 tmp49
+ .b64 func_end10
  .b8 6
  .b8 0
  .b8 144
@@ -12852,8 +13224,8 @@ BB21_2:
  .b8 2
  .b64 0
  .b64 0
- .b64 tmp52
  .b64 tmp55
+ .b64 tmp58
  .b8 6
  .b8 0
  .b8 144
@@ -12862,8 +13234,8 @@ BB21_2:
  .b8 201
  .b8 171
  .b8 2
- .b64 tmp55
- .b64 tmp57
+ .b64 tmp58
+ .b64 tmp60
  .b8 7
  .b8 0
  .b8 144
@@ -12873,8 +13245,8 @@ BB21_2:
  .b8 147
  .b8 215
  .b8 4
- .b64 tmp57
- .b64 tmp61
+ .b64 tmp60
+ .b64 tmp64
  .b8 6
  .b8 0
  .b8 144
@@ -12883,8 +13255,8 @@ BB21_2:
  .b8 201
  .b8 171
  .b8 2
- .b64 tmp61
- .b64 tmp63
+ .b64 tmp64
+ .b64 tmp66
  .b8 6
  .b8 0
  .b8 144
@@ -12893,8 +13265,8 @@ BB21_2:
  .b8 201
  .b8 171
  .b8 2
- .b64 tmp63
- .b64 func_end9
+ .b64 tmp66
+ .b64 func_end11
  .b8 7
  .b8 0
  .b8 144
@@ -12906,8 +13278,8 @@ BB21_2:
  .b8 4
  .b64 0
  .b64 0
- .b64 tmp54
- .b64 tmp56
+ .b64 tmp57
+ .b64 tmp59
  .b8 5
  .b8 0
  .b8 144
@@ -12915,8 +13287,8 @@ BB21_2:
  .b8 228
  .b8 149
  .b8 1
- .b64 tmp56
- .b64 tmp57
+ .b64 tmp59
+ .b64 tmp60
  .b8 6
  .b8 0
  .b8 144
@@ -12925,8 +13297,8 @@ BB21_2:
  .b8 200
  .b8 171
  .b8 2
- .b64 tmp57
- .b64 tmp62
+ .b64 tmp60
+ .b64 tmp65
  .b8 5
  .b8 0
  .b8 144
@@ -12934,8 +13306,8 @@ BB21_2:
  .b8 228
  .b8 149
  .b8 1
- .b64 tmp62
- .b64 tmp64
+ .b64 tmp65
+ .b64 tmp67
  .b8 5
  .b8 0
  .b8 144
@@ -12943,8 +13315,8 @@ BB21_2:
  .b8 228
  .b8 149
  .b8 1
- .b64 tmp64
- .b64 func_end9
+ .b64 tmp67
+ .b64 func_end11
  .b8 6
  .b8 0
  .b8 144
@@ -12959,12 +13331,12 @@ BB21_2:
 .section .debug_ranges {
 }
 .section .debug_pubnames {
- .b32 583
+ .b32 662
  .b8 2
  .b8 0
  .b32 .debug_info
- .b32 11199
- .b32 4444
+ .b32 11539
+ .b32 4469
  .b8 99
  .b8 117
  .b8 100
@@ -12989,7 +13361,7 @@ BB21_2:
  .b8 101
  .b8 0
 
- .b32 7291
+ .b32 7631
  .b8 95
  .b8 90
  .b8 49
@@ -13012,7 +13384,7 @@ BB21_2:
  .b8 99
  .b8 0
 
- .b32 7426
+ .b32 7766
  .b8 95
  .b8 90
  .b8 49
@@ -13036,7 +13408,7 @@ BB21_2:
  .b8 121
  .b8 0
 
- .b32 7146
+ .b32 7486
  .b8 95
  .b8 90
  .b8 49
@@ -13064,7 +13436,69 @@ BB21_2:
  .b8 105
  .b8 0
 
- .b32 6852
+ .b32 5342
+ .b8 95
+ .b8 90
+ .b8 50
+ .b8 50
+ .b8 73
+ .b8 110
+ .b8 116
+ .b8 101
+ .b8 114
+ .b8 110
+ .b8 97
+ .b8 108
+ .b8 73
+ .b8 110
+ .b8 105
+ .b8 116
+ .b8 70
+ .b8 105
+ .b8 108
+ .b8 101
+ .b8 83
+ .b8 121
+ .b8 115
+ .b8 116
+ .b8 101
+ .b8 109
+ .b8 118
+ .b8 0
+
+ .b32 5430
+ .b8 95
+ .b8 90
+ .b8 49
+ .b8 56
+ .b8 73
+ .b8 110
+ .b8 116
+ .b8 101
+ .b8 114
+ .b8 110
+ .b8 97
+ .b8 108
+ .b8 71
+ .b8 102
+ .b8 115
+ .b8 65
+ .b8 100
+ .b8 100
+ .b8 70
+ .b8 105
+ .b8 108
+ .b8 101
+ .b8 80
+ .b8 118
+ .b8 83
+ .b8 95
+ .b8 121
+ .b8 83
+ .b8 95
+ .b8 0
+
+ .b32 7192
  .b8 95
  .b8 90
  .b8 49
@@ -13094,7 +13528,7 @@ BB21_2:
  .b8 105
  .b8 0
 
- .b32 4602
+ .b32 4627
  .b8 99
  .b8 117
  .b8 100
@@ -13110,7 +13544,7 @@ BB21_2:
  .b8 101
  .b8 0
 
- .b32 6453
+ .b32 6793
  .b8 95
  .b8 90
  .b8 49
@@ -13138,7 +13572,7 @@ BB21_2:
  .b8 95
  .b8 0
 
- .b32 4316
+ .b32 4341
  .b8 99
  .b8 117
  .b8 100
@@ -13162,7 +13596,7 @@ BB21_2:
  .b8 115
  .b8 0
 
- .b32 6643
+ .b32 6983
  .b8 95
  .b8 90
  .b8 49
@@ -13192,59 +13626,35 @@ BB21_2:
  .b8 105
  .b8 0
 
- .b32 7001
+ .b32 5258
  .b8 95
  .b8 90
- .b8 49
- .b8 55
- .b8 66
- .b8 99
- .b8 108
- .b8 95
- .b8 71
- .b8 102
- .b8 115
- .b8 95
+ .b8 50
+ .b8 48
+ .b8 67
  .b8 111
- .b8 112
- .b8 101
+ .b8 109
+ .b8 109
+ .b8 111
  .b8 110
- .b8 95
- .b8 102
+ .b8 73
+ .b8 110
+ .b8 105
+ .b8 116
+ .b8 70
  .b8 105
  .b8 108
  .b8 101
- .b8 80
- .b8 99
- .b8 80
- .b8 105
+ .b8 83
+ .b8 121
+ .b8 115
+ .b8 116
+ .b8 101
+ .b8 109
+ .b8 118
  .b8 0
 
- .b32 6205
- .b8 95
- .b8 90
- .b8 49
- .b8 52
- .b8 71
- .b8 102
- .b8 115
- .b8 95
- .b8 99
- .b8 108
- .b8 111
- .b8 115
- .b8 101
- .b8 95
- .b8 102
- .b8 105
- .b8 108
- .b8 101
- .b8 105
- .b8 80
- .b8 105
- .b8 0
-
- .b32 4691
+ .b32 4716
  .b8 99
  .b8 117
  .b8 100
@@ -13292,7 +13702,7 @@ BB21_2:
  .b8 114
  .b8 0
 
- .b32 1680
+ .b32 1705
  .b8 99
  .b8 117
  .b8 100
@@ -13305,7 +13715,27 @@ BB21_2:
  .b8 99
  .b8 0
 
- .b32 5633
+ .b32 6915
+ .b8 95
+ .b8 90
+ .b8 49
+ .b8 50
+ .b8 66
+ .b8 99
+ .b8 108
+ .b8 95
+ .b8 71
+ .b8 102
+ .b8 115
+ .b8 95
+ .b8 105
+ .b8 110
+ .b8 105
+ .b8 116
+ .b8 118
+ .b8 0
+
+ .b32 5973
  .b8 95
  .b8 90
  .b8 49
@@ -13331,7 +13761,7 @@ BB21_2:
  .b8 105
  .b8 0
 
- .b32 6335
+ .b32 6675
  .b8 95
  .b8 90
  .b8 56
@@ -13349,7 +13779,7 @@ BB21_2:
  .b8 99
  .b8 0
 
- .b32 5921
+ .b32 6261
  .b8 95
  .b8 90
  .b8 49
@@ -13373,22 +13803,7 @@ BB21_2:
  .b8 105
  .b8 0
 
- .b32 5233
- .b8 95
- .b8 90
- .b8 56
- .b8 71
- .b8 102
- .b8 115
- .b8 95
- .b8 105
- .b8 110
- .b8 105
- .b8 116
- .b8 118
- .b8 0
-
- .b32 5291
+ .b32 5631
  .b8 95
  .b8 90
  .b8 49
@@ -13414,7 +13829,35 @@ BB21_2:
  .b8 105
  .b8 0
 
- .b32 4940
+ .b32 7341
+ .b8 95
+ .b8 90
+ .b8 49
+ .b8 55
+ .b8 66
+ .b8 99
+ .b8 108
+ .b8 95
+ .b8 71
+ .b8 102
+ .b8 115
+ .b8 95
+ .b8 111
+ .b8 112
+ .b8 101
+ .b8 110
+ .b8 95
+ .b8 102
+ .b8 105
+ .b8 108
+ .b8 101
+ .b8 80
+ .b8 99
+ .b8 80
+ .b8 105
+ .b8 0
+
+ .b32 4965
  .b8 99
  .b8 117
  .b8 100
@@ -13471,24 +13914,28 @@ BB21_2:
  .b8 115
  .b8 0
 
- .b32 6575
+ .b32 6545
  .b8 95
  .b8 90
  .b8 49
- .b8 50
- .b8 66
- .b8 99
- .b8 108
- .b8 95
+ .b8 52
  .b8 71
  .b8 102
  .b8 115
  .b8 95
+ .b8 99
+ .b8 108
+ .b8 111
+ .b8 115
+ .b8 101
+ .b8 95
+ .b8 102
  .b8 105
- .b8 110
+ .b8 108
+ .b8 101
  .b8 105
- .b8 116
- .b8 118
+ .b8 80
+ .b8 105
  .b8 0
 
  .b32 0

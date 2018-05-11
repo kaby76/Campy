@@ -13,9 +13,9 @@ extern "C" {
 #endif
 
 
-EXPORT void InitTheBcl(void * g, size_t size, int count, void * s)
+EXPORT void InitTheBcl(void * g, size_t size, size_t first_overhead, int count, void * s)
 {
-	InternalInitTheBcl(g, size, count, s);
+	InternalInitTheBcl(g, size, first_overhead, count, s);
 }
 
 EXPORT void InitFileSystem()

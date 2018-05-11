@@ -29,12 +29,6 @@
 	.param .b32 _Z17Thread_StackAllocP8tThread_j_param_1
 )
 ;
-.extern .func _Z11JIT_PrepareP14tMD_MethodDef_j
-(
-	.param .b64 _Z11JIT_PrepareP14tMD_MethodDef_j_param_0,
-	.param .b32 _Z11JIT_PrepareP14tMD_MethodDef_j_param_1
-)
-;
 .extern .func  (.param .b64 func_retval0) _Z37MetaData_GetMethodDefFromDefRefOrSpecP10tMetaData_jPP12tMD_TypeDef_S3_
 (
 	.param .b64 _Z37MetaData_GetMethodDefFromDefRefOrSpecP10tMetaData_jPP12tMD_TypeDef_S3__param_0,
@@ -304,7 +298,7 @@ func_end5:
 	.reg .b64 	%SPL;
 	.reg .pred 	%p<8>;
 	.reg .b16 	%rs<4>;
-	.reg .b32 	%r<14>;
+	.reg .b32 	%r<13>;
 	.reg .b64 	%rd<24>;
 
 
@@ -449,58 +443,35 @@ tmp17:
 	bra.uni 	BB6_5;
 
 BB6_5:
-	mov.u32 	%r5, 0;
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/MethodState.c:137 		JIT_Prepare(pMethod, 0);
-	.loc	1 137 3
-tmp18:
-	// Callseq Start 3
-	{
-	.reg .b32 temp_param_reg;
-	// <end>}
-	.param .b64 param0;
-	st.param.b64	[param0+0], %rd4;
-	.param .b32 param1;
-	st.param.b32	[param1+0], %r5;
-	call.uni 
-	_Z11JIT_PrepareP14tMD_MethodDef_j, 
-	(
-	param0, 
-	param1
-	);
-	
-	//{
-	}// Callseq End 3
-tmp19:
 
 BB6_6:
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/MethodState.c:139 	pThis->pJIT = pMethod->pJITted;
-	.loc	1 139 2
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/MethodState.c:141 	pThis->pJIT = pMethod->pJITted;
+	.loc	1 141 2
 	ld.u64 	%rd10, [%rd4+56];
 	st.u64 	[%rd2+16], %rd10;
-	mov.u32 	%r6, 0;
+	mov.u32 	%r5, 0;
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/MethodState.c:140 	pThis->ipOffset = 0;
-	.loc	1 140 2
-	st.u32 	[%rd2+24], %r6;
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/MethodState.c:142 	pThis->ipOffset = 0;
+	.loc	1 142 2
+	st.u32 	[%rd2+24], %r5;
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/MethodState.c:141 	pThis->pEvalStack = (PTR)Thread_StackAlloc(pThread, pThis->pMethod->pJITted->maxStack);
-	.loc	1 141 2
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/MethodState.c:143 	pThis->pEvalStack = (PTR)Thread_StackAlloc(pThread, pThis->pMethod->pJITted->maxStack);
+	.loc	1 143 2
 	ld.u64 	%rd11, [%rd2+8];
 	ld.u64 	%rd12, [%rd11+56];
-	ld.u32 	%r7, [%rd12+8];
+	ld.u32 	%r6, [%rd12+8];
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/MethodState.c:141 	pThis->pEvalStack = (PTR)Thread_StackAlloc(pThread, pThis->pMethod->pJITted->maxStack);
-	.loc	1 141 27
-	// Callseq Start 4
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/MethodState.c:143 	pThis->pEvalStack = (PTR)Thread_StackAlloc(pThread, pThis->pMethod->pJITted->maxStack);
+	.loc	1 143 27
+	// Callseq Start 3
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
 	.param .b64 param0;
 	st.param.b64	[param0+0], %rd3;
 	.param .b32 param1;
-	st.param.b32	[param1+0], %r7;
+	st.param.b32	[param1+0], %r6;
 	.param .b64 retval0;
 	call.uni (retval0), 
 	_Z17Thread_StackAllocP8tThread_j, 
@@ -511,43 +482,43 @@ BB6_6:
 	ld.param.b64	%rd13, [retval0+0];
 	
 	//{
-	}// Callseq End 4
+	}// Callseq End 3
 	st.u64 	[%rd2+32], %rd13;
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/MethodState.c:142 	pThis->stackOfs = 0;
-	.loc	1 142 2
-	st.u32 	[%rd2+40], %r6;
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/MethodState.c:144 	pThis->stackOfs = 0;
+	.loc	1 144 2
+	st.u32 	[%rd2+40], %r5;
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/MethodState.c:143 	pThis->isInternalNewObjCall = isInternalNewObjCall;
-	.loc	1 143 2
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/MethodState.c:145 	pThis->isInternalNewObjCall = isInternalNewObjCall;
+	.loc	1 145 2
 	st.u32 	[%rd2+56], %r1;
 	mov.u64 	%rd14, 0;
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/MethodState.c:144 	pThis->pNextDelegate = NULL;
-	.loc	1 144 2
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/MethodState.c:146 	pThis->pNextDelegate = NULL;
+	.loc	1 146 2
 	st.u64 	[%rd2+72], %rd14;
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/MethodState.c:145 	pThis->pDelegateParams = NULL;
-	.loc	1 145 2
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/MethodState.c:147 	pThis->pDelegateParams = NULL;
+	.loc	1 147 2
 	st.u64 	[%rd2+80], %rd14;
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/MethodState.c:147 	pThis->pParamsLocals = (PTR)Thread_StackAlloc(pThread, pMethod->parameterStackSize + pMethod->pJITted->localsStackSize);
-	.loc	1 147 2
-	ld.u32 	%r8, [%rd4+80];
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/MethodState.c:149 	pThis->pParamsLocals = (PTR)Thread_StackAlloc(pThread, pMethod->parameterStackSize + pMethod->pJITted->localsStackSize);
+	.loc	1 149 2
+	ld.u32 	%r7, [%rd4+80];
 	ld.u64 	%rd15, [%rd4+56];
-	ld.u32 	%r9, [%rd15+12];
-	add.s32 	%r10, %r8, %r9;
+	ld.u32 	%r8, [%rd15+12];
+	add.s32 	%r9, %r7, %r8;
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/MethodState.c:147 	pThis->pParamsLocals = (PTR)Thread_StackAlloc(pThread, pMethod->parameterStackSize + pMethod->pJITted->localsStackSize);
-	.loc	1 147 30
-	// Callseq Start 5
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/MethodState.c:149 	pThis->pParamsLocals = (PTR)Thread_StackAlloc(pThread, pMethod->parameterStackSize + pMethod->pJITted->localsStackSize);
+	.loc	1 149 30
+	// Callseq Start 4
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
 	.param .b64 param0;
 	st.param.b64	[param0+0], %rd3;
 	.param .b32 param1;
-	st.param.b32	[param1+0], %r10;
+	st.param.b32	[param1+0], %r9;
 	.param .b64 retval0;
 	call.uni (retval0), 
 	_Z17Thread_StackAllocP8tThread_j, 
@@ -558,25 +529,25 @@ BB6_6:
 	ld.param.b64	%rd16, [retval0+0];
 	
 	//{
-	}// Callseq End 5
+	}// Callseq End 4
 	st.u64 	[%rd2+48], %rd16;
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/MethodState.c:148 	memset(pThis->pParamsLocals, 0, pMethod->parameterStackSize + pMethod->pJITted->localsStackSize);
-	.loc	1 148 2
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/MethodState.c:150 	memset(pThis->pParamsLocals, 0, pMethod->parameterStackSize + pMethod->pJITted->localsStackSize);
+	.loc	1 150 2
 	ld.u64 	%rd17, [%rd2+48];
-	ld.u32 	%r11, [%rd4+80];
+	ld.u32 	%r10, [%rd4+80];
 	ld.u64 	%rd18, [%rd4+56];
-	ld.u32 	%r12, [%rd18+12];
-	add.s32 	%r13, %r11, %r12;
-	cvt.u64.u32	%rd19, %r13;
-	// Callseq Start 6
+	ld.u32 	%r11, [%rd18+12];
+	add.s32 	%r12, %r10, %r11;
+	cvt.u64.u32	%rd19, %r12;
+	// Callseq Start 5
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
 	.param .b64 param0;
 	st.param.b64	[param0+0], %rd17;
 	.param .b32 param1;
-	st.param.b32	[param1+0], %r6;
+	st.param.b32	[param1+0], %r5;
 	.param .b64 param2;
 	st.param.b64	[param2+0], %rd19;
 	.param .b64 retval0;
@@ -590,16 +561,16 @@ BB6_6:
 	ld.param.b64	%rd20, [retval0+0];
 	
 	//{
-	}// Callseq End 6
+	}// Callseq End 5
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/MethodState.c:195 	return pThis;
-	.loc	1 195 2
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/MethodState.c:197 	return pThis;
+	.loc	1 197 2
 	mov.u64 	%rd21, %rd2;
 	st.u64 	[%SP+0], %rd21;
 	ld.u64 	%rd22, [%SP+0];
 	st.param.b64	[func_retval0+0], %rd22;
 	ret;
-tmp20:
+tmp18:
 func_end6:
 }
 
@@ -615,11 +586,11 @@ func_end6:
 	.reg .b64 	%rd<7>;
 
 
-	.loc 1 198 1
+	.loc 1 200 1
 func_begin7:
 	.loc	1 0 0
 
-	.loc 1 198 1
+	.loc 1 200 1
 
 	ld.param.u64 	%rd1, [_Z11MethodStateP8tThread_P10tMetaData_jP13tMethodState__param_0];
 	ld.param.u64 	%rd2, [_Z11MethodStateP8tThread_P10tMetaData_jP13tMethodState__param_1];
@@ -628,10 +599,10 @@ func_begin7:
 	mov.u64 	%rd4, 0;
 func_exec_begin7:
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/MethodState.c:201 	pMethod = MetaData_GetMethodDefFromDefRefOrSpec(pMetaData, methodToken, NULL, NULL);
-	.loc	1 201 12
-tmp21:
-	// Callseq Start 7
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/MethodState.c:203 	pMethod = MetaData_GetMethodDefFromDefRefOrSpec(pMetaData, methodToken, NULL, NULL);
+	.loc	1 203 12
+tmp19:
+	// Callseq Start 6
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
@@ -655,13 +626,13 @@ tmp21:
 	ld.param.b64	%rd5, [retval0+0];
 	
 	//{
-	}// Callseq End 7
+	}// Callseq End 6
 	mov.u32 	%r2, 0;
-tmp22:
+tmp20:
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/MethodState.c:202 	return MethodState_Direct(pThread, pMethod, pCaller, 0);
-	.loc	1 202 9
-	// Callseq Start 8
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/MethodState.c:204 	return MethodState_Direct(pThread, pMethod, pCaller, 0);
+	.loc	1 204 9
+	// Callseq Start 7
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
@@ -685,10 +656,10 @@ tmp22:
 	ld.param.b64	%rd6, [retval0+0];
 	
 	//{
-	}// Callseq End 8
+	}// Callseq End 7
 	st.param.b64	[func_retval0+0], %rd6;
 	ret;
-tmp23:
+tmp21:
 func_end7:
 }
 
@@ -705,27 +676,27 @@ func_end7:
 	.reg .b64 	%rd<16>;
 
 
-	.loc 1 205 1
+	.loc 1 207 1
 func_begin8:
 	.loc	1 0 0
 
-	.loc 1 205 1
+	.loc 1 207 1
 
 	mov.u64 	%rd15, __local_depot8;
 	cvta.local.u64 	%SP, %rd15;
 	ld.param.u64 	%rd1, [_Z18MethodState_DeleteP8tThread_PP13tMethodState__param_0];
 	ld.param.u64 	%rd2, [_Z18MethodState_DeleteP8tThread_PP13tMethodState__param_1];
-tmp24:
+tmp22:
 func_exec_begin8:
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/MethodState.c:206 	tMethodState *pThis = *ppMethodState;
-	.loc	1 206 22
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/MethodState.c:208 	tMethodState *pThis = *ppMethodState;
+	.loc	1 208 22
 	ld.u64 	%rd3, [%rd2];
 	mov.u64 	%rd4, %rd3;
 	st.u64 	[%SP+0], %rd4;
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/MethodState.c:227 	if (pThis->finalizerThis != NULL) {
-	.loc	1 227 2
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/MethodState.c:229 	if (pThis->finalizerThis != NULL) {
+	.loc	1 229 2
 	ld.u64 	%rd5, [%SP+0];
 	ld.u64 	%rd6, [%rd5+64];
 	setp.ne.s64	%p1, %rd6, 0;
@@ -735,12 +706,12 @@ func_exec_begin8:
 
 BB8_1:
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/MethodState.c:228 		Heap_UnmarkFinalizer(pThis->finalizerThis);
-	.loc	1 228 3
-tmp25:
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/MethodState.c:230 		Heap_UnmarkFinalizer(pThis->finalizerThis);
+	.loc	1 230 3
+tmp23:
 	ld.u64 	%rd7, [%SP+0];
 	ld.u64 	%rd8, [%rd7+64];
-	// Callseq Start 9
+	// Callseq Start 8
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
@@ -753,13 +724,13 @@ tmp25:
 	);
 	
 	//{
-	}// Callseq End 9
-tmp26:
+	}// Callseq End 8
+tmp24:
 
 BB8_2:
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/MethodState.c:231 	if (pThis->pDelegateParams != NULL) {
-	.loc	1 231 2
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/MethodState.c:233 	if (pThis->pDelegateParams != NULL) {
+	.loc	1 233 2
 	ld.u64 	%rd9, [%SP+0];
 	ld.u64 	%rd10, [%rd9+80];
 	setp.ne.s64	%p3, %rd10, 0;
@@ -769,12 +740,12 @@ BB8_2:
 
 BB8_3:
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/MethodState.c:232 		Gfree(pThis->pDelegateParams);
-	.loc	1 232 3
-tmp27:
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/MethodState.c:234 		Gfree(pThis->pDelegateParams);
+	.loc	1 234 3
+tmp25:
 	ld.u64 	%rd11, [%SP+0];
 	ld.u64 	%rd12, [%rd11+80];
-	// Callseq Start 10
+	// Callseq Start 9
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
@@ -787,15 +758,15 @@ tmp27:
 	);
 	
 	//{
-	}// Callseq End 10
-tmp28:
+	}// Callseq End 9
+tmp26:
 
 BB8_4:
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/MethodState.c:237 	Thread_StackFree(pThread, pThis);
-	.loc	1 237 2
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/MethodState.c:239 	Thread_StackFree(pThread, pThis);
+	.loc	1 239 2
 	ld.u64 	%rd13, [%SP+0];
-	// Callseq Start 11
+	// Callseq Start 10
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
@@ -811,17 +782,17 @@ BB8_4:
 	);
 	
 	//{
-	}// Callseq End 11
+	}// Callseq End 10
 	mov.u64 	%rd14, 0;
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/MethodState.c:239 	*ppMethodState = NULL;
-	.loc	1 239 2
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/MethodState.c:241 	*ppMethodState = NULL;
+	.loc	1 241 2
 	st.u64 	[%rd2], %rd14;
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/MethodState.c:240 }
-	.loc	1 240 1
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/MethodState.c:242 }
+	.loc	1 242 1
 	ret;
-tmp29:
+tmp27:
 func_end8:
 }
 
@@ -868,9 +839,9 @@ BB9_2:
 	ret;
 }
 
-	.file	1 "C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/MethodState.c", 1516182285, 8630
+	.file	1 "C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/MethodState.c", 1525229354, 8636
 	.file	2 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v9.0\\include\\cuda_device_runtime_api.h", 1504359958, 14836
-	.file	3 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\MetaData.h", 1516287436, 9774
+	.file	3 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\MetaData.h", 1523655388, 9932
 	.file	4 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\MethodState.h", 1516286593, 3093
 	.file	5 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\MetaDataTables.h", 1513259529, 18172
 	.file	6 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\JIT.h", 1516637997, 4246
@@ -879,7 +850,7 @@ BB9_2:
 	.file	9 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\Thread.h", 1516285724, 4400
 
 .section .debug_info {
- .b32 11384
+ .b32 11425
  .b8 2
  .b8 0
  .b32 .debug_abbrev
@@ -1070,7 +1041,7 @@ BB9_2:
  .b8 0
  .b32 2
  .b32 75
- .b32 11346
+ .b32 11387
  .b8 11
  .b8 3
  .b64 __local_depot0
@@ -1085,7 +1056,7 @@ BB9_2:
  .b8 0
  .b32 2
  .b32 75
- .b32 10922
+ .b32 10963
  .b8 6
  .b8 144
  .b8 180
@@ -3929,7 +3900,7 @@ BB9_2:
  .b8 0
  .b32 2
  .b32 80
- .b32 11352
+ .b32 11393
  .b8 11
  .b8 3
  .b64 __local_depot1
@@ -3944,7 +3915,7 @@ BB9_2:
  .b8 0
  .b32 2
  .b32 80
- .b32 11358
+ .b32 11399
  .b8 6
  .b8 144
  .b8 180
@@ -4023,7 +3994,7 @@ BB9_2:
  .b8 0
  .b32 2
  .b32 85
- .b32 11369
+ .b32 11410
  .b8 6
  .b8 144
  .b8 178
@@ -4042,7 +4013,7 @@ BB9_2:
  .b8 0
  .b32 2
  .b32 85
- .b32 7654
+ .b32 7695
  .b8 5
  .b8 144
  .b8 179
@@ -4062,7 +4033,7 @@ BB9_2:
  .b8 0
  .b32 2
  .b32 85
- .b32 11301
+ .b32 11342
  .b8 5
  .b8 144
  .b8 180
@@ -4123,7 +4094,7 @@ BB9_2:
  .b8 0
  .b32 2
  .b32 90
- .b32 11369
+ .b32 11410
  .b8 6
  .b8 144
  .b8 178
@@ -4252,7 +4223,7 @@ BB9_2:
  .b8 0
  .b32 2
  .b32 95
- .b32 11369
+ .b32 11410
  .b8 6
  .b8 144
  .b8 180
@@ -4271,7 +4242,7 @@ BB9_2:
  .b8 0
  .b32 2
  .b32 95
- .b32 11358
+ .b32 11399
  .b8 6
  .b8 144
  .b8 181
@@ -4295,7 +4266,7 @@ BB9_2:
  .b8 0
  .b32 2
  .b32 95
- .b32 11301
+ .b32 11342
  .b8 5
  .b8 144
  .b8 178
@@ -4324,7 +4295,7 @@ BB9_2:
  .b8 0
  .b32 2
  .b32 95
- .b32 10922
+ .b32 10963
  .b8 6
  .b8 144
  .b8 182
@@ -4471,7 +4442,7 @@ BB9_2:
  .b8 0
  .b32 2
  .b32 100
- .b32 11369
+ .b32 11410
  .b8 6
  .b8 144
  .b8 180
@@ -4490,7 +4461,7 @@ BB9_2:
  .b8 0
  .b32 2
  .b32 100
- .b32 11358
+ .b32 11399
  .b8 6
  .b8 144
  .b8 181
@@ -4514,7 +4485,7 @@ BB9_2:
  .b8 0
  .b32 2
  .b32 100
- .b32 11301
+ .b32 11342
  .b8 5
  .b8 144
  .b8 179
@@ -4543,7 +4514,7 @@ BB9_2:
  .b8 0
  .b32 2
  .b32 100
- .b32 10922
+ .b32 10963
  .b8 6
  .b8 144
  .b8 182
@@ -4563,7 +4534,7 @@ BB9_2:
  .b8 0
  .b32 2
  .b32 100
- .b32 5292
+ .b32 5305
  .b8 5
  .b8 144
  .b8 180
@@ -4731,7 +4702,7 @@ BB9_2:
  .b8 0
  .b32 1
  .b32 120
- .b32 11375
+ .b32 11416
  .b8 6
  .b8 144
  .b8 179
@@ -4810,7 +4781,7 @@ BB9_2:
  .b8 0
  .b32 1
  .b32 120
- .b32 5503
+ .b32 5516
  .b8 5
  .b8 144
  .b8 177
@@ -4821,7 +4792,7 @@ BB9_2:
  .b8 7
 
  .b64 tmp12
- .b64 tmp20
+ .b64 tmp18
  .b8 8
 
  .b8 112
@@ -4860,7 +4831,7 @@ BB9_2:
  .b8 0
  .b32 1
  .b32 124
- .b32 5627
+ .b32 5668
  .b8 6
  .b8 144
  .b8 177
@@ -4957,7 +4928,7 @@ BB9_2:
  .b8 84
 
  .b8 0
- .b32 5311
+ .b32 5324
  .b32 4
  .b32 35
  .b8 16
@@ -4975,7 +4946,7 @@ BB9_2:
  .b8 116
 
  .b8 0
- .b32 5503
+ .b32 5516
  .b32 4
  .b32 37
  .b8 24
@@ -4995,7 +4966,7 @@ BB9_2:
  .b8 107
 
  .b8 0
- .b32 6767
+ .b32 6808
  .b32 4
  .b32 39
  .b8 32
@@ -5013,7 +4984,7 @@ BB9_2:
  .b8 115
 
  .b8 0
- .b32 5503
+ .b32 5516
  .b32 4
  .b32 41
  .b8 40
@@ -5036,7 +5007,7 @@ BB9_2:
  .b8 115
 
  .b8 0
- .b32 6767
+ .b32 6808
  .b32 4
  .b32 43
  .b8 48
@@ -5066,7 +5037,7 @@ BB9_2:
  .b8 108
 
  .b8 0
- .b32 5503
+ .b32 5516
  .b32 4
  .b32 45
  .b8 56
@@ -5089,7 +5060,7 @@ BB9_2:
  .b8 115
 
  .b8 0
- .b32 6973
+ .b32 7014
  .b32 4
  .b32 48
  .b8 64
@@ -5112,7 +5083,7 @@ BB9_2:
  .b8 101
 
  .b8 0
- .b32 7058
+ .b32 7099
  .b32 4
  .b32 51
  .b8 72
@@ -5137,7 +5108,7 @@ BB9_2:
  .b8 115
 
  .b8 0
- .b32 7058
+ .b32 7099
  .b32 4
  .b32 53
  .b8 80
@@ -5160,7 +5131,7 @@ BB9_2:
  .b8 121
 
  .b8 0
- .b32 5497
+ .b32 5510
  .b32 4
  .b32 55
  .b8 88
@@ -5177,7 +5148,7 @@ BB9_2:
  .b8 114
 
  .b8 0
- .b32 7070
+ .b32 7111
  .b32 4
  .b32 63
  .b8 96
@@ -5328,7 +5299,7 @@ BB9_2:
  .b8 115
 
  .b8 0
- .b32 5197
+ .b32 5210
  .b32 5
  .b32 239
  .b8 24
@@ -5343,7 +5314,7 @@ BB9_2:
  .b8 115
 
  .b8 0
- .b32 5197
+ .b32 5210
  .b32 5
  .b32 241
  .b8 26
@@ -5357,7 +5328,7 @@ BB9_2:
  .b8 101
 
  .b8 0
- .b32 5231
+ .b32 5244
  .b32 5
  .b32 243
  .b8 32
@@ -5376,7 +5347,7 @@ BB9_2:
  .b8 101
 
  .b8 0
- .b32 5260
+ .b32 5273
  .b32 5
  .b32 245
  .b8 40
@@ -5395,7 +5366,7 @@ BB9_2:
  .b8 116
 
  .b8 0
- .b32 5277
+ .b32 5290
  .b32 5
  .b32 247
  .b8 48
@@ -5412,7 +5383,7 @@ BB9_2:
  .b8 100
 
  .b8 0
- .b32 5311
+ .b32 5324
  .b32 5
  .b32 250
  .b8 56
@@ -5487,7 +5458,7 @@ BB9_2:
  .b8 115
 
  .b8 0
- .b32 5571
+ .b32 5598
  .b32 5
  .b32 256
  .b8 66
@@ -5504,7 +5475,7 @@ BB9_2:
  .b8 115
 
  .b8 0
- .b32 5580
+ .b32 5621
  .b32 5
  .b32 258
  .b8 72
@@ -5532,7 +5503,7 @@ BB9_2:
  .b8 101
 
  .b8 0
- .b32 5503
+ .b32 5516
  .b32 5
  .b32 260
  .b8 80
@@ -5553,7 +5524,7 @@ BB9_2:
  .b8 101
 
  .b8 0
- .b32 5627
+ .b32 5668
  .b32 5
  .b32 262
  .b8 88
@@ -5574,7 +5545,7 @@ BB9_2:
  .b8 101
 
  .b8 0
- .b32 5627
+ .b32 5668
  .b32 5
  .b32 264
  .b8 96
@@ -5594,7 +5565,7 @@ BB9_2:
  .b8 120
 
  .b8 0
- .b32 5277
+ .b32 5290
  .b32 5
  .b32 266
  .b8 104
@@ -5613,7 +5584,7 @@ BB9_2:
  .b8 115
 
  .b8 0
- .b32 5503
+ .b32 5516
  .b32 5
  .b32 269
  .b8 108
@@ -5639,7 +5610,7 @@ BB9_2:
  .b8 115
 
  .b8 0
- .b32 6910
+ .b32 6951
  .b32 5
  .b32 271
  .b8 112
@@ -5672,7 +5643,7 @@ BB9_2:
  .b8 115
 
  .b8 0
- .b32 6987
+ .b32 7028
  .b32 5
  .b32 273
  .b8 120
@@ -5712,6 +5683,18 @@ BB9_2:
  .b8 56
 
  .b8 0
+ .b8 4
+
+ .b32 5190
+ .b8 117
+ .b8 105
+ .b8 110
+ .b8 116
+ .b8 56
+ .b8 95
+ .b8 116
+
+ .b8 0
  .b8 13
 
  .b8 117
@@ -5733,7 +5716,7 @@ BB9_2:
  .b32 1
  .b8 4
 
- .b32 5210
+ .b32 5223
  .b8 70
  .b8 76
  .b8 65
@@ -5765,7 +5748,7 @@ BB9_2:
  .b32 2
  .b8 4
 
- .b32 5243
+ .b32 5256
  .b8 83
  .b8 84
  .b8 82
@@ -5776,7 +5759,7 @@ BB9_2:
  .b8 0
  .b8 9
 
- .b32 5249
+ .b32 5262
  .b8 12
  .b8 13
 
@@ -5790,7 +5773,7 @@ BB9_2:
  .b32 1
  .b8 4
 
- .b32 5271
+ .b32 5284
  .b8 66
  .b8 76
  .b8 79
@@ -5800,11 +5783,11 @@ BB9_2:
  .b8 0
  .b8 9
 
- .b32 5177
+ .b32 5190
  .b8 12
  .b8 4
 
- .b32 5292
+ .b32 5305
  .b8 73
  .b8 68
  .b8 88
@@ -5836,11 +5819,11 @@ BB9_2:
  .b32 4
  .b8 9
 
- .b32 5317
+ .b32 5330
  .b8 12
  .b8 4
 
- .b32 5330
+ .b32 5343
  .b8 116
  .b8 74
  .b8 73
@@ -5873,7 +5856,7 @@ BB9_2:
  .b8 115
 
  .b8 0
- .b32 5497
+ .b32 5510
  .b32 6
  .b32 40
  .b8 0
@@ -5891,7 +5874,7 @@ BB9_2:
  .b8 107
 
  .b8 0
- .b32 5503
+ .b32 5516
  .b32 6
  .b32 42
  .b8 8
@@ -5916,7 +5899,7 @@ BB9_2:
  .b8 101
 
  .b8 0
- .b32 5503
+ .b32 5516
  .b32 6
  .b32 44
  .b8 12
@@ -5946,7 +5929,7 @@ BB9_2:
  .b8 115
 
  .b8 0
- .b32 5503
+ .b32 5516
  .b32 6
  .b32 46
  .b8 16
@@ -5973,7 +5956,7 @@ BB9_2:
  .b8 115
 
  .b8 0
- .b32 5512
+ .b32 5539
  .b32 6
  .b32 48
  .b8 24
@@ -5982,23 +5965,36 @@ BB9_2:
  .b8 0
  .b8 9
 
- .b32 5503
+ .b32 5516
  .b8 12
  .b8 4
 
- .b32 5292
+ .b32 5525
  .b8 85
  .b8 51
  .b8 50
 
  .b8 0
+ .b8 4
+
+ .b32 5305
+ .b8 117
+ .b8 105
+ .b8 110
+ .b8 116
+ .b8 51
+ .b8 50
+ .b8 95
+ .b8 116
+
+ .b8 0
  .b8 9
 
- .b32 5518
+ .b32 5545
  .b8 12
  .b8 4
 
- .b32 5540
+ .b32 5567
  .b8 116
  .b8 69
  .b8 120
@@ -6043,19 +6039,32 @@ BB9_2:
  .b32 64
  .b8 4
 
- .b32 5210
+ .b32 5607
  .b8 85
  .b8 49
  .b8 54
 
  .b8 0
+ .b8 4
+
+ .b32 5223
+ .b8 117
+ .b8 105
+ .b8 110
+ .b8 116
+ .b8 49
+ .b8 54
+ .b8 95
+ .b8 116
+
+ .b8 0
  .b8 9
 
- .b32 5586
+ .b32 5627
  .b8 12
  .b8 4
 
- .b32 5602
+ .b32 5643
  .b8 116
  .b8 80
  .b8 97
@@ -6088,11 +6097,11 @@ BB9_2:
  .b32 131
  .b8 9
 
- .b32 5633
+ .b32 5674
  .b8 12
  .b8 4
 
- .b32 5650
+ .b32 5691
  .b8 116
  .b8 77
  .b8 68
@@ -6137,7 +6146,7 @@ BB9_2:
  .b8 102
 
  .b8 0
- .b32 5627
+ .b32 5668
  .b32 5
  .b32 87
  .b8 0
@@ -6171,7 +6180,7 @@ BB9_2:
  .b8 115
 
  .b8 0
- .b32 6748
+ .b32 6789
  .b32 5
  .b32 92
  .b8 16
@@ -6185,7 +6194,7 @@ BB9_2:
  .b8 101
 
  .b8 0
- .b32 5231
+ .b32 5244
  .b32 5
  .b32 94
  .b8 24
@@ -6204,7 +6213,7 @@ BB9_2:
  .b8 101
 
  .b8 0
- .b32 5231
+ .b32 5244
  .b32 5
  .b32 96
  .b8 32
@@ -6221,7 +6230,7 @@ BB9_2:
  .b8 115
 
  .b8 0
- .b32 5277
+ .b32 5290
  .b32 5
  .b32 98
  .b8 40
@@ -6240,7 +6249,7 @@ BB9_2:
  .b8 116
 
  .b8 0
- .b32 5277
+ .b32 5290
  .b32 5
  .b32 100
  .b8 44
@@ -6260,7 +6269,7 @@ BB9_2:
  .b8 116
 
  .b8 0
- .b32 5277
+ .b32 5290
  .b32 5
  .b32 102
  .b8 48
@@ -6359,7 +6368,7 @@ BB9_2:
  .b8 101
 
  .b8 0
- .b32 5503
+ .b32 5516
  .b32 5
  .b32 113
  .b8 56
@@ -6376,7 +6385,7 @@ BB9_2:
  .b8 116
 
  .b8 0
- .b32 5627
+ .b32 5668
  .b32 5
  .b32 115
  .b8 64
@@ -6393,7 +6402,7 @@ BB9_2:
  .b8 101
 
  .b8 0
- .b32 6761
+ .b32 6802
  .b32 5
  .b32 117
  .b8 72
@@ -6420,7 +6429,7 @@ BB9_2:
  .b8 115
 
  .b8 0
- .b32 5503
+ .b32 5516
  .b32 5
  .b32 119
  .b8 80
@@ -6443,7 +6452,7 @@ BB9_2:
  .b8 115
 
  .b8 0
- .b32 6767
+ .b32 6808
  .b32 5
  .b32 121
  .b8 88
@@ -6535,7 +6544,7 @@ BB9_2:
  .b8 48
 
  .b8 0
- .b32 6776
+ .b32 6817
  .b32 5
  .b32 131
  .b8 99
@@ -6589,7 +6598,7 @@ BB9_2:
  .b8 101
 
  .b8 0
- .b32 5503
+ .b32 5516
  .b32 5
  .b32 135
  .b8 112
@@ -6608,7 +6617,7 @@ BB9_2:
  .b8 101
 
  .b8 0
- .b32 5503
+ .b32 5516
  .b32 5
  .b32 137
  .b8 116
@@ -6631,7 +6640,7 @@ BB9_2:
  .b8 115
 
  .b8 0
- .b32 5503
+ .b32 5516
  .b32 5
  .b32 139
  .b8 120
@@ -6655,7 +6664,7 @@ BB9_2:
  .b8 115
 
  .b8 0
- .b32 6798
+ .b32 6839
  .b32 5
  .b32 141
  .b8 128
@@ -6676,7 +6685,7 @@ BB9_2:
  .b8 120
 
  .b8 0
- .b32 5277
+ .b32 5290
  .b32 5
  .b32 143
  .b8 136
@@ -6704,7 +6713,7 @@ BB9_2:
  .b8 115
 
  .b8 0
- .b32 6851
+ .b32 6892
  .b32 5
  .b32 145
  .b8 144
@@ -6733,7 +6742,7 @@ BB9_2:
  .b8 110
 
  .b8 0
- .b32 5627
+ .b32 5668
  .b32 5
  .b32 147
  .b8 152
@@ -6759,7 +6768,7 @@ BB9_2:
  .b8 115
 
  .b8 0
- .b32 6910
+ .b32 6951
  .b32 5
  .b32 149
  .b8 160
@@ -6787,7 +6796,7 @@ BB9_2:
  .b8 101
 
  .b8 0
- .b32 5627
+ .b32 5668
  .b32 5
  .b32 151
  .b8 168
@@ -6807,7 +6816,7 @@ BB9_2:
  .b8 115
 
  .b8 0
- .b32 5503
+ .b32 5516
  .b32 5
  .b32 153
  .b8 176
@@ -6826,7 +6835,7 @@ BB9_2:
  .b8 115
 
  .b8 0
- .b32 6916
+ .b32 6957
  .b32 5
  .b32 155
  .b8 184
@@ -6852,7 +6861,7 @@ BB9_2:
  .b8 101
 
  .b8 0
- .b32 5503
+ .b32 5516
  .b32 5
  .b32 157
  .b8 192
@@ -6873,7 +6882,7 @@ BB9_2:
  .b8 115
 
  .b8 0
- .b32 5503
+ .b32 5516
  .b32 5
  .b32 159
  .b8 196
@@ -6893,7 +6902,7 @@ BB9_2:
  .b8 115
 
  .b8 0
- .b32 6761
+ .b32 6802
  .b32 5
  .b32 161
  .b8 200
@@ -6913,7 +6922,7 @@ BB9_2:
  .b8 110
 
  .b8 0
- .b32 5627
+ .b32 5668
  .b32 5
  .b32 163
  .b8 208
@@ -6955,7 +6964,7 @@ BB9_2:
  .b8 116
 
  .b8 0
- .b32 6973
+ .b32 7014
  .b32 5
  .b32 168
  .b8 224
@@ -6965,7 +6974,7 @@ BB9_2:
  .b8 0
  .b8 4
 
- .b32 5292
+ .b32 5305
  .b8 70
  .b8 76
  .b8 65
@@ -6981,7 +6990,7 @@ BB9_2:
  .b8 12
  .b8 4
 
- .b32 5271
+ .b32 5284
  .b8 80
  .b8 84
  .b8 82
@@ -6992,7 +7001,7 @@ BB9_2:
  .b32 5169
  .b8 15
 
- .b32 6788
+ .b32 6829
  .b8 0
 
  .b8 0
@@ -7007,11 +7016,11 @@ BB9_2:
  .b8 5
  .b8 9
 
- .b32 6804
+ .b32 6845
  .b8 12
  .b8 4
 
- .b32 6823
+ .b32 6864
  .b8 116
  .b8 73
  .b8 110
@@ -7050,11 +7059,11 @@ BB9_2:
  .b32 140
  .b8 9
 
- .b32 6857
+ .b32 6898
  .b8 12
  .b8 4
 
- .b32 6879
+ .b32 6920
  .b8 116
  .b8 71
  .b8 101
@@ -7099,19 +7108,19 @@ BB9_2:
  .b32 31
  .b8 9
 
- .b32 5627
+ .b32 5668
  .b8 12
  .b8 9
 
- .b32 6922
+ .b32 6963
  .b8 12
  .b8 9
 
- .b32 6928
+ .b32 6969
  .b8 12
  .b8 4
 
- .b32 6946
+ .b32 6987
  .b8 116
  .b8 77
  .b8 68
@@ -7148,7 +7157,7 @@ BB9_2:
  .b32 185
  .b8 4
 
- .b32 5271
+ .b32 5284
  .b8 72
  .b8 69
  .b8 65
@@ -7161,11 +7170,11 @@ BB9_2:
  .b8 0
  .b8 9
 
- .b32 6993
+ .b32 7034
  .b8 12
  .b8 4
 
- .b32 7021
+ .b32 7062
  .b8 116
  .b8 71
  .b8 101
@@ -7222,7 +7231,7 @@ BB9_2:
  .b32 44
  .b8 9
 
- .b32 7064
+ .b32 7105
  .b8 12
  .b8 17
 
@@ -7234,7 +7243,7 @@ BB9_2:
  .b8 0
  .b8 9
 
- .b32 7076
+ .b32 7117
  .b8 12
  .b8 4
 
@@ -7370,7 +7379,7 @@ BB9_2:
 
  .b8 0
  .b32 1
- .b32 198
+ .b32 200
  .b32 4103
  .b8 1
  .b64 func_begin7
@@ -7389,8 +7398,8 @@ BB9_2:
 
  .b8 0
  .b32 1
- .b32 198
- .b32 11375
+ .b32 200
+ .b32 11416
  .b8 6
  .b8 144
  .b8 177
@@ -7413,7 +7422,7 @@ BB9_2:
 
  .b8 0
  .b32 1
- .b32 198
+ .b32 200
  .b32 4503
  .b8 6
  .b8 144
@@ -7439,8 +7448,8 @@ BB9_2:
 
  .b8 0
  .b32 1
- .b32 198
- .b32 5277
+ .b32 200
+ .b32 5290
  .b8 5
  .b8 144
  .b8 177
@@ -7460,7 +7469,7 @@ BB9_2:
 
  .b8 0
  .b32 1
- .b32 198
+ .b32 200
  .b32 4103
  .b8 6
  .b8 144
@@ -7472,8 +7481,8 @@ BB9_2:
  .b8 2
  .b8 7
 
+ .b64 tmp19
  .b64 tmp21
- .b64 tmp23
  .b8 8
 
  .b8 112
@@ -7486,7 +7495,7 @@ BB9_2:
 
  .b8 0
  .b32 1
- .b32 199
+ .b32 201
  .b32 4548
  .b8 6
  .b8 144
@@ -7603,8 +7612,8 @@ BB9_2:
 
  .b8 0
  .b32 1
- .b32 205
- .b32 7064
+ .b32 207
+ .b32 7105
  .b8 1
  .b64 func_begin8
  .b64 func_end8
@@ -7622,8 +7631,8 @@ BB9_2:
 
  .b8 0
  .b32 1
- .b32 205
- .b32 11375
+ .b32 207
+ .b32 11416
  .b8 6
  .b8 144
  .b8 177
@@ -7650,8 +7659,8 @@ BB9_2:
 
  .b8 0
  .b32 1
- .b32 205
- .b32 11381
+ .b32 207
+ .b32 11422
  .b8 6
  .b8 144
  .b8 178
@@ -7662,8 +7671,8 @@ BB9_2:
  .b8 2
  .b8 7
 
- .b64 tmp24
- .b64 tmp29
+ .b64 tmp22
+ .b64 tmp27
  .b8 8
 
  .b8 112
@@ -7674,7 +7683,7 @@ BB9_2:
 
  .b8 0
  .b32 1
- .b32 206
+ .b32 208
  .b32 4103
  .b8 11
  .b8 3
@@ -11236,7 +11245,7 @@ BB9_2:
  .b8 0
  .b8 4
 
- .b32 10934
+ .b32 10975
  .b8 115
  .b8 105
  .b8 122
@@ -11313,7 +11322,7 @@ BB9_2:
  .b8 115
 
  .b8 0
- .b32 10922
+ .b32 10963
  .b32 8
  .b32 1106
  .b8 0
@@ -11337,7 +11346,7 @@ BB9_2:
  .b8 115
 
  .b8 0
- .b32 10922
+ .b32 10963
  .b32 8
  .b32 1112
  .b8 8
@@ -11361,7 +11370,7 @@ BB9_2:
  .b8 115
 
  .b8 0
- .b32 10922
+ .b32 10963
  .b32 8
  .b32 1117
  .b8 16
@@ -11389,7 +11398,7 @@ BB9_2:
  .b8 107
 
  .b8 0
- .b32 11301
+ .b32 11342
  .b32 8
  .b32 1124
  .b8 24
@@ -11406,7 +11415,7 @@ BB9_2:
  .b8 115
 
  .b8 0
- .b32 11301
+ .b32 11342
  .b32 8
  .b32 1129
  .b8 28
@@ -11426,7 +11435,7 @@ BB9_2:
  .b8 110
 
  .b8 0
- .b32 11301
+ .b32 11342
  .b32 8
  .b32 1136
  .b8 32
@@ -11449,7 +11458,7 @@ BB9_2:
  .b8 110
 
  .b8 0
- .b32 11301
+ .b32 11342
  .b32 8
  .b32 1143
  .b8 36
@@ -11470,7 +11479,7 @@ BB9_2:
  .b8 65
 
  .b8 0
- .b32 11301
+ .b32 11342
  .b32 8
  .b32 1149
  .b8 40
@@ -11505,7 +11514,7 @@ BB9_2:
  .b8 115
 
  .b8 0
- .b32 11301
+ .b32 11342
  .b32 8
  .b32 1156
  .b8 44
@@ -11537,7 +11546,7 @@ BB9_2:
  .b8 116
 
  .b8 0
- .b32 11301
+ .b32 11342
  .b32 8
  .b32 1163
  .b8 48
@@ -11570,7 +11579,7 @@ BB9_2:
  .b32 43
  .b8 4
 
- .b32 11311
+ .b32 11352
  .b8 116
  .b8 84
  .b8 104
@@ -11582,26 +11591,26 @@ BB9_2:
  .b8 0
  .b8 9
 
- .b32 7058
+ .b32 7099
  .b8 12
  .b8 9
 
- .b32 10959
+ .b32 11000
  .b8 12
  .b8 9
 
- .b32 11364
+ .b32 11405
  .b8 12
  .b8 18
 
- .b32 7064
+ .b32 7105
  .b8 9
 
- .b32 11301
+ .b32 11342
  .b8 12
  .b8 9
 
- .b32 11333
+ .b32 11374
  .b8 12
  .b8 9
 
@@ -12057,7 +12066,7 @@ BB9_2:
  .b8 2
  .b8 0
  .b32 .debug_info
- .b32 11384
+ .b32 11425
  .b32 2798
  .b8 99
  .b8 117
@@ -12107,7 +12116,7 @@ BB9_2:
  .b8 101
  .b8 0
 
- .b32 7407
+ .b32 7448
  .b8 95
  .b8 90
  .b8 49
@@ -12220,7 +12229,7 @@ BB9_2:
  .b8 99
  .b8 0
 
- .b32 7094
+ .b32 7135
  .b8 95
  .b8 90
  .b8 49

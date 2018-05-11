@@ -2249,7 +2249,7 @@ BB17_27:
 
 	.file	1 "C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/System.Math.c", 1516286593, 2213
 	.file	2 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v9.0\\include\\cuda_device_runtime_api.h", 1504359958, 14836
-	.file	3 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\Types.h", 1513259530, 3048
+	.file	3 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\Types.h", 1525298601, 3656
 	.file	4 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v9.0\\include\\driver_types.h", 1504359957, 76651
 
 .section .debug_info {
@@ -6117,7 +6117,7 @@ BB17_27:
  .b8 0
  .b32 0
  .b32 3
- .b32 84
+ .b32 116
  .b8 2
 
  .b8 95

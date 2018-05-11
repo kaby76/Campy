@@ -82,4 +82,4 @@ struct _BCL_t {
 };
 
 extern gpu_space_specifier struct _BCL_t * _bcl_;
-global_space_specifier void Initialize_BCL_Globals(void * g, size_t size, int count, struct _BCL_t ** pbcl);
+global_space_specifier void Initialize_BCL_Globals(void * g, size_t size, size_t first_overhead, int count, struct _BCL_t ** pbcl);

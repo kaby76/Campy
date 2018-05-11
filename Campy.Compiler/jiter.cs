@@ -1231,6 +1231,9 @@ namespace Campy.Compiler
             LLVM.InitializeAllTargetInfos();
             LLVM.InitializeAllAsmPrinters();
 
+            // For basic value types, they can also appear as
+            // reference types. We need to distinguish between the two.
+
             basic_llvm_types_created.Add(
                 typeof(Int16).ToMonoTypeReference(),
                 LLVM.Int16Type());
@@ -1832,7 +1835,7 @@ namespace Campy.Compiler
         }
 
         [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "InitTheBcl")]
-        public static extern void InitTheBcl(System.IntPtr a1, long a2, int a3, System.IntPtr a4);
+        public static extern void InitTheBcl(System.IntPtr a1, long a2, long a25, int a3, System.IntPtr a4);
 
         [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "InitFileSystem")]
         public static extern void InitFileSystem();
@@ -1880,14 +1883,14 @@ namespace Campy.Compiler
                 unsafe
                 {
                     BUFFERS buffers = new BUFFERS();
-                    int the_size = 536870912;
+                    int the_size = 2*536870912;
                     IntPtr b = buffers.New(the_size);
                     RUNTIME.BclPtr = b;
                     RUNTIME.BclPtrSize = (ulong)the_size;
                     int max_threads = 16;
                     IntPtr b2 = buffers.New(sizeof(int*));
 
-                    InitTheBcl(b, the_size, max_threads, b2);
+                    InitTheBcl(b, the_size, 2*16777216, max_threads, b2);
                 }
 
                 unsafe

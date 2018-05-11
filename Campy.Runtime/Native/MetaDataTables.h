@@ -389,6 +389,15 @@ struct tMD_ClassLayout_ {
 typedef struct tMD_ClassLayout_ tMD_ClassLayout;
 #define MD_TABLE_CLASSLAYOUT 0x0F
 
+
+struct tMD_FieldLayout_ {
+	U32 offset;
+	IDX_TABLE field;
+};
+typedef struct tMD_FieldLayout_ tMD_FieldLayout;
+#define MD_TABLE_FIELDLAYOUT 0x10
+
+
 // Table 0x11 - StandAloneSig
 struct tMD_StandAloneSig_ {
 	BLOB_ signature;
@@ -426,6 +435,8 @@ struct tMD_PropertyMap_ {
 	IDX_TABLE parent;
 	// PropertyList - index into Property table
 	IDX_TABLE propertyList;
+	// PropertyList - index into Property table
+	IDX_TABLE propertyList2;
 };
 typedef struct tMD_PropertyMap_ tMD_PropertyMap;
 #define MD_TABLE_PROPERTYMAP 0x15
@@ -549,6 +560,17 @@ struct tMD_AssemblyRef_ {
 };
 typedef struct tMD_AssemblyRef_ tMD_AssemblyRef;
 #define MD_TABLE_ASSEMBLYREF 0x23
+
+struct tMD_ManifestResource_ {
+	U32 offset;
+	FLAGS32 flags;
+	// Name
+	STRING name;
+	// GOT NO IDEA WHAT THIS IS!
+	U16 implementation;
+};
+typedef struct tMD_ManifestResource_ tMD_ManifestResource;
+#define MD_TABLE_MANIFESTRESOURCE 0x28
 
 struct tMD_NestedClass_ {
 	// The TypeDef of the class that is nested

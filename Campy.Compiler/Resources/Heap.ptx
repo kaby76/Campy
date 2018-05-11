@@ -27,6 +27,12 @@
 	.param .b64 _Z23SystemArray_GetNumBytesPhP12tMD_TypeDef__param_1
 )
 ;
+.extern .func  (.param .b32 func_retval0) vprintf
+(
+	.param .b64 vprintf_param_0,
+	.param .b64 vprintf_param_1
+)
+;
 .extern .func  (.param .b64 func_retval0) _Z7Gmallocy
 (
 	.param .b64 _Z7Gmallocy_param_0
@@ -84,6 +90,11 @@
 	.param .b64 _Z8GreallocPvy_param_1
 )
 ;
+.visible .func  (.param .b64 func_retval0) _Z14Heap_AllocTypeP12tMD_TypeDef_
+(
+	.param .b64 _Z14Heap_AllocTypeP12tMD_TypeDef__param_0
+)
+;
 .extern .func  (.param .b64 func_retval0) _Z17Thread_GetCurrentv
 (
 
@@ -110,9 +121,11 @@
 )
 ;
 .extern .global .align 8 .b64 _bcl_;
-.global .align 1 .b8 $str[52] = {45, 45, 45, 32, 71, 65, 82, 66, 65, 71, 69, 32, 45, 45, 45, 32, 91, 83, 105, 122, 101, 58, 32, 37, 100, 32, 45, 62, 32, 37, 100, 93, 32, 91, 78, 111, 100, 101, 115, 58, 32, 37, 100, 32, 45, 62, 32, 37, 100, 93, 10, 0};
-.global .align 1 .b8 $str1[27] = {65, 115, 115, 101, 114, 116, 32, 102, 97, 105, 108, 101, 100, 58, 32, 37, 115, 44, 32, 108, 105, 110, 101, 32, 37, 100, 0};
-.global .align 1 .b8 $str2[60] = {67, 58, 47, 85, 115, 101, 114, 115, 47, 107, 101, 110, 110, 101, 47, 68, 111, 99, 117, 109, 101, 110, 116, 115, 47, 67, 97, 109, 112, 121, 50, 47, 67, 97, 109, 112, 121, 46, 82, 117, 110, 116, 105, 109, 101, 47, 78, 97, 116, 105, 118, 101, 47, 72, 101, 97, 112, 46, 99, 0};
+.global .align 1 .b8 $str[18] = {71, 65, 82, 66, 65, 71, 69, 32, 67, 79, 76, 76, 69, 67, 84, 33, 10, 0};
+.global .align 1 .b8 $str1[52] = {45, 45, 45, 32, 71, 65, 82, 66, 65, 71, 69, 32, 45, 45, 45, 32, 91, 83, 105, 122, 101, 58, 32, 37, 100, 32, 45, 62, 32, 37, 100, 93, 32, 91, 78, 111, 100, 101, 115, 58, 32, 37, 100, 32, 45, 62, 32, 37, 100, 93, 10, 0};
+.global .align 1 .b8 $str2[27] = {65, 115, 115, 101, 114, 116, 32, 102, 97, 105, 108, 101, 100, 58, 32, 37, 115, 44, 32, 108, 105, 110, 101, 32, 37, 100, 0};
+.global .align 1 .b8 $str3[60] = {67, 58, 47, 85, 115, 101, 114, 115, 47, 107, 101, 110, 110, 101, 47, 68, 111, 99, 117, 109, 101, 110, 116, 115, 47, 67, 97, 109, 112, 121, 50, 47, 67, 97, 109, 112, 121, 46, 82, 117, 110, 116, 105, 109, 101, 47, 78, 97, 116, 105, 118, 101, 47, 72, 101, 97, 112, 46, 99, 0};
+.global .align 1 .b8 $str4[126] = {87, 65, 82, 78, 73, 78, 71, 58, 32, 72, 101, 97, 112, 95, 65, 108, 108, 111, 99, 32, 99, 97, 108, 108, 101, 100, 32, 119, 105, 116, 104, 32, 115, 105, 122, 101, 32, 114, 101, 113, 117, 101, 115, 116, 32, 111, 102, 32, 48, 32, 98, 121, 116, 101, 115, 46, 32, 82, 101, 115, 117, 108, 116, 105, 110, 103, 32, 112, 111, 105, 110, 116, 101, 114, 32, 109, 97, 121, 32, 110, 111, 116, 32, 119, 111, 114, 107, 32, 97, 115, 32, 101, 120, 112, 101, 99, 116, 101, 100, 32, 40, 101, 46, 103, 46, 44, 32, 109, 101, 109, 111, 114, 121, 32, 111, 118, 101, 114, 114, 117, 110, 115, 41, 46, 10, 0};
 
 .weak .func  (.param .b32 func_retval0) cudaMalloc(
 	.param .b64 cudaMalloc_param_0,
@@ -1720,8 +1733,8 @@ func_end11:
 	.reg .b64 	%SPL;
 	.reg .pred 	%p<70>;
 	.reg .b16 	%rs<17>;
-	.reg .b32 	%r<80>;
-	.reg .b64 	%rd<163>;
+	.reg .b32 	%r<81>;
+	.reg .b64 	%rd<165>;
 
 
 	.loc 1 256 1
@@ -1730,8 +1743,8 @@ func_begin12:
 
 	.loc 1 256 1
 
-	mov.u64 	%rd162, __local_depot12;
-	cvta.local.u64 	%SP, %rd162;
+	mov.u64 	%rd164, __local_depot12;
+	cvta.local.u64 	%SP, %rd164;
 tmp82:
 	mov.u64 	%rd2, 0;
 func_exec_begin12:
@@ -1758,58 +1771,82 @@ tmp84:
 	mov.b32 	%r2, %r24;
 tmp85:
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:268 	_bcl_->numCollections++;
-	.loc	1 268 2
-	ld.u64 	%rd8, [%rd5];
-	ld.u32 	%r25, [%rd8+116];
-	add.s32 	%r26, %r25, 1;
-	st.u32 	[%rd8+116], %r26;
-	mov.u32 	%r27, 64;
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:274 	heapRoots.capacity = 64;
-	.loc	1 274 2
-	st.u32 	[%SP+0], %r27;
-	mov.u32 	%r28, 0;
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:275 	heapRoots.num = 0;
-	.loc	1 275 2
-	st.u32 	[%SP+4], %r28;
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:276 	heapRoots.pHeapEntries = (tHeapRootEntry *)Gmalloc(heapRoots.capacity * sizeof(tHeapRootEntry));
-	.loc	1 276 2
-	ld.u32 	%r29, [%SP+0];
-	cvt.u64.u32	%rd9, %r29;
-	mul.lo.s64 	%rd10, %rd9, 16;
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:276 	heapRoots.pHeapEntries = (tHeapRootEntry *)Gmalloc(heapRoots.capacity * sizeof(tHeapRootEntry));
-	.loc	1 276 45
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:267 	printf("GARBAGE COLLECT!\n");
+	.loc	1 267 2
+	mov.u64 	%rd8, $str;
+	cvta.global.u64 	%rd9, %rd8;
 	// Callseq Start 13
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
 	.param .b64 param0;
-	st.param.b64	[param0+0], %rd10;
-	.param .b64 retval0;
+	st.param.b64	[param0+0], %rd9;
+	.param .b64 param1;
+	st.param.b64	[param1+0], %rd2;
+	.param .b32 retval0;
 	call.uni (retval0), 
-	_Z7Gmallocy, 
+	vprintf, 
 	(
-	param0
+	param0, 
+	param1
 	);
-	ld.param.b64	%rd11, [retval0+0];
+	ld.param.b32	%r25, [retval0+0];
 	
 	//{
 	}// Callseq End 13
-	st.u64 	[%SP+8], %rd11;
-	add.u64 	%rd12, %SP, 0;
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:278 	Thread_GetHeapRoots(&heapRoots);
-	.loc	1 278 2
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:268 	_bcl_->numCollections++;
+	.loc	1 268 2
+	ld.u64 	%rd10, [%rd5];
+	ld.u32 	%r26, [%rd10+116];
+	add.s32 	%r27, %r26, 1;
+	st.u32 	[%rd10+116], %r27;
+	mov.u32 	%r28, 64;
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:274 	heapRoots.capacity = 64;
+	.loc	1 274 2
+	st.u32 	[%SP+0], %r28;
+	mov.u32 	%r29, 0;
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:275 	heapRoots.num = 0;
+	.loc	1 275 2
+	st.u32 	[%SP+4], %r29;
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:276 	heapRoots.pHeapEntries = (tHeapRootEntry *)Gmalloc(heapRoots.capacity * sizeof(tHeapRootEntry));
+	.loc	1 276 2
+	ld.u32 	%r30, [%SP+0];
+	cvt.u64.u32	%rd11, %r30;
+	mul.lo.s64 	%rd12, %rd11, 16;
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:276 	heapRoots.pHeapEntries = (tHeapRootEntry *)Gmalloc(heapRoots.capacity * sizeof(tHeapRootEntry));
+	.loc	1 276 45
 	// Callseq Start 14
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
 	.param .b64 param0;
 	st.param.b64	[param0+0], %rd12;
+	.param .b64 retval0;
+	call.uni (retval0), 
+	_Z7Gmallocy, 
+	(
+	param0
+	);
+	ld.param.b64	%rd13, [retval0+0];
+	
+	//{
+	}// Callseq End 14
+	st.u64 	[%SP+8], %rd13;
+	add.u64 	%rd14, %SP, 0;
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:278 	Thread_GetHeapRoots(&heapRoots);
+	.loc	1 278 2
+	// Callseq Start 15
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b64 param0;
+	st.param.b64	[param0+0], %rd14;
 	call.uni 
 	_Z19Thread_GetHeapRootsP11tHeapRoots_, 
 	(
@@ -1817,16 +1854,16 @@ tmp85:
 	);
 	
 	//{
-	}// Callseq End 14
+	}// Callseq End 15
 
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:279 	CLIFile_GetHeapRoots(&heapRoots);
 	.loc	1 279 2
-	// Callseq Start 15
+	// Callseq Start 16
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
 	.param .b64 param0;
-	st.param.b64	[param0+0], %rd12;
+	st.param.b64	[param0+0], %rd14;
 	call.uni 
 	_Z20CLIFile_GetHeapRootsP11tHeapRoots_, 
 	(
@@ -1834,74 +1871,74 @@ tmp85:
 	);
 	
 	//{
-	}// Callseq End 15
+	}// Callseq End 16
 
 BB12_1:
 
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:282 	while (heapRoots.num > 0) {
 	.loc	1 282 2
-	ld.u32 	%r30, [%SP+4];
-	setp.gt.u32	%p12, %r30, 0;
+	ld.u32 	%r31, [%SP+4];
+	setp.gt.u32	%p12, %r31, 0;
 	not.pred 	%p13, %p12;
 	@%p13 bra 	BB12_42;
 	bra.uni 	BB12_2;
 
 BB12_2:
 tmp86:
-	mov.u32 	%r46, 0;
+	mov.u32 	%r47, 0;
 
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:285 		U32 moreRootsAdded = 0;
 	.loc	1 285 22
 tmp87:
-	mov.b32 	%r3, %r46;
+	mov.b32 	%r3, %r47;
 tmp88:
 
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:290 		pRootsEntry = &heapRoots.pHeapEntries[heapRoots.num - 1];
 	.loc	1 290 3
-	ld.u64 	%rd96, [%SP+8];
-	ld.u32 	%r47, [%SP+4];
-	sub.s32 	%r48, %r47, 1;
-	cvt.u64.u32	%rd97, %r48;
-	shl.b64 	%rd98, %rd97, 4;
-	add.s64 	%rd99, %rd96, %rd98;
+	ld.u64 	%rd98, [%SP+8];
+	ld.u32 	%r48, [%SP+4];
+	sub.s32 	%r49, %r48, 1;
+	cvt.u64.u32	%rd99, %r49;
+	shl.b64 	%rd100, %rd99, 4;
+	add.s64 	%rd101, %rd98, %rd100;
 tmp89:
 
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:291 		rootsEntryNumPointers = pRootsEntry->numPointers;
 	.loc	1 291 3
-	ld.u32 	%r49, [%rd99];
-	mov.b32 	%r4, %r49;
+	ld.u32 	%r50, [%rd101];
+	mov.b32 	%r4, %r50;
 tmp90:
 
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:292 		pRootsEntryMem = pRootsEntry->pMem;
 	.loc	1 292 3
-	ld.u64 	%rd100, [%rd99+8];
-	mov.u64 	%rd101, %rd100;
-	st.u64 	[%SP+672], %rd101;
+	ld.u64 	%rd102, [%rd101+8];
+	mov.u64 	%rd103, %rd102;
+	st.u64 	[%SP+672], %rd103;
 
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:294 		pRootsEntry->numPointers = 0;
 	.loc	1 294 3
-	st.u32 	[%rd99], %r46;
-	mov.u64 	%rd102, 0;
+	st.u32 	[%rd101], %r47;
+	mov.u64 	%rd104, 0;
 
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:295 		pRootsEntry->pMem = NULL;
 	.loc	1 295 3
-	st.u64 	[%rd99+8], %rd102;
+	st.u64 	[%rd101+8], %rd104;
 
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:297 		for (i=0; i<rootsEntryNumPointers; i++) {
 	.loc	1 297 8
-	mov.b32 	%r5, %r46;
+	mov.b32 	%r5, %r47;
 tmp91:
-	mov.u32 	%r69, %r5;
+	mov.u32 	%r70, %r5;
 tmp92:
-	mov.u32 	%r70, %r3;
+	mov.u32 	%r71, %r3;
 tmp93:
 
 BB12_3:
 
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:297 		for (i=0; i<rootsEntryNumPointers; i++) {
 	.loc	1 297 3
-	mov.u32 	%r7, %r70;
-	mov.u32 	%r6, %r69;
+	mov.u32 	%r7, %r71;
+	mov.u32 	%r6, %r70;
 tmp94:
 	setp.lt.u32	%p34, %r6, %r4;
 	not.pred 	%p35, %p34;
@@ -1913,12 +1950,12 @@ BB12_4:
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:298 			void *pMemRef = pRootsEntryMem[i];
 	.loc	1 298 18
 tmp95:
-	ld.u64 	%rd103, [%SP+672];
-	cvt.u64.u32	%rd104, %r6;
-	shl.b64 	%rd105, %rd104, 3;
-	add.s64 	%rd106, %rd103, %rd105;
-	ld.u64 	%rd107, [%rd106];
-	mov.u64 	%rd1, %rd107;
+	ld.u64 	%rd105, [%SP+672];
+	cvt.u64.u32	%rd106, %r6;
+	shl.b64 	%rd107, %rd106, 3;
+	add.s64 	%rd108, %rd105, %rd107;
+	ld.u64 	%rd109, [%rd108];
+	mov.u64 	%rd1, %rd109;
 tmp96:
 
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:300 			if (pMemRef == NULL) {
@@ -1933,7 +1970,7 @@ BB12_5:
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:301 				continue;
 	.loc	1 301 5
 tmp97:
-	mov.u32 	%r76, %r7;
+	mov.u32 	%r77, %r7;
 tmp98:
 	bra.uni 	BB12_37;
 tmp99:
@@ -1942,23 +1979,23 @@ BB12_6:
 
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:307 			pNode = _bcl_->pHeapTreeRoot;
 	.loc	1 307 4
-	mov.u64 	%rd108, _bcl_;
-	cvta.global.u64 	%rd109, %rd108;
-	ld.u64 	%rd110, [%rd109];
-	ld.u64 	%rd111, [%rd110+88];
-	mov.u64 	%rd112, %rd111;
-	st.u64 	[%SP+16], %rd112;
+	mov.u64 	%rd110, _bcl_;
+	cvta.global.u64 	%rd111, %rd110;
+	ld.u64 	%rd112, [%rd111];
+	ld.u64 	%rd113, [%rd112+88];
+	mov.u64 	%rd114, %rd113;
+	st.u64 	[%SP+16], %rd114;
 
 BB12_7:
 
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:308 			while (pNode != _bcl_->nil) {
 	.loc	1 308 4
-	ld.u64 	%rd113, [%SP+16];
-	mov.u64 	%rd114, _bcl_;
-	cvta.global.u64 	%rd115, %rd114;
-	ld.u64 	%rd116, [%rd115];
-	ld.u64 	%rd117, [%rd116+96];
-	setp.ne.s64	%p41, %rd113, %rd117;
+	ld.u64 	%rd115, [%SP+16];
+	mov.u64 	%rd116, _bcl_;
+	cvta.global.u64 	%rd117, %rd116;
+	ld.u64 	%rd118, [%rd117];
+	ld.u64 	%rd119, [%rd118+96];
+	setp.ne.s64	%p41, %rd115, %rd119;
 	not.pred 	%p42, %p41;
 	@%p42 bra 	BB12_35;
 	bra.uni 	BB12_8;
@@ -1968,8 +2005,8 @@ BB12_8:
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:309 				if (pMemRef < (void*)pNode) {
 	.loc	1 309 5
 tmp100:
-	ld.u64 	%rd118, [%SP+16];
-	setp.lt.u64	%p43, %rd1, %rd118;
+	ld.u64 	%rd120, [%SP+16];
+	setp.lt.u64	%p43, %rd1, %rd120;
 	not.pred 	%p44, %p43;
 	@%p44 bra 	BB12_10;
 	bra.uni 	BB12_9;
@@ -1979,10 +2016,10 @@ BB12_9:
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:310 					pNode = pNode->pLink[0];
 	.loc	1 310 6
 tmp101:
-	ld.u64 	%rd159, [%SP+16];
-	ld.u64 	%rd160, [%rd159];
-	mov.u64 	%rd161, %rd160;
-	st.u64 	[%SP+16], %rd161;
+	ld.u64 	%rd161, [%SP+16];
+	ld.u64 	%rd162, [%rd161];
+	mov.u64 	%rd163, %rd162;
+	st.u64 	[%SP+16], %rd163;
 	bra.uni 	BB12_34;
 tmp102:
 
@@ -1990,31 +2027,31 @@ BB12_10:
 
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:311 				} else if ((char*)pMemRef > ((char*)pNode) + GetSize(pNode) + sizeof(tHeapEntry)) {
 	.loc	1 311 12
-	ld.u64 	%rd119, [%SP+16];
-	ld.u64 	%rd120, [%SP+16];
+	ld.u64 	%rd121, [%SP+16];
+	ld.u64 	%rd122, [%SP+16];
 
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:311 				} else if ((char*)pMemRef > ((char*)pNode) + GetSize(pNode) + sizeof(tHeapEntry)) {
 	.loc	1 311 50
-	// Callseq Start 26
+	// Callseq Start 27
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
 	.param .b64 param0;
-	st.param.b64	[param0+0], %rd120;
+	st.param.b64	[param0+0], %rd122;
 	.param .b32 retval0;
 	call.uni (retval0), 
 	_ZN34_INTERNAL_12_Heap_cpp1_ii_09a408fd7GetSizeEP11tHeapEntry_, 
 	(
 	param0
 	);
-	ld.param.b32	%r52, [retval0+0];
+	ld.param.b32	%r53, [retval0+0];
 	
 	//{
-	}// Callseq End 26
-	cvt.u64.u32	%rd121, %r52;
-	add.s64 	%rd122, %rd119, %rd121;
-	add.s64 	%rd123, %rd122, 40;
-	setp.gt.u64	%p45, %rd1, %rd123;
+	}// Callseq End 27
+	cvt.u64.u32	%rd123, %r53;
+	add.s64 	%rd124, %rd121, %rd123;
+	add.s64 	%rd125, %rd124, 40;
+	setp.gt.u64	%p45, %rd1, %rd125;
 	not.pred 	%p46, %p45;
 	@%p46 bra 	BB12_12;
 	bra.uni 	BB12_11;
@@ -2024,10 +2061,10 @@ BB12_11:
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:312 					pNode = pNode->pLink[1];
 	.loc	1 312 6
 tmp103:
-	ld.u64 	%rd156, [%SP+16];
-	ld.u64 	%rd157, [%rd156+8];
-	mov.u64 	%rd158, %rd157;
-	st.u64 	[%SP+16], %rd158;
+	ld.u64 	%rd158, [%SP+16];
+	ld.u64 	%rd159, [%rd158+8];
+	mov.u64 	%rd160, %rd159;
+	st.u64 	[%SP+16], %rd160;
 	bra.uni 	BB12_33;
 tmp104:
 
@@ -2035,13 +2072,13 @@ BB12_12:
 
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:317 					if (pNode->marked == 0) {
 	.loc	1 317 6
-	ld.u64 	%rd124, [%SP+16];
-	ld.u8 	%rs9, [%rd124+17];
-	cvt.u32.u16	%r53, %rs9;
-	and.b32  	%r54, %r53, 255;
-	setp.eq.s32	%p47, %r54, 0;
+	ld.u64 	%rd126, [%SP+16];
+	ld.u8 	%rs9, [%rd126+17];
+	cvt.u32.u16	%r54, %rs9;
+	and.b32  	%r55, %r54, 255;
+	setp.eq.s32	%p47, %r55, 0;
 	not.pred 	%p48, %p47;
-	mov.u32 	%r74, %r7;
+	mov.u32 	%r75, %r7;
 tmp105:
 	@%p48 bra 	BB12_32;
 	bra.uni 	BB12_13;
@@ -2051,35 +2088,35 @@ tmp106:
 
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:318 						tMD_TypeDef *pType = pNode->pTypeDef;
 	.loc	1 318 26
-	ld.u64 	%rd125, [%SP+16];
-	ld.u64 	%rd126, [%rd125+24];
-	mov.u64 	%rd127, %rd126;
-	st.u64 	[%SP+680], %rd127;
+	ld.u64 	%rd127, [%SP+16];
+	ld.u64 	%rd128, [%rd127+24];
+	mov.u64 	%rd129, %rd128;
+	st.u64 	[%SP+680], %rd129;
 
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:321 						pNode->marked = 1;
 	.loc	1 321 7
-	ld.u64 	%rd128, [%SP+16];
+	ld.u64 	%rd130, [%SP+16];
 	mov.u16 	%rs10, 1;
-	st.u8 	[%rd128+17], %rs10;
+	st.u8 	[%rd130+17], %rs10;
 
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:324 						if (pType->stackType == EVALSTACK_O ||
 	.loc	1 324 7
-	ld.u64 	%rd129, [%SP+680];
-	ld.u8 	%rs11, [%rd129+55];
-	cvt.u32.u16	%r55, %rs11;
-	and.b32  	%r56, %r55, 255;
-	setp.eq.s32	%p50, %r56, 5;
+	ld.u64 	%rd131, [%SP+680];
+	ld.u8 	%rs11, [%rd131+55];
+	cvt.u32.u16	%r56, %rs11;
+	and.b32  	%r57, %r56, 255;
+	setp.eq.s32	%p50, %r57, 5;
 	mov.pred 	%p49, -1;
 	mov.pred 	%p64, %p49;
 	@%p50 bra 	BB12_15;
 	bra.uni 	BB12_14;
 
 BB12_14:
-	ld.u64 	%rd130, [%SP+680];
-	ld.u8 	%rs12, [%rd130+55];
-	cvt.u32.u16	%r57, %rs12;
-	and.b32  	%r58, %r57, 255;
-	setp.eq.s32	%p1, %r58, 7;
+	ld.u64 	%rd132, [%SP+680];
+	ld.u8 	%rs12, [%rd132+55];
+	cvt.u32.u16	%r58, %rs12;
+	and.b32  	%r59, %r58, 255;
+	setp.eq.s32	%p1, %r59, 7;
 	mov.pred 	%p64, %p1;
 
 BB12_15:
@@ -2090,17 +2127,17 @@ BB12_15:
 	bra.uni 	BB12_16;
 
 BB12_16:
-	ld.u64 	%rd131, [%SP+680];
-	ld.u8 	%rs13, [%rd131+55];
-	cvt.u32.u16	%r59, %rs13;
-	and.b32  	%r60, %r59, 255;
-	setp.eq.s32	%p3, %r60, 4;
+	ld.u64 	%rd133, [%SP+680];
+	ld.u8 	%rs13, [%rd133+55];
+	cvt.u32.u16	%r60, %rs13;
+	and.b32  	%r61, %r60, 255;
+	setp.eq.s32	%p3, %r61, 4;
 	mov.pred 	%p65, %p3;
 
 BB12_17:
 	mov.pred 	%p4, %p65;
 	not.pred 	%p52, %p4;
-	mov.u32 	%r73, %r7;
+	mov.u32 	%r74, %r7;
 tmp107:
 	@%p52 bra 	BB12_31;
 	bra.uni 	BB12_18;
@@ -2110,13 +2147,13 @@ BB12_18:
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:328 							if (pType != _bcl_->types[TYPE_SYSTEM_STRING] &&
 	.loc	1 328 8
 tmp108:
-	ld.u64 	%rd132, [%SP+680];
-	mov.u64 	%rd133, _bcl_;
-	cvta.global.u64 	%rd134, %rd133;
-	ld.u64 	%rd135, [%rd134];
-	ld.u64 	%rd136, [%rd135+200];
-	ld.u64 	%rd137, [%rd136+72];
-	setp.ne.s64	%p54, %rd132, %rd137;
+	ld.u64 	%rd134, [%SP+680];
+	mov.u64 	%rd135, _bcl_;
+	cvta.global.u64 	%rd136, %rd135;
+	ld.u64 	%rd137, [%rd136];
+	ld.u64 	%rd138, [%rd137+200];
+	ld.u64 	%rd139, [%rd138+72];
+	setp.ne.s64	%p54, %rd134, %rd139;
 	mov.pred 	%p53, 0;
 	not.pred 	%p55, %p54;
 	mov.pred 	%p69, %p53;
@@ -2124,9 +2161,9 @@ tmp108:
 	bra.uni 	BB12_19;
 
 BB12_19:
-	ld.u64 	%rd138, [%SP+680];
-	ld.u64 	%rd139, [%rd138+168];
-	setp.ne.s64	%p57, %rd139, 0;
+	ld.u64 	%rd140, [%SP+680];
+	ld.u64 	%rd141, [%rd140+168];
+	setp.ne.s64	%p57, %rd141, 0;
 	not.pred 	%p58, %p57;
 	mov.pred 	%p56, -1;
 	mov.pred 	%p66, %p56;
@@ -2134,12 +2171,12 @@ BB12_19:
 	bra.uni 	BB12_20;
 
 BB12_20:
-	ld.u64 	%rd140, [%SP+680];
-	ld.u64 	%rd141, [%rd140+168];
-	ld.u8 	%rs14, [%rd141+55];
-	cvt.u32.u16	%r61, %rs14;
-	and.b32  	%r62, %r61, 255;
-	setp.eq.s32	%p5, %r62, 5;
+	ld.u64 	%rd142, [%SP+680];
+	ld.u64 	%rd143, [%rd142+168];
+	ld.u8 	%rs14, [%rd143+55];
+	cvt.u32.u16	%r62, %rs14;
+	and.b32  	%r63, %r62, 255;
+	setp.eq.s32	%p5, %r63, 5;
 	mov.pred 	%p66, %p5;
 
 BB12_21:
@@ -2150,12 +2187,12 @@ BB12_21:
 	bra.uni 	BB12_22;
 
 BB12_22:
-	ld.u64 	%rd142, [%SP+680];
-	ld.u64 	%rd143, [%rd142+168];
-	ld.u8 	%rs15, [%rd143+55];
-	cvt.u32.u16	%r63, %rs15;
-	and.b32  	%r64, %r63, 255;
-	setp.eq.s32	%p7, %r64, 7;
+	ld.u64 	%rd144, [%SP+680];
+	ld.u64 	%rd145, [%rd144+168];
+	ld.u8 	%rs15, [%rd145+55];
+	cvt.u32.u16	%r64, %rs15;
+	and.b32  	%r65, %r64, 255;
+	setp.eq.s32	%p7, %r65, 7;
 	mov.pred 	%p67, %p7;
 
 BB12_23:
@@ -2166,12 +2203,12 @@ BB12_23:
 	bra.uni 	BB12_24;
 
 BB12_24:
-	ld.u64 	%rd144, [%SP+680];
-	ld.u64 	%rd145, [%rd144+168];
-	ld.u8 	%rs16, [%rd145+55];
-	cvt.u32.u16	%r65, %rs16;
-	and.b32  	%r66, %r65, 255;
-	setp.eq.s32	%p9, %r66, 4;
+	ld.u64 	%rd146, [%SP+680];
+	ld.u64 	%rd147, [%rd146+168];
+	ld.u8 	%rs16, [%rd147+55];
+	cvt.u32.u16	%r66, %rs16;
+	and.b32  	%r67, %r66, 255;
+	setp.eq.s32	%p9, %r67, 4;
 	mov.pred 	%p68, %p9;
 
 BB12_25:
@@ -2181,7 +2218,7 @@ BB12_25:
 BB12_26:
 	mov.pred 	%p11, %p69;
 	not.pred 	%p61, %p11;
-	mov.u32 	%r72, %r7;
+	mov.u32 	%r73, %r7;
 tmp109:
 	@%p61 bra 	BB12_30;
 	bra.uni 	BB12_27;
@@ -2191,15 +2228,15 @@ BB12_27:
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:334 								if (pType != _bcl_->types[TYPE_SYSTEM_WEAKREFERENCE]) {
 	.loc	1 334 9
 tmp110:
-	ld.u64 	%rd146, [%SP+680];
-	mov.u64 	%rd147, _bcl_;
-	cvta.global.u64 	%rd148, %rd147;
-	ld.u64 	%rd149, [%rd148];
-	ld.u64 	%rd150, [%rd149+200];
-	ld.u64 	%rd151, [%rd150+288];
-	setp.ne.s64	%p62, %rd146, %rd151;
+	ld.u64 	%rd148, [%SP+680];
+	mov.u64 	%rd149, _bcl_;
+	cvta.global.u64 	%rd150, %rd149;
+	ld.u64 	%rd151, [%rd150];
+	ld.u64 	%rd152, [%rd151+200];
+	ld.u64 	%rd153, [%rd152+288];
+	setp.ne.s64	%p62, %rd148, %rd153;
 	not.pred 	%p63, %p62;
-	mov.u32 	%r71, %r7;
+	mov.u32 	%r72, %r7;
 tmp111:
 	@%p63 bra 	BB12_29;
 	bra.uni 	BB12_28;
@@ -2209,42 +2246,42 @@ BB12_28:
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:335 									Heap_SetRoots(&heapRoots,pNode->memory, GetSize(pNode));
 	.loc	1 335 10
 tmp112:
-	ld.u64 	%rd152, [%SP+16];
-	add.s64 	%rd153, %rd152, 40;
 	ld.u64 	%rd154, [%SP+16];
+	add.s64 	%rd155, %rd154, 40;
+	ld.u64 	%rd156, [%SP+16];
 
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:335 									Heap_SetRoots(&heapRoots,pNode->memory, GetSize(pNode));
 	.loc	1 335 50
-	// Callseq Start 27
+	// Callseq Start 28
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
 	.param .b64 param0;
-	st.param.b64	[param0+0], %rd154;
+	st.param.b64	[param0+0], %rd156;
 	.param .b32 retval0;
 	call.uni (retval0), 
 	_ZN34_INTERNAL_12_Heap_cpp1_ii_09a408fd7GetSizeEP11tHeapEntry_, 
 	(
 	param0
 	);
-	ld.param.b32	%r67, [retval0+0];
+	ld.param.b32	%r68, [retval0+0];
 	
 	//{
-	}// Callseq End 27
-	add.u64 	%rd155, %SP, 0;
+	}// Callseq End 28
+	add.u64 	%rd157, %SP, 0;
 
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:335 									Heap_SetRoots(&heapRoots,pNode->memory, GetSize(pNode));
 	.loc	1 335 10
-	// Callseq Start 28
+	// Callseq Start 29
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
 	.param .b64 param0;
-	st.param.b64	[param0+0], %rd155;
+	st.param.b64	[param0+0], %rd157;
 	.param .b64 param1;
-	st.param.b64	[param1+0], %rd153;
+	st.param.b64	[param1+0], %rd155;
 	.param .b32 param2;
-	st.param.b32	[param2+0], %r67;
+	st.param.b32	[param2+0], %r68;
 	call.uni 
 	_Z13Heap_SetRootsP11tHeapRoots_Pvj, 
 	(
@@ -2254,41 +2291,41 @@ tmp112:
 	);
 	
 	//{
-	}// Callseq End 28
-	mov.u32 	%r68, 1;
+	}// Callseq End 29
+	mov.u32 	%r69, 1;
 
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:336 									moreRootsAdded = 1;
 	.loc	1 336 10
-	mov.b32 	%r8, %r68;
+	mov.b32 	%r8, %r69;
 tmp113:
-	mov.u32 	%r71, %r8;
+	mov.u32 	%r72, %r8;
 tmp114:
 
 BB12_29:
-	mov.u32 	%r9, %r71;
+	mov.u32 	%r9, %r72;
 tmp115:
-	mov.u32 	%r72, %r9;
+	mov.u32 	%r73, %r9;
 tmp116:
 
 BB12_30:
-	mov.u32 	%r10, %r72;
+	mov.u32 	%r10, %r73;
 tmp117:
-	mov.u32 	%r73, %r10;
+	mov.u32 	%r74, %r10;
 tmp118:
 
 BB12_31:
-	mov.u32 	%r11, %r73;
+	mov.u32 	%r11, %r74;
 tmp119:
-	mov.u32 	%r74, %r11;
+	mov.u32 	%r75, %r11;
 tmp120:
 
 BB12_32:
 
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:341 					break;
 	.loc	1 341 6
-	mov.u32 	%r12, %r74;
+	mov.u32 	%r12, %r75;
 tmp121:
-	mov.u32 	%r75, %r12;
+	mov.u32 	%r76, %r12;
 tmp122:
 	bra.uni 	BB12_36;
 
@@ -2298,26 +2335,26 @@ BB12_34:
 	bra.uni 	BB12_7;
 
 BB12_35:
-	mov.u32 	%r75, %r7;
+	mov.u32 	%r76, %r7;
 
 BB12_36:
-	mov.u32 	%r13, %r75;
+	mov.u32 	%r13, %r76;
 tmp123:
-	mov.u32 	%r76, %r13;
+	mov.u32 	%r77, %r13;
 tmp124:
 
 BB12_37:
 
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:297 		for (i=0; i<rootsEntryNumPointers; i++) {
 	.loc	1 297 38
-	mov.u32 	%r14, %r76;
+	mov.u32 	%r14, %r77;
 tmp125:
 
 	add.s32 	%r15, %r6, 1;
 tmp126:
-	mov.u32 	%r69, %r15;
+	mov.u32 	%r70, %r15;
 tmp127:
-	mov.u32 	%r70, %r14;
+	mov.u32 	%r71, %r14;
 tmp128:
 	bra.uni 	BB12_3;
 tmp129:
@@ -2337,9 +2374,9 @@ BB12_40:
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:346 			heapRoots.num--;
 	.loc	1 346 4
 tmp130:
-	ld.u32 	%r50, [%SP+4];
-	add.s32 	%r51, %r50, -1;
-	st.u32 	[%SP+4], %r51;
+	ld.u32 	%r51, [%SP+4];
+	add.s32 	%r52, %r51, -1;
+	st.u32 	[%SP+4], %r52;
 
 BB12_41:
 	bra.uni 	BB12_1;
@@ -2349,13 +2386,13 @@ BB12_42:
 
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:350 	Gfree(heapRoots.pHeapEntries);
 	.loc	1 350 2
-	ld.u64 	%rd13, [%SP+8];
-	// Callseq Start 16
+	ld.u64 	%rd15, [%SP+8];
+	// Callseq Start 17
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
 	.param .b64 param0;
-	st.param.b64	[param0+0], %rd13;
+	st.param.b64	[param0+0], %rd15;
 	call.uni 
 	_Z5GfreePv, 
 	(
@@ -2363,29 +2400,29 @@ BB12_42:
 	);
 	
 	//{
-	}// Callseq End 16
+	}// Callseq End 17
 
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:354 	pUp[0] = _bcl_->pHeapTreeRoot;
 	.loc	1 354 2
-	mov.u64 	%rd14, _bcl_;
-	cvta.global.u64 	%rd15, %rd14;
-	ld.u64 	%rd16, [%rd15];
-	ld.u64 	%rd17, [%rd16+88];
-	st.u64 	[%SP+24], %rd17;
-	mov.u32 	%r31, 1;
+	mov.u64 	%rd16, _bcl_;
+	cvta.global.u64 	%rd17, %rd16;
+	ld.u64 	%rd18, [%rd17];
+	ld.u64 	%rd19, [%rd18+88];
+	st.u64 	[%SP+24], %rd19;
+	mov.u32 	%r32, 1;
 
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:355 	top = 1;
 	.loc	1 355 2
-	mov.b32 	%r16, %r31;
+	mov.b32 	%r16, %r32;
 tmp132:
-	mov.u32 	%r77, %r16;
+	mov.u32 	%r78, %r16;
 tmp133:
 
 BB12_43:
 
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:356 	while (top != 0) {
 	.loc	1 356 2
-	mov.u32 	%r17, %r77;
+	mov.u32 	%r17, %r78;
 tmp134:
 	setp.ne.s32	%p14, %r17, 0;
 	not.pred 	%p15, %p14;
@@ -2399,18 +2436,18 @@ BB12_44:
 tmp135:
 	add.s32 	%r18, %r17, -1;
 tmp136:
-	cvt.s64.s32	%rd44, %r18;
-	shl.b64 	%rd45, %rd44, 3;
-	add.u64 	%rd46, %SP, 24;
-	add.s64 	%rd47, %rd46, %rd45;
-	ld.u64 	%rd48, [%rd47];
-	mov.u64 	%rd49, %rd48;
-	st.u64 	[%SP+16], %rd49;
+	cvt.s64.s32	%rd46, %r18;
+	shl.b64 	%rd47, %rd46, 3;
+	add.u64 	%rd48, %SP, 24;
+	add.s64 	%rd49, %rd48, %rd47;
+	ld.u64 	%rd50, [%rd49];
+	mov.u64 	%rd51, %rd50;
+	st.u64 	[%SP+16], %rd51;
 
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:360 		if (pNode->marked) {
 	.loc	1 360 3
-	ld.u64 	%rd50, [%SP+16];
-	ld.u8 	%rs1, [%rd50+17];
+	ld.u64 	%rd52, [%SP+16];
+	ld.u8 	%rs1, [%rd52+17];
 	and.b16  	%rs2, %rs1, 255;
 	setp.ne.s16	%p18, %rs2, 0;
 	not.pred 	%p19, %p18;
@@ -2422,11 +2459,11 @@ BB12_45:
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:361 			if (pNode->marked != 0xff) {
 	.loc	1 361 4
 tmp137:
-	ld.u64 	%rd70, [%SP+16];
-	ld.u8 	%rs7, [%rd70+17];
-	cvt.u32.u16	%r44, %rs7;
-	and.b32  	%r45, %r44, 255;
-	setp.ne.s32	%p28, %r45, 255;
+	ld.u64 	%rd72, [%SP+16];
+	ld.u8 	%rs7, [%rd72+17];
+	cvt.u32.u16	%r45, %rs7;
+	and.b32  	%r46, %r45, 255;
+	setp.ne.s32	%p28, %r46, 255;
 	not.pred 	%p29, %p28;
 	@%p29 bra 	BB12_47;
 	bra.uni 	BB12_46;
@@ -2436,9 +2473,9 @@ BB12_46:
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:363 				pNode->marked = 0;
 	.loc	1 363 5
 tmp138:
-	ld.u64 	%rd71, [%SP+16];
+	ld.u64 	%rd73, [%SP+16];
 	mov.u16 	%rs8, 0;
-	st.u8 	[%rd71+17], %rs8;
+	st.u8 	[%rd73+17], %rs8;
 
 BB12_47:
 	bra.uni 	BB12_58;
@@ -2448,8 +2485,8 @@ BB12_48:
 
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:368 			if (pNode->needToFinalize) {
 	.loc	1 368 4
-	ld.u64 	%rd51, [%SP+16];
-	ld.u8 	%rs3, [%rd51+18];
+	ld.u64 	%rd53, [%SP+16];
+	ld.u8 	%rs3, [%rd53+18];
 	and.b16  	%rs4, %rs3, 255;
 	setp.ne.s16	%p20, %rs4, 0;
 	not.pred 	%p21, %p20;
@@ -2461,11 +2498,11 @@ BB12_49:
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:369 				if (pNode->needToFinalize == 1) {
 	.loc	1 369 5
 tmp140:
-	ld.u64 	%rd61, [%SP+16];
-	ld.u8 	%rs5, [%rd61+18];
-	cvt.u32.u16	%r41, %rs5;
-	and.b32  	%r42, %r41, 255;
-	setp.eq.s32	%p24, %r42, 1;
+	ld.u64 	%rd63, [%SP+16];
+	ld.u8 	%rs5, [%rd63+18];
+	cvt.u32.u16	%r42, %rs5;
+	and.b32  	%r43, %r42, 255;
+	setp.eq.s32	%p24, %r43, 1;
 	not.pred 	%p25, %p24;
 	@%p25 bra 	BB12_53;
 	bra.uni 	BB12_50;
@@ -2475,14 +2512,14 @@ BB12_50:
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:370 					AddFinalizer((HEAP_PTR)pNode + sizeof(tHeapEntry));
 	.loc	1 370 6
 tmp141:
-	ld.u64 	%rd62, [%SP+16];
-	add.s64 	%rd63, %rd62, 40;
-	// Callseq Start 23
+	ld.u64 	%rd64, [%SP+16];
+	add.s64 	%rd65, %rd64, 40;
+	// Callseq Start 24
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
 	.param .b64 param0;
-	st.param.b64	[param0+0], %rd63;
+	st.param.b64	[param0+0], %rd65;
 	call.uni 
 	_Z12AddFinalizerPh, 
 	(
@@ -2490,19 +2527,19 @@ tmp141:
 	);
 	
 	//{
-	}// Callseq End 23
+	}// Callseq End 24
 
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:373 					pNode->needToFinalize = 2;
 	.loc	1 373 6
-	ld.u64 	%rd64, [%SP+16];
+	ld.u64 	%rd66, [%SP+16];
 	mov.u16 	%rs6, 2;
-	st.u8 	[%rd64+18], %rs6;
+	st.u8 	[%rd66+18], %rs6;
 
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:375 					if (pNode->pSync != NULL) {
 	.loc	1 375 6
-	ld.u64 	%rd65, [%SP+16];
-	ld.u64 	%rd66, [%rd65+32];
-	setp.ne.s64	%p26, %rd66, 0;
+	ld.u64 	%rd67, [%SP+16];
+	ld.u64 	%rd68, [%rd67+32];
+	setp.ne.s64	%p26, %rd68, 0;
 	not.pred 	%p27, %p26;
 	@%p27 bra 	BB12_52;
 	bra.uni 	BB12_51;
@@ -2512,16 +2549,16 @@ BB12_51:
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:376 						RemoveWeakRefTarget(pNode, 0);
 	.loc	1 376 7
 tmp142:
-	ld.u64 	%rd67, [%SP+16];
-	mov.u32 	%r43, 0;
-	// Callseq Start 24
+	ld.u64 	%rd69, [%SP+16];
+	mov.u32 	%r44, 0;
+	// Callseq Start 25
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
 	.param .b64 param0;
-	st.param.b64	[param0+0], %rd67;
+	st.param.b64	[param0+0], %rd69;
 	.param .b32 param1;
-	st.param.b32	[param1+0], %r43;
+	st.param.b32	[param1+0], %r44;
 	call.uni 
 	_ZN34_INTERNAL_12_Heap_cpp1_ii_09a408fd19RemoveWeakRefTargetEP11tHeapEntry_j, 
 	(
@@ -2530,18 +2567,18 @@ tmp142:
 	);
 	
 	//{
-	}// Callseq End 24
+	}// Callseq End 25
 
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:377 						Gfree(pNode->pSync);
 	.loc	1 377 7
-	ld.u64 	%rd68, [%SP+16];
-	ld.u64 	%rd69, [%rd68+32];
-	// Callseq Start 25
+	ld.u64 	%rd70, [%SP+16];
+	ld.u64 	%rd71, [%rd70+32];
+	// Callseq Start 26
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
 	.param .b64 param0;
-	st.param.b64	[param0+0], %rd69;
+	st.param.b64	[param0+0], %rd71;
 	call.uni 
 	_Z5GfreePv, 
 	(
@@ -2549,7 +2586,7 @@ tmp142:
 	);
 	
 	//{
-	}// Callseq End 25
+	}// Callseq End 26
 
 BB12_52:
 
@@ -2561,9 +2598,9 @@ BB12_54:
 
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:382 				if (pNode->pSync != NULL) {
 	.loc	1 382 5
-	ld.u64 	%rd52, [%SP+16];
-	ld.u64 	%rd53, [%rd52+32];
-	setp.ne.s64	%p22, %rd53, 0;
+	ld.u64 	%rd54, [%SP+16];
+	ld.u64 	%rd55, [%rd54+32];
+	setp.ne.s64	%p22, %rd55, 0;
 	not.pred 	%p23, %p22;
 	@%p23 bra 	BB12_56;
 	bra.uni 	BB12_55;
@@ -2573,16 +2610,16 @@ BB12_55:
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:383 					RemoveWeakRefTarget(pNode, 1);
 	.loc	1 383 6
 tmp144:
-	ld.u64 	%rd54, [%SP+16];
-	mov.u32 	%r40, 1;
-	// Callseq Start 21
+	ld.u64 	%rd56, [%SP+16];
+	mov.u32 	%r41, 1;
+	// Callseq Start 22
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
 	.param .b64 param0;
-	st.param.b64	[param0+0], %rd54;
+	st.param.b64	[param0+0], %rd56;
 	.param .b32 param1;
-	st.param.b32	[param1+0], %r40;
+	st.param.b32	[param1+0], %r41;
 	call.uni 
 	_ZN34_INTERNAL_12_Heap_cpp1_ii_09a408fd19RemoveWeakRefTargetEP11tHeapEntry_j, 
 	(
@@ -2591,18 +2628,18 @@ tmp144:
 	);
 	
 	//{
-	}// Callseq End 21
+	}// Callseq End 22
 
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:384 					Gfree(pNode->pSync);
 	.loc	1 384 6
-	ld.u64 	%rd55, [%SP+16];
-	ld.u64 	%rd56, [%rd55+32];
-	// Callseq Start 22
+	ld.u64 	%rd57, [%SP+16];
+	ld.u64 	%rd58, [%rd57+32];
+	// Callseq Start 23
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
 	.param .b64 param0;
-	st.param.b64	[param0+0], %rd56;
+	st.param.b64	[param0+0], %rd58;
 	call.uni 
 	_Z5GfreePv, 
 	(
@@ -2610,22 +2647,22 @@ tmp144:
 	);
 	
 	//{
-	}// Callseq End 22
+	}// Callseq End 23
 tmp145:
 
 BB12_56:
 
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:387 				pNode->pSync = (tSync *)pToDelete;
 	.loc	1 387 5
-	ld.u64 	%rd57, [%SP+664];
-	ld.u64 	%rd58, [%SP+16];
-	st.u64 	[%rd58+32], %rd57;
+	ld.u64 	%rd59, [%SP+664];
+	ld.u64 	%rd60, [%SP+16];
+	st.u64 	[%rd60+32], %rd59;
 
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:388 				pToDelete = pNode;
 	.loc	1 388 5
-	ld.u64 	%rd59, [%SP+16];
-	mov.u64 	%rd60, %rd59;
-	st.u64 	[%SP+664], %rd60;
+	ld.u64 	%rd61, [%SP+16];
+	mov.u64 	%rd62, %rd61;
+	st.u64 	[%SP+664], %rd62;
 tmp146:
 
 BB12_57:
@@ -2634,15 +2671,15 @@ BB12_58:
 
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:392 		if (pNode->pLink[1] != _bcl_->nil) {
 	.loc	1 392 3
-	ld.u64 	%rd72, [%SP+16];
-	ld.u64 	%rd73, [%rd72+8];
-	mov.u64 	%rd74, _bcl_;
-	cvta.global.u64 	%rd75, %rd74;
-	ld.u64 	%rd76, [%rd75];
-	ld.u64 	%rd77, [%rd76+96];
-	setp.ne.s64	%p30, %rd73, %rd77;
+	ld.u64 	%rd74, [%SP+16];
+	ld.u64 	%rd75, [%rd74+8];
+	mov.u64 	%rd76, _bcl_;
+	cvta.global.u64 	%rd77, %rd76;
+	ld.u64 	%rd78, [%rd77];
+	ld.u64 	%rd79, [%rd78+96];
+	setp.ne.s64	%p30, %rd75, %rd79;
 	not.pred 	%p31, %p30;
-	mov.u32 	%r78, %r18;
+	mov.u32 	%r79, %r18;
 tmp147:
 	@%p31 bra 	BB12_60;
 	bra.uni 	BB12_59;
@@ -2652,33 +2689,33 @@ BB12_59:
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:393 			pUp[top++] = pNode->pLink[1];
 	.loc	1 393 4
 tmp148:
-	ld.u64 	%rd78, [%SP+16];
-	ld.u64 	%rd79, [%rd78+8];
+	ld.u64 	%rd80, [%SP+16];
+	ld.u64 	%rd81, [%rd80+8];
 	add.s32 	%r19, %r18, 1;
 tmp149:
-	cvt.s64.s32	%rd80, %r18;
-	shl.b64 	%rd81, %rd80, 3;
-	add.u64 	%rd82, %SP, 24;
-	add.s64 	%rd83, %rd82, %rd81;
-	st.u64 	[%rd83], %rd79;
-	mov.u32 	%r78, %r19;
+	cvt.s64.s32	%rd82, %r18;
+	shl.b64 	%rd83, %rd82, 3;
+	add.u64 	%rd84, %SP, 24;
+	add.s64 	%rd85, %rd84, %rd83;
+	st.u64 	[%rd85], %rd81;
+	mov.u32 	%r79, %r19;
 tmp150:
 
 BB12_60:
 
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:395 		if (pNode->pLink[0] != _bcl_->nil) {
 	.loc	1 395 3
-	mov.u32 	%r20, %r78;
+	mov.u32 	%r20, %r79;
 tmp151:
-	ld.u64 	%rd84, [%SP+16];
-	ld.u64 	%rd85, [%rd84];
-	mov.u64 	%rd86, _bcl_;
-	cvta.global.u64 	%rd87, %rd86;
-	ld.u64 	%rd88, [%rd87];
-	ld.u64 	%rd89, [%rd88+96];
-	setp.ne.s64	%p32, %rd85, %rd89;
+	ld.u64 	%rd86, [%SP+16];
+	ld.u64 	%rd87, [%rd86];
+	mov.u64 	%rd88, _bcl_;
+	cvta.global.u64 	%rd89, %rd88;
+	ld.u64 	%rd90, [%rd89];
+	ld.u64 	%rd91, [%rd90+96];
+	setp.ne.s64	%p32, %rd87, %rd91;
 	not.pred 	%p33, %p32;
-	mov.u32 	%r79, %r20;
+	mov.u32 	%r80, %r20;
 tmp152:
 	@%p33 bra 	BB12_62;
 	bra.uni 	BB12_61;
@@ -2688,22 +2725,22 @@ BB12_61:
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:396 			pUp[top++] = pNode->pLink[0];
 	.loc	1 396 4
 tmp153:
-	ld.u64 	%rd90, [%SP+16];
-	ld.u64 	%rd91, [%rd90];
+	ld.u64 	%rd92, [%SP+16];
+	ld.u64 	%rd93, [%rd92];
 	add.s32 	%r21, %r20, 1;
 tmp154:
-	cvt.s64.s32	%rd92, %r20;
-	shl.b64 	%rd93, %rd92, 3;
-	add.u64 	%rd94, %SP, 24;
-	add.s64 	%rd95, %rd94, %rd93;
-	st.u64 	[%rd95], %rd91;
-	mov.u32 	%r79, %r21;
+	cvt.s64.s32	%rd94, %r20;
+	shl.b64 	%rd95, %rd94, 3;
+	add.u64 	%rd96, %SP, 24;
+	add.s64 	%rd97, %rd96, %rd95;
+	st.u64 	[%rd97], %rd93;
+	mov.u32 	%r80, %r21;
 tmp155:
 
 BB12_62:
-	mov.u32 	%r22, %r79;
+	mov.u32 	%r22, %r80;
 tmp156:
-	mov.u32 	%r77, %r22;
+	mov.u32 	%r78, %r22;
 tmp157:
 	bra.uni 	BB12_43;
 tmp158:
@@ -2714,8 +2751,8 @@ BB12_64:
 
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:401 	while (pToDelete != NULL) {
 	.loc	1 401 2
-	ld.u64 	%rd18, [%SP+664];
-	setp.ne.s64	%p16, %rd18, 0;
+	ld.u64 	%rd20, [%SP+664];
+	setp.ne.s64	%p16, %rd20, 0;
 	not.pred 	%p17, %p16;
 	@%p17 bra 	BB12_66;
 	bra.uni 	BB12_65;
@@ -2725,34 +2762,34 @@ tmp159:
 
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:402 		tHeapEntry *pThis = pToDelete;
 	.loc	1 402 21
-	ld.u64 	%rd25, [%SP+664];
-	mov.u64 	%rd26, %rd25;
-	st.u64 	[%SP+688], %rd26;
+	ld.u64 	%rd27, [%SP+664];
+	mov.u64 	%rd28, %rd27;
+	st.u64 	[%SP+688], %rd28;
 
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:403 		pToDelete = (tHeapEntry*)(pToDelete->pSync);
 	.loc	1 403 3
-	ld.u64 	%rd27, [%SP+664];
-	ld.u64 	%rd28, [%rd27+32];
-	st.u64 	[%SP+664], %rd28;
+	ld.u64 	%rd29, [%SP+664];
+	ld.u64 	%rd30, [%rd29+32];
+	st.u64 	[%SP+664], %rd30;
 
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:404 		_bcl_->pHeapTreeRoot = TreeRemove(_bcl_->pHeapTreeRoot, pThis);
 	.loc	1 404 3
-	mov.u64 	%rd29, _bcl_;
-	cvta.global.u64 	%rd30, %rd29;
-	ld.u64 	%rd31, [%rd30];
-	ld.u64 	%rd32, [%rd31+88];
-	ld.u64 	%rd33, [%SP+688];
+	mov.u64 	%rd31, _bcl_;
+	cvta.global.u64 	%rd32, %rd31;
+	ld.u64 	%rd33, [%rd32];
+	ld.u64 	%rd34, [%rd33+88];
+	ld.u64 	%rd35, [%SP+688];
 
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:404 		_bcl_->pHeapTreeRoot = TreeRemove(_bcl_->pHeapTreeRoot, pThis);
 	.loc	1 404 26
-	// Callseq Start 18
+	// Callseq Start 19
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
 	.param .b64 param0;
-	st.param.b64	[param0+0], %rd32;
+	st.param.b64	[param0+0], %rd34;
 	.param .b64 param1;
-	st.param.b64	[param1+0], %rd33;
+	st.param.b64	[param1+0], %rd35;
 	.param .b64 retval0;
 	call.uni (retval0), 
 	_ZN34_INTERNAL_12_Heap_cpp1_ii_09a408fd10TreeRemoveEP11tHeapEntry_S1_, 
@@ -2760,60 +2797,60 @@ tmp159:
 	param0, 
 	param1
 	);
-	ld.param.b64	%rd34, [retval0+0];
+	ld.param.b64	%rd36, [retval0+0];
 	
 	//{
-	}// Callseq End 18
-	ld.u64 	%rd35, [%rd30];
-	st.u64 	[%rd35+88], %rd34;
+	}// Callseq End 19
+	ld.u64 	%rd37, [%rd32];
+	st.u64 	[%rd37+88], %rd36;
 
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:405 		_bcl_->numNodes--;
 	.loc	1 405 3
-	ld.u64 	%rd36, [%rd30];
-	ld.u32 	%r35, [%rd36+112];
-	add.s32 	%r36, %r35, -1;
-	st.u32 	[%rd36+112], %r36;
+	ld.u64 	%rd38, [%rd32];
+	ld.u32 	%r36, [%rd38+112];
+	add.s32 	%r37, %r36, -1;
+	st.u32 	[%rd38+112], %r37;
 
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:406 		_bcl_->trackHeapSize -= GetSize(pThis) + sizeof(tHeapEntry);
 	.loc	1 406 3
-	ld.u64 	%rd37, [%SP+688];
+	ld.u64 	%rd39, [%SP+688];
 
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:406 		_bcl_->trackHeapSize -= GetSize(pThis) + sizeof(tHeapEntry);
 	.loc	1 406 27
-	// Callseq Start 19
+	// Callseq Start 20
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
 	.param .b64 param0;
-	st.param.b64	[param0+0], %rd37;
+	st.param.b64	[param0+0], %rd39;
 	.param .b32 retval0;
 	call.uni (retval0), 
 	_ZN34_INTERNAL_12_Heap_cpp1_ii_09a408fd7GetSizeEP11tHeapEntry_, 
 	(
 	param0
 	);
-	ld.param.b32	%r37, [retval0+0];
+	ld.param.b32	%r38, [retval0+0];
 	
 	//{
-	}// Callseq End 19
-	cvt.u64.u32	%rd38, %r37;
-	add.s64 	%rd39, %rd38, 40;
-	ld.u64 	%rd40, [%rd30];
-	ld.u32 	%r38, [%rd40+104];
-	cvt.u64.u32	%rd41, %r38;
-	sub.s64 	%rd42, %rd41, %rd39;
-	cvt.u32.u64	%r39, %rd42;
-	st.u32 	[%rd40+104], %r39;
+	}// Callseq End 20
+	cvt.u64.u32	%rd40, %r38;
+	add.s64 	%rd41, %rd40, 40;
+	ld.u64 	%rd42, [%rd32];
+	ld.u32 	%r39, [%rd42+104];
+	cvt.u64.u32	%rd43, %r39;
+	sub.s64 	%rd44, %rd43, %rd41;
+	cvt.u32.u64	%r40, %rd44;
+	st.u32 	[%rd42+104], %r40;
 
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:407 		Gfree(pThis);
 	.loc	1 407 3
-	ld.u64 	%rd43, [%SP+688];
-	// Callseq Start 20
+	ld.u64 	%rd45, [%SP+688];
+	// Callseq Start 21
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
 	.param .b64 param0;
-	st.param.b64	[param0+0], %rd43;
+	st.param.b64	[param0+0], %rd45;
 	call.uni 
 	_Z5GfreePv, 
 	(
@@ -2821,7 +2858,7 @@ tmp159:
 	);
 	
 	//{
-	}// Callseq End 20
+	}// Callseq End 21
 	bra.uni 	BB12_64;
 tmp160:
 
@@ -2829,28 +2866,28 @@ BB12_66:
 
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:414 	log_f(1, "--- GARBAGE --- [Size: %d -> %d] [Nodes: %d -> %d]\n",
 	.loc	1 414 2
-	mov.u64 	%rd19, _bcl_;
-	cvta.global.u64 	%rd20, %rd19;
-	ld.u64 	%rd21, [%rd20];
-	ld.u32 	%r32, [%rd21+104];
-	ld.u64 	%rd22, [%rd20];
-	ld.u32 	%r33, [%rd22+112];
-	mov.u64 	%rd23, $str;
-	cvta.global.u64 	%rd24, %rd23;
-	mov.u32 	%r34, 1;
-	// Callseq Start 17
+	mov.u64 	%rd21, _bcl_;
+	cvta.global.u64 	%rd22, %rd21;
+	ld.u64 	%rd23, [%rd22];
+	ld.u32 	%r33, [%rd23+104];
+	ld.u64 	%rd24, [%rd22];
+	ld.u32 	%r34, [%rd24+112];
+	mov.u64 	%rd25, $str1;
+	cvta.global.u64 	%rd26, %rd25;
+	mov.u32 	%r35, 1;
+	// Callseq Start 18
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
 	.param .b32 param0;
-	st.param.b32	[param0+0], %r34;
+	st.param.b32	[param0+0], %r35;
 	.param .b64 param1;
-	st.param.b64	[param1+0], %rd24;
+	st.param.b64	[param1+0], %rd26;
 	.param .align 8 .b8 param2[16];
 	st.param.b32	[param2+0], %r1;
-	st.param.b32	[param2+4], %r32;
+	st.param.b32	[param2+4], %r33;
 	st.param.b32	[param2+8], %r2;
-	st.param.b32	[param2+12], %r33;
+	st.param.b32	[param2+12], %r34;
 	call.uni 
 	_Z5log_fjPKcz, 
 	(
@@ -2860,7 +2897,7 @@ BB12_66:
 	);
 	
 	//{
-	}// Callseq End 17
+	}// Callseq End 18
 
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:420 }
 	.loc	1 420 1
@@ -2907,12 +2944,12 @@ BB13_1:
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:441 	Assert((sizeInBytes & 0x3) == 0);
 	.loc	1 441 35
 tmp163:
-	mov.u64 	%rd3, $str1;
+	mov.u64 	%rd3, $str2;
 	cvta.global.u64 	%rd4, %rd3;
-	mov.u64 	%rd5, $str2;
+	mov.u64 	%rd5, $str3;
 	cvta.global.u64 	%rd6, %rd5;
 	mov.u32 	%r3, 441;
-	// Callseq Start 29
+	// Callseq Start 30
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
@@ -2929,7 +2966,7 @@ tmp163:
 	);
 	
 	//{
-	}// Callseq End 29
+	}// Callseq End 30
 tmp164:
 
 BB13_2:
@@ -2961,7 +2998,7 @@ tmp165:
 
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:444 		pHeapRoots->pHeapEntries = (tHeapRootEntry*)Grealloc(pHeapRoots->pHeapEntries, pHeapRoots->capacity * sizeof(tHeapRootEntry));
 	.loc	1 444 47
-	// Callseq Start 30
+	// Callseq Start 31
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
@@ -2979,7 +3016,7 @@ tmp165:
 	ld.param.b64	%rd10, [retval0+0];
 	
 	//{
-	}// Callseq End 30
+	}// Callseq End 31
 	st.u64 	[%rd1+8], %rd10;
 tmp166:
 
@@ -3021,22 +3058,22 @@ func_end13:
 	.reg .b64 	%rd<4>;
 
 
-	.loc 1 579 1
+	.loc 1 591 1
 func_begin14:
 	.loc	1 0 0
 
-	.loc 1 579 1
+	.loc 1 591 1
 
 	ld.param.u64 	%rd1, [_ZN34_INTERNAL_12_Heap_cpp1_ii_09a408fd19RemoveWeakRefTargetEP11tHeapEntry_j_param_0];
 	ld.param.u32 	%r1, [_ZN34_INTERNAL_12_Heap_cpp1_ii_09a408fd19RemoveWeakRefTargetEP11tHeapEntry_j_param_1];
 func_exec_begin14:
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:580 	SystemWeakReference_TargetGone(&pTarget->pSync->weakRef, removeLongRefs);
-	.loc	1 580 2
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:592 	SystemWeakReference_TargetGone(&pTarget->pSync->weakRef, removeLongRefs);
+	.loc	1 592 2
 tmp169:
 	ld.u64 	%rd2, [%rd1+32];
 	add.s64 	%rd3, %rd2, 16;
-	// Callseq Start 31
+	// Callseq Start 32
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
@@ -3052,10 +3089,10 @@ tmp169:
 	);
 	
 	//{
-	}// Callseq End 31
+	}// Callseq End 32
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:581 }
-	.loc	1 581 1
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:593 }
+	.loc	1 593 1
 	ret;
 tmp170:
 func_end14:
@@ -3111,7 +3148,7 @@ func_exec_begin16:
 
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:427 	GarbageCollect();
 	.loc	1 427 2
-	// Callseq Start 32
+	// Callseq Start 33
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
@@ -3121,7 +3158,7 @@ func_exec_begin16:
 	);
 	
 	//{
-	}// Callseq End 32
+	}// Callseq End 33
 
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:428 }
 	.loc	1 428 1
@@ -3196,10 +3233,10 @@ func_end18:
 	.param .b32 _Z10Heap_AllocP12tMD_TypeDef_j_param_1
 )
 {
-	.reg .pred 	%p<8>;
+	.reg .pred 	%p<10>;
 	.reg .b16 	%rs<2>;
-	.reg .b32 	%r<27>;
-	.reg .b64 	%rd<42>;
+	.reg .b32 	%r<28>;
+	.reg .b64 	%rd<45>;
 
 
 	.loc 1 451 1
@@ -3212,33 +3249,71 @@ func_begin19:
 	ld.param.u32 	%r2, [_Z10Heap_AllocP12tMD_TypeDef_j_param_1];
 func_exec_begin19:
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:455 	totalSize = sizeof(tHeapEntry) + size;
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:455 	if (size == 0)
 	.loc	1 455 2
 tmp176:
-	cvt.u64.u32	%rd2, %r2;
-	add.s64 	%rd3, %rd2, 40;
-	cvt.u32.u64	%r1, %rd3;
-tmp177:
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:458 	if (_bcl_->trackHeapSize >= _bcl_->heapSizeMax) {
-	.loc	1 458 2
-	mov.u64 	%rd4, _bcl_;
-	cvta.global.u64 	%rd5, %rd4;
-	ld.u64 	%rd6, [%rd5];
-	ld.u32 	%r3, [%rd6+104];
-	ld.u64 	%rd7, [%rd5];
-	ld.u32 	%r4, [%rd7+108];
-	setp.ge.u32	%p1, %r3, %r4;
+	setp.eq.s32	%p1, %r2, 0;
 	not.pred 	%p2, %p1;
-	@%p2 bra 	BB19_6;
+	@%p2 bra 	BB19_2;
 	bra.uni 	BB19_1;
 
 BB19_1:
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:459 		GarbageCollect();
-	.loc	1 459 3
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:457 		printf("WARNING: Heap_Alloc called with size request of 0 bytes. Resulting pointer may not work as expected (e.g., memory overruns).\n");
+	.loc	1 457 3
+tmp177:
+	mov.u64 	%rd2, $str4;
+	cvta.global.u64 	%rd3, %rd2;
+	mov.u64 	%rd4, 0;
+	// Callseq Start 34
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b64 param0;
+	st.param.b64	[param0+0], %rd3;
+	.param .b64 param1;
+	st.param.b64	[param1+0], %rd4;
+	.param .b32 retval0;
+	call.uni (retval0), 
+	vprintf, 
+	(
+	param0, 
+	param1
+	);
+	ld.param.b32	%r3, [retval0+0];
+	
+	//{
+	}// Callseq End 34
 tmp178:
-	// Callseq Start 33
+
+BB19_2:
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:460 	totalSize = sizeof(tHeapEntry) + size;
+	.loc	1 460 2
+	cvt.u64.u32	%rd5, %r2;
+	add.s64 	%rd6, %rd5, 40;
+	cvt.u32.u64	%r1, %rd6;
+tmp179:
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:463 	if (_bcl_->trackHeapSize >= _bcl_->heapSizeMax) {
+	.loc	1 463 2
+	mov.u64 	%rd7, _bcl_;
+	cvta.global.u64 	%rd8, %rd7;
+	ld.u64 	%rd9, [%rd8];
+	ld.u32 	%r4, [%rd9+104];
+	ld.u64 	%rd10, [%rd8];
+	ld.u32 	%r5, [%rd10+108];
+	setp.ge.u32	%p3, %r4, %r5;
+	not.pred 	%p4, %p3;
+	@%p4 bra 	BB19_8;
+	bra.uni 	BB19_3;
+
+BB19_3:
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:464 		GarbageCollect();
+	.loc	1 464 3
+tmp180:
+	// Callseq Start 35
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
@@ -3248,138 +3323,138 @@ tmp178:
 	);
 	
 	//{
-	}// Callseq End 33
+	}// Callseq End 35
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:460 		_bcl_->heapSizeMax = (_bcl_->trackHeapSize + totalSize) << 1;
-	.loc	1 460 3
-	mov.u64 	%rd8, _bcl_;
-	cvta.global.u64 	%rd9, %rd8;
-	ld.u64 	%rd10, [%rd9];
-	ld.u32 	%r5, [%rd10+104];
-	add.s32 	%r6, %r5, %r1;
-	shl.b32 	%r7, %r6, 1;
-	ld.u64 	%rd11, [%rd9];
-	st.u32 	[%rd11+108], %r7;
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:461 		if (_bcl_->heapSizeMax < _bcl_->trackHeapSize + totalSize + MIN_HEAP_SIZE) {
-	.loc	1 461 3
-	ld.u64 	%rd12, [%rd9];
-	ld.u32 	%r8, [%rd12+108];
-	ld.u64 	%rd13, [%rd9];
-	ld.u32 	%r9, [%rd13+104];
-	add.s32 	%r10, %r9, %r1;
-	add.s32 	%r11, %r10, 50000;
-	setp.lt.u32	%p3, %r8, %r11;
-	not.pred 	%p4, %p3;
-	@%p4 bra 	BB19_3;
-	bra.uni 	BB19_2;
-
-BB19_2:
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:463 			_bcl_->heapSizeMax = _bcl_->trackHeapSize + totalSize + MIN_HEAP_SIZE;
-	.loc	1 463 4
-tmp179:
-	mov.u64 	%rd14, _bcl_;
-	cvta.global.u64 	%rd15, %rd14;
-	ld.u64 	%rd16, [%rd15];
-	ld.u32 	%r12, [%rd16+104];
-	add.s32 	%r13, %r12, %r1;
-	add.s32 	%r14, %r13, 50000;
-	ld.u64 	%rd17, [%rd15];
-	st.u32 	[%rd17+108], %r14;
-tmp180:
-
-BB19_3:
-
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:465 		if (_bcl_->heapSizeMax > _bcl_->trackHeapSize + totalSize + MAX_HEAP_EXCESS) {
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:465 		_bcl_->heapSizeMax = (_bcl_->trackHeapSize + totalSize) << 1;
 	.loc	1 465 3
-	mov.u64 	%rd18, _bcl_;
-	cvta.global.u64 	%rd19, %rd18;
-	ld.u64 	%rd20, [%rd19];
-	ld.u32 	%r15, [%rd20+108];
-	ld.u64 	%rd21, [%rd19];
-	ld.u32 	%r16, [%rd21+104];
-	add.s32 	%r17, %r16, %r1;
-	add.s32 	%r18, %r17, 200000;
-	setp.gt.u32	%p5, %r15, %r18;
+	mov.u64 	%rd11, _bcl_;
+	cvta.global.u64 	%rd12, %rd11;
+	ld.u64 	%rd13, [%rd12];
+	ld.u32 	%r6, [%rd13+104];
+	add.s32 	%r7, %r6, %r1;
+	shl.b32 	%r8, %r7, 1;
+	ld.u64 	%rd14, [%rd12];
+	st.u32 	[%rd14+108], %r8;
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:466 		if (_bcl_->heapSizeMax < _bcl_->trackHeapSize + totalSize + MIN_HEAP_SIZE) {
+	.loc	1 466 3
+	ld.u64 	%rd15, [%rd12];
+	ld.u32 	%r9, [%rd15+108];
+	ld.u64 	%rd16, [%rd12];
+	ld.u32 	%r10, [%rd16+104];
+	add.s32 	%r11, %r10, %r1;
+	add.s32 	%r12, %r11, 50000;
+	setp.lt.u32	%p5, %r9, %r12;
 	not.pred 	%p6, %p5;
 	@%p6 bra 	BB19_5;
 	bra.uni 	BB19_4;
 
 BB19_4:
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:467 			_bcl_->heapSizeMax = _bcl_->trackHeapSize + totalSize + MAX_HEAP_EXCESS;
-	.loc	1 467 4
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:468 			_bcl_->heapSizeMax = _bcl_->trackHeapSize + totalSize + MIN_HEAP_SIZE;
+	.loc	1 468 4
 tmp181:
-	mov.u64 	%rd22, _bcl_;
-	cvta.global.u64 	%rd23, %rd22;
-	ld.u64 	%rd24, [%rd23];
-	ld.u32 	%r19, [%rd24+104];
-	add.s32 	%r20, %r19, %r1;
-	add.s32 	%r21, %r20, 200000;
-	ld.u64 	%rd25, [%rd23];
-	st.u32 	[%rd25+108], %r21;
+	mov.u64 	%rd17, _bcl_;
+	cvta.global.u64 	%rd18, %rd17;
+	ld.u64 	%rd19, [%rd18];
+	ld.u32 	%r13, [%rd19+104];
+	add.s32 	%r14, %r13, %r1;
+	add.s32 	%r15, %r14, 50000;
+	ld.u64 	%rd20, [%rd18];
+	st.u32 	[%rd20+108], %r15;
 tmp182:
 
 BB19_5:
 
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:470 		if (_bcl_->heapSizeMax > _bcl_->trackHeapSize + totalSize + MAX_HEAP_EXCESS) {
+	.loc	1 470 3
+	mov.u64 	%rd21, _bcl_;
+	cvta.global.u64 	%rd22, %rd21;
+	ld.u64 	%rd23, [%rd22];
+	ld.u32 	%r16, [%rd23+108];
+	ld.u64 	%rd24, [%rd22];
+	ld.u32 	%r17, [%rd24+104];
+	add.s32 	%r18, %r17, %r1;
+	add.s32 	%r19, %r18, 200000;
+	setp.gt.u32	%p7, %r16, %r19;
+	not.pred 	%p8, %p7;
+	@%p8 bra 	BB19_7;
+	bra.uni 	BB19_6;
+
 BB19_6:
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:471 	pHeapEntry = (tHeapEntry*)Gmalloc(totalSize);
-	.loc	1 471 2
-	cvt.u64.u32	%rd26, %r1;
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:472 			_bcl_->heapSizeMax = _bcl_->trackHeapSize + totalSize + MAX_HEAP_EXCESS;
+	.loc	1 472 4
+tmp183:
+	mov.u64 	%rd25, _bcl_;
+	cvta.global.u64 	%rd26, %rd25;
+	ld.u64 	%rd27, [%rd26];
+	ld.u32 	%r20, [%rd27+104];
+	add.s32 	%r21, %r20, %r1;
+	add.s32 	%r22, %r21, 200000;
+	ld.u64 	%rd28, [%rd26];
+	st.u32 	[%rd28+108], %r22;
+tmp184:
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:471 	pHeapEntry = (tHeapEntry*)Gmalloc(totalSize);
-	.loc	1 471 28
-	// Callseq Start 34
+BB19_7:
+
+BB19_8:
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:476 	pHeapEntry = (tHeapEntry*)Gmalloc(totalSize);
+	.loc	1 476 2
+	cvt.u64.u32	%rd29, %r1;
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:476 	pHeapEntry = (tHeapEntry*)Gmalloc(totalSize);
+	.loc	1 476 28
+	// Callseq Start 36
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
 	.param .b64 param0;
-	st.param.b64	[param0+0], %rd26;
+	st.param.b64	[param0+0], %rd29;
 	.param .b64 retval0;
 	call.uni (retval0), 
 	_Z7Gmallocy, 
 	(
 	param0
 	);
-	ld.param.b64	%rd27, [retval0+0];
-tmp183:
+	ld.param.b64	%rd30, [retval0+0];
+tmp185:
 	
 	//{
-	}// Callseq End 34
+	}// Callseq End 36
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:472 	pHeapEntry->pTypeDef = pTypeDef;
-	.loc	1 472 2
-	st.u64 	[%rd27+24], %rd1;
-	mov.u64 	%rd28, 0;
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:477 	pHeapEntry->pTypeDef = pTypeDef;
+	.loc	1 477 2
+	st.u64 	[%rd30+24], %rd1;
+	mov.u64 	%rd31, 0;
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:473 	pHeapEntry->pSync = NULL;
-	.loc	1 473 2
-	st.u64 	[%rd27+32], %rd28;
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:478 	pHeapEntry->pSync = NULL;
+	.loc	1 478 2
+	st.u64 	[%rd30+32], %rd31;
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:474 	pHeapEntry->needToFinalize = (pTypeDef->pFinalizer != NULL);
-	.loc	1 474 2
-	ld.u64 	%rd29, [%rd1+216];
-	setp.ne.s64	%p7, %rd29, 0;
-	selp.u16	%rs1, 1, 0, %p7;
-	st.u8 	[%rd27+18], %rs1;
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:479 	pHeapEntry->needToFinalize = (pTypeDef->pFinalizer != NULL);
+	.loc	1 479 2
+	ld.u64 	%rd32, [%rd1+216];
+	setp.ne.s64	%p9, %rd32, 0;
+	selp.u16	%rs1, 1, 0, %p9;
+	st.u8 	[%rd30+18], %rs1;
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:475 	memset(pHeapEntry->memory, 0, size);
-	.loc	1 475 2
-	add.s64 	%rd30, %rd27, 40;
-	cvt.u64.u32	%rd31, %r2;
-	mov.u32 	%r22, 0;
-	// Callseq Start 35
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:480 	memset(pHeapEntry->memory, 0, size);
+	.loc	1 480 2
+	add.s64 	%rd33, %rd30, 40;
+	cvt.u64.u32	%rd34, %r2;
+	mov.u32 	%r23, 0;
+	// Callseq Start 37
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
 	.param .b64 param0;
-	st.param.b64	[param0+0], %rd30;
+	st.param.b64	[param0+0], %rd33;
 	.param .b32 param1;
-	st.param.b32	[param1+0], %r22;
+	st.param.b32	[param1+0], %r23;
 	.param .b64 param2;
-	st.param.b64	[param2+0], %rd31;
+	st.param.b64	[param2+0], %rd34;
 	.param .b64 retval0;
 	call.uni (retval0), 
 	memset, 
@@ -3388,35 +3463,35 @@ tmp183:
 	param1, 
 	param2
 	);
-	ld.param.b64	%rd32, [retval0+0];
+	ld.param.b64	%rd35, [retval0+0];
 	
 	//{
-	}// Callseq End 35
+	}// Callseq End 37
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:476 	_bcl_->trackHeapSize += totalSize;
-	.loc	1 476 2
-	mov.u64 	%rd33, _bcl_;
-	cvta.global.u64 	%rd34, %rd33;
-	ld.u64 	%rd35, [%rd34];
-	ld.u32 	%r23, [%rd35+104];
-	add.s32 	%r24, %r23, %r1;
-	st.u32 	[%rd35+104], %r24;
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:481 	_bcl_->trackHeapSize += totalSize;
+	.loc	1 481 2
+	mov.u64 	%rd36, _bcl_;
+	cvta.global.u64 	%rd37, %rd36;
+	ld.u64 	%rd38, [%rd37];
+	ld.u32 	%r24, [%rd38+104];
+	add.s32 	%r25, %r24, %r1;
+	st.u32 	[%rd38+104], %r25;
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:478 	_bcl_->pHeapTreeRoot = TreeInsert(_bcl_->pHeapTreeRoot, pHeapEntry);
-	.loc	1 478 2
-	ld.u64 	%rd36, [%rd34];
-	ld.u64 	%rd37, [%rd36+88];
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:483 	_bcl_->pHeapTreeRoot = TreeInsert(_bcl_->pHeapTreeRoot, pHeapEntry);
+	.loc	1 483 2
+	ld.u64 	%rd39, [%rd37];
+	ld.u64 	%rd40, [%rd39+88];
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:478 	_bcl_->pHeapTreeRoot = TreeInsert(_bcl_->pHeapTreeRoot, pHeapEntry);
-	.loc	1 478 25
-	// Callseq Start 36
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:483 	_bcl_->pHeapTreeRoot = TreeInsert(_bcl_->pHeapTreeRoot, pHeapEntry);
+	.loc	1 483 25
+	// Callseq Start 38
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
 	.param .b64 param0;
-	st.param.b64	[param0+0], %rd37;
+	st.param.b64	[param0+0], %rd40;
 	.param .b64 param1;
-	st.param.b64	[param1+0], %rd27;
+	st.param.b64	[param1+0], %rd30;
 	.param .b64 retval0;
 	call.uni (retval0), 
 	_ZN34_INTERNAL_12_Heap_cpp1_ii_09a408fd10TreeInsertEP11tHeapEntry_S1_, 
@@ -3424,27 +3499,69 @@ tmp183:
 	param0, 
 	param1
 	);
-	ld.param.b64	%rd38, [retval0+0];
+	ld.param.b64	%rd41, [retval0+0];
 	
 	//{
-	}// Callseq End 36
-	ld.u64 	%rd39, [%rd34];
-	st.u64 	[%rd39+88], %rd38;
+	}// Callseq End 38
+	ld.u64 	%rd42, [%rd37];
+	st.u64 	[%rd42+88], %rd41;
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:479 	_bcl_->numNodes++;
-	.loc	1 479 2
-	ld.u64 	%rd40, [%rd34];
-	ld.u32 	%r25, [%rd40+112];
-	add.s32 	%r26, %r25, 1;
-	st.u32 	[%rd40+112], %r26;
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:484 	_bcl_->numNodes++;
+	.loc	1 484 2
+	ld.u64 	%rd43, [%rd37];
+	ld.u32 	%r26, [%rd43+112];
+	add.s32 	%r27, %r26, 1;
+	st.u32 	[%rd43+112], %r27;
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:481 	return pHeapEntry->memory;
-	.loc	1 481 2
-	add.s64 	%rd41, %rd27, 40;
-	st.param.b64	[func_retval0+0], %rd41;
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:486 	return pHeapEntry->memory;
+	.loc	1 486 2
+	add.s64 	%rd44, %rd30, 40;
+	st.param.b64	[func_retval0+0], %rd44;
 	ret;
-tmp184:
+tmp186:
 func_end19:
+}
+
+	// .globl	_Z23Heap_AllocTypeVoidStarsPv
+.visible .func  (.param .b64 func_retval0) _Z23Heap_AllocTypeVoidStarsPv(
+	.param .b64 _Z23Heap_AllocTypeVoidStarsPv_param_0
+)
+{
+	.reg .b64 	%rd<3>;
+
+
+	.loc 1 490 1
+func_begin20:
+	.loc	1 0 0
+
+	.loc 1 490 1
+
+	ld.param.u64 	%rd1, [_Z23Heap_AllocTypeVoidStarsPv_param_0];
+func_exec_begin20:
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:492 	return Heap_AllocType((tMD_TypeDef *)pTypeDef);
+	.loc	1 492 9
+tmp187:
+	// Callseq Start 39
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b64 param0;
+	st.param.b64	[param0+0], %rd1;
+	.param .b64 retval0;
+	call.uni (retval0), 
+	_Z14Heap_AllocTypeP12tMD_TypeDef_, 
+	(
+	param0
+	);
+	ld.param.b64	%rd2, [retval0+0];
+	
+	//{
+	}// Callseq End 39
+	st.param.b64	[func_retval0+0], %rd2;
+	ret;
+tmp188:
+func_end20:
 }
 
 	// .globl	_Z14Heap_AllocTypeP12tMD_TypeDef_
@@ -3456,23 +3573,23 @@ func_end19:
 	.reg .b64 	%rd<3>;
 
 
-	.loc 1 484 1
-func_begin20:
+	.loc 1 496 1
+func_begin21:
 	.loc	1 0 0
 
-	.loc 1 484 1
+	.loc 1 496 1
 
 	ld.param.u64 	%rd1, [_Z14Heap_AllocTypeP12tMD_TypeDef__param_0];
-func_exec_begin20:
+func_exec_begin21:
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:486 	return Heap_Alloc(pTypeDef, pTypeDef->instanceMemSize);
-	.loc	1 486 2
-tmp185:
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:498 	return Heap_Alloc(pTypeDef, pTypeDef->instanceMemSize);
+	.loc	1 498 2
+tmp189:
 	ld.u32 	%r1, [%rd1+56];
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:486 	return Heap_Alloc(pTypeDef, pTypeDef->instanceMemSize);
-	.loc	1 486 9
-	// Callseq Start 37
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:498 	return Heap_Alloc(pTypeDef, pTypeDef->instanceMemSize);
+	.loc	1 498 9
+	// Callseq Start 40
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
@@ -3490,11 +3607,11 @@ tmp185:
 	ld.param.b64	%rd2, [retval0+0];
 	
 	//{
-	}// Callseq End 37
+	}// Callseq End 40
 	st.param.b64	[func_retval0+0], %rd2;
 	ret;
-tmp186:
-func_end20:
+tmp190:
+func_end21:
 }
 
 	// .globl	_Z12Heap_GetTypePh
@@ -3502,39 +3619,39 @@ func_end20:
 	.param .b64 _Z12Heap_GetTypePh_param_0
 )
 {
-	.local .align 8 .b8 	__local_depot21[8];
+	.local .align 8 .b8 	__local_depot22[8];
 	.reg .b64 	%SP;
 	.reg .b64 	%SPL;
 	.reg .b64 	%rd<7>;
 
 
-	.loc 1 489 1
-func_begin21:
+	.loc 1 501 1
+func_begin22:
 	.loc	1 0 0
 
-	.loc 1 489 1
+	.loc 1 501 1
 
-	mov.u64 	%rd6, __local_depot21;
+	mov.u64 	%rd6, __local_depot22;
 	cvta.local.u64 	%SP, %rd6;
 	ld.param.u64 	%rd1, [_Z12Heap_GetTypePh_param_0];
-func_exec_begin21:
+func_exec_begin22:
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:490 	tHeapEntry *pHeapEntry = GET_HEAPENTRY(heapEntry);
-	.loc	1 490 25
-tmp187:
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:502 	tHeapEntry *pHeapEntry = GET_HEAPENTRY(heapEntry);
+	.loc	1 502 25
+tmp191:
 	add.s64 	%rd2, %rd1, -40;
-tmp188:
+tmp192:
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:491 	return pHeapEntry->pTypeDef;
-	.loc	1 491 2
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:503 	return pHeapEntry->pTypeDef;
+	.loc	1 503 2
 	ld.u64 	%rd3, [%rd2+24];
 	mov.u64 	%rd4, %rd3;
 	st.u64 	[%SP+0], %rd4;
 	ld.u64 	%rd5, [%SP+0];
 	st.param.b64	[func_retval0+0], %rd5;
 	ret;
-tmp189:
-func_end21:
+tmp193:
+func_end22:
 }
 
 	// .globl	_Z20Heap_MakeUndeletablePh
@@ -3546,31 +3663,31 @@ func_end21:
 	.reg .b64 	%rd<3>;
 
 
-	.loc 1 494 1
-func_begin22:
+	.loc 1 506 1
+func_begin23:
 	.loc	1 0 0
 
-	.loc 1 494 1
+	.loc 1 506 1
 
 	ld.param.u64 	%rd1, [_Z20Heap_MakeUndeletablePh_param_0];
-func_exec_begin22:
+func_exec_begin23:
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:495 	tHeapEntry *pHeapEntry = GET_HEAPENTRY(heapEntry);
-	.loc	1 495 25
-tmp190:
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:507 	tHeapEntry *pHeapEntry = GET_HEAPENTRY(heapEntry);
+	.loc	1 507 25
+tmp194:
 	add.s64 	%rd2, %rd1, -40;
 	mov.u16 	%rs1, -1;
-tmp191:
+tmp195:
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:496 	pHeapEntry->marked = 0xff;
-	.loc	1 496 2
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:508 	pHeapEntry->marked = 0xff;
+	.loc	1 508 2
 	st.u8 	[%rd2+17], %rs1;
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:497 }
-	.loc	1 497 1
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:509 }
+	.loc	1 509 1
 	ret;
-tmp192:
-func_end22:
+tmp196:
+func_end23:
 }
 
 	// .globl	_Z18Heap_MakeDeletablePh
@@ -3582,31 +3699,31 @@ func_end22:
 	.reg .b64 	%rd<3>;
 
 
-	.loc 1 499 1
-func_begin23:
+	.loc 1 511 1
+func_begin24:
 	.loc	1 0 0
 
-	.loc 1 499 1
+	.loc 1 511 1
 
 	ld.param.u64 	%rd1, [_Z18Heap_MakeDeletablePh_param_0];
-func_exec_begin23:
+func_exec_begin24:
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:500 	tHeapEntry *pHeapEntry = GET_HEAPENTRY(heapEntry);
-	.loc	1 500 25
-tmp193:
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:512 	tHeapEntry *pHeapEntry = GET_HEAPENTRY(heapEntry);
+	.loc	1 512 25
+tmp197:
 	add.s64 	%rd2, %rd1, -40;
 	mov.u16 	%rs1, 0;
-tmp194:
+tmp198:
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:501 	pHeapEntry->marked = 0;
-	.loc	1 501 2
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:513 	pHeapEntry->marked = 0;
+	.loc	1 513 2
 	st.u8 	[%rd2+17], %rs1;
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:502 }
-	.loc	1 502 1
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:514 }
+	.loc	1 514 1
 	ret;
-tmp195:
-func_end23:
+tmp199:
+func_end24:
 }
 
 	// .globl	_Z8Heap_BoxP12tMD_TypeDef_Ph
@@ -3619,20 +3736,20 @@ func_end23:
 	.reg .b64 	%rd<7>;
 
 
-	.loc 1 504 1
-func_begin24:
+	.loc 1 516 1
+func_begin25:
 	.loc	1 0 0
 
-	.loc 1 504 1
+	.loc 1 516 1
 
 	ld.param.u64 	%rd1, [_Z8Heap_BoxP12tMD_TypeDef_Ph_param_0];
 	ld.param.u64 	%rd2, [_Z8Heap_BoxP12tMD_TypeDef_Ph_param_1];
-func_exec_begin24:
+func_exec_begin25:
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:507 	boxed = Heap_AllocType(pType);
-	.loc	1 507 10
-tmp196:
-	// Callseq Start 38
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:519 	boxed = Heap_AllocType(pType);
+	.loc	1 519 10
+tmp200:
+	// Callseq Start 41
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
@@ -3647,14 +3764,14 @@ tmp196:
 	ld.param.b64	%rd3, [retval0+0];
 	
 	//{
-	}// Callseq End 38
-tmp197:
+	}// Callseq End 41
+tmp201:
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:508 	memcpy(boxed, pMem, pType->instanceMemSize);
-	.loc	1 508 2
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:520 	memcpy(boxed, pMem, pType->instanceMemSize);
+	.loc	1 520 2
 	ld.u32 	%r1, [%rd1+56];
 	cvt.u64.u32	%rd4, %r1;
-	// Callseq Start 39
+	// Callseq Start 42
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
@@ -3675,15 +3792,15 @@ tmp197:
 	ld.param.b64	%rd5, [retval0+0];
 	
 	//{
-	}// Callseq End 39
+	}// Callseq End 42
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:510 	return boxed;
-	.loc	1 510 2
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:522 	return boxed;
+	.loc	1 522 2
 	mov.u64 	%rd6, %rd3;
 	st.param.b64	[func_retval0+0], %rd6;
 	ret;
-tmp198:
-func_end24:
+tmp202:
+func_end25:
 }
 
 	// .globl	_Z10Heap_ClonePh
@@ -3695,24 +3812,24 @@ func_end24:
 	.reg .b64 	%rd<9>;
 
 
-	.loc 1 513 1
-func_begin25:
+	.loc 1 525 1
+func_begin26:
 	.loc	1 0 0
 
-	.loc 1 513 1
+	.loc 1 525 1
 
 	ld.param.u64 	%rd1, [_Z10Heap_ClonePh_param_0];
-func_exec_begin25:
+func_exec_begin26:
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:514 	tHeapEntry *pObj = GET_HEAPENTRY(obj);
-	.loc	1 514 19
-tmp199:
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:526 	tHeapEntry *pObj = GET_HEAPENTRY(obj);
+	.loc	1 526 19
+tmp203:
 	add.s64 	%rd2, %rd1, -40;
-tmp200:
+tmp204:
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:516 	U32 size = GetSize(pObj);
-	.loc	1 516 13
-	// Callseq Start 40
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:528 	U32 size = GetSize(pObj);
+	.loc	1 528 13
+	// Callseq Start 43
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
@@ -3727,16 +3844,16 @@ tmp200:
 	ld.param.b32	%r1, [retval0+0];
 	
 	//{
-	}// Callseq End 40
-tmp201:
+	}// Callseq End 43
+tmp205:
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:518 	clone = Heap_Alloc(pObj->pTypeDef, size);
-	.loc	1 518 2
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:530 	clone = Heap_Alloc(pObj->pTypeDef, size);
+	.loc	1 530 2
 	ld.u64 	%rd3, [%rd2+24];
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:518 	clone = Heap_Alloc(pObj->pTypeDef, size);
-	.loc	1 518 10
-	// Callseq Start 41
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:530 	clone = Heap_Alloc(pObj->pTypeDef, size);
+	.loc	1 530 10
+	// Callseq Start 44
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
@@ -3754,14 +3871,14 @@ tmp201:
 	ld.param.b64	%rd4, [retval0+0];
 	
 	//{
-	}// Callseq End 41
-tmp202:
+	}// Callseq End 44
+tmp206:
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:519 	memcpy(clone, pObj->memory, size);
-	.loc	1 519 2
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:531 	memcpy(clone, pObj->memory, size);
+	.loc	1 531 2
 	add.s64 	%rd5, %rd2, 40;
 	cvt.u64.u32	%rd6, %r1;
-	// Callseq Start 42
+	// Callseq Start 45
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
@@ -3782,22 +3899,22 @@ tmp202:
 	ld.param.b64	%rd7, [retval0+0];
 	
 	//{
-	}// Callseq End 42
+	}// Callseq End 45
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:521 	return clone;
-	.loc	1 521 2
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:533 	return clone;
+	.loc	1 533 2
 	mov.u64 	%rd8, %rd4;
 	st.param.b64	[func_retval0+0], %rd8;
 	ret;
-tmp203:
-func_end25:
+tmp207:
+func_end26:
 }
 
 .func  (.param .b64 func_retval0) _ZN34_INTERNAL_12_Heap_cpp1_ii_09a408fd10EnsureSyncEP11tHeapEntry_(
 	.param .b64 _ZN34_INTERNAL_12_Heap_cpp1_ii_09a408fd10EnsureSyncEP11tHeapEntry__param_0
 )
 {
-	.local .align 8 .b8 	__local_depot26[8];
+	.local .align 8 .b8 	__local_depot27[8];
 	.reg .b64 	%SP;
 	.reg .b64 	%SPL;
 	.reg .pred 	%p<3>;
@@ -3805,33 +3922,33 @@ func_end25:
 	.reg .b64 	%rd<10>;
 
 
-	.loc 1 524 1
-func_begin26:
+	.loc 1 536 1
+func_begin27:
 	.loc	1 0 0
 
-	.loc 1 524 1
+	.loc 1 536 1
 
-	mov.u64 	%rd9, __local_depot26;
+	mov.u64 	%rd9, __local_depot27;
 	cvta.local.u64 	%SP, %rd9;
 	ld.param.u64 	%rd1, [_ZN34_INTERNAL_12_Heap_cpp1_ii_09a408fd10EnsureSyncEP11tHeapEntry__param_0];
-func_exec_begin26:
+func_exec_begin27:
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:525 	if (pHeapEntry->pSync == NULL) {
-	.loc	1 525 2
-tmp204:
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:537 	if (pHeapEntry->pSync == NULL) {
+	.loc	1 537 2
+tmp208:
 	ld.u64 	%rd2, [%rd1+32];
 	setp.eq.s64	%p1, %rd2, 0;
 	not.pred 	%p2, %p1;
-	@%p2 bra 	BB26_2;
-	bra.uni 	BB26_1;
+	@%p2 bra 	BB27_2;
+	bra.uni 	BB27_1;
 
-BB26_1:
+BB27_1:
 	mov.u64 	%rd3, 24;
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:526 		tSync *pSync = TMALLOC(tSync);
-	.loc	1 526 26
-tmp205:
-	// Callseq Start 43
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:538 		tSync *pSync = TMALLOC(tSync);
+	.loc	1 538 26
+tmp209:
+	// Callseq Start 46
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
@@ -3846,13 +3963,13 @@ tmp205:
 	ld.param.b64	%rd4, [retval0+0];
 	
 	//{
-	}// Callseq End 43
+	}// Callseq End 46
 	mov.u32 	%r1, 0;
-tmp206:
+tmp210:
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:527 		memset(pSync, 0, sizeof(tSync));
-	.loc	1 527 3
-	// Callseq Start 44
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:539 		memset(pSync, 0, sizeof(tSync));
+	.loc	1 539 3
+	// Callseq Start 47
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
@@ -3873,25 +3990,25 @@ tmp206:
 	ld.param.b64	%rd5, [retval0+0];
 	
 	//{
-	}// Callseq End 44
+	}// Callseq End 47
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:528 		pHeapEntry->pSync = pSync;
-	.loc	1 528 3
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:540 		pHeapEntry->pSync = pSync;
+	.loc	1 540 3
 	st.u64 	[%rd1+32], %rd4;
-tmp207:
+tmp211:
 
-BB26_2:
+BB27_2:
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:530 	return pHeapEntry->pSync;
-	.loc	1 530 2
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:542 	return pHeapEntry->pSync;
+	.loc	1 542 2
 	ld.u64 	%rd6, [%rd1+32];
 	mov.u64 	%rd7, %rd6;
 	st.u64 	[%SP+0], %rd7;
 	ld.u64 	%rd8, [%SP+0];
 	st.param.b64	[func_retval0+0], %rd8;
 	ret;
-tmp208:
-func_end26:
+tmp212:
+func_end27:
 }
 
 .func _ZN34_INTERNAL_12_Heap_cpp1_ii_09a408fd10DeleteSyncEP11tHeapEntry_(
@@ -3903,57 +4020,57 @@ func_end26:
 	.reg .b64 	%rd<8>;
 
 
-	.loc 1 533 1
-func_begin27:
+	.loc 1 545 1
+func_begin28:
 	.loc	1 0 0
 
-	.loc 1 533 1
+	.loc 1 545 1
 
 	ld.param.u64 	%rd1, [_ZN34_INTERNAL_12_Heap_cpp1_ii_09a408fd10DeleteSyncEP11tHeapEntry__param_0];
-func_exec_begin27:
+func_exec_begin28:
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:534 	if (pHeapEntry->pSync != NULL) {
-	.loc	1 534 2
-tmp209:
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:546 	if (pHeapEntry->pSync != NULL) {
+	.loc	1 546 2
+tmp213:
 	ld.u64 	%rd2, [%rd1+32];
 	setp.ne.s64	%p3, %rd2, 0;
 	not.pred 	%p4, %p3;
-	@%p4 bra 	BB27_6;
-	bra.uni 	BB27_1;
+	@%p4 bra 	BB28_6;
+	bra.uni 	BB28_1;
 
-BB27_1:
+BB28_1:
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:535 		if (pHeapEntry->pSync->count == 0 && pHeapEntry->pSync->weakRef == NULL) {
-	.loc	1 535 3
-tmp210:
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:547 		if (pHeapEntry->pSync->count == 0 && pHeapEntry->pSync->weakRef == NULL) {
+	.loc	1 547 3
+tmp214:
 	ld.u64 	%rd3, [%rd1+32];
 	ld.u32 	%r1, [%rd3+8];
 	setp.eq.s32	%p6, %r1, 0;
 	mov.pred 	%p5, 0;
 	not.pred 	%p7, %p6;
 	mov.pred 	%p9, %p5;
-	@%p7 bra 	BB27_3;
-	bra.uni 	BB27_2;
+	@%p7 bra 	BB28_3;
+	bra.uni 	BB28_2;
 
-BB27_2:
+BB28_2:
 	ld.u64 	%rd4, [%rd1+32];
 	ld.u64 	%rd5, [%rd4+16];
 	setp.eq.s64	%p1, %rd5, 0;
 	mov.pred 	%p9, %p1;
 
-BB27_3:
+BB28_3:
 	mov.pred 	%p2, %p9;
 	not.pred 	%p8, %p2;
-	@%p8 bra 	BB27_5;
-	bra.uni 	BB27_4;
+	@%p8 bra 	BB28_5;
+	bra.uni 	BB28_4;
 
-BB27_4:
+BB28_4:
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:536 			Gfree(pHeapEntry->pSync);
-	.loc	1 536 4
-tmp211:
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:548 			Gfree(pHeapEntry->pSync);
+	.loc	1 548 4
+tmp215:
 	ld.u64 	%rd6, [%rd1+32];
-	// Callseq Start 45
+	// Callseq Start 48
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
@@ -3966,23 +4083,23 @@ tmp211:
 	);
 	
 	//{
-	}// Callseq End 45
+	}// Callseq End 48
 	mov.u64 	%rd7, 0;
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:537 			pHeapEntry->pSync = NULL;
-	.loc	1 537 4
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:549 			pHeapEntry->pSync = NULL;
+	.loc	1 549 4
 	st.u64 	[%rd1+32], %rd7;
-tmp212:
+tmp216:
 
-BB27_5:
+BB28_5:
 
-BB27_6:
+BB28_6:
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:540 }
-	.loc	1 540 1
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:552 }
+	.loc	1 552 1
 	ret;
-tmp213:
-func_end27:
+tmp217:
+func_end28:
 }
 
 	// .globl	_Z17Heap_SyncTryEnterPh
@@ -3995,24 +4112,24 @@ func_end27:
 	.reg .b64 	%rd<7>;
 
 
-	.loc 1 544 1
-func_begin28:
+	.loc 1 556 1
+func_begin29:
 	.loc	1 0 0
 
-	.loc 1 544 1
+	.loc 1 556 1
 
 	ld.param.u64 	%rd3, [_Z17Heap_SyncTryEnterPh_param_0];
-func_exec_begin28:
+func_exec_begin29:
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:545 	tHeapEntry *pHeapEntry = GET_HEAPENTRY(obj);
-	.loc	1 545 25
-tmp214:
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:557 	tHeapEntry *pHeapEntry = GET_HEAPENTRY(obj);
+	.loc	1 557 25
+tmp218:
 	add.s64 	%rd4, %rd3, -40;
-tmp215:
+tmp219:
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:546 	tThread *pThread = Thread_GetCurrent();
-	.loc	1 546 21
-	// Callseq Start 46
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:558 	tThread *pThread = Thread_GetCurrent();
+	.loc	1 558 21
+	// Callseq Start 49
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
@@ -4024,12 +4141,12 @@ tmp215:
 	ld.param.b64	%rd1, [retval0+0];
 	
 	//{
-	}// Callseq End 46
-tmp216:
+	}// Callseq End 49
+tmp220:
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:549 	pSync = EnsureSync(pHeapEntry);
-	.loc	1 549 10
-	// Callseq Start 47
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:561 	pSync = EnsureSync(pHeapEntry);
+	.loc	1 561 10
+	// Callseq Start 50
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
@@ -4044,77 +4161,77 @@ tmp216:
 	ld.param.b64	%rd2, [retval0+0];
 	
 	//{
-	}// Callseq End 47
-tmp217:
+	}// Callseq End 50
+tmp221:
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:550 	if (pSync->pThread == NULL) {
-	.loc	1 550 2
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:562 	if (pSync->pThread == NULL) {
+	.loc	1 562 2
 	ld.u64 	%rd5, [%rd2];
 	setp.eq.s64	%p1, %rd5, 0;
 	not.pred 	%p2, %p1;
-	@%p2 bra 	BB28_2;
-	bra.uni 	BB28_1;
+	@%p2 bra 	BB29_2;
+	bra.uni 	BB29_1;
 
-BB28_1:
+BB29_1:
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:551 		pSync->pThread = pThread;
-	.loc	1 551 3
-tmp218:
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:563 		pSync->pThread = pThread;
+	.loc	1 563 3
+tmp222:
 	st.u64 	[%rd2], %rd1;
 	mov.u32 	%r9, 1;
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:552 		pSync->count = 1;
-	.loc	1 552 3
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:564 		pSync->count = 1;
+	.loc	1 564 3
 	st.u32 	[%rd2+8], %r9;
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:553 		return 1;
-	.loc	1 553 3
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:565 		return 1;
+	.loc	1 565 3
 	mov.b32 	%r1, %r9;
 	mov.u32 	%r10, %r1;
-	bra.uni 	BB28_5;
-tmp219:
+	bra.uni 	BB29_5;
+tmp223:
 
-BB28_2:
+BB29_2:
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:555 	if (pSync->pThread == pThread) {
-	.loc	1 555 2
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:567 	if (pSync->pThread == pThread) {
+	.loc	1 567 2
 	ld.u64 	%rd6, [%rd2];
 	setp.eq.s64	%p3, %rd6, %rd1;
 	not.pred 	%p4, %p3;
-	@%p4 bra 	BB28_4;
-	bra.uni 	BB28_3;
+	@%p4 bra 	BB29_4;
+	bra.uni 	BB29_3;
 
-BB28_3:
+BB29_3:
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:556 		pSync->count++;
-	.loc	1 556 3
-tmp220:
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:568 		pSync->count++;
+	.loc	1 568 3
+tmp224:
 	ld.u32 	%r6, [%rd2+8];
 	add.s32 	%r7, %r6, 1;
 	st.u32 	[%rd2+8], %r7;
 	mov.u32 	%r8, 1;
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:557 		return 1;
-	.loc	1 557 3
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:569 		return 1;
+	.loc	1 569 3
 	mov.b32 	%r2, %r8;
 	mov.u32 	%r10, %r2;
-	bra.uni 	BB28_5;
-tmp221:
+	bra.uni 	BB29_5;
+tmp225:
 
-BB28_4:
+BB29_4:
 	mov.u32 	%r5, 0;
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:559 	return 0;
-	.loc	1 559 2
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:571 	return 0;
+	.loc	1 571 2
 	mov.b32 	%r3, %r5;
 	mov.u32 	%r10, %r3;
 
-BB28_5:
+BB29_5:
 	mov.u32 	%r4, %r10;
 	st.param.b32	[func_retval0+0], %r4;
 	ret;
-tmp222:
-func_end28:
+tmp226:
+func_end29:
 }
 
 	// .globl	_Z13Heap_SyncExitPh
@@ -4127,24 +4244,24 @@ func_end28:
 	.reg .b64 	%rd<8>;
 
 
-	.loc 1 564 1
-func_begin29:
+	.loc 1 576 1
+func_begin30:
 	.loc	1 0 0
 
-	.loc 1 564 1
+	.loc 1 576 1
 
 	ld.param.u64 	%rd3, [_Z13Heap_SyncExitPh_param_0];
-func_exec_begin29:
+func_exec_begin30:
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:565 	tHeapEntry *pHeapEntry = GET_HEAPENTRY(obj);
-	.loc	1 565 25
-tmp223:
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:577 	tHeapEntry *pHeapEntry = GET_HEAPENTRY(obj);
+	.loc	1 577 25
+tmp227:
 	add.s64 	%rd1, %rd3, -40;
-tmp224:
+tmp228:
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:566 	tThread *pThread = Thread_GetCurrent();
-	.loc	1 566 21
-	// Callseq Start 48
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:578 	tThread *pThread = Thread_GetCurrent();
+	.loc	1 578 21
+	// Callseq Start 51
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
@@ -4156,69 +4273,69 @@ tmp224:
 	ld.param.b64	%rd2, [retval0+0];
 	
 	//{
-	}// Callseq End 48
-tmp225:
+	}// Callseq End 51
+tmp229:
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:567 	if (pHeapEntry->pSync == NULL) {
-	.loc	1 567 2
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:579 	if (pHeapEntry->pSync == NULL) {
+	.loc	1 579 2
 	ld.u64 	%rd4, [%rd1+32];
 	setp.eq.s64	%p1, %rd4, 0;
 	not.pred 	%p2, %p1;
-	@%p2 bra 	BB29_2;
-	bra.uni 	BB29_1;
+	@%p2 bra 	BB30_2;
+	bra.uni 	BB30_1;
 
-BB29_1:
+BB30_1:
 	mov.u32 	%r9, 0;
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:568 		return 0;
-	.loc	1 568 3
-tmp226:
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:580 		return 0;
+	.loc	1 580 3
+tmp230:
 	mov.b32 	%r1, %r9;
 	mov.u32 	%r10, %r1;
-	bra.uni 	BB29_7;
-tmp227:
+	bra.uni 	BB30_7;
+tmp231:
 
-BB29_2:
+BB30_2:
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:570 	if (pHeapEntry->pSync->pThread != pThread) {
-	.loc	1 570 2
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:582 	if (pHeapEntry->pSync->pThread != pThread) {
+	.loc	1 582 2
 	ld.u64 	%rd5, [%rd1+32];
 	ld.u64 	%rd6, [%rd5];
 	setp.ne.s64	%p3, %rd6, %rd2;
 	not.pred 	%p4, %p3;
-	@%p4 bra 	BB29_4;
-	bra.uni 	BB29_3;
+	@%p4 bra 	BB30_4;
+	bra.uni 	BB30_3;
 
-BB29_3:
+BB30_3:
 	mov.u32 	%r8, 0;
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:571 		return 0;
-	.loc	1 571 3
-tmp228:
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:583 		return 0;
+	.loc	1 583 3
+tmp232:
 	mov.b32 	%r2, %r8;
 	mov.u32 	%r10, %r2;
-	bra.uni 	BB29_7;
-tmp229:
+	bra.uni 	BB30_7;
+tmp233:
 
-BB29_4:
+BB30_4:
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:573 	if (--pHeapEntry->pSync->count == 0) {
-	.loc	1 573 2
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:585 	if (--pHeapEntry->pSync->count == 0) {
+	.loc	1 585 2
 	ld.u64 	%rd7, [%rd1+32];
 	ld.u32 	%r5, [%rd7+8];
 	add.s32 	%r6, %r5, -1;
 	st.u32 	[%rd7+8], %r6;
 	setp.eq.s32	%p5, %r6, 0;
 	not.pred 	%p6, %p5;
-	@%p6 bra 	BB29_6;
-	bra.uni 	BB29_5;
+	@%p6 bra 	BB30_6;
+	bra.uni 	BB30_5;
 
-BB29_5:
+BB30_5:
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:574 		DeleteSync(pHeapEntry);
-	.loc	1 574 3
-tmp230:
-	// Callseq Start 49
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:586 		DeleteSync(pHeapEntry);
+	.loc	1 586 3
+tmp234:
+	// Callseq Start 52
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
@@ -4231,23 +4348,23 @@ tmp230:
 	);
 	
 	//{
-	}// Callseq End 49
-tmp231:
+	}// Callseq End 52
+tmp235:
 
-BB29_6:
+BB30_6:
 	mov.u32 	%r7, 1;
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:576 	return 1;
-	.loc	1 576 2
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:588 	return 1;
+	.loc	1 588 2
 	mov.b32 	%r3, %r7;
 	mov.u32 	%r10, %r3;
 
-BB29_7:
+BB30_7:
 	mov.u32 	%r4, %r10;
 	st.param.b32	[func_retval0+0], %r4;
 	ret;
-tmp232:
-func_end29:
+tmp236:
+func_end30:
 }
 
 	// .globl	_Z21Heap_SetWeakRefTargetPhS_
@@ -4259,25 +4376,25 @@ func_end29:
 	.reg .b64 	%rd<8>;
 
 
-	.loc 1 584 1
-func_begin30:
+	.loc 1 596 1
+func_begin31:
 	.loc	1 0 0
 
-	.loc 1 584 1
+	.loc 1 596 1
 
 	ld.param.u64 	%rd1, [_Z21Heap_SetWeakRefTargetPhS__param_0];
 	ld.param.u64 	%rd2, [_Z21Heap_SetWeakRefTargetPhS__param_1];
-func_exec_begin30:
+func_exec_begin31:
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:585 	tHeapEntry *pTarget = GET_HEAPENTRY(target);
-	.loc	1 585 22
-tmp233:
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:597 	tHeapEntry *pTarget = GET_HEAPENTRY(target);
+	.loc	1 597 22
+tmp237:
 	add.s64 	%rd3, %rd1, -40;
-tmp234:
+tmp238:
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:589 	pSync = EnsureSync(pTarget);
-	.loc	1 589 10
-	// Callseq Start 50
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:601 	pSync = EnsureSync(pTarget);
+	.loc	1 601 10
+	// Callseq Start 53
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
@@ -4292,26 +4409,26 @@ tmp234:
 	ld.param.b64	%rd4, [retval0+0];
 	
 	//{
-	}// Callseq End 50
-tmp235:
+	}// Callseq End 53
+tmp239:
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:590 	prevWeakRef = pSync->weakRef;
-	.loc	1 590 2
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:602 	prevWeakRef = pSync->weakRef;
+	.loc	1 602 2
 	ld.u64 	%rd5, [%rd4+16];
 	mov.u64 	%rd6, %rd5;
-tmp236:
+tmp240:
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:591 	pSync->weakRef = weakRef;
-	.loc	1 591 2
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:603 	pSync->weakRef = weakRef;
+	.loc	1 603 2
 	st.u64 	[%rd4+16], %rd2;
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:592 	return prevWeakRef;
-	.loc	1 592 2
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:604 	return prevWeakRef;
+	.loc	1 604 2
 	mov.u64 	%rd7, %rd6;
 	st.param.b64	[func_retval0+0], %rd7;
 	ret;
-tmp237:
-func_end30:
+tmp241:
+func_end31:
 }
 
 	// .globl	_Z22Heap_GetWeakRefAddressPh
@@ -4322,29 +4439,29 @@ func_end30:
 	.reg .b64 	%rd<5>;
 
 
-	.loc 1 595 1
-func_begin31:
+	.loc 1 607 1
+func_begin32:
 	.loc	1 0 0
 
-	.loc 1 595 1
+	.loc 1 607 1
 
 	ld.param.u64 	%rd1, [_Z22Heap_GetWeakRefAddressPh_param_0];
-func_exec_begin31:
+func_exec_begin32:
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:596 	tHeapEntry *pTarget = GET_HEAPENTRY(target);
-	.loc	1 596 22
-tmp238:
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:608 	tHeapEntry *pTarget = GET_HEAPENTRY(target);
+	.loc	1 608 22
+tmp242:
 	add.s64 	%rd2, %rd1, -40;
-tmp239:
+tmp243:
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:597 	return &pTarget->pSync->weakRef;
-	.loc	1 597 2
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:609 	return &pTarget->pSync->weakRef;
+	.loc	1 609 2
 	ld.u64 	%rd3, [%rd2+32];
 	add.s64 	%rd4, %rd3, 16;
 	st.param.b64	[func_retval0+0], %rd4;
 	ret;
-tmp240:
-func_end31:
+tmp244:
+func_end32:
 }
 
 	// .globl	_Z25Heap_RemovedWeakRefTargetPh
@@ -4355,24 +4472,24 @@ func_end31:
 	.reg .b64 	%rd<3>;
 
 
-	.loc 1 600 1
-func_begin32:
+	.loc 1 612 1
+func_begin33:
 	.loc	1 0 0
 
-	.loc 1 600 1
+	.loc 1 612 1
 
 	ld.param.u64 	%rd1, [_Z25Heap_RemovedWeakRefTargetPh_param_0];
-func_exec_begin32:
+func_exec_begin33:
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:601 	tHeapEntry *pTarget = GET_HEAPENTRY(target);
-	.loc	1 601 22
-tmp241:
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:613 	tHeapEntry *pTarget = GET_HEAPENTRY(target);
+	.loc	1 613 22
+tmp245:
 	add.s64 	%rd2, %rd1, -40;
-tmp242:
+tmp246:
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:602 	DeleteSync(pTarget);
-	.loc	1 602 2
-	// Callseq Start 51
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:614 	DeleteSync(pTarget);
+	.loc	1 614 2
+	// Callseq Start 54
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
@@ -4385,13 +4502,13 @@ tmp242:
 	);
 	
 	//{
-	}// Callseq End 51
+	}// Callseq End 54
 
-//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:603 }
-	.loc	1 603 1
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c:615 }
+	.loc	1 615 1
 	ret;
-tmp243:
-func_end32:
+tmp247:
+func_end33:
 }
 
 .func  (.param .b64 func_retval0) memcpy(
@@ -4415,10 +4532,10 @@ func_end32:
 	mov.u64 	%rd9, 0;
 	not.pred 	%p2, %p1;
 	mov.u64 	%rd14, %rd9;
-	@%p2 bra 	BB33_2;
-	bra.uni 	BB33_1;
+	@%p2 bra 	BB34_2;
+	bra.uni 	BB34_1;
 
-BB33_1:
+BB34_1:
 	mov.u64 	%rd4, %rd14;
 	add.s64 	%rd10, %rd2, %rd4;
 	ld.u8 	%rs1, [%rd10];
@@ -4427,10 +4544,10 @@ BB33_1:
 	add.s64 	%rd5, %rd4, 1;
 	setp.lt.u64	%p3, %rd5, %rd3;
 	mov.u64 	%rd14, %rd5;
-	@%p3 bra 	BB33_1;
-	bra.uni 	BB33_2;
+	@%p3 bra 	BB34_1;
+	bra.uni 	BB34_2;
 
-BB33_2:
+BB34_2:
 	mov.u64 	%rd12, %rd1;
 	mov.u64 	%rd13, %rd12;
 	st.param.b64	[func_retval0+0], %rd13;
@@ -4460,30 +4577,30 @@ BB33_2:
 	mov.u64 	%rd7, 0;
 	not.pred 	%p2, %p1;
 	mov.u64 	%rd11, %rd7;
-	@%p2 bra 	BB34_2;
-	bra.uni 	BB34_1;
+	@%p2 bra 	BB35_2;
+	bra.uni 	BB35_1;
 
-BB34_1:
+BB35_1:
 	mov.u64 	%rd3, %rd11;
 	add.s64 	%rd8, %rd1, %rd3;
 	st.u8 	[%rd8], %rs1;
 	add.s64 	%rd4, %rd3, 1;
 	setp.lt.u64	%p3, %rd4, %rd2;
 	mov.u64 	%rd11, %rd4;
-	@%p3 bra 	BB34_1;
-	bra.uni 	BB34_2;
+	@%p3 bra 	BB35_1;
+	bra.uni 	BB35_2;
 
-BB34_2:
+BB35_2:
 	mov.u64 	%rd9, %rd1;
 	mov.u64 	%rd10, %rd9;
 	st.param.b64	[func_retval0+0], %rd10;
 	ret;
 }
 
-	.file	1 "C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c", 1516309470, 19357
-	.file	2 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\_BCL_.h", 1520869567, 1596
+	.file	1 "C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Heap.c", 1525810480, 19689
+	.file	2 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\_BCL_.h", 1525227101, 1615
 	.file	3 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\MetaDataTables.h", 1513259529, 18172
-	.file	4 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\MetaData.h", 1516287436, 9774
+	.file	4 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\MetaData.h", 1523655388, 9932
 	.file	5 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\Generics.h", 1516286593, 2902
 	.file	6 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\Thread.h", 1516285724, 4400
 	.file	7 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\JIT.h", 1516637997, 4246
@@ -4492,7 +4609,7 @@ BB34_2:
 	.file	10 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\Heap.h", 1516285725, 2832
 
 .section .debug_info {
- .b32 16866
+ .b32 17028
  .b8 2
  .b8 0
  .b32 .debug_abbrev
@@ -4647,7 +4764,7 @@ BB34_2:
  .b32 192
  .b8 1
  .b32 2
- .b32 83
+ .b32 84
  .b8 9
  .b8 3
  .b64 _bcl_
@@ -4675,7 +4792,7 @@ BB34_2:
  .b8 0
  .b32 240
  .b32 2
- .b32 17
+ .b32 18
  .b8 5
 
  .b8 103
@@ -4700,7 +4817,7 @@ BB34_2:
  .b8 0
  .b32 1188
  .b32 2
- .b32 20
+ .b32 21
  .b8 0
 
  .b8 1
@@ -4714,7 +4831,7 @@ BB34_2:
  .b8 0
  .b32 1200
  .b32 2
- .b32 21
+ .b32 22
  .b8 8
 
  .b8 1
@@ -4741,7 +4858,7 @@ BB34_2:
  .b8 0
  .b32 1228
  .b32 2
- .b32 22
+ .b32 23
  .b8 16
 
  .b8 1
@@ -4763,7 +4880,7 @@ BB34_2:
  .b8 0
  .b32 1238
  .b32 2
- .b32 25
+ .b32 26
  .b8 24
 
  .b8 1
@@ -4778,7 +4895,7 @@ BB34_2:
  .b8 0
  .b32 1271
  .b32 2
- .b32 28
+ .b32 29
  .b8 32
 
  .b8 1
@@ -4793,7 +4910,7 @@ BB34_2:
  .b8 0
  .b32 1271
  .b32 2
- .b32 29
+ .b32 30
  .b8 40
 
  .b8 1
@@ -4810,7 +4927,7 @@ BB34_2:
  .b8 0
  .b32 1294
  .b32 2
- .b32 30
+ .b32 31
  .b8 48
 
  .b8 1
@@ -4824,7 +4941,7 @@ BB34_2:
  .b8 0
  .b32 1337
  .b32 2
- .b32 31
+ .b32 32
  .b8 56
 
  .b8 1
@@ -4846,7 +4963,7 @@ BB34_2:
  .b8 0
  .b32 1228
  .b32 2
- .b32 32
+ .b32 33
  .b8 60
 
  .b8 1
@@ -4866,9 +4983,9 @@ BB34_2:
  .b8 101
 
  .b8 0
- .b32 1370
+ .b32 1348
  .b32 2
- .b32 35
+ .b32 36
  .b8 64
 
  .b8 1
@@ -4891,7 +5008,7 @@ BB34_2:
  .b8 0
  .b32 1228
  .b32 2
- .b32 36
+ .b32 37
  .b8 72
 
  .b8 1
@@ -4919,7 +5036,7 @@ BB34_2:
  .b8 0
  .b32 1228
  .b32 2
- .b32 37
+ .b32 38
  .b8 76
 
  .b8 1
@@ -4938,7 +5055,7 @@ BB34_2:
  .b8 0
  .b32 1277
  .b32 2
- .b32 40
+ .b32 41
  .b8 80
 
  .b8 1
@@ -4959,9 +5076,9 @@ BB34_2:
  .b8 116
 
  .b8 0
- .b32 1396
+ .b32 1394
  .b32 2
- .b32 43
+ .b32 44
  .b8 88
 
  .b8 1
@@ -4972,9 +5089,9 @@ BB34_2:
  .b8 108
 
  .b8 0
- .b32 1396
+ .b32 1394
  .b32 2
- .b32 44
+ .b32 45
  .b8 96
 
  .b8 1
@@ -4995,9 +5112,9 @@ BB34_2:
  .b8 101
 
  .b8 0
- .b32 2912
+ .b32 2923
  .b32 2
- .b32 45
+ .b32 46
  .b8 104
 
  .b8 1
@@ -5016,9 +5133,9 @@ BB34_2:
  .b8 120
 
  .b8 0
- .b32 2912
+ .b32 2923
  .b32 2
- .b32 46
+ .b32 47
  .b8 108
 
  .b8 1
@@ -5034,9 +5151,9 @@ BB34_2:
  .b8 115
 
  .b8 0
- .b32 2912
+ .b32 2923
  .b32 2
- .b32 47
+ .b32 48
  .b8 112
 
  .b8 1
@@ -5058,9 +5175,9 @@ BB34_2:
  .b8 115
 
  .b8 0
- .b32 2912
+ .b32 2923
  .b32 2
- .b32 48
+ .b32 49
  .b8 116
 
  .b8 1
@@ -5079,9 +5196,9 @@ BB34_2:
  .b8 111
 
  .b8 0
- .b32 3333
+ .b32 3358
  .b32 2
- .b32 51
+ .b32 52
  .b8 120
 
  .b8 1
@@ -5102,9 +5219,9 @@ BB34_2:
  .b8 116
 
  .b8 0
- .b32 3333
+ .b32 3358
  .b32 2
- .b32 52
+ .b32 53
  .b8 128
  .b8 1
 
@@ -5125,9 +5242,9 @@ BB34_2:
  .b8 101
 
  .b8 0
- .b32 3366
+ .b32 3391
  .b32 2
- .b32 55
+ .b32 56
  .b8 136
  .b8 1
 
@@ -5147,9 +5264,9 @@ BB34_2:
  .b8 115
 
  .b8 0
- .b32 3372
+ .b32 3397
  .b32 2
- .b32 58
+ .b32 59
  .b8 144
  .b8 1
 
@@ -5166,9 +5283,9 @@ BB34_2:
  .b8 108
 
  .b8 0
- .b32 2912
+ .b32 2923
  .b32 2
- .b32 61
+ .b32 62
  .b8 152
  .b8 1
 
@@ -5189,7 +5306,7 @@ BB34_2:
  .b8 0
  .b32 1277
  .b32 2
- .b32 62
+ .b32 63
  .b8 160
  .b8 1
 
@@ -5215,9 +5332,9 @@ BB34_2:
  .b8 101
 
  .b8 0
- .b32 2912
+ .b32 2923
  .b32 2
- .b32 63
+ .b32 64
  .b8 168
  .b8 1
 
@@ -5233,9 +5350,9 @@ BB34_2:
  .b8 115
 
  .b8 0
- .b32 3403
+ .b32 3428
  .b32 2
- .b32 66
+ .b32 67
  .b8 176
  .b8 1
 
@@ -5269,9 +5386,9 @@ BB34_2:
  .b8 100
 
  .b8 0
- .b32 1656
+ .b32 1654
  .b32 2
- .b32 67
+ .b32 68
  .b8 184
  .b8 1
 
@@ -5301,9 +5418,9 @@ BB34_2:
  .b8 115
 
  .b8 0
- .b32 3438
+ .b32 3463
  .b32 2
- .b32 68
+ .b32 69
  .b8 192
  .b8 1
 
@@ -5317,9 +5434,9 @@ BB34_2:
  .b8 115
 
  .b8 0
- .b32 3450
+ .b32 3475
  .b32 2
- .b32 69
+ .b32 70
  .b8 200
  .b8 1
 
@@ -5340,9 +5457,9 @@ BB34_2:
  .b8 115
 
  .b8 0
- .b32 2912
+ .b32 2923
  .b32 2
- .b32 70
+ .b32 71
  .b8 208
  .b8 1
 
@@ -5360,9 +5477,9 @@ BB34_2:
  .b8 67
 
  .b8 0
- .b32 2912
+ .b32 2923
  .b32 2
- .b32 73
+ .b32 74
  .b8 212
  .b8 1
 
@@ -5382,9 +5499,9 @@ BB34_2:
  .b8 115
 
  .b8 0
- .b32 3462
+ .b32 3487
  .b32 2
- .b32 76
+ .b32 77
  .b8 216
  .b8 1
 
@@ -5407,9 +5524,9 @@ BB34_2:
  .b8 100
 
  .b8 0
- .b32 3462
+ .b32 3487
  .b32 2
- .b32 77
+ .b32 78
  .b8 224
  .b8 1
 
@@ -5430,7 +5547,7 @@ BB34_2:
  .b8 0
  .b32 1228
  .b32 2
- .b32 80
+ .b32 81
  .b8 232
  .b8 1
 
@@ -5466,7 +5583,7 @@ BB34_2:
  .b8 0
  .b32 0
  .b32 2
- .b32 8
+ .b32 9
  .b8 8
 
  .b8 105
@@ -5499,7 +5616,7 @@ BB34_2:
  .b8 0
  .b32 0
  .b32 2
- .b32 9
+ .b32 10
  .b8 3
 
  .b32 1277
@@ -5557,18 +5674,37 @@ BB34_2:
  .b8 0
  .b8 7
  .b32 8
- .b8 9
+ .b8 8
 
- .b32 1350
  .b8 98
  .b8 111
  .b8 111
  .b8 108
- .b8 101
- .b8 97
- .b8 110
 
  .b8 0
+ .b8 2
+ .b32 1
+ .b8 3
+
+ .b32 1354
+ .b8 12
+ .b8 9
+
+ .b32 1368
+ .b8 72
+ .b8 69
+ .b8 65
+ .b8 80
+ .b8 95
+ .b8 80
+ .b8 84
+ .b8 82
+
+ .b8 0
+ .b8 3
+
+ .b32 1374
+ .b8 12
  .b8 8
 
  .b8 117
@@ -5590,28 +5726,7 @@ BB34_2:
  .b32 1
  .b8 3
 
- .b32 1376
- .b8 12
- .b8 9
-
- .b32 1390
- .b8 72
- .b8 69
- .b8 65
- .b8 80
- .b8 95
- .b8 80
- .b8 84
- .b8 82
-
- .b8 0
- .b8 3
-
- .b32 1350
- .b8 12
- .b8 3
-
- .b32 1402
+ .b32 1400
  .b8 12
  .b8 4
 
@@ -5640,7 +5755,7 @@ BB34_2:
  .b8 107
 
  .b8 0
- .b32 1612
+ .b32 1610
  .b32 1
  .b32 60
  .b8 0
@@ -5655,7 +5770,7 @@ BB34_2:
  .b8 108
 
  .b8 0
- .b32 1656
+ .b32 1654
  .b32 1
  .b32 62
  .b8 16
@@ -5671,7 +5786,7 @@ BB34_2:
  .b8 100
 
  .b8 0
- .b32 1656
+ .b32 1654
  .b32 1
  .b32 65
  .b8 17
@@ -5695,7 +5810,7 @@ BB34_2:
  .b8 101
 
  .b8 0
- .b32 1656
+ .b32 1654
  .b32 1
  .b32 70
  .b8 18
@@ -5712,7 +5827,7 @@ BB34_2:
  .b8 103
 
  .b8 0
- .b32 1656
+ .b32 1654
  .b32 1
  .b32 73
  .b8 19
@@ -5730,7 +5845,7 @@ BB34_2:
  .b8 102
 
  .b8 0
- .b32 1664
+ .b32 1675
  .b32 1
  .b32 76
  .b8 24
@@ -5745,7 +5860,7 @@ BB34_2:
  .b8 99
 
  .b8 0
- .b32 3176
+ .b32 3201
  .b32 1
  .b32 79
  .b8 32
@@ -5761,7 +5876,7 @@ BB34_2:
  .b8 121
 
  .b8 0
- .b32 3322
+ .b32 3347
  .b32 1
  .b32 82
  .b8 40
@@ -5770,20 +5885,20 @@ BB34_2:
  .b8 0
  .b8 10
 
- .b32 1624
+ .b32 1622
  .b8 11
 
- .b32 1646
+ .b32 1644
  .b8 1
 
  .b8 0
  .b8 3
 
- .b32 1630
+ .b32 1628
  .b8 12
  .b8 9
 
- .b32 1402
+ .b32 1400
  .b8 116
  .b8 72
  .b8 101
@@ -5807,18 +5922,30 @@ BB34_2:
  .b8 5
  .b8 9
 
- .b32 1350
+ .b32 1662
  .b8 85
  .b8 56
 
  .b8 0
+ .b8 9
+
+ .b32 1374
+ .b8 117
+ .b8 105
+ .b8 110
+ .b8 116
+ .b8 56
+ .b8 95
+ .b8 116
+
+ .b8 0
  .b8 3
 
- .b32 1670
+ .b32 1681
  .b8 12
  .b8 9
 
- .b32 1687
+ .b32 1698
  .b8 116
  .b8 77
  .b8 68
@@ -5863,7 +5990,7 @@ BB34_2:
  .b8 102
 
  .b8 0
- .b32 2785
+ .b32 2796
  .b32 3
  .b32 87
  .b8 0
@@ -5882,7 +6009,7 @@ BB34_2:
  .b8 97
 
  .b8 0
- .b32 2808
+ .b32 2819
  .b32 3
  .b32 89
  .b8 8
@@ -5897,7 +6024,7 @@ BB34_2:
  .b8 115
 
  .b8 0
- .b32 2853
+ .b32 2864
  .b32 3
  .b32 92
  .b8 16
@@ -5911,7 +6038,7 @@ BB34_2:
  .b8 101
 
  .b8 0
- .b32 2885
+ .b32 2896
  .b32 3
  .b32 94
  .b8 24
@@ -5930,7 +6057,7 @@ BB34_2:
  .b8 101
 
  .b8 0
- .b32 2885
+ .b32 2896
  .b32 3
  .b32 96
  .b8 32
@@ -5947,7 +6074,7 @@ BB34_2:
  .b8 115
 
  .b8 0
- .b32 2897
+ .b32 2908
  .b32 3
  .b32 98
  .b8 40
@@ -5966,7 +6093,7 @@ BB34_2:
  .b8 116
 
  .b8 0
- .b32 2897
+ .b32 2908
  .b32 3
  .b32 100
  .b8 44
@@ -5986,7 +6113,7 @@ BB34_2:
  .b8 116
 
  .b8 0
- .b32 2897
+ .b32 2908
  .b32 3
  .b32 102
  .b8 48
@@ -6004,7 +6131,7 @@ BB34_2:
  .b8 100
 
  .b8 0
- .b32 1656
+ .b32 1654
  .b32 3
  .b32 105
  .b8 52
@@ -6020,7 +6147,7 @@ BB34_2:
  .b8 116
 
  .b8 0
- .b32 1656
+ .b32 1654
  .b32 3
  .b32 107
  .b8 53
@@ -6041,7 +6168,7 @@ BB34_2:
  .b8 101
 
  .b8 0
- .b32 1656
+ .b32 1654
  .b32 3
  .b32 109
  .b8 54
@@ -6060,7 +6187,7 @@ BB34_2:
  .b8 101
 
  .b8 0
- .b32 1656
+ .b32 1654
  .b32 3
  .b32 111
  .b8 55
@@ -6085,7 +6212,7 @@ BB34_2:
  .b8 101
 
  .b8 0
- .b32 2912
+ .b32 2923
  .b32 3
  .b32 113
  .b8 56
@@ -6102,7 +6229,7 @@ BB34_2:
  .b8 116
 
  .b8 0
- .b32 2785
+ .b32 2796
  .b32 3
  .b32 115
  .b8 64
@@ -6119,7 +6246,7 @@ BB34_2:
  .b8 101
 
  .b8 0
- .b32 2921
+ .b32 2946
  .b32 3
  .b32 117
  .b8 72
@@ -6146,7 +6273,7 @@ BB34_2:
  .b8 115
 
  .b8 0
- .b32 2912
+ .b32 2923
  .b32 3
  .b32 119
  .b8 80
@@ -6169,7 +6296,7 @@ BB34_2:
  .b8 115
 
  .b8 0
- .b32 2980
+ .b32 3005
  .b32 3
  .b32 121
  .b8 88
@@ -6196,7 +6323,7 @@ BB34_2:
  .b8 100
 
  .b8 0
- .b32 1656
+ .b32 1654
  .b32 3
  .b32 123
  .b8 96
@@ -6225,7 +6352,7 @@ BB34_2:
  .b8 110
 
  .b8 0
- .b32 1656
+ .b32 1654
  .b32 3
  .b32 125
  .b8 97
@@ -6243,7 +6370,7 @@ BB34_2:
  .b8 100
 
  .b8 0
- .b32 1656
+ .b32 1654
  .b32 3
  .b32 129
  .b8 98
@@ -6261,7 +6388,7 @@ BB34_2:
  .b8 48
 
  .b8 0
- .b32 2989
+ .b32 3014
  .b32 3
  .b32 131
  .b8 99
@@ -6289,7 +6416,7 @@ BB34_2:
  .b8 114
 
  .b8 0
- .b32 2927
+ .b32 2952
  .b32 3
  .b32 133
  .b8 104
@@ -6315,7 +6442,7 @@ BB34_2:
  .b8 101
 
  .b8 0
- .b32 2912
+ .b32 2923
  .b32 3
  .b32 135
  .b8 112
@@ -6334,7 +6461,7 @@ BB34_2:
  .b8 101
 
  .b8 0
- .b32 2912
+ .b32 2923
  .b32 3
  .b32 137
  .b8 116
@@ -6357,7 +6484,7 @@ BB34_2:
  .b8 115
 
  .b8 0
- .b32 2912
+ .b32 2923
  .b32 3
  .b32 139
  .b8 120
@@ -6381,7 +6508,7 @@ BB34_2:
  .b8 115
 
  .b8 0
- .b32 3001
+ .b32 3026
  .b32 3
  .b32 141
  .b8 128
@@ -6402,7 +6529,7 @@ BB34_2:
  .b8 120
 
  .b8 0
- .b32 2897
+ .b32 2908
  .b32 3
  .b32 143
  .b8 136
@@ -6430,7 +6557,7 @@ BB34_2:
  .b8 115
 
  .b8 0
- .b32 3054
+ .b32 3079
  .b32 3
  .b32 145
  .b8 144
@@ -6459,7 +6586,7 @@ BB34_2:
  .b8 110
 
  .b8 0
- .b32 2785
+ .b32 2796
  .b32 3
  .b32 147
  .b8 152
@@ -6485,7 +6612,7 @@ BB34_2:
  .b8 115
 
  .b8 0
- .b32 3113
+ .b32 3138
  .b32 3
  .b32 149
  .b8 160
@@ -6513,7 +6640,7 @@ BB34_2:
  .b8 101
 
  .b8 0
- .b32 2785
+ .b32 2796
  .b32 3
  .b32 151
  .b8 168
@@ -6533,7 +6660,7 @@ BB34_2:
  .b8 115
 
  .b8 0
- .b32 2912
+ .b32 2923
  .b32 3
  .b32 153
  .b8 176
@@ -6552,7 +6679,7 @@ BB34_2:
  .b8 115
 
  .b8 0
- .b32 3119
+ .b32 3144
  .b32 3
  .b32 155
  .b8 184
@@ -6578,7 +6705,7 @@ BB34_2:
  .b8 101
 
  .b8 0
- .b32 2912
+ .b32 2923
  .b32 3
  .b32 157
  .b8 192
@@ -6599,7 +6726,7 @@ BB34_2:
  .b8 115
 
  .b8 0
- .b32 2912
+ .b32 2923
  .b32 3
  .b32 159
  .b8 196
@@ -6619,7 +6746,7 @@ BB34_2:
  .b8 115
 
  .b8 0
- .b32 2921
+ .b32 2946
  .b32 3
  .b32 161
  .b8 200
@@ -6639,7 +6766,7 @@ BB34_2:
  .b8 110
 
  .b8 0
- .b32 2785
+ .b32 2796
  .b32 3
  .b32 163
  .b8 208
@@ -6660,7 +6787,7 @@ BB34_2:
  .b8 114
 
  .b8 0
- .b32 2927
+ .b32 2952
  .b32 3
  .b32 165
  .b8 216
@@ -6681,7 +6808,7 @@ BB34_2:
  .b8 116
 
  .b8 0
- .b32 1376
+ .b32 1354
  .b32 3
  .b32 168
  .b8 224
@@ -6691,11 +6818,11 @@ BB34_2:
  .b8 0
  .b8 3
 
- .b32 2791
+ .b32 2802
  .b8 12
  .b8 9
 
- .b32 1687
+ .b32 1698
  .b8 116
  .b8 77
  .b8 68
@@ -6711,11 +6838,11 @@ BB34_2:
  .b8 0
  .b8 3
 
- .b32 2814
+ .b32 2825
  .b8 12
  .b8 9
 
- .b32 2829
+ .b32 2840
  .b8 116
  .b8 77
  .b8 101
@@ -6746,7 +6873,7 @@ BB34_2:
  .b32 71
  .b8 9
 
- .b32 2866
+ .b32 2877
  .b8 70
  .b8 76
  .b8 65
@@ -6787,7 +6914,7 @@ BB34_2:
  .b8 0
  .b8 9
 
- .b32 2866
+ .b32 2877
  .b8 73
  .b8 68
  .b8 88
@@ -6801,23 +6928,36 @@ BB34_2:
  .b8 0
  .b8 9
 
- .b32 2866
+ .b32 2932
  .b8 85
  .b8 51
  .b8 50
 
  .b8 0
+ .b8 9
+
+ .b32 2877
+ .b8 117
+ .b8 105
+ .b8 110
+ .b8 116
+ .b8 51
+ .b8 50
+ .b8 95
+ .b8 116
+
+ .b8 0
  .b8 3
 
- .b32 2927
+ .b32 2952
  .b8 12
  .b8 3
 
- .b32 2933
+ .b32 2958
  .b8 12
  .b8 9
 
- .b32 2952
+ .b32 2977
  .b8 116
  .b8 77
  .b8 68
@@ -6856,7 +6996,7 @@ BB34_2:
  .b32 230
  .b8 9
 
- .b32 1390
+ .b32 1368
  .b8 80
  .b8 84
  .b8 82
@@ -6864,20 +7004,20 @@ BB34_2:
  .b8 0
  .b8 10
 
- .b32 1656
+ .b32 1654
  .b8 11
 
- .b32 1646
+ .b32 1644
  .b8 0
 
  .b8 0
  .b8 3
 
- .b32 3007
+ .b32 3032
  .b8 12
  .b8 9
 
- .b32 3026
+ .b32 3051
  .b8 116
  .b8 73
  .b8 110
@@ -6916,11 +7056,11 @@ BB34_2:
  .b32 140
  .b8 3
 
- .b32 3060
+ .b32 3085
  .b8 12
  .b8 9
 
- .b32 3082
+ .b32 3107
  .b8 116
  .b8 71
  .b8 101
@@ -6965,19 +7105,19 @@ BB34_2:
  .b32 31
  .b8 3
 
- .b32 2785
+ .b32 2796
  .b8 12
  .b8 3
 
- .b32 3125
+ .b32 3150
  .b8 12
  .b8 3
 
- .b32 3131
+ .b32 3156
  .b8 12
  .b8 9
 
- .b32 3149
+ .b32 3174
  .b8 116
  .b8 77
  .b8 68
@@ -7014,11 +7154,11 @@ BB34_2:
  .b32 185
  .b8 3
 
- .b32 3182
+ .b32 3207
  .b8 12
  .b8 9
 
- .b32 3193
+ .b32 3218
  .b8 116
  .b8 83
  .b8 121
@@ -7050,7 +7190,7 @@ BB34_2:
  .b8 100
 
  .b8 0
- .b32 3281
+ .b32 3306
  .b32 1
  .b32 46
  .b8 0
@@ -7065,7 +7205,7 @@ BB34_2:
  .b8 116
 
  .b8 0
- .b32 2912
+ .b32 2923
  .b32 1
  .b32 48
  .b8 8
@@ -7082,7 +7222,7 @@ BB34_2:
  .b8 102
 
  .b8 0
- .b32 1376
+ .b32 1354
  .b32 1
  .b32 52
  .b8 16
@@ -7091,11 +7231,11 @@ BB34_2:
  .b8 0
  .b8 3
 
- .b32 3287
+ .b32 3312
  .b8 12
  .b8 9
 
- .b32 3300
+ .b32 3325
  .b8 116
  .b8 84
  .b8 104
@@ -7122,14 +7262,14 @@ BB34_2:
  .b32 43
  .b8 10
 
- .b32 1656
+ .b32 1654
  .b8 13
 
- .b32 1646
+ .b32 1644
  .b8 0
  .b8 3
 
- .b32 3339
+ .b32 3364
  .b8 12
  .b8 7
 
@@ -7153,11 +7293,11 @@ BB34_2:
  .b32 102
  .b8 3
 
- .b32 2866
+ .b32 2877
  .b8 12
  .b8 3
 
- .b32 3378
+ .b32 3403
  .b8 12
  .b8 7
 
@@ -7176,10 +7316,10 @@ BB34_2:
  .b8 0
  .b32 0
  .b32 2
- .b32 12
+ .b32 13
  .b8 3
 
- .b32 3409
+ .b32 3434
  .b8 12
  .b8 7
 
@@ -7202,26 +7342,26 @@ BB34_2:
  .b8 0
  .b32 0
  .b32 2
- .b32 13
+ .b32 14
  .b8 3
 
- .b32 3444
+ .b32 3469
  .b8 12
  .b8 3
 
- .b32 2952
+ .b32 2977
  .b8 12
  .b8 3
 
- .b32 3456
+ .b32 3481
  .b8 12
  .b8 3
 
- .b32 1687
+ .b32 1698
  .b8 12
  .b8 3
 
- .b32 3300
+ .b32 3325
  .b8 12
  .b8 14
 
@@ -7251,7 +7391,7 @@ BB34_2:
  .b8 0
  .b32 8
  .b32 75
- .b32 3574
+ .b32 3599
  .b8 1
  .b64 func_begin0
  .b64 func_end0
@@ -7264,7 +7404,7 @@ BB34_2:
  .b8 0
  .b32 8
  .b32 75
- .b32 16665
+ .b32 16827
  .b8 11
  .b8 3
  .b64 __local_depot0
@@ -7291,7 +7431,7 @@ BB34_2:
  .b8 0
  .b8 9
 
- .b32 3591
+ .b32 3616
  .b8 99
  .b8 117
  .b8 100
@@ -10110,7 +10250,7 @@ BB34_2:
  .b8 0
  .b32 8
  .b32 80
- .b32 3574
+ .b32 3599
  .b8 1
  .b64 func_begin1
  .b64 func_end1
@@ -10123,7 +10263,7 @@ BB34_2:
  .b8 0
  .b32 8
  .b32 80
- .b32 16810
+ .b32 16972
  .b8 11
  .b8 3
  .b64 __local_depot1
@@ -10138,7 +10278,7 @@ BB34_2:
  .b8 0
  .b32 8
  .b32 80
- .b32 16816
+ .b32 16978
  .b8 6
  .b8 144
  .b8 180
@@ -10200,7 +10340,7 @@ BB34_2:
  .b8 0
  .b32 8
  .b32 85
- .b32 3574
+ .b32 3599
  .b8 1
  .b64 func_begin2
  .b64 func_end2
@@ -10217,7 +10357,7 @@ BB34_2:
  .b8 0
  .b32 8
  .b32 85
- .b32 16827
+ .b32 16989
  .b8 6
  .b8 144
  .b8 178
@@ -10236,7 +10376,7 @@ BB34_2:
  .b8 0
  .b32 8
  .b32 85
- .b32 12969
+ .b32 13118
  .b8 5
  .b8 144
  .b8 179
@@ -10299,7 +10439,7 @@ BB34_2:
  .b8 0
  .b32 8
  .b32 90
- .b32 3574
+ .b32 3599
  .b8 1
  .b64 func_begin3
  .b64 func_end3
@@ -10317,7 +10457,7 @@ BB34_2:
  .b8 0
  .b32 8
  .b32 90
- .b32 16827
+ .b32 16989
  .b8 6
  .b8 144
  .b8 178
@@ -10425,7 +10565,7 @@ BB34_2:
  .b8 0
  .b32 8
  .b32 95
- .b32 3574
+ .b32 3599
  .b8 1
  .b64 func_begin4
  .b64 func_end4
@@ -10446,7 +10586,7 @@ BB34_2:
  .b8 0
  .b32 8
  .b32 95
- .b32 16827
+ .b32 16989
  .b8 6
  .b8 144
  .b8 180
@@ -10465,7 +10605,7 @@ BB34_2:
  .b8 0
  .b32 8
  .b32 95
- .b32 16816
+ .b32 16978
  .b8 6
  .b8 144
  .b8 181
@@ -10644,7 +10784,7 @@ BB34_2:
  .b8 0
  .b32 8
  .b32 100
- .b32 3574
+ .b32 3599
  .b8 1
  .b64 func_begin5
  .b64 func_end5
@@ -10665,7 +10805,7 @@ BB34_2:
  .b8 0
  .b32 8
  .b32 100
- .b32 16827
+ .b32 16989
  .b8 6
  .b8 144
  .b8 180
@@ -10684,7 +10824,7 @@ BB34_2:
  .b8 0
  .b32 8
  .b32 100
- .b32 16816
+ .b32 16978
  .b8 6
  .b8 144
  .b8 181
@@ -10757,7 +10897,7 @@ BB34_2:
  .b8 0
  .b32 8
  .b32 100
- .b32 2866
+ .b32 2877
  .b8 5
  .b8 144
  .b8 180
@@ -10938,7 +11078,7 @@ BB34_2:
  .b8 0
  .b32 1
  .b32 129
- .b32 2912
+ .b32 2923
  .b64 func_begin7
  .b64 func_end7
  .b8 1
@@ -10959,7 +11099,7 @@ BB34_2:
  .b8 0
  .b32 1
  .b32 129
- .b32 1624
+ .b32 1622
  .b8 6
  .b8 144
  .b8 177
@@ -10983,7 +11123,7 @@ BB34_2:
  .b8 0
  .b32 1
  .b32 130
- .b32 1664
+ .b32 1675
  .b8 11
  .b8 3
  .b64 __local_depot7
@@ -11127,7 +11267,7 @@ BB34_2:
  .b8 0
  .b32 1
  .b32 143
- .b32 1624
+ .b32 1622
  .b64 func_begin8
  .b64 func_end8
  .b8 1
@@ -11143,7 +11283,7 @@ BB34_2:
  .b8 0
  .b32 1
  .b32 143
- .b32 1624
+ .b32 1622
  .b8 11
  .b8 3
  .b64 __local_depot8
@@ -11170,7 +11310,7 @@ BB34_2:
  .b8 0
  .b32 1
  .b32 145
- .b32 1624
+ .b32 1622
  .b8 11
  .b8 3
  .b64 __local_depot8
@@ -11317,7 +11457,7 @@ BB34_2:
  .b8 0
  .b32 1
  .b32 153
- .b32 1624
+ .b32 1622
  .b64 func_begin9
  .b64 func_end9
  .b8 1
@@ -11333,7 +11473,7 @@ BB34_2:
  .b8 0
  .b32 1
  .b32 153
- .b32 1624
+ .b32 1622
  .b8 11
  .b8 3
  .b64 __local_depot9
@@ -11360,7 +11500,7 @@ BB34_2:
  .b8 0
  .b32 1
  .b32 155
- .b32 1624
+ .b32 1622
  .b8 11
  .b8 3
  .b64 __local_depot9
@@ -11517,7 +11657,7 @@ BB34_2:
  .b8 0
  .b32 1
  .b32 164
- .b32 1624
+ .b32 1622
  .b64 func_begin10
  .b64 func_end10
  .b8 1
@@ -11533,7 +11673,7 @@ BB34_2:
  .b8 0
  .b32 1
  .b32 164
- .b32 1624
+ .b32 1622
  .b8 11
  .b8 3
  .b64 __local_depot10
@@ -11553,7 +11693,7 @@ BB34_2:
  .b8 0
  .b32 1
  .b32 164
- .b32 1624
+ .b32 1622
  .b8 6
  .b8 144
  .b8 178
@@ -11581,7 +11721,7 @@ BB34_2:
  .b8 0
  .b32 1
  .b32 171
- .b32 1624
+ .b32 1622
  .b8 11
  .b8 3
  .b64 __local_depot10
@@ -11598,7 +11738,7 @@ BB34_2:
  .b8 0
  .b32 1
  .b32 172
- .b32 16833
+ .b32 16995
  .b8 11
  .b8 3
  .b64 __local_depot10
@@ -11615,7 +11755,7 @@ BB34_2:
  .b8 0
  .b32 1
  .b32 173
- .b32 16579
+ .b32 16741
  .b32 .debug_loc
  .b8 22
 
@@ -11626,7 +11766,7 @@ BB34_2:
  .b8 0
  .b32 1
  .b32 173
- .b32 16579
+ .b32 16741
  .b32 .debug_loc+299
  .b8 0
  .b8 0
@@ -11777,7 +11917,7 @@ BB34_2:
  .b8 0
  .b32 1
  .b32 205
- .b32 1624
+ .b32 1622
  .b64 func_begin11
  .b64 func_end11
  .b8 1
@@ -11793,7 +11933,7 @@ BB34_2:
  .b8 0
  .b32 1
  .b32 205
- .b32 1624
+ .b32 1622
  .b8 11
  .b8 3
  .b64 __local_depot11
@@ -11814,7 +11954,7 @@ BB34_2:
  .b8 0
  .b32 1
  .b32 205
- .b32 1624
+ .b32 1622
  .b8 6
  .b8 144
  .b8 181
@@ -11848,7 +11988,7 @@ BB34_2:
  .b8 0
  .b32 1
  .b32 209
- .b32 1624
+ .b32 1622
  .b8 11
  .b8 3
  .b64 __local_depot11
@@ -11867,7 +12007,7 @@ BB34_2:
  .b8 0
  .b32 1
  .b32 211
- .b32 1624
+ .b32 1622
  .b8 11
  .b8 3
  .b64 __local_depot11
@@ -11891,7 +12031,7 @@ BB34_2:
  .b8 0
  .b32 1
  .b32 211
- .b32 16845
+ .b32 17007
  .b32 .debug_loc+623
  .b8 21
 
@@ -11900,7 +12040,7 @@ BB34_2:
  .b8 0
  .b32 1
  .b32 210
- .b32 1656
+ .b32 1654
  .b8 6
  .b8 144
  .b8 179
@@ -12060,7 +12200,7 @@ BB34_2:
  .b8 0
  .b32 1
  .b32 257
- .b32 16794
+ .b32 16956
  .b8 11
  .b8 3
  .b64 __local_depot12
@@ -12079,7 +12219,7 @@ BB34_2:
  .b8 0
  .b32 1
  .b32 258
- .b32 1624
+ .b32 1622
  .b8 11
  .b8 3
  .b64 __local_depot12
@@ -12096,7 +12236,7 @@ BB34_2:
  .b8 0
  .b32 1
  .b32 259
- .b32 16851
+ .b32 17013
  .b8 11
  .b8 3
  .b64 __local_depot12
@@ -12119,7 +12259,7 @@ BB34_2:
  .b8 0
  .b32 1
  .b32 261
- .b32 1624
+ .b32 1622
  .b8 12
  .b8 3
  .b64 __local_depot12
@@ -12145,7 +12285,7 @@ BB34_2:
  .b8 0
  .b32 1
  .b32 262
- .b32 2912
+ .b32 2923
  .b8 5
  .b8 144
  .b8 177
@@ -12170,7 +12310,7 @@ BB34_2:
  .b8 0
  .b32 1
  .b32 263
- .b32 2912
+ .b32 2923
  .b8 5
  .b8 144
  .b8 178
@@ -12187,7 +12327,7 @@ BB34_2:
  .b8 0
  .b32 1
  .b32 260
- .b32 16579
+ .b32 16741
  .b32 .debug_loc+1437
  .b8 20
 
@@ -12213,7 +12353,7 @@ BB34_2:
  .b8 0
  .b32 1
  .b32 287
- .b32 16665
+ .b32 16827
  .b8 12
  .b8 3
  .b64 __local_depot12
@@ -12242,7 +12382,7 @@ BB34_2:
  .b8 0
  .b32 1
  .b32 285
- .b32 2912
+ .b32 2923
  .b32 .debug_loc+763
  .b8 21
 
@@ -12261,15 +12401,16 @@ BB34_2:
  .b8 0
  .b32 1
  .b32 283
- .b32 16788
- .b8 7
+ .b32 16950
+ .b8 8
  .b8 144
- .b8 185
- .b8 242
- .b8 144
- .b8 147
- .b8 215
- .b8 4
+ .b8 177
+ .b8 224
+ .b8 196
+ .b8 161
+ .b8 166
+ .b8 174
+ .b8 9
  .b8 2
  .b8 21
 
@@ -12298,7 +12439,7 @@ BB34_2:
  .b8 0
  .b32 1
  .b32 286
- .b32 2912
+ .b32 2923
  .b8 5
  .b8 144
  .b8 180
@@ -12313,7 +12454,7 @@ BB34_2:
  .b8 0
  .b32 1
  .b32 284
- .b32 2912
+ .b32 2923
  .b32 .debug_loc+1303
  .b8 20
 
@@ -12376,7 +12517,7 @@ BB34_2:
  .b8 0
  .b32 1
  .b32 318
- .b32 1664
+ .b32 1675
  .b8 12
  .b8 3
  .b64 __local_depot12
@@ -12408,7 +12549,7 @@ BB34_2:
  .b8 0
  .b32 1
  .b32 402
- .b32 1624
+ .b32 1622
  .b8 12
  .b8 3
  .b64 __local_depot12
@@ -12499,7 +12640,7 @@ BB34_2:
  .b8 0
  .b32 1
  .b32 422
- .b32 1376
+ .b32 1354
  .b8 6
  .b8 144
  .b8 177
@@ -12627,7 +12768,7 @@ BB34_2:
  .b8 0
  .b32 1
  .b32 430
- .b32 2912
+ .b32 2923
  .b8 1
  .b64 func_begin17
  .b64 func_end17
@@ -12689,7 +12830,7 @@ BB34_2:
  .b8 0
  .b32 1
  .b32 434
- .b32 2912
+ .b32 2923
  .b8 1
  .b64 func_begin18
  .b64 func_end18
@@ -12793,7 +12934,7 @@ BB34_2:
  .b8 0
  .b32 1
  .b32 438
- .b32 16863
+ .b32 17025
  .b8 6
  .b8 144
  .b8 177
@@ -12840,7 +12981,7 @@ BB34_2:
  .b8 0
  .b32 1
  .b32 438
- .b32 2912
+ .b32 2923
  .b8 5
  .b8 144
  .b8 177
@@ -12868,7 +13009,7 @@ BB34_2:
  .b8 0
  .b32 1
  .b32 439
- .b32 16788
+ .b32 16950
  .b8 7
  .b8 144
  .b8 180
@@ -12948,7 +13089,7 @@ BB34_2:
  .b8 0
  .b32 1
  .b32 451
- .b32 1376
+ .b32 1354
  .b8 1
  .b64 func_begin19
  .b64 func_end19
@@ -12968,7 +13109,7 @@ BB34_2:
  .b8 0
  .b32 1
  .b32 451
- .b32 1664
+ .b32 1675
  .b8 6
  .b8 144
  .b8 177
@@ -12987,7 +13128,7 @@ BB34_2:
  .b8 0
  .b32 1
  .b32 451
- .b32 2912
+ .b32 2923
  .b8 5
  .b8 144
  .b8 178
@@ -12998,7 +13139,7 @@ BB34_2:
  .b8 20
 
  .b64 tmp176
- .b64 tmp184
+ .b64 tmp186
  .b8 21
 
  .b8 116
@@ -13014,7 +13155,7 @@ BB34_2:
  .b8 0
  .b32 1
  .b32 453
- .b32 2912
+ .b32 2923
  .b8 5
  .b8 144
  .b8 177
@@ -13038,11 +13179,11 @@ BB34_2:
  .b8 0
  .b32 1
  .b32 452
- .b32 1624
+ .b32 1622
  .b8 7
  .b8 144
- .b8 183
- .b8 228
+ .b8 176
+ .b8 230
  .b8 144
  .b8 147
  .b8 215
@@ -13054,8 +13195,8 @@ BB34_2:
 
  .b8 95
  .b8 90
- .b8 49
- .b8 52
+ .b8 50
+ .b8 51
  .b8 72
  .b8 101
  .b8 97
@@ -13070,27 +13211,23 @@ BB34_2:
  .b8 121
  .b8 112
  .b8 101
- .b8 80
- .b8 49
- .b8 50
+ .b8 86
+ .b8 111
+ .b8 105
+ .b8 100
+ .b8 83
  .b8 116
- .b8 77
- .b8 68
- .b8 95
- .b8 84
- .b8 121
- .b8 112
- .b8 101
- .b8 68
- .b8 101
- .b8 102
- .b8 95
+ .b8 97
+ .b8 114
+ .b8 115
+ .b8 80
+ .b8 118
 
  .b8 0
  .b8 95
  .b8 90
- .b8 49
- .b8 52
+ .b8 50
+ .b8 51
  .b8 72
  .b8 101
  .b8 97
@@ -13105,26 +13242,22 @@ BB34_2:
  .b8 121
  .b8 112
  .b8 101
- .b8 80
- .b8 49
- .b8 50
+ .b8 86
+ .b8 111
+ .b8 105
+ .b8 100
+ .b8 83
  .b8 116
- .b8 77
- .b8 68
- .b8 95
- .b8 84
- .b8 121
- .b8 112
- .b8 101
- .b8 68
- .b8 101
- .b8 102
- .b8 95
+ .b8 97
+ .b8 114
+ .b8 115
+ .b8 80
+ .b8 118
 
  .b8 0
  .b32 1
- .b32 484
- .b32 1376
+ .b32 490
+ .b32 1188
  .b8 1
  .b64 func_begin20
  .b64 func_end20
@@ -13143,8 +13276,8 @@ BB34_2:
 
  .b8 0
  .b32 1
- .b32 484
- .b32 1664
+ .b32 490
+ .b32 1188
  .b8 6
  .b8 144
  .b8 177
@@ -13159,46 +13292,76 @@ BB34_2:
  .b8 95
  .b8 90
  .b8 49
- .b8 50
+ .b8 52
  .b8 72
  .b8 101
  .b8 97
  .b8 112
  .b8 95
- .b8 71
- .b8 101
- .b8 116
+ .b8 65
+ .b8 108
+ .b8 108
+ .b8 111
+ .b8 99
  .b8 84
  .b8 121
  .b8 112
  .b8 101
  .b8 80
- .b8 104
+ .b8 49
+ .b8 50
+ .b8 116
+ .b8 77
+ .b8 68
+ .b8 95
+ .b8 84
+ .b8 121
+ .b8 112
+ .b8 101
+ .b8 68
+ .b8 101
+ .b8 102
+ .b8 95
 
  .b8 0
  .b8 95
  .b8 90
  .b8 49
- .b8 50
+ .b8 52
  .b8 72
  .b8 101
  .b8 97
  .b8 112
  .b8 95
- .b8 71
- .b8 101
- .b8 116
+ .b8 65
+ .b8 108
+ .b8 108
+ .b8 111
+ .b8 99
  .b8 84
  .b8 121
  .b8 112
  .b8 101
  .b8 80
- .b8 104
+ .b8 49
+ .b8 50
+ .b8 116
+ .b8 77
+ .b8 68
+ .b8 95
+ .b8 84
+ .b8 121
+ .b8 112
+ .b8 101
+ .b8 68
+ .b8 101
+ .b8 102
+ .b8 95
 
  .b8 0
  .b32 1
- .b32 489
- .b32 1664
+ .b32 496
+ .b32 1354
  .b8 1
  .b64 func_begin21
  .b64 func_end21
@@ -13206,20 +13369,19 @@ BB34_2:
  .b8 156
  .b8 15
 
- .b8 104
- .b8 101
- .b8 97
  .b8 112
- .b8 69
- .b8 110
- .b8 116
- .b8 114
+ .b8 84
  .b8 121
+ .b8 112
+ .b8 101
+ .b8 68
+ .b8 101
+ .b8 102
 
  .b8 0
  .b32 1
- .b32 489
- .b32 1376
+ .b32 496
+ .b32 1675
  .b8 6
  .b8 144
  .b8 177
@@ -13228,62 +13390,24 @@ BB34_2:
  .b8 171
  .b8 2
  .b8 2
- .b8 20
-
- .b64 tmp187
- .b64 tmp189
- .b8 21
-
- .b8 112
- .b8 72
- .b8 101
- .b8 97
- .b8 112
- .b8 69
- .b8 110
- .b8 116
- .b8 114
- .b8 121
-
- .b8 0
- .b32 1
- .b32 490
- .b32 1624
- .b8 6
- .b8 144
- .b8 178
- .b8 200
- .b8 201
- .b8 171
- .b8 2
- .b8 2
- .b8 0
  .b8 0
  .b8 14
 
  .b8 95
  .b8 90
+ .b8 49
  .b8 50
- .b8 48
  .b8 72
  .b8 101
  .b8 97
  .b8 112
  .b8 95
- .b8 77
- .b8 97
- .b8 107
- .b8 101
- .b8 85
- .b8 110
- .b8 100
- .b8 101
- .b8 108
+ .b8 71
  .b8 101
  .b8 116
- .b8 97
- .b8 98
- .b8 108
+ .b8 84
+ .b8 121
+ .b8 112
  .b8 101
  .b8 80
  .b8 104
@@ -13291,35 +13415,27 @@ BB34_2:
  .b8 0
  .b8 95
  .b8 90
+ .b8 49
  .b8 50
- .b8 48
  .b8 72
  .b8 101
  .b8 97
  .b8 112
  .b8 95
- .b8 77
- .b8 97
- .b8 107
- .b8 101
- .b8 85
- .b8 110
- .b8 100
- .b8 101
- .b8 108
+ .b8 71
  .b8 101
  .b8 116
- .b8 97
- .b8 98
- .b8 108
+ .b8 84
+ .b8 121
+ .b8 112
  .b8 101
  .b8 80
  .b8 104
 
  .b8 0
  .b32 1
- .b32 494
- .b32 1194
+ .b32 501
+ .b32 1675
  .b8 1
  .b64 func_begin22
  .b64 func_end22
@@ -13339,8 +13455,8 @@ BB34_2:
 
  .b8 0
  .b32 1
- .b32 494
- .b32 1376
+ .b32 501
+ .b32 1354
  .b8 6
  .b8 144
  .b8 177
@@ -13351,8 +13467,8 @@ BB34_2:
  .b8 2
  .b8 20
 
- .b64 tmp190
- .b64 tmp192
+ .b64 tmp191
+ .b64 tmp193
  .b8 21
 
  .b8 112
@@ -13368,8 +13484,8 @@ BB34_2:
 
  .b8 0
  .b32 1
- .b32 495
- .b32 1624
+ .b32 502
+ .b32 1622
  .b8 6
  .b8 144
  .b8 178
@@ -13384,8 +13500,8 @@ BB34_2:
 
  .b8 95
  .b8 90
- .b8 49
- .b8 56
+ .b8 50
+ .b8 48
  .b8 72
  .b8 101
  .b8 97
@@ -13395,7 +13511,9 @@ BB34_2:
  .b8 97
  .b8 107
  .b8 101
- .b8 68
+ .b8 85
+ .b8 110
+ .b8 100
  .b8 101
  .b8 108
  .b8 101
@@ -13410,8 +13528,8 @@ BB34_2:
  .b8 0
  .b8 95
  .b8 90
- .b8 49
- .b8 56
+ .b8 50
+ .b8 48
  .b8 72
  .b8 101
  .b8 97
@@ -13421,7 +13539,9 @@ BB34_2:
  .b8 97
  .b8 107
  .b8 101
- .b8 68
+ .b8 85
+ .b8 110
+ .b8 100
  .b8 101
  .b8 108
  .b8 101
@@ -13435,7 +13555,7 @@ BB34_2:
 
  .b8 0
  .b32 1
- .b32 499
+ .b32 506
  .b32 1194
  .b8 1
  .b64 func_begin23
@@ -13456,8 +13576,8 @@ BB34_2:
 
  .b8 0
  .b32 1
- .b32 499
- .b32 1376
+ .b32 506
+ .b32 1354
  .b8 6
  .b8 144
  .b8 177
@@ -13468,8 +13588,8 @@ BB34_2:
  .b8 2
  .b8 20
 
- .b64 tmp193
- .b64 tmp195
+ .b64 tmp194
+ .b64 tmp196
  .b8 21
 
  .b8 112
@@ -13485,8 +13605,125 @@ BB34_2:
 
  .b8 0
  .b32 1
- .b32 500
- .b32 1624
+ .b32 507
+ .b32 1622
+ .b8 6
+ .b8 144
+ .b8 178
+ .b8 200
+ .b8 201
+ .b8 171
+ .b8 2
+ .b8 2
+ .b8 0
+ .b8 0
+ .b8 14
+
+ .b8 95
+ .b8 90
+ .b8 49
+ .b8 56
+ .b8 72
+ .b8 101
+ .b8 97
+ .b8 112
+ .b8 95
+ .b8 77
+ .b8 97
+ .b8 107
+ .b8 101
+ .b8 68
+ .b8 101
+ .b8 108
+ .b8 101
+ .b8 116
+ .b8 97
+ .b8 98
+ .b8 108
+ .b8 101
+ .b8 80
+ .b8 104
+
+ .b8 0
+ .b8 95
+ .b8 90
+ .b8 49
+ .b8 56
+ .b8 72
+ .b8 101
+ .b8 97
+ .b8 112
+ .b8 95
+ .b8 77
+ .b8 97
+ .b8 107
+ .b8 101
+ .b8 68
+ .b8 101
+ .b8 108
+ .b8 101
+ .b8 116
+ .b8 97
+ .b8 98
+ .b8 108
+ .b8 101
+ .b8 80
+ .b8 104
+
+ .b8 0
+ .b32 1
+ .b32 511
+ .b32 1194
+ .b8 1
+ .b64 func_begin24
+ .b64 func_end24
+ .b8 1
+ .b8 156
+ .b8 15
+
+ .b8 104
+ .b8 101
+ .b8 97
+ .b8 112
+ .b8 69
+ .b8 110
+ .b8 116
+ .b8 114
+ .b8 121
+
+ .b8 0
+ .b32 1
+ .b32 511
+ .b32 1354
+ .b8 6
+ .b8 144
+ .b8 177
+ .b8 200
+ .b8 201
+ .b8 171
+ .b8 2
+ .b8 2
+ .b8 20
+
+ .b64 tmp197
+ .b64 tmp199
+ .b8 21
+
+ .b8 112
+ .b8 72
+ .b8 101
+ .b8 97
+ .b8 112
+ .b8 69
+ .b8 110
+ .b8 116
+ .b8 114
+ .b8 121
+
+ .b8 0
+ .b32 1
+ .b32 512
+ .b32 1622
  .b8 6
  .b8 144
  .b8 178
@@ -13560,11 +13797,11 @@ BB34_2:
 
  .b8 0
  .b32 1
- .b32 504
- .b32 1376
+ .b32 516
+ .b32 1354
  .b8 1
- .b64 func_begin24
- .b64 func_end24
+ .b64 func_begin25
+ .b64 func_end25
  .b8 1
  .b8 156
  .b8 15
@@ -13577,8 +13814,8 @@ BB34_2:
 
  .b8 0
  .b32 1
- .b32 504
- .b32 1664
+ .b32 516
+ .b32 1675
  .b8 6
  .b8 144
  .b8 177
@@ -13596,8 +13833,8 @@ BB34_2:
 
  .b8 0
  .b32 1
- .b32 504
- .b32 2980
+ .b32 516
+ .b32 3005
  .b8 6
  .b8 144
  .b8 178
@@ -13608,8 +13845,8 @@ BB34_2:
  .b8 2
  .b8 20
 
- .b64 tmp196
- .b64 tmp198
+ .b64 tmp200
+ .b64 tmp202
  .b8 21
 
  .b8 98
@@ -13620,8 +13857,8 @@ BB34_2:
 
  .b8 0
  .b32 1
- .b32 505
- .b32 1376
+ .b32 517
+ .b32 1354
  .b8 6
  .b8 144
  .b8 179
@@ -13671,11 +13908,11 @@ BB34_2:
 
  .b8 0
  .b32 1
- .b32 513
- .b32 1376
+ .b32 525
+ .b32 1354
  .b8 1
- .b64 func_begin25
- .b64 func_end25
+ .b64 func_begin26
+ .b64 func_end26
  .b8 1
  .b8 156
  .b8 15
@@ -13686,8 +13923,8 @@ BB34_2:
 
  .b8 0
  .b32 1
- .b32 513
- .b32 1376
+ .b32 525
+ .b32 1354
  .b8 6
  .b8 144
  .b8 177
@@ -13698,8 +13935,8 @@ BB34_2:
  .b8 2
  .b8 20
 
- .b64 tmp199
  .b64 tmp203
+ .b64 tmp207
  .b8 21
 
  .b8 112
@@ -13709,8 +13946,8 @@ BB34_2:
 
  .b8 0
  .b32 1
- .b32 514
- .b32 1624
+ .b32 526
+ .b32 1622
  .b8 6
  .b8 144
  .b8 178
@@ -13728,8 +13965,8 @@ BB34_2:
 
  .b8 0
  .b32 1
- .b32 516
- .b32 2912
+ .b32 528
+ .b32 2923
  .b8 5
  .b8 144
  .b8 177
@@ -13747,8 +13984,8 @@ BB34_2:
 
  .b8 0
  .b32 1
- .b32 515
- .b32 1376
+ .b32 527
+ .b32 1354
  .b8 6
  .b8 144
  .b8 180
@@ -13898,209 +14135,8 @@ BB34_2:
 
  .b8 0
  .b32 1
- .b32 524
- .b32 3176
- .b64 func_begin26
- .b64 func_end26
- .b8 1
- .b8 156
- .b8 15
-
- .b8 112
- .b8 72
- .b8 101
- .b8 97
- .b8 112
- .b8 69
- .b8 110
- .b8 116
- .b8 114
- .b8 121
-
- .b8 0
- .b32 1
- .b32 524
- .b32 1624
- .b8 6
- .b8 144
- .b8 177
- .b8 200
- .b8 201
- .b8 171
- .b8 2
- .b8 2
- .b8 20
-
- .b64 tmp204
- .b64 tmp208
- .b8 20
-
- .b64 tmp205
- .b64 tmp207
- .b8 21
-
- .b8 112
- .b8 83
- .b8 121
- .b8 110
- .b8 99
-
- .b8 0
- .b32 1
- .b32 526
- .b32 3176
- .b8 6
- .b8 144
- .b8 180
- .b8 200
- .b8 201
- .b8 171
- .b8 2
- .b8 2
- .b8 0
- .b8 0
- .b8 0
- .b8 19
-
- .b8 95
- .b8 90
- .b8 78
- .b8 51
- .b8 52
- .b8 95
- .b8 73
- .b8 78
- .b8 84
- .b8 69
- .b8 82
- .b8 78
- .b8 65
- .b8 76
- .b8 95
- .b8 49
- .b8 50
- .b8 95
- .b8 72
- .b8 101
- .b8 97
- .b8 112
- .b8 95
- .b8 99
- .b8 112
- .b8 112
- .b8 49
- .b8 95
- .b8 105
- .b8 105
- .b8 95
- .b8 48
- .b8 57
- .b8 97
- .b8 52
- .b8 48
- .b8 56
- .b8 102
- .b8 100
- .b8 49
- .b8 48
- .b8 68
- .b8 101
- .b8 108
- .b8 101
- .b8 116
- .b8 101
- .b8 83
- .b8 121
- .b8 110
- .b8 99
- .b8 69
- .b8 80
- .b8 49
- .b8 49
- .b8 116
- .b8 72
- .b8 101
- .b8 97
- .b8 112
- .b8 69
- .b8 110
- .b8 116
- .b8 114
- .b8 121
- .b8 95
-
- .b8 0
- .b8 95
- .b8 90
- .b8 78
- .b8 51
- .b8 52
- .b8 95
- .b8 73
- .b8 78
- .b8 84
- .b8 69
- .b8 82
- .b8 78
- .b8 65
- .b8 76
- .b8 95
- .b8 49
- .b8 50
- .b8 95
- .b8 72
- .b8 101
- .b8 97
- .b8 112
- .b8 95
- .b8 99
- .b8 112
- .b8 112
- .b8 49
- .b8 95
- .b8 105
- .b8 105
- .b8 95
- .b8 48
- .b8 57
- .b8 97
- .b8 52
- .b8 48
- .b8 56
- .b8 102
- .b8 100
- .b8 49
- .b8 48
- .b8 68
- .b8 101
- .b8 108
- .b8 101
- .b8 116
- .b8 101
- .b8 83
- .b8 121
- .b8 110
- .b8 99
- .b8 69
- .b8 80
- .b8 49
- .b8 49
- .b8 116
- .b8 72
- .b8 101
- .b8 97
- .b8 112
- .b8 69
- .b8 110
- .b8 116
- .b8 114
- .b8 121
- .b8 95
-
- .b8 0
- .b32 1
- .b32 533
- .b32 1194
+ .b32 536
+ .b32 3201
  .b64 func_begin27
  .b64 func_end27
  .b8 1
@@ -14120,8 +14156,209 @@ BB34_2:
 
  .b8 0
  .b32 1
- .b32 533
- .b32 1624
+ .b32 536
+ .b32 1622
+ .b8 6
+ .b8 144
+ .b8 177
+ .b8 200
+ .b8 201
+ .b8 171
+ .b8 2
+ .b8 2
+ .b8 20
+
+ .b64 tmp208
+ .b64 tmp212
+ .b8 20
+
+ .b64 tmp209
+ .b64 tmp211
+ .b8 21
+
+ .b8 112
+ .b8 83
+ .b8 121
+ .b8 110
+ .b8 99
+
+ .b8 0
+ .b32 1
+ .b32 538
+ .b32 3201
+ .b8 6
+ .b8 144
+ .b8 180
+ .b8 200
+ .b8 201
+ .b8 171
+ .b8 2
+ .b8 2
+ .b8 0
+ .b8 0
+ .b8 0
+ .b8 19
+
+ .b8 95
+ .b8 90
+ .b8 78
+ .b8 51
+ .b8 52
+ .b8 95
+ .b8 73
+ .b8 78
+ .b8 84
+ .b8 69
+ .b8 82
+ .b8 78
+ .b8 65
+ .b8 76
+ .b8 95
+ .b8 49
+ .b8 50
+ .b8 95
+ .b8 72
+ .b8 101
+ .b8 97
+ .b8 112
+ .b8 95
+ .b8 99
+ .b8 112
+ .b8 112
+ .b8 49
+ .b8 95
+ .b8 105
+ .b8 105
+ .b8 95
+ .b8 48
+ .b8 57
+ .b8 97
+ .b8 52
+ .b8 48
+ .b8 56
+ .b8 102
+ .b8 100
+ .b8 49
+ .b8 48
+ .b8 68
+ .b8 101
+ .b8 108
+ .b8 101
+ .b8 116
+ .b8 101
+ .b8 83
+ .b8 121
+ .b8 110
+ .b8 99
+ .b8 69
+ .b8 80
+ .b8 49
+ .b8 49
+ .b8 116
+ .b8 72
+ .b8 101
+ .b8 97
+ .b8 112
+ .b8 69
+ .b8 110
+ .b8 116
+ .b8 114
+ .b8 121
+ .b8 95
+
+ .b8 0
+ .b8 95
+ .b8 90
+ .b8 78
+ .b8 51
+ .b8 52
+ .b8 95
+ .b8 73
+ .b8 78
+ .b8 84
+ .b8 69
+ .b8 82
+ .b8 78
+ .b8 65
+ .b8 76
+ .b8 95
+ .b8 49
+ .b8 50
+ .b8 95
+ .b8 72
+ .b8 101
+ .b8 97
+ .b8 112
+ .b8 95
+ .b8 99
+ .b8 112
+ .b8 112
+ .b8 49
+ .b8 95
+ .b8 105
+ .b8 105
+ .b8 95
+ .b8 48
+ .b8 57
+ .b8 97
+ .b8 52
+ .b8 48
+ .b8 56
+ .b8 102
+ .b8 100
+ .b8 49
+ .b8 48
+ .b8 68
+ .b8 101
+ .b8 108
+ .b8 101
+ .b8 116
+ .b8 101
+ .b8 83
+ .b8 121
+ .b8 110
+ .b8 99
+ .b8 69
+ .b8 80
+ .b8 49
+ .b8 49
+ .b8 116
+ .b8 72
+ .b8 101
+ .b8 97
+ .b8 112
+ .b8 69
+ .b8 110
+ .b8 116
+ .b8 114
+ .b8 121
+ .b8 95
+
+ .b8 0
+ .b32 1
+ .b32 545
+ .b32 1194
+ .b64 func_begin28
+ .b64 func_end28
+ .b8 1
+ .b8 156
+ .b8 15
+
+ .b8 112
+ .b8 72
+ .b8 101
+ .b8 97
+ .b8 112
+ .b8 69
+ .b8 110
+ .b8 116
+ .b8 114
+ .b8 121
+
+ .b8 0
+ .b32 1
+ .b32 545
+ .b32 1622
  .b8 6
  .b8 144
  .b8 177
@@ -14184,11 +14421,11 @@ BB34_2:
 
  .b8 0
  .b32 1
- .b32 544
- .b32 2912
+ .b32 556
+ .b32 2923
  .b8 1
- .b64 func_begin28
- .b64 func_end28
+ .b64 func_begin29
+ .b64 func_end29
  .b8 1
  .b8 156
  .b8 15
@@ -14199,8 +14436,8 @@ BB34_2:
 
  .b8 0
  .b32 1
- .b32 544
- .b32 1376
+ .b32 556
+ .b32 1354
  .b8 6
  .b8 144
  .b8 179
@@ -14211,8 +14448,8 @@ BB34_2:
  .b8 2
  .b8 20
 
- .b64 tmp214
- .b64 tmp222
+ .b64 tmp218
+ .b64 tmp226
  .b8 21
 
  .b8 112
@@ -14228,8 +14465,8 @@ BB34_2:
 
  .b8 0
  .b32 1
- .b32 545
- .b32 1624
+ .b32 557
+ .b32 1622
  .b8 6
  .b8 144
  .b8 180
@@ -14250,8 +14487,8 @@ BB34_2:
 
  .b8 0
  .b32 1
- .b32 546
- .b32 3281
+ .b32 558
+ .b32 3306
  .b8 6
  .b8 144
  .b8 177
@@ -14270,8 +14507,8 @@ BB34_2:
 
  .b8 0
  .b32 1
- .b32 547
- .b32 3176
+ .b32 559
+ .b32 3201
  .b8 6
  .b8 144
  .b8 178
@@ -14327,11 +14564,11 @@ BB34_2:
 
  .b8 0
  .b32 1
- .b32 564
- .b32 2912
+ .b32 576
+ .b32 2923
  .b8 1
- .b64 func_begin29
- .b64 func_end29
+ .b64 func_begin30
+ .b64 func_end30
  .b8 1
  .b8 156
  .b8 15
@@ -14342,8 +14579,8 @@ BB34_2:
 
  .b8 0
  .b32 1
- .b32 564
- .b32 1376
+ .b32 576
+ .b32 1354
  .b8 6
  .b8 144
  .b8 179
@@ -14354,8 +14591,8 @@ BB34_2:
  .b8 2
  .b8 20
 
- .b64 tmp223
- .b64 tmp232
+ .b64 tmp227
+ .b64 tmp236
  .b8 21
 
  .b8 112
@@ -14371,8 +14608,8 @@ BB34_2:
 
  .b8 0
  .b32 1
- .b32 565
- .b32 1624
+ .b32 577
+ .b32 1622
  .b8 6
  .b8 144
  .b8 177
@@ -14393,8 +14630,8 @@ BB34_2:
 
  .b8 0
  .b32 1
- .b32 566
- .b32 3281
+ .b32 578
+ .b32 3306
  .b8 6
  .b8 144
  .b8 178
@@ -14564,7 +14801,7 @@ BB34_2:
 
  .b8 0
  .b32 1
- .b32 579
+ .b32 591
  .b32 1194
  .b64 func_begin14
  .b64 func_end14
@@ -14582,8 +14819,8 @@ BB34_2:
 
  .b8 0
  .b32 1
- .b32 579
- .b32 1624
+ .b32 591
+ .b32 1622
  .b8 6
  .b8 144
  .b8 177
@@ -14611,8 +14848,8 @@ BB34_2:
 
  .b8 0
  .b32 1
- .b32 579
- .b32 2912
+ .b32 591
+ .b32 2923
  .b8 5
  .b8 144
  .b8 177
@@ -14686,11 +14923,11 @@ BB34_2:
 
  .b8 0
  .b32 1
- .b32 584
- .b32 1376
+ .b32 596
+ .b32 1354
  .b8 1
- .b64 func_begin30
- .b64 func_end30
+ .b64 func_begin31
+ .b64 func_end31
  .b8 1
  .b8 156
  .b8 15
@@ -14704,8 +14941,8 @@ BB34_2:
 
  .b8 0
  .b32 1
- .b32 584
- .b32 1376
+ .b32 596
+ .b32 1354
  .b8 6
  .b8 144
  .b8 177
@@ -14726,8 +14963,8 @@ BB34_2:
 
  .b8 0
  .b32 1
- .b32 584
- .b32 1376
+ .b32 596
+ .b32 1354
  .b8 6
  .b8 144
  .b8 178
@@ -14738,8 +14975,8 @@ BB34_2:
  .b8 2
  .b8 20
 
- .b64 tmp233
  .b64 tmp237
+ .b64 tmp241
  .b8 21
 
  .b8 112
@@ -14752,8 +14989,8 @@ BB34_2:
 
  .b8 0
  .b32 1
- .b32 585
- .b32 1624
+ .b32 597
+ .b32 1622
  .b8 6
  .b8 144
  .b8 179
@@ -14772,8 +15009,8 @@ BB34_2:
 
  .b8 0
  .b32 1
- .b32 586
- .b32 3176
+ .b32 598
+ .b32 3201
  .b8 6
  .b8 144
  .b8 180
@@ -14798,8 +15035,8 @@ BB34_2:
 
  .b8 0
  .b32 1
- .b32 587
- .b32 1376
+ .b32 599
+ .b32 1354
  .b8 6
  .b8 144
  .b8 182
@@ -14873,11 +15110,11 @@ BB34_2:
 
  .b8 0
  .b32 1
- .b32 595
- .b32 1370
+ .b32 607
+ .b32 1348
  .b8 1
- .b64 func_begin31
- .b64 func_end31
+ .b64 func_begin32
+ .b64 func_end32
  .b8 1
  .b8 156
  .b8 15
@@ -14891,8 +15128,8 @@ BB34_2:
 
  .b8 0
  .b32 1
- .b32 595
- .b32 1376
+ .b32 607
+ .b32 1354
  .b8 6
  .b8 144
  .b8 177
@@ -14903,8 +15140,8 @@ BB34_2:
  .b8 2
  .b8 20
 
- .b64 tmp238
- .b64 tmp240
+ .b64 tmp242
+ .b64 tmp244
  .b8 21
 
  .b8 112
@@ -14917,8 +15154,8 @@ BB34_2:
 
  .b8 0
  .b32 1
- .b32 596
- .b32 1624
+ .b32 608
+ .b32 1622
  .b8 6
  .b8 144
  .b8 178
@@ -14998,11 +15235,11 @@ BB34_2:
 
  .b8 0
  .b32 1
- .b32 600
+ .b32 612
  .b32 1194
  .b8 1
- .b64 func_begin32
- .b64 func_end32
+ .b64 func_begin33
+ .b64 func_end33
  .b8 1
  .b8 156
  .b8 15
@@ -15016,8 +15253,8 @@ BB34_2:
 
  .b8 0
  .b32 1
- .b32 600
- .b32 1376
+ .b32 612
+ .b32 1354
  .b8 6
  .b8 144
  .b8 177
@@ -15028,8 +15265,8 @@ BB34_2:
  .b8 2
  .b8 20
 
- .b64 tmp241
- .b64 tmp243
+ .b64 tmp245
+ .b64 tmp247
  .b8 21
 
  .b8 112
@@ -15042,8 +15279,8 @@ BB34_2:
 
  .b8 0
  .b32 1
- .b32 601
- .b32 1624
+ .b32 613
+ .b32 1622
  .b8 6
  .b8 144
  .b8 178
@@ -18881,6 +19118,18 @@ BB34_2:
  .b8 9
 
  .b32 1228
+ .b8 105
+ .b8 110
+ .b8 116
+ .b8 51
+ .b8 50
+ .b8 95
+ .b8 116
+
+ .b8 0
+ .b8 9
+
+ .b32 16728
  .b8 73
  .b8 51
  .b8 50
@@ -18923,7 +19172,7 @@ BB34_2:
  .b8 115
 
  .b8 0
- .b32 2912
+ .b32 2923
  .b32 10
  .b32 35
  .b8 0
@@ -18937,7 +19186,7 @@ BB34_2:
  .b8 109
 
  .b8 0
- .b32 16665
+ .b32 16827
  .b32 10
  .b32 36
  .b8 8
@@ -18950,7 +19199,7 @@ BB34_2:
  .b8 12
  .b8 9
 
- .b32 16588
+ .b32 16750
  .b8 116
  .b8 72
  .b8 101
@@ -18997,7 +19246,7 @@ BB34_2:
  .b8 121
 
  .b8 0
- .b32 2912
+ .b32 2923
  .b32 10
  .b32 40
  .b8 0
@@ -19010,7 +19259,7 @@ BB34_2:
  .b8 109
 
  .b8 0
- .b32 2912
+ .b32 2923
  .b32 10
  .b32 41
  .b8 4
@@ -19032,7 +19281,7 @@ BB34_2:
  .b8 115
 
  .b8 0
- .b32 16788
+ .b32 16950
  .b32 10
  .b32 42
  .b8 8
@@ -19041,11 +19290,11 @@ BB34_2:
  .b8 0
  .b8 3
 
- .b32 16671
+ .b32 16833
  .b8 12
  .b8 9
 
- .b32 16691
+ .b32 16853
  .b8 116
  .b8 72
  .b8 101
@@ -19060,11 +19309,11 @@ BB34_2:
  .b8 0
  .b8 3
 
- .b32 16237
+ .b32 16386
  .b8 12
  .b8 3
 
- .b32 16822
+ .b32 16984
  .b8 12
  .b8 23
 
@@ -19075,29 +19324,29 @@ BB34_2:
  .b8 12
  .b8 10
 
- .b32 1624
+ .b32 1622
  .b8 11
 
- .b32 1646
+ .b32 1644
  .b8 39
 
  .b8 0
  .b8 3
 
- .b32 1624
+ .b32 1622
  .b8 12
  .b8 10
 
- .b32 1624
+ .b32 1622
  .b8 11
 
- .b32 1646
+ .b32 1644
  .b8 79
 
  .b8 0
  .b8 3
 
- .b32 16794
+ .b32 16956
  .b8 12
  .b8 0
 }
@@ -20035,7 +20284,7 @@ BB34_2:
  .b8 6
  .b8 0
  .b8 144
- .b8 176
+ .b8 177
  .b8 238
  .b8 200
  .b8 171
@@ -20054,7 +20303,7 @@ BB34_2:
  .b8 6
  .b8 0
  .b8 144
- .b8 182
+ .b8 183
  .b8 238
  .b8 200
  .b8 171
@@ -20064,7 +20313,7 @@ BB34_2:
  .b8 6
  .b8 0
  .b8 144
- .b8 180
+ .b8 181
  .b8 238
  .b8 200
  .b8 171
@@ -20074,7 +20323,7 @@ BB34_2:
  .b8 6
  .b8 0
  .b8 144
- .b8 179
+ .b8 180
  .b8 238
  .b8 200
  .b8 171
@@ -20084,7 +20333,7 @@ BB34_2:
  .b8 6
  .b8 0
  .b8 144
- .b8 178
+ .b8 179
  .b8 238
  .b8 200
  .b8 171
@@ -20094,7 +20343,7 @@ BB34_2:
  .b8 6
  .b8 0
  .b8 144
- .b8 177
+ .b8 178
  .b8 238
  .b8 200
  .b8 171
@@ -20113,7 +20362,7 @@ BB34_2:
  .b8 6
  .b8 0
  .b8 144
- .b8 177
+ .b8 178
  .b8 238
  .b8 200
  .b8 171
@@ -20132,7 +20381,7 @@ BB34_2:
  .b8 6
  .b8 0
  .b8 144
- .b8 178
+ .b8 179
  .b8 238
  .b8 200
  .b8 171
@@ -20152,7 +20401,7 @@ BB34_2:
  .b8 6
  .b8 0
  .b8 144
- .b8 179
+ .b8 180
  .b8 238
  .b8 200
  .b8 171
@@ -20172,7 +20421,7 @@ BB34_2:
  .b8 6
  .b8 0
  .b8 144
- .b8 180
+ .b8 181
  .b8 238
  .b8 200
  .b8 171
@@ -20192,7 +20441,7 @@ BB34_2:
  .b8 6
  .b8 0
  .b8 144
- .b8 181
+ .b8 182
  .b8 238
  .b8 200
  .b8 171
@@ -20212,7 +20461,7 @@ BB34_2:
  .b8 6
  .b8 0
  .b8 144
- .b8 182
+ .b8 183
  .b8 238
  .b8 200
  .b8 171
@@ -20232,7 +20481,7 @@ BB34_2:
  .b8 6
  .b8 0
  .b8 144
- .b8 176
+ .b8 177
  .b8 238
  .b8 200
  .b8 171
@@ -20253,8 +20502,8 @@ BB34_2:
  .b8 6
  .b8 0
  .b8 144
- .b8 185
- .b8 236
+ .b8 176
+ .b8 238
  .b8 200
  .b8 171
  .b8 2
@@ -20282,8 +20531,8 @@ BB34_2:
  .b8 6
  .b8 0
  .b8 144
- .b8 185
- .b8 236
+ .b8 176
+ .b8 238
  .b8 200
  .b8 171
  .b8 2
@@ -20304,7 +20553,7 @@ BB34_2:
  .b8 6
  .b8 0
  .b8 144
- .b8 183
+ .b8 184
  .b8 238
  .b8 200
  .b8 171
@@ -20334,7 +20583,7 @@ BB34_2:
  .b8 6
  .b8 0
  .b8 144
- .b8 184
+ .b8 185
  .b8 238
  .b8 200
  .b8 171
@@ -20354,7 +20603,7 @@ BB34_2:
  .b8 6
  .b8 0
  .b8 144
- .b8 184
+ .b8 185
  .b8 238
  .b8 200
  .b8 171
@@ -20374,8 +20623,8 @@ BB34_2:
  .b8 6
  .b8 0
  .b8 144
- .b8 185
- .b8 238
+ .b8 176
+ .b8 240
  .b8 200
  .b8 171
  .b8 2
@@ -20394,8 +20643,8 @@ BB34_2:
  .b8 6
  .b8 0
  .b8 144
- .b8 185
- .b8 238
+ .b8 176
+ .b8 240
  .b8 200
  .b8 171
  .b8 2
@@ -20414,7 +20663,7 @@ BB34_2:
  .b8 6
  .b8 0
  .b8 144
- .b8 183
+ .b8 184
  .b8 238
  .b8 200
  .b8 171
@@ -20425,12 +20674,12 @@ BB34_2:
 .section .debug_ranges {
 }
 .section .debug_pubnames {
- .b32 1396
+ .b32 1430
  .b8 2
  .b8 0
  .b32 .debug_info
- .b32 16866
- .b32 12124
+ .b32 17028
+ .b32 12273
  .b8 95
  .b8 90
  .b8 78
@@ -20509,7 +20758,7 @@ BB34_2:
  .b8 106
  .b8 0
 
- .b32 9643
+ .b32 9669
  .b8 95
  .b8 90
  .b8 49
@@ -20536,7 +20785,7 @@ BB34_2:
  .b8 118
  .b8 0
 
- .b32 7081
+ .b32 7106
  .b8 95
  .b8 90
  .b8 78
@@ -20601,7 +20850,7 @@ BB34_2:
  .b8 95
  .b8 0
 
- .b32 11947
+ .b32 12096
  .b8 95
  .b8 90
  .b8 49
@@ -20623,7 +20872,7 @@ BB34_2:
  .b8 104
  .b8 0
 
- .b32 7581
+ .b32 7606
  .b8 95
  .b8 90
  .b8 78
@@ -20690,7 +20939,7 @@ BB34_2:
  .b8 95
  .b8 0
 
- .b32 8633
+ .b32 8658
  .b8 95
  .b8 90
  .b8 78
@@ -20750,7 +20999,7 @@ BB34_2:
  .b8 118
  .b8 0
 
- .b32 6390
+ .b32 6415
  .b8 99
  .b8 117
  .b8 100
@@ -20766,7 +21015,39 @@ BB34_2:
  .b8 101
  .b8 0
 
- .b32 6104
+ .b32 10310
+ .b8 95
+ .b8 90
+ .b8 50
+ .b8 51
+ .b8 72
+ .b8 101
+ .b8 97
+ .b8 112
+ .b8 95
+ .b8 65
+ .b8 108
+ .b8 108
+ .b8 111
+ .b8 99
+ .b8 84
+ .b8 121
+ .b8 112
+ .b8 101
+ .b8 86
+ .b8 111
+ .b8 105
+ .b8 100
+ .b8 83
+ .b8 116
+ .b8 97
+ .b8 114
+ .b8 115
+ .b8 80
+ .b8 118
+ .b8 0
+
+ .b32 6129
  .b8 99
  .b8 117
  .b8 100
@@ -20790,7 +21071,7 @@ BB34_2:
  .b8 115
  .b8 0
 
- .b32 10567
+ .b32 10716
  .b8 95
  .b8 90
  .b8 50
@@ -20819,7 +21100,7 @@ BB34_2:
  .b8 104
  .b8 0
 
- .b32 9725
+ .b32 9751
  .b8 95
  .b8 90
  .b8 49
@@ -20846,7 +21127,7 @@ BB34_2:
  .b8 118
  .b8 0
 
- .b32 3468
+ .b32 3493
  .b8 99
  .b8 117
  .b8 100
@@ -20859,7 +21140,7 @@ BB34_2:
  .b8 99
  .b8 0
 
- .b32 10053
+ .b32 10079
  .b8 95
  .b8 90
  .b8 49
@@ -20892,7 +21173,7 @@ BB34_2:
  .b8 106
  .b8 0
 
- .b32 10735
+ .b32 10884
  .b8 95
  .b8 90
  .b8 49
@@ -20919,7 +21200,7 @@ BB34_2:
  .b8 104
  .b8 0
 
- .b32 10415
+ .b32 10564
  .b8 95
  .b8 90
  .b8 49
@@ -20940,7 +21221,7 @@ BB34_2:
  .b8 104
  .b8 0
 
- .b32 7021
+ .b32 7046
  .b8 95
  .b8 90
  .b8 57
@@ -20956,7 +21237,7 @@ BB34_2:
  .b8 118
  .b8 0
 
- .b32 12374
+ .b32 12523
  .b8 95
  .b8 90
  .b8 50
@@ -20988,7 +21269,7 @@ BB34_2:
  .b8 95
  .b8 0
 
- .b32 12631
+ .b32 12780
  .b8 95
  .b8 90
  .b8 50
@@ -21019,7 +21300,7 @@ BB34_2:
  .b8 104
  .b8 0
 
- .b32 7843
+ .b32 7868
  .b8 95
  .b8 90
  .b8 78
@@ -21091,7 +21372,7 @@ BB34_2:
  .b8 95
  .b8 0
 
- .b32 11088
+ .b32 11237
  .b8 95
  .b8 90
  .b8 49
@@ -21110,7 +21391,7 @@ BB34_2:
  .b8 104
  .b8 0
 
- .b32 6232
+ .b32 6257
  .b8 99
  .b8 117
  .b8 100
@@ -21135,7 +21416,7 @@ BB34_2:
  .b8 101
  .b8 0
 
- .b32 9445
+ .b32 9471
  .b8 95
  .b8 90
  .b8 50
@@ -21164,7 +21445,7 @@ BB34_2:
  .b8 104
  .b8 0
 
- .b32 9561
+ .b32 9587
  .b8 95
  .b8 90
  .b8 49
@@ -21191,7 +21472,7 @@ BB34_2:
  .b8 118
  .b8 0
 
- .b32 11276
+ .b32 11425
  .b8 95
  .b8 90
  .b8 78
@@ -21260,7 +21541,7 @@ BB34_2:
  .b8 95
  .b8 0
 
- .b32 9807
+ .b32 9833
  .b8 95
  .b8 90
  .b8 49
@@ -21297,7 +21578,7 @@ BB34_2:
  .b8 106
  .b8 0
 
- .b32 11537
+ .b32 11686
  .b8 95
  .b8 90
  .b8 78
@@ -21374,7 +21655,7 @@ BB34_2:
  .b8 95
  .b8 0
 
- .b32 10284
+ .b32 10433
  .b8 95
  .b8 90
  .b8 49
@@ -21410,7 +21691,7 @@ BB34_2:
  .b8 95
  .b8 0
 
- .b32 11735
+ .b32 11884
  .b8 95
  .b8 90
  .b8 49
@@ -21436,7 +21717,7 @@ BB34_2:
  .b8 104
  .b8 0
 
- .b32 12797
+ .b32 12946
  .b8 95
  .b8 90
  .b8 50
@@ -21470,7 +21751,7 @@ BB34_2:
  .b8 104
  .b8 0
 
- .b32 6479
+ .b32 6504
  .b8 99
  .b8 117
  .b8 100
@@ -21518,7 +21799,7 @@ BB34_2:
  .b8 114
  .b8 0
 
- .b32 10899
+ .b32 11048
  .b8 95
  .b8 90
  .b8 56
@@ -21549,7 +21830,7 @@ BB34_2:
  .b8 104
  .b8 0
 
- .b32 8215
+ .b32 8240
  .b8 95
  .b8 90
  .b8 78
@@ -21621,7 +21902,7 @@ BB34_2:
  .b8 95
  .b8 0
 
- .b32 7321
+ .b32 7346
  .b8 95
  .b8 90
  .b8 78
@@ -21687,7 +21968,7 @@ BB34_2:
  .b8 95
  .b8 0
 
- .b32 6728
+ .b32 6753
  .b8 99
  .b8 117
  .b8 100

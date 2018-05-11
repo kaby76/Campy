@@ -1381,43 +1381,9 @@
         [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclHeapAlloc")]
         public static extern System.IntPtr BclHeapAlloc(System.IntPtr bcl_type);
 
-        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclGetMetaOfType")]
-        public static extern System.IntPtr BclGetMetaOfType(
-            [MarshalAs(UnmanagedType.LPStr)] string assemblyName,
-            [MarshalAs(UnmanagedType.LPStr)] string nameSpace,
-            [MarshalAs(UnmanagedType.LPStr)] string name,
-            System.IntPtr nested);
-
-        private IntPtr GetBclType(Type type)
-        {
-            Stack<Type> chain = new Stack<Type>();
-            while (type != null)
-            {
-                chain.Push(type);
-                type = type.DeclaringType;
-            }
-
-            System.IntPtr result = System.IntPtr.Zero;
-
-            while (chain.Any())
-            {
-                type = chain.Pop();
-                var tr = type.ToMonoTypeReference();
-                tr = RUNTIME.RewriteType(tr);
-                var assembly_name = tr.Module.Name;
-                var name_space = tr.Namespace;
-                var name = tr.Name;
-                // Make sure assembly is placed in GPU BCL file system.
-                JITER.Singleton.AddAssemblyToFileSystem(tr.Module);
-                result = BclGetMetaOfType(assembly_name, name_space, name, result);
-            }
-
-            return result;
-        }
-
         public IntPtr New(Type type)
         {
-            var bcl_type = GetBclType(type);
+            var bcl_type = RUNTIME.GetBclType(type.ToMonoTypeReference());
             return BclHeapAlloc(bcl_type);
         }
 
@@ -1431,7 +1397,7 @@
         public IntPtr New(Array array)
         {
             Type type = array.GetType().GetElementType();
-            var bcl_type = GetBclType(type);
+            var bcl_type = RUNTIME.GetBclType(type.ToMonoTypeReference());
 
             uint[] lengths = new uint[array.Rank];
             for (int i = 0; i < array.Rank; ++i) lengths[i] = (uint)array.GetLength(i);

@@ -17,6 +17,12 @@
 	.param .b64 _Z22SystemString_GetStringPhPj_param_1
 )
 ;
+.extern .func  (.param .b32 func_retval0) vprintf
+(
+	.param .b64 vprintf_param_0,
+	.param .b64 vprintf_param_1
+)
+;
 .extern .func  (.param .b64 func_retval0) _Z7Gmallocy
 (
 	.param .b64 _Z7Gmallocy_param_0
@@ -260,8 +266,8 @@ func_end5:
 	.reg .b64 	%SPL;
 	.reg .pred 	%p<11>;
 	.reg .b16 	%rs<6>;
-	.reg .b32 	%r<27>;
-	.reg .b64 	%rd<23>;
+	.reg .b32 	%r<28>;
+	.reg .b64 	%rd<24>;
 
 
 	.loc 1 30 1
@@ -270,8 +276,8 @@ func_begin6:
 
 	.loc 1 30 1
 
-	mov.u64 	%rd22, __local_depot6;
-	cvta.local.u64 	%SP, %rd22;
+	mov.u64 	%rd23, __local_depot6;
+	cvta.local.u64 	%SP, %rd23;
 	ld.param.u64 	%rd3, [_Z20System_Console_WritePhS_S__param_0];
 	ld.param.u64 	%rd4, [_Z20System_Console_WritePhS_S__param_1];
 	ld.param.u64 	%rd5, [_Z20System_Console_WritePhS_S__param_2];
@@ -326,14 +332,14 @@ tmp17:
 	
 	//{
 	}// Callseq End 0
-	mov.u32 	%r23, %r1;
+	mov.u32 	%r24, %r1;
 tmp18:
 
 BB6_2:
 
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/System.Console.c:41 		while (strLen > 0) {
 	.loc	1 41 3
-	mov.u32 	%r2, %r23;
+	mov.u32 	%r2, %r24;
 tmp19:
 	ld.u32 	%r12, [%SP+8];
 	setp.gt.u32	%p3, %r12, 0;
@@ -354,15 +360,15 @@ tmp20:
 
 BB6_4:
 	mov.u32 	%r14, 128;
-	mov.u32 	%r24, %r14;
+	mov.u32 	%r25, %r14;
 	bra.uni 	BB6_6;
 
 BB6_5:
 	ld.u32 	%r3, [%SP+8];
-	mov.u32 	%r24, %r3;
+	mov.u32 	%r25, %r3;
 
 BB6_6:
-	mov.u32 	%r4, %r24;
+	mov.u32 	%r4, %r25;
 tmp21:
 	mov.u32 	%r15, 0;
 
@@ -370,14 +376,14 @@ tmp21:
 	.loc	1 43 9
 	mov.b32 	%r5, %r15;
 tmp22:
-	mov.u32 	%r25, %r5;
+	mov.u32 	%r26, %r5;
 tmp23:
 
 BB6_7:
 
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/System.Console.c:43 			for (i=0; i<thisLen; i++) {
 	.loc	1 43 4
-	mov.u32 	%r6, %r25;
+	mov.u32 	%r6, %r26;
 tmp24:
 	setp.lt.u32	%p7, %r6, %r4;
 	not.pred 	%p8, %p7;
@@ -389,14 +395,14 @@ BB6_8:
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/System.Console.c:44 				unsigned char c = str[start+i] & 0xff;
 	.loc	1 44 21
 tmp25:
-	add.s32 	%r18, %r2, %r6;
-	cvt.u64.u32	%rd16, %r18;
-	shl.b64 	%rd17, %rd16, 1;
-	add.s64 	%rd18, %rd2, %rd17;
-	ld.u16 	%rs3, [%rd18];
-	cvt.u32.u16	%r19, %rs3;
-	and.b32  	%r20, %r19, 255;
-	cvt.u16.u32	%rs1, %r20;
+	add.s32 	%r19, %r2, %r6;
+	cvt.u64.u32	%rd17, %r19;
+	shl.b64 	%rd18, %rd17, 1;
+	add.s64 	%rd19, %rd2, %rd18;
+	ld.u16 	%rs3, [%rd19];
+	cvt.u32.u16	%r20, %rs3;
+	and.b32  	%r21, %r20, 255;
+	cvt.u16.u32	%rs1, %r21;
 tmp26:
 	and.b16  	%rs4, %rs1, 255;
 
@@ -408,22 +414,22 @@ tmp26:
 	bra.uni 	BB6_9;
 
 BB6_9:
-	cvt.u32.u16	%r22, %rs1;
-	and.b32  	%r7, %r22, 255;
-	mov.u32 	%r26, %r7;
+	cvt.u32.u16	%r23, %rs1;
+	and.b32  	%r7, %r23, 255;
+	mov.u32 	%r27, %r7;
 	bra.uni 	BB6_11;
 
 BB6_10:
-	mov.u32 	%r21, 63;
-	mov.u32 	%r26, %r21;
+	mov.u32 	%r22, 63;
+	mov.u32 	%r27, %r22;
 
 BB6_11:
-	mov.u32 	%r8, %r26;
+	mov.u32 	%r8, %r27;
 	cvt.u16.u32	%rs5, %r8;
-	cvt.u64.u32	%rd19, %r6;
-	add.u64 	%rd20, %SP, 12;
-	add.s64 	%rd21, %rd20, %rd19;
-	st.u8 	[%rd21], %rs5;
+	cvt.u64.u32	%rd20, %r6;
+	add.u64 	%rd21, %SP, 12;
+	add.s64 	%rd22, %rd21, %rd20;
+	st.u8 	[%rd22], %rs5;
 tmp27:
 
 
@@ -431,7 +437,7 @@ tmp27:
 	.loc	1 43 25
 	add.s32 	%r9, %r6, 1;
 tmp28:
-	mov.u32 	%r25, %r9;
+	mov.u32 	%r26, %r9;
 tmp29:
 	bra.uni 	BB6_7;
 tmp30:
@@ -445,18 +451,41 @@ BB6_13:
 	add.s64 	%rd15, %rd14, %rd13;
 	mov.u16 	%rs2, 0;
 	st.u8 	[%rd15], %rs2;
+	mov.u64 	%rd16, 0;
+
+//C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/System.Console.c:48 			printf(str8);
+	.loc	1 48 4
+	// Callseq Start 1
+	{
+	.reg .b32 temp_param_reg;
+	// <end>}
+	.param .b64 param0;
+	st.param.b64	[param0+0], %rd14;
+	.param .b64 param1;
+	st.param.b64	[param1+0], %rd16;
+	.param .b32 retval0;
+	call.uni (retval0), 
+	vprintf, 
+	(
+	param0, 
+	param1
+	);
+	ld.param.b32	%r16, [retval0+0];
+	
+	//{
+	}// Callseq End 1
 
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/System.Console.c:49 			strLen -= thisLen;
 	.loc	1 49 4
-	ld.u32 	%r16, [%SP+8];
-	sub.s32 	%r17, %r16, %r4;
-	st.u32 	[%SP+8], %r17;
+	ld.u32 	%r17, [%SP+8];
+	sub.s32 	%r18, %r17, %r4;
+	st.u32 	[%SP+8], %r18;
 
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/System.Console.c:50 			start += thisLen;
 	.loc	1 50 4
 	add.s32 	%r10, %r2, %r4;
 tmp31:
-	mov.u32 	%r23, %r10;
+	mov.u32 	%r24, %r10;
 tmp32:
 	bra.uni 	BB6_2;
 tmp33:
@@ -555,7 +584,7 @@ func_exec_begin8:
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/System.Console.c:102 	tAsyncCall *pAsync = TMALLOC(tAsyncCall);
 	.loc	1 102 36
 tmp37:
-	// Callseq Start 1
+	// Callseq Start 2
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
@@ -570,7 +599,7 @@ tmp37:
 	ld.param.b64	%rd8, [retval0+0];
 	
 	//{
-	}// Callseq End 1
+	}// Callseq End 2
 	mov.u32 	%r1, -1;
 tmp38:
 
@@ -634,7 +663,7 @@ func_exec_begin9:
 
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/System.Console.c:114 	isKey = Internal_ReadKey_Check(NULL, NULL, (PTR)&c, NULL);
 	.loc	1 114 10
-	// Callseq Start 2
+	// Callseq Start 3
 	{
 	.reg .b32 temp_param_reg;
 	// <end>}
@@ -658,7 +687,7 @@ func_exec_begin9:
 	ld.param.b32	%r1, [retval0+0];
 	
 	//{
-	}// Callseq End 2
+	}// Callseq End 3
 tmp41:
 
 //C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/System.Console.c:115 	if (isKey) {
@@ -709,17 +738,17 @@ tmp46:
 func_end9:
 }
 
-	.file	1 "C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/System.Console.c", 1516382360, 3481
-	.file	2 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\_BCL_.h", 1520869567, 1596
+	.file	1 "C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/System.Console.c", 1522932998, 3479
+	.file	2 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\_BCL_.h", 1525227101, 1615
 	.file	3 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\JIT.h", 1516637997, 4246
 	.file	4 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\MetaDataTables.h", 1513259529, 18172
 	.file	5 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\Thread.h", 1516285724, 4400
 	.file	6 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v9.0\\include\\cuda_device_runtime_api.h", 1504359958, 14836
-	.file	7 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\Types.h", 1513259530, 3048
+	.file	7 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\Types.h", 1525298601, 3656
 	.file	8 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v9.0\\include\\driver_types.h", 1504359957, 76651
 
 .section .debug_info {
- .b32 10564
+ .b32 10602
  .b8 2
  .b8 0
  .b32 .debug_abbrev
@@ -884,7 +913,7 @@ func_end9:
  .b32 202
  .b8 1
  .b32 2
- .b32 83
+ .b32 84
  .b8 9
  .b8 3
  .b64 _bcl_
@@ -912,7 +941,7 @@ func_end9:
  .b8 0
  .b32 240
  .b32 2
- .b32 17
+ .b32 18
  .b8 5
 
  .b8 103
@@ -937,7 +966,7 @@ func_end9:
  .b8 0
  .b32 1198
  .b32 2
- .b32 20
+ .b32 21
  .b8 0
 
  .b8 1
@@ -951,7 +980,7 @@ func_end9:
  .b8 0
  .b32 1210
  .b32 2
- .b32 21
+ .b32 22
  .b8 8
 
  .b8 1
@@ -978,7 +1007,7 @@ func_end9:
  .b8 0
  .b32 1238
  .b32 2
- .b32 22
+ .b32 23
  .b8 16
 
  .b8 1
@@ -1000,7 +1029,7 @@ func_end9:
  .b8 0
  .b32 1248
  .b32 2
- .b32 25
+ .b32 26
  .b8 24
 
  .b8 1
@@ -1015,7 +1044,7 @@ func_end9:
  .b8 0
  .b32 1281
  .b32 2
- .b32 28
+ .b32 29
  .b8 32
 
  .b8 1
@@ -1030,7 +1059,7 @@ func_end9:
  .b8 0
  .b32 1281
  .b32 2
- .b32 29
+ .b32 30
  .b8 40
 
  .b8 1
@@ -1047,7 +1076,7 @@ func_end9:
  .b8 0
  .b32 1304
  .b32 2
- .b32 30
+ .b32 31
  .b8 48
 
  .b8 1
@@ -1061,7 +1090,7 @@ func_end9:
  .b8 0
  .b32 1347
  .b32 2
- .b32 31
+ .b32 32
  .b8 56
 
  .b8 1
@@ -1083,7 +1112,7 @@ func_end9:
  .b8 0
  .b32 1238
  .b32 2
- .b32 32
+ .b32 33
  .b8 60
 
  .b8 1
@@ -1103,9 +1132,9 @@ func_end9:
  .b8 101
 
  .b8 0
- .b32 1380
+ .b32 1358
  .b32 2
- .b32 35
+ .b32 36
  .b8 64
 
  .b8 1
@@ -1128,7 +1157,7 @@ func_end9:
  .b8 0
  .b32 1238
  .b32 2
- .b32 36
+ .b32 37
  .b8 72
 
  .b8 1
@@ -1156,7 +1185,7 @@ func_end9:
  .b8 0
  .b32 1238
  .b32 2
- .b32 37
+ .b32 38
  .b8 76
 
  .b8 1
@@ -1175,7 +1204,7 @@ func_end9:
  .b8 0
  .b32 1287
  .b32 2
- .b32 40
+ .b32 41
  .b8 80
 
  .b8 1
@@ -1196,9 +1225,9 @@ func_end9:
  .b8 116
 
  .b8 0
- .b32 1406
+ .b32 1404
  .b32 2
- .b32 43
+ .b32 44
  .b8 88
 
  .b8 1
@@ -1209,9 +1238,9 @@ func_end9:
  .b8 108
 
  .b8 0
- .b32 1406
+ .b32 1404
  .b32 2
- .b32 44
+ .b32 45
  .b8 96
 
  .b8 1
@@ -1232,9 +1261,9 @@ func_end9:
  .b8 101
 
  .b8 0
- .b32 1437
+ .b32 1435
  .b32 2
- .b32 45
+ .b32 46
  .b8 104
 
  .b8 1
@@ -1253,9 +1282,9 @@ func_end9:
  .b8 120
 
  .b8 0
- .b32 1437
+ .b32 1435
  .b32 2
- .b32 46
+ .b32 47
  .b8 108
 
  .b8 1
@@ -1271,9 +1300,9 @@ func_end9:
  .b8 115
 
  .b8 0
- .b32 1437
+ .b32 1435
  .b32 2
- .b32 47
+ .b32 48
  .b8 112
 
  .b8 1
@@ -1295,9 +1324,9 @@ func_end9:
  .b8 115
 
  .b8 0
- .b32 1437
+ .b32 1435
  .b32 2
- .b32 48
+ .b32 49
  .b8 116
 
  .b8 1
@@ -1316,9 +1345,9 @@ func_end9:
  .b8 111
 
  .b8 0
- .b32 1465
+ .b32 1477
  .b32 2
- .b32 51
+ .b32 52
  .b8 120
 
  .b8 1
@@ -1339,9 +1368,9 @@ func_end9:
  .b8 116
 
  .b8 0
- .b32 1465
+ .b32 1477
  .b32 2
- .b32 52
+ .b32 53
  .b8 128
  .b8 1
 
@@ -1362,9 +1391,9 @@ func_end9:
  .b8 101
 
  .b8 0
- .b32 1498
+ .b32 1510
  .b32 2
- .b32 55
+ .b32 56
  .b8 136
  .b8 1
 
@@ -1384,9 +1413,9 @@ func_end9:
  .b8 115
 
  .b8 0
- .b32 1504
+ .b32 1516
  .b32 2
- .b32 58
+ .b32 59
  .b8 144
  .b8 1
 
@@ -1403,9 +1432,9 @@ func_end9:
  .b8 108
 
  .b8 0
- .b32 1437
+ .b32 1435
  .b32 2
- .b32 61
+ .b32 62
  .b8 152
  .b8 1
 
@@ -1426,7 +1455,7 @@ func_end9:
  .b8 0
  .b32 1287
  .b32 2
- .b32 62
+ .b32 63
  .b8 160
  .b8 1
 
@@ -1452,9 +1481,9 @@ func_end9:
  .b8 101
 
  .b8 0
- .b32 1437
+ .b32 1435
  .b32 2
- .b32 63
+ .b32 64
  .b8 168
  .b8 1
 
@@ -1470,9 +1499,9 @@ func_end9:
  .b8 115
 
  .b8 0
- .b32 1535
+ .b32 1547
  .b32 2
- .b32 66
+ .b32 67
  .b8 176
  .b8 1
 
@@ -1506,9 +1535,9 @@ func_end9:
  .b8 100
 
  .b8 0
- .b32 1570
+ .b32 1582
  .b32 2
- .b32 67
+ .b32 68
  .b8 184
  .b8 1
 
@@ -1538,9 +1567,9 @@ func_end9:
  .b8 115
 
  .b8 0
- .b32 1578
+ .b32 1603
  .b32 2
- .b32 68
+ .b32 69
  .b8 192
  .b8 1
 
@@ -1554,9 +1583,9 @@ func_end9:
  .b8 115
 
  .b8 0
- .b32 1618
+ .b32 1643
  .b32 2
- .b32 69
+ .b32 70
  .b8 200
  .b8 1
 
@@ -1577,9 +1606,9 @@ func_end9:
  .b8 115
 
  .b8 0
- .b32 1437
+ .b32 1435
  .b32 2
- .b32 70
+ .b32 71
  .b8 208
  .b8 1
 
@@ -1597,9 +1626,9 @@ func_end9:
  .b8 67
 
  .b8 0
- .b32 1437
+ .b32 1435
  .b32 2
- .b32 73
+ .b32 74
  .b8 212
  .b8 1
 
@@ -1619,9 +1648,9 @@ func_end9:
  .b8 115
 
  .b8 0
- .b32 1656
+ .b32 1681
  .b32 2
- .b32 76
+ .b32 77
  .b8 216
  .b8 1
 
@@ -1644,9 +1673,9 @@ func_end9:
  .b8 100
 
  .b8 0
- .b32 1656
+ .b32 1681
  .b32 2
- .b32 77
+ .b32 78
  .b8 224
  .b8 1
 
@@ -1667,7 +1696,7 @@ func_end9:
  .b8 0
  .b32 1238
  .b32 2
- .b32 80
+ .b32 81
  .b8 232
  .b8 1
 
@@ -1703,7 +1732,7 @@ func_end9:
  .b8 0
  .b32 0
  .b32 2
- .b32 8
+ .b32 9
  .b8 8
 
  .b8 105
@@ -1736,7 +1765,7 @@ func_end9:
  .b8 0
  .b32 0
  .b32 2
- .b32 9
+ .b32 10
  .b8 3
 
  .b32 1287
@@ -1794,18 +1823,37 @@ func_end9:
  .b8 0
  .b8 7
  .b32 8
- .b8 9
+ .b8 8
 
- .b32 1360
  .b8 98
  .b8 111
  .b8 111
  .b8 108
- .b8 101
- .b8 97
- .b8 110
 
  .b8 0
+ .b8 2
+ .b32 1
+ .b8 3
+
+ .b32 1364
+ .b8 12
+ .b8 9
+
+ .b32 1378
+ .b8 72
+ .b8 69
+ .b8 65
+ .b8 80
+ .b8 95
+ .b8 80
+ .b8 84
+ .b8 82
+
+ .b8 0
+ .b8 3
+
+ .b32 1384
+ .b8 12
  .b8 8
 
  .b8 117
@@ -1827,28 +1875,7 @@ func_end9:
  .b32 1
  .b8 3
 
- .b32 1386
- .b8 12
- .b8 9
-
- .b32 1400
- .b8 72
- .b8 69
- .b8 65
- .b8 80
- .b8 95
- .b8 80
- .b8 84
- .b8 82
-
- .b8 0
- .b8 3
-
- .b32 1360
- .b8 12
- .b8 3
-
- .b32 1412
+ .b32 1410
  .b8 12
  .b8 7
 
@@ -1867,13 +1894,26 @@ func_end9:
  .b8 0
  .b32 0
  .b32 2
- .b32 11
+ .b32 12
  .b8 9
 
- .b32 1446
+ .b32 1444
  .b8 85
  .b8 51
  .b8 50
+
+ .b8 0
+ .b8 9
+
+ .b32 1458
+ .b8 117
+ .b8 105
+ .b8 110
+ .b8 116
+ .b8 51
+ .b8 50
+ .b8 95
+ .b8 116
 
  .b8 0
  .b8 8
@@ -1896,7 +1936,7 @@ func_end9:
  .b32 4
  .b8 3
 
- .b32 1471
+ .b32 1483
  .b8 12
  .b8 7
 
@@ -1920,11 +1960,11 @@ func_end9:
  .b32 102
  .b8 3
 
- .b32 1446
+ .b32 1458
  .b8 12
  .b8 3
 
- .b32 1510
+ .b32 1522
  .b8 12
  .b8 7
 
@@ -1943,10 +1983,10 @@ func_end9:
  .b8 0
  .b32 0
  .b32 2
- .b32 12
+ .b32 13
  .b8 3
 
- .b32 1541
+ .b32 1553
  .b8 12
  .b8 7
 
@@ -1969,21 +2009,33 @@ func_end9:
  .b8 0
  .b32 0
  .b32 2
- .b32 13
+ .b32 14
  .b8 9
 
- .b32 1360
+ .b32 1590
  .b8 85
  .b8 56
 
  .b8 0
+ .b8 9
+
+ .b32 1384
+ .b8 117
+ .b8 105
+ .b8 110
+ .b8 116
+ .b8 56
+ .b8 95
+ .b8 116
+
+ .b8 0
  .b8 3
 
- .b32 1584
+ .b32 1609
  .b8 12
  .b8 3
 
- .b32 1590
+ .b32 1615
  .b8 12
  .b8 7
 
@@ -2008,11 +2060,11 @@ func_end9:
  .b32 230
  .b8 3
 
- .b32 1624
+ .b32 1649
  .b8 12
  .b8 3
 
- .b32 1630
+ .b32 1655
  .b8 12
  .b8 7
 
@@ -2035,7 +2087,7 @@ func_end9:
  .b32 85
  .b8 3
 
- .b32 1662
+ .b32 1687
  .b8 12
  .b8 7
 
@@ -2080,7 +2132,7 @@ func_end9:
  .b8 0
  .b32 6
  .b32 75
- .b32 1790
+ .b32 1815
  .b8 1
  .b64 func_begin0
  .b64 func_end0
@@ -2093,7 +2145,7 @@ func_end9:
  .b8 0
  .b32 6
  .b32 75
- .b32 10515
+ .b32 10553
  .b8 11
  .b8 3
  .b64 __local_depot0
@@ -2120,7 +2172,7 @@ func_end9:
  .b8 0
  .b8 9
 
- .b32 1807
+ .b32 1832
  .b8 99
  .b8 117
  .b8 100
@@ -4939,7 +4991,7 @@ func_end9:
  .b8 0
  .b32 6
  .b32 80
- .b32 1790
+ .b32 1815
  .b8 1
  .b64 func_begin1
  .b64 func_end1
@@ -4952,7 +5004,7 @@ func_end9:
  .b8 0
  .b32 6
  .b32 80
- .b32 10521
+ .b32 10559
  .b8 11
  .b8 3
  .b64 __local_depot1
@@ -4967,7 +5019,7 @@ func_end9:
  .b8 0
  .b32 6
  .b32 80
- .b32 10527
+ .b32 10565
  .b8 6
  .b8 144
  .b8 180
@@ -5029,7 +5081,7 @@ func_end9:
  .b8 0
  .b32 6
  .b32 85
- .b32 1790
+ .b32 1815
  .b8 1
  .b64 func_begin2
  .b64 func_end2
@@ -5046,7 +5098,7 @@ func_end9:
  .b8 0
  .b32 6
  .b32 85
- .b32 10538
+ .b32 10576
  .b8 6
  .b8 144
  .b8 178
@@ -5065,7 +5117,7 @@ func_end9:
  .b8 0
  .b32 6
  .b32 85
- .b32 6865
+ .b32 6903
  .b8 5
  .b8 144
  .b8 179
@@ -5128,7 +5180,7 @@ func_end9:
  .b8 0
  .b32 6
  .b32 90
- .b32 1790
+ .b32 1815
  .b8 1
  .b64 func_begin3
  .b64 func_end3
@@ -5146,7 +5198,7 @@ func_end9:
  .b8 0
  .b32 6
  .b32 90
- .b32 10538
+ .b32 10576
  .b8 6
  .b8 144
  .b8 178
@@ -5254,7 +5306,7 @@ func_end9:
  .b8 0
  .b32 6
  .b32 95
- .b32 1790
+ .b32 1815
  .b8 1
  .b64 func_begin4
  .b64 func_end4
@@ -5275,7 +5327,7 @@ func_end9:
  .b8 0
  .b32 6
  .b32 95
- .b32 10538
+ .b32 10576
  .b8 6
  .b8 144
  .b8 180
@@ -5294,7 +5346,7 @@ func_end9:
  .b8 0
  .b32 6
  .b32 95
- .b32 10527
+ .b32 10565
  .b8 6
  .b8 144
  .b8 181
@@ -5473,7 +5525,7 @@ func_end9:
  .b8 0
  .b32 6
  .b32 100
- .b32 1790
+ .b32 1815
  .b8 1
  .b64 func_begin5
  .b64 func_end5
@@ -5494,7 +5546,7 @@ func_end9:
  .b8 0
  .b32 6
  .b32 100
- .b32 10538
+ .b32 10576
  .b8 6
  .b8 144
  .b8 180
@@ -5513,7 +5565,7 @@ func_end9:
  .b8 0
  .b32 6
  .b32 100
- .b32 10527
+ .b32 10565
  .b8 6
  .b8 144
  .b8 181
@@ -5586,7 +5638,7 @@ func_end9:
  .b8 0
  .b32 6
  .b32 100
- .b32 1446
+ .b32 1458
  .b8 5
  .b8 144
  .b8 180
@@ -5663,7 +5715,7 @@ func_end9:
  .b8 0
  .b32 1
  .b32 30
- .b32 5723
+ .b32 5748
  .b8 1
  .b64 func_begin6
  .b64 func_end6
@@ -5681,7 +5733,7 @@ func_end9:
  .b8 0
  .b32 1
  .b32 30
- .b32 5931
+ .b32 5969
  .b8 6
  .b8 144
  .b8 182
@@ -5703,7 +5755,7 @@ func_end9:
  .b8 0
  .b32 1
  .b32 30
- .b32 5931
+ .b32 5969
  .b8 6
  .b8 144
  .b8 180
@@ -5730,7 +5782,7 @@ func_end9:
  .b8 0
  .b32 1
  .b32 30
- .b32 5931
+ .b32 5969
  .b8 6
  .b8 144
  .b8 183
@@ -5755,7 +5807,7 @@ func_end9:
  .b8 0
  .b32 1
  .b32 33
- .b32 1437
+ .b32 1435
  .b8 11
  .b8 3
  .b64 __local_depot6
@@ -5775,7 +5827,7 @@ func_end9:
  .b8 0
  .b32 1
  .b32 31
- .b32 1386
+ .b32 1364
  .b8 6
  .b8 144
  .b8 177
@@ -5793,7 +5845,7 @@ func_end9:
  .b8 0
  .b32 1
  .b32 32
- .b32 10475
+ .b32 10513
  .b8 6
  .b8 144
  .b8 178
@@ -5809,7 +5861,7 @@ func_end9:
  .b8 0
  .b32 1
  .b32 33
- .b32 1437
+ .b32 1435
  .b32 .debug_loc+134
  .b8 14
 
@@ -5825,7 +5877,7 @@ func_end9:
  .b8 0
  .b32 1
  .b32 38
- .b32 10544
+ .b32 10582
  .b8 11
  .b8 3
  .b64 __local_depot6
@@ -5844,7 +5896,7 @@ func_end9:
  .b8 0
  .b32 1
  .b32 39
- .b32 1437
+ .b32 1435
  .b32 .debug_loc
  .b8 14
 
@@ -5863,7 +5915,7 @@ func_end9:
  .b8 0
  .b32 1
  .b32 42
- .b32 1437
+ .b32 1435
  .b8 5
  .b8 144
  .b8 180
@@ -5886,7 +5938,7 @@ func_end9:
  .b8 0
  .b32 1
  .b32 44
- .b32 1360
+ .b32 1384
  .b8 6
  .b8 144
  .b8 177
@@ -5903,11 +5955,11 @@ func_end9:
  .b8 0
  .b8 3
 
- .b32 5729
+ .b32 5754
  .b8 12
  .b8 9
 
- .b32 5745
+ .b32 5770
  .b8 116
  .b8 65
  .b8 115
@@ -5937,7 +5989,7 @@ func_end9:
  .b8 0
  .b32 32
  .b32 7
- .b32 84
+ .b32 116
  .b8 5
 
  .b8 115
@@ -5951,9 +6003,9 @@ func_end9:
  .b8 101
 
  .b8 0
- .b32 5865
+ .b32 5890
  .b32 7
- .b32 87
+ .b32 119
  .b8 0
 
  .b8 1
@@ -5968,9 +6020,9 @@ func_end9:
  .b8 110
 
  .b8 0
- .b32 5874
+ .b32 5912
  .b32 7
- .b32 89
+ .b32 121
  .b8 8
 
  .b8 1
@@ -5983,9 +6035,9 @@ func_end9:
  .b8 101
 
  .b8 0
- .b32 5931
+ .b32 5969
  .b32 7
- .b32 91
+ .b32 123
  .b8 16
 
  .b8 1
@@ -6002,16 +6054,16 @@ func_end9:
  .b8 101
 
  .b8 0
- .b32 5962
+ .b32 6000
  .b32 7
- .b32 93
+ .b32 125
  .b8 24
 
  .b8 1
  .b8 0
  .b8 9
 
- .b32 1238
+ .b32 5899
  .b8 73
  .b8 51
  .b8 50
@@ -6019,7 +6071,19 @@ func_end9:
  .b8 0
  .b8 9
 
- .b32 5899
+ .b32 1238
+ .b8 105
+ .b8 110
+ .b8 116
+ .b8 51
+ .b8 50
+ .b8 95
+ .b8 116
+
+ .b8 0
+ .b8 9
+
+ .b32 5937
  .b8 102
  .b8 110
  .b8 73
@@ -6043,27 +6107,27 @@ func_end9:
  .b8 0
  .b8 3
 
- .b32 5905
+ .b32 5943
  .b8 12
  .b8 17
 
- .b32 1437
+ .b32 1435
  .b8 18
 
- .b32 5931
+ .b32 5969
  .b8 18
 
- .b32 5931
+ .b32 5969
  .b8 18
 
- .b32 5931
+ .b32 5969
  .b8 18
 
- .b32 5940
+ .b32 5978
  .b8 0
  .b8 9
 
- .b32 1400
+ .b32 1378
  .b8 80
  .b8 84
  .b8 82
@@ -6071,11 +6135,11 @@ func_end9:
  .b8 0
  .b8 3
 
- .b32 5946
+ .b32 5984
  .b8 12
  .b8 9
 
- .b32 5745
+ .b32 5770
  .b8 116
  .b8 65
  .b8 115
@@ -6296,7 +6360,7 @@ func_end9:
  .b8 0
  .b32 1
  .b32 59
- .b32 1437
+ .b32 1435
  .b64 func_begin7
  .b64 func_end7
  .b8 1
@@ -6313,7 +6377,7 @@ func_end9:
  .b8 0
  .b32 1
  .b32 59
- .b32 5931
+ .b32 5969
  .b8 6
  .b8 144
  .b8 181
@@ -6335,7 +6399,7 @@ func_end9:
  .b8 0
  .b32 1
  .b32 59
- .b32 5931
+ .b32 5969
  .b8 6
  .b8 144
  .b8 182
@@ -6362,7 +6426,7 @@ func_end9:
  .b8 0
  .b32 1
  .b32 59
- .b32 5931
+ .b32 5969
  .b8 6
  .b8 144
  .b8 183
@@ -6383,7 +6447,7 @@ func_end9:
  .b8 0
  .b32 1
  .b32 59
- .b32 5723
+ .b32 5748
  .b8 11
  .b8 3
  .b64 __local_depot7
@@ -6482,7 +6546,7 @@ func_end9:
  .b8 0
  .b32 1
  .b32 101
- .b32 5723
+ .b32 5748
  .b8 1
  .b64 func_begin8
  .b64 func_end8
@@ -6500,7 +6564,7 @@ func_end9:
  .b8 0
  .b32 1
  .b32 101
- .b32 5931
+ .b32 5969
  .b8 6
  .b8 144
  .b8 180
@@ -6522,7 +6586,7 @@ func_end9:
  .b8 0
  .b32 1
  .b32 101
- .b32 5931
+ .b32 5969
  .b8 6
  .b8 144
  .b8 181
@@ -6549,7 +6613,7 @@ func_end9:
  .b8 0
  .b32 1
  .b32 101
- .b32 5931
+ .b32 5969
  .b8 6
  .b8 144
  .b8 182
@@ -6574,7 +6638,7 @@ func_end9:
  .b8 0
  .b32 1
  .b32 102
- .b32 5723
+ .b32 5748
  .b8 6
  .b8 144
  .b8 184
@@ -6685,7 +6749,7 @@ func_end9:
  .b8 0
  .b32 1
  .b32 111
- .b32 5723
+ .b32 5748
  .b8 1
  .b64 func_begin9
  .b64 func_end9
@@ -6703,7 +6767,7 @@ func_end9:
  .b8 0
  .b32 1
  .b32 111
- .b32 5931
+ .b32 5969
  .b8 6
  .b8 144
  .b8 180
@@ -6725,7 +6789,7 @@ func_end9:
  .b8 0
  .b32 1
  .b32 111
- .b32 5931
+ .b32 5969
  .b8 6
  .b8 144
  .b8 181
@@ -6752,7 +6816,7 @@ func_end9:
  .b8 0
  .b32 1
  .b32 111
- .b32 5931
+ .b32 5969
  .b8 6
  .b8 144
  .b8 179
@@ -6772,7 +6836,7 @@ func_end9:
  .b8 0
  .b32 1
  .b32 112
- .b32 1437
+ .b32 1435
  .b8 11
  .b8 3
  .b64 __local_depot9
@@ -6791,7 +6855,7 @@ func_end9:
  .b8 0
  .b32 1
  .b32 112
- .b32 1437
+ .b32 1435
  .b8 5
  .b8 144
  .b8 177
@@ -10627,7 +10691,7 @@ func_end9:
  .b8 0
  .b8 9
 
- .b32 10488
+ .b32 10526
  .b8 83
  .b8 84
  .b8 82
@@ -10639,7 +10703,7 @@ func_end9:
  .b8 0
  .b8 3
 
- .b32 10494
+ .b32 10532
  .b8 12
  .b8 8
 
@@ -10667,11 +10731,11 @@ func_end9:
  .b8 12
  .b8 3
 
- .b32 10133
+ .b32 10171
  .b8 12
  .b8 3
 
- .b32 10533
+ .b32 10571
  .b8 12
  .b8 20
 
@@ -10685,7 +10749,7 @@ func_end9:
  .b32 1293
  .b8 22
 
- .b32 10557
+ .b32 10595
  .b8 128
  .b8 1
 
@@ -11301,7 +11365,7 @@ func_end9:
  .b8 6
  .b8 0
  .b8 144
- .b8 179
+ .b8 180
  .b8 228
  .b8 200
  .b8 171
@@ -11330,7 +11394,7 @@ func_end9:
  .b8 6
  .b8 0
  .b8 144
- .b8 179
+ .b8 180
  .b8 228
  .b8 200
  .b8 171
@@ -11351,7 +11415,7 @@ func_end9:
  .b8 6
  .b8 0
  .b8 144
- .b8 181
+ .b8 182
  .b8 228
  .b8 200
  .b8 171
@@ -11379,7 +11443,7 @@ func_end9:
  .b8 6
  .b8 0
  .b8 144
- .b8 181
+ .b8 182
  .b8 228
  .b8 200
  .b8 171
@@ -11394,8 +11458,8 @@ func_end9:
  .b8 2
  .b8 0
  .b32 .debug_info
- .b32 10564
- .b32 4320
+ .b32 10602
+ .b32 4345
  .b8 99
  .b8 117
  .b8 100
@@ -11419,7 +11483,7 @@ func_end9:
  .b8 115
  .b8 0
 
- .b32 4448
+ .b32 4473
  .b8 99
  .b8 117
  .b8 100
@@ -11444,7 +11508,7 @@ func_end9:
  .b8 101
  .b8 0
 
- .b32 6321
+ .b32 6359
  .b8 95
  .b8 90
  .b8 51
@@ -11488,7 +11552,7 @@ func_end9:
  .b8 95
  .b8 0
 
- .b32 4695
+ .b32 4720
  .b8 99
  .b8 117
  .b8 100
@@ -11536,7 +11600,7 @@ func_end9:
  .b8 114
  .b8 0
 
- .b32 1684
+ .b32 1709
  .b8 99
  .b8 117
  .b8 100
@@ -11549,7 +11613,7 @@ func_end9:
  .b8 99
  .b8 0
 
- .b32 5237
+ .b32 5262
  .b8 95
  .b8 90
  .b8 50
@@ -11582,7 +11646,7 @@ func_end9:
  .b8 95
  .b8 0
 
- .b32 6575
+ .b32 6613
  .b8 95
  .b8 90
  .b8 51
@@ -11631,7 +11695,7 @@ func_end9:
  .b8 95
  .b8 0
 
- .b32 5971
+ .b32 6009
  .b8 95
  .b8 90
  .b8 78
@@ -11730,7 +11794,7 @@ func_end9:
  .b8 95
  .b8 0
 
- .b32 4606
+ .b32 4631
  .b8 99
  .b8 117
  .b8 100
@@ -11746,7 +11810,7 @@ func_end9:
  .b8 101
  .b8 0
 
- .b32 4944
+ .b32 4969
  .b8 99
  .b8 117
  .b8 100

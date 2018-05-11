@@ -268,6 +268,13 @@ function_space_specifier void ModuleTableReader(tMetaData *pThis, tRVA *pRVA, un
 	*ppSource = pSource;
 }
 
+function_space_specifier void OutputModule(tMD_Module* p)
+{
+	printf("Module\n");
+	printf("name %s\n", p->name);
+	printf("\n");
+}
+
 function_space_specifier void TypeRefTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest)
 {
 	// 0x01
@@ -291,6 +298,15 @@ function_space_specifier void TypeRefTableReader(tMetaData *pThis, tRVA *pRVA, u
 	p->nameSpace = (STRING)pThis->strings.pStart + v;
 
 	*ppSource = pSource;
+}
+
+function_space_specifier void OutputTypeRef(tMD_TypeRef * p)
+{
+	printf("TypeRef\n");
+	printf("name %s\n", p->name);
+	printf("nameSpace %s\n", p->nameSpace);
+	printf("resolution %d\n", p->resolutionScope);
+	printf("\n");
 }
 
 function_space_specifier void TypeDefTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
@@ -370,14 +386,31 @@ function_space_specifier void TypeDefTableReader(tMetaData *pThis, tRVA *pRVA, u
 	*ppSource = pSource;
 }
 
+function_space_specifier void OutputTypeDef(tMD_TypeDef * p)
+{
+	printf("TypeDef\n");
+	printf("name %s\n", p->name);
+	printf("nameSpace %s\n", p->nameSpace);
+	printf("flags %ld\n", p->flags);
+	printf("extends %ld\n", p->extends);
+	printf("\n");
+}
+
 function_space_specifier void FieldPtrTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
 {
-	tMD_TypeDef * p = (tMD_TypeDef*)pDest;
-	memset(p, 0, sizeof(tMD_TypeDef));
+	tMD_FieldPtr * p = (tMD_FieldPtr*)pDest;
+	memset(p, 0, sizeof(tMD_FieldPtr));
 
 	unsigned char * pSource = (unsigned char *)*ppSource;
+	// Missing???
 
 	*ppSource = pSource;
+}
+
+function_space_specifier void OutputFieldPtr(tMD_FieldPtr * p)
+{
+	printf("FieldPtr\n");
+	printf("\n");
 }
 
 function_space_specifier void FieldDefTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
@@ -409,6 +442,17 @@ function_space_specifier void FieldDefTableReader(tMetaData *pThis, tRVA *pRVA, 
 	p->tableIndex = MAKE_TABLE_INDEX(MD_TABLE_FIELDDEF, row + 1);
 
 	*ppSource = pSource;
+}
+
+function_space_specifier void OutputFieldDef(tMD_FieldDef * p)
+{
+	printf("FieldDef\n");
+	printf("flags %x\n", p->flags);
+	printf("name %s\n", p->name);
+	printf("signature %llx\n", p->signature);
+	printf("pMetaData %llx\n", p->pMetaData);
+	printf("tableIndx %x\n", p->tableIndex);
+	printf("\n");
 }
 
 function_space_specifier void MethodDefTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
@@ -451,6 +495,16 @@ function_space_specifier void MethodDefTableReader(tMetaData *pThis, tRVA *pRVA,
 	*ppSource = pSource;
 }
 
+function_space_specifier void OutputMethodDef(tMD_MethodDef * p)
+{
+	printf("MethodDef\n");
+	printf("name %s\n", p->name);
+	printf("flags %x\n", p->flags);
+	printf("ImplFlags %x\n", p->implFlags);
+	printf("signature %llx\n", p->signature);
+	printf("\n");
+}
+
 function_space_specifier void ParamTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
 {
 	// 0x08
@@ -479,6 +533,15 @@ function_space_specifier void ParamTableReader(tMetaData *pThis, tRVA *pRVA, uns
 	*ppSource = pSource;
 }
 
+function_space_specifier void OutputParam(tMD_Param * p)
+{
+	printf("Param\n");
+	printf("name %s\n", p->name);
+	printf("flags %x\n", p->flags);
+	printf("sequence %x\n", p->sequence);
+	printf("\n");
+}
+
 function_space_specifier void InterfaceImplTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
 {
 	// Table 0x09 - InterfaceImpl
@@ -494,6 +557,14 @@ function_space_specifier void InterfaceImplTableReader(tMetaData *pThis, tRVA *p
 	p->interface_ = CodedIndex(pThis, '0', &pSource);
 
 	*ppSource = pSource;
+}
+
+function_space_specifier void OutputInterfaceImpl(tMD_InterfaceImpl * p)
+{
+	printf("InterfaceImpl\n");
+	printf("class %llx\n", p->class_);
+	printf("interface %llx\n", p->interface_);
+	printf("\n");
 }
 
 function_space_specifier void MemberRefTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
@@ -523,6 +594,15 @@ function_space_specifier void MemberRefTableReader(tMetaData *pThis, tRVA *pRVA,
 	*ppSource = pSource;
 }
 
+function_space_specifier void OutputMemberRef(tMD_MemberRef * p)
+{
+	printf("MemberRef\n");
+	printf("name %s\n", p->name);
+	printf("class %llx\n", p->class_);
+	printf("signature %llx\n", p->signature);
+	printf("\n");
+}
+
 function_space_specifier void ConstantTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
 {
 	// Table 0x0B - Constant
@@ -550,6 +630,14 @@ function_space_specifier void ConstantTableReader(tMetaData *pThis, tRVA *pRVA, 
 	*ppSource = pSource;
 }
 
+function_space_specifier void OutputConstant(tMD_Constant * p)
+{
+	printf("Constant\n");
+	printf("type %x\n", p->type);
+	printf("parent %llx\n", p->parent);
+	printf("\n");
+}
+
 function_space_specifier void CustomAttributeTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
 {
 	// Table 0x0C - CustomAttribute
@@ -572,6 +660,14 @@ function_space_specifier void CustomAttributeTableReader(tMetaData *pThis, tRVA 
 	p->value = pThis->blobs.pStart + v;
 
 	*ppSource = pSource;
+}
+
+function_space_specifier void OutputCustomAttribute(tMD_CustomAttribute * p)
+{
+	printf("CustomAttribute\n");
+	printf("type %x\n", p->type);
+	printf("parent %x\n", p->parent);
+	printf("\n");
 }
 
 function_space_specifier void DeclSecurityTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
@@ -599,6 +695,14 @@ function_space_specifier void DeclSecurityTableReader(tMetaData *pThis, tRVA *pR
 	*ppSource = pSource;
 }
 
+function_space_specifier void OutputDeclSecurity(tMD_DeclSecurity * p)
+{
+	printf("DeclSecurity\n");
+	printf("action %x\n", p->action);
+	printf("parent %x\n", p->parent);
+	printf("\n");
+}
+
 function_space_specifier void ClassLayoutTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
 {
 	// Table 0x0F - ClassLayout
@@ -618,6 +722,40 @@ function_space_specifier void ClassLayoutTableReader(tMetaData *pThis, tRVA *pRV
 	p->parent = Coded2Index(pThis, 2, &pSource);
 
 	*ppSource = pSource;
+}
+
+function_space_specifier void OutputClassLayout(tMD_ClassLayout * p)
+{
+	printf("ClassLayout\n");
+	printf("packingSize %x\n", p->packingSize);
+	printf("classSize %x\n", p->classSize);
+	printf("parent %x\n", p->parent);
+	printf("\n");
+}
+
+function_space_specifier void FieldLayoutTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
+{
+	// Table 0x10 - FieldLayout
+
+	tMD_FieldLayout * p = (tMD_FieldLayout*)pDest;
+	memset(p, 0, sizeof(tMD_FieldLayout));
+
+	unsigned char * pSource = (unsigned char *)*ppSource;
+
+	p->offset = GetU32(pSource);
+	pSource += 4;
+
+	p->field = Coded2Index(pThis, 4, &pSource);
+
+	*ppSource = pSource;
+}
+
+function_space_specifier void OutputFieldLayout(tMD_FieldLayout * p)
+{
+	printf("FieldLayout\n");
+	printf("offset %x\n", p->offset);
+	printf("field %x\n", p->field);
+	printf("\n");
 }
 
 function_space_specifier void StandAloneSigTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
@@ -640,6 +778,13 @@ function_space_specifier void StandAloneSigTableReader(tMetaData *pThis, tRVA *p
 	*ppSource = pSource;
 }
 
+function_space_specifier void OutputStandAloneSig(tMD_StandAloneSig * p)
+{
+	printf("StandAloneSig\n");
+	printf("signature %llx\n", p->signature);
+	printf("\n");
+}
+
 function_space_specifier void EventMapTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
 {
 	// Table 0x12 - EventMap
@@ -655,6 +800,14 @@ function_space_specifier void EventMapTableReader(tMetaData *pThis, tRVA *pRVA, 
 	p->eventList = Coded2Index(pThis, 0x14, &pSource);
 
 	*ppSource = pSource;
+}
+
+function_space_specifier void OutputEventMap(tMD_EventMap * p)
+{
+	printf("EventMap\n");
+	printf("parent %x\n", p->parent);
+	printf("eventList %x\n", p->eventList);
+	printf("\n");
 }
 
 function_space_specifier void EventTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
@@ -682,6 +835,15 @@ function_space_specifier void EventTableReader(tMetaData *pThis, tRVA *pRVA, uns
 	*ppSource = pSource;
 }
 
+function_space_specifier void OutputEvent(tMD_Event * p)
+{
+	printf("Event\n");
+	printf("eventFlags %x\n", p->eventFlags);
+	printf("name %s\n", p->name);
+	printf("eventType %x\n", p->eventType);
+	printf("\n");
+}
+
 function_space_specifier void PropertyMapTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
 {
 	// Table 0x15 - PropertyMap
@@ -697,6 +859,14 @@ function_space_specifier void PropertyMapTableReader(tMetaData *pThis, tRVA *pRV
 	p->propertyList = Coded2Index(pThis, 0x17, &pSource);
 
 	*ppSource = pSource;
+}
+
+function_space_specifier void OutputPropertyMap(tMD_PropertyMap * p)
+{
+	printf("PropertyMap\n");
+	printf("parent %x\n", p->parent);
+	printf("propertyList %x\n", p->propertyList);
+	printf("\n");
 }
 
 function_space_specifier void PropertyTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
@@ -725,6 +895,14 @@ function_space_specifier void PropertyTableReader(tMetaData *pThis, tRVA *pRVA, 
 	*ppSource = pSource;
 }
 
+function_space_specifier void OutputProperty(tMD_Property * p)
+{
+	printf("Property\n");
+	printf("flags %x\n", p->flags);
+	printf("name %s\n", p->name);
+	printf("\n");
+}
+
 function_space_specifier void MethodSemanticsTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
 {
 	// Table 0x18 - MethodSemantics
@@ -742,6 +920,15 @@ function_space_specifier void MethodSemanticsTableReader(tMetaData *pThis, tRVA 
 
 	p->association = CodedIndex(pThis, '6', &pSource);
 	*ppSource = pSource;
+}
+
+function_space_specifier void OutputMethodSemantics(tMD_MethodSemantics * p)
+{
+	printf("MethodSemantics\n");
+	printf("semantics %x\n", p->semantics);
+	printf("method %x\n", p->method);
+	printf("association %x\n", p->association);
+	printf("\n");
 }
 
 function_space_specifier void MethodImplTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
@@ -763,6 +950,15 @@ function_space_specifier void MethodImplTableReader(tMetaData *pThis, tRVA *pRVA
 	*ppSource = pSource;
 }
 
+function_space_specifier void OutputMethodImpl(tMD_MethodImpl * p)
+{
+	printf("MethodImpl\n");
+	printf("class %x\n", p->class_);
+	printf("methodBody %x\n", p->methodBody);
+	printf("methodDeclaration %x\n", p->methodDeclaration);
+	printf("\n");
+}
+
 function_space_specifier void ModuleRefTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
 {
 	// Table 0x1a - ModuleRef
@@ -779,6 +975,13 @@ function_space_specifier void ModuleRefTableReader(tMetaData *pThis, tRVA *pRVA,
 	p->name = (STRING)pThis->strings.pStart + v;
 
 	*ppSource = pSource;
+}
+
+function_space_specifier void OutputModuleRef(tMD_ModuleRef * p)
+{
+	printf("ModuleRef\n");
+	printf("name %s\n", p->name);
+	printf("\n");
 }
 
 function_space_specifier void TypeSpecTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
@@ -799,6 +1002,13 @@ function_space_specifier void TypeSpecTableReader(tMetaData *pThis, tRVA *pRVA, 
 	p->pMetaData = pThis;
 
 	*ppSource = pSource;
+}
+
+function_space_specifier void OutputTypeSpec(tMD_TypeSpec * p)
+{
+	printf("TypeSpec\n");
+	printf("typedef %llx\n", p->pTypeDef);
+	printf("\n");
 }
 
 function_space_specifier void ImplMapTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
@@ -826,6 +1036,16 @@ function_space_specifier void ImplMapTableReader(tMetaData *pThis, tRVA *pRVA, u
 	*ppSource = pSource;
 }
 
+function_space_specifier void OutputImplMap(tMD_ImplMap * p)
+{
+	printf("ImplMap\n");
+	printf("mappingFlags %x\n", p->mappingFlags);
+	printf("memberForwarded %x\n", p->memberForwarded);
+	printf("importName %s\n", p->importName);
+	printf("importScope %x\n", p->importScope);
+	printf("\n");
+}
+
 function_space_specifier void FieldRVATableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
 {
 	// Table 0x1D - FieldRVA
@@ -843,6 +1063,14 @@ function_space_specifier void FieldRVATableReader(tMetaData *pThis, tRVA *pRVA, 
 	p->field = Coded2Index(pThis, 0x04, &pSource);
 
 	*ppSource = pSource;
+}
+
+function_space_specifier void OutputFieldRVA(tMD_FieldRVA * p)
+{
+	printf("FieldRVA\n");
+	printf("rva %llx\n", p->rva);
+	printf("field %x\n", p->field);
+	printf("\n");
 }
 
 function_space_specifier void AssemblyTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
@@ -888,6 +1116,20 @@ function_space_specifier void AssemblyTableReader(tMetaData *pThis, tRVA *pRVA, 
 	p->culture = (STRING)pThis->strings.pStart + v;
 
 	*ppSource = pSource;
+}
+
+function_space_specifier void OutputAssembly(tMD_Assembly * p)
+{
+	printf("Assembly\n");
+	printf("hashAlgID %x\n", p->hashAlgID);
+	printf("majorVersion %x\n", p->majorVersion);
+	printf("minorVersion %x\n", p->minorVersion);
+	printf("buildNumber %x\n", p->buildNumber);
+	printf("revisionNumber %x\n", p->revisionNumber);
+	printf("flags %x\n", p->flags);
+	printf("name %s\n", p->name);
+	printf("culture %s\n", p->culture);
+	printf("\n");
 }
 
 function_space_specifier void AssemblyRefTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
@@ -936,6 +1178,51 @@ function_space_specifier void AssemblyRefTableReader(tMetaData *pThis, tRVA *pRV
 	*ppSource = pSource;
 }
 
+function_space_specifier void OutputAssemblyRef(tMD_AssemblyRef * p)
+{
+	printf("AssemblyRef\n");
+	printf("majorVersion %x\n", p->majorVersion);
+	printf("minorVersion %x\n", p->minorVersion);
+	printf("buildNumber %x\n", p->buildNumber);
+	printf("revisionNumber %x\n", p->revisionNumber);
+	printf("flags %x\n", p->flags);
+	printf("name %s\n", p->name);
+	printf("culture %s\n", p->culture);
+	printf("\n");
+}
+
+function_space_specifier void ManifestResourceTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
+{
+	// Table 0x28
+	tMD_ManifestResource * p = (tMD_ManifestResource*)pDest;
+	memset(p, 0, sizeof(tMD_ManifestResource));
+
+	unsigned char * pSource = (unsigned char *)*ppSource;
+
+	p->offset = GetU32(pSource);
+	pSource += 4;
+
+	p->flags = GetU32(pSource);
+	pSource += 4;
+
+	int string_skip = pThis->index32BitString ? 4 : 2;
+	unsigned int v = pThis->index32BitString ? GetU32(pSource) : GetU16(pSource);
+	pSource += string_skip;
+	p->name = (STRING)pThis->strings.pStart + v;
+
+	p->implementation = GetU16(pSource);
+	pSource += 2;
+
+	*ppSource = pSource;
+}
+
+function_space_specifier void OutputManifestResource(tMD_ManifestResource * p)
+{
+	printf("ManifestResource\n");
+	printf("name %s\n", p->name);
+	printf("\n");
+}
+
 function_space_specifier void NestedClassTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
 {
 	// Table 0x29 - NestedClass
@@ -951,6 +1238,14 @@ function_space_specifier void NestedClassTableReader(tMetaData *pThis, tRVA *pRV
 	p->enclosingClass = Coded2Index(pThis, 0x2, &pSource);
 
 	*ppSource = pSource;
+}
+
+function_space_specifier void OutputNestedClass(tMD_NestedClass * p)
+{
+	printf("NestedClass\n");
+	printf("nestedClass %x\n", p->nestedClass);
+	printf("enclosingClass %x\n", p->enclosingClass);
+	printf("\n");
 }
 
 function_space_specifier void GenericParamTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
@@ -979,6 +1274,16 @@ function_space_specifier void GenericParamTableReader(tMetaData *pThis, tRVA *pR
 	*ppSource = pSource;
 }
 
+function_space_specifier void OutputGenericParam(tMD_GenericParam * p)
+{
+	printf("GenericParam\n");
+	printf("number %x\n", p->number);
+	printf("flags %x\n", p->flags);
+	printf("owner %x\n", p->owner);
+	printf("name %x\n", p->name);
+	printf("\n");
+}
+
 function_space_specifier void MethodSpecTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
 {
 	// Table 0x2B - MethodSpec
@@ -1001,6 +1306,13 @@ function_space_specifier void MethodSpecTableReader(tMetaData *pThis, tRVA *pRVA
 	*ppSource = pSource;
 }
 
+function_space_specifier void OutputMethodSpec(tMD_MethodSpec * p)
+{
+	printf("MethodSpec\n");
+	printf("method %x\n", p->method);
+	printf("\n");
+}
+
 function_space_specifier void GenericParamConstraintTableReader(tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int row, int numRows)
 {
 	// Table 0x2C - GenericParamConstraint
@@ -1016,6 +1328,13 @@ function_space_specifier void GenericParamConstraintTableReader(tMetaData *pThis
 	p->constraint = CodedIndex(pThis, '0', &pSource);
 
 	*ppSource = pSource;
+}
+
+function_space_specifier void OutputGenericParamConstraint(tMD_GenericParamConstraint * p)
+{
+	printf("GenericParamConstraint\n");
+	printf("constraint %x\n", p->constraint);
+	printf("\n");
 }
 
 
@@ -1052,6 +1371,7 @@ function_space_specifier static void* LoadSingleTable(tMetaData *pThis, tRVA *pR
 		case MD_TABLE_CUSTOMATTRIBUTE: rowLen = sizeof(tMD_CustomAttribute); break;
 		case MD_TABLE_DECLSECURITY: rowLen = sizeof(tMD_DeclSecurity); break;
 		case MD_TABLE_CLASSLAYOUT: rowLen = sizeof(tMD_ClassLayout); break;
+		case MD_TABLE_FIELDLAYOUT: rowLen = sizeof(tMD_FieldLayout); break;
 		case MD_TABLE_STANDALONESIG: rowLen = sizeof(tMD_StandAloneSig); break;
 		case MD_TABLE_EVENTMAP: rowLen = sizeof(tMD_EventMap); break;
 		case MD_TABLE_EVENT: rowLen = sizeof(tMD_Event); break;
@@ -1065,6 +1385,7 @@ function_space_specifier static void* LoadSingleTable(tMetaData *pThis, tRVA *pR
 		case MD_TABLE_FIELDRVA: rowLen = sizeof(tMD_FieldRVA); break;
 		case MD_TABLE_ASSEMBLY: rowLen = sizeof(tMD_Assembly); break;
 		case MD_TABLE_ASSEMBLYREF: rowLen = sizeof(tMD_AssemblyRef); break;
+		case MD_TABLE_MANIFESTRESOURCE: rowLen = sizeof(tMD_ManifestResource); break;
 		case MD_TABLE_NESTEDCLASS: rowLen = sizeof(tMD_NestedClass); break;
 		case MD_TABLE_GENERICPARAM: rowLen = sizeof(tMD_GenericParam); break;
 		case MD_TABLE_METHODSPEC: rowLen = sizeof(tMD_MethodSpec); break;
@@ -1076,6 +1397,9 @@ function_space_specifier static void* LoadSingleTable(tMetaData *pThis, tRVA *pR
 
 	// Allocate memory for destination table
 	pRet = Gmalloc(numRows * rowLen);
+	if (pRet == NULL)
+		Crash("Out of memory!\n");
+
 	pThis->tables.data[tableID] = pRet;
 	pDest = (char*) pRet;
 
@@ -1097,6 +1421,7 @@ function_space_specifier static void* LoadSingleTable(tMetaData *pThis, tRVA *pR
 			case MD_TABLE_CUSTOMATTRIBUTE: CustomAttributeTableReader(pThis, pRVA, &pSource, MetaData_GetTableRow(pThis, MAKE_TABLE_INDEX(tableID, 1 + row)), row, numRows); continue;
 			case MD_TABLE_DECLSECURITY: DeclSecurityTableReader(pThis, pRVA, &pSource, MetaData_GetTableRow(pThis, MAKE_TABLE_INDEX(tableID, 1 + row)), row, numRows); continue;
 			case MD_TABLE_CLASSLAYOUT: ClassLayoutTableReader(pThis, pRVA, &pSource, MetaData_GetTableRow(pThis, MAKE_TABLE_INDEX(tableID, 1 + row)), row, numRows); continue;
+			case MD_TABLE_FIELDLAYOUT: FieldLayoutTableReader(pThis, pRVA, &pSource, MetaData_GetTableRow(pThis, MAKE_TABLE_INDEX(tableID, 1 + row)), row, numRows); continue;
 			case MD_TABLE_STANDALONESIG: StandAloneSigTableReader(pThis, pRVA, &pSource, MetaData_GetTableRow(pThis, MAKE_TABLE_INDEX(tableID, 1 + row)), row, numRows); continue;
 			case MD_TABLE_EVENTMAP: EventMapTableReader(pThis, pRVA, &pSource, MetaData_GetTableRow(pThis, MAKE_TABLE_INDEX(tableID, 1 + row)), row, numRows); continue;
 			case MD_TABLE_EVENT: EventTableReader(pThis, pRVA, &pSource, MetaData_GetTableRow(pThis, MAKE_TABLE_INDEX(tableID, 1 + row)), row, numRows); continue;
@@ -1110,6 +1435,7 @@ function_space_specifier static void* LoadSingleTable(tMetaData *pThis, tRVA *pR
 			case MD_TABLE_FIELDRVA: FieldRVATableReader(pThis, pRVA, &pSource, MetaData_GetTableRow(pThis, MAKE_TABLE_INDEX(tableID, 1 + row)), row, numRows); continue;
 			case MD_TABLE_ASSEMBLY: AssemblyTableReader(pThis, pRVA, &pSource, MetaData_GetTableRow(pThis, MAKE_TABLE_INDEX(tableID, 1 + row)), row, numRows); continue;
 			case MD_TABLE_ASSEMBLYREF: AssemblyRefTableReader(pThis, pRVA, &pSource, MetaData_GetTableRow(pThis, MAKE_TABLE_INDEX(tableID, 1 + row)), row, numRows); continue;
+			case MD_TABLE_MANIFESTRESOURCE: ManifestResourceTableReader(pThis, pRVA, &pSource, MetaData_GetTableRow(pThis, MAKE_TABLE_INDEX(tableID, 1 + row)), row, numRows); continue;
 			case MD_TABLE_NESTEDCLASS: NestedClassTableReader(pThis, pRVA, &pSource, MetaData_GetTableRow(pThis, MAKE_TABLE_INDEX(tableID, 1 + row)), row, numRows); continue;
 			case MD_TABLE_GENERICPARAM: GenericParamTableReader(pThis, pRVA, &pSource, MetaData_GetTableRow(pThis, MAKE_TABLE_INDEX(tableID, 1 + row)), row, numRows); continue;
 			case MD_TABLE_METHODSPEC: MethodSpecTableReader(pThis, pRVA, &pSource, MetaData_GetTableRow(pThis, MAKE_TABLE_INDEX(tableID, 1 + row)), row, numRows); continue;
@@ -1128,104 +1454,197 @@ function_space_specifier static void* LoadSingleTable(tMetaData *pThis, tRVA *pR
 		case MD_TABLE_MODULE:
 		{
 			tMD_Module* y = (tMD_Module*)dd;
+			OutputModule(y);
 			break;
 		}
 		case MD_TABLE_TYPEREF:
 		{
 			tMD_TypeRef* y = (tMD_TypeRef*)dd;
+			OutputTypeRef(y);
 			break;
 		}
 		case MD_TABLE_TYPEDEF:
 		{
 			tMD_TypeDef* y = (tMD_TypeDef*)dd;
+			OutputTypeDef(y);
+			break;
+		}
+		case MD_TABLE_FIELDPTR:
+		{
+			tMD_FieldPtr* y = (tMD_FieldPtr*)dd;
+			OutputFieldPtr(y);
 			break;
 		}
 		case MD_TABLE_FIELDDEF:
 		{
 			tMD_FieldDef* y = (tMD_FieldDef*)dd;
+			OutputFieldDef(y);
 			break;
 		}
 		case MD_TABLE_METHODDEF:
 		{
 			tMD_MethodDef* y = (tMD_MethodDef*)dd;
+			OutputMethodDef(y);
 			break;
 		}
 		case MD_TABLE_PARAM:
 		{
 			tMD_Param* y = (tMD_Param*)dd;
+			OutputParam(y);
 			break;
 		}
 		case MD_TABLE_INTERFACEIMPL:
 		{
 			tMD_InterfaceImpl* y = (tMD_InterfaceImpl*)dd;
+			OutputInterfaceImpl(y);
 			break;
 		}
 		case MD_TABLE_MEMBERREF:
 		{
 			tMD_MemberRef* y = (tMD_MemberRef*)dd;
+			OutputMemberRef(y);
 			break;
 		}
 		case MD_TABLE_CONSTANT:
 		{
 			tMD_Constant* y = (tMD_Constant*)dd;
+			OutputConstant(y);
 			break;
 		}
 		case MD_TABLE_CUSTOMATTRIBUTE:
 		{
 			tMD_CustomAttribute* y = (tMD_CustomAttribute*)dd;
+			OutputCustomAttribute(y);
 			break;
 		}
 		case MD_TABLE_DECLSECURITY:
 		{
 			tMD_DeclSecurity* y = (tMD_DeclSecurity*)dd;
+			OutputDeclSecurity(y);
 			break;
 		}
 		case MD_TABLE_CLASSLAYOUT:
 		{
 			tMD_ClassLayout* y = (tMD_ClassLayout*)dd;
+			OutputClassLayout(y);
+			break;
+		}
+		case MD_TABLE_FIELDLAYOUT:
+		{
+			tMD_FieldLayout* y = (tMD_FieldLayout*)dd;
+			OutputFieldLayout(y);
 			break;
 		}
 		case MD_TABLE_STANDALONESIG:
 		{
 			tMD_StandAloneSig* y = (tMD_StandAloneSig*)dd;
+			OutputStandAloneSig(y);
 			break;
 		}
 		case MD_TABLE_EVENTMAP:
 		{
 			tMD_EventMap* y = (tMD_EventMap*)dd;
+			OutputEventMap(y);
 			break;
 		}
 		case MD_TABLE_EVENT:
 		{
 			tMD_Event* y = (tMD_Event*)dd;
+			OutputEvent(y);
 			break;
 		}
 		case MD_TABLE_PROPERTYMAP:
 		{
 			tMD_PropertyMap* y = (tMD_PropertyMap*)dd;
+			OutputPropertyMap(y);
 			break;
 		}
 		case MD_TABLE_PROPERTY:
 		{
 			tMD_Property* y = (tMD_Property*)dd;
+			OutputProperty(y);
 			break;
 		}
 		case MD_TABLE_METHODSEMANTICS:
 		{
 			tMD_MethodSemantics* y = (tMD_MethodSemantics*)dd;
+			OutputMethodSemantics(y);
 			break;
 		}
 		case MD_TABLE_METHODIMPL:
 		{
 			tMD_MethodImpl* y = (tMD_MethodImpl*)dd;
+			OutputMethodImpl(y);
 			break;
 		}
 		case MD_TABLE_MODULEREF:
 		{
 			tMD_ModuleRef* y = (tMD_ModuleRef*)dd;
+			OutputModuleRef(y);
+			break;
+		}
+		case MD_TABLE_TYPESPEC:
+		{
+			tMD_TypeSpec* y = (tMD_TypeSpec*)dd;
+			OutputTypeSpec(y);
+			break;
+		}
+		case MD_TABLE_IMPLMAP:
+		{
+			tMD_ImplMap* y = (tMD_ImplMap*)dd;
+			OutputImplMap(y);
+			break;
+		}
+		case MD_TABLE_FIELDRVA:
+		{
+			tMD_FieldRVA* y = (tMD_FieldRVA*)dd;
+			OutputFieldRVA(y);
+			break;
+		}
+		case MD_TABLE_ASSEMBLY:
+		{
+			tMD_Assembly* y = (tMD_Assembly*)dd;
+			OutputAssembly(y);
+			break;
+		}
+		case MD_TABLE_ASSEMBLYREF:
+		{
+			tMD_AssemblyRef* y = (tMD_AssemblyRef*)dd;
+			OutputAssemblyRef(y);
+			break;
+		}
+		case MD_TABLE_MANIFESTRESOURCE:
+		{
+			tMD_ManifestResource* y = (tMD_ManifestResource*)dd;
+			OutputManifestResource(y);
+			break;
+		}
+		case MD_TABLE_NESTEDCLASS:
+		{
+			tMD_NestedClass* y = (tMD_NestedClass*)dd;
+			OutputNestedClass(y);
+			break;
+		}
+		case MD_TABLE_GENERICPARAM:
+		{
+			tMD_GenericParam* y = (tMD_GenericParam*)dd;
+			OutputGenericParam(y);
+			break;
+		}
+		case MD_TABLE_METHODSPEC:
+		{
+			tMD_MethodSpec* y = (tMD_MethodSpec*)dd;
+			OutputMethodSpec(y);
+			break;
+		}
+		case MD_TABLE_GENERICPARAMCONSTRAINT:
+		{
+			tMD_GenericParamConstraint* y = (tMD_GenericParamConstraint*)dd;
+			OutputGenericParamConstraint(y);
 			break;
 		}
 		default:
+			printf("NO IDEA!\n");
 			break;
 		}
 	}

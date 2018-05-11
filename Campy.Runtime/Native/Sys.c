@@ -38,9 +38,6 @@ function_space_specifier void Crash(const char *pMsg, ...) {
 
 	Gprintf("\n\n*** CRASH ***\n");
 
-#ifdef WIN32
-	dbg::fail("crash", "crash");
-#endif
 	va_start(va, pMsg);
 	char buf[10000];
 	Gvsprintf(buf, pMsg, va);
@@ -49,10 +46,9 @@ function_space_specifier void Crash(const char *pMsg, ...) {
 	Gprintf("\n\n");
 
 #ifdef WIN32
-	{
-		// Cause a delibrate exception, to get into debugger
-		__debugbreak();
-	}
+	dbg::fail("crash", "crash");
+	// Cause a delibrate exception, to get into debugger
+	__debugbreak();
 #endif
 //	gpuexit(1);
 }
