@@ -14,7 +14,7 @@
 #include <string.h>
 
 gpu_space_specifier struct _BCL_t * _bcl_;
-function_space_specifier void Initialize_BCL0(void * g, size_t size, size_t first_overhead, int count);
+function_space_specifier void Initialize_BCL0(size_t size, size_t first_overhead, int count);
 
 
 function_space_specifier void CommonInitTheBcl(void * g, size_t size, size_t first_overhead, int count, struct _BCL_t ** pbcl)
@@ -27,11 +27,12 @@ function_space_specifier void CommonInitTheBcl(void * g, size_t size, size_t fir
 
 	// basics/memory allocation.
 	_bcl_->global_memory_heap = NULL;
-	_bcl_->head = NULL;
+	_bcl_->heap_list = NULL;
 	_bcl_->kernel_base_index = 0;
+	_bcl_->count = 0;
 
 	// Init memory allocation.
-	Initialize_BCL0(g, size, first_overhead, count);
+	Initialize_BCL0(size, first_overhead, count);
 
 	// CLIFile.
 	bcl->pFilesLoaded = NULL;
@@ -126,81 +127,140 @@ function_space_specifier  void gpuexit(int _Code) {}
 
 
 struct header_t {
+	unsigned is_free;
+	size_t size;
 	struct header_t *next;
 	struct header_t *prev;
-	size_t size;
-	unsigned is_free;
+	unsigned char data[1];
+	// unsigned char pad_before[32];
+	// real data
+	// unsigned char pad_after[32];
 };
-
-
-function_space_specifier void Initialize_BCL0(void * g, size_t size, size_t first_overhead, int count)
-{
-	// Initialize memory allocation / malloc. Nothing can be done until this is done.
-	// Layout
-	//
-	//  ==================================
-	//  0                         bcl, the struct _BCL_t
-	//  0x1000                    headers, an array of pointers to heaps.
-	//  0x1000+size_for_headers   ptr
-	//  ==================================
-	int size_for_bcl = 0x1000;
-	_bcl_->head = (struct header_t*)(size_for_bcl + (unsigned char*)g);
-	int size_for_headers = sizeof(struct header_t) * count;
-	unsigned char * ptr = size_for_bcl + size_for_headers + (unsigned char *)_bcl_->head;
-	int overhead_for_first = first_overhead;
-	long long s = (long long) ptr;
-	long long e = s + size;
-
-	int remainder = size - size_for_bcl - size_for_headers - overhead_for_first;
-	int per_thread_remainder = remainder / count;
-
-	per_thread_remainder = per_thread_remainder >> 3;
-	per_thread_remainder = per_thread_remainder << 3;
-	for (int c = 0; c < count; ++c)
-	{
-		struct header_t * start = &_bcl_->head[c];
-		struct header_t * h = (struct header_t*)ptr;
-		{
-			long long hs = (long long)h;
-			int diff = hs - s;
-			if (diff >= size)
-			{
-				printf("out of bounds\n");
-			}
-		}
-		int siz;
-		if (c == 0)
-			siz = overhead_for_first;
-		else
-			siz = per_thread_remainder;
-		start->is_free = 0;
-		start->next = h;
-		start->prev = NULL;
-		start->size = 0;
-		int alloc_siz = siz - sizeof(struct header_t);
-		h->next = NULL;
-		h->prev = start;
-		h->is_free = 1;
-		h->size = alloc_siz;
-		ptr += siz;
-	}
-}
-
-function_space_specifier struct header_t *get_free_block(int threadId, size_t size)
-{
-	struct header_t *curr = &_bcl_->head[threadId];
-	while (curr) {
-		if (curr->is_free && curr->size >= size)
-			return curr;
-		curr = curr->next;
-	}
-	return NULL;
-}
 
 function_space_specifier int roundUp(int numToRound, int multiple)
 {
 	return ((numToRound + multiple - 1) / multiple) * multiple;
 }
+
+function_space_specifier void Initialize_BCL0(size_t size, size_t first_overhead, int count)
+{
+	// Initialize heaps for BCL allocation.
+	// Nothing can be done until this is done.
+	// Layout, illustrated below, contains sections that are all fixed in size.
+	//
+	//  g points here:
+	//  ======================================================================
+	//           The struct _BCL_t
+	//  ----------------------------------------------------------------------
+	//  g+0x1000 Heap list-- count number of them.
+	//           This is an array of the start of all heaps. Each heap is
+	//           basically self contained, with allocated and free lists,
+	//           which are per-thread oriented.
+	//  ======================================================================
+
+	// Each heap has the following structure:
+	//  ----------------------------------------------------------------------
+	//  Allocated list.
+	//           This should be large enough as to handle all buffer pointers
+	//           allocated by this package. The size is specified during set up.
+	//           If zero or full, then debugging of heap pointers is limited.
+	//           Allocation will still occur if full, but you can't track issues.
+	//  -----------------------------------------------------------------------
+	//  Free list.
+	//           The list is a linked list of the free blocks, which vary in
+	//           size. Free blocks are filled with 0xde bytes, and must be large
+	//           enough. The algorithm is first fit.
+	//           https://web.archive.org/web/20060409094110/http://www.osdcom.info/content/view/31/39/
+	//  ======================================================================
+	
+	_bcl_->count = count;
+	_bcl_->padding = 256;
+	_bcl_->pointer_count = 0x100000;
+
+	int size_for_bcl = roundUp(sizeof(struct _BCL_t), 0x1000);
+
+	_bcl_->heap_list = (void**)(
+			size_for_bcl
+			+ (unsigned char*)_bcl_);
+
+	int size_for_heap_list = roundUp(sizeof(void*) * count, 0x1000);
+
+	// Set up heap table with start of each heap.
+	unsigned char * start = (unsigned char *)(
+		size_for_bcl
+		+ size_for_heap_list
+		+ (unsigned char*)_bcl_);
+	for (int c = 0; c < count; ++c)
+	{
+		size_t heap_size = (c == 0) ? first_overhead
+			: (size - first_overhead) / (count + 1);
+
+		_bcl_->heap_list[c] = start;
+		start = start + heap_size;
+	}
+
+	// For each heap, set up allocated and free block list.
+	for (int c = 0; c < count; ++c)
+	{
+		size_t heap_size = (c == 0) ? first_overhead
+			: (size - first_overhead) / (count + 1);
+		void * s = _bcl_->heap_list[c];
+		// allocate table for allocated.
+		struct header_t ** f = (struct header_t **)s;
+		struct header_t ** a = (struct header_t **)s + _bcl_->pointer_count * sizeof(struct header_t*);
+		struct header_t ** b = (struct header_t **)s + _bcl_->pointer_count * sizeof(struct header_t*) * 2;
+		for (int j = 0; j < _bcl_->pointer_count; ++j)
+		{
+			a[j] = NULL;
+			f[j] = NULL;
+		}
+
+		// Set up pointer to first, and currently only, free block.
+		f[0] = (struct header_t*)b;
+
+		// Set up sizes.
+		// header_overhead is # bytes of struct header_t up to "data".
+		int header_overhead = (long long)(&f[0]->data) - (long long)(&f[0]->is_free);
+		_bcl_->head_size = header_overhead;
+
+		// ptr_tables is the size of recorded free and used blocks.
+		size_t ptr_tables = (size_t)(b - f);
+
+		// set up free block.
+		f[0]->is_free = 1;
+		f[0]->next = NULL;
+		f[0]->prev = NULL;
+		f[0]->size =
+			heap_size			// all of the heap
+			- ptr_tables	    // less the size for pointer tables free and used.
+			- header_overhead	// less the overhead of header_t to data.
+			- _bcl_->padding			// less padding after data for overrun checks.
+			;
+
+		// Set padding of free block.
+		unsigned char * pad = (unsigned char *)&f[0]->data + f[0]->size;
+		memset(pad, 0xde, _bcl_->padding);
+	}
+}
+
+function_space_specifier void check_heap_structures()
+{
+	if (_bcl_ == NULL)
+		Crash("BCL base pointer is null.");
+
+	for (int i = 0; i < _bcl_->count; ++i)
+	{
+		struct header_t ** s = (struct header_t **)_bcl_->heap_list[i];
+		struct header_t * curr = s[0];
+		while (curr)
+		{
+			if (!(curr->is_free == 0 || curr->is_free == 1))
+				Crash("BCL heap chain corrupt.");
+			curr = curr->next;
+		}
+	}
+}
+
 
 function_space_specifier void * simple_malloc(size_t size)
 {
@@ -216,42 +276,73 @@ function_space_specifier void * simple_malloc(size_t size)
 
 	size_t total_size;
 	void *block;
-	struct header_t *header;
+	struct header_t *new_block;
 	if (!size)
 		return NULL;
-	size = roundUp(size, 8);
-	header = get_free_block(threadId, size);
 
-	if (header)
+	size = roundUp(size, 8);
+	struct header_t ** f = (struct header_t **)_bcl_->heap_list[threadId];
+	// First fit algorithm of free list.
+	struct header_t * curr = f[0];
+	while (curr)
+	{
+		if (curr->is_free && curr->size >= size)
+		{
+			new_block = curr;
+			break;
+		}
+		curr = curr->next;
+	}
+
+	if (new_block)
 	{
 		printf("simple_malloc allocating\n");
+
+		size_t old_size = new_block->size;
+		size_t new_free_block_size =
+			old_size
+			- _bcl_->head_size;
+
+		struct header_t * new_free_block = NULL;
+
 		// split block if big enough.
-		if (header->size > (size + sizeof(struct header_t)))
+		if (new_free_block_size > 8)
 		{
 			printf("split\n");
-			int original_size = header->size;
-			int skip = size + sizeof(struct header_t);
-			unsigned char * ptr = ((unsigned char *)header) + skip;
-			struct header_t * new_free = (struct header_t *)ptr;
-			new_free->is_free = 1;
-			new_free->size = original_size - skip;
-			new_free->prev = header->prev;
-			new_free->next = header->next;
-			if (new_free->prev != NULL)
-			{
-				new_free->prev->next = new_free;
-			}
-			header->size = size;
+
+			// set up new free block.
+			new_free_block =
+				(struct header_t *)(new_block->data
+					+ size
+					+ _bcl_->padding);
+
+			// set up free block.
+			new_free_block->is_free = 1;
+			new_free_block->next = new_block->next;
+			new_free_block->prev = new_block->prev;
+			new_free_block->size = new_free_block_size;
+
+			// change allocated block.
+			new_block->size = size;
+			memset(new_block->data + size, 0xde, _bcl_->padding);
+			memset(new_block->data, 0x00, size);
 		}
-		header->is_free = 0;
+
+		// Set up free and allocated list.
+		if (f[0] == new_block)
+		{
+			f[0] = new_free_block;
+		}
+
 		size_t free = 0;
-		struct header_t *curr2 = &_bcl_->head[0];
+		struct header_t ** s = (struct header_t **)_bcl_->heap_list[threadId];
+		struct header_t * curr2 = s[0];
 		while (curr2) {
 			if (curr2->is_free) free += (curr2->size);
 			curr2 = curr2->next;
 		}
 		printf("Memory of heap %d left %lld\n", threadId, free);
-		return (void*)(header + 1);
+		return (void*)(new_block + 1);
 	}
 	Crash("No memory left.");
 	return NULL;

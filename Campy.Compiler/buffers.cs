@@ -208,7 +208,7 @@
             {
                 if (Campy.Utils.Options.IsOn("copy_trace"))
                     System.Console.WriteLine("Allocating GPU buf " + to_gpu);
-                result = New(BUFFERS.SizeOf(type));
+                result = New(type);
                 _allocated_objects[to_gpu] = result;
             }
             else result = find_object.First().Value;
