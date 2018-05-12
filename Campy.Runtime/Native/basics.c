@@ -250,16 +250,64 @@ function_space_specifier void check_heap_structures()
 
 	for (int i = 0; i < _bcl_->count; ++i)
 	{
-		struct header_t ** s = (struct header_t **)_bcl_->heap_list[i];
-		struct header_t * curr = s[0];
+		// Check free list for basic integrity.
+		struct header_t ** f = (struct header_t **)_bcl_->heap_list[i];
+		struct header_t ** a = f + _bcl_->pointer_count;
+		struct header_t * curr = f[0];
 		while (curr)
 		{
 			if (!(curr->is_free == 0 || curr->is_free == 1))
 				Crash("BCL heap chain corrupt.");
 			curr = curr->next;
 		}
+		// Verify every block here is on free list.
+		for (int j = 0; j < _bcl_->pointer_count; ++j)
+		{
+			struct header_t * check = f[j];
+			curr = f[0];
+			while (curr)
+			{
+				if (check == curr)
+					break;
+				curr = curr->next;
+			}
+			if (curr == NULL && check != NULL)
+				Crash("Block in check list but not on free list.");
+		}
+		// Verify all free blocks have integrity padding unchanged.
+		curr = f[0];
+		while (curr)
+		{
+			unsigned char * pad = (unsigned char *)&curr->data + curr->size;
+			memset(pad, 0xde, _bcl_->padding);
+			for (int j = 0; j < _bcl_->padding; ++j)
+			{
+				if (pad[j] != 0xde)
+					Crash("Padding overwrite.");
+			}
+			curr = curr->next;
+		}
+		// Verify all allocated blocks have integrity padding unchanged.
+		curr = a[0];
+		while (curr)
+		{
+			unsigned char * pad = (unsigned char *)&curr->data + curr->size;
+			memset(pad, 0xde, _bcl_->padding);
+			for (int j = 0; j < _bcl_->padding; ++j)
+			{
+				if (pad[j] != 0xde)
+					Crash("Padding overwrite.");
+			}
+			curr = curr->next;
+		}
 	}
 }
+
+function_space_specifier void InternalCheckHeap()
+{
+	check_heap_structures();
+}
+
 
 
 function_space_specifier void * simple_malloc(size_t size)
@@ -334,15 +382,19 @@ function_space_specifier void * simple_malloc(size_t size)
 			f[0] = new_free_block;
 		}
 
+		// Put allocated item on allocated list.
+		struct header_t ** a = f + _bcl_->pointer_count;
+		new_block->next = a[0];
+		a[0] = new_block;
+
 		size_t free = 0;
-		struct header_t ** s = (struct header_t **)_bcl_->heap_list[threadId];
-		struct header_t * curr2 = s[0];
+		struct header_t * curr2 = f[0];
 		while (curr2) {
 			if (curr2->is_free) free += (curr2->size);
 			curr2 = curr2->next;
 		}
 		printf("Memory of heap %d left %lld\n", threadId, free);
-		return (void*)(new_block + 1);
+		return (void*)&new_block->data[0];
 	}
 	Crash("No memory left.");
 	return NULL;

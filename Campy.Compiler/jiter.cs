@@ -1183,6 +1183,24 @@ namespace Campy.Compiler
 
     public class JITER
     {
+        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "InitTheBcl")]
+        public static extern void InitTheBcl(System.IntPtr a1, long a2, long a25, int a3, System.IntPtr a4);
+
+        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "InitFileSystem")]
+        public static extern void InitFileSystem();
+
+        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "GfsAddFile")]
+        public static extern void GfsAddFile(System.IntPtr name, System.IntPtr file, long length, System.IntPtr result);
+
+        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "InitializeBCL1")]
+        public static extern void InitializeBCL1();
+
+        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "InitializeBCL2")]
+        public static extern void InitializeBCL2();
+
+        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "CheckHeap")]
+        public static extern void CheckHeap();
+
         private IMPORTER _importer;
         private CFG _mcfg;
         private static int _nn_id = 0;
@@ -1834,20 +1852,6 @@ namespace Campy.Compiler
             return helloWorld;
         }
 
-        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "InitTheBcl")]
-        public static extern void InitTheBcl(System.IntPtr a1, long a2, long a25, int a3, System.IntPtr a4);
-
-        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "InitFileSystem")]
-        public static extern void InitFileSystem();
-
-        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "GfsAddFile")]
-        public static extern void GfsAddFile(System.IntPtr name, System.IntPtr file, long length, System.IntPtr result);
-
-        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "InitializeBCL1")]
-        public static extern void InitializeBCL1();
-
-        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "InitializeBCL2")]
-        public static extern void InitializeBCL2();
 
     
         private HashSet<string> _added_module_already = new HashSet<string>();

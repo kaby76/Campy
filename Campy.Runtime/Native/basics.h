@@ -7,4 +7,5 @@ __device__  __host__ void InternalInitTheBcl(void * g, size_t size, size_t first
 __device__ __host__ void InternalInitFileSystem();
 __device__ __host__ void InternalInitializeBCL1();
 __device__ __host__ void InternalInitializeBCL2();
+__device__ __host__ void InternalCheckHeap();
 

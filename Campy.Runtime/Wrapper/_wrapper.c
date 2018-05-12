@@ -13,12 +13,17 @@ extern "C" {
 #endif
 
 
-EXPORT void InitTheBcl(void * g, size_t size, size_t first_overhead, int count, void * s)
-{
-	InternalInitTheBcl(g, size, first_overhead, count, s);
-}
+	EXPORT void InitTheBcl(void * g, size_t size, size_t first_overhead, int count, void * s)
+	{
+		InternalInitTheBcl(g, size, first_overhead, count, s);
+	}
 
-EXPORT void InitFileSystem()
+	EXPORT void CheckHeap()
+	{
+		InternalCheckHeap();
+	}
+
+	EXPORT void InitFileSystem()
 {
 	InternalInitFileSystem();
 }
