@@ -58,6 +58,7 @@ struct tMDC_ToTypeDef_ {
 
 // Table 0x00 - Module
 struct tMD_Module_ {
+	int identity;
 	// Module name - index into string heap
 	STRING name;
 	// GUID for module version - index into GUID heap
@@ -71,10 +72,16 @@ struct tMD_TypeRef_ {
 	// Combined
 	tMD_TypeDef *pTypeDef;
 
+	int identity;
+
 	// Table index into various tables
 	IDX_TABLE resolutionScope;
+	// Offset for the name of type ref - index into string heap
+	int name_offset;
 	// Name of type ref - index into string heap
 	STRING name;
+	// Offset for the namespace of type ref - index into string heap
+	int nameSpace_offset;
 	// Namespace of type ref - index into string heap
 	STRING nameSpace;
 };
@@ -85,13 +92,18 @@ typedef struct tMD_TypeRef_ tMD_TypeRef;
 struct tMD_TypeDef_ {
 	// Combined
 	tMD_TypeDef *pTypeDef;
+
 	// MetaData pointer
 	tMetaData *pMetaData;
+	
+	int identity;
 
 	// Type attribute flags
 	FLAGS32 flags;
+	int name_offset;
 	// Name of type def - index into string heap
 	STRING name;
+	int nameSpace_offset;
 	// Namespace of type def - index into string heap
 	STRING nameSpace;
 	// The type that this type extends (inherits from)
@@ -174,29 +186,39 @@ struct tMD_FieldPtr_
 {
 	// Combined
 	tMD_TypeDef *pTypeDef;
+
 	// MetaData pointer
 	tMetaData *pMetaData;
+
+	int identity;
 
 };
 typedef struct tMD_FieldPtr_ tMD_FieldPtr;
 #define MD_TABLE_FIELDPTR 0x03
 
 
-struct tMD_FieldDef_ {
+struct tMD_FieldDef_
+{
 	// Combined
 	tMD_FieldDef *pFieldDef;
+
 	// MetaData pointer
 	tMetaData *pMetaData;
+
+	int identity;
 
 	// Flags - FieldAttributes
 	FLAGS16 flags;
 	// Padding dummy entry
 	I16 padding0;
+	int name_offset;
 	// Name of the field
 	STRING name;
-	// Signature of the field
-	BLOB_ signature;
+	// Signature offset.
+	int signature_offset;
 
+	// Signature of the field. Derived field from parsing signature offset.
+	BLOB_ signature;
 	// The type of this field
 	tMD_TypeDef *pType;
 	// The type that contains this field
@@ -219,19 +241,25 @@ struct tMD_MethodPtr_
 {
 	// Combined
 	tMD_TypeDef *pTypeDef;
+
 	// MetaData pointer
 	tMetaData *pMetaData;
+
+	int identity;
 };
 typedef struct tMD_MethodPtr_ tMD_MethodPtr;
 #define MD_TABLE_METHODPTR 0x05
 
 
 // Table 0x06 - MethodDef
-struct tMD_MethodDef_ {
+struct tMD_MethodDef_ 
+{
 	// Combined
 	tMD_MethodDef *pMethodDef;
 	// MetaData pointer
 	tMetaData *pMetaData;
+
+	int identity;
 
 	// RVA converted to pointer. Code for this method
 	U8 *pCIL;
@@ -240,7 +268,10 @@ struct tMD_MethodDef_ {
 	// Flags - MethodAttribute
 	FLAGS16 flags;
 	// Name of method
+	int name_offset;
 	STRING name;
+	// Offset into blob for signature.
+	int signature_offset;
 	// Signature of method
 	BLOB_ signature;
 	// The first entry in the Param table of the parameters of this method def
@@ -296,19 +327,24 @@ typedef struct tMD_MethodDef_ tMD_MethodDef;
 #define MD_TABLE_METHODDEF 0x06
 
 // Table 0x08 - Param
-struct tMD_Param_ {
+struct tMD_Param_
+{
+	int identity;
 	// Flags - ParamAttributes
 	FLAGS16 flags;
 	// The sequence number of the parameter. 0 is the return value, 1+ are the parameters
 	U16 sequence;
 	// The name of the parameter (optional)
+	int name_offset;
 	STRING name;
 };
 typedef struct tMD_Param_ tMD_Param;
 #define MD_TABLE_PARAM 0x08
 
 // Table 0x09 - InterfaceImpl
-struct tMD_InterfaceImpl_ {
+struct tMD_InterfaceImpl_
+{
+	int identity;
 	// The class that implements...
 	IDX_TABLE class_;
 	// ...this interface
@@ -318,17 +354,23 @@ typedef struct tMD_InterfaceImpl_ tMD_InterfaceImpl;
 #define MD_TABLE_INTERFACEIMPL 0x09
 
 // Table 0x0A - MemberRef
-struct tMD_MemberRef_ {
+struct tMD_MemberRef_
+{
 	// Combined
 	union {
 		tMD_MethodDef *pMethodDef;
 		tMD_FieldDef *pFieldDef;
 	} u;
 
+	int identity;
+
 	// Type of member, coded index: MemberRefParent
 	IDX_TABLE class_;
+	int name_offset;
 	// Name of the member
 	STRING name;
+	// Offset for the signature of the member
+	int signature_offset;
 	// Signature of the member
 	BLOB_ signature;
 };
@@ -336,13 +378,17 @@ typedef struct tMD_MemberRef_ tMD_MemberRef;
 #define MD_TABLE_MEMBERREF 0x0a
 
 // Table 0x0B - Constant
-struct tMD_Constant_ {
+struct tMD_Constant_
+{
+	int identity;
 	// The ELEMENT_TYPE of the constant - 'void' is ELEMENT_TYPE_CLASS with a 0 blob index
 	U8 type;
 	// Padding
 	U8 padding0[3];
 	// The parent of this constant - HasConstant encoded table index
 	IDX_TABLE parent;
+	// offset for the value of the constant, index in the BLOB heap
+	int value_offset;
 	// The value of the constant, index in the BLOB heap
 	BLOB_ value;
 };
@@ -350,11 +396,15 @@ typedef struct tMD_Constant_ tMD_Constant;
 #define MD_TABLE_CONSTANT 0x0b
 
 // Table 0x0C - CustomAttribute
-struct tMD_CustomAttribute_ {
+struct tMD_CustomAttribute_
+{
+	int identity;
 	// Parent
 	IDX_TABLE parent;
 	// Type
 	IDX_TABLE type;
+	// Offset for value of attribute
+	int value_offset;
 	// value of attribute
 	BLOB_ value;
 };
@@ -362,13 +412,17 @@ typedef struct tMD_CustomAttribute_ tMD_CustomAttribute;
 #define MD_TABLE_CUSTOMATTRIBUTE 0x0c
 
 // Table 0x0E - DeclSecurity
-struct tMD_DeclSecurity_ {
+struct tMD_DeclSecurity_
+{
+	int identity;
 	// The security action
 	U16 action;
 	// Padding
 	U16 padding0;
 	// The parent typedef, methoddef or assembly of this security info - HasDeclSecurity coded index
 	IDX_TABLE parent;
+	// Offset for the security permission set
+	int permissionSet_offset;
 	// The security permission set
 	BLOB_ permissionSet;
 };
@@ -376,7 +430,9 @@ typedef struct tMD_DeclSecurity_ tMD_DeclSecurity;
 #define MD_TABLE_DECLSECURITY 0x0e
 
 // Table 0x0F - ClassLayout
-struct tMD_ClassLayout_ {
+struct tMD_ClassLayout_
+{
+	int identity;
 	// The packing size
 	U16 packingSize;
 	// Padding
@@ -390,7 +446,9 @@ typedef struct tMD_ClassLayout_ tMD_ClassLayout;
 #define MD_TABLE_CLASSLAYOUT 0x0F
 
 
-struct tMD_FieldLayout_ {
+struct tMD_FieldLayout_
+{
+	int identity;
 	U32 offset;
 	IDX_TABLE field;
 };
@@ -399,14 +457,19 @@ typedef struct tMD_FieldLayout_ tMD_FieldLayout;
 
 
 // Table 0x11 - StandAloneSig
-struct tMD_StandAloneSig_ {
+struct tMD_StandAloneSig_
+{
+	int identity;
+	int signature_offset;
 	BLOB_ signature;
 };
 typedef struct tMD_StandAloneSig_ tMD_StandAloneSig;
 #define MD_TABLE_STANDALONESIG 0x11
 
 // Table 0x12 - EventMap
-struct tMD_EventMap_ {
+struct tMD_EventMap_
+{
+	int identity;
 	// Index into TypeDef table
 	IDX_TABLE parent;
 	// Index into Event table. Marks the start of a continuous run of events owned by this type.
@@ -416,7 +479,9 @@ typedef struct tMD_EventMap_ tMD_EventMap;
 #define MD_TABLE_EVENTMAP 0x12
 
 // Table 0x14 - Event
-struct tMD_Event_ {
+struct tMD_Event_
+{
+	int identity;
 	// Flags of type eventAttributes
 	FLAGS16 eventFlags;
 	// Padding
@@ -430,7 +495,9 @@ typedef struct tMD_Event_ tMD_Event;
 #define MD_TABLE_EVENT 0x14
 
 // Table 0x15 - PropertyMap
-struct tMD_PropertyMap_ {
+struct tMD_PropertyMap_
+{
+	int identity;
 	// Parent - index into TypeDef table
 	IDX_TABLE parent;
 	// PropertyList - index into Property table
@@ -442,13 +509,17 @@ typedef struct tMD_PropertyMap_ tMD_PropertyMap;
 #define MD_TABLE_PROPERTYMAP 0x15
 
 // Table 0x17 - Property
-struct tMD_Property_ {
+struct tMD_Property_
+{
+	int identity;
 	// Flags - PropertyAttributes
 	FLAGS16 flags;
 	// Padding dummy entry
 	I16 padding0;
 	// Name
 	STRING name;
+	// Offset for the type signature
+	int typeSig_offset;
 	// The type signature
 	BLOB_ typeSig;
 };
@@ -456,7 +527,9 @@ typedef struct tMD_Property_ tMD_Property;
 #define MD_TABLE_PROPERTY 0x17
 
 // Table 0x18 - MethodSemantics
-struct tMD_MethodSemantics_ {
+struct tMD_MethodSemantics_
+{
+	int identity;
 	// semantics flags - MethodSemanticsAttributes
 	FLAGS16 semantics;
 	// Padding dummy entry
@@ -470,7 +543,9 @@ typedef struct tMD_MethodSemantics_ tMD_MethodSemantics;
 #define MD_TABLE_METHODSEMANTICS 0x18
 
 // Table 0x19 - MethodImpl
-struct tMD_MethodImpl_ {
+struct tMD_MethodImpl_
+{
+	int identity;
 	// Index into TypeDef table
 	IDX_TABLE class_;
 	// The method to use as the interface implementation. Coded index MethodDefOrRef
@@ -481,7 +556,9 @@ struct tMD_MethodImpl_ {
 typedef struct tMD_MethodImpl_ tMD_MethodImpl;
 #define MD_TABLE_METHODIMPL 0x19
 
-struct tMD_ModuleRef_ {
+struct tMD_ModuleRef_
+{
+	int identity;
 	// The module name referenced
 	STRING name;
 };
@@ -489,19 +566,24 @@ typedef struct tMD_ModuleRef_ tMD_ModuleRef;
 #define MD_TABLE_MODULEREF 0x1a
 
 // Table 0x1B - TypeSpec
-struct tMD_TypeSpec_ {
+struct tMD_TypeSpec_
+{
 	// Combined
 	tMD_TypeDef *pTypeDef;
 	// MetaData pointer
 	tMetaData *pMetaData;
-
+	int identity;
+	// Offset for the signature of the type
+	int signature_offset;
 	// The signature of the type
 	BLOB_ signature;
 };
 typedef struct tMD_TypeSpec_ tMD_TypeSpec;
 #define MD_TABLE_TYPESPEC 0x1b
 
-struct tMD_ImplMap_ {
+struct tMD_ImplMap_
+{
+	int identity;
 	// Mapping flags of type PInvokeAttributes
 	U16 mappingFlags;
 	// padding
@@ -517,7 +599,9 @@ typedef struct tMD_ImplMap_ tMD_ImplMap;
 #define MD_TABLE_IMPLMAP 0x1c
 
 // Table 0x1D - FieldRVA
-struct tMD_FieldRVA_ {
+struct tMD_FieldRVA_
+{
+	int identity;
 	// The RVA of the initial data for the field
 	void* rva;
 	// Index into the field table
@@ -527,13 +611,17 @@ typedef struct tMD_FieldRVA_ tMD_FieldRVA;
 #define MD_TABLE_FIELDRVA 0x1d
 
 // Table 0x20 - Assembly
-struct tMD_Assembly_ {
+struct tMD_Assembly_
+{
+	int identity;
 	// Hash algorithm ID of type AssemblyHashAlgorithm
 	U32 hashAlgID;
 	// Version info
 	U16 majorVersion, minorVersion, buildNumber, revisionNumber;
 	// Flags - AssemblyFlags
 	FLAGS32 flags;
+	// Offset for public key
+	int publicKey_offset;
 	// Public key
 	BLOB_ publicKey;
 	// Name
@@ -544,24 +632,32 @@ struct tMD_Assembly_ {
 typedef struct tMD_Assembly_ tMD_Assembly;
 #define MD_TABLE_ASSEMBLY 0x20
 
-struct tMD_AssemblyRef_ {
+struct tMD_AssemblyRef_
+{
+	int identity;
 	// Version info
 	U16 majorVersion, minorVersion, buildNumber, revisionNumber;
 	// Flags - AssemblyFlags
 	FLAGS32 flags;
+	// Offset for public key or token
+	int publicKeyOrToken_offset;
 	// Public key or token
 	BLOB_ publicKeyOrToken;
 	// Name
 	STRING name;
 	// Culture
 	STRING culture;
+	// Offset for hash value.
+	int hashValue_offset;
 	// Hash value
 	BLOB_ hashValue;
 };
 typedef struct tMD_AssemblyRef_ tMD_AssemblyRef;
 #define MD_TABLE_ASSEMBLYREF 0x23
 
-struct tMD_ManifestResource_ {
+struct tMD_ManifestResource_
+{
+	int identity;
 	U32 offset;
 	FLAGS32 flags;
 	// Name
@@ -572,7 +668,9 @@ struct tMD_ManifestResource_ {
 typedef struct tMD_ManifestResource_ tMD_ManifestResource;
 #define MD_TABLE_MANIFESTRESOURCE 0x28
 
-struct tMD_NestedClass_ {
+struct tMD_NestedClass_
+{
+	int identity;
 	// The TypeDef of the class that is nested
 	IDX_TABLE nestedClass;
 	// The TypeDef of the class in which nestedClass is enclosed
@@ -582,7 +680,9 @@ typedef struct tMD_NestedClass_ tMD_NestedClass;
 #define MD_TABLE_NESTEDCLASS 0x29
 
 // Table 0x2A - Generic param
-struct tMD_GenericParam_ {
+struct tMD_GenericParam_
+{
+	int identity;
 	// The number of this generic parameter. Numbered left-to-right, starting from 0
 	U16 number;
 	// Flags - GenericParamAttributes
@@ -596,7 +696,9 @@ typedef struct tMD_GenericParam_ tMD_GenericParam;
 #define MD_TABLE_GENERICPARAM 0x2A
 
 // Table 0x2B - MethodSpec
-struct tMD_MethodSpec_ {
+struct tMD_MethodSpec_
+{
+	int identity;
 	// Combined
 	tMD_MethodDef *pMethodDef;
 	// MetaData pointer
@@ -604,6 +706,8 @@ struct tMD_MethodSpec_ {
 
 	// Index into MethodDef or MethodRef specifying which method this spec refers to
 	IDX_TABLE method;
+	// Offset for the index into blob heap, holding the signature of this instantiation
+	int instantiation_offset;
 	// Index into blob heap, holding the signature of this instantiation
 	BLOB_ instantiation;
 };
@@ -611,7 +715,9 @@ typedef struct tMD_MethodSpec_ tMD_MethodSpec;
 #define MD_TABLE_METHODSPEC 0x2B
 
 // Table 0x2C - GenericParamConstraint
-struct tMD_GenericParamConstraint_ {
+struct tMD_GenericParamConstraint_
+{
+	int identity;
 	// The generic param that this constraint applies to
 	tMD_GenericParam *pGenericParam;
 	// The type of the constraint (coded index TypeDefOrRef)

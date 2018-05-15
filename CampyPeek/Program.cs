@@ -12,7 +12,7 @@ namespace CampyPeek
     class Program
     {
         [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "InitTheBcl")]
-        public static extern void InitTheBcl(System.IntPtr a1, long a2, int a3, System.IntPtr a4);
+        public static extern void InitTheBcl(System.IntPtr a1, long a2, long a25, int a3, System.IntPtr a4);
 
         [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "InitFileSystem")]
         public static extern void InitFileSystem();
@@ -43,9 +43,9 @@ namespace CampyPeek
                 IntPtr b = buffers.New(the_size);
                 RUNTIME.BclPtr = b;
                 RUNTIME.BclPtrSize = (ulong)the_size;
-                int max_threads = 16;
+                int max_threads = 1;
                 IntPtr b2 = buffers.New(sizeof(int*));
-                InitTheBcl(b, the_size, max_threads, b2);
+                InitTheBcl(b, the_size, 2 * 16777216, max_threads, b2);
             }
 
             unsafe

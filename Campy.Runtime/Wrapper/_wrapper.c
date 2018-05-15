@@ -76,7 +76,7 @@ EXPORT void * STDCALL BclGetMeta(char * file_name)
 
 EXPORT void STDCALL BclPrintMeta(void* meta)
 {
-	CLIFile_PrintMetaData((tMetaData*)meta);
+	MetaData_PrintMetaData((tMetaData*)meta);
 }
 
 #ifdef __cplusplus

@@ -42,7 +42,6 @@ struct tCLIFile_ {
 // static methods
 function_space_specifier tMetaData* CLIFile_GetMetaDataForAssembly(char *pAssemblyName);
 function_space_specifier void CLIFile_GetHeapRoots(tHeapRoots *pHeapRoots);
-function_space_specifier void CLIFile_PrintMetaData(tMetaData * meta);
 
 // instance methods
 function_space_specifier tCLIFile* CLIFile_Load(char *pFileName);

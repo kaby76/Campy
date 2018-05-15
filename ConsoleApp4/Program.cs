@@ -626,6 +626,16 @@ namespace ConsoleApp4
         {
             StartDebugging();
 
+            //{
+            //    int n = 4;
+
+            //    int[] x = new int[n];
+            //    Campy.Parallel.For(n, i =>
+            //    {
+            //        x[i] = i;
+            //    });
+            //}
+
             FFT.FFT_Test();
 
             //BitonicSortT t = new BitonicSortT();
@@ -641,15 +651,6 @@ namespace ConsoleApp4
             //            throw new Exception();
             //}
 
-            {
-                int n = 4;
-
-                int[] x = new int[n];
-                Campy.Parallel.For(n, i =>
-                {
-                    x[i] = i;
-                });
-            }
             //{
             //    int n = 4;
 

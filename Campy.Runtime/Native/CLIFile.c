@@ -52,12 +52,6 @@ __global__ void BCL_CLIFile_GetMetaDataForAssembly(char * fileName)
 	result = CLIFile_GetMetaDataForAssembly(fileName);
 }
 
-function_space_specifier void CLIFile_PrintMetaData(tMetaData * meta)
-{
-
-
-}
-
 function_space_specifier tMetaData* CLIFile_GetMetaDataForAssembly(char * fileName)
 {
 	tFilesLoaded *pFiles;

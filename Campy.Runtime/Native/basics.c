@@ -127,8 +127,8 @@ function_space_specifier  void gpuexit(int _Code) {}
 
 
 struct header_t {
-	unsigned is_free;
-	size_t size;
+	U64 is_free;
+	U64 size;
 	struct header_t *next;
 	struct header_t *prev;
 	unsigned char data[1];

@@ -203,4 +203,7 @@ function_space_specifier unsigned int GetU32(unsigned char *pSource);
 function_space_specifier unsigned int GetU16(unsigned char *pSource);
 function_space_specifier unsigned long long GetU64(unsigned char *pSource);
 
+
+function_space_specifier void MetaData_PrintMetaData(tMetaData * meta);
+
 #endif
