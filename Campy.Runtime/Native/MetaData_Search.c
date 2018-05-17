@@ -37,8 +37,8 @@ function_space_specifier U32 MetaData_CompareNameAndSig(STRING name, BLOB_ sigBl
 		sig = MetaData_GetBlob(sigBlob, NULL);
 		thisSig = MetaData_GetBlob(pMethod->signature, NULL);
 
-		e = MetaData_DecodeSigEntry(&sig);
-		thisE = MetaData_DecodeSigEntry(&thisSig);
+		e = MetaData_DecodeUnsigned32BitInteger(&sig);
+		thisE = MetaData_DecodeUnsigned32BitInteger(&thisSig);
 		// Check method call type (static, etc...)
 		if (e != thisE) {
 			return 0;
@@ -46,16 +46,16 @@ function_space_specifier U32 MetaData_CompareNameAndSig(STRING name, BLOB_ sigBl
 
 		// If method has generic arguments, check the generic type argument count
 		if (e & SIG_METHODDEF_GENERIC) {
-			e = MetaData_DecodeSigEntry(&sig);
-			thisE = MetaData_DecodeSigEntry(&thisSig);
+			e = MetaData_DecodeUnsigned32BitInteger(&sig);
+			thisE = MetaData_DecodeUnsigned32BitInteger(&thisSig);
 			// Generic argument count
 			if (e != thisE) {
 				return 0;
 			}
 		}
 
-		e = MetaData_DecodeSigEntry(&sig);
-		thisE = MetaData_DecodeSigEntry(&thisSig);
+		e = MetaData_DecodeUnsigned32BitInteger(&sig);
+		thisE = MetaData_DecodeUnsigned32BitInteger(&thisSig);
 		// check parameter count
 		if (e != thisE) {
 			return 0;
@@ -101,15 +101,15 @@ function_space_specifier static tMD_MethodDef* FindMethodInType(tMD_TypeDef *pTy
 		pMsg = (char*)Gmalloc(2048);
 		*pMsg = 0;
 		sig = MetaData_GetBlob(sigBlob, &i);
-		entry = MetaData_DecodeSigEntry(&sig);
+		entry = MetaData_DecodeUnsigned32BitInteger(&sig);
 		if ((entry & SIG_METHODDEF_HASTHIS) == 0) {
 			Gsprintf(Gstrchr(pMsg, 0), "static ");
 		}
 		if (entry & SIG_METHODDEF_GENERIC) {
 			// read number of generic type args - don't care what it is
-			MetaData_DecodeSigEntry(&sig);
+			MetaData_DecodeUnsigned32BitInteger(&sig);
 		}
-		numParams = MetaData_DecodeSigEntry(&sig);
+		numParams = MetaData_DecodeUnsigned32BitInteger(&sig);
 		pParamTypeDef = Type_GetTypeFromSig(pSigMetaData, &sig, ppClassTypeArgs, ppMethodTypeArgs); // return type
 		if (pParamTypeDef != NULL) {
 			Gsprintf(Gstrchr(pMsg, 0), "%s ", pParamTypeDef->name);

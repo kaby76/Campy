@@ -1760,8 +1760,8 @@ function_space_specifier void JIT_Prepare(tMD_MethodDef *pMethodDef, U32 genComb
 
 		pStandAloneSig = (tMD_StandAloneSig*)MetaData_GetTableRow(pMethodDef->pMetaData, localsToken);
 		sig = MetaData_GetBlob(pStandAloneSig->signature, &sigLength);
-		MetaData_DecodeSigEntry(&sig); // Always 0x07
-		numLocals = MetaData_DecodeSigEntry(&sig);
+		MetaData_DecodeUnsigned32BitInteger(&sig); // Always 0x07
+		numLocals = MetaData_DecodeUnsigned32BitInteger(&sig);
 		pLocals = (tParameter*)Gmalloc(numLocals * sizeof(tParameter));
 		totalSize = 0;
 		for (i=0; i<numLocals; i++) {

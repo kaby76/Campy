@@ -32,10 +32,15 @@
 #include <crt/host_defines.h>
 #endif
 
-function_space_specifier unsigned int MetaData_DecodeSigEntry(SIG *pSig) {
+// Return the length of the signature. The length is an unsigned 32-bit integer
+// of the number of bytes following the encoded length. Remember, the length
+// is compressed, and can occupy more than one byte, so psig must be adjusted
+// to be the first byte following the length.
+function_space_specifier unsigned int MetaData_DecodeUnsigned32BitInteger(SIG *pSig) {
 	unsigned char a,b,c,d;
 	unsigned char* ptr = ((unsigned char*)*pSig);
 	a = *ptr++;
+	*pSig = ptr;
 	if ((a & 0x80) == 0) {
 		// 1-byte entry
 		return a;
@@ -46,20 +51,33 @@ function_space_specifier unsigned int MetaData_DecodeSigEntry(SIG *pSig) {
 	}
 
 	b = *ptr++;
+	*pSig = ptr;
 	if ((a & 0xc0) == 0x80) {
 		// 2-byte entry
 		return ((int)(a & 0x3f)) << 8 | b;
 	}
 	// 4-byte entry
 	c = *ptr++;
+	*pSig = ptr;
 	d = *ptr++;
+	*pSig = ptr;
 	return ((int)(a & 0x1f)) << 24 | ((int)b) << 16 | ((int)c) << 8 | d;
 }
+
+
+function_space_specifier unsigned int MetaData_DecodeUnsigned8BitInteger(SIG *pSig) {
+	unsigned char a, b, c, d;
+	unsigned char* ptr = ((unsigned char*)*pSig);
+	a = *ptr++;
+	*pSig = ptr;
+	return a;
+}
+
 
 function_space_specifier IDX_TABLE MetaData_DecodeSigEntryToken(SIG *pSig) {
 	static U8 tableID[4] = {MD_TABLE_TYPEDEF, MD_TABLE_TYPEREF, MD_TABLE_TYPESPEC, 0};
 
-	U32 entry = MetaData_DecodeSigEntry(pSig);
+	U32 entry = MetaData_DecodeUnsigned32BitInteger(pSig);
 	return MAKE_TABLE_INDEX(tableID[entry & 0x3], entry >> 2);
 }
 
@@ -76,7 +94,7 @@ function_space_specifier void MetaData_LoadStrings(tMetaData *pThis, void *pStre
 }
 
 function_space_specifier unsigned int MetaData_DecodeHeapEntryLength(unsigned char **ppHeapEntry) {
-	return MetaData_DecodeSigEntry((SIG*)ppHeapEntry);
+	return MetaData_DecodeUnsigned32BitInteger((SIG*)ppHeapEntry);
 }
 
 function_space_specifier void MetaData_LoadBlobs(tMetaData *pThis, void *pStream, unsigned int streamLen) {

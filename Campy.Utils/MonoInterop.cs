@@ -21,16 +21,11 @@ namespace Campy.Utils
 
         public static System.Type ToSystemType(this TypeReference type)
         {
-            var to_type = ToSystemType2(type);
+            var to_type = Type.GetType(type.FullName);
+            if (to_type == null) return null;
             string y = to_type.AssemblyQualifiedName;
             return Type.GetType(y, true);
         }
-
-        public static System.Type ToSystemType2(this Mono.Cecil.TypeReference tr)
-        {
-            return Type.GetType(tr.FullName);
-        }
-
 
         public static Mono.Cecil.TypeReference SubstituteMonoTypeReference(this System.Type type, Mono.Cecil.ModuleDefinition md)
         {

@@ -63,6 +63,7 @@ void* RVA_FindData(tRVA *pThis, unsigned int rva) {
 		return NULL;
 	}
 
+	// This code follows directly outlined in section II.25 of ECMA 335.
 	pRVA = pThis->pFirstRVA;
 	while (pRVA != NULL) {
 		if (rva >= pRVA->baseAddress && rva < pRVA->baseAddress+pRVA->size) {

@@ -54,10 +54,19 @@ __global__ void BCL_CLIFile_GetMetaDataForAssembly(char * fileName)
 
 function_space_specifier tMetaData* CLIFile_GetMetaDataForAssembly(char * fileName)
 {
+	// Functionality of assembly resolution seems it should be here.
+	// But, this is a problem with GPU BCL because we don't have a
+	// GAC for file system. What a mess.
+
+
+
+	// As there is no file names for module names, construct one.
 	tFilesLoaded *pFiles;
 	char * pAssemblyName;
 	char assemblyName[250];
+	char fName[250];
 	Gstrcpy(assemblyName, fileName);
+	Gstrcpy(fName, fileName);
 	char * r = Gstrstr(assemblyName, ".exe");
 	if (r > 0) *r = 0;
 	r = Gstrstr(assemblyName, ".dll");
@@ -93,9 +102,23 @@ function_space_specifier tMetaData* CLIFile_GetMetaDataForAssembly(char * fileNa
 	// Assembly not loaded, so load it if possible
 	{
 		tCLIFile *pCLIFile;
-		pCLIFile = CLIFile_Load(fileName);
-		//pCLIFile = CLIFile_Load(pAssemblyName);
-		//printf("In CLIFile_GetMetaDataForAssembly2\n");
+		char * r1 = Gstrstr(fileName, ".dll");
+		char * r2 = Gstrstr(fileName, ".exe");
+		if (r1 != NULL || r2 != NULL)
+		{
+			pCLIFile = CLIFile_Load(fileName);
+		}
+		else
+		{
+			Gstrcat(fName, ".dll");
+			pCLIFile = CLIFile_Load(fName);
+			if (pCLIFile == NULL)
+			{
+				Gstrcpy(fName, fileName);
+				Gstrcat(fName, ".exe");
+				pCLIFile = CLIFile_Load(fName);
+			}
+		}
 		if (pCLIFile == NULL) {
 			Crash("Cannot load required assembly file: %s", fileName);
 			return NULL;

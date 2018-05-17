@@ -1383,7 +1383,7 @@
 
         public IntPtr New(Type type)
         {
-            var bcl_type = RUNTIME.GetBclType(type.ToMonoTypeReference());
+            var bcl_type = RUNTIME.GetBclType(type);
             return BclHeapAlloc(bcl_type);
         }
 

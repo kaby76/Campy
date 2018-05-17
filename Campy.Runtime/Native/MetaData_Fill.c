@@ -36,7 +36,12 @@ function_space_specifier void MetaData_Fill_FieldDef(tMD_TypeDef *pParentType, t
 
 	sig = MetaData_GetBlob(pFieldDef->signature, &sigLength);
 
-	MetaData_DecodeSigEntry(&sig); // First entry always 0x06
+	// First entry always 0x06
+	// Let's check that section #.
+	unsigned int section_number = MetaData_DecodeUnsigned8BitInteger(&sig);
+	if (section_number != 0x6)
+		Crash("Section number for field def is not 6.");
+
 	pFieldDef->pType = Type_GetTypeFromSig(pFieldDef->pMetaData, &sig, ppClassTypeArgs, NULL);
 	if (pFieldDef->pType == NULL) {
 		// If the field is a core generic type definition, then we can't do anything more
@@ -95,12 +100,12 @@ function_space_specifier void MetaData_Fill_MethodDef(tMD_TypeDef *pParentType, 
 	}
 
 	sig = MetaData_GetBlob(pMethodDef->signature, NULL);
-	entry = MetaData_DecodeSigEntry(&sig);
+	entry = MetaData_DecodeUnsigned32BitInteger(&sig);
 	if (entry & SIG_METHODDEF_GENERIC) {
 		// Has generic parameters. Read how many, but don't care about the answer
-		MetaData_DecodeSigEntry(&sig);
+		MetaData_DecodeUnsigned32BitInteger(&sig);
 	}
-	pMethodDef->numberOfParameters = MetaData_DecodeSigEntry(&sig) + (METHOD_ISSTATIC(pMethodDef)?0:1);
+	pMethodDef->numberOfParameters = MetaData_DecodeUnsigned32BitInteger(&sig) + (METHOD_ISSTATIC(pMethodDef)?0:1);
 	pMethodDef->pReturnType = Type_GetTypeFromSig(pMethodDef->pMetaData, &sig, ppClassTypeArgs, ppMethodTypeArgs);
 	if (pMethodDef->pReturnType != NULL) {
 		MetaData_Fill_TypeDef(pMethodDef->pReturnType, NULL, NULL);

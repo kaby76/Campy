@@ -2,6 +2,6 @@
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
     <EnableUnmanagedDebugging>true</EnableUnmanagedDebugging>
-    <StartArguments>C:\Users\kenne\Documents\Campy2\ConsoleApp1\bin\Debug\netcoreapp2.0\ConsoleApp1.dll</StartArguments>
+    <StartArguments>"C:\Windows.old\WINDOWS\Microsoft.NET\Framework\v4.0.30319\System.Numerics.dll"</StartArguments>
   </PropertyGroup>
 </Project>

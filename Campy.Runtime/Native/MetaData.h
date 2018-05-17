@@ -148,7 +148,8 @@ struct tInterfaceMap_ {
 
 // static functions
 function_space_specifier void MetaData_Init();
-function_space_specifier unsigned int MetaData_DecodeSigEntry(SIG *pSig);
+function_space_specifier unsigned int MetaData_DecodeUnsigned32BitInteger(SIG *pSig);
+function_space_specifier unsigned int MetaData_DecodeUnsigned8BitInteger(SIG *pSig);
 function_space_specifier IDX_TABLE MetaData_DecodeSigEntryToken(SIG *pSig);
 function_space_specifier unsigned int MetaData_DecodeHeapEntryLength(unsigned char **ppHeapEntry);
 

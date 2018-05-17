@@ -34,7 +34,7 @@
 
 function_space_specifier void CommonInitFileSystem()
 {
-	_bcl_->initial_size = 10;
+	_bcl_->initial_size = 200;
 	_bcl_->names = (char**)Gmalloc(_bcl_->initial_size * sizeof(char*));
 	memset(_bcl_->names, 0, _bcl_->initial_size * sizeof(char*));
 	_bcl_->files = (char**)Gmalloc(_bcl_->initial_size * sizeof(char*));

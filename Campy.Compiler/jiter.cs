@@ -1859,6 +1859,11 @@ namespace Campy.Compiler
         public void AddAssemblyToFileSystem(Mono.Cecil.ModuleDefinition module)
         {
             string full_path_assem = module.FileName;
+            AddAssemblyToFileSystem(full_path_assem);
+        }
+
+        public void AddAssemblyToFileSystem(string full_path_assem)
+        {
             if (_added_module_already.Contains(full_path_assem))
                 return;
             _added_module_already.Add(full_path_assem);

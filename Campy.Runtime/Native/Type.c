@@ -222,7 +222,7 @@ function_space_specifier U32 Type_IsValueType(tMD_TypeDef *pTypeDef) {
 function_space_specifier tMD_TypeDef* Type_GetTypeFromSig(tMetaData *pMetaData, SIG *pSig, tMD_TypeDef **ppClassTypeArgs, tMD_TypeDef **ppMethodTypeArgs) {
 	U32 entry;
 
-	entry = MetaData_DecodeSigEntry(pSig);
+	entry = MetaData_DecodeUnsigned32BitInteger(pSig);
 	switch (entry) {
 		case ELEMENT_TYPE_VOID:
 			return NULL;
@@ -286,7 +286,7 @@ function_space_specifier tMD_TypeDef* Type_GetTypeFromSig(tMetaData *pMetaData, 
 			return MetaData_GetTypeDefFromDefRefOrSpec(pMetaData, entry, ppClassTypeArgs, ppMethodTypeArgs);
 
 		case ELEMENT_TYPE_VAR:
-			entry = MetaData_DecodeSigEntry(pSig); // This is the argument number
+			entry = MetaData_DecodeUnsigned32BitInteger(pSig); // This is the argument number
 			if (ppClassTypeArgs == NULL) {
 				// Return null here as we don't yet know what the type really is.
 				// The generic instantiation code figures this out later.
@@ -321,7 +321,7 @@ function_space_specifier tMD_TypeDef* Type_GetTypeFromSig(tMetaData *pMetaData, 
 			}
 
 		case ELEMENT_TYPE_MVAR:
-			entry = MetaData_DecodeSigEntry(pSig); // This is the argument number
+			entry = MetaData_DecodeUnsigned32BitInteger(pSig); // This is the argument number
 			if (ppMethodTypeArgs == NULL) {
 				// Can't do anything sensible, as we don't have any type args
 				return NULL;
@@ -455,11 +455,11 @@ function_space_specifier U32 Type_IsMethod(tMD_MethodDef *pMethod, STRING name, 
 	}
 
 	sig = MetaData_GetBlob(pMethod->signature, &sigLen);
-	i = MetaData_DecodeSigEntry(&sig); // Don't care about this
+	i = MetaData_DecodeUnsigned32BitInteger(&sig); // Don't care about this
 	if (i & SIG_METHODDEF_GENERIC) {
-		MetaData_DecodeSigEntry(&sig);
+		MetaData_DecodeUnsigned32BitInteger(&sig);
 	}
-	numSigParams = MetaData_DecodeSigEntry(&sig);
+	numSigParams = MetaData_DecodeUnsigned32BitInteger(&sig);
 
 	if (numParams != numSigParams) {
 		return 0;

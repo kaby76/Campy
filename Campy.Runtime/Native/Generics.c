@@ -49,7 +49,7 @@ function_space_specifier tMD_TypeDef* Generics_GetGenericTypeFromSig
 	pCoreType = Type_GetTypeFromSig(pMetaData, pSig, ppCallingClassTypeArgs, ppCallingMethodTypeArgs);
 	MetaData_Fill_TypeDef(pCoreType, ppCallingClassTypeArgs, ppCallingMethodTypeArgs); //NULL, NULL);
 
-	numTypeArgs = MetaData_DecodeSigEntry(pSig);
+	numTypeArgs = MetaData_DecodeUnsigned32BitInteger(pSig);
 	ppTypeArgs = (tMD_TypeDef**)Gmalloc(numTypeArgs * sizeof(tMD_TypeDef*));
 	for (i=0; i<numTypeArgs; i++) {
 		ppTypeArgs[i] = Type_GetTypeFromSig(pMetaData, pSig, ppCallingClassTypeArgs, ppCallingMethodTypeArgs);
@@ -172,8 +172,8 @@ function_space_specifier tMD_MethodDef* Generics_GetMethodDefFromSpec
 
 	//ppClassTypeArgs = pCoreMethod->pParentType->ppClassTypeArgs;
 	sig = MetaData_GetBlob(pMethodSpec->instantiation, NULL);
-	MetaData_DecodeSigEntry(&sig); // always 0x0a
-	argCount = MetaData_DecodeSigEntry(&sig);
+	MetaData_DecodeUnsigned32BitInteger(&sig); // always 0x0a
+	argCount = MetaData_DecodeUnsigned32BitInteger(&sig);
 	ppTypeArgs = (tMD_TypeDef**)Gmalloc(argCount * sizeof(tMD_TypeDef*));
 
 	for (i=0; i<argCount; i++) {

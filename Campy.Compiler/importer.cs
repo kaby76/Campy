@@ -218,6 +218,12 @@ namespace Campy.Compiler
             var method_debug_information = symbol_reader?.Read(method_definition);
             Collection<SequencePoint> sequence_points = method_debug_information != null ? method_debug_information.SequencePoints : new Collection<SequencePoint>();
             Mono.Cecil.Cil.MethodBody body = method_definition.Body;
+            if (body == null)
+                throw new Exception("Body null, not expecting it to be.");
+            if (body.Instructions == null)
+                throw new Exception("Body has instructions collection.");
+            if (body.Instructions.Count == 0)
+                throw new Exception("Body instruction count is zero.");
             for (int j = 0; j < instruction_count; ++j)
             {
                 Mono.Cecil.Cil.Instruction instruction = body.Instructions[j];
