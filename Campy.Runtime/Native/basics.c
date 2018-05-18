@@ -175,7 +175,7 @@ function_space_specifier void Initialize_BCL0(size_t size, size_t first_overhead
 	
 	_bcl_->count = count;
 	_bcl_->padding = 256;
-	_bcl_->pointer_count = 0x100000;
+	_bcl_->pointer_count = 0x10;
 
 	int size_for_bcl = roundUp(sizeof(struct _BCL_t), 0x1000);
 
@@ -190,47 +190,53 @@ function_space_specifier void Initialize_BCL0(size_t size, size_t first_overhead
 		size_for_bcl
 		+ size_for_heap_list
 		+ (unsigned char*)_bcl_);
+	size_t second_and_on_heap_size = (size - first_overhead) / (count - 1);
+	// make sure size is multiple of eight, so remove lower bits.
+	second_and_on_heap_size = (second_and_on_heap_size >> 3) << 3;
+	// check.
+	if (first_overhead + second_and_on_heap_size * (count - 1) > size)
+		Crash("Miscomputed sizes.");
+
+	// Set up start of individual heaps.
 	for (int c = 0; c < count; ++c)
 	{
-		size_t heap_size = (c == 0) ? first_overhead
-			: (size - first_overhead) / (count + 1);
-
+		size_t heap_size = (c == 0) ? first_overhead : second_and_on_heap_size;
 		_bcl_->heap_list[c] = start;
 		start = start + heap_size;
 	}
 
 	// For each heap, set up allocated and free block list.
-	for (int c = 0; c < count; ++c)
+    for (int c = 0; c < count; ++c)
 	{
-		size_t heap_size = (c == 0) ? first_overhead
-			: (size - first_overhead) / (count + 1);
-		void * s = _bcl_->heap_list[c];
+		size_t heap_size = (c == 0) ? first_overhead : second_and_on_heap_size;
+		unsigned char * s = (unsigned char *)_bcl_->heap_list[c];
 		// allocate table for allocated.
 		struct header_t ** f = (struct header_t **)s;
-		struct header_t ** a = (struct header_t **)s + _bcl_->pointer_count * sizeof(struct header_t*);
-		struct header_t ** b = (struct header_t **)s + _bcl_->pointer_count * sizeof(struct header_t*) * 2;
+		struct header_t ** a = (struct header_t **)(s + _bcl_->pointer_count * sizeof(struct header_t*));
+		struct header_t ** start_of_free_blocks = (struct header_t **)(s + _bcl_->pointer_count * sizeof(struct header_t*) * 2);
 		for (int j = 0; j < _bcl_->pointer_count; ++j)
 		{
-			a[j] = NULL;
 			f[j] = NULL;
+			a[j] = NULL;
 		}
 
 		// Set up pointer to first, and currently only, free block.
-		f[0] = (struct header_t*)b;
+		struct header_t* fb = (struct header_t*)start_of_free_blocks;
+		f[0] = fb;
 
-		// Set up sizes.
+		// Set up size of the free block in this heap.
 		// header_overhead is # bytes of struct header_t up to "data".
-		int header_overhead = (long long)(&f[0]->data) - (long long)(&f[0]->is_free);
+		int header_overhead = (long long)(&fb->data[0]) - (long long)(&fb->is_free);
 		_bcl_->head_size = header_overhead;
 
 		// ptr_tables is the size of recorded free and used blocks.
-		size_t ptr_tables = (size_t)(b - f);
+		size_t ptr_tables = (size_t)(((long long)start_of_free_blocks) - (long long)f);
 
 		// set up free block.
-		f[0]->is_free = 1;
-		f[0]->next = NULL;
-		f[0]->prev = NULL;
-		f[0]->size =
+		fb->is_free = 1;
+		fb->next = NULL;
+		fb->prev = NULL;
+		fb->size =
 			heap_size			// all of the heap
 			- ptr_tables	    // less the size for pointer tables free and used.
 			- header_overhead	// less the overhead of header_t to data.
@@ -238,8 +244,21 @@ function_space_specifier void Initialize_BCL0(size_t size, size_t first_overhead
 			;
 
 		// Set padding of free block.
-		unsigned char * pad = (unsigned char *)&f[0]->data + f[0]->size;
+		unsigned char * pad = (unsigned char *)&fb->data[0] + fb->size;
 		memset(pad, 0xde, _bcl_->padding);
+	}
+
+	// check each free is not overlapping.
+	// check end of fb is not over edge of whole heap.
+	for (int c = 0; c < count; ++c)
+	{
+		size_t heap_size = (c == 0) ? first_overhead : second_and_on_heap_size;
+		unsigned char * s = (unsigned char *)_bcl_->heap_list[c];
+		unsigned char * end = s + heap_size;
+		struct header_t ** f = (struct header_t **)s;
+		struct header_t* fb = f[0];
+		if (((unsigned char*)fb) + fb->size + _bcl_->padding - 1 >= end)
+			Crash("Allocation of heaps off.");
 	}
 }
 
@@ -264,6 +283,8 @@ function_space_specifier void check_heap_structures()
 		for (int j = 0; j < _bcl_->pointer_count; ++j)
 		{
 			struct header_t * check = f[j];
+			if (check == NULL) continue;
+			//printf("Check is 0x%08llx\n", check);
 			curr = f[0];
 			while (curr)
 			{
@@ -322,20 +343,27 @@ function_space_specifier void * simple_malloc(size_t size)
 	int threadId = 0;
 #endif
 
+	//printf("Starting alloc, first a check...\n");
+	check_heap_structures();
+
 	size_t total_size;
 	void *block;
 	struct header_t *new_block;
 	if (!size)
 		return NULL;
 
+	size_t before = size;
 	size = roundUp(size, 8);
+	//printf("Block size was %llx, now %llx\n", before, size);
 	struct header_t ** f = (struct header_t **)_bcl_->heap_list[threadId];
 	// First fit algorithm of free list.
+	//printf("Looking for a free block\n");
 	struct header_t * curr = f[0];
 	while (curr)
 	{
 		if (curr->is_free && curr->size >= size)
 		{
+			//printf("OK. Found free block 0x%08llx size %x\n", curr, curr->size);
 			new_block = curr;
 			break;
 		}
@@ -344,7 +372,7 @@ function_space_specifier void * simple_malloc(size_t size)
 
 	if (new_block)
 	{
-		printf("simple_malloc allocating\n");
+		//printf("got block, checking whether to split or use whole.\n");
 
 		size_t old_size = new_block->size;
 		size_t new_free_block_size =
@@ -356,13 +384,16 @@ function_space_specifier void * simple_malloc(size_t size)
 		// split block if big enough.
 		if (new_free_block_size > 8)
 		{
-			printf("split\n");
+			//printf("split\n");
 
 			// set up new free block.
 			new_free_block =
-				(struct header_t *)(new_block->data
+				(struct header_t *)(&new_block->data[0]
 					+ size
 					+ _bcl_->padding);
+
+			//printf("New free block starts here 0x%08llx\n", new_free_block);
+			//printf("allocated block starts here 0x%08llx which will be reformatted.\n", new_block);
 
 			// set up free block.
 			new_free_block->is_free = 1;
@@ -370,10 +401,19 @@ function_space_specifier void * simple_malloc(size_t size)
 			new_free_block->prev = new_block->prev;
 			new_free_block->size = new_free_block_size;
 
+			//printf("Zapping the following addrs:\n");
+			//printf("0xde's, starting at 0x%08llx, and going for %d bytes\n",
+			//	&new_block->data[0] + size, _bcl_->padding);
+			//printf("0's, starting at 0x%08llx, and going for %lld bytes\n",
+			//		&new_block->data[0], size);
 			// change allocated block.
 			new_block->size = size;
-			memset(new_block->data + size, 0xde, _bcl_->padding);
-			memset(new_block->data, 0x00, size);
+			memset(&new_block->data[0] + size, 0xde, _bcl_->padding);
+			memset(&new_block->data[0], 0x00, size);
+		}
+		else
+		{
+			//printf("Using whole.\n");
 		}
 
 		// Set up free and allocated list.
@@ -387,13 +427,16 @@ function_space_specifier void * simple_malloc(size_t size)
 		new_block->next = a[0];
 		a[0] = new_block;
 
-		size_t free = 0;
-		struct header_t * curr2 = f[0];
-		while (curr2) {
-			if (curr2->is_free) free += (curr2->size);
-			curr2 = curr2->next;
-		}
-		printf("Memory of heap %d left %lld\n", threadId, free);
+		//size_t free = 0;
+		//struct header_t * curr2 = f[0];
+		//while (curr2) {
+		//	if (curr2->is_free) free += (curr2->size);
+		//	curr2 = curr2->next;
+		//}
+		//printf("Memory of heap %d left %lld\n", threadId, free);
+		//printf("Finishing up, first a check...\n");
+		check_heap_structures();
+
 		return (void*)&new_block->data[0];
 	}
 	Crash("No memory left.");

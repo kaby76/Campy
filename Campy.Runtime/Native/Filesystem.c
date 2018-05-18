@@ -74,11 +74,12 @@ function_space_specifier void Gfs_add_file(char * name, char * file, size_t leng
 	{
 		if (*ptr_name == NULL)
 		{
+			printf("Entered\n");
 			*ptr_name = Gstrdup(name);
 			*ptr_file = (char *)Gmalloc(length);
 			memcpy(*ptr_file, file, length);
 			*ptr_length = length;
-			*result = i;
+			//*result = i;
 			return;
 		}
 		else
@@ -88,7 +89,8 @@ function_space_specifier void Gfs_add_file(char * name, char * file, size_t leng
 			ptr_length++;
 		}
 	}
-	*result = -1;
+	printf("Not entered\n");
+	//*result = -1;
 }
 
 __global__ void Bcl_Gfs_remove_file(char * name, int * result)

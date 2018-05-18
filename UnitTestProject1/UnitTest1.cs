@@ -1,10 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using Campy;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Numerics;
 
-namespace ConsoleApp1
+namespace UnitTestProject1
 {
     public class FFT
     {
@@ -30,7 +29,7 @@ namespace ConsoleApp1
 
         /* Uses Cooley-Tukey iterative in-place algorithm with radix-2 DIT case
          * assumes no of points provided are a power of 2 */
-        public static void Seq(Complex[] buffer)
+        public static void Seq(System.Numerics.Complex[] buffer)
         {
             int bits = (int)Math.Log(buffer.Length, 2);
             for (int j = 1; j < buffer.Length / 2; j++)
@@ -100,6 +99,7 @@ namespace ConsoleApp1
         }
     }
 
+    [TestClass]
     public class Test
     {
         static bool ApproxEqual(double a, double b)
@@ -107,6 +107,7 @@ namespace ConsoleApp1
             return b - a < 0.0001 || a - b < 0.0001;
         }
 
+        [TestMethod]
         public void FFT_Test()
         {
             Complex[] input = { 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
@@ -119,34 +120,6 @@ namespace ConsoleApp1
             {
                 if (!ApproxEqual(copy[i].Real, input[i].Real)) throw new Exception();
                 if (!ApproxEqual(copy[i].Imaginary, input[i].Imaginary)) throw new Exception();
-            }
-        }
-    }
-
-    class Program
-    {
-        static void StartDebugging()
-        {
-            Campy.Utils.Options.Set("graph_trace");
-            Campy.Utils.Options.Set("module_trace");
-            Campy.Utils.Options.Set("name_trace");
-            Campy.Utils.Options.Set("cfg_construction_trace");
-            Campy.Utils.Options.Set("dot_graph");
-            Campy.Utils.Options.Set("jit_trace");
-            Campy.Utils.Options.Set("memory_trace");
-            Campy.Utils.Options.Set("ptx_trace");
-            Campy.Utils.Options.Set("state_computation_trace");
-            Campy.Utils.Options.Set("continue_with_no_resolve");
-            Campy.Utils.Options.Set("copy_trace");
-            Campy.Utils.Options.Set("runtime_trace");
-        }
-
-        static void Main(string[] args)
-        {
-            StartDebugging();
-            {
-                var t = new Test();
-                t.FFT_Test();
             }
         }
     }

@@ -30,6 +30,8 @@ extern "C" {
 
 EXPORT void GfsAddFile(void * name, void * file, size_t length, void * result)
 {
+	printf("Adding File to GFS %s 0x%08llx %x\n",
+		name, file, length);
 	InternalGfsAddFile(name, file, length, result);
 }
 

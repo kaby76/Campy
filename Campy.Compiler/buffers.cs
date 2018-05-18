@@ -16,6 +16,9 @@
     /// </summary>
     public class BUFFERS
     {
+        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "CheckHeap")]
+        public static extern void CheckHeap();
+
         private Dictionary<string, string> _type_name_map = new Dictionary<string, string>();
 
         // A dictionary of allocated blocks of memory corresponding to an object in C#,
@@ -513,6 +516,7 @@
                     short* sp = (short*)ip;
                     for (int i = 0; i < v; ++i)
                         *sp++ = (short)s[i];
+                    BUFFERS.CheckHeap();
                     return;
                 }
 
@@ -1262,6 +1266,7 @@
                         + size_element);
                 }
             }
+            BUFFERS.CheckHeap();
         }
 
         private unsafe void CpArraytoCpu(void* from_gpu, Array to_cpu, System.Type from_element_type)
@@ -1384,7 +1389,10 @@
         public IntPtr New(Type type)
         {
             var bcl_type = RUNTIME.GetBclType(type);
-            return BclHeapAlloc(bcl_type);
+            BUFFERS.CheckHeap();
+            IntPtr result = BclHeapAlloc(bcl_type);
+            BUFFERS.CheckHeap();
+            return result;
         }
 
 
@@ -1397,12 +1405,16 @@
         public IntPtr New(Array array)
         {
             Type type = array.GetType().GetElementType();
+            BUFFERS.CheckHeap();
             var bcl_type = RUNTIME.GetBclType(type.ToMonoTypeReference());
+            BUFFERS.CheckHeap();
 
             uint[] lengths = new uint[array.Rank];
             for (int i = 0; i < array.Rank; ++i) lengths[i] = (uint)array.GetLength(i);
-
-            return BclArrayAlloc(bcl_type, array.Rank, lengths);
+            BUFFERS.CheckHeap();
+            IntPtr result = BclArrayAlloc(bcl_type, array.Rank, lengths);
+            BUFFERS.CheckHeap();
+            return result;
         }
 
         public void Free(IntPtr pointer)
@@ -1435,18 +1447,22 @@
             {
                 // srcPtr and destPtr are IntPtr's pointing to valid memory locations
                 // size is the number of bytes to copy
+                BUFFERS.CheckHeap();
                 byte* src = (byte*)srcPtr;
                 byte* dest = (byte*)destPtr;
                 for (int i = 0; i < size; i++)
                 {
                     dest[i] = src[i];
                 }
+                BUFFERS.CheckHeap();
             }
         }
 
         public static unsafe void Cp(void* destPtr, object src)
         {
+            BUFFERS.CheckHeap();
             Marshal.StructureToPtr(src, (IntPtr)destPtr, false);
+            BUFFERS.CheckHeap();
         }
     }
 }

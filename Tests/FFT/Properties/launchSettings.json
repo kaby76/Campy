@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "xUnit.net Console": {
+      "executablePath": "$(XUnitPath)",
+      "nativeDebugging": true,
+      "commandLineArgs": "$(XUnitArguments)"
+    }
+  }
+}

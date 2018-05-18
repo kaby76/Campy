@@ -704,11 +704,9 @@
                 var refs = tr.Module.GetTypeReferences();
                 foreach (var r in refs)
                 {
-                    System.Console.WriteLine("Ref type " + r.FullName);
                     var sys_type = r.ToSystemType();
                     if (sys_type == null) continue;
                     var loc = sys_type.Assembly.Location;
-                    System.Console.WriteLine("Add file " + loc);
                     JITER.Singleton.AddAssemblyToFileSystem(loc);
                 }
             }
@@ -723,7 +721,6 @@
                 var name_space = tr.Namespace;
                 var name = tr.Name;
                 // Make sure assembly is placed in GPU BCL file system.
-                System.Console.WriteLine("Add file " + tr.Module.FileName);
                 JITER.Singleton.AddAssemblyToFileSystem(tr.Module.FileName);
                 result = BclGetMetaOfType(assembly_name, name_space, name, result);
             }
@@ -769,9 +766,7 @@
                 foreach (var f in fs)
                 {
                     var r = f.FieldType;
-                    System.Console.WriteLine("Ref type " + r.FullName);
                     var loc = r.Assembly.Location;
-                    System.Console.WriteLine("Add file " + loc);
                     JITER.Singleton.AddAssemblyToFileSystem(loc);
                 }
             }

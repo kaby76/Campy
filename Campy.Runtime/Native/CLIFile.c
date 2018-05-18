@@ -35,7 +35,8 @@
 #include "Filesystem.h"
 
 // Is this exe/dll file for the .NET virtual machine?
-#define DOT_NET_MACHINE 0x14c
+#define IMAGE_FILE_MACHINE_I386 0x14c
+#define IMAGE_FILE_MACHINE_AMD64 0x8664
 
 typedef struct tFilesLoaded_ tFilesLoaded;
 struct tFilesLoaded_ {
@@ -157,7 +158,7 @@ function_space_specifier static void* LoadFileFromDisk(char *pFileName)
 	return pData;
 }
 
-function_space_specifier static tCLIFile* LoadPEFile(void *pData) {
+function_space_specifier static tCLIFile* LoadPEFile(char * pFileName, void *pData) {
 
 	tCLIFile *pRet = TMALLOC(tCLIFile);
 	memset(pRet, 0, sizeof(tCLIFile));
@@ -186,8 +187,9 @@ function_space_specifier static tCLIFile* LoadPEFile(void *pData) {
 	pPESectionHeaders = pPEOptionalHeader + 224;
 
 	machine = GetU16(&(pPEHeader[0]));
-	if (machine != DOT_NET_MACHINE) {
-		Gprintf("Not DOT_NET_MACHINE.\n");
+	if (!(machine == IMAGE_FILE_MACHINE_I386 || machine == IMAGE_FILE_MACHINE_AMD64))
+	{
+		Gprintf("Not IMAGE_FILE_MACHINE_I386 or .\n");
 		return NULL;
 	}
 
@@ -204,7 +206,7 @@ function_space_specifier static tCLIFile* LoadPEFile(void *pData) {
 	cliHeaderSize = GetU32(&(pPEOptionalHeader[212]));
 
 	pCLIHeader = (unsigned char *)RVA_FindData(pRet->pRVA, cliHeaderRVA);
-
+	if (pCLIHeader == NULL) Crash("Cannot find RVA data for PE file %s", pFileName);
 	metaDataRVA = GetU32(&(pCLIHeader[8]));
 	metaDataSize = GetU32(&(pCLIHeader[12]));
 	pRet->entryPoint = GetU32(&(pCLIHeader[20]));
@@ -329,7 +331,11 @@ function_space_specifier tCLIFile* CLIFile_Load(char *pFileName) {
 		Crash("Cannot load file: %s", pFileName);
 	}
 
-	pRet = LoadPEFile(pRawFile);
+	pRet = LoadPEFile(pFileName, pRawFile);
+	if (pRet == NULL)
+	{
+		Crash("File %s doesn't load correctly.", pFileName);
+	}
 	pRet->pFileName = (char*)mallocForever((U32)Gstrlen(pFileName) + 1);
 	Gstrcpy(pRet->pFileName, pFileName);
 

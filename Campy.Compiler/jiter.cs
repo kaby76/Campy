@@ -1794,7 +1794,6 @@ namespace Campy.Compiler
             Utils.CudaHelpers.CheckCudaError(res);
 
             // Go to directory for Campy.
-            var dir = Path.GetDirectoryName(Path.GetFullPath(System.Reflection.Assembly.GetEntryAssembly().Location));
             uint num_ops = 0;
             res = Cuda.cuLinkAddFile_v2(linkState, CUjitInputType.CU_JIT_INPUT_LIBRARY,
                 RUNTIME.FindNativeCoreLib(), num_ops, op, op_values_intptr);
@@ -1866,6 +1865,8 @@ namespace Campy.Compiler
         {
             if (_added_module_already.Contains(full_path_assem))
                 return;
+            if (Campy.Utils.Options.IsOn("runtime_trace"))
+                System.Console.WriteLine("Adding to GPU file system " + full_path_assem);
             _added_module_already.Add(full_path_assem);
             // Set up corlib.dll in file system.
             string assem = Path.GetFileName(full_path_assem);
@@ -1879,7 +1880,9 @@ namespace Campy.Compiler
             stream.Dispose();
             var ptrx = Marshal.StringToHGlobalAnsi(assem);
             BUFFERS buffers = new BUFFERS();
+            BUFFERS.CheckHeap();
             IntPtr pointer1 = buffers.New(assem.Length + 1);
+            BUFFERS.CheckHeap();
             BUFFERS.Cp(pointer1, ptrx, assem.Length + 1);
             var pointer4 = buffers.New(sizeof(int));
             GfsAddFile(pointer1, corlib_bytes_intptr, corlib_bytes_handle_len, pointer4);
