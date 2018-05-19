@@ -46,7 +46,8 @@ function_space_specifier void Crash(const char *pMsg, ...) {
 	Gprintf("\n\n");
 
 #ifdef WIN32
-	dbg::fail("crash", "crash");
+	if (_bcl_ && (_bcl_->options & BCL_DEBUG_INTERACTIVE))
+		dbg::fail("crash", "crash");
 	// Cause a delibrate exception, to get into debugger
 	__debugbreak();
 #endif

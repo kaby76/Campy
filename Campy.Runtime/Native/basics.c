@@ -101,11 +101,6 @@ function_space_specifier void InternalInitTheBcl(void * g, size_t size, size_t f
 	CommonInitTheBcl(g, size, first_overhead, count, (struct _BCL_t**)s);
 }
 
-global_space_specifier void Initialize_BCL_Globals(void * g, size_t size, size_t first_overhead, int count, struct _BCL_t ** pbcl)
-{
-	CommonInitTheBcl(g, size, first_overhead, count, pbcl);
-}
-
 global_space_specifier void Set_BCL_Globals(struct _BCL_t * bcl)
 {
 	_bcl_ = bcl;
@@ -266,6 +261,9 @@ function_space_specifier void check_heap_structures()
 {
 	if (_bcl_ == NULL)
 		Crash("BCL base pointer is null.");
+
+	if (!(_bcl_->options & BCL_DEBUG_CHECK_HEAPS))
+		return;
 
 	for (int i = 0; i < _bcl_->count; ++i)
 	{
@@ -494,12 +492,16 @@ function_space_specifier void* Bcl_Array_Alloc(tMD_TypeDef* element_type_def, in
 
 function_space_specifier int get_kernel_base_index()
 {
-	return _bcl_->kernel_base_index;
+	if (_bcl_)
+		return _bcl_->kernel_base_index;
+	else
+		return 0;
 }
 
 global_space_specifier void set_kernel_base_index(int i)
 {
-	_bcl_->kernel_base_index = i;
+	if (_bcl_)
+		_bcl_->kernel_base_index = i;
 }
 
 
@@ -547,3 +549,10 @@ global_space_specifier void set_kernel_base_index(int i)
 //		PUSH_U32(value);
 //	}
 //}
+
+
+function_space_specifier void InternalSetOptions(U64 options)
+{
+	if (_bcl_)
+		_bcl_->options = options;
+}

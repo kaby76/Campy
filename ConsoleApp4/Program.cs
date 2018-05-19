@@ -625,30 +625,30 @@ namespace ConsoleApp4
         static void Main(string[] args)
         {
             StartDebugging();
-            {
-                int n = 4;
+            //{
+            //    int n = 4;
 
-                int[] x = new int[n];
-                Campy.Parallel.For(n, i =>
-                {
-                    x[i] = i;
-                });
-            }
-            {
-                A[] array = new A[10];
-                for (int i = 0; i < 10; ++i) array[i] = new A();
+            //    int[] x = new int[n];
+            //    Campy.Parallel.For(n, i =>
+            //    {
+            //        x[i] = i;
+            //    });
+            //}
+            //{
+            //    A[] array = new A[10];
+            //    for (int i = 0; i < 10; ++i) array[i] = new A();
 
-                Campy.Parallel.For(10, i =>
-                {
-                    array[i].X = i;
-                });
+            //    Campy.Parallel.For(10, i =>
+            //    {
+            //        array[i].X = i;
+            //    });
 
-                for (int i = 0; i < 10; i++)
-                {
-                    if (array[i].X != i) throw new Exception();
-                }
+            //    for (int i = 0; i < 10; i++)
+            //    {
+            //        if (array[i].X != i) throw new Exception();
+            //    }
 
-            }
+            //}
 
             FFT.FFT_Test();
 

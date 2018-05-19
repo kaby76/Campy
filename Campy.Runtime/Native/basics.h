@@ -8,4 +8,5 @@ __device__ __host__ void InternalInitFileSystem();
 __device__ __host__ void InternalInitializeBCL1();
 __device__ __host__ void InternalInitializeBCL2();
 __device__ __host__ void InternalCheckHeap();
+__device__ __host__ void InternalSetOptions(U64 options);
 

@@ -83,7 +83,13 @@ struct _BCL_t {
 
 	// Type
 	int CorLibDone;
+
+	// Options -- bitmap of whether to print debugging information.
+	U64 options;
 };
 
+#define BCL_DEBUG_PRINT_EVERYTHING 0x1
+#define BCL_DEBUG_CHECK_HEAPS      0x2
+#define BCL_DEBUG_INTERACTIVE      0x4
+
 extern gpu_space_specifier struct _BCL_t * _bcl_;
-global_space_specifier void Initialize_BCL_Globals(void * g, size_t size, size_t first_overhead, int count, struct _BCL_t ** pbcl);

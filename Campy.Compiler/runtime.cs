@@ -276,7 +276,8 @@
             try
             {
                 // Let's try the calling executable directory.
-                var dir = Path.GetDirectoryName(Path.GetFullPath(System.Reflection.Assembly.GetEntryAssembly().Location));
+                var p = typeof(RUNTIME).Assembly.Location;
+                var dir = Path.GetDirectoryName(Path.GetFullPath(p));
                 string full_path_assem = dir + Path.DirectorySeparatorChar
                                                        + "corlib.dll";
                 full_path_assem = Path.GetFullPath(full_path_assem);
@@ -289,22 +290,27 @@
             }
 
             // Try something else...
-
-            try
+            // Panic, assume this is somewhere within the Campy directory.
+            // go up the tree and try to find.
+            for (int level = 0; level < 10; ++level)
             {
-                // This could be a unit test in Campy. If that is true, then look in the standard directory structure
-                // for Campy source/object. It should have actually copied the damn corlib.dll to the output executable directory,
-                // but someone set up the test wrong. Anyways, assume that the project is up to date, and load from Campy.Runtime.
-                // ../../../../../Campy.Runtime/Corlib/bin/Debug/net20/
-                var path_of_campy = @"../../../../../Campy.Runtime/Corlib/bin/Debug/net20";
-                string full_path_assem = path_of_campy + Path.DirectorySeparatorChar + "corlib.dll";
-                full_path_assem = Path.GetFullPath(full_path_assem);
-                Stream stream = new FileStream(full_path_assem, FileMode.Open, FileAccess.Read, FileShare.Read);
-                stream.Close();
-                return full_path_assem;
-            }
-            catch (Exception)
-            {
+                try
+                {
+                    // This could be a unit test in Campy. If that is true, then look in the standard directory structure
+                    // for Campy source/object. It should have actually copied the damn corlib.dll to the output executable directory,
+                    // but someone set up the test wrong. Anyways, assume that the project is up to date, and load from Campy.Runtime.
+                    // ../../../../../Campy.Runtime/Corlib/bin/Debug/net20/
+                    var prefix = string.Concat(Enumerable.Repeat("../", level));
+                    var path_of_campy = prefix + @"Campy.Runtime/Corlib/bin/Debug/netstandard2.0";
+                    string full_path_assem = path_of_campy + Path.DirectorySeparatorChar + "corlib.dll";
+                    full_path_assem = Path.GetFullPath(full_path_assem);
+                    Stream stream = new FileStream(full_path_assem, FileMode.Open, FileAccess.Read, FileShare.Read);
+                    stream.Close();
+                    return full_path_assem;
+                }
+                catch (Exception)
+                {
+                }
             }
 
             // Fuck. I have no idea.

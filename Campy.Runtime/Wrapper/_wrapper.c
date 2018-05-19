@@ -23,6 +23,12 @@ extern "C" {
 		InternalCheckHeap();
 	}
 
+	EXPORT void SetOptions(U64 options)
+	{
+		InternalSetOptions(options);
+	}
+
+
 	EXPORT void InitFileSystem()
 {
 	InternalInitFileSystem();
