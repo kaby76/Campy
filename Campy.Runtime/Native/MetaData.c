@@ -1336,6 +1336,52 @@ function_space_specifier void OutputAssemblyRef(tMD_AssemblyRef * p)
 	printf("\n");
 }
 
+function_space_specifier void ExportedTypeTableReader(int table, int row, tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int numRows)
+{
+	// Table 0x27
+
+	tMD_ExportedType * p = (tMD_ExportedType*)pDest;
+	memset(p, 0, sizeof(tMD_ExportedType));
+	unsigned char * pSource = (unsigned char *)*ppSource;
+
+	p->identity = MAKE_TABLE_INDEX(table, row);
+
+	p->flags = GetU32(pSource);
+	pSource += 4;
+
+	p->TypeDefId = GetU32(pSource);
+	pSource += 4;
+
+	int string_skip = pThis->index32BitString ? 4 : 2;
+	int v = pThis->index32BitString ? GetU32(pSource) : GetU16(pSource);
+	p->offset_TypeName = v;
+	pSource += string_skip;
+	p->TypeName = (STRING)pThis->strings.pStart + v;
+
+	int string_skip2 = pThis->index32BitString ? 4 : 2;
+	v = pThis->index32BitString ? GetU32(pSource) : GetU16(pSource);
+	p->offset_TypeNamespace = v;
+	pSource += string_skip2;
+	p->TypeNamespace = (STRING)pThis->strings.pStart + v;
+
+	p->Implementation = GetU16(pSource);
+	pSource += 2;
+
+	*ppSource = pSource;
+}
+
+function_space_specifier void OutputExportedType(tMD_ExportedType * p)
+{
+	printf("AssemblyRef\n");
+	printf("id 0x%08x\n", p->identity);
+	printf("flags %x\n", p->flags);
+	printf("TypeDefId 0x%04x\n", p->TypeDefId);
+	printf("TypeName %s\n", p->TypeName);
+	printf("TypeNamespace %s\n", p->TypeNamespace);
+	printf("Implementation 0x%04x\n", p->Implementation);
+	printf("\n");
+}
+
 function_space_specifier void ManifestResourceTableReader(int table, int row, tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int numRows)
 {
 	// Table 0x28
@@ -1542,6 +1588,7 @@ function_space_specifier static void* LoadSingleTable(tMetaData *pThis, tRVA *pR
 		case MD_TABLE_FIELDRVA: rowLen = sizeof(tMD_FieldRVA); break;
 		case MD_TABLE_ASSEMBLY: rowLen = sizeof(tMD_Assembly); break;
 		case MD_TABLE_ASSEMBLYREF: rowLen = sizeof(tMD_AssemblyRef); break;
+		case MD_TABLE_EXPORTEDTYPE: rowLen = sizeof(tMD_ExportedType); break;
 		case MD_TABLE_MANIFESTRESOURCE: rowLen = sizeof(tMD_ManifestResource); break;
 		case MD_TABLE_NESTEDCLASS: rowLen = sizeof(tMD_NestedClass); break;
 		case MD_TABLE_GENERICPARAM: rowLen = sizeof(tMD_GenericParam); break;
@@ -1595,6 +1642,7 @@ function_space_specifier static void* LoadSingleTable(tMetaData *pThis, tRVA *pR
 			case MD_TABLE_FIELDRVA: FieldRVATableReader(tableID, row, pThis, pRVA, &pSource, MetaData_GetTableRow(pThis, MAKE_TABLE_INDEX(tableID, 1 + row)), numRows); continue;
 			case MD_TABLE_ASSEMBLY: AssemblyTableReader(tableID, row, pThis, pRVA, &pSource, MetaData_GetTableRow(pThis, MAKE_TABLE_INDEX(tableID, 1 + row)), numRows); continue;
 			case MD_TABLE_ASSEMBLYREF: AssemblyRefTableReader(tableID, row, pThis, pRVA, &pSource, MetaData_GetTableRow(pThis, MAKE_TABLE_INDEX(tableID, 1 + row)), numRows); continue;
+			case MD_TABLE_EXPORTEDTYPE: ExportedTypeTableReader(tableID, row, pThis, pRVA, &pSource, MetaData_GetTableRow(pThis, MAKE_TABLE_INDEX(tableID, 1 + row)), numRows); continue;
 			case MD_TABLE_MANIFESTRESOURCE: ManifestResourceTableReader(tableID, row, pThis, pRVA, &pSource, MetaData_GetTableRow(pThis, MAKE_TABLE_INDEX(tableID, 1 + row)), numRows); continue;
 			case MD_TABLE_NESTEDCLASS: NestedClassTableReader(tableID, row, pThis, pRVA, &pSource, MetaData_GetTableRow(pThis, MAKE_TABLE_INDEX(tableID, 1 + row)), numRows); continue;
 			case MD_TABLE_GENERICPARAM: GenericParamTableReader(tableID, row, pThis, pRVA, &pSource, MetaData_GetTableRow(pThis, MAKE_TABLE_INDEX(tableID, 1 + row)), numRows); continue;
@@ -1965,6 +2013,12 @@ function_space_specifier void MetaData_PrintMetaData(tMetaData * meta)
 				{
 					tMD_AssemblyRef* y = (tMD_AssemblyRef*)dd;
 					OutputAssemblyRef(y);
+					break;
+				}
+				case MD_TABLE_EXPORTEDTYPE:
+				{
+					tMD_ExportedType* y = (tMD_ExportedType*)dd;
+					OutputExportedType(y);
 					break;
 				}
 				case MD_TABLE_MANIFESTRESOURCE:

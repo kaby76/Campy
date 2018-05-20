@@ -178,6 +178,23 @@ function_space_specifier tMD_TypeDef* MetaData_GetTypeDefFromName(tMetaData *pMe
 //	printf("looking for %s in ns %s\n", name, nameSpace);
     U32 i;
 	tMD_TypeDef* result = 0;
+
+	// If this metadata is for netstandard, then we are going to work on type forwarding.
+	// Open all file references, and look in these assemblies.
+
+	if (strcmp(pMetaData->file_name, "netstandard.dll") == 0)
+	{
+		// Open each referenced assembly and perform search.
+		for (i = 1; i <= pMetaData->tables.numRows[MD_TABLE_ASSEMBLYREF]; ++i)
+		{
+			tMD_AssemblyRef * pAssemblyRef = (tMD_AssemblyRef *)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_ASSEMBLYREF, i));
+			tMetaData* alternative = CLIFile_GetMetaDataForAssembly(pAssemblyRef->name);
+			result = (tMD_TypeDef*)MetaData_GetTypeDefFromName(alternative, nameSpace, name, pInNestedClass);
+			if (result) return result;
+		}
+		return NULL;
+	}
+
 	for (i=1; i<=pMetaData->tables.numRows[MD_TABLE_TYPEDEF]; i++) {
 		tMD_TypeDef *pTypeDef;
 

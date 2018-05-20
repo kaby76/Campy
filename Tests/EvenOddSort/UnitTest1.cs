@@ -30,6 +30,7 @@ namespace OddEvenSort
                         sorted = false;
                     }
                 }
+
                 for (int i = 0; i < n2 - 1; ++i)
                 {
                     int j = i * 2 + 1;
@@ -70,43 +71,44 @@ namespace OddEvenSort
                     }
                 });
             }
+
             Campy.Parallel.Sync();
         }
 
-// Adapted from http://www.iti.fh-flensburg.de/lang/algorithmen/sortieren/networks/oemen.htm
+        // Adapted from http://www.iti.fh-flensburg.de/lang/algorithmen/sortieren/networks/oemen.htm
 
-/** sorts a piece of length n of the array
- * starting at position lo
- */
-public static void Rec(int[] a, int lo, int n)
-{
-    if (n > 1)
-    {
-        int m = n / 2;
-        Rec(a, lo, m);
-        Rec(a, lo + m, m);
-        RecMerge(a, lo, n, 1);
-    }
-}
+        /** sorts a piece of length n of the array
+         * starting at position lo
+         */
+        public static void Rec(int[] a, int lo, int n)
+        {
+            if (n > 1)
+            {
+                int m = n / 2;
+                Rec(a, lo, m);
+                Rec(a, lo + m, m);
+                RecMerge(a, lo, n, 1);
+            }
+        }
 
-/** lo is the starting position and
- * n is the length of the piece to be merged,
- * r is the distance of the elements to be compared
- */
-public static void RecMerge(int[] a, int lo, int n, int r)
-{
-    int m = r * 2;
-    if (m < n)
-    {
-        RecMerge(a, lo, n, m); // even subsequence
-        RecMerge(a, lo + r, n, m); // odd subsequence
-        for (int i = lo + r; i + r < lo + n; i += m)
-            if (a[i] > a[i + r])
-                swap(ref a[i], ref a[i + r]);
-    }
-    else if (a[lo] > a[lo + r])
-        swap(ref a[lo], ref a[lo + r]);
-}
+        /** lo is the starting position and
+         * n is the length of the piece to be merged,
+         * r is the distance of the elements to be compared
+         */
+        public static void RecMerge(int[] a, int lo, int n, int r)
+        {
+            int m = r * 2;
+            if (m < n)
+            {
+                RecMerge(a, lo, n, m); // even subsequence
+                RecMerge(a, lo + r, n, m); // odd subsequence
+                for (int i = lo + r; i + r < lo + n; i += m)
+                    if (a[i] > a[i + r])
+                        swap(ref a[i], ref a[i + r]);
+            }
+            else if (a[lo] > a[lo + r])
+                swap(ref a[lo], ref a[lo + r]);
+        }
     }
 
     public class UnitTest1

@@ -181,6 +181,7 @@ function_space_specifier static tCLIFile* LoadPEFile(char * pFileName, void *pDa
 	tMetaData *pMetaData;
 	pRet->pRVA = RVA();
 	pRet->pMetaData = pMetaData = MetaData();
+	pMetaData->file_name = Gstrdup(pFileName);
 	lfanew = GetU32(&(pMSDOSHeader[0x3c]));
 	pPEHeader = pMSDOSHeader + lfanew + 4;
 	pPEOptionalHeader = pPEHeader + 20;

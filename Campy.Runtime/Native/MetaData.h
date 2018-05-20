@@ -74,8 +74,8 @@ struct tMetaData_ {
 	tMetaDataUserStrings userStrings;
 	tMetaDataGUIDs GUIDs;
 	tTables tables;
-
 	unsigned char index32BitString, index32BitBlob, index32BitGUID;
+	char * file_name;
 };
 
 #define TYPEATTRIBUTES_INTERFACE 0x20

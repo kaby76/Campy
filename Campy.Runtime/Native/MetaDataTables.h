@@ -655,6 +655,21 @@ struct tMD_AssemblyRef_
 typedef struct tMD_AssemblyRef_ tMD_AssemblyRef;
 #define MD_TABLE_ASSEMBLYREF 0x23
 
+
+struct tMD_ExportedType_
+{
+	FLAGS32 flags;
+	IDX_TABLE TypeDefId;
+	U32 offset_TypeName;
+	STRING TypeName;
+	U32 offset_TypeNamespace;
+	STRING TypeNamespace;
+	U16 Implementation;
+	U32 identity;
+};
+typedef struct tMD_ExportedType_ tMD_ExportedType;
+#define MD_TABLE_EXPORTEDTYPE 0x27
+
 struct tMD_ManifestResource_
 {
 	int identity;
