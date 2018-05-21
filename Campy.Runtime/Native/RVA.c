@@ -22,6 +22,7 @@
 #include "Compat.h"
 
 #include "RVA.h"
+#include "CLIFile.h"
 
 tRVA* RVA() {
 	tRVA *pRet;
@@ -37,6 +38,9 @@ tRVA_Item* RVA_Create(tRVA *pThis, void *pFile, void *pSectionHeader) {
 
 	pRet = TMALLOC(tRVA_Item);
 	memset(pRet, 0, sizeof(tRVA_Item));
+	
+	struct pe_section_header * psh = (struct pe_section_header *)pSectionHeader;
+
 	pRet->baseAddress = *(unsigned int*)&((char*)pSectionHeader)[12];
 	pRet->size = *(unsigned int*)&((char*)pSectionHeader)[8];
 	pRet->pData = Gmalloc(pRet->size);

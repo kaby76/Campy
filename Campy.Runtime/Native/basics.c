@@ -16,9 +16,37 @@
 gpu_space_specifier struct _BCL_t * _bcl_;
 function_space_specifier void Initialize_BCL0(size_t size, size_t first_overhead, int count);
 
+#ifdef __GNUC__
+
+#include <execinfo.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <signal.h>
+
+void handler(int sig) {
+	void *array[100];
+	size_t size;
+	printf("Hi from handler!\n");
+	// get void*'s for all entries on the stack
+	size = backtrace(array, 100);
+
+	// print out all the frames to stderr
+	fprintf(stderr, "Error: signal %d:\n", sig);
+	backtrace_symbols_fd(array, size, STDERR_FILENO);
+
+	// Stop.
+	exit(1);
+}
+#endif
+
 
 function_space_specifier void CommonInitTheBcl(void * g, size_t size, size_t first_overhead, int count, struct _BCL_t ** pbcl)
 {
+#ifdef __GNUC__
+	printf("Hi from setup!\n");
+    signal(SIGSEGV, handler);   // install our handler
+#endif
+
 	// Erase the structure, then afterwards set everything up.
 	struct _BCL_t * bcl = (struct _BCL_t*)g;
 	*pbcl = bcl;
@@ -168,6 +196,12 @@ function_space_specifier void Initialize_BCL0(size_t size, size_t first_overhead
 	//           https://web.archive.org/web/20060409094110/http://www.osdcom.info/content/view/31/39/
 	//  ======================================================================
 	
+	unsigned char * begin = (unsigned char *)_bcl_;
+	unsigned char * end = begin + size;
+
+	//printf("beginning bcl 0x%08llx\n", begin);
+	//printf("out of bounds end should be 0x%08llx\n", end);
+
 	_bcl_->count = count;
 	_bcl_->padding = 256;
 	_bcl_->pointer_count = 0x10;
@@ -178,6 +212,8 @@ function_space_specifier void Initialize_BCL0(size_t size, size_t first_overhead
 			size_for_bcl
 			+ (unsigned char*)_bcl_);
 
+	//printf("heap pointers array starts at 0x%08llx\n", _bcl_->heap_list);
+
 	int size_for_heap_list = roundUp(sizeof(void*) * count, 0x1000);
 
 	// Set up heap table with start of each heap.
@@ -185,17 +221,33 @@ function_space_specifier void Initialize_BCL0(size_t size, size_t first_overhead
 		size_for_bcl
 		+ size_for_heap_list
 		+ (unsigned char*)_bcl_);
-	size_t second_and_on_heap_size = (size - first_overhead) / (count - 1);
+
+	size_t second_and_on_heap_size = 0;
+	if (count > 1)
+		second_and_on_heap_size = (size - size_for_bcl - size_for_heap_list - first_overhead) / (count - 1);
+
+	//printf("The size of first heap is 0x%08llx\n", first_overhead);
+	//printf("The before size of remaining is 0x%08llx\n", second_and_on_heap_size);
+
 	// make sure size is multiple of eight, so remove lower bits.
 	second_and_on_heap_size = (second_and_on_heap_size >> 3) << 3;
+
+	//printf("The after size of remaining is 0x%08llx\n", second_and_on_heap_size);
+
 	// check.
-	if (first_overhead + second_and_on_heap_size * (count - 1) > size)
+	if (size_for_bcl + size_for_heap_list + first_overhead + second_and_on_heap_size * (count - 1) > size)
 		Crash("Miscomputed sizes.");
 
 	// Set up start of individual heaps.
 	for (int c = 0; c < count; ++c)
 	{
+		printf("start of heap %d at 0x%08llx\n", c, start);
 		size_t heap_size = (c == 0) ? first_overhead : second_and_on_heap_size;
+		if (start < begin)
+			Crash("Ptr of heap %d starts before begin, 0x%08llx\n", c, start);
+		if (start >= end)
+			Crash("Ptr of heap %d ends after end, 0x%08llx\n", c, start);
+
 		_bcl_->heap_list[c] = start;
 		start = start + heap_size;
 	}
@@ -219,6 +271,8 @@ function_space_specifier void Initialize_BCL0(size_t size, size_t first_overhead
 		struct header_t* fb = (struct header_t*)start_of_free_blocks;
 		f[0] = fb;
 
+		//printf("ptr to begin of free block = 0x%08llx\n", (unsigned char *)fb);
+
 		// Set up size of the free block in this heap.
 		// header_overhead is # bytes of struct header_t up to "data".
 		int header_overhead = (long long)(&fb->data[0]) - (long long)(&fb->is_free);
@@ -238,9 +292,21 @@ function_space_specifier void Initialize_BCL0(size_t size, size_t first_overhead
 			- _bcl_->padding			// less padding after data for overrun checks.
 			;
 
+		//printf("ptr to begin of free block = 0x%08llx size after header = 0x%08llx\n", ((unsigned char *)&fb->data[0]), fb->size);
+		//printf("padding %d\n", _bcl_->padding);
+		
 		// Set padding of free block.
-		unsigned char * pad = (unsigned char *)&fb->data[0] + fb->size;
+		unsigned char * pad = ((unsigned char *)&fb->data[0]) + fb->size;
+
+		if (pad < begin)
+			Crash("Pad of heap %d starts before begin, 0x%08llx\n", c, pad);
+		if (pad > end)
+			Crash("Pad of heap %d ends after end, 0x%08llx\n", c, pad);
+		if (pad + fb->size > end)
+			Crash("Pad of heap end %d ends after end, 0x%08llx\n", c, pad + fb->size);
+
 		memset(pad, 0xde, _bcl_->padding);
+		printf("OK\n");
 	}
 
 	// check each free is not overlapping.

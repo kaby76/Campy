@@ -2,6 +2,6 @@
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
     <EnableUnmanagedDebugging>true</EnableUnmanagedDebugging>
-    <StartArguments>"C:\Windows.old\WINDOWS\Microsoft.NET\Framework\v4.0.30319\System.Numerics.dll"</StartArguments>
+    <StartArguments>"C:\Users\kenne\test2\bin\Debug\netcoreapp2.0\ubuntu.16.04-x64\test2.dll"</StartArguments>
   </PropertyGroup>
 </Project>

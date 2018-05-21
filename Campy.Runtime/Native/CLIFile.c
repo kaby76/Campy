@@ -158,6 +158,7 @@ function_space_specifier static void* LoadFileFromDisk(char *pFileName)
 	return pData;
 }
 
+
 function_space_specifier static tCLIFile* LoadPEFile(char * pFileName, void *pData) {
 
 	tCLIFile *pRet = TMALLOC(tCLIFile);
@@ -182,27 +183,91 @@ function_space_specifier static tCLIFile* LoadPEFile(char * pFileName, void *pDa
 	pRet->pRVA = RVA();
 	pRet->pMetaData = pMetaData = MetaData();
 	pMetaData->file_name = Gstrdup(pFileName);
-	lfanew = GetU32(&(pMSDOSHeader[0x3c]));
+
+	struct pe_image_header * pih;
+	struct pe_image_header_pe32 * pih32;
+	struct pe_image_header_pe32_plus * pih32p;
+	struct pe_image_header_data * pid = NULL;
+	struct pe_msdos * pm = (struct pe_msdos *)pMSDOSHeader;
+	struct pe_section_header * psh;
+
+	// Cast dos header pointer to the above BCL_IMAGE_DOS_HEADER struct.
+	BCL_IMAGE_DOS_HEADER * p_dos_header = (BCL_IMAGE_DOS_HEADER *)pMSDOSHeader;
+
+	lfanew = p_dos_header->e_lfanew;
+
 	pPEHeader = pMSDOSHeader + lfanew + 4;
+	
+	struct pe_header * ph = (struct pe_header *)pPEHeader;
+
 	pPEOptionalHeader = pPEHeader + 20;
 	pPESectionHeaders = pPEOptionalHeader + 224;
 
-	machine = GetU16(&(pPEHeader[0]));
+	machine = ph->machine;
+
 	if (!(machine == IMAGE_FILE_MACHINE_I386 || machine == IMAGE_FILE_MACHINE_AMD64))
 	{
 		Gprintf("Not IMAGE_FILE_MACHINE_I386 or .\n");
 		return NULL;
 	}
 
-	numSections = GetU16(&(pPEHeader[2]));
+	numSections = ph->section_cnt;
 	imageBase = GetU32(&(pPEOptionalHeader[28]));
 	fileAlignment = GetU32(&(pPEOptionalHeader[36]));
 
-	for (i=0; i<numSections; i++) {
-		unsigned char *pSection = pPESectionHeaders + i * 40;
-		RVA_Create(pRet->pRVA, pData, pSection);
+#define _htol16(x) (x)
+
+	ph->section_cnt = _htol16(ph->section_cnt);
+	ph->opthdr_size = _htol16(ph->opthdr_size);
+	off_t base = 0;
+	int cnt = 0;
+	if (ph->opthdr_size >= sizeof(*pih))
+	{
+		pih = (struct pe_image_header *)pPEOptionalHeader;
+		if (pih->signature == PE_IMAGE_HEADER_PE32
+			&& ph->opthdr_size >= sizeof(*pih)
+			+ sizeof(*pih32))
+		{
+			/* PE32 executable */
+			pih32 = (struct pe_image_header_pe32 *)(pih + 1);
+#define _htol32(x) (x)
+			pih32->image_base = _htol32(pih32->image_base);
+			pih32->rvasizes_cnt = _htol32(pih32->rvasizes_cnt);
+			base = pih32->image_base;
+			pid = (struct pe_image_header_data *)(pih32 + 1);
+			cnt = pih32->rvasizes_cnt;
+		}
+		else if (pih->signature == PE_IMAGE_HEADER_PE32_PLUS
+			&& ph->opthdr_size >= sizeof(*pih)
+			+ sizeof(*pih32p))
+		{
+			/* PE32+ executable */
+			pih32p = (struct pe_image_header_pe32_plus *)(pih + 1);
+#define _htol64(x) (x)
+			pih32p->image_base = _htol64(pih32p->image_base);
+			pih32p->rvasizes_cnt = _htol32(pih32p->rvasizes_cnt);
+			base = pih32p->image_base;
+			pid = (struct pe_image_header_data *)(pih32p + 1);
+			cnt = pih32p->rvasizes_cnt;
+		}
 	}
 
+	/* read and record each section */
+	char _pe_msdos_signature[2];
+	memcpy(_pe_msdos_signature, "MZ", 2);
+	char _pe_header_signature[4];
+	memcpy(_pe_header_signature, "PE\0\0", 4);
+	off_t offset = pm->offset + sizeof(_pe_header_signature) + sizeof(*ph)
+		+ ph->opthdr_size;
+
+	for (i=0; i<numSections; i++) {
+		unsigned char *pSection = pMSDOSHeader + offset;
+		RVA_Create(pRet->pRVA, pData, pSection);
+		offset += sizeof(*psh);
+	}
+
+	unsigned int ncliHeaderRVA = pid->vaddr;
+	unsigned int ncliHeaderSize = pid->size;
 	cliHeaderRVA = GetU32(&(pPEOptionalHeader[208]));
 	cliHeaderSize = GetU32(&(pPEOptionalHeader[212]));
 

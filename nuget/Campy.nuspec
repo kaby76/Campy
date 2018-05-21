@@ -5,7 +5,7 @@
     <id>Campy</id>
     <title>Campy</title>
 
-    <version>0.0.9</version>
+    <version>0.0.10</version>
 
     <!-- Authors contain text that appears directly on the gallery -->
     <authors>Ken Domino</authors>
@@ -16,13 +16,13 @@
     <owners>Ken Domino</owners>
 
     <!-- License, project, icon links for the gallery -->
-    <projectUrl>https://github.com/kaby76/campy</projectUrl>
+    <projectUrl>http://campynet.com</projectUrl>
 <!--    <iconUrl></iconUrl> -->
     <licenseUrl>https://raw.github.com/kaby76/campy/master/LICENSE</licenseUrl>
 
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>An API for GP-GPU computing using C# or any other NET language, for Windows x64.</description>
-    <releaseNotes>Version 0.0.9 -- http://campynet.com/?page_id=2</releaseNotes>
+    <description>An API for GP-GPU computing using C# or any other NET language, for Windows and Ubuntu x64.</description>
+    <releaseNotes>Version 0.0.10 -- Fixes to the metadata system. See http://campynet.com/?p=771</releaseNotes>
 
     <!-- Copyright information -->
     <copyright>Copyright © 2017-2018</copyright>
