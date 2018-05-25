@@ -366,11 +366,11 @@ function_space_specifier void OutputTypeRef(tMD_TypeRef * p)
 {
 	printf("TypeRef\n");
 	printf("id 0x%08x\n", p->identity);
-	printf("name_offset %x\n", p->name_offset);
+	printf("name_offset 0x%x\n", p->name_offset);
 	printf("name %s\n", p->name);
-	printf("nameSpace_offset %x\n", p->nameSpace_offset);
+	printf("nameSpace_offset 0x%x\n", p->nameSpace_offset);
 	printf("nameSpace %s\n", p->nameSpace);
-	printf("resolution %d\n", p->resolutionScope);
+	printf("resolution 0x%08x\n", p->resolutionScope);
 	printf("\n");
 }
 
@@ -458,9 +458,9 @@ function_space_specifier void OutputTypeDef(tMD_TypeDef * p)
 {
 	printf("TypeDef\n");
 	printf("id 0x%08x\n", p->identity);
-	printf("name_offset %x\n", p->name_offset);
+	printf("name_offset 0x%x\n", p->name_offset);
 	printf("name %s\n", p->name);
-	printf("nameSpace_offset %x\n", p->nameSpace_offset);
+	printf("nameSpace_offset 0x%x\n", p->nameSpace_offset);
 	printf("nameSpace %s\n", p->nameSpace);
 	printf("flags %ld\n", p->flags);
 	printf("extends %ld\n", p->extends);
@@ -524,13 +524,13 @@ function_space_specifier void OutputFieldDef(tMD_FieldDef * p)
 {
 	printf("FieldDef\n");
 	printf("id 0x%08x\n", p->identity);
-	printf("flags %x\n", p->flags);
-	printf("name_offset %x\n", p->name_offset);
+	printf("flags 0x%x\n", p->flags);
+	printf("name_offset 0x%x\n", p->name_offset);
 	printf("name %s\n", p->name);
-	printf("signature_offset %x\n", p->signature_offset);
+	printf("signature_offset 0x%x\n", p->signature_offset);
 	OutputSignature(p->signature);
-	printf("pMetaData %llx\n", p->pMetaData);
-	printf("tableIndx %x\n", p->tableIndex);
+	printf("pMetaData 0x%llx\n", p->pMetaData);
+	printf("tableIndx 0x%x\n", p->tableIndex);
 	printf("\n");
 }
 

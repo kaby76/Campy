@@ -241,7 +241,7 @@ function_space_specifier void Initialize_BCL0(size_t size, size_t first_overhead
 	// Set up start of individual heaps.
 	for (int c = 0; c < count; ++c)
 	{
-		printf("start of heap %d at 0x%08llx\n", c, start);
+		//printf("start of heap %d at 0x%08llx\n", c, start);
 		size_t heap_size = (c == 0) ? first_overhead : second_and_on_heap_size;
 		if (start < begin)
 			Crash("Ptr of heap %d starts before begin, 0x%08llx\n", c, start);
@@ -306,7 +306,7 @@ function_space_specifier void Initialize_BCL0(size_t size, size_t first_overhead
 			Crash("Pad of heap end %d ends after end, 0x%08llx\n", c, pad + fb->size);
 
 		memset(pad, 0xde, _bcl_->padding);
-		printf("OK\n");
+		//printf("OK\n");
 	}
 
 	// check each free is not overlapping.
