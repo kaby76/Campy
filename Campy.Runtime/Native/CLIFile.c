@@ -184,26 +184,21 @@ function_space_specifier static tCLIFile* LoadPEFile(char * pFileName, void *pDa
 	pRet->pMetaData = pMetaData = MetaData();
 	pMetaData->file_name = Gstrdup(pFileName);
 
-	struct pe_image_header * pih;
-	struct pe_image_header_pe32 * pih32;
-	struct pe_image_header_pe32_plus * pih32p;
-	struct pe_image_header_data * pid = NULL;
-	struct pe_msdos * pm = (struct pe_msdos *)pMSDOSHeader;
-	struct pe_section_header * psh;
+	struct BCL_IMAGE_SECTION_HEADER * psh;
 
 	// Cast dos header pointer to the above BCL_IMAGE_DOS_HEADER struct.
-	BCL_IMAGE_DOS_HEADER * p_dos_header = (BCL_IMAGE_DOS_HEADER *)pMSDOSHeader;
+	struct BCL_IMAGE_DOS_HEADER * p_dos_header = (struct BCL_IMAGE_DOS_HEADER *)pMSDOSHeader;
 
 	lfanew = p_dos_header->e_lfanew;
 
 	pPEHeader = pMSDOSHeader + lfanew + 4;
-	
-	struct pe_header * ph = (struct pe_header *)pPEHeader;
+	struct BCL_IMAGE_NT_HEADERS * pnt = (struct BCL_IMAGE_NT_HEADERS*)pPEHeader;
+	struct BCL_IMAGE_FILE_HEADER * ph = (struct BCL_IMAGE_FILE_HEADER *)pPEHeader;
 
 	pPEOptionalHeader = pPEHeader + 20;
 	pPESectionHeaders = pPEOptionalHeader + 224;
 
-	machine = ph->machine;
+	machine = ph->Machine;
 
 	if (!(machine == IMAGE_FILE_MACHINE_I386 || machine == IMAGE_FILE_MACHINE_AMD64))
 	{
@@ -211,44 +206,41 @@ function_space_specifier static tCLIFile* LoadPEFile(char * pFileName, void *pDa
 		return NULL;
 	}
 
-	numSections = ph->section_cnt;
+	numSections = ph->NumberOfSections;
 	imageBase = GetU32(&(pPEOptionalHeader[28]));
 	fileAlignment = GetU32(&(pPEOptionalHeader[36]));
 
 #define _htol16(x) (x)
 
-	ph->section_cnt = _htol16(ph->section_cnt);
-	ph->opthdr_size = _htol16(ph->opthdr_size);
+	ph->NumberOfSections = _htol16(ph->NumberOfSections);
+	ph->SizeOfOptionalHeader = _htol16(ph->SizeOfOptionalHeader);
 	off_t base = 0;
 	int cnt = 0;
-	if (ph->opthdr_size >= sizeof(*pih))
+	unsigned int ncliHeaderRVA;
+	unsigned int ncliHeaderSize;
+	if (ph->SizeOfOptionalHeader >= sizeof(*ph))
 	{
-		pih = (struct pe_image_header *)pPEOptionalHeader;
-		if (pih->signature == PE_IMAGE_HEADER_PE32
-			&& ph->opthdr_size >= sizeof(*pih)
-			+ sizeof(*pih32))
+		struct BCL_IMAGE_OPTIONAL_HEADER32 * pih = (struct BCL_IMAGE_OPTIONAL_HEADER32 *)pPEOptionalHeader;
+		if (pih->Magic == IMAGE_NT_OPTIONAL_HDR32_MAGIC
+			&& ph->SizeOfOptionalHeader >= sizeof(*pih))
 		{
 			/* PE32 executable */
-			pih32 = (struct pe_image_header_pe32 *)(pih + 1);
+			struct BCL_IMAGE_OPTIONAL_HEADER32 *pih32 = (struct BCL_IMAGE_OPTIONAL_HEADER32 *)(pih);
 #define _htol32(x) (x)
-			pih32->image_base = _htol32(pih32->image_base);
-			pih32->rvasizes_cnt = _htol32(pih32->rvasizes_cnt);
-			base = pih32->image_base;
-			pid = (struct pe_image_header_data *)(pih32 + 1);
-			cnt = pih32->rvasizes_cnt;
+			pih32->ImageBase = _htol32(pih32->ImageBase);
+			pih32->NumberOfRvaAndSizes = _htol32(pih32->NumberOfRvaAndSizes);
+			base = pih32->ImageBase;
+			cliHeaderRVA = pih32->DataDirectory[0xe].VirtualAddress;
+			cliHeaderSize = pih32->DataDirectory[0xe].Size;
 		}
-		else if (pih->signature == PE_IMAGE_HEADER_PE32_PLUS
-			&& ph->opthdr_size >= sizeof(*pih)
-			+ sizeof(*pih32p))
+		else if (pih->Magic == IMAGE_NT_OPTIONAL_HDR64_MAGIC
+			&& ph->SizeOfOptionalHeader >= sizeof(*pih))
 		{
 			/* PE32+ executable */
-			pih32p = (struct pe_image_header_pe32_plus *)(pih + 1);
+			struct BCL_IMAGE_OPTIONAL_HEADER64 * pih32p = (struct BCL_IMAGE_OPTIONAL_HEADER64 *)(pih);
 #define _htol64(x) (x)
-			pih32p->image_base = _htol64(pih32p->image_base);
-			pih32p->rvasizes_cnt = _htol32(pih32p->rvasizes_cnt);
-			base = pih32p->image_base;
-			pid = (struct pe_image_header_data *)(pih32p + 1);
-			cnt = pih32p->rvasizes_cnt;
+			cliHeaderRVA = pih32p->DataDirectory[0xe].VirtualAddress;
+			cliHeaderSize = pih32p->DataDirectory[0xe].Size;
 		}
 	}
 
@@ -257,19 +249,16 @@ function_space_specifier static tCLIFile* LoadPEFile(char * pFileName, void *pDa
 	memcpy(_pe_msdos_signature, "MZ", 2);
 	char _pe_header_signature[4];
 	memcpy(_pe_header_signature, "PE\0\0", 4);
-	off_t offset = pm->offset + sizeof(_pe_header_signature) + sizeof(*ph)
-		+ ph->opthdr_size;
+	off_t offset = p_dos_header->e_lfanew;
+	offset += sizeof(_pe_header_signature);
+	offset += sizeof(*ph);
+	offset += ph->SizeOfOptionalHeader;
 
 	for (i=0; i<numSections; i++) {
 		unsigned char *pSection = pMSDOSHeader + offset;
 		RVA_Create(pRet->pRVA, pData, pSection);
 		offset += sizeof(*psh);
 	}
-
-	unsigned int ncliHeaderRVA = pid->vaddr;
-	unsigned int ncliHeaderSize = pid->size;
-	cliHeaderRVA = GetU32(&(pPEOptionalHeader[208]));
-	cliHeaderSize = GetU32(&(pPEOptionalHeader[212]));
 
 	pCLIHeader = (unsigned char *)RVA_FindData(pRet->pRVA, cliHeaderRVA);
 	if (pCLIHeader == NULL) Crash("Cannot find RVA data for PE file %s", pFileName);
