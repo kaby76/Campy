@@ -49,17 +49,20 @@ struct tFilesLoaded_ {
 
 __global__ void BCL_CLIFile_GetMetaDataForAssembly(char * fileName)
 {
+	if (_bcl_ && _bcl_->options & BCL_DEBUG_FUNCTION_ENTRY)
+		Gprintf("BCL_CLIFile_GetMetaDataForAssembly\n");
 	tMetaData* result;
 	result = CLIFile_GetMetaDataForAssembly(fileName);
 }
 
 function_space_specifier tMetaData* CLIFile_GetMetaDataForAssembly(char * fileName)
 {
+	if (_bcl_ && _bcl_->options & BCL_DEBUG_FUNCTION_ENTRY)
+		Gprintf("CLIFile_GetMetaDataForAssembly\n");
+
 	// Functionality of assembly resolution seems it should be here.
 	// But, this is a problem with GPU BCL because we don't have a
 	// GAC for file system. What a mess.
-
-
 
 	// As there is no file names for module names, construct one.
 	tFilesLoaded *pFiles;
@@ -68,6 +71,8 @@ function_space_specifier tMetaData* CLIFile_GetMetaDataForAssembly(char * fileNa
 	char fName[250];
 	Gstrcpy(assemblyName, fileName);
 	Gstrcpy(fName, fileName);
+
+	// First, erase suffix to get assembly name.
 	char * r = Gstrstr(assemblyName, ".exe");
 	if (r > 0) *r = 0;
 	r = Gstrstr(assemblyName, ".dll");
@@ -84,9 +89,10 @@ function_space_specifier tMetaData* CLIFile_GetMetaDataForAssembly(char * fileNa
 		pAssemblyName = "corlib";
 	}
 
-	// Look in already-loaded files first
+	// Look in loaded files first
 	pFiles = _bcl_->pFilesLoaded;
-	while (pFiles != NULL) {
+	while (pFiles != NULL)
+	{
 		tCLIFile *pCLIFile;
 		tMD_Assembly *pThisAssembly;
 
@@ -103,28 +109,22 @@ function_space_specifier tMetaData* CLIFile_GetMetaDataForAssembly(char * fileNa
 	// Assembly not loaded, so load it if possible
 	{
 		tCLIFile *pCLIFile;
-		char * r1 = Gstrstr(fileName, ".dll");
-		char * r2 = Gstrstr(fileName, ".exe");
-		if (r1 != NULL || r2 != NULL)
-		{
-			pCLIFile = CLIFile_Load(fileName);
-		}
-		else
-		{
-			Gstrcat(fName, ".dll");
-			pCLIFile = CLIFile_Load(fName);
-			if (pCLIFile == NULL)
-			{
-				Gstrcpy(fName, fileName);
-				Gstrcat(fName, ".exe");
-				pCLIFile = CLIFile_Load(fName);
-			}
-		}
-		if (pCLIFile == NULL) {
-			Crash("Cannot load required assembly file: %s", fileName);
-			return NULL;
-		}
-		return pCLIFile->pMetaData;
+		// First, try .exe. Note: when program is "published", there will be both exe and dll.
+		// The exe may crap out on load, in which case, move on to the dll.
+		Gstrcpy(fName, pAssemblyName);
+		Gstrcat(fName, ".dll");
+		pCLIFile = CLIFile_Load(fName);
+		if (pCLIFile != NULL)
+			return pCLIFile->pMetaData;
+
+		Gstrcpy(fName, pAssemblyName);
+		Gstrcat(fName, ".exe");
+		pCLIFile = CLIFile_Load(fName);
+		if (pCLIFile != NULL)
+			return pCLIFile->pMetaData;
+
+		Crash("Cannot load required assembly %s either dll or exe.", pAssemblyName);
+		return NULL;
 	}
 }
 
@@ -132,6 +132,8 @@ function_space_specifier tMetaData* CLIFile_GetMetaDataForAssembly(char * fileNa
 
 function_space_specifier static void* LoadFileFromDisk(char *pFileName)
 {
+	if (_bcl_ && _bcl_->options & BCL_DEBUG_FUNCTION_ENTRY)
+		Gprintf("LoadFileFromDisk\n");
 	char *pData = NULL;
 	// Crashes! Gprintf("File name = %s\n", pFileName);
 	int handle;
@@ -159,8 +161,10 @@ function_space_specifier static void* LoadFileFromDisk(char *pFileName)
 }
 
 
-function_space_specifier static tCLIFile* LoadPEFile(char * pFileName, void *pData) {
-
+function_space_specifier static tCLIFile* LoadPEFile(char * pFileName, void *pData)
+{
+	if (_bcl_ && _bcl_->options & BCL_DEBUG_FUNCTION_ENTRY)
+		Gprintf("LoadPEFile\n");
 	tCLIFile *pRet = TMALLOC(tCLIFile);
 	memset(pRet, 0, sizeof(tCLIFile));
 
@@ -261,7 +265,8 @@ function_space_specifier static tCLIFile* LoadPEFile(char * pFileName, void *pDa
 	}
 
 	pCLIHeader = (unsigned char *)RVA_FindData(pRet->pRVA, cliHeaderRVA);
-	if (pCLIHeader == NULL) Crash("Cannot find RVA data for PE file %s", pFileName);
+	if (pCLIHeader == NULL)
+		return NULL;
 	metaDataRVA = GetU32(&(pCLIHeader[8]));
 	metaDataSize = GetU32(&(pCLIHeader[12]));
 	pRet->entryPoint = GetU32(&(pCLIHeader[20]));
@@ -364,7 +369,7 @@ function_space_specifier static tCLIFile* LoadPEFile(char * pFileName, void *pDa
 		pChild = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, pNested->nestedClass);
 		if (pChild == NULL)
 		{
-			printf("Warning--meta reading is messed up.\n");
+			Gprintf("Warning--meta reading is messed up.\n");
 		}
 		else
 		{
@@ -375,21 +380,28 @@ function_space_specifier static tCLIFile* LoadPEFile(char * pFileName, void *pDa
 	return pRet;
 }
 
-function_space_specifier tCLIFile* CLIFile_Load(char *pFileName) {
+function_space_specifier tCLIFile* CLIFile_Load(char *pFileName)
+{
+	if (_bcl_ && _bcl_->options & BCL_DEBUG_FUNCTION_ENTRY)
+		Gprintf("CLIFile_Load\n");
+	
 	void *pRawFile;
 	tCLIFile *pRet;
 	tFilesLoaded *pNewFile;
 
 	pRawFile = LoadFileFromDisk(pFileName);
 
-	if (pRawFile == NULL) {
-		Crash("Cannot load file: %s", pFileName);
+	if (pRawFile == NULL)
+	{
+		Gprintf("Warning: assembly %s cannot be found.\n", pFileName);
+		return NULL;
 	}
 
 	pRet = LoadPEFile(pFileName, pRawFile);
 	if (pRet == NULL)
 	{
-		Crash("File %s doesn't load correctly.", pFileName);
+		Gprintf("Warning: assembly %s does not appear to have metadata.\n", pFileName);
+		return NULL;
 	}
 	pRet->pFileName = (char*)mallocForever((U32)Gstrlen(pFileName) + 1);
 	Gstrcpy(pRet->pFileName, pFileName);
@@ -403,7 +415,8 @@ function_space_specifier tCLIFile* CLIFile_Load(char *pFileName) {
 	return pRet;
 }
 
-function_space_specifier I32 CLIFile_Execute(tCLIFile *pThis, int argc, char **argp) {
+function_space_specifier I32 CLIFile_Execute(tCLIFile *pThis, int argc, char **argp)
+{
 	//tThread *pThread;
 	//HEAP_PTR args;
 	//int i;
@@ -427,7 +440,8 @@ function_space_specifier I32 CLIFile_Execute(tCLIFile *pThis, int argc, char **a
 	return 0;
 }
 
-function_space_specifier void CLIFile_GetHeapRoots(tHeapRoots *pHeapRoots) {
+function_space_specifier void CLIFile_GetHeapRoots(tHeapRoots *pHeapRoots)
+{
 	//tFilesLoaded *pFile;
 
 	//pFile = pFilesLoaded;

@@ -45,7 +45,7 @@ function_space_specifier tAsyncCall* System_Console_Write(PTR pThis_, PTR pParam
 				str8[i] = c?c:'?';
 			}
 			str8[i] = 0;
-			printf(str8);
+			Gprintf(str8);
 			strLen -= thisLen;
 			start += thisLen;
 		}

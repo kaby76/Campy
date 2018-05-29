@@ -20,7 +20,6 @@
 
 #include "Compat.h"
 #include "Sys.h"
-
 #include "Heap.h"
 
 #include "MetaData.h"
@@ -264,7 +263,7 @@ function_space_specifier static void GarbageCollect() {
 #ifdef DIAG_GC
 	U64 startTime;
 #endif
-	printf("GARBAGE COLLECT!\n");
+//	Gprintf("GARBAGE COLLECT!\n");
 	_bcl_->numCollections++;
 
 #ifdef DIAG_GC
@@ -454,7 +453,7 @@ function_space_specifier HEAP_PTR Heap_Alloc(tMD_TypeDef *pTypeDef, U32 size) {
 
 	if (size == 0)
 	{
-		printf("WARNING: Heap_Alloc called with size request of 0 bytes. Resulting pointer may not work as expected (e.g., memory overruns).\n");
+		Gprintf("WARNING: Heap_Alloc called with size request of 0 bytes. Resulting pointer may not work as expected (e.g., memory overruns).\n");
 	}
 
 	totalSize = sizeof(tHeapEntry) + size;
@@ -494,7 +493,7 @@ function_space_specifier void* Heap_AllocTypeVoidStars(void *pTypeDef)
 
 
 function_space_specifier HEAP_PTR Heap_AllocType(tMD_TypeDef *pTypeDef) {
-	//printf("Heap_AllocType('%s')\n", pTypeDef->name);
+	//Gprintf("Heap_AllocType('%s')\n", pTypeDef->name);
 	return Heap_Alloc(pTypeDef, pTypeDef->instanceMemSize);
 }
 

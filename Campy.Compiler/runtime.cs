@@ -262,7 +262,8 @@
                 string full_path_assem = path_of_campy + Path.DirectorySeparatorChar
                                                        + ".." + Path.DirectorySeparatorChar
                                                        + ".." + Path.DirectorySeparatorChar
-                                                       + "content" + Path.DirectorySeparatorChar
+                                                       + "lib" + Path.DirectorySeparatorChar
+                                                       + "native" + Path.DirectorySeparatorChar
                                                        + "corlib.dll";
                 full_path_assem = Path.GetFullPath(full_path_assem);
                 Stream stream = new FileStream(full_path_assem, FileMode.Open, FileAccess.Read, FileShare.Read);
@@ -271,6 +272,28 @@
             }
             catch (Exception)
             {
+            }
+
+            System.Diagnostics.StackTrace callStack = new System.Diagnostics.StackTrace();
+            for (int i = 0; i < callStack.FrameCount; i++)
+            {
+                System.Diagnostics.StackFrame sf = callStack.GetFrame(i);
+                try
+                {
+                    // Let's try going up the stack, looking for anything.
+                    var m = sf.GetMethod();
+                    var p = m.DeclaringType.Assembly.Location;
+                    var dir = Path.GetDirectoryName(Path.GetFullPath(p));
+                    string full_path_assem = dir + Path.DirectorySeparatorChar
+                                                           + "corlib.dll";
+                    full_path_assem = Path.GetFullPath(full_path_assem);
+                    Stream stream = new FileStream(full_path_assem, FileMode.Open, FileAccess.Read, FileShare.Read);
+                    stream.Close();
+                    return full_path_assem;
+                }
+                catch (Exception)
+                {
+                }
             }
 
             try
@@ -791,8 +814,6 @@
 
             return result;
         }
-
-
     }
 }
 

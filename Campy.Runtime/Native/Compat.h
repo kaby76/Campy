@@ -132,6 +132,10 @@ function_space_specifier int Gsprintf(
 	char const* const _Format,
 	...);
 
+function_space_specifier int Gprintf(
+	char const* const _Format,
+	...);
+
 function_space_specifier void* Grealloc(
 	void*  _Block,
 	size_t _Size

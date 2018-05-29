@@ -1180,7 +1180,6 @@ namespace Campy.Compiler
         }
     }
 
-
     public class JITER
     {
         [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "InitTheBcl")]
@@ -1201,6 +1200,9 @@ namespace Campy.Compiler
         [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "CheckHeap")]
         public static extern void CheckHeap();
 
+        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "SetOptions")]
+        public static extern void SetOptions(UInt64 options);
+
         private IMPORTER _importer;
         private CFG _mcfg;
         private static int _nn_id = 0;
@@ -1216,6 +1218,7 @@ namespace Campy.Compiler
         private Dictionary<MethodInfo, IntPtr> method_to_image;
         private bool done_init;
         private static JITER _singleton;
+        private UInt64 _options;
 
         public static JITER Singleton
         {
@@ -1388,6 +1391,11 @@ namespace Campy.Compiler
                         new TypeRef[] { }, false)));
 
             RUNTIME.Initialize();
+        }
+
+        public static void Options(UInt64 options)
+        {
+            Singleton._options = options;
         }
 
         public static void InitCuda()
@@ -1903,6 +1911,8 @@ namespace Campy.Compiler
                     IntPtr b2 = buffers.New(sizeof(int*));
 
                     InitTheBcl(b, the_size, 2*16777216, max_threads, b2);
+
+                    JITER.SetOptions(JITER.Singleton._options);
                 }
 
                 unsafe

@@ -202,5 +202,10 @@ namespace Campy
                 if (default(GCHandle) != handle2) handle2.Free();
             }
         }
+
+        public static void Options(UInt64 options)
+        {
+            JITER.Options(options);
+        }
     }
 }

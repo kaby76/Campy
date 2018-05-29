@@ -394,7 +394,7 @@ function_space_specifier static void fmtstr(char *buffer, size_t *currlen, size_
 	int cnt = 0;
 
 #ifdef DEBUG_SNPRINTF
-	printf("fmtstr min=%d max=%d s=[%s]\n", min, max, value);
+	Gprintf("fmtstr min=%d max=%d s=[%s]\n", min, max, value);
 #endif
 	if (value == 0) {
 		value = "<NULL>";
@@ -476,7 +476,7 @@ function_space_specifier static void fmtint(char *buffer, size_t *currlen, size_
 		spadlen = -spadlen; /* Left Justifty */
 
 #ifdef DEBUG_SNPRINTF
-	printf("zpad: %d, spad: %d, min: %d, max: %d, place: %d\n",
+	Gprintf("zpad: %d, spad: %d, min: %d, max: %d, place: %d\n",
 		zpadlen, spadlen, min, max, place);
 #endif
 
@@ -566,7 +566,7 @@ function_space_specifier int Gsprintf(
 }
 
 
-function_space_specifier int Gprintf(const char * _Format, ...)
+function_space_specifier int Gprintf(char const* const _Format, ...)
 {
 	va_list va;
 	va_start(va, _Format);
@@ -574,6 +574,12 @@ function_space_specifier int Gprintf(const char * _Format, ...)
 	Gvsprintf(buf, _Format, va);
 	va_end(va);
 	int done = printf(buf); // Native CUDA.
+	// CUDA does not have stdout defined, but as this code is used on straight CPU code in the
+	// wrapper dll, ifdef some code to force a flush.
+#ifdef CUDA
+#else
+	fflush(stdout);
+#endif
 	return done;
 }
 

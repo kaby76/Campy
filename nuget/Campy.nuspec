@@ -42,37 +42,37 @@
 	 <dependency id="NETStandard.Library" version="[2.0.0,)" />
 	 <dependency id="swigged.llvm" version="[6.0.6,)" />
 	 <dependency id="swigged.cuda" version="[9.185.6,)" />
-	 <dependency id="Mono.Cecil" version="[0.10.0,)" />
+	 <dependency id="Mono.Cecil" version="[0.10,)" />
       </group>
       <group targetFramework="net462" >
 	 <dependency id="NETStandard.Library" version="[2.0.0,)" />
 	 <dependency id="swigged.llvm" version="[6.0.6,)" />
 	 <dependency id="swigged.cuda" version="[9.185.6,)" />
-	 <dependency id="Mono.Cecil" version="[0.10.0,)" />
+	 <dependency id="Mono.Cecil" version="[0.10,)" />
       </group>
       <group targetFramework="net47" >
 	 <dependency id="NETStandard.Library" version="[2.0.0,)" />
 	 <dependency id="swigged.llvm" version="[6.0.6,)" />
 	 <dependency id="swigged.cuda" version="[9.185.6,)" />
-	 <dependency id="Mono.Cecil" version="[0.10.0,)" />
+	 <dependency id="Mono.Cecil" version="[0.10,)" />
       </group>
       <group targetFramework="net471" >
 	 <dependency id="NETStandard.Library" version="[2.0.0,)" />
 	 <dependency id="swigged.llvm" version="[6.0.6,)" />
 	 <dependency id="swigged.cuda" version="[9.185.6,)" />
-	 <dependency id="Mono.Cecil" version="[0.10.0,)" />
+	 <dependency id="Mono.Cecil" version="[0.10,)" />
       </group>
       <group targetFramework="netstandard2.0" >
 	 <dependency id="NETStandard.Library" version="[2.0.0,)" />
 	 <dependency id="swigged.llvm" version="[6.0.6,)" />
 	 <dependency id="swigged.cuda" version="[9.185.6,)" />
-	 <dependency id="Mono.Cecil" version="[0.10.0,)" />
+	 <dependency id="Mono.Cecil" version="[0.10,)" />
       </group>
       <group targetFramework="netcoreapp2.0" >
 	 <dependency id="NETStandard.Library" version="[2.0.0,)" />
 	 <dependency id="swigged.llvm" version="[6.0.6,)" />
 	 <dependency id="swigged.cuda" version="[9.185.6,)" />
-	 <dependency id="Mono.Cecil" version="[0.10.0,)" />
+	 <dependency id="Mono.Cecil" version="[0.10,)" />
       </group>
     </dependencies>
 

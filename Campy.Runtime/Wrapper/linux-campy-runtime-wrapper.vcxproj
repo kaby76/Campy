@@ -191,7 +191,7 @@
       <AdditionalOptions>
       </AdditionalOptions>
       <PositionIndependentCode>true</PositionIndependentCode>
-      <PreprocessorDefinitions>CUDA;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <CompileAs>CompileAsC</CompileAs>
       <AdditionalIncludeDirectories>..\Native;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>

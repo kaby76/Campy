@@ -120,13 +120,13 @@ function_space_specifier static void PushStackType_(tTypeStack *pTypeStack, tMD_
 	if (size > pTypeStack->maxBytes) {
 		pTypeStack->maxBytes = size;
 	}
-	//printf("Stack ofs = %d; Max stack size: %d (0x%x)\n", pTypeStack->ofs, size, size);
+	//Gprintf("Stack ofs = %d; Max stack size: %d (0x%x)\n", pTypeStack->ofs, size, size);
 }
 
 function_space_specifier static void PushU32_(tOps *pOps, U32 v) {
 //	if (pOps->ofs >= pOps->capacity) {
 //		pOps->capacity <<= 1;
-////		printf("a.pOps->p = 0x%08x size=%d\n", pOps->p, pOps->capacity * sizeof(U32));
+////		Gprintf("a.pOps->p = 0x%08x size=%d\n", pOps->p, pOps->capacity * sizeof(U32));
 //		pOps->p = realloc(pOps->p, pOps->capacity * sizeof(U32));
 //	}
 //	pOps->p[pOps->ofs++] = v;

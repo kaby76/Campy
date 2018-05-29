@@ -104,7 +104,7 @@ function_space_specifier tAsyncCall* System_String_ctor_StringIntInt(PTR pThis_,
 	for (int i = 0; i < length << 1; ++i)
 	{
 		unsigned char c = *pc++;
-		printf("c[%d] = %x\n", i, c);
+		Gprintf("c[%d] = %x\n", i, c);
 	}
 	*(HEAP_PTR*)pReturnValue = (HEAP_PTR)pThis;
 	return NULL;

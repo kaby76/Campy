@@ -91,5 +91,6 @@ struct _BCL_t {
 #define BCL_DEBUG_PRINT_EVERYTHING 0x1
 #define BCL_DEBUG_CHECK_HEAPS      0x2
 #define BCL_DEBUG_INTERACTIVE      0x4
+#define BCL_DEBUG_FUNCTION_ENTRY   0x8
 
 extern gpu_space_specifier struct _BCL_t * _bcl_;

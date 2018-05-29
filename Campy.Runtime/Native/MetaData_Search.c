@@ -132,7 +132,10 @@ function_space_specifier static tMD_MethodDef* FindMethodInType(tMD_TypeDef *pTy
 	return NULL;
 }
 
-function_space_specifier static tMD_FieldDef* FindFieldInType(tMD_TypeDef *pTypeDef, STRING name) {
+function_space_specifier static tMD_FieldDef* FindFieldInType(tMD_TypeDef *pTypeDef, STRING name)
+{
+	if (_bcl_ && _bcl_->options & BCL_DEBUG_FUNCTION_ENTRY)
+		Gprintf("FindFieldInType\n");
 	U32 i;
 
 	MetaData_Fill_TypeDef(pTypeDef, NULL, NULL);
@@ -148,7 +151,10 @@ function_space_specifier static tMD_FieldDef* FindFieldInType(tMD_TypeDef *pType
 	return NULL;
 }
 
-function_space_specifier tMetaData* MetaData_GetResolutionScopeMetaData(tMetaData *pMetaData, IDX_TABLE resolutionScopeToken, tMD_TypeDef **ppInNestedType) {
+function_space_specifier tMetaData* MetaData_GetResolutionScopeMetaData(tMetaData *pMetaData, IDX_TABLE resolutionScopeToken, tMD_TypeDef **ppInNestedType)
+{
+	if (_bcl_ && _bcl_->options & BCL_DEBUG_FUNCTION_ENTRY)
+		Gprintf("MetaData_GetResolutionScopeMetaData\n");
 	switch (TABLE_ID(resolutionScopeToken)) {
 		case MD_TABLE_ASSEMBLYREF:
 			{
@@ -175,7 +181,9 @@ function_space_specifier tMetaData* MetaData_GetResolutionScopeMetaData(tMetaDat
 
 function_space_specifier tMD_TypeDef* MetaData_GetTypeDefFromName(tMetaData *pMetaData, STRING nameSpace, STRING name, tMD_TypeDef *pInNestedClass) 
 {
-//	printf("looking for %s in ns %s\n", name, nameSpace);
+	if (_bcl_ && _bcl_->options & BCL_DEBUG_FUNCTION_ENTRY)
+		Gprintf("MetaData_GetTypeDefFromName\n");
+	//	Gprintf("looking for %s in ns %s\n", name, nameSpace);
     U32 i;
 	tMD_TypeDef* result = 0;
 
@@ -218,7 +226,10 @@ function_space_specifier tMD_TypeDef* MetaData_GetTypeDefFromName(tMetaData *pMe
 	return NULL;
 }
 
-function_space_specifier tMD_TypeDef* MetaData_GetTypeDefFromFullName(STRING assemblyName, STRING nameSpace, STRING name) {
+function_space_specifier tMD_TypeDef* MetaData_GetTypeDefFromFullName(STRING assemblyName, STRING nameSpace, STRING name)
+{
+	if (_bcl_ && _bcl_->options & BCL_DEBUG_FUNCTION_ENTRY)
+		Gprintf("MetaData_GetTypeDefFromFullName\n");
 	tMetaData *pTypeMetaData;
 
 	pTypeMetaData = CLIFile_GetMetaDataForAssembly(assemblyName);
@@ -227,7 +238,10 @@ function_space_specifier tMD_TypeDef* MetaData_GetTypeDefFromFullName(STRING ass
 	return MetaData_GetTypeDefFromName(pTypeMetaData, nameSpace, name, NULL);
 }
 
-function_space_specifier tMD_TypeDef* MetaData_GetTypeDefFromFullNameAndNestedType(STRING assemblyName, STRING nameSpace, STRING name, tMD_TypeDef* nested) {
+function_space_specifier tMD_TypeDef* MetaData_GetTypeDefFromFullNameAndNestedType(STRING assemblyName, STRING nameSpace, STRING name, tMD_TypeDef* nested)
+{
+	if (_bcl_ && _bcl_->options & BCL_DEBUG_FUNCTION_ENTRY)
+		Gprintf("MetaData_GetTypeDefFromFullNameAndNestedType\n");
 	tMetaData *pTypeMetaData;
 
 	pTypeMetaData = CLIFile_GetMetaDataForAssembly(assemblyName);

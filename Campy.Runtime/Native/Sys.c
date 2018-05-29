@@ -33,10 +33,15 @@ namespace dbg {
 }
 #endif
 
-function_space_specifier void Crash(const char *pMsg, ...) {
+function_space_specifier void Crash(const char *pMsg, ...)
+{
 	va_list va;
 
 	Gprintf("\n\n*** CRASH ***\n");
+#ifdef CUDA
+#else
+	fflush(stdout);
+#endif
 
 	va_start(va, pMsg);
 	char buf[10000];
@@ -44,10 +49,14 @@ function_space_specifier void Crash(const char *pMsg, ...) {
 	va_end(va);
 	Gprintf(buf);
 	Gprintf("\n\n");
+#ifdef CUDA
+#else
+	fflush(stdout);
+#endif
 
 #ifdef WIN32
-	if (_bcl_ && (_bcl_->options & BCL_DEBUG_INTERACTIVE))
-		dbg::fail("crash", "crash");
+	//if (_bcl_ && (_bcl_->options & BCL_DEBUG_INTERACTIVE))
+		dbg::fail("crash", buf);
 	// Cause a delibrate exception, to get into debugger
 	__debugbreak();
 #endif

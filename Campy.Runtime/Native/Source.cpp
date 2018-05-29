@@ -202,7 +202,6 @@ namespace dbg
 		}
 
 		MessageBoxA(NULL, buff.str().c_str(), "Assert Failed", MB_OK | MB_ICONSTOP);
-		abort();
 	}
 
     void fail(const char* func, const char* msg)
@@ -218,6 +217,15 @@ namespace dbg
 			buff << "0x" << std::hex << stack[i].address << ": " << stack[i].name << "(" << stack[i].line << ") in " << stack[i].module << "\n";
 		}
 		printf("%s\n", buff.str().c_str());
+#ifdef CUDA
+#else
+		fflush(stdout);
+		handle_assert(func, msg);
+		fflush(stdout);
+		fflush(stderr);
+		fflush(stdout);
+
+#endif
 		abort();
 	}
 }

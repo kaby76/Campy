@@ -24,6 +24,7 @@
 #include <string.h>
 #include "Gstring.h"
 #include "Filesystem.h"
+#include "Sys.h"
 
 //function_space_specifier static char** names;
 //function_space_specifier static char** files;
@@ -34,7 +35,7 @@
 
 function_space_specifier void CommonInitFileSystem()
 {
-	_bcl_->initial_size = 200;
+	_bcl_->initial_size = 700;
 	_bcl_->names = (char**)Gmalloc(_bcl_->initial_size * sizeof(char*));
 	memset(_bcl_->names, 0, _bcl_->initial_size * sizeof(char*));
 	_bcl_->files = (char**)Gmalloc(_bcl_->initial_size * sizeof(char*));
@@ -74,7 +75,7 @@ function_space_specifier void Gfs_add_file(char * name, char * file, size_t leng
 	{
 		if (*ptr_name == NULL)
 		{
-			//printf("Entered\n");
+			//Gprintf("Entered\n");
 			*ptr_name = Gstrdup(name);
 			*ptr_file = (char *)Gmalloc(length);
 			memcpy(*ptr_file, file, length);
@@ -89,7 +90,8 @@ function_space_specifier void Gfs_add_file(char * name, char * file, size_t leng
 			ptr_length++;
 		}
 	}
-	//printf("Not entered\n");
+	Crash("File system overflow. Cannot handle more than %d files.\n", _bcl_->initial_size);
+	//Gprintf("Not entered\n");
 	//*result = -1;
 }
 
