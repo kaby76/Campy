@@ -145,7 +145,7 @@ namespace ConsoleApp4
         {
             StartDebugging();
 
-                string text = @"The unanimous Declaration of the thirteen United States of America,
+            string text = @"The unanimous Declaration of the thirteen United States of America,
                 When in the Course of human events, it becomes necessary for one people to dissolve the political bands which have connected them with another, and to assume among the powers of the earth, the separate and equal station to which the Laws of Nature and of Nature's God entitle them, a decent respect to the opinions of mankind requires that they should declare the causes which impel them to the separation.
                 We hold these truths to be self-evident, that all men are created equal, that they are endowed by their Creator with certain unalienable Rights, that among these are Life, Liberty and the pursuit of Happiness.
                 That to secure these rights, Governments are instituted among Men, deriving their just powers from the consent of the governed, That whenever any Form of Government becomes destructive of these ends, it is the Right of the People to alter or to abolish it, and to institute new Government, laying its foundation on such principles and organizing its powers in such form, as to them shall seem most likely to effect their Safety and Happiness. Prudence, indeed, will dictate that Governments long established should not be changed for light and transient causes; and accordingly all experience hath shewn, that mankind are more disposed to suffer, while evils are sufferable, than to right themselves by abolishing the forms to which they are accustomed. But when a long train of abuses and usurpations, pursuing invariably the same Object evinces a design to reduce them under absolute Despotism, it is their right, it is their duty, to throw off such Government, and to provide new Guards for their future security.
@@ -182,43 +182,43 @@ namespace ConsoleApp4
                 We, therefore, the Representatives of the united States of America, in General Congress, Assembled, appealing to the Supreme Judge of the world for the rectitude of our intentions, do, in the Name, and by Authority of the good People of these Colonies, solemnly publish and declare, That these united Colonies are, and of Right ought to be Free and Independent States; that they are Absolved from all Allegiance to the British Crown, and that all political connection between them and the State of Great Britain, is and ought to be totally dissolved; and that as Free and Independent States, they have full Power to levy War, conclude Peace, contract Alliances, establish Commerce, and to do all other Acts and Things which Independent States may of right do. And for the support of this Declaration, with a firm reliance on the protection of divine Providence, we mutually pledge to each other our Lives, our Fortunes and our sacred Honor.
 ";
 
-                text = text + text + text + text + text + text;
-                int n = text.Length;
-                string pattern = "He has refused";
-                int[] found = new int[n];
-                int m = pattern.Length;
-                for (int i = 0; i < n; i++)
+            text = text + text + text + text + text + text;
+            int n = text.Length;
+            string pattern = "He has refused";
+            int[] found = new int[n];
+            int m = pattern.Length;
+            for (int i = 0; i < n; i++)
+            {
+                int j;
+                for (j = 0; j < m && i + j < n; j++)
+                    if (text[i + j] != pattern[j])
+                        break;
+                // mismatch found, break the inner loop
+                if (j == m)
                 {
-                    int j;
-                    for (j = 0; j < m && i + j < n; j++)
-                        if (text[i + j] != pattern[j])
-                            break;
-                    // mismatch found, break the inner loop
-                    if (j == m)
-                    {
-                        // match found
-                        found[i] = i;
-                    }
+                    // match found
+                    found[i] = i;
                 }
+            }
 
-                int[] found2 = new int[n];
-                Campy.Parallel.For(n, i =>
+            int[] found2 = new int[n];
+            Campy.Parallel.For(n, i =>
+            {
+                int j;
+                for (j = 0; j < m && i + j < n; j++)
+                    if (text[i + j] != pattern[j])
+                        break;
+                // mismatch found, break the inner loop
+                if (j == m)
                 {
-                    int j;
-                    for (j = 0; j < m && i + j < n; j++)
-                        if (text[i + j] != pattern[j])
-                            break;
-                    // mismatch found, break the inner loop
-                    if (j == m)
-                    {
-                        // match found
-                        found2[i] = i;
-                    }
-                });
+                    // match found
+                    found2[i] = i;
+                }
+            });
 
-                for (int i = 0; i < n; ++i)
-                    if (found[i] != found2[i])
-                        throw new Exception();
+            for (int i = 0; i < n; ++i)
+                if (found[i] != found2[i])
+                    throw new Exception();
 
         }
     }
