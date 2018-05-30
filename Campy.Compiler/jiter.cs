@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using Campy.Graphs;
 using Campy.Utils;
 using Mono.Cecil;
@@ -468,6 +469,7 @@ namespace Campy.Compiler
                     bb.AlreadyCompiled = true;
                 }
             }
+
             return weeded;
         }
 
@@ -498,8 +500,8 @@ namespace Campy.Compiler
                     // Warn if predecessor does not concur with another predecessor.
                     if (in_level != -1 && states_out.ContainsKey(pred) && states_out[pred]._stack.Count != in_level)
                         throw new Exception("Miscalculation in stack size "
-                        + "for basic block " + bb
-                        + " or predecessor " + pred);
+                                            + "for basic block " + bb
+                                            + " or predecessor " + pred);
                     if (states_out.ContainsKey(pred))
                         in_level = states_out[pred]._stack.Count;
                 }
@@ -636,7 +638,8 @@ namespace Campy.Compiler
 
             Dictionary<CFG.Vertex, bool> visited = new Dictionary<CFG.Vertex, bool>();
             Dictionary<CFG.Vertex, STATE<TypeReference>> states_in = new Dictionary<CFG.Vertex, STATE<TypeReference>>();
-            Dictionary<CFG.Vertex, STATE<TypeReference>> states_out = new Dictionary<CFG.Vertex, STATE<TypeReference>>();
+            Dictionary<CFG.Vertex, STATE<TypeReference>>
+                states_out = new Dictionary<CFG.Vertex, STATE<TypeReference>>();
 
             // propagate type information and create new basic blocks for nodes that have
             // specific generic type information.
@@ -679,6 +682,7 @@ namespace Campy.Compiler
                     if (Campy.Utils.Options.IsOn("state_computation_trace"))
                         state_out.OutputTrace(new String(' ', 4));
                 }
+
                 visited[bb] = true;
             }
         }
@@ -755,7 +759,7 @@ namespace Campy.Compiler
                 ModuleRef mod = JITER.global_llvm_module; // LLVM.ModuleCreateWithName(mn);
                 bb.LlvmInfo.Module = mod;
 
-                uint count = (uint)bb.StackNumberOfArguments;
+                uint count = (uint) bb.StackNumberOfArguments;
                 TypeRef[] param_types = new TypeRef[count];
                 int current = 0;
                 if (count > 0)
@@ -765,6 +769,7 @@ namespace Campy.Compiler
                         TYPE t = new TYPE(method.ReturnType);
                         param_types[current++] = LLVM.PointerType(t.IntermediateType, 0);
                     }
+
                     if (bb.HasThis)
                     {
                         TYPE t = new TYPE(method.DeclaringType);
@@ -790,13 +795,15 @@ namespace Campy.Compiler
                             type_reference_of_parameter = JITER.FromGenericParameterToTypeReference(
                                 type_reference_of_parameter, git);
                         }
+
                         TYPE t = new TYPE(type_reference_of_parameter);
                         param_types[current++] = t.IntermediateType;
                     }
 
                     if (Campy.Utils.Options.IsOn("jit_trace"))
                     {
-                        System.Console.WriteLine("Params for block " + bb.Name + " " + bb._original_method_reference.FullName);
+                        System.Console.WriteLine("Params for block " + bb.Name + " " +
+                                                 bb._original_method_reference.FullName);
                         System.Console.WriteLine("(" + bb._method_definition.FullName + ")");
                         foreach (var pp in param_types)
                         {
@@ -807,11 +814,13 @@ namespace Campy.Compiler
                 }
 
                 //mi2 = FromGenericParameterToTypeReference(typeof(void).ToMonoTypeReference(), null);
-                TYPE t_ret = new TYPE(JITER.FromGenericParameterToTypeReference(method.ReturnType, method.DeclaringType as GenericInstanceType));
+                TYPE t_ret = new TYPE(JITER.FromGenericParameterToTypeReference(method.ReturnType,
+                    method.DeclaringType as GenericInstanceType));
                 if (bb.HasStructReturnValue)
                 {
                     t_ret = new TYPE(typeof(void).ToMonoTypeReference());
                 }
+
                 TypeRef ret_type = t_ret.IntermediateType;
                 TypeRef met_type = LLVM.FunctionType(ret_type, param_types, false);
                 ValueRef fun = LLVM.AddFunction(mod,
@@ -828,6 +837,7 @@ namespace Campy.Compiler
                 bb.LlvmInfo.Builder = builder;
                 LLVM.PositionBuilderAtEnd(builder, entry);
             }
+
             return basic_blocks_to_compile;
         }
 
@@ -859,6 +869,7 @@ namespace Campy.Compiler
                     LLVM.PositionBuilderAtEnd(builder, llvm_bb);
                 }
             }
+
             return basic_blocks_to_compile;
         }
 
@@ -895,6 +906,7 @@ namespace Campy.Compiler
                         in_level = states_out[pred]._stack.Count;
                 }
             }
+
             if (in_level == -1)
             {
                 throw new Exception("Predecessor edge computation screwed up.");
@@ -933,7 +945,7 @@ namespace Campy.Compiler
                 // one to one and in order mapping of the locals with that
                 // defined for the method body by Mono.
                 Collection<VariableDefinition> variables = bb.RewrittenCalleeSignature.Resolve().Body.Variables;
-                state._locals = state._stack.Section((int)state._stack.Count, locals);
+                state._locals = state._stack.Section((int) state._stack.Count, locals);
                 for (int i = 0; i < locals; ++i)
                 {
                     var tr = variables[i].VariableType;
@@ -944,25 +956,27 @@ namespace Campy.Compiler
                     else if (LLVM.GetTypeKind(type.IntermediateType) == TypeKind.DoubleTypeKind)
                         value = new VALUE(LLVM.ConstReal(LLVM.DoubleType(), 0));
                     else if (LLVM.GetTypeKind(type.IntermediateType) == TypeKind.IntegerTypeKind)
-                        value = new VALUE(LLVM.ConstInt(type.IntermediateType, (ulong)0, true));
+                        value = new VALUE(LLVM.ConstInt(type.IntermediateType, (ulong) 0, true));
                     else if (LLVM.GetTypeKind(type.IntermediateType) == TypeKind.StructTypeKind)
                     {
                         var entry = bb.Entry.LlvmInfo.BasicBlock;
                         //var beginning = LLVM.GetFirstInstruction(entry);
                         //LLVM.PositionBuilderBefore(basic_block.Builder, beginning);
-                        var new_obj = LLVM.BuildAlloca(bb.LlvmInfo.Builder, type.IntermediateType, "i" + INST.instruction_id++); // Allocates struct on stack, but returns a pointer to struct.
+                        var new_obj = LLVM.BuildAlloca(bb.LlvmInfo.Builder, type.IntermediateType,
+                            "i" + INST.instruction_id++); // Allocates struct on stack, but returns a pointer to struct.
                         //LLVM.PositionBuilderAtEnd(bb.LlvmInfo.Builder, bb.BasicBlock);
                         value = new VALUE(new_obj);
                     }
                     else
                         throw new Exception("Unhandled type");
+
                     state._stack.Push(value);
                 }
 
                 // Set up any thing else.
                 for (int i = state._stack.Size(); i < level; ++i)
                 {
-                    VALUE value = new VALUE(LLVM.ConstInt(LLVM.Int32Type(), (ulong)0, true));
+                    VALUE value = new VALUE(LLVM.ConstInt(LLVM.Int32Type(), (ulong) 0, true));
                     state._stack.Push(value);
                 }
             }
@@ -981,6 +995,7 @@ namespace Campy.Compiler
                     var vx = other._stack[i];
                     state._stack.Push(vx);
                 }
+
                 state._struct_ret = state._stack.Section(other._struct_ret.Base, other._struct_ret.Len);
                 state._this = state._stack.Section(other._this.Base, other._this.Len);
                 state._arguments = state._stack.Section(other._arguments.Base, other._arguments.Len);
@@ -996,7 +1011,7 @@ namespace Campy.Compiler
                 for (int pred_ind = 0; pred_ind < bb._graph.Predecessors(bb).ToList().Count; ++pred_ind)
                 {
                     var to_check = bb._graph.PredecessorEdges(bb).ToList()[pred_ind].From;
-           //         if (!visited.ContainsKey(to_check)) continue;
+                    //         if (!visited.ContainsKey(to_check)) continue;
                     CFG.Vertex check_llvm_node = to_check;
                     if (!states_out.ContainsKey(check_llvm_node))
                         continue;
@@ -1013,7 +1028,7 @@ namespace Campy.Compiler
                 for (int i = 0; i < size; ++i)
                 {
                     {
-                        VALUE f = new VALUE(LLVM.ConstInt(LLVM.Int32Type(), (ulong)0, true));
+                        VALUE f = new VALUE(LLVM.ConstInt(LLVM.Int32Type(), (ulong) 0, true));
                         state._stack.Push(f);
                     }
                     var count = bb._graph.Predecessors(bb).Count();
@@ -1024,6 +1039,7 @@ namespace Campy.Compiler
                     bb.LlvmInfo.Phi.Add(res);
                     state._stack[i] = new VALUE(res);
                 }
+
                 var other = states_out[p_llvm_node];
                 state._struct_ret = state._stack.Section(other._struct_ret.Base, other._struct_ret.Len);
                 state._this = state._stack.Section(other._this.Base, other._this.Len);
@@ -1131,7 +1147,7 @@ namespace Campy.Compiler
                                                  + ob.Name + " for stack depth " + i);
                     ValueRef res;
                     res = states_in[llvm_node]._stack[i].V;
-                    if(!llvm_node.LlvmInfo.Phi.Contains(res))
+                    if (!llvm_node.LlvmInfo.Phi.Contains(res))
                         continue;
                     ValueRef[] phi_vals = new ValueRef[count];
                     for (int c = 0; c < count; ++c)
@@ -1178,31 +1194,93 @@ namespace Campy.Compiler
                 }
             }
         }
+
+        public static string TranslateToPTX(this List<CFG.Vertex> basic_blocks_to_compile)
+        {
+            var module = JITER.global_llvm_module;
+            // Get basic block of entry.
+            if (!basic_blocks_to_compile.Any())
+                return "";
+
+            CFG.Vertex basic_block = basic_blocks_to_compile.First();
+
+            if (Campy.Utils.Options.IsOn("module_trace"))
+                LLVM.DumpModule(module);
+
+            LLVM.DIBuilderFinalize(INST.dib);
+
+            MyString error = new MyString();
+            LLVM.VerifyModule(module, VerifierFailureAction.PrintMessageAction, error);
+            if (error.ToString() != "")
+            {
+                System.Console.WriteLine(error);
+                throw new Exception("Error in JIT compilation.");
+            }
+
+            string triple = "nvptx64-nvidia-cuda";
+            var b = LLVM.GetTargetFromTriple(triple, out TargetRef t2, error);
+            if (error.ToString() != "")
+            {
+                System.Console.WriteLine(error);
+                throw new Exception("Error in JIT compilation.");
+            }
+
+            TargetMachineRef tmr = LLVM.CreateTargetMachine(t2, triple, "", "", CodeGenOptLevel.CodeGenLevelDefault,
+                RelocMode.RelocDefault, CodeModel.CodeModelKernel);
+//ContextRef context_ref = LLVM.ContextCreate();
+            ContextRef context_ref = LLVM.GetModuleContext(JITER.global_llvm_module);
+            ValueRef kernelMd = LLVM.MDNodeInContext(
+                context_ref, new ValueRef[3]
+                {
+                    basic_block.LlvmInfo.MethodValueRef,
+                    LLVM.MDStringInContext(context_ref, "kernel", 6),
+                    LLVM.ConstInt(LLVM.Int32TypeInContext(context_ref), 1, false)
+                });
+            LLVM.AddNamedMetadataOperand(module, "nvvm.annotations", kernelMd);
+            try
+            {
+                LLVM.TargetMachineEmitToMemoryBuffer(tmr, module, Swigged.LLVM.CodeGenFileType.AssemblyFile,
+                    error, out MemoryBufferRef buffer);
+                string ptx = null;
+                try
+                {
+                    ptx = LLVM.GetBufferStart(buffer);
+                    uint length = LLVM.GetBufferSize(buffer);
+
+// Modify the version number of the ISA PTX source generated to be the
+// most up to date.
+                    ptx = ptx.Replace(".version 3.2", ".version 6.0");
+
+                    // Make sure the target machine is set to sm_30 because we assume that as
+                    // a minimum, and it's compatible with GPU BCL runtime. Besides, older versions
+                    // are deprecated.
+                    ptx = ptx.Replace(".target sm_20", ".target sm_30");
+
+                    // Make sure to fix the stupid end-of-line delimiters to be for Windows.
+                    ptx = ptx.Replace("\n", "\r\n");
+
+                    //ptx = ptx + System_String_get_Chars;
+
+                    if (Campy.Utils.Options.IsOn("ptx_trace"))
+                        System.Console.WriteLine(ptx);
+                }
+                finally
+                {
+                    LLVM.DisposeMemoryBuffer(buffer);
+                }
+
+                return ptx;
+            }
+            catch (Exception)
+            {
+                Console.WriteLine();
+                throw;
+            }
+        }
     }
 
     public class JITER
     {
-        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "InitTheBcl")]
-        public static extern void InitTheBcl(System.IntPtr a1, long a2, long a25, int a3, System.IntPtr a4);
-
-        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "InitFileSystem")]
-        public static extern void InitFileSystem();
-
-        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "GfsAddFile")]
-        public static extern void GfsAddFile(System.IntPtr name, System.IntPtr file, long length, System.IntPtr result);
-
-        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "InitializeBCL1")]
-        public static extern void InitializeBCL1();
-
-        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "InitializeBCL2")]
-        public static extern void InitializeBCL2();
-
-        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "CheckHeap")]
-        public static extern void CheckHeap();
-
-        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "SetOptions")]
-        public static extern void SetOptions(UInt64 options);
-
         private IMPORTER _importer;
         private CFG _mcfg;
         private static int _nn_id = 0;
@@ -1216,7 +1294,7 @@ namespace Campy.Compiler
         public int _start_index;
         private static bool init;
         private Dictionary<MethodInfo, IntPtr> method_to_image;
-        private bool done_init;
+        private bool done_major_init;
         private static JITER _singleton;
         private UInt64 _options;
 
@@ -1239,7 +1317,7 @@ namespace Campy.Compiler
             previous_llvm_types_created_global = new Dictionary<TypeReference, TypeRef>();
             _rename_to_legal_llvm_name_cache = new Dictionary<string, string>();
             method_to_image = new Dictionary<MethodInfo, IntPtr>();
-            done_init = false;
+            done_major_init = false;
 
             _importer = IMPORTER.Singleton();
             _mcfg = _importer.Cfg;
@@ -1445,37 +1523,6 @@ namespace Campy.Compiler
             return v;
         }
 
-        private void EnterInstantiatedBasicBlock(CFG.Vertex current, Mono.Cecil.TypeReference generic_type, System.Type value, CFG.Vertex bb)
-        {
-            var k = new Tuple<CFG.Vertex, TypeReference, System.Type>(current, generic_type, value);
-            mmap[k] = bb;
-        }
-
-        public CFG.Vertex Eval(CFG.Vertex current, Dictionary<Tuple<TypeReference, GenericParameter>, System.Type> ops)
-        {
-            // Start at current vertex, and find transition state given ops.
-            CFG.Vertex result = current;
-            for (;;)
-            {
-                bool found = false;
-                foreach(var t in ops)
-                {
-                    Tuple<TypeReference, GenericParameter> k = t.Key;
-                    var x = FindInstantiatedBasicBlock(current, k.Item1, t.Value);
-                    if (x != null)
-                    {
-                        current = x;
-                        found = true;
-                        break;
-                    }
-                }
-                if (!found) break;
-            }
-            return current;
-        }
-
-        private bool TypeUsingGeneric() { return false; }
-
         public bool IsFullyInstantiatedNode(CFG.Vertex node)
         {
             bool result = false;
@@ -1541,9 +1588,7 @@ namespace Campy.Compiler
             return mr.FullName;
         }
 
-
-        public string CompileToLLVM(List<CFG.Vertex> basic_blocks_to_compile, List<Mono.Cecil.TypeReference> list_of_data_types_used,
-            string basic_block_id)
+        private string CIL_to_LLVM_to_PTX(List<CFG.Vertex> basic_blocks_to_compile, List<Mono.Cecil.TypeReference> list_of_data_types_used)
         {
             basic_blocks_to_compile = basic_blocks_to_compile
                 .RemoveBasicBlocksAlreadyCompiled()
@@ -1558,89 +1603,10 @@ namespace Campy.Compiler
             if (Utils.Options.IsOn("name_trace"))
                 NameTableTrace();
 
-            {
-                var module = JITER.global_llvm_module;
-                var basic_block = GetBasicBlock(basic_block_id);
-
-                if (Campy.Utils.Options.IsOn("module_trace"))
-                    LLVM.DumpModule(module);
-
-                LLVM.DIBuilderFinalize(INST.dib);
-
-                MyString error = new MyString();
-                LLVM.VerifyModule(module, VerifierFailureAction.PrintMessageAction, error);
-                if (error.ToString() != "")
-                {
-                    System.Console.WriteLine(error);
-                    throw new Exception("Error in JIT compilation.");
-                }
-
-                string triple = "nvptx64-nvidia-cuda";
-                var b = LLVM.GetTargetFromTriple(triple, out TargetRef t2, error);
-                if (error.ToString() != "")
-                {
-                    System.Console.WriteLine(error);
-                    throw new Exception("Error in JIT compilation.");
-                }
-                TargetMachineRef tmr = LLVM.CreateTargetMachine(t2, triple, "", "", CodeGenOptLevel.CodeGenLevelDefault,
-                    RelocMode.RelocDefault, CodeModel.CodeModelKernel);
-                //ContextRef context_ref = LLVM.ContextCreate();
-                ContextRef context_ref = LLVM.GetModuleContext(JITER.global_llvm_module);
-                ValueRef kernelMd = LLVM.MDNodeInContext(
-                    context_ref, new ValueRef[3]
-                {
-                    basic_block.LlvmInfo.MethodValueRef,
-                    LLVM.MDStringInContext(context_ref, "kernel", 6),
-                    LLVM.ConstInt(LLVM.Int32TypeInContext(context_ref), 1, false)
-                });
-                LLVM.AddNamedMetadataOperand(module, "nvvm.annotations", kernelMd);
-                try
-                {
-                    LLVM.TargetMachineEmitToMemoryBuffer(tmr, module, Swigged.LLVM.CodeGenFileType.AssemblyFile,
-                        error, out MemoryBufferRef buffer);
-                    string ptx = null;
-                    try
-                    {
-                        ptx = LLVM.GetBufferStart(buffer);
-                        uint length = LLVM.GetBufferSize(buffer);
-
-                        // Modify the version number of the ISA PTX source generated to be the
-                        // most up to date.
-                        ptx = ptx.Replace(".version 3.2", ".version 6.0");
-
-                        // Make sure the target machine is set to sm_30 because we assume that as
-                        // a minimum, and it's compatible with GPU BCL runtime. Besides, older versions
-                        // are deprecated.
-                        ptx = ptx.Replace(".target sm_20", ".target sm_30");
-
-                        // Make sure to fix the stupid end-of-line delimiters to be for Windows.
-                        ptx = ptx.Replace("\n", "\r\n");
-
-                        //ptx = ptx + System_String_get_Chars;
-
-                        if (Campy.Utils.Options.IsOn("ptx_trace"))
-                            System.Console.WriteLine(ptx);
-                    }
-                    finally
-                    {
-                        LLVM.DisposeMemoryBuffer(buffer);
-                    }
-                    return ptx;
-                }
-                catch (Exception)
-                {
-                    Console.WriteLine();
-                    throw;
-                }
-            }
+            return basic_blocks_to_compile.TranslateToPTX();
         }
 
-        public CFG.Vertex GetBasicBlock(string block_id)
-        {
-            return _mcfg.Vertices.Where(i => i.IsEntry && i.Name == block_id).FirstOrDefault();
-        }
-
-        public IntPtr JitCodeToImage(MethodInfo kernel_method, object kernel_target)
+        public IntPtr Compile(MethodInfo kernel_method, object kernel_target)
         {
             if (method_to_image.TryGetValue(kernel_method, out IntPtr value))
             {
@@ -1706,8 +1672,7 @@ namespace Campy.Compiler
             stopwatch_compiler.Start();
 
             // Compile methods with added type information.
-            string ptx = CompileToLLVM(cs, list_of_mono_data_types_used,
-                bb.Name);
+            string ptx = CIL_to_LLVM_to_PTX(cs, list_of_mono_data_types_used);
 
             stopwatch_compiler.Stop();
             var elapse_compiler = stopwatch_compiler.Elapsed;
@@ -1837,6 +1802,11 @@ namespace Campy.Compiler
             return image;
         }
 
+        public CFG.Vertex GetBasicBlock(string block_id)
+        {
+            return _mcfg.Vertices.Where(i => i.IsEntry && i.Name == block_id).FirstOrDefault();
+        }
+
         public CFG.Vertex GetBasicBlock(MethodInfo kernel_method)
         {
             CFG.Vertex bb = _mcfg.Entries.Where(v =>
@@ -1859,15 +1829,7 @@ namespace Campy.Compiler
             return helloWorld;
         }
 
-
-    
         private HashSet<string> _added_module_already = new HashSet<string>();
-
-        public void AddAssemblyToFileSystem(Mono.Cecil.ModuleDefinition module)
-        {
-            string full_path_assem = module.FileName;
-            AddAssemblyToFileSystem(full_path_assem);
-        }
 
         public void AddAssemblyToFileSystem(string full_path_assem)
         {
@@ -1888,106 +1850,83 @@ namespace Campy.Compiler
             stream.Dispose();
             var ptrx = Marshal.StringToHGlobalAnsi(assem);
             BUFFERS buffers = new BUFFERS();
-            BUFFERS.CheckHeap();
+            RUNTIME.CheckHeap();
             IntPtr pointer1 = buffers.New(assem.Length + 1);
-            BUFFERS.CheckHeap();
+            RUNTIME.CheckHeap();
             BUFFERS.Cp(pointer1, ptrx, assem.Length + 1);
             var pointer4 = buffers.New(sizeof(int));
-            GfsAddFile(pointer1, corlib_bytes_intptr, corlib_bytes_handle_len, pointer4);
+            RUNTIME.GfsAddFile(pointer1, corlib_bytes_intptr, corlib_bytes_handle_len, pointer4);
         }
 
         public void InitBCL(CUmodule mod)
         {
-            if (!done_init)
+            if (!done_major_init)
             {
-                unsafe
-                {
-                    BUFFERS buffers = new BUFFERS();
-                    int the_size = 2*536870912;
-                    IntPtr b = buffers.New(the_size);
-                    RUNTIME.BclPtr = b;
-                    RUNTIME.BclPtrSize = (ulong)the_size;
-                    int max_threads = 16;
-                    IntPtr b2 = buffers.New(sizeof(int*));
-
-                    InitTheBcl(b, the_size, 2*16777216, max_threads, b2);
-
-                    JITER.SetOptions(JITER.Singleton._options);
-                }
-
-                unsafe
-                {
-                    InitFileSystem();
-
-                    {
-                        // Set up corlib.dll in file system.
-                        string full_path_assem = RUNTIME.FindCoreLib();
-                        string assem = Path.GetFileName(full_path_assem);
-                        Stream stream = new FileStream(full_path_assem, FileMode.Open, FileAccess.Read, FileShare.Read);
-                        var corlib_bytes_handle_len = stream.Length;
-                        var corlib_bytes = new byte[corlib_bytes_handle_len];
-                        stream.Read(corlib_bytes, 0, (int)corlib_bytes_handle_len);
-                        var corlib_bytes_handle = GCHandle.Alloc(corlib_bytes, GCHandleType.Pinned);
-                        var corlib_bytes_intptr = corlib_bytes_handle.AddrOfPinnedObject();
-                        stream.Close();
-                        stream.Dispose();
-                        var ptrx = Marshal.StringToHGlobalAnsi(assem);
-                        BUFFERS buffers = new BUFFERS();
-                        IntPtr pointer1 = buffers.New(assem.Length + 1);
-                        BUFFERS.Cp(pointer1, ptrx, assem.Length + 1);
-                        var pointer4 = buffers.New(sizeof(int));
-                        GfsAddFile(pointer1, corlib_bytes_intptr, corlib_bytes_handle_len, pointer4);
-                    }
-
-                    InitializeBCL1();
-
-                    InitializeBCL2();
-
-                    done_init = true;
-                }
+                BUFFERS buffers = new BUFFERS();
+                int the_size = 2 * 536870912;
+                IntPtr b = buffers.New(the_size);
+                RUNTIME.BclPtr = b;
+                RUNTIME.BclPtrSize = (ulong) the_size;
+                int max_threads = 16;
+                RUNTIME.InitTheBcl(b, the_size, 2 * 16777216, max_threads);
+                RUNTIME.SetOptions(JITER.Singleton._options);
+                RUNTIME.InitFileSystem();
+                // Set up corlib.dll in file system.
+                string full_path_assem = RUNTIME.FindCoreLib();
+                string assem = Path.GetFileName(full_path_assem);
+                Stream stream = new FileStream(full_path_assem, FileMode.Open, FileAccess.Read, FileShare.Read);
+                var corlib_bytes_handle_len = stream.Length;
+                var corlib_bytes = new byte[corlib_bytes_handle_len];
+                stream.Read(corlib_bytes, 0, (int) corlib_bytes_handle_len);
+                var corlib_bytes_handle = GCHandle.Alloc(corlib_bytes, GCHandleType.Pinned);
+                var corlib_bytes_intptr = corlib_bytes_handle.AddrOfPinnedObject();
+                stream.Close();
+                stream.Dispose();
+                var ptrx = Marshal.StringToHGlobalAnsi(assem);
+                IntPtr pointer1 = buffers.New(assem.Length + 1);
+                BUFFERS.Cp(pointer1, ptrx, assem.Length + 1);
+                var pointer4 = buffers.New(sizeof(int));
+                RUNTIME.GfsAddFile(pointer1, corlib_bytes_intptr, corlib_bytes_handle_len, pointer4);
+                RUNTIME.InitializeBCL1();
+                RUNTIME.InitializeBCL2();
+                done_major_init = true;
             }
 
+            CUresult res;
+
+            // Instead of full initialization, just set pointer to BCL globals area.
+            Campy.Utils.CudaHelpers.MakeLinearTiling(1,
+                out Campy.Utils.CudaHelpers.dim3 tile_size,
+                out Campy.Utils.CudaHelpers.dim3 tiles);
+
+            // Set up pointer to bcl.
+            unsafe
             {
-                CUresult res;
+                // Set up parameters.
+                IntPtr bcl_ptr = RUNTIME.BclPtr;
+                IntPtr[] x1 = new IntPtr[] {bcl_ptr};
+                GCHandle handle1 = GCHandle.Alloc(x1, GCHandleType.Pinned);
+                IntPtr parm1 = handle1.AddrOfPinnedObject();
 
-                // Instead of full initialization, just set pointer to BCL globals area.
-                Campy.Utils.CudaHelpers.MakeLinearTiling(1,
-                    out Campy.Utils.CudaHelpers.dim3 tile_size,
-                    out Campy.Utils.CudaHelpers.dim3 tiles);
+                IntPtr[] kp = new IntPtr[] {parm1};
 
-                // Set up pointer to bcl.
-                unsafe
+                CUfunction _Z15Set_BCL_GlobalsP6_BCL_t = RUNTIME._Z15Set_BCL_GlobalsP6_BCL_t(mod);
+                fixed (IntPtr* kernelParams = kp)
                 {
-                    // Set up parameters.
-                    IntPtr parm1;
-                    var bcl_ptr = RUNTIME.BclPtr;
-                    IntPtr[] x1 = new IntPtr[] { bcl_ptr };
-                    GCHandle handle1 = GCHandle.Alloc(x1, GCHandleType.Pinned);
-                    parm1 = handle1.AddrOfPinnedObject();
-
-                    IntPtr[] kp = new IntPtr[] {parm1};
-
-                    CUfunction _Z15Set_BCL_GlobalsP6_BCL_t = RUNTIME._Z15Set_BCL_GlobalsP6_BCL_t(mod);
-                    fixed (IntPtr* kernelParams = kp)
-                    {
-                        res = Cuda.cuLaunchKernel(
-                            _Z15Set_BCL_GlobalsP6_BCL_t,
-                            tiles.x, tiles.y, tiles.z, // grid has one block.
-                            tile_size.x, tile_size.y, tile_size.z, // n threads.
-                            0, // no shared memory
-                            default(CUstream),
-                            (IntPtr) kernelParams,
-                            (IntPtr) IntPtr.Zero
-                        );
-                    }
-
-                    Utils.CudaHelpers.CheckCudaError(res);
-                    res = Cuda.cuCtxSynchronize(); // Make sure it's copied back to host.
-                    Utils.CudaHelpers.CheckCudaError(res);
+                    res = Cuda.cuLaunchKernel(
+                        _Z15Set_BCL_GlobalsP6_BCL_t,
+                        tiles.x, tiles.y, tiles.z, // grid has one block.
+                        tile_size.x, tile_size.y, tile_size.z, // n threads.
+                        0, // no shared memory
+                        default(CUstream),
+                        (IntPtr) kernelParams,
+                        (IntPtr) IntPtr.Zero
+                    );
                 }
-
+                Utils.CudaHelpers.CheckCudaError(res);
+                res = Cuda.cuCtxSynchronize();
+                Utils.CudaHelpers.CheckCudaError(res);
             }
-
         }
 
         public static string GetStringTypeOf(ValueRef v)

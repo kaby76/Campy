@@ -16,6 +16,46 @@
 
     public class RUNTIME
     {
+        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclHeapAlloc")]
+        public static extern System.IntPtr BclHeapAlloc(System.IntPtr bcl_type);
+
+        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "SetOptions")]
+        public static extern void SetOptions(UInt64 options);
+
+        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "InitTheBcl")]
+        public static extern void InitTheBcl(System.IntPtr a1, long a2, long a3, int a4);
+
+        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "InitFileSystem")]
+        public static extern void InitFileSystem();
+
+        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "GfsAddFile")]
+        public static extern void GfsAddFile(System.IntPtr name, System.IntPtr file, long length, System.IntPtr result);
+
+        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "InitializeBCL1")]
+        public static extern void InitializeBCL1();
+
+        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "InitializeBCL2")]
+        public static extern void InitializeBCL2();
+
+        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "CheckHeap")]
+        public static extern void CheckHeap();
+
+        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "GcCollect")]
+        public static extern void GcCollect();
+
+        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclAllocString")]
+        public static extern IntPtr BclAllocString(int length, IntPtr chars);
+
+
+        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclArrayAlloc")]
+        public static extern System.IntPtr BclArrayAlloc(
+            System.IntPtr bcl_type,
+            int rank,
+            uint[] lengths);
+
+
+
+
         // This table encodes runtime type information for rewriting BCL types. Use this to determine
         // what a type (represented in Mono.Cecil.TypeReference) in the user's program maps to
         // in the GPU base class layer (also represented in Mono.Cecil.TypeReference).

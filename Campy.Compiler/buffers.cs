@@ -16,9 +16,6 @@
     /// </summary>
     public class BUFFERS
     {
-        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "CheckHeap")]
-        public static extern void CheckHeap();
-
         private Dictionary<string, string> _type_name_map = new Dictionary<string, string>();
 
         // A dictionary of allocated blocks of memory corresponding to an object in C#,
@@ -221,9 +218,6 @@
 
             return result;
         }
-
-        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "GcCollect")]
-        public static extern void GcCollect();
 
         public void SynchDataStructures()
         {
@@ -1255,7 +1249,7 @@
                         + size_element);
                 }
             }
-            BUFFERS.CheckHeap();
+            RUNTIME.CheckHeap();
         }
 
         private unsafe void CpArraytoCpu(void* from_gpu, Array to_cpu, System.Type from_element_type)
@@ -1372,9 +1366,6 @@
             //}
         }
 
-        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclHeapAlloc")]
-        public static extern System.IntPtr BclHeapAlloc(System.IntPtr bcl_type);
-
         public IntPtr New(object obj)
         {
             if (obj == null)
@@ -1389,13 +1380,13 @@
                 {
                     var str = obj as string;
                     var len = str.Length;
-                    BUFFERS.CheckHeap();
+                    RUNTIME.CheckHeap();
                     fixed (char* chars = str)
                     {
-                        result = BclAllocString(len, (IntPtr)chars);
+                        result = RUNTIME.BclAllocString(len, (IntPtr)chars);
                     }
                 }
-                BUFFERS.CheckHeap();
+                RUNTIME.CheckHeap();
                 return result;
             }
 
@@ -1403,37 +1394,27 @@
             {
                 var array = obj as Array;
                 Type etype = array.GetType().GetElementType();
-                BUFFERS.CheckHeap();
+                RUNTIME.CheckHeap();
                 var bcl_type = RUNTIME.GetBclType(etype.ToMonoTypeReference());
-                BUFFERS.CheckHeap();
+                RUNTIME.CheckHeap();
 
                 uint[] lengths = new uint[array.Rank];
                 for (int i = 0; i < array.Rank; ++i) lengths[i] = (uint)array.GetLength(i);
-                BUFFERS.CheckHeap();
-                IntPtr result = BclArrayAlloc(bcl_type, array.Rank, lengths);
-                BUFFERS.CheckHeap();
+                RUNTIME.CheckHeap();
+                IntPtr result = RUNTIME.BclArrayAlloc(bcl_type, array.Rank, lengths);
+                RUNTIME.CheckHeap();
                 return result;
             }
 
             {
                 var bcl_type = RUNTIME.GetBclType(type);
-                BUFFERS.CheckHeap();
-                IntPtr result = BclHeapAlloc(bcl_type);
-                BUFFERS.CheckHeap();
+                RUNTIME.CheckHeap();
+                IntPtr result = RUNTIME.BclHeapAlloc(bcl_type);
+                RUNTIME.CheckHeap();
                 return result;
             }
         }
 
-
-        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclAllocString")]
-        public static extern IntPtr BclAllocString(int length, IntPtr chars);
-
-
-        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclArrayAlloc")]
-        public static extern System.IntPtr BclArrayAlloc(
-            System.IntPtr bcl_type,
-            int rank,
-            uint[] lengths);
 
 
         public void Free(IntPtr pointer)
@@ -1466,22 +1447,22 @@
             {
                 // srcPtr and destPtr are IntPtr's pointing to valid memory locations
                 // size is the number of bytes to copy
-                BUFFERS.CheckHeap();
+                RUNTIME.CheckHeap();
                 byte* src = (byte*)srcPtr;
                 byte* dest = (byte*)destPtr;
                 for (int i = 0; i < size; i++)
                 {
                     dest[i] = src[i];
                 }
-                BUFFERS.CheckHeap();
+                RUNTIME.CheckHeap();
             }
         }
 
         public static unsafe void Cp(void* destPtr, object src)
         {
-            BUFFERS.CheckHeap();
+            RUNTIME.CheckHeap();
             Marshal.StructureToPtr(src, (IntPtr)destPtr, false);
-            BUFFERS.CheckHeap();
+            RUNTIME.CheckHeap();
         }
     }
 }

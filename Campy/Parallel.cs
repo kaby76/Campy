@@ -81,11 +81,11 @@ namespace Campy
                     /////////////////////////////////////////////
                     var stopwatch_cuda_compile = new Stopwatch();
                     stopwatch_cuda_compile.Start();
-                    IntPtr image = Singleton()._converter.JitCodeToImage(simpleKernel.Method, simpleKernel.Target);
+                    IntPtr image = Singleton()._converter.Compile(simpleKernel.Method, simpleKernel.Target);
                     CUfunction ptr_to_kernel = Singleton()._converter.GetCudaFunction(simpleKernel.Method, image);
                     var elapse_cuda_compile = stopwatch_cuda_compile.Elapsed;
 
-                    BUFFERS.CheckHeap();
+                    RUNTIME.CheckHeap();
 
                     //////// COPY DATA INTO GPU /////////////////
                     /////////////////////////////////////////////
@@ -109,7 +109,7 @@ namespace Campy
                     // object.
                     if (bb.HasThis)
                     {
-                        BUFFERS.CheckHeap();
+                        RUNTIME.CheckHeap();
                         ptr = buffer.AddDataStructure(simpleKernel.Target);
                         parm1[0] = ptr;
                     }
@@ -137,7 +137,7 @@ namespace Campy
                     handle2 = GCHandle.Alloc(x2, GCHandleType.Pinned);
                     IntPtr pointer2 = handle2.AddrOfPinnedObject();
 
-                    BUFFERS.CheckHeap();
+                    RUNTIME.CheckHeap();
 
                     IntPtr[] kp = new IntPtr[] { pointer1, pointer2 };
                     var res = CUresult.CUDA_SUCCESS;
@@ -175,7 +175,7 @@ namespace Campy
                         var stopwatch_deep_copy_back = new Stopwatch();
                         stopwatch_deep_copy_back.Reset();
 
-                        BUFFERS.CheckHeap();
+                        RUNTIME.CheckHeap();
 
                         stopwatch_deep_copy_back.Start();
 
@@ -183,7 +183,7 @@ namespace Campy
                         
                         stopwatch_deep_copy_back.Stop();
 
-                        BUFFERS.CheckHeap();
+                        RUNTIME.CheckHeap();
 
                         var elapse_deep_copy_back = stopwatch_deep_copy_back.Elapsed;
                         if (Campy.Utils.Options.IsOn("jit_trace"))

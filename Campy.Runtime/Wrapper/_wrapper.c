@@ -14,12 +14,12 @@ extern "C" {
 #endif
 
 
-	EXPORT void InitTheBcl(void * g, size_t size, size_t first_overhead, int count, void * s)
+	EXPORT void InitTheBcl(void * g, size_t size, size_t first_overhead, int count)
 	{
 		if (_bcl_ && _bcl_->options & BCL_DEBUG_FUNCTION_ENTRY)
 			Gprintf("InitTheBcl\n");
 
-		InternalInitTheBcl(g, size, first_overhead, count, s);
+		InternalInitTheBcl(g, size, first_overhead, count);
 	}
 
 	EXPORT void CheckHeap()

@@ -42,14 +42,13 @@ void handler(int sig) {
 }
 
 
-function_space_specifier void CommonInitTheBcl(void * g, size_t size, size_t first_overhead, int count, struct _BCL_t ** pbcl)
+function_space_specifier void CommonInitTheBcl(void * g, size_t size, size_t first_overhead, int count)
 {
 //	Gprintf("Hi from setup!\n");
     signal(SIGSEGV, handler);   // install our handler
 
 	// Erase the structure, then afterwards set everything up.
 	struct _BCL_t * bcl = (struct _BCL_t*)g;
-	*pbcl = bcl;
 	_bcl_ = bcl;
 	memset(bcl, 0, sizeof(struct _BCL_t));
 
@@ -124,9 +123,9 @@ function_space_specifier void CommonInitTheBcl(void * g, size_t size, size_t fir
 	bcl->CorLibDone = 0;
 }
 
-function_space_specifier void InternalInitTheBcl(void * g, size_t size, size_t first_overhead, int count, void * s)
+function_space_specifier void InternalInitTheBcl(void * g, size_t size, size_t first_overhead, int count)
 {
-	CommonInitTheBcl(g, size, first_overhead, count, (struct _BCL_t**)s);
+	CommonInitTheBcl(g, size, first_overhead, count);
 }
 
 global_space_specifier void Set_BCL_Globals(struct _BCL_t * bcl)
