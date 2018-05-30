@@ -66,14 +66,14 @@ namespace Campy.Compiler
             throw new ArgumentException("Unimplemented in derived type.");
         }
 
-	public override int GetHashCode()
-	{
-		throw new ArgumentException("Unimplemented in derived type.");
-	}
+        public override int GetHashCode()
+        {
+            throw new ArgumentException("Unimplemented in derived type.");
+        }
 
         public override bool Equals(object obj)
         {
-		throw new ArgumentException("Unimplemented in derived type.");
+            throw new ArgumentException("Unimplemented in derived type.");
         }
 
         public static new bool Equals(object obj1, object obj2) /* override */

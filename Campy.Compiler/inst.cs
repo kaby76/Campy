@@ -5035,12 +5035,12 @@
         {
         }
 
-		public override INST GenerateGenerics(STATE<TypeReference> state)
-		{
-			var a = state._stack.Pop();
-		    state._stack.Push(typeof(System.UInt32).ToMonoTypeReference());
-			return this;
-		}
+        public override INST GenerateGenerics(STATE<TypeReference> state)
+        {
+            var a = state._stack.Pop();
+            state._stack.Push(typeof(System.UInt32).ToMonoTypeReference());
+            return this;
+        }
 
         // For array implementation, see https://www.codeproject.com/Articles/3467/Arrays-UNDOCUMENTED
 
@@ -5524,62 +5524,62 @@
 
         public override INST GenerateGenerics(STATE<TypeReference> state)
         {
-			INST new_inst = this;
+            INST new_inst = this;
 
-			// Successor is fallthrough.
-			object method = this.Operand;
+            // Successor is fallthrough.
+            object method = this.Operand;
 
-			if (method as Mono.Cecil.MethodReference == null)
-				throw new Exception();
+            if (method as Mono.Cecil.MethodReference == null)
+                throw new Exception();
 
-			Mono.Cecil.MethodReference mr = method as Mono.Cecil.MethodReference;
-			int xargs = (mr.HasThis ? 1 : 0) + mr.Parameters.Count;
+            Mono.Cecil.MethodReference mr = method as Mono.Cecil.MethodReference;
+            int xargs = (mr.HasThis ? 1 : 0) + mr.Parameters.Count;
 
-			if (mr.DeclaringType != null && mr.DeclaringType.HasGenericParameters)
-			{
-				// Instantiate a generic type and rewrite the
-				// instruction with new target.
-				// Try "this".
-				if (mr.HasThis)
-				{
-					// Grab "this" from stack and generate the type.
-					var this_parameter = state._stack.PeekTop(xargs-1);
-					var declaring_type = mr.DeclaringType;
-					var new_type = this_parameter.ConvertGenericInstanceTypeToNonGenericInstanceType();
+            if (mr.DeclaringType != null && mr.DeclaringType.HasGenericParameters)
+            {
+                // Instantiate a generic type and rewrite the
+                // instruction with new target.
+                // Try "this".
+                if (mr.HasThis)
+                {
+                    // Grab "this" from stack and generate the type.
+                    var this_parameter = state._stack.PeekTop(xargs-1);
+                    var declaring_type = mr.DeclaringType;
+                    var new_type = this_parameter.ConvertGenericInstanceTypeToNonGenericInstanceType();
 
-					// Get the method from the non-generic (real instance) type.
-					mr = new_type.Resolve().Methods.Where(j =>
-					{
-						if (j.Name != mr.Name) return false;
-						if (j.Parameters.Count != mr.Parameters.Count) return false;
-						return true;
-					}).First();
+                    // Get the method from the non-generic (real instance) type.
+                    mr = new_type.Resolve().Methods.Where(j =>
+                    {
+                        if (j.Name != mr.Name) return false;
+                        if (j.Parameters.Count != mr.Parameters.Count) return false;
+                        return true;
+                    }).First();
 
-					// Create new instruction to replace this one.
-					var worker = this.Body.GetILProcessor();
-					Instruction new_mono_inst = worker.Create(
-						this.OpCode, mr);
-					new_mono_inst.Offset = this.Instruction.Offset;
-					new_inst = Wrap(new_mono_inst, this.Body, this.Block, this.SeqPoint);
-				}
-			}
+                    // Create new instruction to replace this one.
+                    var worker = this.Body.GetILProcessor();
+                    Instruction new_mono_inst = worker.Create(
+                        this.OpCode, mr);
+                    new_mono_inst.Offset = this.Instruction.Offset;
+                    new_inst = Wrap(new_mono_inst, this.Body, this.Block, this.SeqPoint);
+                }
+            }
 
-			{
-				var name = JITER.MethodName(mr);
+            {
+                var name = JITER.MethodName(mr);
 
-				// Set up args, type casting if required.
-				for (int k = 0; k < xargs; ++k)
-				{
-					var v = state._stack.Pop();
-				}
+                // Set up args, type casting if required.
+                for (int k = 0; k < xargs; ++k)
+                {
+                    var v = state._stack.Pop();
+                }
 
-				if (mr.ReturnType.FullName != "System.Void")
-				{
-					state._stack.Push(mr.ReturnType);
-				}
-			}
+                if (mr.ReturnType.FullName != "System.Void")
+                {
+                    state._stack.Push(mr.ReturnType);
+                }
+            }
 
-			IMPORTER.Singleton().Add(mr);
+            IMPORTER.Singleton().Add(mr);
 
             return this;
         }

@@ -277,10 +277,10 @@ namespace Campy.Compiler
             return LLVM.VoidTypeInContext(C);
         }
 
-	public override int GetHashCode()
-	{
-		return this.IntermediateType.GetHashCode();
-	}
+        public override int GetHashCode()
+        {
+            return this.IntermediateType.GetHashCode();
+        }
 
         public override bool Equals(object obj)
         {
