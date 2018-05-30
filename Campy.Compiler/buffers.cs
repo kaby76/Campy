@@ -44,7 +44,6 @@
             set;
         } = new List<object>();
 
-        private int _level = 0;
         public bool _delay = false;
 
         public void Synchronize()
@@ -211,7 +210,7 @@
             {
                 if (Campy.Utils.Options.IsOn("copy_trace"))
                     System.Console.WriteLine("Allocating GPU buf " + to_gpu);
-                result = New(type);
+                result = New(to_gpu);
                 _allocated_objects[to_gpu] = result;
             }
             else result = find_object.First().Value;
@@ -391,19 +390,11 @@
             return 0;
         }
 
-        /// <summary>
-        /// This method copies from a managed type into a blittable managed type.
-        /// The type is converted from managed into a blittable managed type.
-        /// </summary>
-        /// <param name="from_cpu"></param>
-        /// <param name="to"></param>
-        public unsafe void DeepCopyToImplementation(object from_cpu, void* to_gpu)
+        private unsafe void DeepCopyToImplementation(object from_cpu, void* to_gpu)
         {
             // Copy object to a buffer.
             try
             {
-                _level++;
-
                 {
                     bool is_null = false;
                     try
@@ -506,17 +497,19 @@
                         System.Console.WriteLine("Adding object to 'copied_to_gpu' " + from_cpu);
                     _copied_to_gpu.Add(from_cpu);
 
-                    System.Type f = from_cpu.GetType();
-                    System.Type tr = blittable_type;
-                    int* ip = (int*) to_gpu;
-                    string s = (string)from_cpu;
-                    int v = s.Length;
-                    *ip = v;
-                    ++ip;
-                    short* sp = (short*)ip;
-                    for (int i = 0; i < v; ++i)
-                        *sp++ = (short)s[i];
-                    BUFFERS.CheckHeap();
+                    //var sss = New(from_cpu as string);
+
+                    //System.Type f = from_cpu.GetType();
+                    //System.Type tr = blittable_type;
+                    //int* ip = (int*) to_gpu;
+                    //string s = (string)from_cpu;
+                    //int v = s.Length;
+                    //*ip = v;
+                    //++ip;
+                    //short* sp = (short*)ip;
+                    //for (int i = 0; i < v; ++i)
+                    //    *sp++ = (short)s[i];
+                    //BUFFERS.CheckHeap();
                     return;
                 }
 
@@ -693,7 +686,7 @@
                                         if (Campy.Utils.Options.IsOn("copy_trace"))
                                             System.Console.WriteLine("Allocating GPU buf " + field_value);
 //                                     // gp = New(field_size);
-                                        gp = New(fi.FieldType);
+                                        gp = New(field_value);
                                         _allocated_objects[field_value] = (IntPtr)gp;
                                     }
                                     // Copy pointer to field.
@@ -734,7 +727,6 @@
             }
             finally
             {
-                _level--;
             }
         }
 
@@ -753,8 +745,6 @@
         {
             try
             {
-                _level++;
-
                 System.Type t_type = target_type;
                 System.Type f_type = t_type;
 
@@ -1160,7 +1150,6 @@
             }
             finally
             {
-                _level--;
             }
         }
 
@@ -1237,7 +1226,7 @@
                         {
                             if (Campy.Utils.Options.IsOn("copy_trace"))
                                 System.Console.WriteLine("Allocating GPU buf " + size_element);
-                            gp = New(from_element_value.GetType());
+                            gp = New(from_element_value);
                             //gp = New(size_element);
                             _allocated_objects[from_element_value] = (IntPtr)gp;
                         }
@@ -1386,14 +1375,58 @@
         [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclHeapAlloc")]
         public static extern System.IntPtr BclHeapAlloc(System.IntPtr bcl_type);
 
-        public IntPtr New(Type type)
+        public IntPtr New(object obj)
         {
-            var bcl_type = RUNTIME.GetBclType(type);
-            BUFFERS.CheckHeap();
-            IntPtr result = BclHeapAlloc(bcl_type);
-            BUFFERS.CheckHeap();
-            return result;
+            if (obj == null)
+                return IntPtr.Zero;
+
+            Type type = obj.GetType();
+
+            if (type.FullName == "System.String")
+            {
+                IntPtr result;
+                unsafe
+                {
+                    var str = obj as string;
+                    var len = str.Length;
+                    BUFFERS.CheckHeap();
+                    fixed (char* chars = str)
+                    {
+                        result = BclAllocString(len, (IntPtr)chars);
+                    }
+                }
+                BUFFERS.CheckHeap();
+                return result;
+            }
+
+            if (type.IsArray)
+            {
+                var array = obj as Array;
+                Type etype = array.GetType().GetElementType();
+                BUFFERS.CheckHeap();
+                var bcl_type = RUNTIME.GetBclType(etype.ToMonoTypeReference());
+                BUFFERS.CheckHeap();
+
+                uint[] lengths = new uint[array.Rank];
+                for (int i = 0; i < array.Rank; ++i) lengths[i] = (uint)array.GetLength(i);
+                BUFFERS.CheckHeap();
+                IntPtr result = BclArrayAlloc(bcl_type, array.Rank, lengths);
+                BUFFERS.CheckHeap();
+                return result;
+            }
+
+            {
+                var bcl_type = RUNTIME.GetBclType(type);
+                BUFFERS.CheckHeap();
+                IntPtr result = BclHeapAlloc(bcl_type);
+                BUFFERS.CheckHeap();
+                return result;
+            }
         }
+
+
+        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclAllocString")]
+        public static extern IntPtr BclAllocString(int length, IntPtr chars);
 
 
         [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclArrayAlloc")]
@@ -1402,20 +1435,6 @@
             int rank,
             uint[] lengths);
 
-        public IntPtr New(Array array)
-        {
-            Type type = array.GetType().GetElementType();
-            BUFFERS.CheckHeap();
-            var bcl_type = RUNTIME.GetBclType(type.ToMonoTypeReference());
-            BUFFERS.CheckHeap();
-
-            uint[] lengths = new uint[array.Rank];
-            for (int i = 0; i < array.Rank; ++i) lengths[i] = (uint)array.GetLength(i);
-            BUFFERS.CheckHeap();
-            IntPtr result = BclArrayAlloc(bcl_type, array.Rank, lengths);
-            BUFFERS.CheckHeap();
-            return result;
-        }
 
         public void Free(IntPtr pointer)
         {

@@ -2,6 +2,7 @@
 #include "_BCL_.h"
 #include "MetaData.h"
 #include "System.Array.h"
+#include "System.String.h"
 #include "Type.h"
 #include "Types.h"
 #include "basics.h"
@@ -109,6 +110,13 @@ EXPORT void STDCALL BclPrintMeta(void* meta)
 	if (_bcl_ && _bcl_->options & BCL_DEBUG_FUNCTION_ENTRY)
 		Gprintf("BclPrintMeta\n");
 	MetaData_PrintMetaData((tMetaData*)meta);
+}
+
+EXPORT void * STDCALL BclAllocString(int len, void * chars)
+{
+	if (_bcl_ && _bcl_->options & BCL_DEBUG_FUNCTION_ENTRY)
+		Gprintf("BclAllocString\n");
+	return Internal_SystemString_FromCharPtrUTF16(len, (U16*)chars);
 }
 
 #ifdef __cplusplus

@@ -32,7 +32,8 @@
 
 typedef struct tSystemString_ tSystemString;
 // This structure must tie up with string.cs
-struct tSystemString_ {
+struct tSystemString_
+{
 	// Length in characters (not bytes)
 	U32 length;
 	// The characters
@@ -42,7 +43,8 @@ struct tSystemString_ {
 //extern function_space_specifier int CorLibDone;
 
 // length in characters, not bytes
-static function_space_specifier tSystemString* CreateStringHeapObj(U32 len) {
+static function_space_specifier tSystemString* CreateStringHeapObj(U32 len)
+{
 	tSystemString *pSystemString;
 	U32 totalSize;
 	
@@ -52,7 +54,8 @@ static function_space_specifier tSystemString* CreateStringHeapObj(U32 len) {
 	return pSystemString;
 }
 
-function_space_specifier tAsyncCall* System_String_ctor_CharInt32(PTR pThis_, PTR pParams, PTR pReturnValue) {
+function_space_specifier tAsyncCall* System_String_ctor_CharInt32(PTR pThis_, PTR pParams, PTR pReturnValue)
+{
 	tSystemString *pSystemString;
 	U32 i;
 
@@ -406,16 +409,12 @@ function_space_specifier HEAP_PTR SystemString_FromCharPtrUTF16(U16 *pStr) {
 	return (HEAP_PTR)pSystemString;
 }
 
-host_space_specifier gpu_space_specifier void Global_SystemString_FromCharPtrUTF16(U16 *pStr, HEAP_PTR* ptr) {
+function_space_specifier HEAP_PTR Internal_SystemString_FromCharPtrUTF16(int strLen, U16 *pStr)
+{
 	tSystemString *pSystemString;
-	int strLen = 0;
-
-	while (pStr[strLen] != 0) {
-		strLen++;
-	}
 	pSystemString = CreateStringHeapObj(strLen);
 	memcpy(pSystemString->chars, pStr, strLen << 1);
-	*ptr = (HEAP_PTR)pSystemString;
+	return (HEAP_PTR)pSystemString;
 }
 
 function_space_specifier STRING2 SystemString_GetString(HEAP_PTR pThis_, U32 *pLength) {

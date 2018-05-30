@@ -107,7 +107,7 @@
 
   <ItemGroup>
     <PackageReference Include="Mono.Cecil" Version="0.10.0" />
-    <PackageReference Include="swigged.cuda" Version="9.185.6" />
+    <PackageReference Include="swigged.cuda" Version="9.185.7" />
     <PackageReference Include="swigged.llvm" Version="6.0.6" />
   </ItemGroup>
 

@@ -41,5 +41,6 @@ function_space_specifier HEAP_PTR SystemString_FromCharPtrASCII(char *pStr);
 function_space_specifier HEAP_PTR SystemString_FromCharPtrUTF16(U16 *pStr);
 function_space_specifier STRING2 SystemString_GetString(HEAP_PTR pThis_, U32 *pLength);
 function_space_specifier U32 SystemString_GetNumBytes(HEAP_PTR pThis_);
+function_space_specifier HEAP_PTR Internal_SystemString_FromCharPtrUTF16(int strLen, U16 *pStr);
 
 #endif
