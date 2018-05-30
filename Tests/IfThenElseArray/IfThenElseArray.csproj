@@ -1,0 +1,45 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.7.2" />
+    <PackageReference Include="xunit" Version="2.3.1" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.3.1" />
+    <DotNetCliToolReference Include="dotnet-xunit" Version="2.3.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Campy\Campy.csproj" />
+  </ItemGroup>
+
+  <Target Name="CopyCustomContent" AfterTargets="AfterBuild">
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\..\..\Campy.Runtime\Corlib\bin\Debug\netstandard2.0\corlib.dll" DestinationFolder="$(OutDir)" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\..\..\Campy.Runtime\Corlib\bin\Debug\netstandard2.0\corlib.pdb" DestinationFolder="$(OutDir)" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\..\..\Campy.Runtime\Corlib\bin\Debug\netstandard2.0\corlib.deps.json" DestinationFolder="$(OutDir)" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\..\..\x64\Debug\campy-runtime-native.lib" DestinationFolder="$(OutDir)" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\..\..\x64\Debug\campy-runtime-wrapper.lib" DestinationFolder="$(OutDir)" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\..\..\x64\Debug\campy-runtime-wrapper.dll" DestinationFolder="$(OutDir)" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\..\..\x64\Debug\campy-runtime-wrapper.pdb" DestinationFolder="$(OutDir)" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\..\..\x64\Debug\cudart32_91.dll" DestinationFolder="$(OutDir)" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\..\..\x64\Debug\cudart64_91.dll" DestinationFolder="$(OutDir)" />
+  </Target>
+  <Target Name="CopyCustomContentOnPublish" AfterTargets="Publish">
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\..\..\Campy.Runtime\Corlib\bin\Debug\netstandard2.0\corlib.dll" DestinationFolder="$(PublishDir)" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\..\..\Campy.Runtime\Corlib\bin\Debug\netstandard2.0\corlib.pdb" DestinationFolder="$(PublishDir)" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\..\..\Campy.Runtime\Corlib\bin\Debug\netstandard2.0\corlib.deps.json" DestinationFolder="$(PublishDir)" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\..\..\x64\Debug\campy-runtime-native.lib" DestinationFolder="$(PublishDir)" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\..\..\x64\Debug\campy-runtime-wrapper.lib" DestinationFolder="$(PublishDir)" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\..\..\x64\Debug\campy-runtime-wrapper.dll" DestinationFolder="$(PublishDir)" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\..\..\x64\Debug\campy-runtime-wrapper.pdb" DestinationFolder="$(PublishDir)" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\..\..\x64\Debug\cudart32_91.dll" DestinationFolder="$(PublishDir)" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\..\..\x64\Debug\cudart64_91.dll" DestinationFolder="$(PublishDir)" />
+  </Target>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+</Project>
