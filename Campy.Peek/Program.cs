@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Campy.Compiler;
 
-namespace CampyPeek
+namespace Peek
 {
     class Program
     {

@@ -6,8 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{0D8392C1-5E1A-4B20-B95A-87C44F7A77E4}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>CampyPeek</RootNamespace>
-    <AssemblyName>CampyPeek</AssemblyName>
+    <RootNamespace>Peek</RootNamespace>
+    <AssemblyName>Peek</AssemblyName>
     <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
