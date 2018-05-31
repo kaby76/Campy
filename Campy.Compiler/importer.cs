@@ -191,10 +191,11 @@ namespace Campy.Compiler
 
         private void ExtractBasicBlocksOfMethod(Tuple<MethodReference, List<TypeReference>> definition)
         {
-            MethodReference original_method_reference = definition.Item1;
+            MethodReference method_reference = definition.Item1;
+            MethodReference original_method_reference = method_reference;
             _methods_done.Add(original_method_reference.FullName);
             MethodDefinition method_definition = Rewrite(original_method_reference);
-            if (method_definition == null)
+            if (method_definition == null || method_definition.Body == null)
                 return;
             _methods_done.Add(method_definition.FullName);
             int change_set = Cfg.StartChangeSet();
@@ -425,8 +426,9 @@ namespace Campy.Compiler
             var cfg = node._graph;
             CFG.Vertex result = (CFG.Vertex)cfg.AddVertex(new CFG.Vertex() { Name = cfg.NewNodeNumber().ToString() });
             result.Entry = node.Entry;
-            result._original_method_reference = node._original_method_reference;
             result._method_definition = node._method_definition;
+            result._method_reference = node._method_reference;
+            result._original_method_reference = node._original_method_reference;
 
             int count = node.Instructions.Count;
 
@@ -488,20 +490,16 @@ namespace Campy.Compiler
             return result;
         }
 
-        /// <summary>
-        /// Substitute method reference with an method reference in the BCL runtime for GPUs if there is one.
-        /// The substituted method is returned. If there is no substitution, it will return the method reference unchanged.
-        /// In the body of the method, rewrite each instruction, replacing references to the BCL runtime for GPUs
-        /// </summary>
-        /// <param name="method_reference"></param>
-        /// <returns></returns>
         private MethodDefinition Rewrite(MethodReference method_reference)
         {
-            var method_definition = RUNTIME.SubstituteMethod(method_reference);
-
+            // Perform any substitution of this method reference.
+            MethodReference new_method_reference = RUNTIME.SubstituteMethod(method_reference);
+            method_reference = new_method_reference != null ? new_method_reference : method_reference; 
+            MethodDefinition method_definition = method_reference.Resolve();
+            // Perform any substitutions of individual instructions.
             if (!(method_definition == null || method_definition.Body == null))
                 RUNTIME.RewriteCilCodeBlock(method_definition.Body);
-
+            // Return method definition for further analysis.
             return method_definition;
         }
     }

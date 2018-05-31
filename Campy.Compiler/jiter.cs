@@ -1613,191 +1613,155 @@ namespace Campy.Compiler
                 return value;
             }
 
-            Stopwatch stopwatch_discovery = new Stopwatch();
-            stopwatch_discovery.Reset();
-            stopwatch_discovery.Start();
-
-            // Parse kernel instructions to determine basic block representation of all the code to compile.
-            int change_set_id = _mcfg.StartChangeSet();
-            _importer.AnalyzeMethod(kernel_method);
-            if (_importer.Failed)
-            {
-                throw new Exception("Failure to find all methods in GPU code. Cannot continue.");
-            }
-            List<CFG.Vertex> cs = _mcfg.PopChangeSet(change_set_id);
-
-            stopwatch_discovery.Stop();
-            var elapse_discovery = stopwatch_discovery.Elapsed;
-            if (Campy.Utils.Options.IsOn("jit_trace"))
-                System.Console.WriteLine("discovery     " + elapse_discovery);
-
-            object target = kernel_target;
-
-            // Get basic block of entry.
+            List<CFG.Vertex> cs = null;
             CFG.Vertex bb;
-            if (!cs.Any())
+
+            Campy.Utils.TimePhase.Time("discovery     ", () =>
             {
-                // Compiled previously. Look for basic block of entry.
-                bb = _mcfg.Entries.Where(v =>
-                    v.IsEntry && v._original_method_reference.Name == kernel_method.Name).FirstOrDefault();
-            }
-            else
+                // Parse kernel instructions to determine basic block representation of all the code to compile.
+                int change_set_id = _mcfg.StartChangeSet();
+                _importer.AnalyzeMethod(kernel_method);
+                if (_importer.Failed)
+                {
+                    throw new Exception("Failure to find all methods in GPU code. Cannot continue.");
+                }
+                cs = _mcfg.PopChangeSet(change_set_id);
+                if (!cs.Any())
+                {
+                    bb = _mcfg.Entries.Where(v =>
+                        v.IsEntry && v._original_method_reference.Name == kernel_method.Name).FirstOrDefault();
+                }
+                else
+                {
+                    bb = cs.First();
+                }
+            });
+
+            string ptx = null;
+
+            Campy.Utils.TimePhase.Time("compiler      ", () =>
             {
-                bb = cs.First();
-            }
+                // Very important note: Although we have the control flow graph of the code that is to
+                // be compiled, there is going to be generics used, e.g., ArrayView<int>, within the body
+                // of the code and in the called runtime library. We need to record the types for compiling
+                // and add that to compilation.
+                // https://stackoverflow.com/questions/5342345/how-do-generics-get-compiled-by-the-jit-compiler
 
-            // Very important note: Although we have the control flow graph of the code that is to
-            // be compiled, there is going to be generics used, e.g., ArrayView<int>, within the body
-            // of the code and in the called runtime library. We need to record the types for compiling
-            // and add that to compilation.
-            // https://stackoverflow.com/questions/5342345/how-do-generics-get-compiled-by-the-jit-compiler
+                // Create a list of generics called with types passed.
+                List<System.Type> list_of_data_types_used = new List<System.Type>();
+                list_of_data_types_used.Add(kernel_target.GetType());
 
-            // Create a list of generics called with types passed.
-            List<System.Type> list_of_data_types_used = new List<System.Type>();
-            list_of_data_types_used.Add(kernel_target.GetType());
+                // Convert list into Mono data types.
+                List<Mono.Cecil.TypeReference> list_of_mono_data_types_used = new List<TypeReference>();
+                foreach (System.Type data_type_used in list_of_data_types_used)
+                {
+                    list_of_mono_data_types_used.Add(
+                        data_type_used.ToMonoTypeReference());
+                }
+                // Compile methods with added type information.
+                ptx = CIL_to_LLVM_to_PTX(cs, list_of_mono_data_types_used);
+            });
 
-            // Convert list into Mono data types.
-            List<Mono.Cecil.TypeReference> list_of_mono_data_types_used = new List<TypeReference>();
-            foreach (System.Type data_type_used in list_of_data_types_used)
+            IntPtr image = IntPtr.Zero;
+
+            Campy.Utils.TimePhase.Time("linker        ", () =>
             {
-                list_of_mono_data_types_used.Add(
-                    data_type_used.ToMonoTypeReference());
-            }
+                var current_directory = Directory.GetCurrentDirectory();
+                if (Campy.Utils.Options.IsOn("jit_trace"))
+                    System.Console.WriteLine("Current directory " + current_directory);
 
-            // Associate "this" with entry.
-            Dictionary<Tuple<TypeReference, GenericParameter>, System.Type> ops = bb.OpsFromOriginal;
+                CudaHelpers.CheckCudaError(Cuda.cuMemGetInfo_v2(out ulong free_memory, out ulong total_memory));
+                if (Campy.Utils.Options.IsOn("jit_trace"))
+                    System.Console.WriteLine("total memory " + total_memory + " free memory " + free_memory);
+                CudaHelpers.CheckCudaError(Cuda.cuCtxGetLimit(out ulong pvalue, CUlimit.CU_LIMIT_STACK_SIZE));
+                if (Campy.Utils.Options.IsOn("jit_trace"))
+                    System.Console.WriteLine("Stack size " + pvalue);
 
-            var stopwatch_compiler = new Stopwatch();
-            stopwatch_compiler.Reset();
-            stopwatch_compiler.Start();
+                var stopwatch_cuda_compile = new Stopwatch();
+                stopwatch_cuda_compile.Reset();
+                stopwatch_cuda_compile.Start();
 
-            // Compile methods with added type information.
-            string ptx = CIL_to_LLVM_to_PTX(cs, list_of_mono_data_types_used);
+                // Add in all of the GPU BCL runtime required.
+                uint num_ops_link = 5;
+                var op_link = new CUjit_option[num_ops_link];
+                ulong[] op_values_link = new ulong[num_ops_link];
 
-            stopwatch_compiler.Stop();
-            var elapse_compiler = stopwatch_compiler.Elapsed;
-            if (Campy.Utils.Options.IsOn("jit_trace"))
-                System.Console.WriteLine("compiler      " + elapse_compiler);
-            var current_directory = Directory.GetCurrentDirectory();
-            if (Campy.Utils.Options.IsOn("jit_trace"))
-                System.Console.WriteLine("Current directory " + current_directory);
+                int size = 1024 * 100;
+                op_link[0] = CUjit_option.CU_JIT_INFO_LOG_BUFFER_SIZE_BYTES;
+                op_values_link[0] = (ulong) size;
 
-            CudaHelpers.CheckCudaError(Cuda.cuMemGetInfo_v2(out ulong free_memory, out ulong total_memory));
-            if (Campy.Utils.Options.IsOn("jit_trace"))
-                System.Console.WriteLine("total memory " + total_memory + " free memory " + free_memory);
-            CudaHelpers.CheckCudaError(Cuda.cuCtxGetLimit(out ulong pvalue, CUlimit.CU_LIMIT_STACK_SIZE));
-            if (Campy.Utils.Options.IsOn("jit_trace"))
-                System.Console.WriteLine("Stack size " + pvalue);
-            var stopwatch_cuda_compile = new Stopwatch();
-            stopwatch_cuda_compile.Reset();
-            stopwatch_cuda_compile.Start();
+                op_link[1] = CUjit_option.CU_JIT_INFO_LOG_BUFFER;
+                byte[] info_log_buffer = new byte[size];
+                var info_log_buffer_handle = GCHandle.Alloc(info_log_buffer, GCHandleType.Pinned);
+                var info_log_buffer_intptr = info_log_buffer_handle.AddrOfPinnedObject();
+                op_values_link[1] = (ulong) info_log_buffer_intptr;
 
-            // GetCudaFunction(string basic_block_id, string ptx)
-            var basic_block_id = bb.Name;
-            var basic_block = GetBasicBlock(basic_block_id);
-            var method = basic_block._original_method_reference;
+                op_link[2] = CUjit_option.CU_JIT_ERROR_LOG_BUFFER_SIZE_BYTES;
+                op_values_link[2] = (ulong) size;
 
-            var res = Cuda.cuDeviceGet(out int device, 0);
-            Utils.CudaHelpers.CheckCudaError(res);
-            res = Cuda.cuDeviceGetPCIBusId(out string pciBusId, 100, device);
-            Utils.CudaHelpers.CheckCudaError(res);
-            res = Cuda.cuDeviceGetName(out string name, 100, device);
-            Utils.CudaHelpers.CheckCudaError(res);
+                op_link[3] = CUjit_option.CU_JIT_ERROR_LOG_BUFFER;
+                byte[] error_log_buffer = new byte[size];
+                var error_log_buffer_handle = GCHandle.Alloc(error_log_buffer, GCHandleType.Pinned);
+                var error_log_buffer_intptr = error_log_buffer_handle.AddrOfPinnedObject();
+                op_values_link[3] = (ulong) error_log_buffer_intptr;
 
-            res = Cuda.cuCtxGetCurrent(out CUcontext pctx);
-            Utils.CudaHelpers.CheckCudaError(res);
+                op_link[4] = CUjit_option.CU_JIT_LOG_VERBOSE;
+                op_values_link[4] = (ulong) 1;
 
-            res = Cuda.cuCtxGetApiVersion(pctx, out uint version);
-            Utils.CudaHelpers.CheckCudaError(res);
+                //op_link[5] = CUjit_option.CU_JIT_TARGET;
+                //op_values_link[5] = (ulong)CUjit_target.CU_TARGET_COMPUTE_35;
 
-            // Create context done around cuInit() call.
-            //res = Cuda.cuCtxCreate_v2(out CUcontext cuContext, 0, device);
-            //CheckCudaError(res);
+                var op_values_link_handle = GCHandle.Alloc(op_values_link, GCHandleType.Pinned);
+                var op_values_link_intptr = op_values_link_handle.AddrOfPinnedObject();
+                var res = Cuda.cuLinkCreate_v2(num_ops_link, op_link, op_values_link_intptr, out CUlinkState linkState);
+                Utils.CudaHelpers.CheckCudaError(res);
 
-            // Add in all of the GPU BCL runtime required.
-            uint num_ops_link = 5;
-            var op_link = new CUjit_option[num_ops_link];
-            ulong[] op_values_link = new ulong[num_ops_link];
+                IntPtr ptr = Marshal.StringToHGlobalAnsi(ptx);
+                CUjit_option[] op = new CUjit_option[0];
+                ulong[] op_values = new ulong[0];
+                var op_values_handle = GCHandle.Alloc(op_values, GCHandleType.Pinned);
+                var op_values_intptr = op_values_handle.AddrOfPinnedObject();
+                res = Cuda.cuLinkAddData_v2(linkState, CUjitInputType.CU_JIT_INPUT_PTX, ptr, (uint) ptx.Length, "", 0,
+                    op,
+                    op_values_intptr);
+                if (res != CUresult.CUDA_SUCCESS)
+                {
+                    string info = Marshal.PtrToStringAnsi(info_log_buffer_intptr);
+                    System.Console.WriteLine(info);
+                    string error = Marshal.PtrToStringAnsi(error_log_buffer_intptr);
+                    System.Console.WriteLine(error);
+                }
 
-            int size = 1024 * 100;
-            op_link[0] = CUjit_option.CU_JIT_INFO_LOG_BUFFER_SIZE_BYTES;
-            op_values_link[0] = (ulong) size;
+                Utils.CudaHelpers.CheckCudaError(res);
 
-            op_link[1] = CUjit_option.CU_JIT_INFO_LOG_BUFFER;
-            byte[] info_log_buffer = new byte[size];
-            var info_log_buffer_handle = GCHandle.Alloc(info_log_buffer, GCHandleType.Pinned);
-            var info_log_buffer_intptr = info_log_buffer_handle.AddrOfPinnedObject();
-            op_values_link[1] = (ulong) info_log_buffer_intptr;
+                // Go to directory for Campy.
+                uint num_ops = 0;
+                res = Cuda.cuLinkAddFile_v2(linkState, CUjitInputType.CU_JIT_INPUT_LIBRARY,
+                    RUNTIME.FindNativeCoreLib(), num_ops, op, op_values_intptr);
 
-            op_link[2] = CUjit_option.CU_JIT_ERROR_LOG_BUFFER_SIZE_BYTES;
-            op_values_link[2] = (ulong) size;
+                if (res != CUresult.CUDA_SUCCESS)
+                {
+                    string info = Marshal.PtrToStringAnsi(info_log_buffer_intptr);
+                    System.Console.WriteLine(info);
+                    string error = Marshal.PtrToStringAnsi(error_log_buffer_intptr);
+                    System.Console.WriteLine(error);
+                }
 
-            op_link[3] = CUjit_option.CU_JIT_ERROR_LOG_BUFFER;
-            byte[] error_log_buffer = new byte[size];
-            var error_log_buffer_handle = GCHandle.Alloc(error_log_buffer, GCHandleType.Pinned);
-            var error_log_buffer_intptr = error_log_buffer_handle.AddrOfPinnedObject();
-            op_values_link[3] = (ulong) error_log_buffer_intptr;
+                Utils.CudaHelpers.CheckCudaError(res);
 
-            op_link[4] = CUjit_option.CU_JIT_LOG_VERBOSE;
-            op_values_link[4] = (ulong) 1;
+                res = Cuda.cuLinkComplete(linkState, out image, out ulong sz);
+                if (res != CUresult.CUDA_SUCCESS)
+                {
+                    string info = Marshal.PtrToStringAnsi(info_log_buffer_intptr);
+                    System.Console.WriteLine(info);
+                    string error = Marshal.PtrToStringAnsi(error_log_buffer_intptr);
+                    System.Console.WriteLine(error);
+                }
 
-            //op_link[5] = CUjit_option.CU_JIT_TARGET;
-            //op_values_link[5] = (ulong)CUjit_target.CU_TARGET_COMPUTE_35;
+                Utils.CudaHelpers.CheckCudaError(res);
 
-            var op_values_link_handle = GCHandle.Alloc(op_values_link, GCHandleType.Pinned);
-            var op_values_link_intptr = op_values_link_handle.AddrOfPinnedObject();
-            res = Cuda.cuLinkCreate_v2(num_ops_link, op_link, op_values_link_intptr, out CUlinkState linkState);
-            Utils.CudaHelpers.CheckCudaError(res);
-
-
-            IntPtr ptr = Marshal.StringToHGlobalAnsi(ptx);
-            CUjit_option[] op = new CUjit_option[0];
-            ulong[] op_values = new ulong[0];
-            var op_values_handle = GCHandle.Alloc(op_values, GCHandleType.Pinned);
-            var op_values_intptr = op_values_handle.AddrOfPinnedObject();
-            res = Cuda.cuLinkAddData_v2(linkState, CUjitInputType.CU_JIT_INPUT_PTX, ptr, (uint) ptx.Length, "", 0, op,
-                op_values_intptr);
-            if (res != CUresult.CUDA_SUCCESS)
-            {
-                string info = Marshal.PtrToStringAnsi(info_log_buffer_intptr);
-                System.Console.WriteLine(info);
-                string error = Marshal.PtrToStringAnsi(error_log_buffer_intptr);
-                System.Console.WriteLine(error);
-            }
-            Utils.CudaHelpers.CheckCudaError(res);
-
-            // Go to directory for Campy.
-            uint num_ops = 0;
-            res = Cuda.cuLinkAddFile_v2(linkState, CUjitInputType.CU_JIT_INPUT_LIBRARY,
-                RUNTIME.FindNativeCoreLib(), num_ops, op, op_values_intptr);
-            // static .lib
-            // cuLinkAddFile_v2, CU_JIT_INPUT_OBJECT; succeeds cuLinkAddFile_v2, fails cuLinkComplete => truncated .lib?
-            // cuLinkAddFile_v2, CU_JIT_INPUT_LIBRARY; fails cuLinkAddFile_v2 => invalid image?
-            // 
-            // static .lib, device-link = no.
-            // cuLinkAddFile_v2, CU_JIT_INPUT_LIBRARY; succeeds.
-
-            if (res != CUresult.CUDA_SUCCESS)
-            {
-                string info = Marshal.PtrToStringAnsi(info_log_buffer_intptr);
-                System.Console.WriteLine(info);
-                string error = Marshal.PtrToStringAnsi(error_log_buffer_intptr);
-                System.Console.WriteLine(error);
-            }
-            Utils.CudaHelpers.CheckCudaError(res);
-
-            IntPtr image;
-            res = Cuda.cuLinkComplete(linkState, out image, out ulong sz);
-            if (res != CUresult.CUDA_SUCCESS)
-            {
-                string info = Marshal.PtrToStringAnsi(info_log_buffer_intptr);
-                System.Console.WriteLine(info);
-                string error = Marshal.PtrToStringAnsi(error_log_buffer_intptr);
-                System.Console.WriteLine(error);
-            }
-            Utils.CudaHelpers.CheckCudaError(res);
-
-            method_to_image[kernel_method] = image;
+                method_to_image[kernel_method] = image;
+            });
 
             return image;
         }

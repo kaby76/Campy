@@ -113,7 +113,6 @@ namespace Campy.Compiler
 
         public class Vertex
         {
-
             public struct LLVMINFO
             {
                 public BasicBlockRef BasicBlock { get; set; }
@@ -131,7 +130,6 @@ namespace Campy.Compiler
                     }
                 }
             }
-
             public string Name { get; set; }
             public override string ToString()
             {
@@ -150,7 +148,11 @@ namespace Campy.Compiler
             }
             public LLVMINFO LlvmInfo;
             public bool AlreadyCompiled { get; set; }
+            // Method reference, which might be a generic instance.
+            public MethodReference _method_reference { get; set; }
+            // Cached method definition so I don't need to do _method_referenc.Resolve() all the time.
             public MethodDefinition _method_definition { get; set; }
+            // This may be the original reference in the code before substitution with BCL code.
             public MethodReference _original_method_reference { get; set; }
             public bool HasThis
             {
@@ -159,8 +161,6 @@ namespace Campy.Compiler
             }
             public bool HasScalarReturnValue { get; set; }
             public bool HasStructReturnValue { get; set; }
-            //public STATE StateIn { get; set; }
-            //public STATE StateOut { get; set; }
             private Vertex _entry;
             public Vertex Entry
             {
@@ -253,15 +253,6 @@ namespace Campy.Compiler
             public Edge()
                 : base(null, null)
             {
-            }
-
-            public bool IsInterprocedural()
-            {
-                CFG.Vertex f = (CFG.Vertex)this.From;
-                CFG.Vertex t = (CFG.Vertex)this.To;
-                if (f._original_method_reference != t._original_method_reference)
-                    return true;
-                return false;
             }
         }
 

@@ -639,57 +639,48 @@
         }
 
 
-        public static MethodDefinition SubstituteMethod(MethodReference method_reference)
+        public static MethodReference SubstituteMethod(MethodReference method_reference)
         {
-            // Look up base class.
-            TypeReference mr_dt = method_reference.DeclaringType;
+            // Can't do anything if method isn't associated with a type.
+            TypeReference declaring_type = method_reference.DeclaringType;
+            if (declaring_type == null)
+                return null; 
+
+            TypeDefinition declaring_type_resolved = declaring_type.Resolve();
             MethodDefinition method_definition = method_reference.Resolve();
-            // Find in Campy.Runtime, assuming it exists in the same
-            // directory as the Campy compiler assembly.
-            Mono.Cecil.ModuleDefinition md = Mono.Cecil.ModuleDefinition.ReadModule(FindCoreLib());
-            // Find type/method in order to do a substitution. If there
-            // is no substitution, continue on with the method.
-            if (mr_dt != null)
+
+            Mono.Cecil.ModuleDefinition campy_bcl_runtime = Mono.Cecil.ModuleDefinition.ReadModule(FindCoreLib());
+            TypeDefinition substituted_declaring_type =
+                declaring_type.SubstituteMonoTypeReference(campy_bcl_runtime);
+            // Can't do anything if the type isn't part of Campy BCL.
+            if (substituted_declaring_type == null)
+                return null;
+
+            foreach (MethodDefinition substituted_method_definition in substituted_declaring_type.Methods)
             {
-                foreach (var type in md.Types)
+                if (substituted_method_definition.Name != method_definition.Name) continue;
+                if (substituted_method_definition.Parameters.Count != method_definition.Parameters.Count) continue;
+                for (int i = 0; i < substituted_method_definition.Parameters.Count; ++i)
                 {
-                    if (type.Name == mr_dt.Name && type.Namespace == mr_dt.Namespace)
-                    {
-                        var fn = mr_dt.Module.Assembly.FullName;
-                        var sub = mr_dt.SubstituteMonoTypeReference(md);
-                        foreach (var meth in sub.Methods)
-                        {
-                            if (meth.Name != method_reference.Name) continue;
-                            if (meth.Parameters.Count != method_reference.Parameters.Count) continue;
-
-                            var mrdt_resolve = mr_dt.Resolve();
-                            if (mrdt_resolve != null && mrdt_resolve.FullName != sub.FullName)
-                                continue;
-
-                            for (int i = 0; i < meth.Parameters.Count; ++i)
-                            {
-                                var p1 = meth.Parameters[i];
-                                var p2 = method_reference.Parameters[i];
-                            }
-
-                            method_reference = meth;
-                            method_definition = method_reference.Resolve();
-                            break;
-                        }
-                    }
+                    // Should do a comparison of paramter types.
+                    var p1 = substituted_method_definition.Parameters[i];
+                    var p2 = method_definition.Parameters[i];
                 }
+
+                // Match.
+                method_reference = substituted_method_definition;
+                method_definition = method_reference.Resolve();
+                break;
             }
 
-            if (method_definition == null)
+            // Convert method definition back into method reference because it may
+            // be a generic instance.
+            if (method_definition.ContainsGenericParameter)
             {
-                return null;
-            }
-            else if (method_definition.Body == null)
-            {
-                return null;
+                method_reference = null;
             }
 
-            return method_definition;
+            return method_reference;
         }
 
         public static void RewriteCilCodeBlock(Mono.Cecil.Cil.MethodBody body)
