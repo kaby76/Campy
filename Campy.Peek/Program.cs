@@ -37,7 +37,7 @@ namespace Peek
         {
             unsafe
             {
-                JITER.InitCuda();
+                var s = JITER.Singleton;
                 BUFFERS buffers = new BUFFERS();
                 int the_size = 536870912;
                 IntPtr b = buffers.New(the_size);

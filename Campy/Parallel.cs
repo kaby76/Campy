@@ -67,8 +67,6 @@ namespace Campy
 
         public static void For(int number_of_threads, SimpleKernel simpleKernel)
         {
-            JITER.InitCuda();
-
             GCHandle handle1 = default(GCHandle);
             GCHandle handle2 = default(GCHandle);
 

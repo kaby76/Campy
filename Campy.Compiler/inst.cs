@@ -5363,7 +5363,7 @@
                 string str = (string)operand;
 
                 var llvm_cstr_t = LLVM.BuildGlobalString(Builder, str, "i" + instruction_id++);
-                var llvm_cstr = LLVM.BuildBitCast(Builder, llvm_cstr_t, LLVM.PointerType(LLVM.Int8Type(), 0), "i" + instruction_id++);
+				var llvm_cstr = LLVM.BuildPtrToInt(Builder, llvm_cstr_t, LLVM.Int64Type(), "i" + instruction_id++);
                 args[0] = llvm_cstr;
                 string name = "_Z29SystemString_FromCharPtrASCIIPc";
                 var list = RUNTIME.BclNativeMethods.ToList();
@@ -5533,35 +5533,41 @@
                 throw new Exception();
 
             Mono.Cecil.MethodReference mr = method as Mono.Cecil.MethodReference;
-            int xargs = (mr.HasThis ? 1 : 0) + mr.Parameters.Count;
+            int xargs = /* always pass "this", but it does not count because newobj
+                creates the object. So, it is just the number of standard parameters
+                of the contructor. */
+                mr.Parameters.Count;
 
-            if (mr.DeclaringType != null && mr.DeclaringType.HasGenericParameters)
+            if (mr.DeclaringType == null)
             {
+                throw new Exception("can't handle.");
+            }
+
+            if (mr.DeclaringType.HasGenericParameters)
+            {
+                throw new Exception("can't handle.");
                 // Instantiate a generic type and rewrite the
                 // instruction with new target.
                 // Try "this".
-                if (mr.HasThis)
+                // Grab "this" from stack and generate the type.
+                var this_parameter = state._stack.PeekTop(xargs - 1);
+                var declaring_type = mr.DeclaringType;
+                var new_type = this_parameter.ConvertGenericInstanceTypeToNonGenericInstanceType();
+
+                // Get the method from the non-generic (real instance) type.
+                mr = new_type.Resolve().Methods.Where(j =>
                 {
-                    // Grab "this" from stack and generate the type.
-                    var this_parameter = state._stack.PeekTop(xargs-1);
-                    var declaring_type = mr.DeclaringType;
-                    var new_type = this_parameter.ConvertGenericInstanceTypeToNonGenericInstanceType();
+                    if (j.Name != mr.Name) return false;
+                    if (j.Parameters.Count != mr.Parameters.Count) return false;
+                    return true;
+                }).First();
 
-                    // Get the method from the non-generic (real instance) type.
-                    mr = new_type.Resolve().Methods.Where(j =>
-                    {
-                        if (j.Name != mr.Name) return false;
-                        if (j.Parameters.Count != mr.Parameters.Count) return false;
-                        return true;
-                    }).First();
-
-                    // Create new instruction to replace this one.
-                    var worker = this.Body.GetILProcessor();
-                    Instruction new_mono_inst = worker.Create(
-                        this.OpCode, mr);
-                    new_mono_inst.Offset = this.Instruction.Offset;
-                    new_inst = Wrap(new_mono_inst, this.Body, this.Block, this.SeqPoint);
-                }
+                // Create new instruction to replace this one.
+                var worker = this.Body.GetILProcessor();
+                Instruction new_mono_inst = worker.Create(
+                    this.OpCode, mr);
+                new_mono_inst.Offset = this.Instruction.Offset;
+                new_inst = Wrap(new_mono_inst, this.Body, this.Block, this.SeqPoint);
             }
 
             {
@@ -5575,8 +5581,11 @@
 
                 if (mr.ReturnType.FullName != "System.Void")
                 {
-                    state._stack.Push(mr.ReturnType);
+                    throw new Exception(
+                        "Constructor has a return type, but they should never have a type. Something is wrong.");
                 }
+
+                state._stack.Push(mr.DeclaringType);
             }
 
             IMPORTER.Singleton().Add(mr);
@@ -5816,53 +5825,27 @@
             else if (!is_type_value_type && the_entry != null)
             {
                 ValueRef new_obj;
-
                 {
-                    // Allocate an object of the correct type, then call the constructor. Note,
-                    // allocation must call the GPU BCL native code, but in the following code,
-                    // the constructor is in CLI, which we have discovered as corresponding to "the_entry".
-                    // obj = Heap_AllocType(pConstructorDef->pParentType);
-                    // To do this, we must have the type defined in the meta for the BCL!!!
-                    // To do that, we have to define up front the classes used in this code to the BCL.
-                    // The BCL is extended to construct types for this kernel!
-                    // (call void* _Z14Bcl_Heap_AllocPcS_S_(STRING assemblyName, STRING nameSpace, STRING name);)
+                    var meta = RUNTIME.GetBclType(type);
+
+                    // Generate code to allocate object and stuff.
+                    // This boxes the value.
                     var xx1 = RUNTIME.BclNativeMethods.ToList();
                     var xx2 = RUNTIME.PtxFunctions.ToList();
-
                     var xx = xx2
-                        .Where(t =>
-                        {
-                            return t._mangled_name == "_Z14Bcl_Heap_AllocPcS_S_";
-                        });
+                        .Where(t => { return t._mangled_name == "_Z23Heap_AllocTypeVoidStarsPv"; });
                     var xxx = xx.ToList();
                     RUNTIME.PtxFunction first_kv_pair = xx.FirstOrDefault();
                     if (first_kv_pair == null)
                         throw new Exception("Yikes.");
 
                     ValueRef fv2 = first_kv_pair._valueref;
-                    ValueRef[] args = new ValueRef[3];
-                    string type_name = type.Resolve().Name;
-                    string type_namespace = type.Resolve().Namespace;
-                    string type_assembly = type.Resolve().Module.Name;
+                    ValueRef[] args = new ValueRef[1];
 
-                    var p0 = LLVM.BuildGlobalString(Builder, type_assembly, "i" + instruction_id++);
-                    var p1 = LLVM.BuildGlobalString(Builder, type_namespace, "i" + instruction_id++);
-                    var p2 = LLVM.BuildGlobalString(Builder, type_name, "i" + instruction_id++);
-                    System.Console.WriteLine(new VALUE(p0));
-
-                    var pp0 = LLVM.BuildBitCast(Builder, p0, LLVM.PointerType(LLVM.Int8Type(), 0), "i" + instruction_id++);
-                    var pp1 = LLVM.BuildBitCast(Builder, p1, LLVM.PointerType(LLVM.Int8Type(), 0), "i" + instruction_id++);
-                    var pp2 = LLVM.BuildBitCast(Builder, p2, LLVM.PointerType(LLVM.Int8Type(), 0), "i" + instruction_id++);
-                    System.Console.WriteLine(new VALUE(pp0));
-
-                    args[0] = pp0;
-                    args[1] = pp1;
-                    args[2] = pp2;
-                    var call = LLVM.BuildCall(Builder, fv2, args, name);
-
-                    new_obj = LLVM.BuildBitCast(Builder,
-                        call,
-                        llvm_type, "i" + instruction_id++);
+                    args[0] = LLVM.ConstInt(LLVM.Int64Type(), (ulong) meta.ToInt64(), false);
+                    var call = LLVM.BuildCall(Builder, fv2, args, "i" + instruction_id++);
+                    var cast = LLVM.BuildIntToPtr(Builder, call, llvm_type, "i" + instruction_id++);
+                    new_obj = cast;
 
                     if (Campy.Utils.Options.IsOn("jit_trace"))
                         System.Console.WriteLine(new VALUE(new_obj));
@@ -5906,7 +5889,6 @@
                         System.Console.WriteLine(new VALUE(call));
 
                     state._stack.Push(new VALUE(new_obj));
-
                 }
             }
 

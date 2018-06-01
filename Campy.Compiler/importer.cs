@@ -129,66 +129,6 @@ namespace Campy.Compiler
             return module;
         }
 
-        public static TypeReference InstantiateGenericTypeReference(TypeReference type)
-        {
-            TypeReference result = type;
-
-            if (type.IsGenericInstance)
-            {
-                // Create non-generic type out of a generic type instance.
-                var git = type as GenericInstanceType;
-                result = git.ConvertGenericInstanceTypeToNonGenericInstanceType();
-            }
-
-            return result;
-        }
-
-
-        private static MethodReference MakeGeneric(MethodReference method, TypeReference declaringType)
-        {
-            var reference = new MethodReference(method.Name, method.ReturnType, declaringType);
-
-            foreach (ParameterDefinition parameter in method.Parameters)
-                reference.Parameters.Add(new ParameterDefinition(parameter.ParameterType));
-            return reference;
-        }
-
-        private static TypeReference MakeGenericType(TypeReference type, params
-            TypeReference[] arguments)
-        {
-            if (type.GenericParameters.Count != arguments.Length)
-                throw new ArgumentException();
-
-            var instance = new GenericInstanceType(type);
-            foreach (var argument in arguments)
-                instance.GenericArguments.Add(argument);
-
-            return instance;
-        }
-
-        private static MethodReference MakeHostInstanceGeneric(
-            MethodReference self,
-            params TypeReference[] args)
-        {
-            var reference = new MethodReference(
-                self.Name,
-                self.ReturnType,
-                self.DeclaringType.MakeGenericInstanceType(args))
-            {
-                HasThis = self.HasThis,
-                ExplicitThis = self.ExplicitThis,
-                CallingConvention = self.CallingConvention
-            };
-
-            foreach (var parameter in self.Parameters)
-                reference.Parameters.Add(new ParameterDefinition(parameter.ParameterType));
-
-            foreach (var genericParam in self.GenericParameters)
-                reference.GenericParameters.Add(new GenericParameter(genericParam.Name, reference));
-
-            return reference;
-        }
-
         private void ExtractBasicBlocksOfMethod(Tuple<MethodReference, List<TypeReference>> definition)
         {
             MethodReference method_reference = definition.Item1;

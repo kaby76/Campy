@@ -1309,6 +1309,7 @@ namespace Campy.Compiler
 
         private JITER()
         {
+            InitCuda();
             global_llvm_module = default(ModuleRef);
             all_llvm_modules = new List<ModuleRef>();
             functions_in_internal_bcl_layer = new Dictionary<string, ValueRef>();
@@ -1469,6 +1470,8 @@ namespace Campy.Compiler
                         new TypeRef[] { }, false)));
 
             RUNTIME.Initialize();
+
+            InitBCL();
         }
 
         public static void Options(UInt64 options)
@@ -1476,7 +1479,7 @@ namespace Campy.Compiler
             Singleton._options = options;
         }
 
-        public static void InitCuda()
+        private void InitCuda()
         {
             // Initialize CUDA if it hasn't been done before.
             if (init) return;
@@ -1786,7 +1789,7 @@ namespace Campy.Compiler
             string basic_block_id = bb.Name;
             CUmodule module = RUNTIME.InitializeModule(image);
             RUNTIME.RuntimeModule = module;
-            InitBCL(module);
+            SetBCLForModule(module);
             var normalized_method_name = JITER.RenameToLegalLLVMName(JITER.MethodName(bb._original_method_reference));
             var res = Cuda.cuModuleGetFunction(out CUfunction helloWorld, module, normalized_method_name);
             Utils.CudaHelpers.CheckCudaError(res);
@@ -1822,7 +1825,7 @@ namespace Campy.Compiler
             RUNTIME.GfsAddFile(pointer1, corlib_bytes_intptr, corlib_bytes_handle_len, pointer4);
         }
 
-        public void InitBCL(CUmodule mod)
+        public void InitBCL()
         {
             if (!done_major_init)
             {
@@ -1833,7 +1836,7 @@ namespace Campy.Compiler
                 RUNTIME.BclPtrSize = (ulong) the_size;
                 int max_threads = 16;
                 RUNTIME.InitTheBcl(b, the_size, 2 * 16777216, max_threads);
-                RUNTIME.SetOptions(JITER.Singleton._options);
+                RUNTIME.SetOptions(_options);
                 RUNTIME.InitFileSystem();
                 // Set up corlib.dll in file system.
                 string full_path_assem = RUNTIME.FindCoreLib();
@@ -1855,7 +1858,10 @@ namespace Campy.Compiler
                 RUNTIME.InitializeBCL2();
                 done_major_init = true;
             }
+        }
 
+        public void SetBCLForModule(CUmodule mod)
+        {
             CUresult res;
 
             // Instead of full initialization, just set pointer to BCL globals area.

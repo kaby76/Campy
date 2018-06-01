@@ -1,5 +1,6 @@
 ﻿
 using System.IO;
+using Mono.Cecil.Rocks;
 
 namespace Campy.Utils
 {
@@ -33,13 +34,19 @@ namespace Campy.Utils
             return reference;
         }
 
-        public static Mono.Cecil.TypeDefinition SubstituteMonoTypeReference(this Mono.Cecil.TypeReference type, Mono.Cecil.ModuleDefinition md)
+        public static TypeReference SubstituteMonoTypeReference(this Mono.Cecil.TypeReference type, Mono.Cecil.ModuleDefinition md)
         {
             // ImportReference does not work as expected because the scope of the type found isn't in the module.
             foreach (var tt in md.Types)
             {
                 if (type.Name == tt.Name && type.Namespace == tt.Namespace)
                 {
+                    if (type as GenericInstanceType != null)
+                    {
+                        TypeReference[] args = (type as GenericInstanceType).GenericArguments.ToArray();
+                        GenericInstanceType de = tt.MakeGenericInstanceType(args);
+                        return de;
+                    }
                     return tt;
                 }
             }

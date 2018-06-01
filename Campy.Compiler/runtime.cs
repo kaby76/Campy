@@ -649,38 +649,47 @@
             TypeDefinition declaring_type_resolved = declaring_type.Resolve();
             MethodDefinition method_definition = method_reference.Resolve();
 
-            Mono.Cecil.ModuleDefinition campy_bcl_runtime = Mono.Cecil.ModuleDefinition.ReadModule(FindCoreLib());
-            TypeDefinition substituted_declaring_type =
-                declaring_type.SubstituteMonoTypeReference(campy_bcl_runtime);
             // Can't do anything if the type isn't part of Campy BCL.
+            Mono.Cecil.ModuleDefinition campy_bcl_runtime = Mono.Cecil.ModuleDefinition.ReadModule(FindCoreLib());
+            TypeReference substituted_declaring_type = declaring_type.SubstituteMonoTypeReference(campy_bcl_runtime);
             if (substituted_declaring_type == null)
                 return null;
 
-            foreach (MethodDefinition substituted_method_definition in substituted_declaring_type.Methods)
-            {
-                if (substituted_method_definition.Name != method_definition.Name) continue;
-                if (substituted_method_definition.Parameters.Count != method_definition.Parameters.Count) continue;
-                for (int i = 0; i < substituted_method_definition.Parameters.Count; ++i)
-                {
-                    // Should do a comparison of paramter types.
-                    var p1 = substituted_method_definition.Parameters[i];
-                    var p2 = method_definition.Parameters[i];
-                }
+            TypeDefinition substituted_declaring_type_definition = substituted_declaring_type.Resolve();
+            if (substituted_declaring_type_definition == null)
+                return null;
 
-                // Match.
-                method_reference = substituted_method_definition;
-                method_definition = method_reference.Resolve();
-                break;
+            var substituted_method_definition = substituted_declaring_type_definition.Methods
+                .Where(m =>
+                {
+                    if (m.Name != method_definition.Name) return false;
+                    if (m.Parameters.Count != method_definition.Parameters.Count) return false;
+                    for (int i = 0; i < m.Parameters.Count; ++i)
+                    {
+                        // Should do a comparison of paramter types.
+                        var p1 = m.Parameters[i];
+                        var p2 = method_definition.Parameters[i];
+                    }
+                    return true;
+                }).FirstOrDefault();
+
+            if (substituted_method_definition == null)
+            {
+                // Yes, this is a problem because I cannot find the equivalent method in Campy BCL.
+                return null;
             }
 
             // Convert method definition back into method reference because it may
             // be a generic instance.
-            if (method_definition.ContainsGenericParameter)
+            var new_method_reference = substituted_method_definition.MakeMethodReference(substituted_declaring_type);
+
+            if (method_reference as GenericInstanceMethod != null)
             {
-                method_reference = null;
+                
+                
             }
 
-            return method_reference;
+            return new_method_reference;
         }
 
         public static void RewriteCilCodeBlock(Mono.Cecil.Cil.MethodBody body)
