@@ -773,6 +773,38 @@ function_space_specifier void OutputCustomAttribute(tMD_CustomAttribute * p)
 	Gprintf("\n");
 }
 
+function_space_specifier void FieldMarshalTableReader(int table, int row, tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int numRows)
+{
+	// Table 0x0d - FieldMarshal
+
+	tMD_FieldMarshal * p = (tMD_FieldMarshal*)pDest;
+	memset(p, 0, sizeof(tMD_FieldMarshal));
+	p->identity = MAKE_TABLE_INDEX(table, row);
+
+	unsigned char * pSource = (unsigned char *)*ppSource;
+
+	int v;
+
+	p->type = CodedIndex(pThis, '3', &pSource);
+
+	int blob_skip = pThis->index32BitBlob ? 4 : 2;
+	v = pThis->index32BitBlob ? GetU32(pSource) : GetU16(pSource);
+	p->value_offset = v;
+	pSource += blob_skip;
+	p->value = pThis->blobs.pStart + v;
+
+	*ppSource = pSource;
+}
+
+function_space_specifier void OutputFieldMarshal(tMD_FieldMarshal * p)
+{
+	Gprintf("FieldMarshal\n");
+	Gprintf("id 0x%08x\n", p->identity);
+	Gprintf("type %x\n", p->type);
+	Gprintf("value_offset %x\n", p->value_offset);
+	Gprintf("\n");
+}
+
 function_space_specifier void DeclSecurityTableReader(int table, int row, tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest, int numRows)
 {
 	// Table 0x0E - DeclSecurity
@@ -806,6 +838,7 @@ function_space_specifier void OutputDeclSecurity(tMD_DeclSecurity * p)
 	Gprintf("id 0x%08x\n", p->identity);
 	Gprintf("action %x\n", p->action);
 	Gprintf("parent %x\n", p->parent);
+	Gprintf("permissionSet_offset %x\n", p->permissionSet_offset);
 	Gprintf("\n");
 }
 
@@ -1571,6 +1604,7 @@ function_space_specifier static void* LoadSingleTable(tMetaData *pThis, tRVA *pR
 		case MD_TABLE_MEMBERREF: rowLen = sizeof(tMD_MemberRef); break;
 		case MD_TABLE_CONSTANT: rowLen = sizeof(tMD_Constant); break;
 		case MD_TABLE_CUSTOMATTRIBUTE: rowLen = sizeof(tMD_CustomAttribute); break;
+		case MD_TABLE_FIELDMARSHAL: rowLen = sizeof(tMD_FieldMarshal); break;
 		case MD_TABLE_DECLSECURITY: rowLen = sizeof(tMD_DeclSecurity); break;
 		case MD_TABLE_CLASSLAYOUT: rowLen = sizeof(tMD_ClassLayout); break;
 		case MD_TABLE_FIELDLAYOUT: rowLen = sizeof(tMD_FieldLayout); break;
@@ -1625,6 +1659,7 @@ function_space_specifier static void* LoadSingleTable(tMetaData *pThis, tRVA *pR
 			case MD_TABLE_MEMBERREF: MemberRefTableReader(tableID, row, pThis, pRVA, &pSource, MetaData_GetTableRow(pThis, MAKE_TABLE_INDEX(tableID, 1 + row)), numRows); continue;
 			case MD_TABLE_CONSTANT: ConstantTableReader(tableID, row, pThis, pRVA, &pSource, MetaData_GetTableRow(pThis, MAKE_TABLE_INDEX(tableID, 1 + row)), numRows); continue;
 			case MD_TABLE_CUSTOMATTRIBUTE: CustomAttributeTableReader(tableID, row, pThis, pRVA, &pSource, MetaData_GetTableRow(pThis, MAKE_TABLE_INDEX(tableID, 1 + row)), numRows); continue;
+			case MD_TABLE_FIELDMARSHAL: FieldMarshalTableReader(tableID, row, pThis, pRVA, &pSource, MetaData_GetTableRow(pThis, MAKE_TABLE_INDEX(tableID, 1 + row)), numRows); continue;
 			case MD_TABLE_DECLSECURITY: DeclSecurityTableReader(tableID, row, pThis, pRVA, &pSource, MetaData_GetTableRow(pThis, MAKE_TABLE_INDEX(tableID, 1 + row)), numRows); continue;
 			case MD_TABLE_CLASSLAYOUT: ClassLayoutTableReader(tableID, row, pThis, pRVA, &pSource, MetaData_GetTableRow(pThis, MAKE_TABLE_INDEX(tableID, 1 + row)), numRows); continue;
 			case MD_TABLE_FIELDLAYOUT: FieldLayoutTableReader(tableID, row, pThis, pRVA, &pSource, MetaData_GetTableRow(pThis, MAKE_TABLE_INDEX(tableID, 1 + row)), numRows); continue;
@@ -1916,6 +1951,12 @@ function_space_specifier void MetaData_PrintMetaData(tMetaData * meta)
 				{
 					tMD_CustomAttribute* y = (tMD_CustomAttribute*)dd;
 					OutputCustomAttribute(y);
+					break;
+				}
+				case MD_TABLE_FIELDMARSHAL:
+				{
+					tMD_FieldMarshal* y = (tMD_FieldMarshal*)dd;
+					OutputFieldMarshal(y);
 					break;
 				}
 				case MD_TABLE_DECLSECURITY:
