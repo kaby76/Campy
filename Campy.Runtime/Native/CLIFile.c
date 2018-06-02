@@ -50,14 +50,6 @@ struct tFilesLoaded_ {
 // Keep track of all the files currently loaded
 //function_space_specifier static tFilesLoaded *pFilesLoaded = NULL;
 
-__global__ void BCL_CLIFile_GetMetaDataForAssembly(char * fileName)
-{
-	if (_bcl_ && _bcl_->options & BCL_DEBUG_FUNCTION_ENTRY)
-		Gprintf("BCL_CLIFile_GetMetaDataForAssembly\n");
-	tMetaData* result;
-	result = CLIFile_GetMetaDataForAssembly(fileName);
-}
-
 function_space_specifier tMetaData* CLIFile_GetMetaDataForAssembly(char * fileName)
 {
 	if (_bcl_ && _bcl_->options & BCL_DEBUG_FUNCTION_ENTRY)

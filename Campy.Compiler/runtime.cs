@@ -613,12 +613,6 @@
             return function;
         }
 
-        public static CUfunction _Z34BCL_CLIFile_GetMetaDataForAssemblyPc(CUmodule module)
-        {
-            CudaHelpers.CheckCudaError(Cuda.cuModuleGetFunction(out CUfunction function, module, "_Z34BCL_CLIFile_GetMetaDataForAssemblyPc"));
-            return function;
-        }
-
         public static CUfunction _Z15Set_BCL_GlobalsP6_BCL_t(CUmodule module)
         {
             CudaHelpers.CheckCudaError(Cuda.cuModuleGetFunction(out CUfunction function, module, "_Z15Set_BCL_GlobalsP6_BCL_t"));

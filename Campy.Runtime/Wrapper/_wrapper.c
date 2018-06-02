@@ -101,7 +101,7 @@ EXPORT void * STDCALL BclGetMeta(char * file_name)
 {
 	if (_bcl_ && _bcl_->options & BCL_DEBUG_FUNCTION_ENTRY)
 		Gprintf("BclGetMeta\n");
-	tMetaData* result = CLIFile_GetMetaDataForAssembly(file_name);
+	tCLIFile* result = CLIFile_Load(file_name);
 	return (void*)result;
 }
 
@@ -109,7 +109,12 @@ EXPORT void STDCALL BclPrintMeta(void* meta)
 {
 	if (_bcl_ && _bcl_->options & BCL_DEBUG_FUNCTION_ENTRY)
 		Gprintf("BclPrintMeta\n");
-	MetaData_PrintMetaData((tMetaData*)meta);
+	if (meta == 0) return;
+	tCLIFile* clifile = (tCLIFile*)meta;
+	Gprintf("%s\n", clifile->pFileName);
+	Gprintf("%s\n", clifile->pVersion);
+	Gprintf("\n");
+	MetaData_PrintMetaData(clifile->pMetaData);
 }
 
 EXPORT void * STDCALL BclAllocString(int len, void * chars)

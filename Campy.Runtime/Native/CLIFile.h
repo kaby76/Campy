@@ -25,7 +25,6 @@
 #include "Types.h"
 #include "MetaData.h"
 
-typedef struct tCLIFile_ tCLIFile;
 struct tCLIFile_ {
 	// The filename
 	char *pFileName;
@@ -38,6 +37,7 @@ struct tCLIFile_ {
 
 	tMetaData *pMetaData;
 };
+typedef struct tCLIFile_ tCLIFile;
 
 // static methods
 function_space_specifier tMetaData* CLIFile_GetMetaDataForAssembly(char *pAssemblyName);
