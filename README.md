@@ -26,22 +26,14 @@ public delegate void Campy.Types._Kernel_type(Index idx);
 # Campy under a minute #
 (Make sure to install Net Core 2.0, https://www.microsoft.com/net/learn/get-started/windows.)
 ~~~~
+One step install: copy and paste the following code in a Bash shell.
+
+
+#!/bin/bash
 mkdir test
 cd test
 dotnet new console
-dotnet add package Campy
-# copy the example code below into test.cs.
-dotnet build
-dotnet publish -r win10-x64
-# for Ubuntu, dotnet publish -r ubuntu.16.04-x64
-cd bin/Debug/netcoreapp2.0/win10-x64/publish/
-./test.exe
-# output should be four lines of integers, 0 to 3.
-~~~~
-
-# Example #
-
-~~~~
+cat - << HERE > Program.cs
 namespace test
 {
     class Program
@@ -56,7 +48,39 @@ namespace test
         }
     }
 }
+HERE
+dotnet add package Campy
+dotnet build
+unameOut="$(uname -s)"
+case "${unameOut}" in
+    Linux*)
+	dotnet publish -r ubuntu.16.04-x64
+	cd bin/Debug/netcoreapp2.0/ubuntu.16.04-x64/publish/
+        ./test
+	;;
+    Darwin*)
+	echo Cannot target Mac yet.
+	exit 1
+	;;
+    CYGWIN*)
+	dotnet publish -r win-x64
+	cd bin/Debug/netcoreapp2.0/win-x64/publish/
+        ./test.exe
+	;;
+    MINGW*)
+	dotnet publish -r win-x64
+	cd bin/Debug/netcoreapp2.0/win-x64/publish/
+        ./test.exe
+	;;
+    *)
+	echo Unknown machine.
+	exit 1
+	;;
+esac
+echo Output should be four lines of integers, 0 to 3.
+Once an app is "published" as a self-contained deployment, it is completely sufficient.
 ~~~~
+
 
 Additional examples in Campy test area (https://github.com/kaby76/Campy/tree/master/Tests), including Reduction, various sorting algorithms, FFT, etc.
  
