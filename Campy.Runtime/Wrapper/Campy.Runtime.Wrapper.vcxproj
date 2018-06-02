@@ -65,7 +65,8 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
     </PostBuildEvent>
     <CudaCompile>
       <TargetMachinePlatform>64</TargetMachinePlatform>
-      <Defines>CUDA</Defines>
+      <Defines>
+      </Defines>
       <GenerateRelocatableDeviceCode>true</GenerateRelocatableDeviceCode>
       <Include>..\Native;%(Include)</Include>
     </CudaCompile>

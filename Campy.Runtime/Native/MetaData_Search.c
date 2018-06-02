@@ -187,43 +187,57 @@ function_space_specifier tMD_TypeDef* MetaData_GetTypeDefFromName(tMetaData *pMe
     U32 i;
 	tMD_TypeDef* result = 0;
 
-	// If this metadata is for netstandard, then we are going to work on type forwarding.
-	// Open all file references, and look in these assemblies.
-
-	if (strcmp(pMetaData->file_name, "netstandard.dll") == 0)
+	// Open corlib.dll as a substitution, and try to find.
+	if (strcmp(pMetaData->file_name, "corlib.dll") != 0)
 	{
-		// Open each referenced assembly and perform search.
-		for (i = 1; i <= pMetaData->tables.numRows[MD_TABLE_ASSEMBLYREF]; ++i)
-		{
-			tMD_AssemblyRef * pAssemblyRef = (tMD_AssemblyRef *)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_ASSEMBLYREF, i));
-			tMetaData* alternative = CLIFile_GetMetaDataForAssembly(pAssemblyRef->name);
-			result = (tMD_TypeDef*)MetaData_GetTypeDefFromName(alternative, nameSpace, name, pInNestedClass);
-			if (result) return result;
-		}
-		return NULL;
+		result = MetaData_GetTypeDefFromFullName("corlib.dll", nameSpace, name);
+		if (result) return result;
 	}
 
-	for (i=1; i<=pMetaData->tables.numRows[MD_TABLE_TYPEDEF]; i++) {
+	// Look through meta for typedef. If none exists, find assembly for typeref and continue
+	// resolving.
+	for (i = 1; i <= pMetaData->tables.numRows[MD_TABLE_TYPEDEF]; i++) {
 		tMD_TypeDef *pTypeDef;
 
 		pTypeDef = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_TYPEDEF, i));
-		
-//		printf("checking %s in %s\n", pTypeDef->name, pTypeDef->nameSpace);
-		
+
+		//		printf("checking %s in %s\n", pTypeDef->name, pTypeDef->nameSpace);
+
 		if (pInNestedClass == pTypeDef->pNestedIn &&
 			Gstrcmp(name, pTypeDef->name) == 0 &&
 			(pInNestedClass != NULL || Gstrcmp(nameSpace, pTypeDef->nameSpace) == 0))
 		{
 			result = pTypeDef;
-			
-//			return pTypeDef;
+			break;
 		}
 	}
+
 	if (result != 0) return result;
 
-	Crash("MetaData_GetTypeDefFromName(): Cannot find type %s.%s", nameSpace, name);
-	FAKE_RETURN;
-	return NULL;
+	tMD_TypeRef* typeref_result = 0;
+
+	// There isn't a TypeDef in this meta, so find a TypeRef instead.
+	// Then, find the TypeDef if in another assembly.
+	for (i = 1; i <= pMetaData->tables.numRows[MD_TABLE_TYPEREF]; i++) {
+		tMD_TypeRef *pTypeRef;
+
+		pTypeRef = (tMD_TypeRef*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_TYPEREF, i));
+
+		if (Gstrcmp(name, pTypeRef->name) == 0)
+		{
+			typeref_result = pTypeRef;
+			break;
+		}
+	}
+
+	if (typeref_result == 0)
+		return NULL;
+
+	// Get assemblyref of typeref.
+	typeref_result->resolutionScope;
+	tMetaData * pTypeDefMetaData = MetaData_GetResolutionScopeMetaData(pMetaData, typeref_result->resolutionScope, &pInNestedClass);
+	result = MetaData_GetTypeDefFromName(pTypeDefMetaData, nameSpace, name, pInNestedClass);
+	return result;
 }
 
 function_space_specifier tMD_TypeDef* MetaData_GetTypeDefFromFullName(STRING assemblyName, STRING nameSpace, STRING name)

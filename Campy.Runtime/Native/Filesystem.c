@@ -95,6 +95,43 @@ function_space_specifier void Gfs_add_file(char * name, char * file, size_t leng
 	//*result = -1;
 }
 
+function_space_specifier void Gfs_add_file_no_malloc(char * name, char * file, size_t length, int * result)
+{
+	if (_bcl_->init == 0) CommonInitFileSystem();
+	char ** ptr_name = _bcl_->names;
+	char ** ptr_file = _bcl_->files;
+	size_t * ptr_length = _bcl_->lengths;
+	// First search for file. No duplicates.
+	for (int i = 0; i < _bcl_->initial_size; ++i)
+	{
+		if (*ptr_name == NULL)
+			break;
+		if (Gstrcmp(*ptr_name, name) == 0)
+			return;
+	}
+	for (int i = 0; i < _bcl_->initial_size; ++i)
+	{
+		if (*ptr_name == NULL)
+		{
+			//Gprintf("Entered\n");
+			*ptr_name = Gstrdup(name);
+			*ptr_file = file;
+			*ptr_length = length;
+			//*result = i;
+			return;
+		}
+		else
+		{
+			ptr_name++;
+			ptr_file++;
+			ptr_length++;
+		}
+	}
+	Crash("File system overflow. Cannot handle more than %d files.\n", _bcl_->initial_size);
+	//Gprintf("Not entered\n");
+	//*result = -1;
+}
+
 __global__ void Bcl_Gfs_remove_file(char * name, int * result)
 {
 	Gfs_remove_file(name, result);
@@ -107,6 +144,14 @@ function_space_specifier void Gfs_remove_file(char * name, int * result)
 	char ** ptr_name = _bcl_->names;
 	char ** ptr_file = _bcl_->files;
 	size_t * ptr_length = _bcl_->lengths;
+	// First search for file. No duplicates.
+	for (int i = 0; i < _bcl_->initial_size; ++i)
+	{
+		if (*ptr_name == NULL)
+			break;
+		if (Gstrcmp(*ptr_name, name) == 0)
+			return;
+	}
 	for (int i = 0; i < _bcl_->initial_size; ++i)
 	{
 		if (*ptr_name != NULL && Gstrcmp(*ptr_name, name) == 0)
@@ -176,7 +221,10 @@ __global__ void Bcl_Gfs_read(int file, char ** result)
 function_space_specifier void Gfs_read(int file, char ** result)
 {
 	if (_bcl_->init == 0) CommonInitFileSystem();
-	*result = _bcl_->files[file];
+	if (file >= 0)
+		*result = _bcl_->files[file];
+	else
+		*result = 0;
 }
 
 __global__ void Bcl_Gfs_length(int file, size_t * result)

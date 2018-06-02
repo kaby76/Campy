@@ -33,6 +33,9 @@
 #include "Gstring.h"
 #include "Gprintf.h"
 #include "Filesystem.h"
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <fcntl.h>
 
 // Is this exe/dll file for the .NET virtual machine?
 #define IMAGE_FILE_MACHINE_I386 0x14c
@@ -135,28 +138,35 @@ function_space_specifier static void* LoadFileFromDisk(char *pFileName)
 	if (_bcl_ && _bcl_->options & BCL_DEBUG_FUNCTION_ENTRY)
 		Gprintf("LoadFileFromDisk\n");
 	char *pData = NULL;
-	// Crashes! Gprintf("File name = %s\n", pFileName);
 	int handle;
 	Gfs_open_file(pFileName, &handle);
 	Gfs_read(handle, &pData);
+#ifndef CUDA
+	if (handle == -1)
+	{
+		// For host OS, try this if it's not in the GFS.
+		int f = open(pFileName, O_RDONLY | O_BINARY);
+		if (f >= 0)
+		{
+			int len;
+			len = lseek(f, 0, SEEK_END);
+			lseek(f, 0, SEEK_SET);
+			// TODO: Change to use mmap() or windows equivilent
+			pData = (char *)Gmalloc(len);
+			if (pData != NULL) {
+				int r = read(f, pData, len);
+				if (r != len) {
+					Gfree(pData);
+					pData = NULL;
+				}
+			}
+			close(f);
+			int re;
+			Gfs_add_file(pFileName, pData, len, &re);
+		}
+	}
+#endif
 
-	//f = open(pFileName, O_RDONLY|O_BINARY);
-	//if (f >= 0) {
-	//	int len;
-	//	len = lseek(f, 0, SEEK_END);
-	//	lseek(f, 0, SEEK_SET);
-	//	// TODO: Change to use mmap() or windows equivilent
-	//	pData = mallocForever(len);
-	//	if (pData != NULL) {
-	//		int r = read(f, pData, len);
-	//		if (r != len) {
-	//			Gfree(pData);
-	//			pData = NULL;
-	//		}
-	//	}
-	//	close(f);
-	//}
-	//pData = Gdata;
 	return pData;
 }
 

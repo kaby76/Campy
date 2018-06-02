@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Campy;
 using System.Numerics;
+using Mono.Cecil;
 
 namespace ConsoleApp1
 {
@@ -144,10 +145,13 @@ namespace ConsoleApp1
         static void Main(string[] args)
         {
             StartDebugging();
-            {
-                var t = new Test();
-                t.FFT_Test();
-            }
+            // List of ints.
+            List<int> x = new List<int>();
+            int n = 4;
+            for (int i = 0; i < n; ++i) x.Add(0);
+            Campy.Parallel.For(n, i => x[i] = i);
+            for (int i = 0; i < n; ++i) if (x[i] != i)
+                throw new Exception();
         }
     }
 }
