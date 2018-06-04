@@ -609,7 +609,7 @@ namespace Campy.Compiler
                 state._locals = state._stack.Section((int) state._stack.Count, locals);
                 for (int i = 0; i < locals; ++i)
                 {
-                    var tr = variables[i].VariableType;
+                    var tr = variables[i].VariableType.InstantiateGeneric(bb);
                     state._stack.Push(tr);
                 }
 
@@ -1016,7 +1016,7 @@ namespace Campy.Compiler
                 state._locals = state._stack.Section((int) state._stack.Count, locals);
                 for (int i = 0; i < locals; ++i)
                 {
-                    var tr = variables[i].VariableType;
+                    var tr = variables[i].VariableType.InstantiateGeneric(bb);
                     TYPE type = new TYPE(tr);
                     VALUE value;
                     if (LLVM.GetTypeKind(type.IntermediateType) == TypeKind.PointerTypeKind)
