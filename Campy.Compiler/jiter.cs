@@ -583,12 +583,12 @@ namespace Campy.Compiler
             {
                 if (!bb.IsEntry) throw new Exception("Cannot handle dead code blocks.");
                 if (has_this)
-                    state._stack.Push(bb._method_definition.DeclaringType);
+                    state._stack.Push(bb._method_definition.DeclaringType.InstantiateGeneric(bb));
 
                 for (int i = 0; i < bb._method_definition.Parameters.Count; ++i)
                 {
                     var par = bb._method_definition.Parameters[i];
-                    var type = par.ParameterType;
+                    var type = par.ParameterType.InstantiateGeneric(bb);
                     if (Campy.Utils.Options.IsOn("jit_trace"))
                         System.Console.WriteLine(par);
                     state._stack.Push(type);
