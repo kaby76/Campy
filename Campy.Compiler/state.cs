@@ -26,7 +26,7 @@ namespace Campy.Compiler
             Dictionary<CFG.Vertex, STATE<T>> states_in,
             Dictionary<CFG.Vertex, STATE<T>> states_out,
             CFG.Vertex bb,
-            Action<STATE<T>, Dictionary<CFG.Vertex, STATE<T>>,Dictionary<CFG.Vertex, STATE<T>>,CFG.Vertex> custum_initializer
+            Action<STATE<T>, Dictionary<CFG.Vertex, STATE<T>>,Dictionary<CFG.Vertex, STATE<T>>,CFG.Vertex> custom_initializer
             )
         {
             // Set up a state that is a copy of another state.
@@ -74,7 +74,7 @@ namespace Campy.Compiler
 
             int level = in_level;
 
-            custum_initializer(this, states_in, states_out, bb);
+            custom_initializer(this, states_in, states_out, bb);
         }
 
         public STATE(STATE<T> other)

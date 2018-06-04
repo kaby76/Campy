@@ -41,7 +41,47 @@ namespace Campy.Utils
 
         private static List<TypeDefinition> _cache = new List<TypeDefinition>();
 
-        private static TypeReference ConvertGenericParameterToTypeReference(TypeReference type,
+        public static TypeReference ConvertGenericParameterToTypeReference(TypeReference type,
+            Collection<TypeReference> generic_arguments)
+        {
+            if (type as GenericParameter != null)
+            {
+                var gp = type as GenericParameter;
+                var num = gp.Position;
+                var yo = generic_arguments.ToArray()[num];
+                type = yo;
+            }
+            if (type.IsArray)
+            {
+                var array_type = type as Mono.Cecil.ArrayType;
+                var element_type = array_type.ElementType;
+                var new_element_type = ConvertGenericParameterToTypeReference(element_type, generic_arguments);
+                if (element_type != new_element_type)
+                {
+                    var new_array_type = new ArrayType(new_element_type,
+                        array_type.Rank);
+                    type = new_array_type;
+                }
+            }
+
+            if (type as GenericInstanceType != null)
+            {
+                // For generic instance types, it could contain a generic parameter.
+                // Substitute parameter if needed.
+                var git = type as GenericInstanceType;
+                var args = git.GenericArguments;
+                var new_args = git.GenericArguments.ToArray();
+                for (int i = 0; i < new_args.Length; ++i)
+                {
+                    var arg = args[i];
+                    var new_arg = ConvertGenericParameterToTypeReference(arg, generic_arguments);
+                    git.GenericArguments[i] = new_arg;
+                }
+            }
+            return type;
+        }
+
+        public static TypeReference ConvertGenericParameterToTypeReference(TypeReference type,
             params TypeReference[] generic_arguments)
         {
             if (type as GenericParameter != null)

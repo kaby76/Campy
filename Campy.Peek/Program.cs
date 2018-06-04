@@ -42,10 +42,6 @@ namespace Peek
                 int max_threads = 1;
                 IntPtr b2 = buffers.New(sizeof(int*));
                 InitTheBcl(b, the_size, 2 * 16777216, max_threads, b2);
-            }
-
-            unsafe
-            {
                 InitFileSystem();
                 // Set up corlib.dll in file system.
                 string full_path_assem = RUNTIME.FindCoreLib();
@@ -59,7 +55,6 @@ namespace Peek
                 stream.Close();
                 stream.Dispose();
                 var ptrx = Marshal.StringToHGlobalAnsi(assem);
-                BUFFERS buffers = new BUFFERS();
                 IntPtr pointer1 = buffers.New(assem.Length + 1);
                 BUFFERS.Cp(pointer1, ptrx, assem.Length + 1);
                 var pointer4 = buffers.New(sizeof(int));

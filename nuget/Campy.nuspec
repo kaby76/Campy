@@ -5,7 +5,7 @@
     <id>Campy</id>
     <title>Campy</title>
 
-    <version>0.0.10</version>
+    <version>0.0.11</version>
 
     <!-- Authors contain text that appears directly on the gallery -->
     <authors>Ken Domino</authors>
@@ -22,7 +22,7 @@
 
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>An API for GP-GPU computing using C# or any other NET language, for Windows and Ubuntu x64.</description>
-    <releaseNotes>Version 0.0.10 -- Fixes to the metadata system. See http://campynet.com/?p=771</releaseNotes>
+    <releaseNotes>Version 0.0.11 -- Even more fixes to the metadata system.</releaseNotes>
 
     <!-- Copyright information -->
     <copyright>Copyright © 2017-2018</copyright>
@@ -41,37 +41,37 @@
       <group targetFramework="net461" >
 	 <dependency id="NETStandard.Library" version="[2.0.0,)" />
 	 <dependency id="swigged.llvm" version="[6.0.6,)" />
-	 <dependency id="swigged.cuda" version="[9.185.6,)" />
+	 <dependency id="swigged.cuda" version="[9.185.7,)" />
 	 <dependency id="Mono.Cecil" version="[0.10,)" />
       </group>
       <group targetFramework="net462" >
 	 <dependency id="NETStandard.Library" version="[2.0.0,)" />
 	 <dependency id="swigged.llvm" version="[6.0.6,)" />
-	 <dependency id="swigged.cuda" version="[9.185.6,)" />
+	 <dependency id="swigged.cuda" version="[9.185.7,)" />
 	 <dependency id="Mono.Cecil" version="[0.10,)" />
       </group>
       <group targetFramework="net47" >
 	 <dependency id="NETStandard.Library" version="[2.0.0,)" />
 	 <dependency id="swigged.llvm" version="[6.0.6,)" />
-	 <dependency id="swigged.cuda" version="[9.185.6,)" />
+	 <dependency id="swigged.cuda" version="[9.185.7,)" />
 	 <dependency id="Mono.Cecil" version="[0.10,)" />
       </group>
       <group targetFramework="net471" >
 	 <dependency id="NETStandard.Library" version="[2.0.0,)" />
 	 <dependency id="swigged.llvm" version="[6.0.6,)" />
-	 <dependency id="swigged.cuda" version="[9.185.6,)" />
+	 <dependency id="swigged.cuda" version="[9.185.7,)" />
 	 <dependency id="Mono.Cecil" version="[0.10,)" />
       </group>
       <group targetFramework="netstandard2.0" >
 	 <dependency id="NETStandard.Library" version="[2.0.0,)" />
 	 <dependency id="swigged.llvm" version="[6.0.6,)" />
-	 <dependency id="swigged.cuda" version="[9.185.6,)" />
+	 <dependency id="swigged.cuda" version="[9.185.7,)" />
 	 <dependency id="Mono.Cecil" version="[0.10,)" />
       </group>
       <group targetFramework="netcoreapp2.0" >
 	 <dependency id="NETStandard.Library" version="[2.0.0,)" />
 	 <dependency id="swigged.llvm" version="[6.0.6,)" />
-	 <dependency id="swigged.cuda" version="[9.185.6,)" />
+	 <dependency id="swigged.cuda" version="[9.185.7,)" />
 	 <dependency id="Mono.Cecil" version="[0.10,)" />
       </group>
     </dependencies>

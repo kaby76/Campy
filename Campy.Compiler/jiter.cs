@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using Campy.Graphs;
 using Campy.Utils;
 using Mono.Cecil;
@@ -15,14 +14,13 @@ using Swigged.Cuda;
 using Mono.Cecil.Rocks;
 using Mono.Collections.Generic;
 using FieldAttributes = Mono.Cecil.FieldAttributes;
-using MethodBody = Mono.Cecil.Cil.MethodBody;
 
 namespace Campy.Compiler
 {
     public static class JIT_HELPER
     {
         public static TypeRef ToTypeRef(
-            this Mono.Cecil.TypeReference tr,
+            this TypeReference tr,
             Dictionary<Tuple<TypeReference, GenericParameter>, System.Type> generic_type_rewrite_rules = null,
             int level = 0)
         {
@@ -452,6 +450,72 @@ namespace Campy.Compiler
 
             }
         }
+
+        public static TypeReference InstantiateGeneric(this TypeReference type, CFG.Vertex bb)
+        {
+            if (type.IsGenericParameter)
+            {
+                // Go to basic block and get type.
+                var declaring_type = bb._original_method_reference.DeclaringType;
+                if (declaring_type.IsGenericInstance)
+                {
+                    var generic_type_of_declaring_type = declaring_type as GenericInstanceType;
+                    var generic_arguments = generic_type_of_declaring_type.GenericArguments;
+                    var new_arg = Campy.Utils.Class1.ConvertGenericParameterToTypeReference(type, generic_arguments);
+                    return new_arg;
+                }
+            }
+            return type;
+        }
+
+        public static VariableReference InstantiateGeneric(this VariableReference variable, CFG.Vertex bb)
+        {
+            var type = variable.VariableType;
+            if (type.IsGenericParameter)
+            {
+                // Go to basic block and get type.
+                var declaring_type = bb._original_method_reference.DeclaringType;
+                if (declaring_type.IsGenericInstance)
+                {
+                    var generic_type_of_declaring_type = declaring_type as GenericInstanceType;
+                    var generic_arguments = generic_type_of_declaring_type.GenericArguments;
+                    var new_arg = Campy.Utils.Class1.ConvertGenericParameterToTypeReference(type, generic_arguments);
+                    var new_var = new VariableDefinition(new_arg);
+                    return new_var;
+                }
+            }
+            return variable;
+        }
+
+        public static VariableDefinition InstantiateGeneric(this VariableDefinition variable, CFG.Vertex bb)
+        {
+            var type = variable.VariableType;
+            if (type.IsGenericParameter)
+            {
+                // Go to basic block and get type.
+                var declaring_type = bb._original_method_reference.DeclaringType;
+                if (declaring_type.IsGenericInstance)
+                {
+                    var generic_type_of_declaring_type = declaring_type as GenericInstanceType;
+                    var generic_arguments = generic_type_of_declaring_type.GenericArguments;
+                    var new_arg = Campy.Utils.Class1.ConvertGenericParameterToTypeReference(type, generic_arguments);
+                    var new_var = new VariableDefinition(new_arg);
+                    //new_var.IsPinned = variable.IsPinned;
+                    var a = variable.GetType().GetFields(System.Reflection.BindingFlags.Instance
+                                                         | System.Reflection.BindingFlags.NonPublic
+                                                         | System.Reflection.BindingFlags.Public);
+                    variable
+                        .GetType()
+                        .GetField("index", System.Reflection.BindingFlags.Instance
+                                           | System.Reflection.BindingFlags.NonPublic
+                                           | System.Reflection.BindingFlags.Public)
+                        .SetValue(new_var, variable.Index);
+                    return new_var;
+                }
+            }
+            return variable;
+        }
+
     }
 
     static class PHASES
@@ -941,10 +1005,14 @@ namespace Campy.Compiler
                     has_this ? offset - 1 : offset,
                     args - (struct_ret ? 1 : 0));
 
-                // Set up locals. I'm making an assumption that there is a 
-                // one to one and in order mapping of the locals with that
-                // defined for the method body by Mono.
+                // Set up locals. I'm making an assumption that the locals here
+                // correspond exactly with those reported by Mono.
                 Collection<VariableDefinition> variables = bb.RewrittenCalleeSignature.Resolve().Body.Variables;
+                // Convert any generic parameters to generic instance reference.
+                for (int i = 0; i < variables.Count; ++i)
+                {
+                    variables[i] = variables[i].InstantiateGeneric(bb);
+                }
                 state._locals = state._stack.Section((int) state._stack.Count, locals);
                 for (int i = 0; i < locals; ++i)
                 {
