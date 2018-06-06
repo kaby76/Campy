@@ -162,7 +162,7 @@ function_space_specifier tMetaData* MetaData_GetResolutionScopeMetaData(tMetaDat
 
 				pAssemblyRef = (tMD_AssemblyRef*)MetaData_GetTableRow(pMetaData, resolutionScopeToken);
 				*ppInNestedType = NULL;
-				return CLIFile_GetMetaDataForAssembly(pAssemblyRef->name);
+				return CLIFile_GetMetaDataForAssembly(pAssemblyRef);
 			}
 		case MD_TABLE_TYPEREF:
 			{
@@ -201,11 +201,11 @@ function_space_specifier tMD_TypeDef* MetaData_GetTypeDefFromName(tMetaData *pMe
 
 		pTypeDef = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_TYPEDEF, i));
 
-		//		printf("checking %s in %s\n", pTypeDef->name, pTypeDef->nameSpace);
+		printf("checking whether %s::%s matches %s::%s, all in %s\n", nameSpace, name, pTypeDef->nameSpace, pTypeDef->name, pMetaData->file_name);
 
-		if (pInNestedClass == pTypeDef->pNestedIn &&
-			Gstrcmp(name, pTypeDef->name) == 0 &&
-			(pInNestedClass != NULL || Gstrcmp(nameSpace, pTypeDef->nameSpace) == 0))
+		if (pInNestedClass == pTypeDef->pNestedIn
+			&& Gstrcmp(name, pTypeDef->name) == 0
+			&& (pInNestedClass != NULL || Gstrcmp(nameSpace, pTypeDef->nameSpace) == 0))
 		{
 			result = pTypeDef;
 			break;
@@ -246,7 +246,7 @@ function_space_specifier tMD_TypeDef* MetaData_GetTypeDefFromFullName(STRING ass
 		Gprintf("MetaData_GetTypeDefFromFullName\n");
 	tMetaData *pTypeMetaData;
 
-	pTypeMetaData = CLIFile_GetMetaDataForAssembly(assemblyName);
+	pTypeMetaData = CLIFile_GetMetaDataForAssemblyAux(assemblyName, NULL, 0, 0);
 
 	// Note that this cannot get a nested class, as this final parameter is always NULL
 	return MetaData_GetTypeDefFromName(pTypeMetaData, nameSpace, name, NULL);
@@ -258,7 +258,7 @@ function_space_specifier tMD_TypeDef* MetaData_GetTypeDefFromFullNameAndNestedTy
 		Gprintf("MetaData_GetTypeDefFromFullNameAndNestedType\n");
 	tMetaData *pTypeMetaData;
 
-	pTypeMetaData = CLIFile_GetMetaDataForAssembly(assemblyName);
+	pTypeMetaData = CLIFile_GetMetaDataForAssemblyAux(assemblyName, NULL, 0, 0);
 
 	// Note that this cannot get a nested class, as this final parameter is always NULL
 	return MetaData_GetTypeDefFromName(pTypeMetaData, nameSpace, name, nested);

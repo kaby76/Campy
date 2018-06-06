@@ -48,7 +48,7 @@
 #include <sys/types.h>
 
 #ifdef XXXXXXX
-#include <strings.h>
+#include <string.h>
 #include <sys/uio.h>
 #include <unistd.h>
 #include <termios.h>
@@ -96,10 +96,10 @@
 #define LIB_PREFIX ""
 #define LIB_SUFFIX "dll"
 
-#else // WIN32
+#else
 
 #include <stdlib.h>
-#include <strings.h>
+#include <string.h>
 #include <sys/types.h>
 #include <sys/uio.h>
 #include <unistd.h>

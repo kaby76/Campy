@@ -40,7 +40,8 @@ struct tCLIFile_ {
 typedef struct tCLIFile_ tCLIFile;
 
 // static methods
-function_space_specifier tMetaData* CLIFile_GetMetaDataForAssembly(char *pAssemblyName);
+function_space_specifier tMetaData* CLIFile_GetMetaDataForAssembly(tMD_AssemblyRef * ar);
+function_space_specifier tMetaData* CLIFile_GetMetaDataForAssemblyAux(char * fileName, char* publickey, U16 majv, U16 minv);
 function_space_specifier void CLIFile_GetHeapRoots(tHeapRoots *pHeapRoots);
 
 // instance methods

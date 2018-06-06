@@ -81,6 +81,23 @@ function_space_specifier IDX_TABLE MetaData_DecodeSigEntryToken(SIG *pSig) {
 	return MAKE_TABLE_INDEX(tableID[entry & 0x3], entry >> 2);
 }
 
+
+function_space_specifier STRING MetaData_DecodePublicKey(BLOB_ blob)
+{
+	char * buf;
+	unsigned int size = (unsigned int)blob[0];
+	unsigned int buf_size = size * 2 + 1;
+	buf = (char*)Gmalloc(buf_size);
+	memset(buf, 0, buf_size);
+	for (int i = 1; i <= size; ++i)
+	{
+		char hex[32];
+		Gsprintf(hex, "%02x", blob[i]);
+		Gstrcat(buf, hex);
+	}
+	return buf;
+}
+
 function_space_specifier tMetaData* MetaData() {
 	tMetaData *pRet = TMALLOC(tMetaData);
 	memset(pRet, 0, sizeof(tMetaData));
@@ -1277,6 +1294,7 @@ function_space_specifier void AssemblyTableReader(int table, int row, tMetaData 
 	p->publicKey_offset = v;
 	pSource += blob_skip;
 	p->publicKey = pThis->blobs.pStart + v;
+	p->public_key_str = MetaData_DecodePublicKey(p->publicKey);
 
 	int string_skip = pThis->index32BitString ? 4 : 2;
 	v = pThis->index32BitString ? GetU32(pSource) : GetU16(pSource);
@@ -1336,6 +1354,7 @@ function_space_specifier void AssemblyRefTableReader(int table, int row, tMetaDa
 	p->publicKeyOrToken_offset = v;
 	pSource += blob_skip;
 	p->publicKeyOrToken = pThis->blobs.pStart + v;
+	p->public_key_str = MetaData_DecodePublicKey(p->publicKeyOrToken);
 
 	int string_skip = pThis->index32BitString ? 4 : 2;
 	v = pThis->index32BitString ? GetU32(pSource) : GetU16(pSource);

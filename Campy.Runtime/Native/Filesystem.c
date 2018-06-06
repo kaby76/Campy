@@ -95,7 +95,7 @@ function_space_specifier void Gfs_add_file(char * name, char * file, size_t leng
 	//*result = -1;
 }
 
-function_space_specifier void Gfs_add_file_no_malloc(char * name, char * file, size_t length, int * result)
+function_space_specifier void Gfs_add_file_no_malloc(const char * name, const char * file, size_t length)
 {
 	if (_bcl_->init == 0) CommonInitFileSystem();
 	char ** ptr_name = _bcl_->names;
@@ -113,11 +113,9 @@ function_space_specifier void Gfs_add_file_no_malloc(char * name, char * file, s
 	{
 		if (*ptr_name == NULL)
 		{
-			//Gprintf("Entered\n");
 			*ptr_name = Gstrdup(name);
-			*ptr_file = file;
+			*ptr_file = (char*)file;
 			*ptr_length = length;
-			//*result = i;
 			return;
 		}
 		else
@@ -128,8 +126,6 @@ function_space_specifier void Gfs_add_file_no_malloc(char * name, char * file, s
 		}
 	}
 	Crash("File system overflow. Cannot handle more than %d files.\n", _bcl_->initial_size);
-	//Gprintf("Not entered\n");
-	//*result = -1;
 }
 
 __global__ void Bcl_Gfs_remove_file(char * name, int * result)

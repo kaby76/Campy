@@ -36,6 +36,11 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <fcntl.h>
+#if WIN32 && !CUDA
+#include <filesystem>
+#include <string>
+#include <direct.h>
+#endif
 
 // Is this exe/dll file for the .NET virtual machine?
 #define IMAGE_FILE_MACHINE_I386 0x14c
@@ -49,20 +54,21 @@ struct tFilesLoaded_ {
 
 // Keep track of all the files currently loaded
 //function_space_specifier static tFilesLoaded *pFilesLoaded = NULL;
+function_space_specifier tMetaData* CLIFile_GetMetaDataForAssembly(tMD_AssemblyRef * ar)
+{
+	return CLIFile_GetMetaDataForAssemblyAux(ar->name, ar->public_key_str, ar->majorVersion, ar->minorVersion);
+}
 
-function_space_specifier tMetaData* CLIFile_GetMetaDataForAssembly(char * fileName)
+function_space_specifier tMetaData* CLIFile_GetMetaDataForAssemblyAux(char * fileName, char* publickey, U16 majv, U16 minv)
 {
 	if (_bcl_ && _bcl_->options & BCL_DEBUG_FUNCTION_ENTRY)
 		Gprintf("CLIFile_GetMetaDataForAssembly\n");
 
-	// Functionality of assembly resolution seems it should be here.
-	// But, this is a problem with GPU BCL because we don't have a
-	// GAC for file system. What a mess.
-
 	// As there is no file names for module names, construct one.
 	tFilesLoaded *pFiles;
 	char * pAssemblyName;
-	char assemblyName[250];
+	const int max_size = 250;
+	char assemblyName[max_size];
 	char fName[250];
 	Gstrcpy(assemblyName, fileName);
 	Gstrcpy(fName, fileName);
@@ -103,9 +109,142 @@ function_space_specifier tMetaData* CLIFile_GetMetaDataForAssembly(char * fileNa
 
 	// Assembly not loaded, so load it if possible
 	{
+#if WIN32 && !CUDA
+		int added = 0;
+		// Try current directory first.
+		char * cwddir = _getcwd(fName, max_size);
+		if (cwddir != NULL)
+		{
+			std::experimental::filesystem::path p(fName);
+			std::experimental::filesystem::directory_iterator start(p);
+			std::experimental::filesystem::directory_iterator end;
+			for (; start != end; ++start)
+			{
+				std::experimental::filesystem::path tpath = start->path();
+				std::string path_string = tpath.u8string();
+				std::string tail = path_string.substr(path_string.length() - 4);
+				printf("%s\n", tail.c_str());
+				printf("%s\n", path_string.c_str());
+				strncpy(fName, assemblyName, max_size);
+				strncat(fName, ".dll", max_size);
+				std::size_t f1 = path_string.find(fName, 0);
+				if (f1 != std::string::npos)
+				{
+					std::experimental::filesystem::path fn = tpath.filename();
+					std::string fn2 = fn.u8string();
+					const char * file_name = fn2.c_str();
+					FILE * file = fopen(path_string.c_str(), "rb");
+					fseek(file, 0, SEEK_END);
+					long file_len = ftell(file);
+					fseek(file, 0, SEEK_SET);
+					char * buffer = (char *)Gmalloc(file_len + 1);
+					if (!buffer)
+					{
+						fprintf(stderr, "Memory error!");
+						fclose(file);
+					}
+					fread(buffer, file_len, 1, file);
+					fclose(file);
+					Gfs_add_file_no_malloc(file_name, buffer, file_len);
+					added = 1;
+					break;
+				}
+			}
+		}
+		// Functionality of assembly resolution seems it should be here.
+		// But, this is a problem with GPU BCL because we don't have a
+		// GAC for file system. What a mess.
+		// For Windows, GAC is located in %windir%\Microsoft.NET\assembly
+		// Look under preferentially GAC_64, then GAC_MSIL. Do not consider GAC_32 -- not supported.
+		// The structure of all these files is GAC_*/<assembly-name>/<version>_<publickey>/<assembly-name>.dll
+		char * windir = getenv("windir");
+		if (added == 0 && windir != NULL)
+		{
+			strncpy(fName, windir, max_size);
+			strncat(fName, "\\Microsoft.NET\\assembly\\GAC_MSIL\\", max_size);
+			strncat(fName, assemblyName, max_size);
+			strncat(fName, "\\", max_size);
+			std::experimental::filesystem::path p(fName);
+			std::experimental::filesystem::recursive_directory_iterator start(p);
+			std::experimental::filesystem::recursive_directory_iterator end;
+			for (; start != end; ++start) {
+				std::experimental::filesystem::path tpath = start->path();
+				std::string path_string = tpath.u8string();
+				std::string tail = path_string.substr(path_string.length() - 4);
+				printf("%s\n", tail.c_str());
+				printf("%s\n", path_string.c_str());
+				std::size_t f1 = path_string.find(publickey, 0);
+				std::size_t f2 = tail.find(".dll", 0);
+				if (f1 != std::string::npos && f2 != std::string::npos)
+				{
+					std::experimental::filesystem::path fn = tpath.filename();
+					std::string fn2 = fn.u8string();
+					const char * file_name = fn2.c_str();
+					FILE * file = fopen(path_string.c_str(), "rb");
+					fseek(file, 0, SEEK_END);
+					long file_len = ftell(file);
+					fseek(file, 0, SEEK_SET);
+					char * buffer = (char *)Gmalloc(file_len + 1);
+					if (!buffer)
+					{
+						fprintf(stderr, "Memory error!");
+						fclose(file);
+					}
+					fread(buffer, file_len, 1, file);
+					fclose(file);
+					Gfs_add_file_no_malloc(file_name, buffer, file_len);
+					added = 1;
+					break;
+				}
+			}
+		}
+		// Net Core versioning does not work like Net Framework--wonderful designing by profession programmers!
+		// Try to find appropriate Net Core file.
+		if (added == 0)
+		{
+			strncpy(fName, "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\", max_size);
+			std::experimental::filesystem::path p(fName);
+			std::experimental::filesystem::recursive_directory_iterator start(p);
+			std::experimental::filesystem::recursive_directory_iterator end;
+			for (; start != end; ++start) {
+				std::experimental::filesystem::path tpath = start->path();
+				std::string path_string = tpath.u8string();
+				std::string tail = path_string.substr(path_string.length() - 4);
+				printf("%s\n", tail.c_str());
+				printf("%s\n", path_string.c_str());
+				printf("%s\n", path_string.c_str());
+				strncpy(fName, assemblyName, max_size);
+				strncat(fName, ".dll", max_size);
+				std::size_t f1 = path_string.find(fName, 0);
+				std::size_t f2 = path_string.find("\\2.0", 0);
+				if (f1 != std::string::npos && f2 != std::string::npos)
+				{
+					std::experimental::filesystem::path fn = tpath.filename();
+					std::string fn2 = fn.u8string();
+					const char * file_name = fn2.c_str();
+					FILE * file = fopen(path_string.c_str(), "rb");
+					fseek(file, 0, SEEK_END);
+					long file_len = ftell(file);
+					fseek(file, 0, SEEK_SET);
+					char * buffer = (char *)Gmalloc(file_len + 1);
+					if (!buffer)
+					{
+						fprintf(stderr, "Memory error!");
+						fclose(file);
+					}
+					fread(buffer, file_len, 1, file);
+					fclose(file);
+					Gfs_add_file_no_malloc(file_name, buffer, file_len);
+					added = 1;
+					break;
+				}
+			}
+		}
+
+
+#endif
+
 		tCLIFile *pCLIFile;
-		// First, try .exe. Note: when program is "published", there will be both exe and dll.
-		// The exe may crap out on load, in which case, move on to the dll.
 		Gstrcpy(fName, pAssemblyName);
 		Gstrcat(fName, ".dll");
 		pCLIFile = CLIFile_Load(fName);

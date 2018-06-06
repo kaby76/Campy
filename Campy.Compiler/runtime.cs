@@ -729,53 +729,18 @@
 
         public static IntPtr GetBclType(TypeReference type)
         {
-            // First, make sure all dll's in the executable directory
-            // have been preemptively added to the BCL file system. There really
-            // isn't a good way for the BCL to call back to the host to get files.
-            var path = CampyInfo.PathOfCampy();
-            var files = Directory.GetFiles(path);
-            foreach (var full_path in files)
-            {
-                var just_file_name = Path.GetFileName(full_path);
-                if (!just_file_name.EndsWith(".dll", true, null))
-                    continue;
-                if (just_file_name.StartsWith("swigged-"))
-                    continue;
-                if (just_file_name.StartsWith("campy-"))
-                    continue;
-                JITER.Singleton.AddAssemblyToFileSystem(full_path);
-            }
-
+            // Using the BCL, find the type. Note, Mono has a tendency to list something
+            // in a namespace in which the type's metadata says it has no namespace.
+            // As far as I can tell, this is for generated methods corresponding to the kernels.
+            // Due to the disparity of what the "namespace" means, look up the type from
+            // the top-most declaring type, and use that as context for the sub-class search.
             Stack<TypeReference> chain = new Stack<TypeReference>();
             while (type != null)
             {
                 chain.Push(type);
                 type = type.DeclaringType;
             }
-            Stack<TypeReference> copy = new Stack<TypeReference>(chain);
-
-            // Also no good way to do this, but find the types referenced,
-            // convert to system reflection types, and make sure the files
-            // are loaded.
-            while (copy.Any())
-            {
-                var tr = copy.Pop();
-                tr = RUNTIME.RewriteType(tr);
-                var assembly_name = tr.Module.FileName;
-                JITER.Singleton.AddAssemblyToFileSystem(tr.Module.FileName);
-                // Grab referenced assemblies.
-                var refs = tr.Module.GetTypeReferences();
-                foreach (var r in refs)
-                {
-                    var sys_type = r.ToSystemType();
-                    if (sys_type == null) continue;
-                    var loc = sys_type.Assembly.Location;
-                    JITER.Singleton.AddAssemblyToFileSystem(loc);
-                }
-            }
-
             System.IntPtr result = System.IntPtr.Zero;
-
             while (chain.Any())
             {
                 var tr = chain.Pop();
@@ -783,59 +748,25 @@
                 var assembly_name = tr.Module.Name;
                 var name_space = tr.Namespace;
                 var name = tr.Name;
-                // Make sure assembly is placed in GPU BCL file system.
-                JITER.Singleton.AddAssemblyToFileSystem(tr.Module.FileName);
                 result = BclGetMetaOfType(assembly_name, name_space, name, result);
             }
-
             return result;
         }
 
         public static IntPtr GetBclType(Type type)
         {
-            // First, make sure all dll's in the executable directory
-            // have been preemptively added to the BCL file system. There really
-            // isn't a good way for the BCL to call back to the host to get files.
-            var path = CampyInfo.PathOfCampy();
-            var files = Directory.GetFiles(path);
-            foreach (var full_path in files)
-            {
-                var just_file_name = Path.GetFileName(full_path);
-                if (!just_file_name.EndsWith(".dll", true, null))
-                    continue;
-                if (just_file_name.StartsWith("swigged-"))
-                    continue;
-                if (just_file_name.StartsWith("campy-"))
-                    continue;
-                JITER.Singleton.AddAssemblyToFileSystem(full_path);
-            }
-
+            // Using the BCL, find the type. Note, Mono has a tendency to list something
+            // in a namespace in which the type's metadata says it has no namespace.
+            // As far as I can tell, this is for generated methods corresponding to the kernels.
+            // Due to the disparity of what the "namespace" means, look up the type from
+            // the top-most declaring type, and use that as context for the sub-class search.
             Stack<Type> chain = new Stack<Type>();
             while (type != null)
             {
                 chain.Push(type);
                 type = type.DeclaringType;
             }
-            Stack<Type> copy = new Stack<Type>(chain);
-
-            // Also no good way to do this, but find the types referenced,
-            // and make sure the files are loaded.
-            while (copy.Any())
-            {
-                var tr = copy.Pop();
-                JITER.Singleton.AddAssemblyToFileSystem(tr.Assembly.Location);
-                // Grab referenced assemblies.
-                var fs = tr.GetFields();
-                foreach (var f in fs)
-                {
-                    var r = f.FieldType;
-                    var loc = r.Assembly.Location;
-                    JITER.Singleton.AddAssemblyToFileSystem(loc);
-                }
-            }
-
             System.IntPtr result = System.IntPtr.Zero;
-
             while (chain.Any())
             {
                 var tr = chain.Pop();

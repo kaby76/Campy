@@ -636,6 +636,8 @@ struct tMD_Assembly_
 	int publicKey_offset;
 	// Public key
 	BLOB_ publicKey;
+	// String version of public key.
+	STRING public_key_str;
 	// Name
 	STRING name;
 	// Culture
@@ -655,6 +657,8 @@ struct tMD_AssemblyRef_
 	int publicKeyOrToken_offset;
 	// Public key or token
 	BLOB_ publicKeyOrToken;
+	// String version of public key.
+	STRING public_key_str;
 	// Name
 	STRING name;
 	// Culture

@@ -139,6 +139,9 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
+    <CudaCompile>
+      <Defines>CUDA</Defines>
+    </CudaCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="basics.h" />
