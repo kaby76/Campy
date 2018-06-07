@@ -432,7 +432,8 @@ function_space_specifier void Type_Init() {
 			MetaData_Fill_TypeDef(_bcl_->types[i], NULL, NULL);
 		} else {
 			// Special initialisation for arrays of particular types.
-			_bcl_->types[i] = Type_GetArrayTypeDef(_bcl_->types[(U32)(typeInit[i].name)], NULL, NULL);
+// CANNOT WORK!!!!!! CANNOT CAST A POINTER TO INDEX!!! BOGUS CODE!!!
+//			_bcl_->types[i] = Type_GetArrayTypeDef(_bcl_->types[(U32)(typeInit[i].name)], NULL, NULL);
 		}
 	}
 	_bcl_->CorLibDone = 1;

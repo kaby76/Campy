@@ -27,7 +27,7 @@
 #include "Gprintf.h"
 #include <stdio.h>
 
-#ifdef WIN32
+#if defined(_MSC_VER)
 namespace dbg {
 	void fail(const char* func, const char* msg);
 }
@@ -54,7 +54,7 @@ function_space_specifier void Crash(const char *pMsg, ...)
 	fflush(stdout);
 #endif
 
-#ifdef WIN32
+#if defined(_MSC_VER)
 	//if (_bcl_ && (_bcl_->options & BCL_DEBUG_INTERACTIVE))
 		dbg::fail("crash", buf);
 	// Cause a delibrate exception, to get into debugger

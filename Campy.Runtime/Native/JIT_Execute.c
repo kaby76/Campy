@@ -189,7 +189,7 @@ U32 opcodeNumUses[JIT_OPCODE_MAXNUM];
 #define GO_NEXT() goto **(void**)(pCurOp++)
 
 #else
-#ifdef WIN32
+#ifdef _MSC_VER
 
 #define GET_LABEL(var, label) \
 	{ __asm mov edi, label \

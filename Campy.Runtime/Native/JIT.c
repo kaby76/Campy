@@ -1610,175 +1610,175 @@ return NULL;
 
 // Prepare a method for execution
 // This makes sure that the method has been JITed.
-function_space_specifier void JIT_Prepare(tMD_MethodDef *pMethodDef, U32 genCombinedOpcodes) {
-	tMetaData *pMetaData;
-	U8 *pMethodHeader;
-	tJITted *pJITted;
-	FLAGS16 flags;
-	U32 codeSize;
-	IDX_TABLE localsToken;
-	U8 *pCIL;
-	SIG sig;
-	U32 i, sigLength, numLocals;
-	tParameter *pLocals;
-
-	log_f(2, "JIT:   %s\n", Sys_GetMethodDesc(pMethodDef));
-
-	pMetaData = pMethodDef->pMetaData;
-	pJITted = (genCombinedOpcodes)?TMALLOC(tJITted):TMALLOCFOREVER(tJITted);
-	memset(pJITted, 0, sizeof(tJITted));
-
-#ifdef GEN_COMBINED_OPCODES
-	pJITted->pCombinedOpcodesMem = NULL;
-	pJITted->opsMemSize = 0;
-	if (genCombinedOpcodes) {
-		pMethodDef->pJITtedCombined = pJITted;
-	} else {
-		pMethodDef->pJITted = pJITted;
-	}
-#else
-	pMethodDef->pJITted = pJITted;
-#endif
-
-	if ((pMethodDef->implFlags & METHODIMPLATTRIBUTES_INTERNALCALL) ||
-		((pMethodDef->implFlags & METHODIMPLATTRIBUTES_CODETYPE_MASK) == METHODIMPLATTRIBUTES_CODETYPE_RUNTIME)) {
-		tJITCallNative *pCallNative;
-
-		// Internal call
-		if (Gstrcmp(pMethodDef->name, ".ctor") == 0) {
-			// Internal constructor needs enough evaluation stack space to return itself
-			pJITted->maxStack = pMethodDef->pParentType->stackSize;
-		} else {
-			pJITted->maxStack = (pMethodDef->pReturnType == NULL)?0:pMethodDef->pReturnType->stackSize; // For return value
-		}
-		pCallNative = TMALLOCFOREVER(tJITCallNative);
-		pCallNative->opCode = Translate(JIT_CALL_NATIVE, 0);
-		pCallNative->pMethodDef = pMethodDef;
-		pCallNative->fn = InternalCall_Map(pMethodDef);
-		pCallNative->retOpCode = Translate(JIT_RETURN, 0);
-
-		pJITted->localsStackSize = 0;
-		pJITted->pOps = (U32*)pCallNative;
-
-		return;
-	}
-	if (pMethodDef->flags & METHODATTRIBUTES_PINVOKEIMPL) {
-		tJITCallPInvoke *pCallPInvoke;
-
-		// PInvoke call
-		tMD_ImplMap *pImplMap = MetaData_GetImplMap(pMetaData, pMethodDef->tableIndex);
-		fnPInvoke fn = PInvoke_GetFunction(pMetaData, pImplMap);
-		if (fn == NULL) {
-			Crash("PInvoke library or function not found: %s()", pImplMap->importName);
-		}
-
-		pCallPInvoke = TMALLOCFOREVER(tJITCallPInvoke);
-		pCallPInvoke->opCode = Translate(JIT_CALL_PINVOKE, 0);
-		pCallPInvoke->fn = fn;
-		pCallPInvoke->pMethod = pMethodDef;
-		pCallPInvoke->pImplMap = pImplMap;
-
-		pJITted->localsStackSize = 0;
-		pJITted->maxStack = (pMethodDef->pReturnType == NULL)?0:pMethodDef->pReturnType->stackSize; // For return value
-		pJITted->pOps = (U32*)pCallPInvoke;
-
-		return;
-	}
-
-	pMethodHeader = (U8*)pMethodDef->pCIL;
-	if ((*pMethodHeader & 0x3) == CorILMethod_TinyFormat) {
-		// Tiny header
-		flags = *pMethodHeader & 0x3;
-		pJITted->maxStack = 8;
-		codeSize = (*pMethodHeader & 0xfc) >> 2;
-		localsToken = 0;
-		pCIL = pMethodHeader + 1;
-	} else {
-		// Fat header
-		flags = *(U16*)pMethodHeader & 0x0fff;
-		pJITted->maxStack = *(U16*)&pMethodHeader[2];
-		codeSize = *(U32*)&pMethodHeader[4];
-		localsToken = *(IDX_TABLE*)&pMethodHeader[8];
-		pCIL = pMethodHeader + ((pMethodHeader[1] & 0xf0) >> 2);
-	}
-	if (flags & CorILMethod_MoreSects) {
-		U32 numClauses;
-
-		pMethodHeader = pCIL + ((codeSize + 3) & (~0x3));
-		if (*pMethodHeader & CorILMethod_Sect_FatFormat) {
-			U32 exSize;
-			// Fat header
-			numClauses = ((*(U32*)pMethodHeader >> 8) - 4) / 24;
-			//pJITted->pExceptionHeaders = (tExceptionHeader*)(pMethodHeader + 4);
-			exSize = numClauses * sizeof(tExceptionHeader);
-			pJITted->pExceptionHeaders =
-				(tExceptionHeader*)(genCombinedOpcodes?Gmalloc(exSize):mallocForever(exSize));
-			memcpy(pJITted->pExceptionHeaders, pMethodHeader + 4, exSize);
-		} else {
-			// Thin header
-			tExceptionHeader *pExHeaders;
-			U32 exSize;
-
-			numClauses = (((U8*)pMethodHeader)[1] - 4) / 12;
-			exSize = numClauses * sizeof(tExceptionHeader);
-			pMethodHeader += 4;
-			//pExHeaders = pJITted->pExceptionHeaders = (tExceptionHeader*)mallocForever(numClauses * sizeof(tExceptionHeader));
-			pExHeaders = pJITted->pExceptionHeaders =
-				(tExceptionHeader*)(genCombinedOpcodes?Gmalloc(exSize):mallocForever(exSize));
-			for (i=0; i<numClauses; i++) {
-				pExHeaders[i].flags = ((U16*)pMethodHeader)[0];
-				pExHeaders[i].tryStart = ((U16*)pMethodHeader)[1];
-				pExHeaders[i].tryEnd = ((U8*)pMethodHeader)[4];
-				pExHeaders[i].handlerStart = ((U8*)pMethodHeader)[5] | (((U8*)pMethodHeader)[6] << 8);
-				pExHeaders[i].handlerEnd = ((U8*)pMethodHeader)[7];
-				pExHeaders[i].u.classToken = ((U32*)pMethodHeader)[2];
-
-				pMethodHeader += 12;
-			}
-		}
-		pJITted->numExceptionHandlers = numClauses;
-		// replace all classToken's with the actual tMD_TypeDef*
-		for (i=0; i<numClauses; i++) {
-			if (pJITted->pExceptionHeaders[i].flags == COR_ILEXCEPTION_CLAUSE_EXCEPTION) {
-				pJITted->pExceptionHeaders[i].u.pCatchTypeDef =
-					MetaData_GetTypeDefFromDefRefOrSpec(pMethodDef->pMetaData, pJITted->pExceptionHeaders[i].u.classToken, pMethodDef->pParentType->ppClassTypeArgs, pMethodDef->ppMethodTypeArgs);
-			}
-		}
-	} else {
-		pJITted->numExceptionHandlers = 0;
-		pJITted->pExceptionHeaders = NULL;
-	}
-
-	// Analyse the locals
-	if (localsToken == 0) {
-		// No locals
-		pJITted->localsStackSize = 0;
-		pLocals = NULL;
-	} else {
-		tMD_StandAloneSig *pStandAloneSig;
-		U32 i, totalSize;
-
-		pStandAloneSig = (tMD_StandAloneSig*)MetaData_GetTableRow(pMethodDef->pMetaData, localsToken);
-		sig = MetaData_GetBlob(pStandAloneSig->signature, &sigLength);
-		MetaData_DecodeUnsigned32BitInteger(&sig); // Always 0x07
-		numLocals = MetaData_DecodeUnsigned32BitInteger(&sig);
-		pLocals = (tParameter*)Gmalloc(numLocals * sizeof(tParameter));
-		totalSize = 0;
-		for (i=0; i<numLocals; i++) {
-			tMD_TypeDef *pTypeDef;
-
-			pTypeDef = Type_GetTypeFromSig(pMethodDef->pMetaData, &sig, pMethodDef->pParentType->ppClassTypeArgs, pMethodDef->ppMethodTypeArgs);
-			MetaData_Fill_TypeDef(pTypeDef, NULL, NULL);
-			pLocals[i].pTypeDef = pTypeDef;
-			pLocals[i].offset = totalSize;
-			pLocals[i].size = pTypeDef->stackSize;
-			totalSize += pTypeDef->stackSize;
-		}
-		pJITted->localsStackSize = totalSize;
-	}
-
-	// JIT the CIL code
-	pJITted->pOps = JITit(pMethodDef, pCIL, codeSize, pLocals, pJITted, genCombinedOpcodes);
-
-	Gfree(pLocals);
-}
+//function_space_specifier void JIT_Prepare(tMD_MethodDef *pMethodDef, U32 genCombinedOpcodes) {
+//	tMetaData *pMetaData;
+//	U8 *pMethodHeader;
+//	tJITted *pJITted;
+//	FLAGS16 flags;
+//	U32 codeSize;
+//	IDX_TABLE localsToken;
+//	U8 *pCIL;
+//	SIG sig;
+//	U32 i, sigLength, numLocals;
+//	tParameter *pLocals;
+//
+//	log_f(2, "JIT:   %s\n", Sys_GetMethodDesc(pMethodDef));
+//
+//	pMetaData = pMethodDef->pMetaData;
+//	pJITted = (genCombinedOpcodes)?TMALLOC(tJITted):TMALLOCFOREVER(tJITted);
+//	memset(pJITted, 0, sizeof(tJITted));
+//
+//#ifdef GEN_COMBINED_OPCODES
+//	pJITted->pCombinedOpcodesMem = NULL;
+//	pJITted->opsMemSize = 0;
+//	if (genCombinedOpcodes) {
+//		pMethodDef->pJITtedCombined = pJITted;
+//	} else {
+//		pMethodDef->pJITted = pJITted;
+//	}
+//#else
+//	pMethodDef->pJITted = pJITted;
+//#endif
+//
+//	if ((pMethodDef->implFlags & METHODIMPLATTRIBUTES_INTERNALCALL) ||
+//		((pMethodDef->implFlags & METHODIMPLATTRIBUTES_CODETYPE_MASK) == METHODIMPLATTRIBUTES_CODETYPE_RUNTIME)) {
+//		tJITCallNative *pCallNative;
+//
+//		// Internal call
+//		if (Gstrcmp(pMethodDef->name, ".ctor") == 0) {
+//			// Internal constructor needs enough evaluation stack space to return itself
+//			pJITted->maxStack = pMethodDef->pParentType->stackSize;
+//		} else {
+//			pJITted->maxStack = (pMethodDef->pReturnType == NULL)?0:pMethodDef->pReturnType->stackSize; // For return value
+//		}
+//		pCallNative = TMALLOCFOREVER(tJITCallNative);
+//		pCallNative->opCode = Translate(JIT_CALL_NATIVE, 0);
+//		pCallNative->pMethodDef = pMethodDef;
+//		pCallNative->fn = InternalCall_Map(pMethodDef);
+//		pCallNative->retOpCode = Translate(JIT_RETURN, 0);
+//
+//		pJITted->localsStackSize = 0;
+//		pJITted->pOps = (U32*)pCallNative;
+//
+//		return;
+//	}
+//	if (pMethodDef->flags & METHODATTRIBUTES_PINVOKEIMPL) {
+//		tJITCallPInvoke *pCallPInvoke;
+//
+//		// PInvoke call
+//		tMD_ImplMap *pImplMap = MetaData_GetImplMap(pMetaData, pMethodDef->tableIndex);
+//		fnPInvoke fn = PInvoke_GetFunction(pMetaData, pImplMap);
+//		if (fn == NULL) {
+//			Crash("PInvoke library or function not found: %s()", pImplMap->importName);
+//		}
+//
+//		pCallPInvoke = TMALLOCFOREVER(tJITCallPInvoke);
+//		pCallPInvoke->opCode = Translate(JIT_CALL_PINVOKE, 0);
+//		pCallPInvoke->fn = fn;
+//		pCallPInvoke->pMethod = pMethodDef;
+//		pCallPInvoke->pImplMap = pImplMap;
+//
+//		pJITted->localsStackSize = 0;
+//		pJITted->maxStack = (pMethodDef->pReturnType == NULL)?0:pMethodDef->pReturnType->stackSize; // For return value
+//		pJITted->pOps = (U32*)pCallPInvoke;
+//
+//		return;
+//	}
+//
+//	pMethodHeader = (U8*)pMethodDef->pCIL;
+//	if ((*pMethodHeader & 0x3) == CorILMethod_TinyFormat) {
+//		// Tiny header
+//		flags = *pMethodHeader & 0x3;
+//		pJITted->maxStack = 8;
+//		codeSize = (*pMethodHeader & 0xfc) >> 2;
+//		localsToken = 0;
+//		pCIL = pMethodHeader + 1;
+//	} else {
+//		// Fat header
+//		flags = *(U16*)pMethodHeader & 0x0fff;
+//		pJITted->maxStack = *(U16*)&pMethodHeader[2];
+//		codeSize = *(U32*)&pMethodHeader[4];
+//		localsToken = *(IDX_TABLE*)&pMethodHeader[8];
+//		pCIL = pMethodHeader + ((pMethodHeader[1] & 0xf0) >> 2);
+//	}
+//	if (flags & CorILMethod_MoreSects) {
+//		U32 numClauses;
+//
+//		pMethodHeader = pCIL + ((codeSize + 3) & (~0x3));
+//		if (*pMethodHeader & CorILMethod_Sect_FatFormat) {
+//			U32 exSize;
+//			// Fat header
+//			numClauses = ((*(U32*)pMethodHeader >> 8) - 4) / 24;
+//			//pJITted->pExceptionHeaders = (tExceptionHeader*)(pMethodHeader + 4);
+//			exSize = numClauses * sizeof(tExceptionHeader);
+//			pJITted->pExceptionHeaders =
+//				(tExceptionHeader*)(genCombinedOpcodes?Gmalloc(exSize):mallocForever(exSize));
+//			memcpy(pJITted->pExceptionHeaders, pMethodHeader + 4, exSize);
+//		} else {
+//			// Thin header
+//			tExceptionHeader *pExHeaders;
+//			U32 exSize;
+//
+//			numClauses = (((U8*)pMethodHeader)[1] - 4) / 12;
+//			exSize = numClauses * sizeof(tExceptionHeader);
+//			pMethodHeader += 4;
+//			//pExHeaders = pJITted->pExceptionHeaders = (tExceptionHeader*)mallocForever(numClauses * sizeof(tExceptionHeader));
+//			pExHeaders = pJITted->pExceptionHeaders =
+//				(tExceptionHeader*)(genCombinedOpcodes?Gmalloc(exSize):mallocForever(exSize));
+//			for (i=0; i<numClauses; i++) {
+//				pExHeaders[i].flags = ((U16*)pMethodHeader)[0];
+//				pExHeaders[i].tryStart = ((U16*)pMethodHeader)[1];
+//				pExHeaders[i].tryEnd = ((U8*)pMethodHeader)[4];
+//				pExHeaders[i].handlerStart = ((U8*)pMethodHeader)[5] | (((U8*)pMethodHeader)[6] << 8);
+//				pExHeaders[i].handlerEnd = ((U8*)pMethodHeader)[7];
+//				pExHeaders[i].u.classToken = ((U32*)pMethodHeader)[2];
+//
+//				pMethodHeader += 12;
+//			}
+//		}
+//		pJITted->numExceptionHandlers = numClauses;
+//		// replace all classToken's with the actual tMD_TypeDef*
+//		for (i=0; i<numClauses; i++) {
+//			if (pJITted->pExceptionHeaders[i].flags == COR_ILEXCEPTION_CLAUSE_EXCEPTION) {
+//				pJITted->pExceptionHeaders[i].u.pCatchTypeDef =
+//					MetaData_GetTypeDefFromDefRefOrSpec(pMethodDef->pMetaData, pJITted->pExceptionHeaders[i].u.classToken, pMethodDef->pParentType->ppClassTypeArgs, pMethodDef->ppMethodTypeArgs);
+//			}
+//		}
+//	} else {
+//		pJITted->numExceptionHandlers = 0;
+//		pJITted->pExceptionHeaders = NULL;
+//	}
+//
+//	// Analyse the locals
+//	if (localsToken == 0) {
+//		// No locals
+//		pJITted->localsStackSize = 0;
+//		pLocals = NULL;
+//	} else {
+//		tMD_StandAloneSig *pStandAloneSig;
+//		U32 i, totalSize;
+//
+//		pStandAloneSig = (tMD_StandAloneSig*)MetaData_GetTableRow(pMethodDef->pMetaData, localsToken);
+//		sig = MetaData_GetBlob(pStandAloneSig->signature, &sigLength);
+//		MetaData_DecodeUnsigned32BitInteger(&sig); // Always 0x07
+//		numLocals = MetaData_DecodeUnsigned32BitInteger(&sig);
+//		pLocals = (tParameter*)Gmalloc(numLocals * sizeof(tParameter));
+//		totalSize = 0;
+//		for (i=0; i<numLocals; i++) {
+//			tMD_TypeDef *pTypeDef;
+//
+//			pTypeDef = Type_GetTypeFromSig(pMethodDef->pMetaData, &sig, pMethodDef->pParentType->ppClassTypeArgs, pMethodDef->ppMethodTypeArgs);
+//			MetaData_Fill_TypeDef(pTypeDef, NULL, NULL);
+//			pLocals[i].pTypeDef = pTypeDef;
+//			pLocals[i].offset = totalSize;
+//			pLocals[i].size = pTypeDef->stackSize;
+//			totalSize += pTypeDef->stackSize;
+//		}
+//		pJITted->localsStackSize = totalSize;
+//	}
+//
+//	// JIT the CIL code
+//	pJITted->pOps = JITit(pMethodDef, pCIL, codeSize, pLocals, pJITted, genCombinedOpcodes);
+//
+//	Gfree(pLocals);
+//}

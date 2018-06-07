@@ -159,145 +159,145 @@ typedef U64    (STDCALL *_uCuuuuuuuuuu)(U32 _0, U32 _1, U32 _2, U32 _3, U32 _4, 
 #define SET_ARG_TYPE(paramNum, type) funcParams |= (type << ((paramNum+1) << 1))
 
 #define MAX_ARGS 16
-function_space_specifier U32 PInvoke_Call(tJITCallPInvoke *pCall, PTR pParams, PTR pReturnValue) {
-	U32 _args[MAX_ARGS];
-	double _argsd[MAX_ARGS];
-	void* _pTempMem[MAX_ARGS];
-	U32 numParams, param, paramTypeNum;
-
-	tMD_MethodDef *pMethod = pCall->pMethod;
-	tMD_TypeDef *pReturnType = pMethod->pReturnType;
-	tMD_ImplMap *pImplMap = pCall->pImplMap;
-	void *pFn = pCall->fn;
-	U32 _argOfs = 0, _argdOfs = 0, paramOfs = 0;
-	U32 _tempMemOfs = 0;
-	U32 i;
-	U32 funcParams = DEFAULT;
-	U64 u64Ret;
-	float fRet;
-	double dRet;
-
-	if (pReturnType != NULL) {
-		if (pReturnType == _bcl_->types[TYPE_SYSTEM_SINGLE]) {
-			funcParams = SINGLE;
-		} else if (pReturnType == _bcl_->types[TYPE_SYSTEM_DOUBLE]) {
-			funcParams = DOUBLE;
-		}
-	}
-
-	numParams = pMethod->numberOfParameters;
-	for (param = 0, paramTypeNum = 0; param<numParams; param++, paramTypeNum++) {
-		tParameter *pParam = &(pMethod->pParams[param]);
-		tMD_TypeDef *pParamType = pParam->pTypeDef;
-		U32 paramType = DEFAULT;
-
-		if (pParamType->stackType == EVALSTACK_INT32) {
-			_args[_argOfs] = *(U32*)(pParams + paramOfs);
-			_argOfs++;
-			paramOfs += 4;
-		} else if (pParamType == _bcl_->types[TYPE_SYSTEM_STRING]) {
-			// Allocate a temp bit of memory for the string that's been converted.
-			void *pString;
-			if (IMPLMAP_ISCHARSET_ANSI(pImplMap) || IMPLMAP_ISCHARSET_AUTO(pImplMap) || IMPLMAP_ISCHARSET_NOTSPEC(pImplMap)) {
-				pString = ConvertStringToANSI(*(HEAP_PTR*)(pParams + paramOfs));
-			} else if (IMPLMAP_ISCHARSET_UNICODE(pImplMap)) {
-				pString = ConvertStringToUnicode(*(HEAP_PTR*)(pParams + paramOfs));
-			} else {
-				Crash("PInvoke_Call() Cannot handle string marshalling of given type");
-			}
-			_pTempMem[_tempMemOfs] = pString;
-			_tempMemOfs++;
-			_args[_argOfs] = (U32)pString;
-			_argOfs++;
-			paramOfs += 4;
-		} else if (pParamType == _bcl_->types[TYPE_SYSTEM_INTPTR]) {
-			// Only works for 32-bit
-			_args[_argOfs] = *(U32*)(pParams + paramOfs);
-			_argOfs++;
-			paramOfs += 4;
-		} else if (pParamType == _bcl_->types[TYPE_SYSTEM_SINGLE]) {
-			_argsd[_argdOfs] = *(float*)(pParams + paramOfs);
-			_argdOfs++;
-			paramOfs += 4;
-			paramType = SINGLE;
-		} else if (pParamType == _bcl_->types[TYPE_SYSTEM_DOUBLE]) {
-			_argsd[_argdOfs] = *(double*)(pParams + paramOfs);
-			_argdOfs++;
-			paramOfs += 8;
-			paramType = DOUBLE;
-		} else {
-			Crash("PInvoke_Call() Cannot handle parameter of type: %s", pParamType->name);
-		}
-		SET_ARG_TYPE(paramTypeNum, paramType);
-	}
-	
-	switch (funcParams) {
-
-#include "PInvoke_CaseCode.h"
-
-	case CALL5(DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT):
-		u64Ret = ((_uCuuuuu)(pFn))(_args[0], _args[1], _args[2], _args[3], _args[4]);
-		break;
-
-	case CALL6(DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT):
-		u64Ret = ((_uCuuuuuu)(pFn))(_args[0], _args[1], _args[2], _args[3], _args[4], _args[5]);
-		break;
-
-	case CALL7(DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT):
-		u64Ret = ((_uCuuuuuuu)(pFn))(_args[0], _args[1], _args[2], _args[3], _args[4], _args[5], _args[6]);
-		break;
-
-	case CALL8(DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT):
-		u64Ret = ((_uCuuuuuuuu)(pFn))(_args[0], _args[1], _args[2], _args[3], _args[4], _args[5], _args[6], _args[7]);
-		break;
-
-	case CALL9(DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT):
-		u64Ret = ((_uCuuuuuuuuu)(pFn))(_args[0], _args[1], _args[2], _args[3], _args[4], _args[5], _args[6], _args[7], _args[8]);
-		break;
-
-	case CALL10(DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT):
-		u64Ret = ((_uCuuuuuuuuuu)(pFn))(_args[0], _args[1], _args[2], _args[3], _args[4], _args[5], _args[6], _args[7], _args[8], _args[9]);
-		break;
-
-	default:
-		Crash("PInvoke_Call() Cannot handle the function parameters: 0x%08x", funcParams);
-	}
-	
-	for (i=0; i<_tempMemOfs; i++) {
-		Gfree(_pTempMem[i]);
-	}
-
-	if (pReturnType == NULL) {
-		return 0;
-	}
-	if (pReturnType->stackType == EVALSTACK_INT32) {
-		*(U32*)pReturnValue = (U32)u64Ret;
-		return 4;
-	}
-	if (pReturnType == _bcl_->types[TYPE_SYSTEM_STRING]) {
-		if (IMPLMAP_ISCHARSET_ANSI(pImplMap) || IMPLMAP_ISCHARSET_AUTO(pImplMap) || IMPLMAP_ISCHARSET_NOTSPEC(pImplMap)) {
-			*(HEAP_PTR*)pReturnValue = SystemString_FromCharPtrASCII((char*)u64Ret);
-		} else if (IMPLMAP_ISCHARSET_UNICODE(pImplMap)) {
-			*(HEAP_PTR*)pReturnValue = SystemString_FromCharPtrUTF16((U16*)(U32)u64Ret);
-		} else {
-			Crash("PInvoke_Call() Cannot handle return string in specified format");
-		}
-		return sizeof(void*);
-	}
-	if (pReturnType == _bcl_->types[TYPE_SYSTEM_INTPTR]) {
-		*(void**)pReturnValue = (void*)(U32)u64Ret;
-		return sizeof(void*);
-	}
-	if (pReturnType == _bcl_->types[TYPE_SYSTEM_SINGLE]) {
-		*(double*)pReturnValue = (double)fRet;
-		return 8;
-	}
-	if (pReturnType == _bcl_->types[TYPE_SYSTEM_DOUBLE]) {
-		*(double*)pReturnValue = dRet;
-		return 8;
-	}
-
-	Crash("PInvoke_Call() Cannot handle return type: %s", pReturnType->name);
-	FAKE_RETURN;
-	return 0;
-}
+//function_space_specifier U32 PInvoke_Call(tJITCallPInvoke *pCall, PTR pParams, PTR pReturnValue) {
+//	U32 _args[MAX_ARGS];
+//	double _argsd[MAX_ARGS];
+//	void* _pTempMem[MAX_ARGS];
+//	U32 numParams, param, paramTypeNum;
+//
+//	tMD_MethodDef *pMethod = pCall->pMethod;
+//	tMD_TypeDef *pReturnType = pMethod->pReturnType;
+//	tMD_ImplMap *pImplMap = pCall->pImplMap;
+//	void *pFn = pCall->fn;
+//	U32 _argOfs = 0, _argdOfs = 0, paramOfs = 0;
+//	U32 _tempMemOfs = 0;
+//	U32 i;
+//	U32 funcParams = DEFAULT;
+//	U64 u64Ret;
+//	float fRet;
+//	double dRet;
+//
+//	if (pReturnType != NULL) {
+//		if (pReturnType == _bcl_->types[TYPE_SYSTEM_SINGLE]) {
+//			funcParams = SINGLE;
+//		} else if (pReturnType == _bcl_->types[TYPE_SYSTEM_DOUBLE]) {
+//			funcParams = DOUBLE;
+//		}
+//	}
+//
+//	numParams = pMethod->numberOfParameters;
+//	for (param = 0, paramTypeNum = 0; param<numParams; param++, paramTypeNum++) {
+//		tParameter *pParam = &(pMethod->pParams[param]);
+//		tMD_TypeDef *pParamType = pParam->pTypeDef;
+//		U32 paramType = DEFAULT;
+//
+//		if (pParamType->stackType == EVALSTACK_INT32) {
+//			_args[_argOfs] = *(U32*)(pParams + paramOfs);
+//			_argOfs++;
+//			paramOfs += 4;
+//		} else if (pParamType == _bcl_->types[TYPE_SYSTEM_STRING]) {
+//			// Allocate a temp bit of memory for the string that's been converted.
+//			void *pString;
+//			if (IMPLMAP_ISCHARSET_ANSI(pImplMap) || IMPLMAP_ISCHARSET_AUTO(pImplMap) || IMPLMAP_ISCHARSET_NOTSPEC(pImplMap)) {
+//				pString = ConvertStringToANSI(*(HEAP_PTR*)(pParams + paramOfs));
+//			} else if (IMPLMAP_ISCHARSET_UNICODE(pImplMap)) {
+//				pString = ConvertStringToUnicode(*(HEAP_PTR*)(pParams + paramOfs));
+//			} else {
+//				Crash("PInvoke_Call() Cannot handle string marshalling of given type");
+//			}
+//			_pTempMem[_tempMemOfs] = pString;
+//			_tempMemOfs++;
+//			_args[_argOfs] = (U32)pString;
+//			_argOfs++;
+//			paramOfs += 4;
+//		} else if (pParamType == _bcl_->types[TYPE_SYSTEM_INTPTR]) {
+//			// Only works for 32-bit
+//			_args[_argOfs] = *(U32*)(pParams + paramOfs);
+//			_argOfs++;
+//			paramOfs += 4;
+//		} else if (pParamType == _bcl_->types[TYPE_SYSTEM_SINGLE]) {
+//			_argsd[_argdOfs] = *(float*)(pParams + paramOfs);
+//			_argdOfs++;
+//			paramOfs += 4;
+//			paramType = SINGLE;
+//		} else if (pParamType == _bcl_->types[TYPE_SYSTEM_DOUBLE]) {
+//			_argsd[_argdOfs] = *(double*)(pParams + paramOfs);
+//			_argdOfs++;
+//			paramOfs += 8;
+//			paramType = DOUBLE;
+//		} else {
+//			Crash("PInvoke_Call() Cannot handle parameter of type: %s", pParamType->name);
+//		}
+//		SET_ARG_TYPE(paramTypeNum, paramType);
+//	}
+//	
+//	switch (funcParams) {
+//
+//#include "PInvoke_CaseCode.h"
+//
+//	case CALL5(DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT):
+//		u64Ret = ((_uCuuuuu)(pFn))(_args[0], _args[1], _args[2], _args[3], _args[4]);
+//		break;
+//
+//	case CALL6(DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT):
+//		u64Ret = ((_uCuuuuuu)(pFn))(_args[0], _args[1], _args[2], _args[3], _args[4], _args[5]);
+//		break;
+//
+//	case CALL7(DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT):
+//		u64Ret = ((_uCuuuuuuu)(pFn))(_args[0], _args[1], _args[2], _args[3], _args[4], _args[5], _args[6]);
+//		break;
+//
+//	case CALL8(DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT):
+//		u64Ret = ((_uCuuuuuuuu)(pFn))(_args[0], _args[1], _args[2], _args[3], _args[4], _args[5], _args[6], _args[7]);
+//		break;
+//
+//	case CALL9(DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT):
+//		u64Ret = ((_uCuuuuuuuuu)(pFn))(_args[0], _args[1], _args[2], _args[3], _args[4], _args[5], _args[6], _args[7], _args[8]);
+//		break;
+//
+//	case CALL10(DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT):
+//		u64Ret = ((_uCuuuuuuuuuu)(pFn))(_args[0], _args[1], _args[2], _args[3], _args[4], _args[5], _args[6], _args[7], _args[8], _args[9]);
+//		break;
+//
+//	default:
+//		Crash("PInvoke_Call() Cannot handle the function parameters: 0x%08x", funcParams);
+//	}
+//	
+//	for (i=0; i<_tempMemOfs; i++) {
+//		Gfree(_pTempMem[i]);
+//	}
+//
+//	if (pReturnType == NULL) {
+//		return 0;
+//	}
+//	if (pReturnType->stackType == EVALSTACK_INT32) {
+//		*(U32*)pReturnValue = (U32)u64Ret;
+//		return 4;
+//	}
+//	if (pReturnType == _bcl_->types[TYPE_SYSTEM_STRING]) {
+//		if (IMPLMAP_ISCHARSET_ANSI(pImplMap) || IMPLMAP_ISCHARSET_AUTO(pImplMap) || IMPLMAP_ISCHARSET_NOTSPEC(pImplMap)) {
+//			*(HEAP_PTR*)pReturnValue = SystemString_FromCharPtrASCII((char*)u64Ret);
+//		} else if (IMPLMAP_ISCHARSET_UNICODE(pImplMap)) {
+//			*(HEAP_PTR*)pReturnValue = SystemString_FromCharPtrUTF16((U16*)(U32)u64Ret);
+//		} else {
+//			Crash("PInvoke_Call() Cannot handle return string in specified format");
+//		}
+//		return sizeof(void*);
+//	}
+//	if (pReturnType == _bcl_->types[TYPE_SYSTEM_INTPTR]) {
+//		*(void**)pReturnValue = (void*)(U32)u64Ret;
+//		return sizeof(void*);
+//	}
+//	if (pReturnType == _bcl_->types[TYPE_SYSTEM_SINGLE]) {
+//		*(double*)pReturnValue = (double)fRet;
+//		return 8;
+//	}
+//	if (pReturnType == _bcl_->types[TYPE_SYSTEM_DOUBLE]) {
+//		*(double*)pReturnValue = dRet;
+//		return 8;
+//	}
+//
+//	Crash("PInvoke_Call() Cannot handle return type: %s", pReturnType->name);
+//	FAKE_RETURN;
+//	return 0;
+//}

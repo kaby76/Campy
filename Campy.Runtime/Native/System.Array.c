@@ -128,7 +128,7 @@ function_space_specifier tAsyncCall* System_Array_Internal_SetValue(PTR pThis_, 
 
     index = *(U32*)p++;
 
-#if defined(WIN32) && defined(_DEBUG)
+#if defined(_MSC_VER) && defined(_DEBUG)
     // Do a bounds-check
     U32 len = *((&(pArray->rank)) + 1);
     if (index >= len) {
@@ -198,7 +198,7 @@ function_space_specifier tAsyncCall* System_Array_Internal_Copy(PTR pThis_, PTR 
     if (Type_IsAssignableFrom(pDstType->pArrayElementType, pSrcElementType)) {
         // Can do fast-copy
 
-#if defined(WIN32) && defined(_DEBUG)
+#if defined(_MSC_VER) && defined(_DEBUG)
         // Do bounds check
         U32 slen = *((&(pSrc->rank)) + 1);
         U32 dlen = *((&(pDst->rank)) + 1);
@@ -314,7 +314,7 @@ function_space_specifier void SystemArray_StoreElement(HEAP_PTR pThis_, U32 inde
     tMD_TypeDef *pArrayTypeDef;
     U32 elemSize;
 
-#if defined(WIN32) && defined(_DEBUG)
+#if defined(_MSC_VER) && defined(_DEBUG)
     // Do a bounds check
     U32 len = *((&(pArray->rank)) + 1);
     if (index >= len) {
@@ -494,7 +494,7 @@ function_space_specifier PTR SystemArray_LoadElementAddress(HEAP_PTR pThis_, U32
     tSystemArray *pArray = (tSystemArray*)pThis_;
     tMD_TypeDef *pArrayTypeDef;
 
-#if defined(WIN32) && defined(_DEBUG)
+#if defined(_MSC_VER) && defined(_DEBUG)
     U32 len = *((&(pArray->rank)) + 1);
     if (index >= len) {
 //      printf("SystemArray_LoadElementAddress() Bounds check failed\n");

@@ -76,7 +76,7 @@ typedef uint16_t U16;
 typedef uint8_t U8;
 
 
-#ifdef WIN32
+#ifdef _MSC_VER
 
 typedef int I32;
 typedef unsigned int U32;

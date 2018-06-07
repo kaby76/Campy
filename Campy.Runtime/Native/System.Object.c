@@ -43,8 +43,8 @@ function_space_specifier tAsyncCall* System_Object_Clone(PTR pThis_, PTR pParams
 }
 
 function_space_specifier tAsyncCall* System_Object_GetHashCode(PTR pThis_, PTR pParams, PTR pReturnValue) {
-	*(U32*)pReturnValue = ((((U32)pThis_) >> 2) * 2654435761UL);
-
+	//*(U32*)pReturnValue = ((((U32)pThis_) >> 2) * 2654435761UL);
+	*(U32*)pReturnValue = static_cast<unsigned>(reinterpret_cast<uintptr_t>(pThis_));
 	return NULL;
 }
 

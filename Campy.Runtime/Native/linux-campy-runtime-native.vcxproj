@@ -66,19 +66,19 @@
     <IncludePath>./;/usr/local/cuda-9.1/include/;$(IncludePath)</IncludePath>
     <LibraryPath>/usr/local/cuda-9.1/lib64</LibraryPath>
     <TargetName>campy-runtime-native</TargetName>
-    <RemoteCppCompileToolExe>/home/ken/kens-nvcc.sh</RemoteCppCompileToolExe>
+    <RemoteCppCompileToolExe>/home/ken/kens-campy-nvcc-9-1.sh</RemoteCppCompileToolExe>
     <TargetExt>.a</TargetExt>
-    <RemoteCCompileToolExe>/home/ken/kens-nvcc.sh</RemoteCCompileToolExe>
-    <RemoteLdToolExe>/home/ken/kens-link.sh</RemoteLdToolExe>
+    <RemoteCCompileToolExe>/home/ken/kens-campy-nvcc-9-1.sh</RemoteCCompileToolExe>
+    <RemoteLdToolExe>/home/ken/kens-campy-link-9-1.sh</RemoteLdToolExe>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>./;/usr/local/cuda-9.1/include/;$(IncludePath)</IncludePath>
     <LibraryPath>/usr/local/cuda-9.1/lib64</LibraryPath>
-    <RemoteCppCompileToolExe>/home/ken/kens-nvcc.sh</RemoteCppCompileToolExe>
+    <RemoteCppCompileToolExe>/home/ken/kens-campy-nvcc-9-1.sh</RemoteCppCompileToolExe>
     <TargetName>campy-runtime-native</TargetName>
     <TargetExt>.a</TargetExt>
-    <RemoteCCompileToolExe>/home/ken/kens-nvcc.sh</RemoteCCompileToolExe>
-    <RemoteLdToolExe>/home/ken/kens-link.sh</RemoteLdToolExe>
+    <RemoteCCompileToolExe>/home/ken/kens-campy-nvcc-9-1.sh</RemoteCCompileToolExe>
+    <RemoteLdToolExe>/home/ken/kens-campy-link-9-1.sh</RemoteLdToolExe>
   </PropertyGroup>
   <ItemGroup>
     <ClInclude Include="basics.h" />

@@ -23,7 +23,7 @@
 
 #include "System.DateTime.h"
 
-#ifndef WIN32
+#ifndef _MSC_VER
 
 #include <sys/time.h>
 
@@ -36,7 +36,7 @@
 
 function_space_specifier tAsyncCall* System_DateTime_InternalUtcNow(PTR pThis_, PTR pParams, PTR pReturnValue) {
 
-#ifdef WIN32
+#ifdef _MSC_VER
 
 	//FILETIME ft;
 

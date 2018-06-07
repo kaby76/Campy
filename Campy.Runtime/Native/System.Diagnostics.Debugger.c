@@ -29,7 +29,7 @@
 
 function_space_specifier tAsyncCall* System_Diagnostics_Debugger_Break(PTR pThis_, PTR pParams, PTR pReturnValue) {
 //	printf("BREAK\n");
-#if defined(WIN32) && defined(_DEBUG)
+#if defined(_MSC_VER) && defined(_DEBUG)
 	__debugbreak();
 #endif
 	return NULL;

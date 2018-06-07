@@ -94,7 +94,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="swigged.cuda">
-      <Version>9.185.7</Version>
+      <Version>9.185.8</Version>
     </PackageReference>
     <PackageReference Include="swigged.llvm">
       <Version>6.0.6</Version>

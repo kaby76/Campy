@@ -25,7 +25,7 @@
 
 #include "System.Array.h"
 
-#ifdef WIN32
+#ifdef _MSC_VER
 #define ERRNO WSAGetLastError()
 #define WOULDBLOCK WSAEWOULDBLOCK
 #else

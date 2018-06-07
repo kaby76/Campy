@@ -36,7 +36,11 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <fcntl.h>
-#if WIN32 && !CUDA
+#if defined(__GNUC__) && !CUDA
+#include <experimental/filesystem>
+#include <string>
+#endif
+#if defined(_MSC_VER) && !CUDA
 #include <filesystem>
 #include <string>
 #include <direct.h>
@@ -109,7 +113,50 @@ function_space_specifier tMetaData* CLIFile_GetMetaDataForAssemblyAux(char * fil
 
 	// Assembly not loaded, so load it if possible
 	{
-#if WIN32 && !CUDA
+#if defined(__GNUC__) && !CUDA
+		int added = 0;
+		// Try current directory first.
+		char * cwddir = getcwd(fName, max_size);
+		if (cwddir != NULL)
+		{
+			std::experimental::filesystem::path p(fName);
+			std::experimental::filesystem::directory_iterator start(p);
+			std::experimental::filesystem::directory_iterator end;
+			for (; start != end; ++start)
+			{
+				std::experimental::filesystem::path tpath = start->path();
+				std::string path_string = tpath.u8string();
+				std::string tail = path_string.substr(path_string.length() - 4);
+				printf("%s\n", tail.c_str());
+				printf("%s\n", path_string.c_str());
+				strncpy(fName, assemblyName, max_size);
+				strncat(fName, ".dll", max_size);
+				std::size_t f1 = path_string.find(fName, 0);
+				if (f1 != std::string::npos)
+				{
+					std::experimental::filesystem::path fn = tpath.filename();
+					std::string fn2 = fn.u8string();
+					const char * file_name = fn2.c_str();
+					FILE * file = fopen(path_string.c_str(), "rb");
+					fseek(file, 0, SEEK_END);
+					long file_len = ftell(file);
+					fseek(file, 0, SEEK_SET);
+					char * buffer = (char *)Gmalloc(file_len + 1);
+					if (!buffer)
+					{
+						fprintf(stderr, "Memory error!");
+						fclose(file);
+					}
+					fread(buffer, file_len, 1, file);
+					fclose(file);
+					Gfs_add_file_no_malloc(file_name, buffer, file_len);
+					added = 1;
+					break;
+				}
+			}
+		}
+#endif
+#if (defined(_MSC_VER) && !CUDA)
 		int added = 0;
 		// Try current directory first.
 		char * cwddir = _getcwd(fName, max_size);
@@ -151,6 +198,8 @@ function_space_specifier tMetaData* CLIFile_GetMetaDataForAssemblyAux(char * fil
 				}
 			}
 		}
+#endif
+#if (defined(_MSC_VER) && !CUDA)
 		// Functionality of assembly resolution seems it should be here.
 		// But, this is a problem with GPU BCL because we don't have a
 		// GAC for file system. What a mess.
