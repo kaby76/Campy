@@ -26,7 +26,7 @@ namespace ConsoleApp4
 
         static void Main(string[] args)
         {
-            StartDebugging();
+            //StartDebugging();
             List<int> x = new List<int>();
             int n = 4;
             for (int i = 0; i < n; ++i) x.Add(0);

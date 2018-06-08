@@ -44,11 +44,8 @@
 #include <filesystem>
 #include <string>
 #include <direct.h>
+#include <Shlwapi.h>
 #endif
-
-// Is this exe/dll file for the .NET virtual machine?
-#define IMAGE_FILE_MACHINE_I386 0x14c
-#define IMAGE_FILE_MACHINE_AMD64 0x8664
 
 typedef struct tFilesLoaded_ tFilesLoaded;
 struct tFilesLoaded_ {
@@ -127,8 +124,6 @@ function_space_specifier tMetaData* CLIFile_GetMetaDataForAssemblyAux(char * fil
 				std::experimental::filesystem::path tpath = start->path();
 				std::string path_string = tpath.u8string();
 				std::string tail = path_string.substr(path_string.length() - 4);
-				printf("%s\n", tail.c_str());
-				printf("%s\n", path_string.c_str());
 				strncpy(fName, assemblyName, max_size);
 				strncat(fName, ".dll", max_size);
 				std::size_t f1 = path_string.find(fName, 0);
@@ -158,6 +153,70 @@ function_space_specifier tMetaData* CLIFile_GetMetaDataForAssemblyAux(char * fil
 #endif
 #if (defined(_MSC_VER) && !CUDA)
 		int added = 0;
+		char dest[400];
+		int destSize = 400;
+		DWORD length = GetModuleFileName(NULL, dest, destSize);
+		PathRemoveFileSpec(dest);
+		{
+			std::experimental::filesystem::path p(dest);
+			std::experimental::filesystem::directory_iterator start(p);
+			std::experimental::filesystem::directory_iterator end;
+			for (; start != end; ++start)
+			{
+				std::experimental::filesystem::path tpath = start->path();
+				std::string path_string = tpath.u8string();
+				std::string tail = path_string.substr(path_string.length() - 4);
+				strncpy(fName, assemblyName, max_size);
+				strncat(fName, ".dll", max_size);
+				std::size_t f1 = path_string.find(fName, 0);
+				if (f1 != std::string::npos)
+				{
+					std::experimental::filesystem::path fn = tpath.filename();
+					std::string fn2 = fn.u8string();
+					const char * file_name = fn2.c_str();
+					FILE * file = fopen(path_string.c_str(), "rb");
+					fseek(file, 0, SEEK_END);
+					long file_len = ftell(file);
+					fseek(file, 0, SEEK_SET);
+					char * buffer = (char *)Gmalloc(file_len + 1);
+					if (!buffer)
+					{
+						fprintf(stderr, "Memory error!");
+						fclose(file);
+					}
+					fread(buffer, file_len, 1, file);
+					fclose(file);
+					Gfs_add_file_no_malloc(file_name, buffer, file_len);
+					added = 1;
+					break;
+				}
+				strncpy(fName, assemblyName, max_size);
+				strncat(fName, ".exe", max_size);
+				f1 = path_string.find(fName, 0);
+				if (f1 != std::string::npos)
+				{
+					std::experimental::filesystem::path fn = tpath.filename();
+					std::string fn2 = fn.u8string();
+					const char * file_name = fn2.c_str();
+					FILE * file = fopen(path_string.c_str(), "rb");
+					fseek(file, 0, SEEK_END);
+					long file_len = ftell(file);
+					fseek(file, 0, SEEK_SET);
+					char * buffer = (char *)Gmalloc(file_len + 1);
+					if (!buffer)
+					{
+						fprintf(stderr, "Memory error!");
+						fclose(file);
+					}
+					fread(buffer, file_len, 1, file);
+					fclose(file);
+					Gfs_add_file_no_malloc(file_name, buffer, file_len);
+					added = 1;
+					break;
+				}
+			}
+		}
+
 		// Try current directory first.
 		char * cwddir = _getcwd(fName, max_size);
 		if (cwddir != NULL)
@@ -170,8 +229,6 @@ function_space_specifier tMetaData* CLIFile_GetMetaDataForAssemblyAux(char * fil
 				std::experimental::filesystem::path tpath = start->path();
 				std::string path_string = tpath.u8string();
 				std::string tail = path_string.substr(path_string.length() - 4);
-				printf("%s\n", tail.c_str());
-				printf("%s\n", path_string.c_str());
 				strncpy(fName, assemblyName, max_size);
 				strncat(fName, ".dll", max_size);
 				std::size_t f1 = path_string.find(fName, 0);
@@ -220,8 +277,6 @@ function_space_specifier tMetaData* CLIFile_GetMetaDataForAssemblyAux(char * fil
 				std::experimental::filesystem::path tpath = start->path();
 				std::string path_string = tpath.u8string();
 				std::string tail = path_string.substr(path_string.length() - 4);
-				printf("%s\n", tail.c_str());
-				printf("%s\n", path_string.c_str());
 				std::size_t f1 = path_string.find(publickey, 0);
 				std::size_t f2 = tail.find(".dll", 0);
 				if (f1 != std::string::npos && f2 != std::string::npos)
@@ -259,9 +314,6 @@ function_space_specifier tMetaData* CLIFile_GetMetaDataForAssemblyAux(char * fil
 				std::experimental::filesystem::path tpath = start->path();
 				std::string path_string = tpath.u8string();
 				std::string tail = path_string.substr(path_string.length() - 4);
-				printf("%s\n", tail.c_str());
-				printf("%s\n", path_string.c_str());
-				printf("%s\n", path_string.c_str());
 				strncpy(fName, assemblyName, max_size);
 				strncat(fName, ".dll", max_size);
 				std::size_t f1 = path_string.find(fName, 0);
@@ -394,9 +446,9 @@ function_space_specifier static tCLIFile* LoadPEFile(char * pFileName, void *pDa
 
 	machine = ph->Machine;
 
-	if (!(machine == IMAGE_FILE_MACHINE_I386 || machine == IMAGE_FILE_MACHINE_AMD64))
+	if (!(machine == IMAGE_FILE_MACHINE_I386 || machine == IMAGE_FILE_MACHINE_AMD64 || machine == IMAGE_FILE_MACHINE_UNDOCUMENTED0xFD1D))
 	{
-		Gprintf("Not IMAGE_FILE_MACHINE_I386 or .\n");
+		Gprintf("Unknown machine image file: %04x\n", machine);
 		return NULL;
 	}
 
@@ -583,14 +635,14 @@ function_space_specifier tCLIFile* CLIFile_Load(char *pFileName)
 
 	if (pRawFile == NULL)
 	{
-		Gprintf("Warning: assembly %s cannot be found.\n", pFileName);
+//		Gprintf("Warning: assembly %s cannot be found.\n", pFileName);
 		return NULL;
 	}
 
 	pRet = LoadPEFile(pFileName, pRawFile);
 	if (pRet == NULL)
 	{
-		Gprintf("Warning: assembly %s does not appear to have metadata.\n", pFileName);
+//		Gprintf("Warning: assembly %s does not appear to have metadata.\n", pFileName);
 		return NULL;
 	}
 	pRet->pFileName = (char*)mallocForever((U32)Gstrlen(pFileName) + 1);

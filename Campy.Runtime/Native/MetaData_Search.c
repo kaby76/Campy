@@ -201,7 +201,7 @@ function_space_specifier tMD_TypeDef* MetaData_GetTypeDefFromName(tMetaData *pMe
 
 		pTypeDef = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_TYPEDEF, i));
 
-		printf("checking whether %s::%s matches %s::%s, all in %s\n", nameSpace, name, pTypeDef->nameSpace, pTypeDef->name, pMetaData->file_name);
+		//printf("checking whether %s::%s matches %s::%s, all in %s\n", nameSpace, name, pTypeDef->nameSpace, pTypeDef->name, pMetaData->file_name);
 
 		if (pInNestedClass == pTypeDef->pNestedIn
 			&& Gstrcmp(name, pTypeDef->name) == 0

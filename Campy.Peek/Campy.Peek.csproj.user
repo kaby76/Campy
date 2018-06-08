@@ -2,6 +2,6 @@
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
     <EnableUnmanagedDebugging>true</EnableUnmanagedDebugging>
-    <StartArguments>"C:\Users\kenne\Documents\testtest\bin\Debug\netcoreapp2.0\win-x64\publish\testtest.exe"</StartArguments>
+    <StartArguments>"C:\Users\kenne\test\bin\Debug\netcoreapp2.0\ubuntu.16.04-x64\publish\System.Collections.dll"</StartArguments>
   </PropertyGroup>
 </Project>

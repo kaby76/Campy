@@ -22,7 +22,7 @@
 
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>An API for GP-GPU computing using C# or any other NET language, for Windows and Ubuntu x64.</description>
-    <releaseNotes>Version 0.0.11 -- Even more fixes to the metadata system.</releaseNotes>
+    <releaseNotes>Version 0.0.11 -- Even more fixes to the metadata system, assembly resolution, generics.</releaseNotes>
 
     <!-- Copyright information -->
     <copyright>Copyright © 2017-2018</copyright>

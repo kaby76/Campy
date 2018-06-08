@@ -278,7 +278,7 @@ function_space_specifier void Initialize_BCL0(size_t size, size_t first_overhead
 		struct header_t* fb = (struct header_t*)start_of_free_blocks;
 		f[0] = fb;
 
-		//Gprintf("ptr to begin of free block = 0x%08llx\n", (unsigned char *)fb);
+//      Gprintf("ptr to begin of free block = 0x%08llx\n", (unsigned char *)fb);
 
 		// Set up size of the free block in this heap.
 		// header_overhead is # bytes of struct header_t up to "data".
@@ -355,7 +355,7 @@ function_space_specifier void check_heap_structures()
 		{
 			struct header_t * check = f[j];
 			if (check == NULL) continue;
-			//Gprintf("Check is 0x%08llx\n", check);
+//			Gprintf("Check is 0x%08llx\n", check);
 			curr = f[0];
 			while (curr)
 			{
@@ -414,7 +414,7 @@ function_space_specifier void * simple_malloc(size_t size)
 	int threadId = 0;
 #endif
 
-	//Gprintf("Starting alloc, first a check...\n");
+//	Gprintf("Starting alloc, first a check...\n");
 	check_heap_structures();
 
 	size_t total_size;
@@ -425,16 +425,16 @@ function_space_specifier void * simple_malloc(size_t size)
 
 	size_t before = size;
 	size = roundUp(size, 8);
-	//Gprintf("Block size was %llx, now %llx\n", before, size);
+//	Gprintf("Block size was %llx, now %llx\n", before, size);
 	struct header_t ** f = (struct header_t **)_bcl_->heap_list[threadId];
 	// First fit algorithm of free list.
-	//Gprintf("Looking for a free block\n");
+//	Gprintf("Looking for a free block\n");
 	struct header_t * curr = f[0];
 	while (curr)
 	{
 		if (curr->is_free && curr->size >= size)
 		{
-			//Gprintf("OK. Found free block 0x%08llx size %x\n", curr, curr->size);
+//			Gprintf("OK. Found free block 0x%08llx size %x\n", curr, curr->size);
 			new_block = curr;
 			break;
 		}
@@ -443,7 +443,7 @@ function_space_specifier void * simple_malloc(size_t size)
 
 	if (new_block)
 	{
-		//Gprintf("got block, checking whether to split or use whole.\n");
+//		Gprintf("got block, checking whether to split or use whole.\n");
 
 		size_t old_size = new_block->size;
 		size_t new_free_block_size =
@@ -455,7 +455,7 @@ function_space_specifier void * simple_malloc(size_t size)
 		// split block if big enough.
 		if (new_free_block_size > 8)
 		{
-			//Gprintf("split\n");
+//			Gprintf("split\n");
 
 			// set up new free block.
 			new_free_block =
@@ -463,8 +463,8 @@ function_space_specifier void * simple_malloc(size_t size)
 					+ size
 					+ _bcl_->padding);
 
-			//Gprintf("New free block starts here 0x%08llx\n", new_free_block);
-			//Gprintf("allocated block starts here 0x%08llx which will be reformatted.\n", new_block);
+//			Gprintf("New free block starts here 0x%08llx\n", new_free_block);
+//			Gprintf("allocated block starts here 0x%08llx which will be reformatted.\n", new_block);
 
 			// set up free block.
 			new_free_block->is_free = 1;
@@ -472,11 +472,11 @@ function_space_specifier void * simple_malloc(size_t size)
 			new_free_block->prev = new_block->prev;
 			new_free_block->size = new_free_block_size;
 
-			//Gprintf("Zapping the following addrs:\n");
-			//Gprintf("0xde's, starting at 0x%08llx, and going for %d bytes\n",
-			//	&new_block->data[0] + size, _bcl_->padding);
-			//Gprintf("0's, starting at 0x%08llx, and going for %lld bytes\n",
-			//		&new_block->data[0], size);
+//			Gprintf("Zapping the following addrs:\n");
+//			Gprintf("0xde's, starting at 0x%08llx, and going for %d bytes\n",
+//				&new_block->data[0] + size, _bcl_->padding);
+//			Gprintf("0's, starting at 0x%08llx, and going for %lld bytes\n",
+//					&new_block->data[0], size);
 			// change allocated block.
 			new_block->size = size;
 			memset(&new_block->data[0] + size, 0xde, _bcl_->padding);
@@ -484,7 +484,7 @@ function_space_specifier void * simple_malloc(size_t size)
 		}
 		else
 		{
-			//Gprintf("Using whole.\n");
+//			Gprintf("Using whole.\n");
 		}
 
 		// Set up free and allocated list.
