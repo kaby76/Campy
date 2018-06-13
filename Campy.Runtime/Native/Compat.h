@@ -18,9 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#if !defined (__COMPAT_H)
-#define __COMPAT_H
-
+#pragma once
 
 // Define CUDA spaces. Sometimes we don't want to compile under Cuda.
 // But, if you do, #define CUDA
@@ -155,5 +153,4 @@ function_space_specifier void Gfree(
 // to/from the type desired. The old pParams[i] mechanism does not work.
 #define INTERNALSYSTEMCALL_PARAM(pParams, ofs, type) *(type*)(((void**)pParams) + ofs)
 
-#endif
 

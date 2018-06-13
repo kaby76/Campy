@@ -18,8 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#if !defined(__SYSTEM_RUNTIMETYPE_H)
-#define __SYSTEM_RUNTIMETYPE_H
+#pragma once
 
 #include "Types.h"
 #include "MetaData.h"
@@ -43,5 +42,3 @@ function_space_specifier tAsyncCall* System_RuntimeType_GetGenericArguments(PTR 
 function_space_specifier HEAP_PTR RuntimeType_New(tMD_TypeDef *pTypeDef);
 // De-ref a runtime type pointer
 function_space_specifier tMD_TypeDef* RuntimeType_DeRef(PTR type);
-
-#endif

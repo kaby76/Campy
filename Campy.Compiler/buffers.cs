@@ -1,5 +1,6 @@
 ﻿namespace Campy.Compiler
 {
+    using Mono.Cecil;
     using Swigged.Cuda;
     using System.Collections.Generic;
     using System.Linq;
@@ -199,14 +200,24 @@
         public IntPtr AddDataStructure(object to_gpu)
         {
             IntPtr result = IntPtr.Zero;
+
             var type = to_gpu.GetType();
+            var expected_bcl_type = type.ToMonoTypeReference();
+
+            Mono.Cecil.ModuleDefinition campy_bcl_runtime = Mono.Cecil.ModuleDefinition.ReadModule(RUNTIME.FindCoreLib());
+            TypeReference substituted_mono_type = expected_bcl_type.SubstituteMonoTypeReference(campy_bcl_runtime);
+            if (substituted_mono_type != null) expected_bcl_type = substituted_mono_type;
+
             var find_object = _allocated_objects.Where(p => p.Key == to_gpu);
+
+            if (Campy.Utils.Options.IsOn("copy_trace"))
+                System.Console.WriteLine("On CPU closure value before copying to GPU:"
+                                         + Environment.NewLine
+                                         + PrintCpuObject(0, to_gpu));
 
             // Allocate new buffer for object on GPU.
             if (!find_object.Any())
             {
-                if (Campy.Utils.Options.IsOn("copy_trace"))
-                    System.Console.WriteLine("Allocating GPU buf " + to_gpu);
                 result = New(to_gpu);
                 _allocated_objects[to_gpu] = result;
             }
@@ -215,6 +226,11 @@
             // Copy to GPU if it hasn't been done before.
             if (!_copied_to_gpu.Contains(result))
                 DeepCopyToImplementation(to_gpu, result);
+
+            if (Campy.Utils.Options.IsOn("copy_trace"))
+                System.Console.WriteLine("Closure value on GPU:"
+                                         + Environment.NewLine
+                                         + PrintBclObject(0, result, expected_bcl_type));
 
             return result;
         }
@@ -615,14 +631,11 @@
                         foreach (System.Reflection.FieldInfo fi in ffi)
                         {
                             object field_value = fi.GetValue(from_cpu);
-                            if (Campy.Utils.Options.IsOn("copy_trace"))
-                                System.Console.WriteLine("Copying field "
-                                                         + field_value
-                                                         + " "
-                                                         + RuntimeHelpers.GetHashCode(field_value));
                             if (field_value != null && Campy.Utils.Options.IsOn("copy_trace"))
-                                    System.Console.WriteLine("Copying field type "
-                                                             + field_value.GetType().FullName);
+                                if (Campy.Utils.Options.IsOn("copy_trace"))
+                                {
+                                    System.Console.WriteLine("Copying field " + field_value);
+                                }
 
                             String na = fi.Name;
                             var tfield = tfi.Where(k => k.Name == fi.Name).FirstOrDefault();
@@ -1372,6 +1385,8 @@
                 return IntPtr.Zero;
 
             Type type = obj.GetType();
+            Mono.Cecil.ModuleDefinition campy_bcl_runtime = Mono.Cecil.ModuleDefinition.ReadModule(RUNTIME.FindCoreLib());
+            TypeReference substituted_type = type.SubstituteMonoTypeReference(campy_bcl_runtime);
 
             if (type.FullName == "System.String")
             {
@@ -1407,7 +1422,7 @@
             }
 
             {
-                var bcl_type = RUNTIME.GetBclType(type);
+                var bcl_type = RUNTIME.GetBclType(type.ToMonoTypeReference());
                 RUNTIME.CheckHeap();
                 IntPtr result = RUNTIME.BclHeapAlloc(bcl_type);
                 RUNTIME.CheckHeap();
@@ -1464,6 +1479,161 @@
             Marshal.StructureToPtr(src, (IntPtr)destPtr, false);
             RUNTIME.CheckHeap();
         }
+
+        public static string Indent(int size, string value)
+        {
+            var strArray = value.Split('\r');
+            var sb = new StringBuilder();
+            foreach (var s in strArray)
+                sb.Append(new string(' ', size)).Append(s.Replace("\n", "\r\n"));
+            return sb.ToString();
+        }
+
+        public static string PrintCpuObject(int level, object obj)
+        {
+            if (obj == null)
+                return Indent(level, "null" + Environment.NewLine);
+
+            var type = obj.GetType();
+            var sb = new StringBuilder();
+            var s = Indent(level, type.Name + ":");
+            sb.Append(s + Environment.NewLine);
+
+            if (type.IsValueType && !type.IsStruct())
+            {
+                sb.Append(Indent(level + 2, obj.ToString()) + Environment.NewLine);
+                return sb.ToString();
+            }
+
+            if (type.IsArray)
+            {
+                var a = obj as Array;
+                for (int i = 0; i < a.Length; ++i)
+                {
+                    var v = a.GetValue(i);
+                    sb.Append(Indent(level + 2, i.ToString() + ":" + PrintCpuObject(level + 2, v)));
+                }
+                return sb.ToString();
+            }
+            else
+            {
+                // Print out value as string.
+                var fields = obj.GetType().GetFields(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
+                foreach (var f in fields)
+                {
+                    var v = f.GetValue(obj);
+                    sb.Append(Indent(level + 2, f.Name.ToString() + ":" + PrintCpuObject(level + 2, v)));
+                }
+                return sb.ToString();
+            }
+        }
+
+        public static string PrintBclObject(int level, IntPtr obj, TypeReference expected_bcl_type)
+        {
+            var sb = new StringBuilder();
+            var s = Indent(level, expected_bcl_type.Name + ":");
+            sb.Append(s + Environment.NewLine);
+
+            if (expected_bcl_type.IsValueType)
+            {
+                if (!expected_bcl_type.IsStruct())
+                {
+                    var sys_type = expected_bcl_type.ToSystemType();
+                    var o = Marshal.PtrToStructure(obj, sys_type);
+                    sb.Append(Indent(level + 2, o.ToString()) + Environment.NewLine);
+                    return sb.ToString();
+                }
+                else
+                {
+                    throw new Exception("unhandled");
+                }
+            }
+            else
+            {
+                // Reference type.
+                // Look up type in BCL of object pointer.
+                var bcl_type = RUNTIME.BclHeapGetType(obj);
+                if (expected_bcl_type.IsArray)
+                {
+                    var et = expected_bcl_type.GetElementType();
+                    uint rank = (uint)RUNTIME.BclSystemArrayGetRank(obj);
+                    IntPtr len_ptr = RUNTIME.BclSystemArrayGetDims(obj);
+                    unsafe
+                    {
+                        long total_size = 1;
+                        long * lens = (long*)len_ptr;
+                        for (int i = 0; i < rank; ++i) total_size *= lens[i];
+                        for (int i = 0; i < total_size; ++i)
+                        {
+                            long[] index = new long[rank];
+                            long c = i;
+                            for (int j = (int)rank - 1; j >= 0; --j)
+                            {
+                                long ind_size = lens[j];
+                                long remainder = c % ind_size;
+                                c = c / lens[j];
+                                index[j] = remainder;
+                            }
+                            fixed (long* inds = index)
+                            {
+                                void* address;
+                                RUNTIME.BclSystemArrayLoadElementIndicesAddress(obj, rank, (IntPtr)inds, (IntPtr)(& address));
+                                // In the case of a pointer, you have to deref the field.
+                                IntPtr fPtr = (IntPtr)address;
+                                var oPtr = fPtr;
+                                if (!et.IsValueType)
+                                    oPtr = (IntPtr)Marshal.PtrToStructure(fPtr, typeof(IntPtr));
+                                sb.Append(Indent(level + 2, i.ToString() + ":" + PrintBclObject(level + 2, oPtr, et)));
+                            }
+                        }
+                    }
+
+                    return sb.ToString();
+                }
+                else
+                {
+                    // Get all bcl fields of class object.
+                    IntPtr[] fields = null;
+                    unsafe
+                    {
+                        IntPtr* buf;
+                        int len;
+                        RUNTIME.BclGetFields(bcl_type, &buf, &len);
+                        fields = new IntPtr[len];
+                        for (int i = 0; i < len; ++i) fields[i] = buf[i];
+                    }
+                    // Get all Mono fields of class object.
+                    var mono_fields = expected_bcl_type.ResolveFields().ToArray();
+                    // Match up and print out.
+                    for (int i = 0; i < fields.Length; ++i)
+                    {
+                        var f = fields[i];
+                        var mono_field_type = mono_fields[i].FieldType;
+                        Mono.Cecil.ModuleDefinition campy_bcl_runtime = Mono.Cecil.ModuleDefinition.ReadModule(RUNTIME.FindCoreLib());
+                        TypeReference substituted_mono_type = mono_field_type.SubstituteMonoTypeReference(campy_bcl_runtime);
+                        if (substituted_mono_type != null)
+                            mono_field_type = substituted_mono_type;
+                        var ptrName = RUNTIME.BclGetFieldName(f);
+                        string name = Marshal.PtrToStringAnsi(ptrName);
+                        var fBclType = RUNTIME.BclGetFieldType(f);
+                        var find = mono_fields.Where(t => t.Name == name);
+                        var fPtr = RUNTIME.BclGetField(obj, f);
+                        // In the case of a pointer, you have to deref the field.
+                        var oPtr = fPtr;
+                        if (!mono_field_type.IsValueType)
+                            oPtr = (IntPtr)Marshal.PtrToStructure(fPtr, typeof(IntPtr));
+                        sb.Append(Indent(level + 2, name + ":" + PrintBclObject(level + 2, oPtr, mono_field_type)));
+                    }
+
+                    return sb.ToString();
+                }
+            }
+            throw new Exception("unhandled");
+            return "";
+        }
     }
 }
+
+
+
 

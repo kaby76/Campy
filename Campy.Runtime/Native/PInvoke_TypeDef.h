@@ -18,6 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#pragma once
+
 typedef float  (STDCALL *_fC)();
 typedef double (STDCALL *_dC)();
 typedef U64    (STDCALL *_uC)();

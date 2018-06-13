@@ -41,25 +41,29 @@ function_space_specifier void Generic_GetHeapRoots(tHeapRoots *pHeapRoots, tMD_T
 }
 
 function_space_specifier tMD_TypeDef* Generics_GetGenericTypeFromSig
-	(tMetaData *pMetaData, SIG *pSig, tMD_TypeDef **ppCallingClassTypeArgs, tMD_TypeDef **ppCallingMethodTypeArgs) {
-	tMD_TypeDef *pCoreType, *pRet;
+(tMetaData *pMetaData, SIG *pSig, tMD_TypeDef **ppCallingClassTypeArgs, tMD_TypeDef **ppCallingMethodTypeArgs) {
+	tMD_TypeDef *pCoreType;
+	tMD_TypeDef *pRet = NULL; // NULL indicates System.Void.
 	U32 numTypeArgs, i;
 	tMD_TypeDef **ppTypeArgs;
 
 	pCoreType = Type_GetTypeFromSig(pMetaData, pSig, ppCallingClassTypeArgs, ppCallingMethodTypeArgs);
-	MetaData_Fill_TypeDef(pCoreType, ppCallingClassTypeArgs, ppCallingMethodTypeArgs); //NULL, NULL);
+	if (pCoreType != NULL)
+	{
+		MetaData_Fill_TypeDef(pCoreType, ppCallingClassTypeArgs, ppCallingMethodTypeArgs); //NULL, NULL);
 
-	numTypeArgs = MetaData_DecodeUnsigned32BitInteger(pSig);
-	ppTypeArgs = (tMD_TypeDef**)Gmalloc(numTypeArgs * sizeof(tMD_TypeDef*));
-	for (i=0; i<numTypeArgs; i++) {
-		ppTypeArgs[i] = Type_GetTypeFromSig(pMetaData, pSig, ppCallingClassTypeArgs, ppCallingMethodTypeArgs);
-		if (ppTypeArgs[i] != NULL) {
-			MetaData_Fill_TypeDef(ppTypeArgs[i], NULL, NULL);
+		numTypeArgs = MetaData_DecodeUnsigned32BitInteger(pSig);
+		ppTypeArgs = (tMD_TypeDef**)Gmalloc(numTypeArgs * sizeof(tMD_TypeDef*));
+		for (i = 0; i < numTypeArgs; i++) {
+			ppTypeArgs[i] = Type_GetTypeFromSig(pMetaData, pSig, ppCallingClassTypeArgs, ppCallingMethodTypeArgs);
+			if (ppTypeArgs[i] != NULL) {
+				MetaData_Fill_TypeDef(ppTypeArgs[i], NULL, NULL);
+			}
 		}
-	}
 
-	pRet = Generics_GetGenericTypeFromCoreType(pCoreType, numTypeArgs, ppTypeArgs);
-	Gfree(ppTypeArgs);
+		pRet = Generics_GetGenericTypeFromCoreType(pCoreType, numTypeArgs, ppTypeArgs);
+		Gfree(ppTypeArgs);
+	}
 	return pRet;
 }
 
@@ -155,7 +159,7 @@ function_space_specifier tMD_TypeDef* Generics_GetGenericTypeFromCoreType(tMD_Ty
 	pTypeDef->pNestedIn = pCoreType->pNestedIn;
 	pTypeDef->isPrimed = 1;
 
-	MetaData_Fill_TypeDef_(pTypeDef, ppTypeArgs, NULL);
+	MetaData_Fill_TypeDef(pTypeDef, ppTypeArgs, NULL);
 
 	return pTypeDef;
 }

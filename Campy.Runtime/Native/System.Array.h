@@ -18,8 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#if !defined(__SYSTEM_ARRAY_H)
-#define __SYSTEM_ARRAY_H
+#pragma once
 
 #include "MetaData.h"
 #include "Types.h"
@@ -36,6 +35,9 @@ function_space_specifier HEAP_PTR SystemArray_NewVector(tMD_TypeDef *pArrayTypeD
 function_space_specifier void SystemArray_StoreElement(HEAP_PTR pThis_, U32 index, PTR value);
 function_space_specifier void SystemArray_LoadElement(HEAP_PTR pThis_, U32 index, PTR value);
 #define SystemArray_GetElements(pArray) ((PTR)(((PTR)pArray)+4))
+function_space_specifier void SystemArray_LoadElementIndices(HEAP_PTR pThis_, U32 dim, U64* indices, U64* value);
+function_space_specifier void SystemArray_LoadElementIndicesAddress(HEAP_PTR pThis_, U32 dim, U64* indices, HEAP_PTR * value_address);
 function_space_specifier PTR SystemArray_LoadElementAddress(HEAP_PTR pThis_, U32 index);
 function_space_specifier U32 SystemArray_GetNumBytes(HEAP_PTR pThis_, tMD_TypeDef *pElementType);
-#endif
+function_space_specifier int SystemArray_GetRank(HEAP_PTR pThis_);
+function_space_specifier U64* SystemArray_GetDims(HEAP_PTR pThis_);

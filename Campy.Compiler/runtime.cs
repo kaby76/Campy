@@ -46,14 +46,57 @@
         [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclAllocString")]
         public static extern IntPtr BclAllocString(int length, IntPtr chars);
 
-
         [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclArrayAlloc")]
         public static extern System.IntPtr BclArrayAlloc(
             System.IntPtr bcl_type,
             int rank,
             uint[] lengths);
 
+        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclGetMetaOfType")]
+        public static extern System.IntPtr BclGetMetaOfType(
+            [MarshalAs(UnmanagedType.LPStr)] string assemblyName,
+            [MarshalAs(UnmanagedType.LPStr)] string nameSpace,
+            [MarshalAs(UnmanagedType.LPStr)] string name,
+            System.IntPtr nested);
 
+        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclGenericsGetGenericTypeFromCoreType")]
+        public static extern System.IntPtr BclGenericsGetGenericTypeFromCoreType(
+            System.IntPtr base_type,
+            int count,
+            System.IntPtr[] args);
+
+        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclHeapGetType")]
+        public static extern System.IntPtr BclHeapGetType(System.IntPtr ptr);
+
+        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclFindFieldInType")]
+        public static extern System.IntPtr BclFindFieldInType(System.IntPtr ptr, [MarshalAs(UnmanagedType.LPStr)] string name);
+
+        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclGetField")]
+        public static extern System.IntPtr BclGetField(System.IntPtr ptr, System.IntPtr bcl_field);
+
+        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclSetField")]
+        public static extern void BclSetField(System.IntPtr ptr, System.IntPtr bcl_field, System.IntPtr value);
+
+        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclGetFields")]
+        public static extern unsafe void BclGetFields(System.IntPtr bcl_type, System.IntPtr ** buf, int * len);
+
+        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclGetFieldName")]
+        public static extern IntPtr BclGetFieldName(System.IntPtr bcl_field);
+
+        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclGetFieldType")]
+        public static extern IntPtr BclGetFieldType(System.IntPtr bcl_field);
+
+        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclSystemArrayGetRank")]
+        public static extern int BclSystemArrayGetRank(System.IntPtr bcl_object);
+
+        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclSystemArrayGetDims")]
+        public static extern IntPtr BclSystemArrayGetDims(System.IntPtr bcl_object);
+
+        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclSystemArrayLoadElementIndices")]
+        public static extern IntPtr BclSystemArrayLoadElementIndices(IntPtr bcl_object, uint dim, IntPtr indices, IntPtr value);
+
+        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclSystemArrayLoadElementIndicesAddress")]
+        public static extern IntPtr BclSystemArrayLoadElementIndicesAddress(IntPtr bcl_object, uint dim, IntPtr indices, IntPtr value_address);
 
 
         // This table encodes runtime type information for rewriting BCL types. Use this to determine
@@ -583,36 +626,6 @@
             return result;
         }
 
-        public static CUfunction _Z22Initialize_BCL_GlobalsPvyiPP6_BCL_t(CUmodule module)
-        {
-            CudaHelpers.CheckCudaError(Cuda.cuModuleGetFunction(out CUfunction function, module, "_Z22Initialize_BCL_GlobalsPvyiPP6_BCL_t"));
-            return function;
-        }
-
-        public static CUfunction _Z15Initialize_BCL1v(CUmodule module)
-        {
-            CudaHelpers.CheckCudaError(Cuda.cuModuleGetFunction(out CUfunction function, module, "_Z15Initialize_BCL1v"));
-            return function;
-        }
-
-        public static CUfunction _Z15Initialize_BCL2v(CUmodule module)
-        {
-            CudaHelpers.CheckCudaError(Cuda.cuModuleGetFunction(out CUfunction function, module, "_Z15Initialize_BCL2v"));
-            return function;
-        }
-
-        public static CUfunction _Z12Bcl_Gfs_initv(CUmodule module)
-        {
-            CudaHelpers.CheckCudaError(Cuda.cuModuleGetFunction(out CUfunction function, module, "_Z12Bcl_Gfs_initv"));
-            return function;
-        }
-
-        public static CUfunction _Z16Bcl_Gfs_add_filePcS_yPi(CUmodule module)
-        {
-            CudaHelpers.CheckCudaError(Cuda.cuModuleGetFunction(out CUfunction function, module, "_Z16Bcl_Gfs_add_filePcS_yPi"));
-            return function;
-        }
-
         public static CUfunction _Z15Set_BCL_GlobalsP6_BCL_t(CUmodule module)
         {
             CudaHelpers.CheckCudaError(Cuda.cuModuleGetFunction(out CUfunction function, module, "_Z15Set_BCL_GlobalsP6_BCL_t"));
@@ -631,7 +644,6 @@
             }
             return tr;
         }
-
 
         public static MethodReference SubstituteMethod(MethodReference method_reference)
         {
@@ -719,13 +731,7 @@
             }
         }
 
-
-        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclGetMetaOfType")]
-        public static extern System.IntPtr BclGetMetaOfType(
-            [MarshalAs(UnmanagedType.LPStr)] string assemblyName,
-            [MarshalAs(UnmanagedType.LPStr)] string nameSpace,
-            [MarshalAs(UnmanagedType.LPStr)] string name,
-            System.IntPtr nested);
+        internal static Dictionary<TypeReference, IntPtr> _type_to_bcltype = new Dictionary<TypeReference, IntPtr>();
 
         public static IntPtr GetBclType(TypeReference type)
         {
@@ -744,39 +750,37 @@
             while (chain.Any())
             {
                 var tr = chain.Pop();
-                tr = RUNTIME.RewriteType(tr);
+                var mt = RUNTIME.RewriteType(tr);
                 var assembly_name = tr.Module.Name;
                 var name_space = tr.Namespace;
                 var name = tr.Name;
-                result = BclGetMetaOfType(assembly_name, name_space, name, result);
-            }
-            return result;
-        }
 
-        public static IntPtr GetBclType(Type type)
-        {
-            // Using the BCL, find the type. Note, Mono has a tendency to list something
-            // in a namespace in which the type's metadata says it has no namespace.
-            // As far as I can tell, this is for generated methods corresponding to the kernels.
-            // Due to the disparity of what the "namespace" means, look up the type from
-            // the top-most declaring type, and use that as context for the sub-class search.
-            Stack<Type> chain = new Stack<Type>();
-            while (type != null)
-            {
-                chain.Push(type);
-                type = type.DeclaringType;
-            }
-            System.IntPtr result = System.IntPtr.Zero;
-            while (chain.Any())
-            {
-                var tr = chain.Pop();
-                var mt = RUNTIME.RewriteType(tr.ToMonoTypeReference());
-                var assembly_name = tr.Module.Name;
-                var name_space = tr.Namespace;
-                var name = tr.Name;
-                result = BclGetMetaOfType(assembly_name, name_space, name, result);
-            }
+                var mt_assembly_name = mt.Scope.Name;
+                var mt_name_space = mt.Namespace;
+                var mt_name = mt.Name;
 
+                if (mt.IsGenericInstance)
+                {
+                    result = BclGetMetaOfType(mt_assembly_name, mt_name_space, mt_name, result);
+                    // Look up each argument type of generic instance and construct array of these args.
+                    var g_mt = mt as GenericInstanceType;
+                    var generic_arguments = g_mt.GenericArguments;
+                    var count = generic_arguments.Count;
+                    System.IntPtr[] args = new System.IntPtr[count];
+                    for (int i = 0; i < count; ++i)
+                        args[i] = (System.IntPtr)GetBclType(generic_arguments[i]);
+                    RUNTIME.CheckHeap();
+                    result = BclGenericsGetGenericTypeFromCoreType(result, count, args);
+                }
+                else
+                {
+                    result = BclGetMetaOfType(mt_assembly_name, mt_name_space, mt_name, result);
+                }
+                if (!_type_to_bcltype.ContainsKey(mt))
+                {
+                    _type_to_bcltype[mt] = result;
+                }
+            }
             return result;
         }
     }

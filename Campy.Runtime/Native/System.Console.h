@@ -18,13 +18,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#if !defined(__SYSTEM_CONSOLE_H)
-#define __SYSTEM_CONSOLE_H
+#pragma once
 
 #include "Types.h"
 
 function_space_specifier tAsyncCall* System_Console_Write(PTR pThis_, PTR pParams, PTR pReturnValue);
 function_space_specifier tAsyncCall* System_Console_Internal_ReadKey(PTR pThis_, PTR pParams, PTR pReturnValue);
 function_space_specifier tAsyncCall* System_Console_Internal_KeyAvailable(PTR pThis_, PTR pParams, PTR pReturnValue);
-
-#endif

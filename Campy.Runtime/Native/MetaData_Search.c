@@ -20,7 +20,6 @@
 
 #include "Compat.h"
 #include "Sys.h"
-
 #include "MetaData.h"
 #include "CLIFile.h"
 #include "Type.h"
@@ -151,6 +150,10 @@ function_space_specifier static tMD_FieldDef* FindFieldInType(tMD_TypeDef *pType
 	return NULL;
 }
 
+function_space_specifier tMD_FieldDef* MetaData_FindFieldInType(tMD_TypeDef *pTypeDef, STRING name) {
+	return FindFieldInType(pTypeDef, name);
+}
+
 function_space_specifier tMetaData* MetaData_GetResolutionScopeMetaData(tMetaData *pMetaData, IDX_TABLE resolutionScopeToken, tMD_TypeDef **ppInNestedType)
 {
 	if (_bcl_ && _bcl_->options & BCL_DEBUG_FUNCTION_ENTRY)
@@ -262,13 +265,6 @@ function_space_specifier tMD_TypeDef* MetaData_GetTypeDefFromFullNameAndNestedTy
 
 	// Note that this cannot get a nested class, as this final parameter is always NULL
 	return MetaData_GetTypeDefFromName(pTypeMetaData, nameSpace, name, nested);
-}
-
-
-__global__
-void Bcl_MetaData_GetTypeDefFromDefRefOrSpec(tMetaData *pMetaData, IDX_TABLE token, tMD_TypeDef **ppClassTypeArgs, tMD_TypeDef **ppMethodTypeArgs, tMD_TypeDef** result)
-{
-	*result = MetaData_GetTypeDefFromDefRefOrSpec(pMetaData, token, ppClassTypeArgs, ppMethodTypeArgs);
 }
 
 function_space_specifier tMD_TypeDef* MetaData_GetTypeDefFromDefRefOrSpec(tMetaData *pMetaData, IDX_TABLE token, tMD_TypeDef **ppClassTypeArgs, tMD_TypeDef **ppMethodTypeArgs) {

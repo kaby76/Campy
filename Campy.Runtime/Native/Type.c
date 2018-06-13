@@ -225,7 +225,8 @@ function_space_specifier tMD_TypeDef* Type_GetTypeFromSig(tMetaData *pMetaData, 
 	entry = MetaData_DecodeUnsigned32BitInteger(pSig);
 	switch (entry) {
 		case ELEMENT_TYPE_VOID:
-			return NULL;
+			//return _bcl_->types[TYPE_SYSTEM_VOID]; // CANNOT WORK BECAUSE IT TRIES TO "FILL" THE TYPE VALUE.
+			return NULL;// THIS CANNOT BE RIGHT!! SIG == NULL => Crash in MetaData_Fill_TypeDef!
 
 		case ELEMENT_TYPE_BOOLEAN:
 			return _bcl_->types[TYPE_SYSTEM_BOOLEAN];

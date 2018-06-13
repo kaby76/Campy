@@ -18,8 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#if !defined(__METADATA_H)
-#define __METADATA_H
+#pragma once
 
 #include "Types.h"
 #include "RVA.h"
@@ -157,30 +156,23 @@ function_space_specifier void MetaData_GetHeapRoots(tHeapRoots *pHeapRoots, tMet
 
 // Meta-data filling extra information
 
-#define MetaData_Fill_TypeDef(pTypeDef, ppClassTypeArgs, ppMethodTypeArgs) if ((pTypeDef)->isFilled == 0) MetaData_Fill_TypeDef_(pTypeDef, ppClassTypeArgs, ppMethodTypeArgs)
-function_space_specifier void MetaData_Fill_TypeDef_(tMD_TypeDef *pTypeDef, tMD_TypeDef **ppClassTypeArgs, tMD_TypeDef **ppMethodTypeArgs);
+function_space_specifier void MetaData_Fill_TypeDef(tMD_TypeDef *pTypeDef, tMD_TypeDef **ppClassTypeArgs, tMD_TypeDef **ppMethodTypeArgs);
 function_space_specifier void MetaData_Fill_FieldDef(tMD_TypeDef *pParentType, tMD_FieldDef *pFieldDef, U32 memOffset, tMD_TypeDef **ppClassTypeArgs);
 function_space_specifier void MetaData_Fill_MethodDef(tMD_TypeDef *pParentType, tMD_MethodDef *pMethodDef, tMD_TypeDef **ppClassTypeArgs, tMD_TypeDef **ppMethodTypeArgs);
 
 // Meta-data searching
 
 function_space_specifier U32 MetaData_CompareNameAndSig(STRING name, BLOB_ sigBlob, tMetaData *pSigMetaData, tMD_TypeDef **ppSigClassTypeArgs, tMD_TypeDef **ppSigMethodTypeArgs, tMD_MethodDef *pMethod, tMD_TypeDef **ppMethodClassTypeArgs, tMD_TypeDef **ppMethodMethodTypeArgs);
-
 function_space_specifier tMetaData* MetaData_GetResolutionScopeMetaData(tMetaData *pMetaData, IDX_TABLE resolutionScopeToken, tMD_TypeDef **ppInNestedType);
-
 function_space_specifier PTR MetaData_GetTypeMethodField(tMetaData *pMetaData, IDX_TABLE token, U32 *pObjectType, tMD_TypeDef **ppClassTypeArgs, tMD_TypeDef **ppMethodTypeArgs);
-
 function_space_specifier tMD_TypeDef* MetaData_GetTypeDefFromName(tMetaData *pMetaData, STRING nameSpace, STRING name, tMD_TypeDef *pInNestedClass);
 function_space_specifier tMD_TypeDef* MetaData_GetTypeDefFromFullName(STRING assemblyName, STRING nameSpace, STRING name);
 function_space_specifier tMD_TypeDef* MetaData_GetTypeDefFromFullNameAndNestedType(STRING assemblyName, STRING nameSpace, STRING name, tMD_TypeDef* nested);
 function_space_specifier tMD_TypeDef* MetaData_GetTypeDefFromDefRefOrSpec(tMetaData *pMetaData, IDX_TABLE token, tMD_TypeDef **ppClassTypeArgs, tMD_TypeDef **ppMethodTypeArgs);
 function_space_specifier tMD_TypeDef* MetaData_GetTypeDefFromMethodDef(tMD_MethodDef *pMethodDef);
 function_space_specifier tMD_TypeDef* MetaData_GetTypeDefFromFieldDef(tMD_FieldDef *pFieldDef);
-
 function_space_specifier tMD_MethodDef* MetaData_GetMethodDefFromDefRefOrSpec(tMetaData *pMetaData, IDX_TABLE token, tMD_TypeDef **ppClassTypeArgs, tMD_TypeDef **ppMethodTypeArgs);
-
 function_space_specifier tMD_FieldDef* MetaData_GetFieldDefFromDefOrRef(tMetaData *pMetaData, IDX_TABLE token, tMD_TypeDef **ppClassTypeArgs, tMD_TypeDef **ppMethodTypeArgs);
-
 function_space_specifier tMD_ImplMap* MetaData_GetImplMap(tMetaData *pMetaData, IDX_TABLE memberForwardedToken);
 function_space_specifier STRING MetaData_GetModuleRefName(tMetaData *pMetaData, IDX_TABLE memberRefToken);
 
@@ -191,20 +183,23 @@ function_space_specifier void MetaData_LoadBlobs(tMetaData *pThis, void *pStream
 function_space_specifier void MetaData_LoadUserStrings(tMetaData *pThis, void *pStream, unsigned int streamLen);
 function_space_specifier void MetaData_LoadGUIDs(tMetaData *pThis, void *pStream, unsigned int streamLen);
 function_space_specifier void MetaData_LoadTables(tMetaData *pThis, tRVA *pRVA, unsigned char *pStream, unsigned int streamLen);
-
 function_space_specifier PTR MetaData_GetBlob(BLOB_ blob, U32 *pBlobLength);
 function_space_specifier STRING2 MetaData_GetUserString(tMetaData *pThis, IDX_USERSTRINGS index, unsigned int *pStringLength);
-
 function_space_specifier void* MetaData_GetTableRow(tMetaData *pThis, IDX_TABLE index);
-
 function_space_specifier void MetaData_GetConstant(tMetaData *pThis, IDX_TABLE idx, PTR pResultMem);
+
+
+
+// Not sure where to put this, but this seems best.
+function_space_specifier void MetaData_SetField(HEAP_PTR object, tMD_FieldDef * pField, HEAP_PTR value);
+function_space_specifier void * MetaData_GetField(HEAP_PTR object, tMD_FieldDef * pField);
+function_space_specifier void MetaData_GetFields(tMD_TypeDef * pTypeDef, tMD_FieldDef*** out_buf, int * out_len);
+function_space_specifier char * MetaData_GetFieldName(tMD_FieldDef * pFieldDef);
+function_space_specifier tMD_TypeDef * MetaData_GetFieldType(tMD_FieldDef * pFieldDef);
 
 // Probably shouldn't be here but oh well...
 function_space_specifier unsigned int GetU32(unsigned char *pSource);
 function_space_specifier unsigned int GetU16(unsigned char *pSource);
 function_space_specifier unsigned long long GetU64(unsigned char *pSource);
 
-
 function_space_specifier void MetaData_PrintMetaData(tMetaData * meta);
-
-#endif

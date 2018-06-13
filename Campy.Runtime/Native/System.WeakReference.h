@@ -18,8 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#if !defined(__SYSTEM_WEAKREFERENCE_H)
-#define __SYSTEM_WEAKREFERENCE_H
+#pragma once
 
 #include "MetaData.h"
 #include "Types.h"
@@ -28,5 +27,3 @@ function_space_specifier tAsyncCall* System_WeakReference_get_Target(PTR pThis_,
 function_space_specifier tAsyncCall* System_WeakReference_set_Target(PTR pThis_, PTR pParams, PTR pReturnValue);
 
 function_space_specifier void SystemWeakReference_TargetGone(HEAP_PTR *ppWeakRef_, U32 removeLongRefs);
-
-#endif

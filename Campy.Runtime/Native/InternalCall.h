@@ -18,12 +18,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#if !defined(__INTERNALCALL_H)
-#define __INTERNALCALL_H
+#pragma once
 
 #include "Types.h"
 #include "MetaData.h"
 
 function_space_specifier fnInternalCall InternalCall_Map(tMD_MethodDef *pMethod);
 
-#endif

@@ -1,129 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using Campy;
-using System.Numerics;
-using Mono.Cecil;
+using System.Collections.ObjectModel;
 
 namespace ConsoleApp1
 {
-    public class FFT
-    {
-        /* Performs a Bit Reversal Algorithm on a postive integer 
-         * for given number of bits
-         * e.g. 011 with 3 bits is reversed to 110
-         */
-        public static int BitReverse(int n, int bits)
-        {
-            int reversedN = n;
-            int count = bits - 1;
-
-            n >>= 1;
-            while (n > 0)
-            {
-                reversedN = (reversedN << 1) | (n & 1);
-                count--;
-                n >>= 1;
-            }
-
-            return ((reversedN << count) & ((1 << bits) - 1));
-        }
-
-        /* Uses Cooley-Tukey iterative in-place algorithm with radix-2 DIT case
-         * assumes no of points provided are a power of 2 */
-        public static void Seq(Complex[] buffer)
-        {
-            int bits = (int)Math.Log(buffer.Length, 2);
-            for (int j = 1; j < buffer.Length / 2; j++)
-            {
-                int swapPos = BitReverse(j, bits);
-                var temp = buffer[j];
-                buffer[j] = buffer[swapPos];
-                buffer[swapPos] = temp;
-            }
-
-            for (int N = 2; N <= buffer.Length; N <<= 1)
-            {
-                for (int i = 0; i < buffer.Length; i += N)
-                {
-                    for (int k = 0; k < N / 2; k++)
-                    {
-                        int evenIndex = i + k;
-                        int oddIndex = i + k + (N / 2);
-                        var even = buffer[evenIndex];
-                        var odd = buffer[oddIndex];
-
-                        double term = -2 * Math.PI * k / (double)N;
-                        Complex exp = new Complex(Math.Cos(term), Math.Sin(term)) * odd;
-
-                        buffer[evenIndex] = even + exp;
-                        buffer[oddIndex] = even - exp;
-                    }
-                }
-            }
-        }
-
-        public static void Par(Complex[] buffer)
-        {
-            Campy.Parallel.Sticky(buffer);
-
-            int bits = (int)Math.Log(buffer.Length, 2);
-            Campy.Parallel.For(buffer.Length / 2 - 1, k =>
-            {
-                int j = k + 1;
-                int swapPos = BitReverse(j, bits);
-                var temp = buffer[j];
-                buffer[j] = buffer[swapPos];
-                buffer[swapPos] = temp;
-            });
-
-            for (int N = 2; N <= buffer.Length; N <<= 1)
-            {
-                int step = N / 2;
-                Campy.Parallel.For(buffer.Length / 2, d =>
-                {
-                    var k = d % step;
-                    var t = d % step + N * (d / step);
-                    int evenIndex = t;
-                    int oddIndex = t + step;
-
-                    var even = buffer[evenIndex];
-                    var odd = buffer[oddIndex];
-
-                    double term = -2 * Math.PI * k / (double)N;
-                    Complex exp = new Complex(Math.Cos(term), Math.Sin(term)) * odd;
-
-                    buffer[evenIndex] = even + exp;
-                    buffer[oddIndex] = even - exp;
-                });
-            }
-            Campy.Parallel.Sync();
-        }
-    }
-
-    public class Test
-    {
-        static bool ApproxEqual(double a, double b)
-        {
-            return b - a < 0.0001 || a - b < 0.0001;
-        }
-
-        public void FFT_Test()
-        {
-            Complex[] input = { 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
-            var copy = input.ToArray();
-
-            FFT.Par(input);
-            FFT.Seq(copy);
-
-            for (int i = 0; i < input.Length; ++i)
-            {
-                if (!ApproxEqual(copy[i].Real, input[i].Real)) throw new Exception();
-                if (!ApproxEqual(copy[i].Imaginary, input[i].Imaginary)) throw new Exception();
-            }
-        }
-    }
-
     class Program
     {
         static void StartDebugging()
@@ -145,12 +25,134 @@ namespace ConsoleApp1
         static void Main(string[] args)
         {
             StartDebugging();
-            List<int> x = new List<int>();
-            int n = 4;
-            for (int i = 0; i < n; ++i) x.Add(0);
-            Campy.Parallel.For(n, i => x[i] = i);
-            Campy.Parallel.For(n, i => x[i] = x[i] * 2);
-            for (int i = 0; i < n; ++i) System.Console.WriteLine(x[i]);
+            var A = new SquareMatrix(new Collection<double>() { 3, 2, 2, 6 });
+            var b = new Vector(new Collection<double> { 2, -8 });
+            var x = new Vector(new Collection<double> { -2, -2 });
+            var r = SD.SteepestDescent(A, b, x);
         }
     }
+
+    class SquareMatrix
+    {
+        public int N { get; private set; }
+        private List<double> data;
+        public SquareMatrix(int n)
+        {
+            N = n;
+            data = new List<double>();
+            for (int i = 0; i < n * n; ++i) data.Add(0);
+        }
+
+        public SquareMatrix(Collection<double> c)
+        {
+            data = new List<double>(c);
+            var s = Math.Sqrt(c.Count);
+            N = (int)Math.Floor(s);
+            if (s != (double)N)
+            {
+                throw new Exception("Need to provide square matrix sized initializer.");
+            }
+        }
+
+        public static Vector operator *(SquareMatrix a, Vector b)
+        {
+            Vector result = new Vector(a.N);
+            Campy.Parallel.For(result.N, i =>
+            {
+                for (int j = 0; j < result.N; ++j)
+                    result[i] += a.data[i * result.N + j] * b[j];
+            });
+            return result;
+        }
+    }
+
+    class Vector
+    {
+        public int N { get; private set; }
+        private List<double> data;
+
+        public Vector(int n)
+        {
+            N = n;
+            data = new List<double>();
+            for (int i = 0; i < n; ++i) data.Add(0);
+        }
+
+        public double this[int i]
+        {
+            get
+            {
+                return data[i];
+            }
+            set
+            {
+                data[i] = value;
+            }
+        }
+
+        public Vector(Collection<double> c)
+        {
+            data = new List<double>(c);
+            N = c.Count;
+        }
+
+        public static double operator *(Vector a, Vector b)
+        {
+            double result = 0;
+            for (int i = 0; i < a.N; ++i) result += a[i] * b[i];
+            return result;
+        }
+
+        public static Vector operator *(double a, Vector b)
+        {
+            Vector result = new Vector(b.N);
+            Campy.Parallel.For(b.N, i => { result[i] = a * b[i]; });
+            return result;
+        }
+
+        public static Vector operator -(Vector a, Vector b)
+        {
+            Vector result = new Vector(a.N);
+            Campy.Parallel.For(a.N, i => { result[i] = a[i] - b[i]; });
+            return result;
+        }
+
+        public static Vector operator +(Vector a, Vector b)
+        {
+            Vector result = new Vector(a.N);
+            Campy.Parallel.For(a.N, i => { result[i] = a[i] + b[i]; });
+            return result;
+        }
+    }
+
+    class SD
+    {
+        public static Vector SteepestDescent(SquareMatrix A, Vector b, Vector x)
+        {
+            // Similar to http://ta.twi.tudelft.nl/nw/users/mmbaumann/projects/Projekte/MPI2_slides.pdf
+            for (; ; )
+            {
+                Vector r = b - A * x;
+                double rr = r * r;
+                double rAr = r * (A * r);
+                if (rAr == 0) break; // not safe.
+                double a = (double)rr / (double)rAr;
+                x = x + (a * r);
+            }
+            return x;
+        }
+
+        // https://www.coursera.org/learn/predictive-analytics/lecture/RhkFB/parallelizing-gradient-descent
+        // "Hogwild! A lock-free approach to parallelizing stochastic gradient descent"
+        // https://arxiv.org/abs/1106.5730
+
+        // Parallelize vector and matrix operations
+        // http://www.dcs.warwick.ac.uk/pmbs/pmbs14/PMBS14/Workshop_Schedule_files/8-CUDAHPCG.pdf
+
+        // An introduction to the conjugate gradient method without the agonizing pain
+        // https://www.cs.cmu.edu/~quake-papers/painless-conjugate-gradient.pdf
+
+        // https://github.com/gmarkall/cuda_cg/blob/master/gpu_solve.cu
+    }
+
 }

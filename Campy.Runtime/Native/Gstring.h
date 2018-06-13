@@ -1,4 +1,5 @@
 #pragma once
+
 function_space_specifier int Gstrncasecmp(const char *s1, const char *s2, size_t len);
 function_space_specifier int Gstrcasecmp(const char *s1, const char *s2);
 function_space_specifier char * Gstrcpy(char * dest, const char *src);

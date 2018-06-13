@@ -99,6 +99,7 @@
     <ClInclude Include="JIT_OpCodes.h" />
     <ClInclude Include="MetaData.h" />
     <ClInclude Include="MetaDataTables.h" />
+    <ClInclude Include="MetaData_Search.h" />
     <ClInclude Include="MethodState.h" />
     <ClInclude Include="PInvoke.h" />
     <ClInclude Include="PInvoke_CaseCode.h" />

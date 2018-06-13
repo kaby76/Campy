@@ -18,9 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#if !defined(__TYPES_H)
-#define __TYPES_H
-
+#pragma once
 
 #if defined(_MSC_VER)
 //  Microsoft 
@@ -124,5 +122,3 @@ struct tAsyncCall_ {
 	// Not for most functions to use. Record the start time of this async call
 	U64 startTime;
 };
-
-#endif

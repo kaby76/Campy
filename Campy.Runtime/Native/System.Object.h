@@ -18,8 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#if !defined(__SYSTEM_OBJECT_H)
-#define __SYSTEM_OBJECT_H
+#pragma once
 
 #include "Types.h"
 #include "MetaData.h"
@@ -28,5 +27,3 @@ function_space_specifier tAsyncCall* System_Object_Equals(PTR pThis_, PTR pParam
 function_space_specifier tAsyncCall* System_Object_Clone(PTR pThis_, PTR pParams, PTR pReturnValue);
 function_space_specifier tAsyncCall* System_Object_GetHashCode(PTR pThis_, PTR pParams, PTR pReturnValue);
 function_space_specifier tAsyncCall* System_Object_GetType(PTR pThis_, PTR pParams, PTR pReturnValue);
-
-#endif

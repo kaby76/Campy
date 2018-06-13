@@ -18,8 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#if !defined(__GENERICS_H)
-#define __GENERICS_H
+#pragma once
 
 typedef struct tGenericInstance_ tGenericInstance;
 typedef struct tGenericMethodInstance_ tGenericMethodInstance;
@@ -61,5 +60,3 @@ function_space_specifier tMD_TypeDef* Generics_GetGenericTypeFromCoreType(tMD_Ty
 
 function_space_specifier tMD_MethodDef* Generics_GetMethodDefFromSpec(tMD_MethodSpec *pMethodSpec, tMD_TypeDef **ppCallingClassTypeArgs, tMD_TypeDef **ppCallingMethodTypeArgs);
 function_space_specifier tMD_MethodDef* Generics_GetMethodDefFromCoreMethod(tMD_MethodDef *pCoreMethod, tMD_TypeDef *pParentType, U32 numMethodTypeArgs, tMD_TypeDef **ppMethodTypeArgs);
-
-#endif

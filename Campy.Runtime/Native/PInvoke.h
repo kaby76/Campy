@@ -18,8 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#if !defined (__PINVOKE_H)
-#define __PINVOKE_H
+#pragma once
 
 #include "MetaData.h"
 #include "JIT.h"
@@ -28,5 +27,3 @@ typedef void* fnPInvoke;
 
 function_space_specifier fnPInvoke PInvoke_GetFunction(tMetaData *pMetaData, tMD_ImplMap *pImplMap);
 function_space_specifier U32 PInvoke_Call(tJITCallPInvoke *pCall, PTR pParams, PTR pReturnValue);
-
-#endif

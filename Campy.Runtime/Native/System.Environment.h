@@ -18,8 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#if !defined(__SYSTEM_ENVIRONMENT_H)
-#define __SYSTEM_ENVIRONMENT_H
+#pragma once
 
 #include "MetaData.h"
 #include "Types.h"
@@ -27,5 +26,3 @@
 function_space_specifier tAsyncCall* System_Environment_get_TickCount(PTR pThis_, PTR pParams, PTR pReturnValue);
 function_space_specifier tAsyncCall* System_Environment_GetOSVersionString(PTR pThis_, PTR pParams, PTR pReturnValue);
 function_space_specifier tAsyncCall* System_Environment_get_Platform(PTR pThis_, PTR pParams, PTR pReturnValue);
-
-#endif

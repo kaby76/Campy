@@ -5,6 +5,9 @@ using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
 using Mono.Collections.Generic;
+using System.IO;
+using System.Reflection;
+using TypeAttributes = Mono.Cecil.TypeAttributes;
 
 namespace Campy.Utils
 {
@@ -315,6 +318,44 @@ namespace Campy.Utils
                 reference.GenericParameters.Add(new GenericParameter(genericParam.Name, reference));
 
             return reference;
+        }
+
+        public static Collection<FieldReference> ResolveFields(this TypeReference tr)
+        {
+            // Resolve throws away type information of fields, attributes, properties, methods.
+            // This function performs a "resolve()" while retaining type information of generics.
+            TypeDefinition resolved = tr.Resolve();
+            Collection<FieldDefinition> resolved_fields = resolved.Fields;
+            Collection<FieldReference> result = new Collection<FieldReference>();
+            ModuleDefinition module = tr.Module;
+
+            // Turn FieldDefinition back into FieldReference.
+            if (tr.IsGenericInstance)
+            {
+                var gtr = tr as GenericInstanceType;
+                var generic_arguments = gtr.GenericArguments;
+                // For generics, convert any field defitions that use generic parameters into generic arguments.
+                foreach (FieldDefinition field in resolved_fields)
+                {
+                    // Add in all fields.
+                    var field_type = field.FieldType;
+                    var new_field_type = ConvertGenericParameterToTypeReference(field_type, generic_arguments);
+                    var new_field_reference = new FieldReference(field.Name,
+                        new_field_type,
+                        tr);
+                    result.Add(new_field_reference);
+                }
+            }
+            else
+            {
+                // For non-generics, just use the field definition--no need to create field reference from scratch.
+                foreach (FieldDefinition f in resolved_fields)
+                {
+                    FieldReference fr = f;
+                    result.Add(fr);
+                }
+            }
+            return result;
         }
     }
 }

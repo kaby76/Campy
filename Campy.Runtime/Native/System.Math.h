@@ -18,8 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#if !defined(__SYSTEM_MATH_H)
-#define __SYSTEM_MATH_H
+#pragma once
 
 #include "Types.h"
 
@@ -28,5 +27,3 @@ function_space_specifier tAsyncCall* System_Math_Cos(PTR pThis_, PTR pParams, PT
 function_space_specifier tAsyncCall* System_Math_Tan(PTR pThis_, PTR pParams, PTR pReturnValue);
 function_space_specifier tAsyncCall* System_Math_Pow(PTR pThis_, PTR pParams, PTR pReturnValue);
 function_space_specifier tAsyncCall* System_Math_Sqrt(PTR pThis_, PTR pParams, PTR pReturnValue);
-
-#endif

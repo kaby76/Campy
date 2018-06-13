@@ -110,14 +110,17 @@ namespace Campy
                         RUNTIME.CheckHeap();
                         ptr = buffer.AddDataStructure(simpleKernel.Target);
                         parm1[0] = ptr;
+                        RUNTIME.CheckHeap();
                     }
 
                     {
+                        RUNTIME.CheckHeap();
                         Type btype = typeof(int);
                         var s = BUFFERS.SizeOf(btype);
                         var ptr2 = buffer.New(s);
                         // buffer.DeepCopyToImplementation(index, ptr2);
                         parm2[0] = ptr2;
+                        RUNTIME.CheckHeap();
                     }
 
                     stopwatch_deep_copy_to.Start();

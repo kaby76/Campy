@@ -18,8 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#if !defined(__SYSTEM_NET_SOCKETS_SOCKET_H)
-#define __SYSTEM_NET_SOCKETS_SOCKET_H
+#pragma once
 
 function_space_specifier void Socket_Init();
 
@@ -31,5 +30,3 @@ function_space_specifier tAsyncCall* System_Net_Sockets_Internal_Accept(PTR pThi
 function_space_specifier tAsyncCall* System_Net_Sockets_Internal_Connect(PTR pThis_, PTR pParams, PTR pReturnValue);
 function_space_specifier tAsyncCall* System_Net_Sockets_Internal_Receive(PTR pThis_, PTR pParams, PTR pReturnValue);
 function_space_specifier tAsyncCall* System_Net_Sockets_Internal_Send(PTR pThis_, PTR pParams, PTR pReturnValue);
-
-#endif

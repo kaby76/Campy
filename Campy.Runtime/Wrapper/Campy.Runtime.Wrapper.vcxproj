@@ -113,6 +113,7 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
     <ClInclude Include="..\Native\JIT_OpCodes.h" />
     <ClInclude Include="..\Native\MetaData.h" />
     <ClInclude Include="..\Native\MetaDataTables.h" />
+    <ClInclude Include="..\Native\MetaData_Search.h" />
     <ClInclude Include="..\Native\MethodState.h" />
     <ClInclude Include="..\Native\PInvoke.h" />
     <ClInclude Include="..\Native\PInvoke_CaseCode.h" />

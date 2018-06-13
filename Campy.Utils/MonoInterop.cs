@@ -10,14 +10,35 @@ namespace Campy.Utils
     using System.Diagnostics;
     using System.Linq;
 
+    public static class TypeDefinitionEnumerator
+    {
+        public static IEnumerable<TypeDefinition> GetBoxes(this TypeDefinition t)
+        {
+            yield return t;
+
+            if (t.HasNestedTypes)
+            {
+                foreach (TypeDefinition nested in t.NestedTypes)
+                {
+                    foreach (TypeDefinition x in nested.GetBoxes())
+                        yield return x;
+                }
+            }
+        }
+    }
+
     public static class MonoInterop
     {
+
         public static Mono.Cecil.TypeReference ToMonoTypeReference(this System.Type type)
         {
             String kernel_assembly_file_name = type.Assembly.Location;
             Mono.Cecil.ModuleDefinition md = Mono.Cecil.ModuleDefinition.ReadModule(kernel_assembly_file_name);
-            var reference = md.ImportReference(type);
-            return reference;
+            string ecma_name = type.FullName.Replace("+", "/");
+            var reference = md.GetType(ecma_name);
+            if (reference != null) return reference;
+            var fallback = md.ImportReference(type);
+            return fallback;
         }
 
         public static System.Type ToSystemType(this TypeReference type)

@@ -1,6 +1,7 @@
 
 #include "_BCL_.h"
 #include "MetaData.h"
+#include "MetaData_Search.h"
 #include "System.Array.h"
 #include "System.String.h"
 #include "Type.h"
@@ -8,38 +9,37 @@
 #include "basics.h"
 #include "Heap.h"
 #include "CLIFile.h"
+#include "Generics.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+EXPORT void InitTheBcl(void * g, size_t size, size_t first_overhead, int count)
+{
+	if (_bcl_ && _bcl_->options & BCL_DEBUG_FUNCTION_ENTRY)
+		Gprintf("InitTheBcl\n");
 
-	EXPORT void InitTheBcl(void * g, size_t size, size_t first_overhead, int count)
-	{
-		if (_bcl_ && _bcl_->options & BCL_DEBUG_FUNCTION_ENTRY)
-			Gprintf("InitTheBcl\n");
+	InternalInitTheBcl(g, size, first_overhead, count);
+}
 
-		InternalInitTheBcl(g, size, first_overhead, count);
-	}
+EXPORT void CheckHeap()
+{
+	if (_bcl_ && _bcl_->options & BCL_DEBUG_FUNCTION_ENTRY)
+		Gprintf("CheckHeap\n");
 
-	EXPORT void CheckHeap()
-	{
-		if (_bcl_ && _bcl_->options & BCL_DEBUG_FUNCTION_ENTRY)
-			Gprintf("CheckHeap\n");
+	InternalCheckHeap();
+}
 
-		InternalCheckHeap();
-	}
+EXPORT void SetOptions(U64 options)
+{
+	if (_bcl_ && _bcl_->options & BCL_DEBUG_FUNCTION_ENTRY)
+		Gprintf("SetOptions\n");
 
-	EXPORT void SetOptions(U64 options)
-	{
-		if (_bcl_ && _bcl_->options & BCL_DEBUG_FUNCTION_ENTRY)
-			Gprintf("SetOptions\n");
+	InternalSetOptions(options);
+}
 
-		InternalSetOptions(options);
-	}
-
-
-	EXPORT void InitFileSystem()
+EXPORT void InitFileSystem()
 {
 	InternalInitFileSystem();
 }
@@ -89,13 +89,20 @@ EXPORT void* BclGetMetaOfType(char* assemblyName, char* nameSpace, char* name, v
 	return (void*)result;
 }
 
+EXPORT void* BclGenericsGetGenericTypeFromCoreType(void * c, U32 numTypeArgs, void * a)
+{
+	tMD_TypeDef * pCoreType = (tMD_TypeDef *)c;
+	tMD_TypeDef ** ppTypeArgs = (tMD_TypeDef **)a;
+	tMD_TypeDef * result = Generics_GetGenericTypeFromCoreType(pCoreType, numTypeArgs, ppTypeArgs);
+	return (void*)result;
+}
+
 EXPORT void GcCollect()
 {
 	if (_bcl_ && _bcl_->options & BCL_DEBUG_FUNCTION_ENTRY)
 		Gprintf("GcCollect\n");
 	Heap_GarbageCollect();
 }
-
 
 EXPORT void * STDCALL BclGetMeta(char * file_name)
 {
@@ -122,6 +129,64 @@ EXPORT void * STDCALL BclAllocString(int len, void * chars)
 	if (_bcl_ && _bcl_->options & BCL_DEBUG_FUNCTION_ENTRY)
 		Gprintf("BclAllocString\n");
 	return Internal_SystemString_FromCharPtrUTF16(len, (U16*)chars);
+}
+
+EXPORT void * BclHeapGetType(void * heapEntry)
+{
+	tMD_TypeDef* type = Heap_GetType((HEAP_PTR)heapEntry);
+	return (void*)type;
+}
+
+EXPORT void * BclFindFieldInType(void * bcl_type, char * name)
+{
+	return (void *)MetaData_FindFieldInType((tMD_TypeDef *)bcl_type, name);
+}
+
+EXPORT void * BclGetField(void * bcl_object, void * bcl_field)
+{
+	return (void *)MetaData_GetField((HEAP_PTR)bcl_object, (tMD_FieldDef *)bcl_field);
+}
+
+EXPORT void BclSetField(void * bcl_object, void * bcl_field, void * value)
+{
+	MetaData_SetField((HEAP_PTR)bcl_object, (tMD_FieldDef *)bcl_field, (HEAP_PTR)value);
+}
+
+EXPORT void BclGetFields(void * bcl_type, void * out_buf, void * out_len)
+{
+	MetaData_GetFields((tMD_TypeDef*)bcl_type, (tMD_FieldDef ***)out_buf, (int*)out_len);
+}
+
+EXPORT char * BclGetFieldName(void * bcl_field)
+{
+	char * name = MetaData_GetFieldName((tMD_FieldDef*)bcl_field);
+	return name;
+}
+
+EXPORT void * BclGetFieldType(void * bcl_field)
+{
+	tMD_TypeDef* bcl_type = MetaData_GetFieldType((tMD_FieldDef*)bcl_field);
+	return (void *)bcl_type;
+}
+
+EXPORT int BclSystemArrayGetRank(void * bcl_object)
+{
+	return SystemArray_GetRank((HEAP_PTR) bcl_object);
+}
+
+EXPORT void * BclSystemArrayGetDims(void * bcl_object)
+{
+	return SystemArray_GetDims((HEAP_PTR) bcl_object);
+}
+
+EXPORT void BclSystemArrayLoadElementIndices(void * bcl_object, unsigned int dim, void * indices, void * value)
+{
+	SystemArray_LoadElementIndices((HEAP_PTR)bcl_object, dim, (U64*)indices, (U64*)value);
+}
+
+EXPORT void BclSystemArrayLoadElementIndicesAddress(void * bcl_object, unsigned int dim, void * indices, void * value_address)
+{
+	SystemArray_LoadElementIndicesAddress((HEAP_PTR)bcl_object, dim, (U64*)indices, (HEAP_PTR*)value_address);
 }
 
 #ifdef __cplusplus

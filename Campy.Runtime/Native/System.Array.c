@@ -30,6 +30,7 @@
 
 // This structure must be kept consistent with code in Campy.Compiler, Campy.Runtime.Corlib, as well as this module.
 typedef struct tSystemArray_ tSystemArray;
+
 struct tSystemArray_ {
     PTR ptr_elements;
     U64 rank;
@@ -60,7 +61,6 @@ function_space_specifier tAsyncCall* System_Array_Internal_GetLength(PTR pThis_,
 
     return NULL;
 }
-
 
 // Must return a boxed version of value-types
 function_space_specifier tAsyncCall* System_Array_Internal_GetValue(PTR pThis_, PTR pParams, PTR pReturnValue) {
@@ -308,7 +308,6 @@ function_space_specifier HEAP_PTR SystemArray_NewVector(tMD_TypeDef *pArrayTypeD
     return (HEAP_PTR)pArray;
 }
 
-
 function_space_specifier void SystemArray_StoreElement(HEAP_PTR pThis_, U32 index, PTR value) {
     tSystemArray *pArray = (tSystemArray*)pThis_;
     tMD_TypeDef *pArrayTypeDef;
@@ -366,7 +365,7 @@ function_space_specifier void SystemArray_LoadElement(HEAP_PTR pThis_, U32 index
     }
 }
 
-function_space_specifier void SystemArray_LoadElementIndices(HEAP_PTR pThis_, U32 dim, U32 elemSize, U32* indices, U64* value)
+function_space_specifier void SystemArray_LoadElementIndices(HEAP_PTR pThis_, U32 dim, U64* indices, U64* value)
 {
 #ifdef  __CUDA_ARCH__
 	int blockId = blockIdx.x + blockIdx.y * gridDim.x
@@ -380,8 +379,8 @@ function_space_specifier void SystemArray_LoadElementIndices(HEAP_PTR pThis_, U3
 	tSystemArray *pArray = (tSystemArray*)pThis_;
 	tMD_TypeDef *pArrayTypeDef;
 
-	//pArrayTypeDef = Heap_GetType(pThis_);
-	//elemSize = pArrayTypeDef->pArrayElementType->arrayElementSize;
+	pArrayTypeDef = Heap_GetType(pThis_);
+	U32 elemSize = pArrayTypeDef->pArrayElementType->arrayElementSize;
 
 	PTR beginning_of_elements = pArray->ptr_elements;
 	PTR b1 = (PTR)&pArray->rank;
@@ -399,36 +398,37 @@ function_space_specifier void SystemArray_LoadElementIndices(HEAP_PTR pThis_, U3
 		index += indices[i] * k;
 	}
 
-	switch (elemSize) {
-	case 1:
+	switch (elemSize)
 	{
-		*(U8*)value = *(((U8*)(beginning_of_elements)) + index);
-		break;
-	}
-	case 2:
-	{
-		*(U16*)value = *(((U16*)(beginning_of_elements)) + index);
-		break;
-	}
-	case 4:
-	{
-		*(U32*)value = *(((U32*)(beginning_of_elements)) + index);
-		break;
-	}
-	case 8:
-	{
-		*(U64*)value = *(((U64*)(beginning_of_elements)) + index);
-		break;
-	}
-	default:
-	{
-		memcpy(value, &beginning_of_elements[index * elemSize], elemSize);
-		break;
-	}
+		case 1:
+		{
+			*(U8*)value = *(((U8*)(beginning_of_elements)) + index);
+			break;
+		}
+		case 2:
+		{
+			*(U16*)value = *(((U16*)(beginning_of_elements)) + index);
+			break;
+		}
+		case 4:
+		{
+			*(U32*)value = *(((U32*)(beginning_of_elements)) + index);
+			break;
+		}
+		case 8:
+		{
+			*(U64*)value = *(((U64*)(beginning_of_elements)) + index);
+			break;
+		}
+		default:
+		{
+			memcpy(value, &beginning_of_elements[index * elemSize], elemSize);
+			break;
+		}
 	}
 }
 
-function_space_specifier void SystemArray_StoreElementIndices(HEAP_PTR pThis_, U32 dim, U32 elemSize, U32* indices, U64* value) {
+function_space_specifier void SystemArray_StoreElementIndices(HEAP_PTR pThis_, U32 dim, U64* indices, U64* value) {
 #ifdef  __CUDA_ARCH__
 	int blockId = blockIdx.x + blockIdx.y * gridDim.x
 		+ gridDim.x * gridDim.y * blockIdx.z;
@@ -441,11 +441,11 @@ function_space_specifier void SystemArray_StoreElementIndices(HEAP_PTR pThis_, U
 	tSystemArray *pArray = (tSystemArray*)pThis_;
 	tMD_TypeDef *pArrayTypeDef;
 
-	//pArrayTypeDef = Heap_GetType(pThis_);
-	//elemSize = pArrayTypeDef->pArrayElementType->arrayElementSize;
+	pArrayTypeDef = Heap_GetType(pThis_);
+	U32 elemSize = pArrayTypeDef->pArrayElementType->arrayElementSize;
 
 	PTR beginning_of_elements = pArray->ptr_elements;
-	PTR b1 = (PTR) &pArray->rank;
+	PTR b1 = (PTR)&pArray->rank;
 	U64 * beginning_of_lengths = ((U64*)b1) + 1;
 	int index = 0;
 	for (int i = 0; i < dim; ++i)
@@ -460,7 +460,8 @@ function_space_specifier void SystemArray_StoreElementIndices(HEAP_PTR pThis_, U
 		index += indices[i] * k;
 	}
 
-	switch (elemSize) {
+	switch (elemSize)
+	{
 		case 1:
 		{
 			*(((U8*)(beginning_of_elements)) + index) = *(U8*)value;
@@ -490,6 +491,41 @@ function_space_specifier void SystemArray_StoreElementIndices(HEAP_PTR pThis_, U
 	}
 }
 
+function_space_specifier void SystemArray_LoadElementIndicesAddress(HEAP_PTR pThis_, U32 dim, U64* indices, HEAP_PTR * value_address)
+{
+#ifdef  __CUDA_ARCH__
+	int blockId = blockIdx.x + blockIdx.y * gridDim.x
+		+ gridDim.x * gridDim.y * blockIdx.z;
+	int threadId = blockId * (blockDim.x * blockDim.y * blockDim.z)
+		+ (threadIdx.z * (blockDim.x * blockDim.y))
+		+ (threadIdx.y * blockDim.x) + threadIdx.x;
+#else
+	int threadId = 0;
+#endif
+	tSystemArray *pArray = (tSystemArray*)pThis_;
+	tMD_TypeDef *pArrayTypeDef;
+
+	pArrayTypeDef = Heap_GetType(pThis_);
+	U32 elemSize = pArrayTypeDef->pArrayElementType->arrayElementSize;
+
+	PTR beginning_of_elements = pArray->ptr_elements;
+	PTR b1 = (PTR)&pArray->rank;
+	U64 * beginning_of_lengths = ((U64*)b1) + 1;
+	int index = 0;
+	for (int i = 0; i < dim; ++i)
+	{
+		int k = 1;
+		for (int j = i + 1; j < dim; ++j)
+		{
+			U64 x = beginning_of_lengths[j];
+			U32 y = (U32)x;
+			k = k * y;
+		}
+		index += indices[i] * k;
+	}
+	*value_address = (((U8*)(beginning_of_elements)) + index);
+}
+
 function_space_specifier PTR SystemArray_LoadElementAddress(HEAP_PTR pThis_, U32 index) {
     tSystemArray *pArray = (tSystemArray*)pThis_;
     tMD_TypeDef *pArrayTypeDef;
@@ -510,4 +546,20 @@ function_space_specifier PTR SystemArray_LoadElementAddress(HEAP_PTR pThis_, U32
 function_space_specifier U32 SystemArray_GetNumBytes(HEAP_PTR pThis_, tMD_TypeDef *pElementType) {
     U32 len = *((&(((tSystemArray*)pThis_)->rank)) + 1);
     return (len * pElementType->arrayElementSize) + sizeof(tSystemArray);
+}
+
+function_space_specifier int SystemArray_GetRank(HEAP_PTR pThis_)
+{
+	tSystemArray *pArray = (tSystemArray*)pThis_;
+	U64 p_len = pArray->rank;
+	return p_len;
+}
+
+function_space_specifier U64* SystemArray_GetDims(HEAP_PTR pThis_)
+{
+	tSystemArray *pArray = (tSystemArray*)pThis_;
+    PTR beginning_of_elements = pArray->ptr_elements;
+	PTR b1 = (PTR)&pArray->rank;
+	U64 * beginning_of_lengths = ((U64*)b1) + 1;
+	return beginning_of_lengths;
 }

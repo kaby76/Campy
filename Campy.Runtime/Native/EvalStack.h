@@ -18,8 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#if !defined (__EVALSTACK_H)
-#define __EVALSTACK_H
+#pragma once
 
 #define EVALSTACK_INT64 0
 #define EVALSTACK_INT32 1
@@ -35,5 +34,3 @@
 
 // dummy value used for methods that return nothing (void)
 #define EVALSTACK_VOID 0xff
-
-#endif

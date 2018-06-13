@@ -18,12 +18,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#if !defined (__FINALIZER_H)
-#define __FINALIZER_H
+#pragma once
 
 function_space_specifier void Finalizer_Init();
 
 function_space_specifier void AddFinalizer(PTR ptr);
 function_space_specifier HEAP_PTR GetNextFinalizer();
 
-#endif

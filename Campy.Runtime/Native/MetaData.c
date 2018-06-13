@@ -2115,10 +2115,37 @@ function_space_specifier void MetaData_PrintMetaData(tMetaData * meta)
 					break;
 				}
 			}
-
-
 		}
 	}
 }
 
+
+// Not sure where to put this, but this seems best.
+function_space_specifier void MetaData_SetField(HEAP_PTR object, tMD_FieldDef * pField, HEAP_PTR value)
+{
+}
+
+function_space_specifier void * MetaData_GetField(HEAP_PTR object, tMD_FieldDef * pField)
+{
+	int field_offset = pField->memOffset;
+	unsigned char * field = (unsigned char *)object + field_offset;
+	int field_size = pField->memSize;
+	return (void*)field;
+}
+
+function_space_specifier void MetaData_GetFields(tMD_TypeDef * pTypeDef, tMD_FieldDef*** out_buf, int * out_len)
+{
+	*out_len = pTypeDef->numFields;
+	*out_buf = pTypeDef->ppFields;
+}
+
+function_space_specifier char * MetaData_GetFieldName(tMD_FieldDef * pFieldDef)
+{
+	return pFieldDef->name;
+}
+
+function_space_specifier tMD_TypeDef * MetaData_GetFieldType(tMD_FieldDef * pFieldDef)
+{
+	return pFieldDef->pType;
+}
 

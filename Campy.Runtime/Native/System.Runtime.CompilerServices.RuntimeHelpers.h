@@ -18,12 +18,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#if !defined(__SYSTEM_RUNTIME_COMPILERSERVICES_RUNTIMEHELPERS_H)
-#define __SYSTEM_RUNTIME_COMPILERSERVICES_RUNTIMEHELPERS_H
+#pragma once
 
 #include "MetaData.h"
 #include "Types.h"
 
 function_space_specifier tAsyncCall* System_Runtime_CompilerServices_InitializeArray(PTR pThis_, PTR pParams, PTR pReturnValue);
-
-#endif

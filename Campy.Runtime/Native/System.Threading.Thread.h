@@ -18,8 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#if !defined(__SYSTEM_THREADING_THREAD_H)
-#define __SYSTEM_THREADING_THREAD_H
+#pragma once
 
 #include "MetaData.h"
 #include "Types.h"
@@ -29,5 +28,3 @@ function_space_specifier tAsyncCall* System_Threading_Thread_ctorParam(PTR pThis
 function_space_specifier tAsyncCall* System_Threading_Thread_Start(PTR pThis_, PTR pParams, PTR pReturnValue);
 function_space_specifier tAsyncCall* System_Threading_Thread_Sleep(PTR pThis_, PTR pParams, PTR pReturnValue);
 function_space_specifier tAsyncCall* System_Threading_Thread_get_CurrentThread(PTR pThis_, PTR pParams, PTR pReturnValue);
-
-#endif

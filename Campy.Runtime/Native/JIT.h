@@ -18,8 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#if !defined (__JIT_H)
-#define __JIT_H
+#pragma once
 
 typedef struct tJITted_ tJITted;
 typedef struct tExceptionHeader_ tExceptionHeader;
@@ -130,4 +129,3 @@ extern U64 opcodeTimes[JIT_OPCODE_MAXNUM];
 extern function_space_specifier U32 opcodeNumUses[JIT_OPCODE_MAXNUM];
 #endif
 
-#endif

@@ -50,7 +50,11 @@ function_space_specifier void MetaData_Fill_FieldDef(tMD_TypeDef *pParentType, t
 	MetaData_Fill_TypeDef(pFieldDef->pType, NULL, NULL);
 	// A check for 0 is done so if a type has a field of it's own type it is handled correctly.
 	pFieldDef->memSize = (pFieldDef->pType->stackSize>0)?pFieldDef->pType->stackSize:sizeof(void*);
-	pFieldDef->memOffset = memOffset;
+	// Extremely important!! Make sure offset is rounded up to the nearest 8-byte boundary if this is
+	// an 8 byte thing. NVIDIA GPUs cannot fetch 8 bytes on non-8-byte boundaries!!
+	int alignment = pFieldDef->memSize;
+	int padding = (alignment - (int)(memOffset % alignment)) % alignment;
+	pFieldDef->memOffset = memOffset + padding;
 	pFieldDef->pFieldDef = pFieldDef;
 
 	pMetaData = pFieldDef->pMetaData;
@@ -186,12 +190,20 @@ function_space_specifier static tMD_MethodDef* FindVirtualOverriddenMethod(tMD_T
 	return NULL;
 }
 
-function_space_specifier void MetaData_Fill_TypeDef_(tMD_TypeDef *pTypeDef, tMD_TypeDef **ppClassTypeArgs, tMD_TypeDef **ppMethodTypeArgs) {
+function_space_specifier void MetaData_Fill_TypeDef(tMD_TypeDef *pTypeDef, tMD_TypeDef **ppClassTypeArgs, tMD_TypeDef **ppMethodTypeArgs) {
 	IDX_TABLE firstIdx, lastIdx, token;
 	U32 instanceMemSize, staticMemSize, virtualOfs, i, j;
 	tMetaData *pMetaData;
 	tMD_TypeDef *pParent;
 
+	// This test moved from macro MetaData_Fill_TypeDef because it does not seem to
+	// work with generic types: if ppClassTypeArgs is not null, then it still is filled???? No!
+	if (pTypeDef->isFilled == 1)
+	{
+		if (ppClassTypeArgs == NULL && ppMethodTypeArgs == NULL)
+			return;
+		printf("????\n");
+	}
 	pMetaData = pTypeDef->pMetaData;
 	pTypeDef->isFilled = 1;
 	pTypeDef->pTypeDef = pTypeDef;

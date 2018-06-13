@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#if !defined (__RVA_H)
-#define __RVA_H
+#pragma once
+
 #include "Compat.h"
 
 typedef struct tRVA_Item_ tRVA_Item;
@@ -39,5 +39,3 @@ struct tRVA_ {
 function_space_specifier tRVA* RVA();
 function_space_specifier tRVA_Item* RVA_Create(tRVA *pThis, void *pFile, void *pSectionHeader);
 function_space_specifier void* RVA_FindData(tRVA *pThis, unsigned int rva);
-
-#endif

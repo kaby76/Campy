@@ -18,8 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#if !defined (__CLIFILE_H)
-#define __CLIFILE_H
+#pragma once
 
 #include "RVA.h"
 #include "Types.h"
@@ -306,5 +305,3 @@ struct BCL_IMAGE_RELOCATION
 #define IMAGE_REL_AMD64_SSPAN32         0x0010
 #pragma pack()
 
-
-#endif

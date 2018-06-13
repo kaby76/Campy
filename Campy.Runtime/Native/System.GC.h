@@ -18,8 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#if !defined(__SYSTEM_GC_H)
-#define __SYSTEM_GC_H
+#pragma once
 
 #include "MetaData.h"
 #include "Types.h"
@@ -28,5 +27,3 @@ function_space_specifier tAsyncCall* System_GC_Collect(PTR pThis_, PTR pParams, 
 function_space_specifier tAsyncCall* System_GC_Internal_CollectionCount(PTR pThis_, PTR pParams, PTR pReturnValue);
 function_space_specifier tAsyncCall* System_GC_GetTotalMemory(PTR pThis_, PTR pParams, PTR pReturnValue);
 function_space_specifier tAsyncCall* System_GC_SuppressFinalize(PTR pThis_, PTR pParams, PTR pReturnValue);
-
-#endif

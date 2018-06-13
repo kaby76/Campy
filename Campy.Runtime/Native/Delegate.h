@@ -18,8 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#if !defined (__DELEGATE_H)
-#define __DELEGATE_H
+#pragma once
 
 #include "MetaData.h"
 #include "Types.h"
@@ -28,6 +27,3 @@ function_space_specifier fnInternalCall Map_Delegate(tMD_MethodDef *pMethod);
 
 function_space_specifier tMD_MethodDef* Delegate_GetMethod(void *pThis_);
 function_space_specifier tMD_MethodDef* Delegate_GetMethodAndStore(void *pThis_, HEAP_PTR *pTargetObj, void **ppNextDelegate);
-
-
-#endif

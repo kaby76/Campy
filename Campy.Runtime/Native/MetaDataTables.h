@@ -18,8 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#if !defined(__METADATATABLES_H)
-#define __METADATATABLES_H
+#pragma once
 
 // NOTE (KED): This meta is version specific; assemblies differ based on the compiler that generated them.
 
@@ -756,5 +755,3 @@ struct tMD_GenericParamConstraint_
 };
 typedef struct tMD_GenericParamConstraint_ tMD_GenericParamConstraint;
 #define MD_TABLE_GENERICPARAMCONSTRAINT 0x2C
-
-#endif

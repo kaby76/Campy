@@ -18,8 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#if !defined(__HEAP_H)
-#define __HEAP_H
+#pragma once
 
 #include "MetaData.h"
 #include "Types.h"
@@ -65,4 +64,4 @@ function_space_specifier U32 Heap_SyncExit(HEAP_PTR obj);
 function_space_specifier HEAP_PTR Heap_SetWeakRefTarget(HEAP_PTR target, HEAP_PTR weakRef);
 function_space_specifier HEAP_PTR* Heap_GetWeakRefAddress(HEAP_PTR target);
 function_space_specifier void Heap_RemovedWeakRefTarget(HEAP_PTR target);
-#endif
+

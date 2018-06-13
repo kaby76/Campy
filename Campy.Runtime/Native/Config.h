@@ -18,8 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef __CONFIG_H
-#define __CONFIG_H
+#pragma once
 
 // Diagnostic stuff
 // Some of this will only work on Windows
@@ -57,5 +56,3 @@
 //#define GEN_COMBINED_OPCODES
 #define GEN_COMBINED_OPCODES_MAX_MEMORY 0x4000
 #define GEN_COMBINED_OPCODES_CALL_TRIGGER 20
-
-#endif

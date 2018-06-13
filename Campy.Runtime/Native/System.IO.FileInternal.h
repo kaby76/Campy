@@ -18,8 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#if !defined(__SYSTEM_IO_FILEINTERNAL_H)
-#define __SYSTEM_IO_FILEINTERNAL_H
+#pragma once
 
 #include "Types.h"
 #include "MetaData.h"
@@ -30,6 +29,3 @@ function_space_specifier tAsyncCall* System_IO_FileInternal_Close(PTR pThis_, PT
 function_space_specifier tAsyncCall* System_IO_FileInternal_GetCurrentDirectory(PTR pThis_, PTR pParams, PTR pReturnValue);
 function_space_specifier tAsyncCall* System_IO_FileInternal_GetFileAttributes(PTR pThis_, PTR pParams, PTR pReturnValue);
 function_space_specifier tAsyncCall* System_IO_FileInternal_GetFileSystemEntries(PTR pThis_, PTR pParams, PTR pReturnValue);
-
-
-#endif

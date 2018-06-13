@@ -168,6 +168,9 @@
     <ClInclude Include="basics.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="MetaData_Search.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="basics.c">

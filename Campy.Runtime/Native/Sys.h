@@ -18,8 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#if !defined(__SYS_H)
-#define __SYS_H
+#pragma once
 
 #include "Config.h"
 
@@ -55,5 +54,3 @@ function_space_specifier U64 msTime();
 function_space_specifier U64 microTime();
 #endif
 function_space_specifier void SleepMS(U32 ms);
-
-#endif

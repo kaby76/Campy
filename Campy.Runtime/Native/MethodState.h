@@ -18,8 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#if !defined(__METHODSTATE_H)
-#define __METHODSTATE_H
+#pragma once
 
 typedef struct tMethodState_ tMethodState;
 
@@ -67,5 +66,3 @@ struct tMethodState_ {
 function_space_specifier tMethodState* MethodState_Direct(tThread *pThread, tMD_MethodDef *pMethod, tMethodState *pCaller, U32 isInternalNewObjCall);
 function_space_specifier tMethodState* MethodState(tThread *pThread, tMetaData *pMetaData, IDX_TABLE methodToken, tMethodState *pCaller);
 function_space_specifier void MethodState_Delete(tThread *pThread, tMethodState **ppMethodState);
-
-#endif

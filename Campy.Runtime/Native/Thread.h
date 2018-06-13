@@ -18,8 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#if !defined(__THREAD_H)
-#define __THREAD_H
+#pragma once
 
 typedef struct tThread_ tThread;
 typedef struct tThreadStack_ tThreadStack;
@@ -106,5 +105,3 @@ function_space_specifier void* Thread_StackAlloc(tThread *pThread, U32 size);
 function_space_specifier void Thread_StackFree(tThread *pThread, void *pAddr);
 
 function_space_specifier void Thread_GetHeapRoots(tHeapRoots *pHeapRoots);
-
-#endif

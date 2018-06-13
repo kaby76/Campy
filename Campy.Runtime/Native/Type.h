@@ -18,8 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#if !defined(__TYPE_H)
-#define __TYPE_H
+#pragma once
 
 #include "MetaData.h"
 #include "Types.h"
@@ -127,5 +126,3 @@ function_space_specifier U32 Type_IsAssignableFrom(tMD_TypeDef *pToType, tMD_Typ
 function_space_specifier tMD_TypeDef* Type_GetArrayTypeDef(tMD_TypeDef *pElementType, tMD_TypeDef **ppClassTypeArgs, tMD_TypeDef **ppMethodTypeArgs);
 
 function_space_specifier HEAP_PTR Type_GetTypeObject(tMD_TypeDef *pTypeDef);
-
-#endif
