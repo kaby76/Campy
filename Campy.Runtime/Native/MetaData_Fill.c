@@ -202,7 +202,6 @@ function_space_specifier void MetaData_Fill_TypeDef(tMD_TypeDef *pTypeDef, tMD_T
 	{
 		if (ppClassTypeArgs == NULL && ppMethodTypeArgs == NULL)
 			return;
-		printf("????\n");
 	}
 	pMetaData = pTypeDef->pMetaData;
 	pTypeDef->isFilled = 1;

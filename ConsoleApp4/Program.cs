@@ -24,7 +24,7 @@ namespace ConsoleApp4
 
         static void Main(string[] args)
         {
-            StartDebugging();
+            //StartDebugging();
             var A = new SquareMatrix(new Collection<double>() { 3, 2, 2, 6 });
             var b = new Vector(new Collection<double> { 2, -8 });
             var x = new Vector(new Collection<double> { -2, -2 });
