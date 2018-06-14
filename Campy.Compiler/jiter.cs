@@ -810,13 +810,6 @@ namespace Campy.Compiler
                     continue;
                 }
 
-                if (!JITER.Singleton.IsFullyInstantiatedNode(bb))
-                {
-                    if (Campy.Utils.Options.IsOn("jit_trace"))
-                        System.Console.WriteLine("skipping -- not fully instantiated block the contains generics.");
-                    continue;
-                }
-
                 MethodReference method = bb._original_method_reference;
                 List<ParameterDefinition> parameters = method.Parameters.ToList();
                 List<ParameterReference> instantiated_parameters = new List<ParameterReference>();
@@ -913,9 +906,6 @@ namespace Campy.Compiler
 
             foreach (var bb in basic_blocks_to_compile)
             {
-                if (!JITER.Singleton.IsFullyInstantiatedNode(bb))
-                    continue;
-
                 IEnumerable<CFG.Vertex> successors = _mcfg.SuccessorNodes(bb);
                 if (!bb.IsEntry)
                 {
@@ -1556,25 +1546,6 @@ namespace Campy.Compiler
             Utils.CudaHelpers.CheckCudaError(Cuda.cuDevicePrimaryCtxReset(0));
             Utils.CudaHelpers.CheckCudaError(Cuda.cuCtxCreate_v2(out CUcontext pctx, 0, 0));
             init = true;
-        }
-
-        public bool IsFullyInstantiatedNode(CFG.Vertex node)
-        {
-            bool result = false;
-            // First, go through and mark all nodes that have non-null
-            // previous entries.
-
-            Dictionary<CFG.Vertex, bool> instantiated = new Dictionary<CFG.Vertex, bool>();
-            foreach (var v in _mcfg.Vertices)
-            {
-                instantiated[v] = true;
-            }
-            foreach (var v in _mcfg.Vertices)
-            {
-                if (v.PreviousVertex != null) instantiated[v.PreviousVertex] = false;
-            }
-            result = instantiated[node];
-            return result;
         }
 
         private ModuleRef CreateModule(string name)

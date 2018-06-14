@@ -135,9 +135,7 @@ namespace Campy.Compiler
             {
                 return Name;
             }
-            public CFG.Vertex OriginalVertex { get; set; }
             public Dictionary<Tuple<TypeReference, GenericParameter>, System.Type> OpsFromOriginal { get; set; } = new Dictionary<Tuple<TypeReference, GenericParameter>, System.Type>();
-            public CFG.Vertex PreviousVertex { get; set; }
             public Tuple<Tuple<TypeReference, GenericParameter>, System.Type> OpFromPreviousNode { get; set; }
             public MethodReference RewrittenCalleeSignature { get; set; }
             public List<INST> Instructions { get; set; } = new List<INST>();

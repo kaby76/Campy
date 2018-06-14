@@ -1637,8 +1637,7 @@
                 var g = this.Block._graph;
                 CFG.Vertex v = node;
                 JITER c = JITER.Singleton;
-                if (v.IsEntry && JITER.MethodName(v._original_method_reference) == mr.FullName &&
-                    c.IsFullyInstantiatedNode(v))
+                if (v.IsEntry && JITER.MethodName(v._original_method_reference) == mr.FullName)
                     return true;
                 else return false;
             }).ToList().FirstOrDefault();
@@ -5621,7 +5620,7 @@
                 var g = inst.Block._graph;
                 CFG.Vertex v = node;
                 JITER c = JITER.Singleton;
-                if (v.IsEntry && JITER.MethodName(v._original_method_reference) == name && c.IsFullyInstantiatedNode(v))
+                if (v.IsEntry && JITER.MethodName(v._original_method_reference) == name)
                     return true;
                 else return false;
             }).ToList().FirstOrDefault();
