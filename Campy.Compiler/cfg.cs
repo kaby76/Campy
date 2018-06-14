@@ -1,23 +1,20 @@
-﻿using Mono.Collections.Generic;
-using Swigged.LLVM;
-
-namespace Campy.Compiler
+﻿namespace Campy.Compiler
 {
     using Campy.Graphs;
-    using Mono.Cecil.Cil;
     using Mono.Cecil;
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Linq;
     using System;
+    using Swigged.LLVM;
 
     public class CFG : GraphAdjList<CFG.Vertex, CFG.Edge>
     {
         private static int _node_number = 1;
-        private Dictionary<int, List<CFG.Vertex>> _change_set = new Dictionary<int, List<Vertex>>();
+        private Dictionary<int, List<Vertex>> _change_set = new Dictionary<int, List<Vertex>>();
         private Random random;
 
-        public List<CFG.Vertex> Entries { get; } = new List<Vertex>();
+        public List<Vertex> Entries { get; } = new List<Vertex>();
 
         public int NewNodeNumber()
         {
@@ -44,7 +41,7 @@ namespace Campy.Compiler
             return new_num;
         }
 
-        public List<CFG.Vertex> PopChangeSet(int num)
+        public List<Vertex> PopChangeSet(int num)
         {
             if (_change_set.ContainsKey(num))
             {
@@ -55,16 +52,15 @@ namespace Campy.Compiler
             throw new Exception("Unknown change set.");
         }
 
-        public override CFG.Vertex AddVertex(CFG.Vertex v)
+        public override Vertex AddVertex(Vertex v)
         {
-            foreach (CFG.Vertex vertex in this.Vertices)
+            foreach (var vertex in Vertices)
             {
-                if (vertex == v)
-                    return vertex;
+                if (vertex == v) return vertex;
             }
-            CFG.Vertex x = (Vertex)base.AddVertex(v);
+            var x = base.AddVertex(v);
             x._graph = this;
-            foreach (KeyValuePair<int, List<CFG.Vertex>> pair in this._change_set)
+            foreach (KeyValuePair<int, List<Vertex>> pair in this._change_set)
             {
                 pair.Value.Add(x);
                 Debug.Assert(_change_set[pair.Key].Contains(x));
@@ -113,7 +109,7 @@ namespace Campy.Compiler
             public bool HasScalarReturnValue { get; set; }
             public bool HasStructReturnValue { get; set; }
             public Vertex Entry { get; set; }
-            public bool IsEntry { get { return this.Entry == this; } }
+            public bool IsEntry { get { return Entry == this; } }
             public int StackNumberOfLocals { get; set; }
             public int StackNumberOfArguments { get; set; }
 
@@ -122,7 +118,7 @@ namespace Campy.Compiler
                 if (!Campy.Utils.Options.IsOn("graph_trace"))
                     return;
 
-                CFG.Vertex v = this;
+                var v = this;
                 Console.WriteLine();
                 Console.WriteLine("Node: " + v.ToString() + " ");
                 Console.WriteLine(new String(' ', 4) + "Method " + v._original_method_reference.FullName + " " + v._original_method_reference.Module.Name + " " + v._original_method_reference.Module.FileName);
@@ -131,7 +127,7 @@ namespace Campy.Compiler
                 Console.WriteLine(new String(' ', 4) + "Args   " + v.StackNumberOfArguments);
                 Console.WriteLine(new String(' ', 4) + "Locals " + v.StackNumberOfLocals);
                 Console.WriteLine(new String(' ', 4) + "Return (reuse) " + v.HasScalarReturnValue);
-                if (this._graph.Predecessors(v).Any())
+                if (_graph.Predecessors(v).Any())
                 {
                     Console.Write(new String(' ', 4) + "Edges from:");
                     foreach (object t in this._graph.Predecessors(v))
@@ -159,7 +155,7 @@ namespace Campy.Compiler
             }
         }
 
-        public class Edge : DirectedEdge<CFG.Vertex>
+        public class Edge : DirectedEdge<Vertex>
         {
             public Edge()
                 : base(null, null)
@@ -175,7 +171,7 @@ namespace Campy.Compiler
             System.Console.WriteLine();
             System.Console.WriteLine("List of entry blocks:");
             System.Console.WriteLine(new String(' ', 4) + "Node" + new string(' ', 4) + "Method");
-            foreach (Vertex n in Entries)
+            foreach (var n in Entries)
             {
                 System.Console.Write("{0,8}", n);
                 System.Console.Write(new string(' ', 4));
@@ -184,7 +180,7 @@ namespace Campy.Compiler
             System.Console.WriteLine();
             System.Console.WriteLine("List of callers:");
             System.Console.WriteLine(new String(' ', 4) + "Node" + new string(' ', 4) + "Instruction");
-            foreach (INST caller in INST.CallInstructions)
+            foreach (var caller in INST.CallInstructions)
             {
                 Vertex n = caller.Block;
                 System.Console.Write("{0,8}", n);
@@ -199,7 +195,7 @@ namespace Campy.Compiler
                 System.Console.WriteLine();
             }
 
-            foreach (Vertex n in Vertices)
+            foreach (var n in Vertices)
             {
                   n.OutputEntireNode();
             }
@@ -211,20 +207,20 @@ namespace Campy.Compiler
                 return;
 
             Dictionary<CFG.Vertex,bool> visited = new Dictionary<CFG.Vertex, bool>();
-            System.Console.WriteLine("digraph {");
-            foreach (var n in this.Edges)
+            Console.WriteLine("digraph {");
+            foreach (var n in Edges)
             {
-                System.Console.WriteLine(n.From + " -> " + n.To + ";");
+                Console.WriteLine(n.From + " -> " + n.To + ";");
                 visited[n.From] = true;
                 visited[n.To] = true;
             }
-            foreach (var n in this.Vertices)
+            foreach (var n in Vertices)
             {
                 if (visited.ContainsKey(n)) continue;
-                System.Console.WriteLine(n + ";");
+                Console.WriteLine(n + ";");
             }
-            System.Console.WriteLine("}");
-            System.Console.WriteLine();
+            Console.WriteLine("}");
+            Console.WriteLine();
         }
     }
 }
