@@ -1357,7 +1357,6 @@ namespace Campy.Compiler
         public static ModuleRef global_llvm_module;
         private List<ModuleRef> all_llvm_modules;
         public static Dictionary<string, ValueRef> functions_in_internal_bcl_layer;
-        Dictionary<Tuple<CFG.Vertex, Mono.Cecil.TypeReference, System.Type>, CFG.Vertex> mmap;
         internal static Dictionary<TypeReference, TypeRef> basic_llvm_types_created;
         internal static Dictionary<TypeReference, TypeRef> previous_llvm_types_created_global;
         internal static Dictionary<string, string> _rename_to_legal_llvm_name_cache;
@@ -1383,7 +1382,6 @@ namespace Campy.Compiler
             global_llvm_module = default(ModuleRef);
             all_llvm_modules = new List<ModuleRef>();
             functions_in_internal_bcl_layer = new Dictionary<string, ValueRef>();
-            mmap = new Dictionary<Tuple<CFG.Vertex, TypeReference, System.Type>, CFG.Vertex>(new Comparer());
             basic_llvm_types_created = new Dictionary<TypeReference, TypeRef>();
             previous_llvm_types_created_global = new Dictionary<TypeReference, TypeRef>();
             _rename_to_legal_llvm_name_cache = new Dictionary<string, string>();
@@ -1558,43 +1556,6 @@ namespace Campy.Compiler
             Utils.CudaHelpers.CheckCudaError(Cuda.cuDevicePrimaryCtxReset(0));
             Utils.CudaHelpers.CheckCudaError(Cuda.cuCtxCreate_v2(out CUcontext pctx, 0, 0));
             init = true;
-        }
-
-        public class Comparer : IEqualityComparer<Tuple<CFG.Vertex, Mono.Cecil.TypeReference, System.Type>>
-        {
-            bool IEqualityComparer<Tuple<CFG.Vertex, TypeReference, System.Type>>.Equals(Tuple<CFG.Vertex, TypeReference, System.Type> x, Tuple<CFG.Vertex, TypeReference, System.Type> y)
-            {
-                // Order by vertex id, typereference string, type string.
-                if (x.Item1.Name != y.Item1.Name)
-                    return false;
-                // Equal vertex name.
-                if (x.Item2.Name != y.Item2.Name)
-                    return false;
-                // Equal TypeReference.
-                if (x.Item3.Name != y.Item3.Name)
-                    return false;
-
-                return true;
-            }
-
-            int IEqualityComparer<Tuple<CFG.Vertex, TypeReference, System.Type>>.GetHashCode(Tuple<CFG.Vertex, TypeReference, System.Type> obj)
-            {
-                int result = 0;
-               // result = obj.Item1.GetHashCode() + obj.Item2.GetHashCode() + obj.Item3.GetHashCode();
-                return result;
-            }
-        }
-
-        private CFG.Vertex FindInstantiatedBasicBlock(CFG.Vertex current, Mono.Cecil.TypeReference generic_type, System.Type value)
-        {
-            var k = new Tuple<CFG.Vertex, TypeReference, System.Type>(current, generic_type, value);
-
-            // Find vertex that maps from base vertex via symbol.
-            if (!mmap.ContainsKey(k))
-                return null;
-
-            var v = mmap[k];
-            return v;
         }
 
         public bool IsFullyInstantiatedNode(CFG.Vertex node)
