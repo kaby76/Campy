@@ -22,15 +22,7 @@ namespace Campy.Compiler
 
         private List<CFG.Vertex> _entries = new List<Vertex>();
 
-        public List<CFG.Vertex> Entries
-        {
-            get { return _entries; }
-        }
-
-        public CFG()
-            : base()
-        {
-        }
+        public List<CFG.Vertex> Entries { get; } = new List<Vertex>();
 
         private Dictionary<int, List<CFG.Vertex>> _change_set = new Dictionary<int, List<Vertex>>();
         private Random random;
@@ -262,7 +254,7 @@ namespace Campy.Compiler
             System.Console.WriteLine();
             System.Console.WriteLine("List of entry blocks:");
             System.Console.WriteLine(new String(' ', 4) + "Node" + new string(' ', 4) + "Method");
-            foreach (Vertex n in this._entries)
+            foreach (Vertex n in Entries)
             {
                 System.Console.Write("{0,8}", n);
                 System.Console.Write(new string(' ', 4));
@@ -278,7 +270,7 @@ namespace Campy.Compiler
                 System.Console.Write(new string(' ', 4));
                 System.Console.WriteLine(caller);
             }
-            if (this._entries.Any())
+            if (Entries.Any())
             {
                 System.Console.WriteLine();
                 System.Console.WriteLine("List of orphan blocks:");
