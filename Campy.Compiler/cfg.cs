@@ -14,19 +14,16 @@ namespace Campy.Compiler
     public class CFG : GraphAdjList<CFG.Vertex, CFG.Edge>
     {
         private static int _node_number = 1;
+        private Dictionary<int, List<CFG.Vertex>> _change_set = new Dictionary<int, List<Vertex>>();
+        private Random random;
+
+        public List<CFG.Vertex> Entries { get; } = new List<Vertex>();
 
         public int NewNodeNumber()
         {
             return _node_number++;
         }
 
-        private List<CFG.Vertex> _entries = new List<Vertex>();
-
-        public List<CFG.Vertex> Entries { get; } = new List<Vertex>();
-
-        private Dictionary<int, List<CFG.Vertex>> _change_set = new Dictionary<int, List<Vertex>>();
-        private Random random;
-        
         public int StartChangeSet()
         {
             if (random == null)
@@ -75,34 +72,6 @@ namespace Campy.Compiler
             return x;
         }
 
-        public Vertex FindEntry(INST inst)
-        {
-            Vertex result = null;
-
-            // Find owning block.
-            result = inst.Block;
-
-            // Return entry block for method.
-            return result.Entry;
-        }
-
-        public Vertex FindEntry(Mono.Cecil.Cil.Instruction inst)
-        {
-            Vertex result = null;
-            foreach (CFG.Vertex node in this.Vertices)
-                if (node.Instructions.First().Instruction == inst)
-                    return node;
-            return result;
-        }
-
-        public Vertex FindEntry(Mono.Cecil.MethodReference mr)
-        {
-            foreach (CFG.Vertex node in this.Vertices)
-                if (node._original_method_reference == mr)
-                    return node;
-            return null;
-        }
-
         public class Vertex
         {
             public struct LLVMINFO
@@ -131,11 +100,7 @@ namespace Campy.Compiler
             public Tuple<Tuple<TypeReference, GenericParameter>, System.Type> OpFromPreviousNode { get; set; }
             public MethodReference RewrittenCalleeSignature { get; set; }
             public List<INST> Instructions { get; set; } = new List<INST>();
-            public CFG _graph
-            {
-                get;
-                set;
-            }
+            public CFG _graph { get; set; }
             public LLVMINFO LlvmInfo;
             public bool AlreadyCompiled { get; set; }
             // Method reference, which might be a generic instance.
@@ -144,57 +109,13 @@ namespace Campy.Compiler
             public MethodDefinition _method_definition { get; set; }
             // This may be the original reference in the code before substitution with BCL code.
             public MethodReference _original_method_reference { get; set; }
-            public bool HasThis
-            {
-                get;
-                set;
-            }
+            public bool HasThis { get; set; }
             public bool HasScalarReturnValue { get; set; }
             public bool HasStructReturnValue { get; set; }
-            private Vertex _entry;
-            public Vertex Entry
-            {
-                get { return _entry; }
-                set { _entry = value; }
-            }
-            public bool IsEntry
-            {
-                get
-                {
-                    return this.Entry == this;
-                }
-            }
-            public int StackNumberOfLocals
-            {
-                get;
-                set;
-            }
-            public int StackNumberOfArguments
-            {
-                get;
-                set;
-            }
-            public Vertex Exit
-            {
-                get
-                {
-                    return null;
-                }
-            }
-
-            public Vertex()
-                : base()
-            {
-            }
-
-            public Vertex(Vertex copy)
-                : base()
-            {
-                _original_method_reference = copy._original_method_reference;
-                this.Instructions = copy.Instructions;
-                HasScalarReturnValue = copy.HasScalarReturnValue;
-
-            }
+            public Vertex Entry { get; set; }
+            public bool IsEntry { get { return this.Entry == this; } }
+            public int StackNumberOfLocals { get; set; }
+            public int StackNumberOfArguments { get; set; }
 
             public void OutputEntireNode()
             {
@@ -305,56 +226,5 @@ namespace Campy.Compiler
             System.Console.WriteLine("}");
             System.Console.WriteLine();
         }
-
-        class CallEnumerator : IEnumerable<CFG.Vertex>
-        {
-            CFG.Vertex _node;
-
-            public CallEnumerator(CFG.Vertex node)
-            {
-                _node = node;
-            }
-
-            public IEnumerator<CFG.Vertex> GetEnumerator()
-            {
-                // Create a sorted list of nodes for given node.
-                List<CFG.Vertex> list = new List<Vertex>();
-                foreach (CFG.Vertex v in _node._graph.Vertices)
-                {
-                    if (v.Entry == _node) list.Add(v);
-                }
-                for (int i = 0; i < list.Count - 1; ++i)
-                {
-                    var v1 = list[i];
-                    var v2 = list[i + 1];
-                    var sv1 = v1.Instructions.First().ToString();
-                    var sv2 = v2.Instructions.First().ToString();
-                    if (sv1.CompareTo(sv2) > 0)
-                    {
-                        list[i] = v2;
-                        list[i + 1] = v1;
-                    }
-                }
-                foreach (CFG.Vertex current in list)
-                {
-                    foreach (CFG.Vertex next in _node._graph.SuccessorNodes(current))
-                    {
-                        if (next.IsEntry && next._original_method_reference != _node._original_method_reference)
-                            yield return next;
-                    }
-                }
-            }
-
-            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-            {
-                return GetEnumerator();
-            }
-        }
-
-        public IEnumerable<CFG.Vertex> AllInterproceduralCalls(CFG.Vertex node)
-        {
-            return new CallEnumerator(node);
-        }
-
     }
 }
