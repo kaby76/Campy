@@ -49,26 +49,13 @@ namespace Campy.Compiler
             _methods_avoid.Add("System.Void System.ArgumentOutOfRangeException::.ctor(System.String, System.String)");
         }
 
-        public void AnalyzeMethod(MethodInfo methodInfo)
+        public void AnalyzeMethod(MethodReference method_reference)
         {
             Failed = false; // Might be dubious to reset here.
-            this.Add(methodInfo);
+            this.Add(method_reference);
             this.ExtractBasicBlocks();
             Cfg.OutputEntireGraph();
             Cfg.OutputDotGraph();
-        }
-
-        private void Add(MethodInfo method_info)
-        {
-            String kernel_assembly_file_name = method_info.DeclaringType.Assembly.Location;
-            string p = Path.GetDirectoryName(kernel_assembly_file_name);
-            var resolver = new DefaultAssemblyResolver();
-            resolver.AddSearchDirectory(p);
-            Mono.Cecil.ModuleDefinition md = Mono.Cecil.ModuleDefinition.ReadModule(
-                kernel_assembly_file_name,
-                new ReaderParameters { AssemblyResolver = resolver, ReadSymbols = true});
-            MethodReference method_reference = md.ImportReference(method_info);
-            Add(method_reference);
         }
 
         internal void Add(MethodReference method_reference)

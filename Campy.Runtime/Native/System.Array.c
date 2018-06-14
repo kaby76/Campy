@@ -506,7 +506,7 @@ function_space_specifier void SystemArray_LoadElementIndicesAddress(HEAP_PTR pTh
 	tMD_TypeDef *pArrayTypeDef;
 
 	pArrayTypeDef = Heap_GetType(pThis_);
-	U32 elemSize = pArrayTypeDef->pArrayElementType->arrayElementSize;
+	U32 element_size = pArrayTypeDef->pArrayElementType->arrayElementSize;
 
 	PTR beginning_of_elements = pArray->ptr_elements;
 	PTR b1 = (PTR)&pArray->rank;
@@ -523,7 +523,7 @@ function_space_specifier void SystemArray_LoadElementIndicesAddress(HEAP_PTR pTh
 		}
 		index += indices[i] * k;
 	}
-	*value_address = (((U8*)(beginning_of_elements)) + index);
+	*value_address = (((U8*)(beginning_of_elements)) + index * element_size);
 }
 
 function_space_specifier PTR SystemArray_LoadElementAddress(HEAP_PTR pThis_, U32 index) {

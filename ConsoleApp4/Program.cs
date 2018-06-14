@@ -138,7 +138,7 @@ namespace ConsoleApp4
                 Vector r = b - A * x;
                 double rr = r * r;
                 double rAr = r * (A * r);
-                if (rAr == 0) break; // not safe.
+                if (Math.Abs(rAr) <= 1.0e-10) break; // not safe.
                 double a = (double)rr / (double)rAr;
                 x = x + (a * r);
             }

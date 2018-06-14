@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using Campy.Compiler;
 using Campy.Utils;
+using Mono.Cecil;
 using Swigged.Cuda;
 using Type = System.Type;
 
@@ -79,8 +82,18 @@ namespace Campy
                     /////////////////////////////////////////////
                     var stopwatch_cuda_compile = new Stopwatch();
                     stopwatch_cuda_compile.Start();
-                    IntPtr image = Singleton()._converter.Compile(simpleKernel.Method, simpleKernel.Target);
-                    CUfunction ptr_to_kernel = Singleton()._converter.GetCudaFunction(simpleKernel.Method, image);
+                    System.Reflection.MethodInfo method_info = simpleKernel.Method;
+                    String kernel_assembly_file_name = method_info.DeclaringType.Assembly.Location;
+                    string p = Path.GetDirectoryName(kernel_assembly_file_name);
+                    var resolver = new DefaultAssemblyResolver();
+                    resolver.AddSearchDirectory(p);
+                    Mono.Cecil.ModuleDefinition md = Mono.Cecil.ModuleDefinition.ReadModule(
+                        kernel_assembly_file_name,
+                        new ReaderParameters { AssemblyResolver = resolver, ReadSymbols = true });
+                    MethodReference method_reference = md.ImportReference(method_info);
+
+                    IntPtr image = Singleton()._converter.Compile(method_reference, simpleKernel.Target);
+                    CUfunction ptr_to_kernel = Singleton()._converter.GetCudaFunction(method_reference, image);
                     var elapse_cuda_compile = stopwatch_cuda_compile.Elapsed;
 
                     RUNTIME.CheckHeap();
@@ -94,7 +107,7 @@ namespace Campy
 
                     // Set up parameters.
                     int count = simpleKernel.Method.GetParameters().Length;
-                    var bb = Singleton()._converter.GetBasicBlock(simpleKernel.Method);
+                    var bb = Singleton()._converter.GetBasicBlock(method_reference);
                     if (bb.HasThis) count++;
                     if (!(count == 1 || count == 2))
                         throw new Exception("Expecting at least one parameter for kernel.");

@@ -42,12 +42,6 @@
             set;
         } = new List<object>();
 
-        public bool _delay = false;
-
-        public void Synchronize()
-        {
-        }
-
         public void Delay(object obj)
         {
             if (_delayed_from_gpu.Contains(obj))
@@ -60,10 +54,6 @@
             if (_never_copy_from_gpu.Contains(obj))
                 return;
             _never_copy_from_gpu.Add(obj);
-        }
-
-        public void ClearAllocatedObjects()
-        {
         }
 
         public BUFFERS()
@@ -186,12 +176,6 @@
             else
                 result = Marshal.SizeOf(type);
             return result;
-        }
-
-        public void ResetDataStructures()
-        {
-            _copied_from_gpu = new List<object>();
-            _copied_to_gpu = new List<object>();
         }
 
         // Create a buffer corresponding to the given object. If there is a buffer
@@ -748,7 +732,7 @@
             }
         }
 
-        public unsafe void DeepCopyFromImplementation(IntPtr from_gpu, out object to_cpu, System.Type target_type)
+        private unsafe void DeepCopyFromImplementation(IntPtr from_gpu, out object to_cpu, System.Type target_type)
         {
             try
             {
@@ -1430,8 +1414,6 @@
             }
         }
 
-
-
         public void Free(IntPtr pointer)
         {
             // There are two buffer types: one for straight unmanaged buffers shared between CPU and GPU,
@@ -1447,13 +1429,6 @@
             var res = Cuda.cuMemFreeHost(pointer);
             CudaHelpers.CheckCudaError(res);
             //Marshal.FreeHGlobal(pointerToUnmanagedMemory);
-        }
-
-        public unsafe void* Resize<T>(void* oldPointer, int newElementCount)
-            where T : struct
-        {
-            return (Marshal.ReAllocHGlobal(new IntPtr(oldPointer),
-                new IntPtr(BUFFERS.SizeOf(typeof(T)) * newElementCount))).ToPointer();
         }
 
         public static void Cp(IntPtr destPtr, IntPtr srcPtr, int size)
@@ -1473,7 +1448,7 @@
             }
         }
 
-        public static unsafe void Cp(void* destPtr, object src)
+        private static unsafe void Cp(void* destPtr, object src)
         {
             RUNTIME.CheckHeap();
             Marshal.StructureToPtr(src, (IntPtr)destPtr, false);
@@ -1531,7 +1506,7 @@
         public static string PrintBclObject(int level, IntPtr obj, TypeReference expected_bcl_type)
         {
             var sb = new StringBuilder();
-            var s = Indent(level, expected_bcl_type.Name + ":");
+            var s = Indent(level, expected_bcl_type.Name + " at 0x" + obj.ToInt64().ToString("X8") + ":");
             sb.Append(s + Environment.NewLine);
 
             if (expected_bcl_type.IsValueType)
@@ -1583,7 +1558,11 @@
                                 var oPtr = fPtr;
                                 if (!et.IsValueType)
                                     oPtr = (IntPtr)Marshal.PtrToStructure(fPtr, typeof(IntPtr));
-                                sb.Append(Indent(level + 2, i.ToString() + ":" + PrintBclObject(level + 2, oPtr, et)));
+                                sb.Append(Indent(level + 2,
+                                    i.ToString()
+                                    + " at 0x" + oPtr.ToInt64().ToString("X8")
+                                    + ":"
+                                    + PrintBclObject(level + 2, oPtr, et)));
                             }
                         }
                     }
@@ -1622,14 +1601,17 @@
                         var oPtr = fPtr;
                         if (!mono_field_type.IsValueType)
                             oPtr = (IntPtr)Marshal.PtrToStructure(fPtr, typeof(IntPtr));
-                        sb.Append(Indent(level + 2, name + ":" + PrintBclObject(level + 2, oPtr, mono_field_type)));
+                        sb.Append(Indent(level + 2,
+                            name
+                            + " at 0x" + oPtr.ToInt64().ToString("X8")
+                            + ":"
+                            + PrintBclObject(level + 2, oPtr, mono_field_type)));
                     }
 
                     return sb.ToString();
                 }
             }
             throw new Exception("unhandled");
-            return "";
         }
     }
 }

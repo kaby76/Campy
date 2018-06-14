@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -907,6 +908,7 @@ namespace Campy.Compiler
 
         public static List<CFG.Vertex> SetupLLVMNonEntries(this List<CFG.Vertex> basic_blocks_to_compile)
         {
+            if (!basic_blocks_to_compile.Any()) return basic_blocks_to_compile;
             var _mcfg = basic_blocks_to_compile.First()._graph;
 
             foreach (var bb in basic_blocks_to_compile)
@@ -1118,7 +1120,7 @@ namespace Campy.Compiler
 
         public static void TranslateToLLVMInstructions(this List<CFG.Vertex> basic_blocks_to_compile)
         {
-            if (basic_blocks_to_compile.Count == 0)
+            if (!basic_blocks_to_compile.Any())
                 return;
 
             var _mcfg = basic_blocks_to_compile.First()._graph;
@@ -1361,7 +1363,7 @@ namespace Campy.Compiler
         internal static Dictionary<string, string> _rename_to_legal_llvm_name_cache;
         public int _start_index;
         private static bool init;
-        private Dictionary<MethodInfo, IntPtr> method_to_image;
+        private Dictionary<MethodDefinition, IntPtr> method_to_image;
         private bool done_major_init;
         private static JITER _singleton;
         private UInt64 _options;
@@ -1385,7 +1387,8 @@ namespace Campy.Compiler
             basic_llvm_types_created = new Dictionary<TypeReference, TypeRef>();
             previous_llvm_types_created_global = new Dictionary<TypeReference, TypeRef>();
             _rename_to_legal_llvm_name_cache = new Dictionary<string, string>();
-            method_to_image = new Dictionary<MethodInfo, IntPtr>();
+            method_to_image = new Dictionary<MethodDefinition, IntPtr>(
+                new LambdaComparer<MethodDefinition>((MethodDefinition a, MethodDefinition b) => a.FullName == b.FullName));
             done_major_init = false;
 
             _importer = IMPORTER.Singleton();
@@ -1659,7 +1662,7 @@ namespace Campy.Compiler
             return mr.FullName;
         }
 
-        private string CIL_to_LLVM_to_PTX(List<CFG.Vertex> basic_blocks_to_compile, List<Mono.Cecil.TypeReference> list_of_data_types_used)
+        private string CIL_to_LLVM_to_PTX(List<CFG.Vertex> basic_blocks_to_compile)
         {
             basic_blocks_to_compile = basic_blocks_to_compile
                 .RemoveBasicBlocksAlreadyCompiled()
@@ -1677,9 +1680,9 @@ namespace Campy.Compiler
             return basic_blocks_to_compile.TranslateToPTX();
         }
 
-        public IntPtr Compile(MethodInfo kernel_method, object kernel_target)
+        public IntPtr Compile(MethodReference kernel_method, object kernel_target)
         {
-            if (method_to_image.TryGetValue(kernel_method, out IntPtr value))
+            if (method_to_image.TryGetValue(kernel_method.Resolve(), out IntPtr value))
             {
                 return value;
             }
@@ -1700,7 +1703,7 @@ namespace Campy.Compiler
                 if (!cs.Any())
                 {
                     bb = _mcfg.Entries.Where(v =>
-                        v.IsEntry && v._original_method_reference.Name == kernel_method.Name).FirstOrDefault();
+                        v.IsEntry && v._original_method_reference.FullName == kernel_method.FullName).FirstOrDefault();
                 }
                 else
                 {
@@ -1712,26 +1715,12 @@ namespace Campy.Compiler
 
             Campy.Utils.TimePhase.Time("compiler      ", () =>
             {
-                // Very important note: Although we have the control flow graph of the code that is to
-                // be compiled, there is going to be generics used, e.g., ArrayView<int>, within the body
-                // of the code and in the called runtime library. We need to record the types for compiling
-                // and add that to compilation.
-                // https://stackoverflow.com/questions/5342345/how-do-generics-get-compiled-by-the-jit-compiler
-
-                // Create a list of generics called with types passed.
-                List<System.Type> list_of_data_types_used = new List<System.Type>();
-                list_of_data_types_used.Add(kernel_target.GetType());
-
-                // Convert list into Mono data types.
-                List<Mono.Cecil.TypeReference> list_of_mono_data_types_used = new List<TypeReference>();
-                foreach (System.Type data_type_used in list_of_data_types_used)
-                {
-                    list_of_mono_data_types_used.Add(
-                        data_type_used.ToMonoTypeReference());
-                }
-                // Compile methods with added type information.
-                ptx = CIL_to_LLVM_to_PTX(cs, list_of_mono_data_types_used);
+                // Compile methods.
+                ptx = CIL_to_LLVM_to_PTX(cs);
             });
+
+            if (ptx == "") throw new Exception(
+                    "Change set for compilation empty, which means we compiled this before. But, it wasn't recorded.");
 
             IntPtr image = IntPtr.Zero;
 
@@ -1831,7 +1820,7 @@ namespace Campy.Compiler
 
                 Utils.CudaHelpers.CheckCudaError(res);
 
-                method_to_image[kernel_method] = image;
+                method_to_image[kernel_method.Resolve()] = image;
             });
 
             return image;
@@ -1842,18 +1831,18 @@ namespace Campy.Compiler
             return _mcfg.Vertices.Where(i => i.IsEntry && i.Name == block_id).FirstOrDefault();
         }
 
-        public CFG.Vertex GetBasicBlock(MethodInfo kernel_method)
+        public CFG.Vertex GetBasicBlock(MethodReference kernel_method)
         {
             CFG.Vertex bb = _mcfg.Entries.Where(v =>
-                v.IsEntry && v._original_method_reference.Name == kernel_method.Name).FirstOrDefault();
+                v.IsEntry && v._original_method_reference.FullName == kernel_method.FullName).FirstOrDefault();
             return bb;
         }
 
-        public CUfunction GetCudaFunction(MethodInfo kernel_method, IntPtr image)
+        public CUfunction GetCudaFunction(MethodReference kernel_method, IntPtr image)
         {
             // Compiled previously. Look for basic block of entry.
             CFG.Vertex bb = _mcfg.Entries.Where(v =>
-                v.IsEntry && v._original_method_reference.Name == kernel_method.Name).FirstOrDefault();
+                v.IsEntry && v._original_method_reference.FullName == kernel_method.FullName).FirstOrDefault();
             string basic_block_id = bb.Name;
             CUmodule module = RUNTIME.InitializeModule(image);
             RUNTIME.RuntimeModule = module;
