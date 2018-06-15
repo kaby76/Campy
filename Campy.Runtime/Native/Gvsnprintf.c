@@ -570,7 +570,7 @@ function_space_specifier int Gprintf(char const* const _Format, ...)
 {
 	va_list va;
 	va_start(va, _Format);
-	char buf[10000];
+	char buf[128];
 	Gvsprintf(buf, _Format, va);
 	va_end(va);
 	int done = printf(buf); // Native CUDA.

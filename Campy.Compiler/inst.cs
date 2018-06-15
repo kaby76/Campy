@@ -1884,6 +1884,8 @@
                         // Set up return. For now, always allocate buffer.
                         // Note function return is type of third parameter.
                         var return_type = mat._returnType.ToTypeRef();
+                        if (mat._returnType.FullName == "System.Void")
+                            return_type = typeof(IntPtr).ToMonoTypeReference().ToTypeRef();
                         var return_buffer = LLVM.BuildAlloca(Builder, return_type, "i" + instruction_id++);
                         LLVM.SetAlignment(return_buffer, 64);
                         //LLVM.PositionBuilderAtEnd(Builder, this.Block.BasicBlock);

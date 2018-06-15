@@ -17,30 +17,26 @@
     /// </summary>
     public class BUFFERS
     {
-        private Dictionary<string, string> _type_name_map = new Dictionary<string, string>();
+        private Dictionary<string, string> _type_name_map { get; } = new Dictionary<string, string>();
 
         // A dictionary of allocated blocks of memory corresponding to an object in C#,
         // calculated when a C# object is copied to the GPU space.
-        private Dictionary<object, IntPtr> _allocated_objects = new Dictionary<object, IntPtr>();
+        private Dictionary<object, IntPtr> _allocated_objects { get; } = new Dictionary<object, IntPtr>();
 
         // The above mapping in reverse.
-        private Dictionary<IntPtr, object> _allocated_buffers = new Dictionary<IntPtr, object>();
+        private Dictionary<IntPtr, object> _allocated_buffers { get; } = new Dictionary<IntPtr, object>();
 
         // A list of object that have been copied from GPU space back to C#.
-        private List<object> _copied_from_gpu = new List<object>();
+        private List<object> _copied_from_gpu { get; } = new List<object>();
 
         // A list of object that should not be copied back to the CPU after a For loop call.
-        private List<object> _delayed_from_gpu = new List<object>();
+        private List<object> _delayed_from_gpu { get; } = new List<object>();
 
         // A list of object that should not be copied back to the CPU after a For loop call.
-        private List<object> _never_copy_from_gpu = new List<object>();
+        private List<object> _never_copy_from_gpu { get; } = new List<object>();
 
         // A list of object that have been copied to GPU space.
-        private List<object> _copied_to_gpu
-        {
-            get;
-            set;
-        } = new List<object>();
+        private List<object> _copied_to_gpu { get; } = new List<object>();
 
         public void Delay(object obj)
         {
@@ -54,10 +50,6 @@
             if (_never_copy_from_gpu.Contains(obj))
                 return;
             _never_copy_from_gpu.Add(obj);
-        }
-
-        public BUFFERS()
-        {
         }
 
         public static int Alignment(System.Type type)
@@ -273,7 +265,7 @@
         {
             // Reset any delayed object copies. In other words, copy the objects
             // on this list back to the CPU.
-            _delayed_from_gpu = new List<object>();
+            _delayed_from_gpu.Clear();
 
             // Copy objects from GPU to CPU.
             SynchDataStructures();
@@ -1587,6 +1579,8 @@
                     for (int i = 0; i < fields.Length; ++i)
                     {
                         var f = fields[i];
+                        var field_definition = mono_fields[i].Resolve();
+                        if (field_definition != null && field_definition.IsStatic) continue;
                         var mono_field_type = mono_fields[i].FieldType;
                         Mono.Cecil.ModuleDefinition campy_bcl_runtime = Mono.Cecil.ModuleDefinition.ReadModule(RUNTIME.FindCoreLib());
                         TypeReference substituted_mono_type = mono_field_type.SubstituteMonoTypeReference(campy_bcl_runtime);
