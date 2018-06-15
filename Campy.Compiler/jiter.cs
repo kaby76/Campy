@@ -1666,12 +1666,9 @@ namespace Campy.Compiler
                 if (Campy.Utils.Options.IsOn("jit_trace"))
                     System.Console.WriteLine("total memory " + total_memory + " free memory " + free_memory);
                 CudaHelpers.CheckCudaError(Cuda.cuCtxGetLimit(out ulong pvalue, CUlimit.CU_LIMIT_STACK_SIZE));
+                CudaHelpers.CheckCudaError(Cuda.cuCtxSetLimit(CUlimit.CU_LIMIT_STACK_SIZE, (uint)pvalue * 4));
                 if (Campy.Utils.Options.IsOn("jit_trace"))
                     System.Console.WriteLine("Stack size " + pvalue);
-
-                var stopwatch_cuda_compile = new Stopwatch();
-                stopwatch_cuda_compile.Reset();
-                stopwatch_cuda_compile.Start();
 
                 // Add in all of the GPU BCL runtime required.
                 uint num_ops_link = 5;
