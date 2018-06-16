@@ -1566,14 +1566,18 @@
                 throw new Exception();
 
             Mono.Cecil.MethodReference mr = method as Mono.Cecil.MethodReference;
-            int xargs = (mr.HasThis ? 1 : 0) + mr.Parameters.Count;
+            bool has_this = false;
+            if (mr.HasThis) has_this = true;
+            if (OpCode.Code == Code.Callvirt) has_this = true;
+            bool is_explicit_this = mr.ExplicitThis;
+            int xargs = (has_this && !is_explicit_this ? 1 : 0) + mr.Parameters.Count;
 
             if (mr.DeclaringType != null && mr.DeclaringType.HasGenericParameters)
             {
                 // Instantiate a generic type and rewrite the
                 // instruction with new target.
                 // Try "this".
-                if (mr.HasThis)
+                if (has_this && !is_explicit_this)
                 {
                     // Grab "this" from stack and generate the type.
                     var this_parameter = state._stack.PeekTop(xargs-1);
@@ -5468,6 +5472,18 @@
         {
         }
 
+        public override INST GenerateGenerics(STATE<TypeReference> state)
+        {
+            var v = state._stack.Pop();
+
+            if (Campy.Utils.Options.IsOn("jit_trace"))
+                System.Console.WriteLine(v.ToString());
+
+            state._stack.Push(v);
+
+            return this;
+        }
+
         public override INST Convert(STATE<VALUE> state)
         {
             var rhs = state._stack.Pop();
@@ -5496,6 +5512,27 @@
         public i_newarr(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+        }
+
+        public override INST GenerateGenerics(STATE<TypeReference> state)
+        {
+            var v = state._stack.Pop();
+
+            if (Campy.Utils.Options.IsOn("jit_trace"))
+                System.Console.WriteLine(v.ToString());
+
+            // Call meta system to get type and create array of the given type and size.
+            object operand = this.Operand;
+
+            // Get the type of object array to create.
+            TypeReference type = operand as TypeReference;
+            
+            // Declare an array of type.
+            TypeReference new_array_type = new ArrayType(type, 1 /* 1D array */);
+
+            state._stack.Push(new_array_type);
+
+            return this;
         }
 
         public override INST Convert(STATE<VALUE> state)

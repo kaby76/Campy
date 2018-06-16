@@ -93,9 +93,7 @@ namespace Campy.Compiler
 
                 blocks.ThreadInstructions();
 
-                // Perform type propagation on blocks, and get call targets
-                // for new methods to analyze.
-                blocks.InstantiateGenerics();
+                blocks.PropagateTypesAndPerformCallClosure();
             }
         }
 
@@ -127,7 +125,7 @@ namespace Campy.Compiler
             _methods_done.Add(method_definition.FullName);
             int change_set = Cfg.StartChangeSet();
             int instruction_count = method_definition.Body.Instructions.Count;
-            List<Mono.Cecil.Cil.Instruction> split_point = new List<Mono.Cecil.Cil.Instruction>();
+            List<Instruction> split_point = new List<Instruction>();
             // Each method is a leader of a block.
             CFG.Vertex basic_block = (CFG.Vertex)Cfg.AddVertex(new CFG.Vertex(){Name = Cfg.NewNodeNumber().ToString()});
             basic_block._method_definition = method_definition;
@@ -178,11 +176,19 @@ namespace Campy.Compiler
                             // Two cases of branches:
                             // 1) operand is a single instruction;
                             // 2) operand is an array of instructions via a switch instruction.
+                            // In doing this type casting, the resulting instructions are turned
+                            // into def's, and operands no longer correspond to what was in the original
+                            // method. We override the List<> compare to correct this problem.
                             Mono.Cecil.Cil.Instruction single_instruction = operand as Mono.Cecil.Cil.Instruction;
                             Mono.Cecil.Cil.Instruction[] array_of_instructions = operand as Mono.Cecil.Cil.Instruction[];
                             if (single_instruction != null)
                             {
-                                if (!split_point.Contains(single_instruction))
+                                if (!split_point.Contains(single_instruction,
+                                    new LambdaComparer<Instruction>(
+                                        (Instruction a, Instruction b)
+                                        => a.Offset == b.Offset
+                                           && a.OpCode == b.OpCode
+                                           )))
                                     split_point.Add(single_instruction);
                             }
                             else if (array_of_instructions != null)
@@ -190,7 +196,12 @@ namespace Campy.Compiler
                                 foreach (var ins in array_of_instructions)
                                 {
                                     Debug.Assert(ins != null);
-                                    if (!split_point.Contains(single_instruction))
+                                    if (!split_point.Contains(single_instruction,
+                                        new LambdaComparer<Instruction>(
+                                            (Instruction a, Instruction b)
+                                                => a.Offset == b.Offset
+                                                   && a.OpCode == b.OpCode
+                                                   )))
                                         split_point.Add(ins);
                                 }
                             }
@@ -214,7 +225,12 @@ namespace Campy.Compiler
                             if (j + 1 < instruction_count)
                             {
                                 var ins = basic_block.Instructions[j + 1].Instruction;
-                                if (!split_point.Contains(ins))
+                                if (!split_point.Contains(ins,
+                                    new LambdaComparer<Instruction>(
+                                        (Instruction a, Instruction b)
+                                            => a.Offset == b.Offset
+                                               && a.OpCode == b.OpCode
+                                               )))
                                     split_point.Add(ins);
                             }
                         }
@@ -224,7 +240,7 @@ namespace Campy.Compiler
 
             // Note, we assume that these splits are within the same method.
             // Order the list according to offset from beginning of the method.
-            List<Mono.Cecil.Cil.Instruction> ordered_leader_list = new List<Mono.Cecil.Cil.Instruction>();
+            List<Instruction> ordered_leader_list = new List<Mono.Cecil.Cil.Instruction>();
             for (int j = 0; j < instruction_count; ++j)
             {
                 // Order jump targets. These denote locations
@@ -232,10 +248,23 @@ namespace Campy.Compiler
                 // so that splitting is done from last instruction in block
                 // to first instruction in block.
                 Mono.Cecil.Cil.Instruction i = method_definition.Body.Instructions[j];
-                if (split_point.Contains(i))
+                if (split_point.Contains(i,
+                    new LambdaComparer<Instruction>(
+                        (Instruction a, Instruction b)
+                            =>
+                        {
+                            if (a.Offset != b.Offset)
+                                return false;
+                            if (a.OpCode != b.OpCode)
+                                return false;
+                            return true;
+                        })))
                     ordered_leader_list.Add(i);
             }
 
+            if (ordered_leader_list.Count != split_point.Count)
+                throw new Exception("Mono Cecil giving weird results for instruction operand type casting. Size of original split points not the same as order list of split points.")
+ 
             // Split block at all jump targets.
             foreach (var i in ordered_leader_list)
             {

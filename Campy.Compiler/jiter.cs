@@ -679,7 +679,7 @@ namespace Campy.Compiler
             }
         }
 
-        public static void InstantiateGenerics(this List<CFG.Vertex> basic_blocks_to_compile)
+        public static void PropagateTypesAndPerformCallClosure(this List<CFG.Vertex> basic_blocks_to_compile)
         {
             if (basic_blocks_to_compile.Count == 0)
                 return;

@@ -21,6 +21,7 @@
 #if !LOCALTEST
 
 using System.Runtime.CompilerServices;
+using System.Text;
 
 namespace System {
 	public static class Console {
@@ -82,8 +83,15 @@ namespace System {
 		#region WriteLine Methods
 
 		public static void WriteLine(string value) {
-			Write(value);
-			Write(Environment.NewLine);
+            // The old implementation (Write(value); Write(NewLine))
+            // is incorrect for multithreaded applications. The result on the GPU
+            // is for the value to appear first for all threads, then the newline
+            // chars. Instead, we need to compute a concatenated string value,
+            // then print that.
+            StringBuilder sb = new StringBuilder();
+		    sb.Append(value);
+		    sb.Append(Environment.NewLine);
+			Write(sb.ToString());
 		}
 
 		public static void WriteLine() {

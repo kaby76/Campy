@@ -700,7 +700,6 @@
 
         public static void RewriteCilCodeBlock(Mono.Cecil.Cil.MethodBody body)
         {
-            List<Instruction> result = new List<Instruction>();
             for (int j = 0; j < body.Instructions.Count; ++j)
             {
                 Instruction i = body.Instructions[j];
