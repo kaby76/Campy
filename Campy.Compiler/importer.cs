@@ -263,7 +263,8 @@ namespace Campy.Compiler
             }
 
             if (ordered_leader_list.Count != split_point.Count)
-                throw new Exception("Mono Cecil giving weird results for instruction operand type casting. Size of original split points not the same as order list of split points.")
+                throw new Exception(
+                    "Mono Cecil giving weird results for instruction operand type casting. Size of original split points not the same as order list of split points.");
  
             // Split block at all jump targets.
             foreach (var i in ordered_leader_list)
@@ -278,6 +279,13 @@ namespace Campy.Compiler
                 var j = target_node.Instructions.FindIndex(a => a.Instruction == i);
                 CFG.Vertex new_node = Split(target_node, j);
             }
+
+
+            LambdaComparer<Instruction> fixed_comparer = new LambdaComparer<Instruction>(
+                (Instruction a, Instruction b)
+                    => a.Offset == b.Offset
+                       && a.OpCode == b.OpCode
+            );
 
             // Add in all edges.
             var list_new_nodes = Cfg.PopChangeSet(change_set);
@@ -300,10 +308,10 @@ namespace Campy.Compiler
                             {
                                 Mono.Cecil.Cil.Instruction target_instruction =
                                     last_instruction.Operand as Mono.Cecil.Cil.Instruction;
-                                CFG.Vertex target_node = Cfg.Vertices.FirstOrDefault(
+                                CFG.Vertex target_node = list_new_nodes.FirstOrDefault(
                                     (CFG.Vertex x) =>
                                     {
-                                        if (!x.Instructions.First().Instruction.Equals(target_instruction))
+                                        if (!fixed_comparer.Equals(x.Instructions.First().Instruction, target_instruction))
                                             return false;
                                         return true;
                                     });
@@ -315,10 +323,10 @@ namespace Campy.Compiler
                                 foreach (Mono.Cecil.Cil.Instruction target_instruction in
                                     (last_instruction.Operand as Mono.Cecil.Cil.Instruction[]))
                                 {
-                                    CFG.Vertex target_node = Cfg.Vertices.FirstOrDefault(
+                                    CFG.Vertex target_node = list_new_nodes.FirstOrDefault(
                                         (CFG.Vertex x) =>
                                         {
-                                            if (!x.Instructions.First().Instruction.Equals(target_instruction))
+                                            if (!fixed_comparer.Equals(x.Instructions.First().Instruction, target_instruction))
                                                 return false;
                                             return true;
                                         });
