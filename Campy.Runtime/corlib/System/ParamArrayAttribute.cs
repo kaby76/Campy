@@ -23,12 +23,12 @@
 using System;
 
 namespace System {
-	public sealed class ParamArrayAttribute : Attribute {
+    public sealed class ParamArrayAttribute : Attribute {
 
-		public ParamArrayAttribute() {
-		}
+        public ParamArrayAttribute() {
+        }
 
-	}
+    }
 }
 
 #endif

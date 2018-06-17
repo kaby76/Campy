@@ -25,9 +25,9 @@ using System.Text;
 
 namespace System {
 
-	public static class Activator {
+    public static class Activator {
         [MethodImpl(MethodImplOptions.InternalCall)]
         public extern static object CreateInstance(Type type);
-	}
+    }
 
 }

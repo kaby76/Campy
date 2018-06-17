@@ -21,8 +21,8 @@
 #if !LOCALTEST
 
 namespace System {
-	public abstract class MarshalByRefObject {
-	}
+    public abstract class MarshalByRefObject {
+    }
 }
 
 #endif

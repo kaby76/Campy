@@ -4,10 +4,10 @@ using System.Runtime.CompilerServices;
 using System.Globalization;
 using System.Text;
 namespace System {
-	public struct DateTimeOffset {
+    public struct DateTimeOffset {
 
-		
-	}
+        
+    }
 }
 
 #endif

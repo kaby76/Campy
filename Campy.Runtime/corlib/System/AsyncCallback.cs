@@ -22,7 +22,7 @@
 
 namespace System {
 
-	public delegate void AsyncCallback(IAsyncResult ar);
+    public delegate void AsyncCallback(IAsyncResult ar);
 
 }
 

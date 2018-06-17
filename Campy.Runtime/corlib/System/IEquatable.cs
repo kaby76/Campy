@@ -22,9 +22,9 @@
 
 namespace System {
 
-	public interface IEquatable<T> {
-		bool Equals(T x);
-	}
+    public interface IEquatable<T> {
+        bool Equals(T x);
+    }
 
 }
 

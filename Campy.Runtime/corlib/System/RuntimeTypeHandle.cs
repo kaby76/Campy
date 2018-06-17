@@ -21,20 +21,20 @@
 #if !LOCALTEST
 
 namespace System {
-	public struct RuntimeTypeHandle {
+    public struct RuntimeTypeHandle {
 
-		private IntPtr value;
+        private IntPtr value;
 
-		internal RuntimeTypeHandle(IntPtr v) {
-			value = v;
-		}
+        internal RuntimeTypeHandle(IntPtr v) {
+            value = v;
+        }
 
-		public IntPtr Value {
-			get {
-				return value;
-			}
-		}
-	}
+        public IntPtr Value {
+            get {
+                return value;
+            }
+        }
+    }
 }
 
 #endif

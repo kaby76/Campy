@@ -21,11 +21,11 @@
 #if !LOCALTEST
 
 namespace System {
-	public interface ICustomFormatter {
+    public interface ICustomFormatter {
 
-		string Format(string format, object arg, IFormatProvider formatProvider);
+        string Format(string format, object arg, IFormatProvider formatProvider);
 
-	}
+    }
 }
 
 #endif

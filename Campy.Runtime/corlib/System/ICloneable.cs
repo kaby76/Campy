@@ -21,11 +21,11 @@
 #if !LOCALTEST
 
 namespace System {
-	public interface ICloneable {
+    public interface ICloneable {
 
-		object Clone();
+        object Clone();
 
-	}
+    }
 }
 
 #endif

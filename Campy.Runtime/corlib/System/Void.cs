@@ -21,8 +21,8 @@
 #if !LOCALTEST
 
 namespace System {
-	public struct Void {
-	}
+    public struct Void {
+    }
 }
 
 #endif

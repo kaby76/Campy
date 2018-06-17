@@ -5,9 +5,9 @@ using System.Collections.Generic;
 using System.Text;
 
 namespace System {
-	public interface IFormatProvider {
-		object GetFormat(Type formatType);
-	}
+    public interface IFormatProvider {
+        object GetFormat(Type formatType);
+    }
 }
 
 #endif
