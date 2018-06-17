@@ -40,7 +40,6 @@ typedef struct tArrayTypeDefs_ tArrayTypeDefs;
 struct tArrayTypeDefs_ {
 	tMD_TypeDef *pArrayType;
 	tMD_TypeDef *pElementType;
-
 	tArrayTypeDefs *pNext;
 };
 
@@ -103,12 +102,13 @@ function_space_specifier static void GetMethodDefs() {
 	_bcl_->genericArrayMethodsInited = 1;
 }
 
-function_space_specifier static void CreateNewArrayType(tMD_TypeDef *pNewArrayType, tMD_TypeDef *pElementType, tMD_TypeDef **ppClassTypeArgs, tMD_TypeDef **ppMethodTypeArgs) {
+function_space_specifier static void CreateNewArrayType(tMD_TypeDef *pNewArrayType, int rank, tMD_TypeDef *pElementType, tMD_TypeDef **ppClassTypeArgs, tMD_TypeDef **ppMethodTypeArgs) {
 	MetaData_Fill_TypeDef(_bcl_->types[TYPE_SYSTEM_ARRAY_NO_TYPE], NULL, NULL);
 
 	memcpy(pNewArrayType, _bcl_->types[TYPE_SYSTEM_ARRAY_NO_TYPE], sizeof(tMD_TypeDef));
 	pNewArrayType->pArrayElementType = pElementType;
 	pNewArrayType->isFilled = 1;
+	pNewArrayType->rank = rank;
 
 	// Auto-generate the generic interfaces IEnumerable<T>, ICollection<T> and IList<T> for this array
 	{
@@ -167,7 +167,8 @@ function_space_specifier static void CreateNewArrayType(tMD_TypeDef *pNewArrayTy
 }
 
 // Returns a TypeDef for an array to the given element type
-function_space_specifier tMD_TypeDef* Type_GetArrayTypeDef(tMD_TypeDef *pElementType, tMD_TypeDef **ppClassTypeArgs, tMD_TypeDef **ppMethodTypeArgs) {
+function_space_specifier tMD_TypeDef* Type_GetArrayTypeDef(tMD_TypeDef *pElementType, int rank, tMD_TypeDef **ppClassTypeArgs, tMD_TypeDef **ppMethodTypeArgs)
+{
 	tArrayTypeDefs *pIterArrays;
 
 	if (pElementType == NULL) {
@@ -176,8 +177,12 @@ function_space_specifier tMD_TypeDef* Type_GetArrayTypeDef(tMD_TypeDef *pElement
 
 	pIterArrays = _bcl_->pArrays;
 	while (pIterArrays != NULL) {
-		if (pIterArrays->pElementType == pElementType) {
-			return pIterArrays->pArrayType;
+		if (pIterArrays->pElementType == pElementType)
+		{
+			tMD_TypeDef * ar = pIterArrays->pArrayType;
+			if (ar->rank != rank)
+				continue;
+			return ar;
 		}
 		pIterArrays = pIterArrays->pNext;
 	}
@@ -190,8 +195,7 @@ function_space_specifier tMD_TypeDef* Type_GetArrayTypeDef(tMD_TypeDef *pElement
 	_bcl_->pArrays = pIterArrays;
 	pIterArrays->pArrayType = TMALLOC(tMD_TypeDef);
 	Gmemset(pIterArrays->pArrayType, 0, sizeof(tMD_TypeDef));
-
-	CreateNewArrayType(pIterArrays->pArrayType, pElementType, ppClassTypeArgs, ppMethodTypeArgs);
+	CreateNewArrayType(pIterArrays->pArrayType, rank, pElementType, ppClassTypeArgs, ppMethodTypeArgs);
 	return pIterArrays->pArrayType;
 }
 
@@ -318,7 +322,7 @@ function_space_specifier tMD_TypeDef* Type_GetTypeFromSig(tMetaData *pMetaData, 
 				tMD_TypeDef *pElementType;
 
 				pElementType = Type_GetTypeFromSig(pMetaData, pSig, ppClassTypeArgs, ppMethodTypeArgs);
-				return Type_GetArrayTypeDef(pElementType, ppClassTypeArgs, ppMethodTypeArgs);
+				return Type_GetArrayTypeDef(pElementType, 1, ppClassTypeArgs, ppMethodTypeArgs);
 			}
 
 		case ELEMENT_TYPE_MVAR:

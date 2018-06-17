@@ -123,6 +123,6 @@ function_space_specifier U32 Type_IsImplemented(tMD_TypeDef *pInterface, tMD_Typ
 // Can a variable of FromType be assigend to ToType?
 function_space_specifier U32 Type_IsAssignableFrom(tMD_TypeDef *pToType, tMD_TypeDef *pFromType);
 
-function_space_specifier tMD_TypeDef* Type_GetArrayTypeDef(tMD_TypeDef *pElementType, tMD_TypeDef **ppClassTypeArgs, tMD_TypeDef **ppMethodTypeArgs);
+function_space_specifier tMD_TypeDef* Type_GetArrayTypeDef(tMD_TypeDef *pElementType, int rank, tMD_TypeDef **ppClassTypeArgs, tMD_TypeDef **ppMethodTypeArgs);
 
 function_space_specifier HEAP_PTR Type_GetTypeObject(tMD_TypeDef *pTypeDef);

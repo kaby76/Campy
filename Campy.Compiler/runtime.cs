@@ -59,6 +59,11 @@
             [MarshalAs(UnmanagedType.LPStr)] string name,
             System.IntPtr nested);
 
+        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclGetArrayTypeDef")]
+        public static extern System.IntPtr BclGetArrayTypeDef(
+            System.IntPtr element_type,
+            int rank);
+        
         [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclGenericsGetGenericTypeFromCoreType")]
         public static extern System.IntPtr BclGenericsGetGenericTypeFromCoreType(
             System.IntPtr base_type,
@@ -750,10 +755,6 @@
             {
                 var tr = chain.Pop();
                 var mt = RUNTIME.RewriteType(tr);
-                var assembly_name = tr.Module.Name;
-                var name_space = tr.Namespace;
-                var name = tr.Name;
-
                 var mt_assembly_name = mt.Scope.Name;
                 var mt_name_space = mt.Namespace;
                 var mt_name = mt.Name;
@@ -770,6 +771,13 @@
                         args[i] = (System.IntPtr)GetBclType(generic_arguments[i]);
                     RUNTIME.CheckHeap();
                     result = BclGenericsGetGenericTypeFromCoreType(result, count, args);
+                }
+                else if (mt.IsArray)
+                {
+                    var et = mt.GetElementType();
+                    var mta = mt as Mono.Cecil.ArrayType;
+                    var bcl_et = GetBclType(et);
+                    result = BclGetArrayTypeDef(bcl_et, mta.Rank);
                 }
                 else
                 {

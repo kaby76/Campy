@@ -26,6 +26,8 @@ namespace ConsoleApp4
         static void Main(string[] args)
         {
             StartDebugging();
+            int[] xx = new int[4];
+            Parallel.For(4, i => xx[i] = i);
             Parallel.For(10, i =>
             {
                 System.Console.WriteLine("hello world");

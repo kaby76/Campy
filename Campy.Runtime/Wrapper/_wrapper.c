@@ -72,11 +72,19 @@ EXPORT void* BclHeapAlloc(void* type_def)
 	return result;
 }
 
+EXPORT void* BclGetArrayTypeDef(void* element_type_def, int rank)
+{
+	if (_bcl_ && _bcl_->options & BCL_DEBUG_FUNCTION_ENTRY)
+		Gprintf("BclArrayAlloc\n");
+	tMD_TypeDef* array_type_def = Type_GetArrayTypeDef((tMD_TypeDef*)element_type_def, rank, NULL, NULL);
+	return (void*)array_type_def;
+}
+
 EXPORT void* BclArrayAlloc(void* element_type_def, int rank, unsigned int* lengths)
 {
 	if (_bcl_ && _bcl_->options & BCL_DEBUG_FUNCTION_ENTRY)
 		Gprintf("BclArrayAlloc\n");
-	tMD_TypeDef* array_type_def = Type_GetArrayTypeDef((tMD_TypeDef*)element_type_def, NULL, NULL);
+	tMD_TypeDef* array_type_def = Type_GetArrayTypeDef((tMD_TypeDef*)element_type_def, rank, NULL, NULL);
 	return (void*)SystemArray_NewVector(array_type_def, rank, lengths);
 }
 

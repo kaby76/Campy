@@ -559,7 +559,7 @@ global_space_specifier void Initialize_BCL2()
 
 function_space_specifier void* Bcl_Array_Alloc(tMD_TypeDef* element_type_def, int rank, unsigned int* lengths)
 {
-	tMD_TypeDef* array_type_def = Type_GetArrayTypeDef(element_type_def, NULL, NULL);
+	tMD_TypeDef* array_type_def = Type_GetArrayTypeDef(element_type_def, rank, NULL, NULL);
 	return (void*)SystemArray_NewVector(array_type_def, rank, lengths);
 }
 

@@ -64,7 +64,6 @@ function_space_specifier unsigned int MetaData_DecodeUnsigned32BitInteger(SIG *p
 	return ((int)(a & 0x1f)) << 24 | ((int)b) << 16 | ((int)c) << 8 | d;
 }
 
-
 function_space_specifier unsigned int MetaData_DecodeUnsigned8BitInteger(SIG *pSig) {
 	unsigned char a, b, c, d;
 	unsigned char* ptr = ((unsigned char*)*pSig);
@@ -73,14 +72,12 @@ function_space_specifier unsigned int MetaData_DecodeUnsigned8BitInteger(SIG *pS
 	return a;
 }
 
-
 function_space_specifier IDX_TABLE MetaData_DecodeSigEntryToken(SIG *pSig) {
 	static U8 tableID[4] = {MD_TABLE_TYPEDEF, MD_TABLE_TYPEREF, MD_TABLE_TYPESPEC, 0};
 
 	U32 entry = MetaData_DecodeUnsigned32BitInteger(pSig);
 	return MAKE_TABLE_INDEX(tableID[entry & 0x3], entry >> 2);
 }
-
 
 function_space_specifier STRING MetaData_DecodePublicKey(BLOB_ blob)
 {
@@ -125,7 +122,6 @@ function_space_specifier void MetaData_LoadUserStrings(tMetaData *pThis, void *p
 	pThis->userStrings.pStart = (unsigned char*)pStream;
 
 	log_f(1, "Loaded User Strings\n");
-
 }
 
 function_space_specifier void MetaData_LoadGUIDs(tMetaData *pThis, void *pStream, unsigned int streamLen) {
@@ -137,8 +133,6 @@ function_space_specifier void MetaData_LoadGUIDs(tMetaData *pThis, void *pStream
 
 	log_f(1, "Read %d GUIDs\n", pThis->GUIDs.numGUIDs);
 }
-
-
 
 // function_space_specifier static unsigned int tableRowSize[MAX_TABLES];
 
@@ -271,7 +265,6 @@ function_space_specifier unsigned int Coded2Index(tMetaData *pThis, int d, unsig
 	return v;
 }
 
-
 function_space_specifier void OutputSignature(unsigned char * ptr)
 {
 	// Get length.
@@ -310,7 +303,6 @@ function_space_specifier void OutputSignature(unsigned char * ptr)
 	Gprintf("\n");
 }
 
-// Reads metadata tables into structs in a platform-independent way.
 function_space_specifier void ModuleTableReader(int table, int row, tMetaData *pThis, tRVA *pRVA, unsigned char **ppSource, void *pDest)
 {
 	// 0x00
@@ -1590,10 +1582,6 @@ function_space_specifier void OutputGenericParamConstraint(tMD_GenericParamConst
 	Gprintf("\n");
 }
 
-
-
-
-// Loads a single table, returns pointer to table in memory.
 function_space_specifier static void* LoadSingleTable(tMetaData *pThis, tRVA *pRVA, int tableID, void **ppTable) {
 	int numRows = pThis->tables.numRows[tableID];
 	int rowLen = 0; // Number of bytes taken by each row in memory.
@@ -2119,7 +2107,6 @@ function_space_specifier void MetaData_PrintMetaData(tMetaData * meta)
 	}
 }
 
-
 // Not sure where to put this, but this seems best.
 function_space_specifier void MetaData_SetField(HEAP_PTR object, tMD_FieldDef * pField, HEAP_PTR value)
 {
@@ -2148,4 +2135,3 @@ function_space_specifier tMD_TypeDef * MetaData_GetFieldType(tMD_FieldDef * pFie
 {
 	return pFieldDef->pType;
 }
-

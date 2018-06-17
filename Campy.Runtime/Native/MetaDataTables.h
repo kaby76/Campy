@@ -177,6 +177,9 @@ struct tMD_TypeDef_ {
 	// Pointer to the heap object which is the Type class object for this type.
 	// This is only allocated as needed, so defaults to NULL
 	HEAP_PTR typeObject;
+	// for array.
+	int rank;
+	unsigned int * lengths;
 };
 typedef struct tMD_TypeDef_ tMD_TypeDef;
 #define MD_TABLE_TYPEDEF 0x02

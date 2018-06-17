@@ -5368,7 +5368,7 @@
                 string str = (string)operand;
 
                 var llvm_cstr_t = LLVM.BuildGlobalString(Builder, str, "i" + instruction_id++);
-				var llvm_cstr = LLVM.BuildPtrToInt(Builder, llvm_cstr_t, LLVM.Int64Type(), "i" + instruction_id++);
+                var llvm_cstr = LLVM.BuildPtrToInt(Builder, llvm_cstr_t, LLVM.Int64Type(), "i" + instruction_id++);
                 args[0] = llvm_cstr;
                 string name = "_Z29SystemString_FromCharPtrASCIIPc";
                 var list = RUNTIME.BclNativeMethods.ToList();
@@ -5540,14 +5540,37 @@
             // Call meta system to get type and create array of the given type and size.
             object operand = this.Operand;
 
-            // Get the type of object to create.
-            TypeReference type = operand as TypeReference;
+            // Get the type of object array to create.
+            TypeReference element_type = operand as TypeReference;
 
-            // Convert to GPU BCL type.
+            // Declare an array of type.
+            TypeReference new_array_type = new ArrayType(element_type, 1 /* 1D array */);
+            var meta = RUNTIME.GetBclType(new_array_type);
+            var llvm_type = new_array_type.ToTypeRef();
 
-            // Create array.
+            // Generate code to allocate object.
+            var xx2 = RUNTIME.PtxFunctions.ToList();
+            var xx = xx2.Where(t => { return t._mangled_name == "_Z21SystemArray_NewVectorP12tMD_TypeDef_jPj"; });
+            RUNTIME.PtxFunction first_kv_pair = xx.FirstOrDefault();
+            if (first_kv_pair == null)
+                throw new Exception("Yikes.");
+            ValueRef fv2 = first_kv_pair._valueref;
+            ValueRef[] args = new ValueRef[3];
+            var length_buffer = LLVM.BuildAlloca(Builder, LLVM.Int32Type(), "i" + instruction_id++);
+            LLVM.SetAlignment(length_buffer, 64);
+            args[2] = LLVM.BuildPtrToInt(Builder, length_buffer, LLVM.Int64Type(), "i" + instruction_id++);
+            args[1] = LLVM.ConstInt(LLVM.Int32Type(), (ulong)1, false);
+            args[0] = LLVM.ConstInt(LLVM.Int64Type(), (ulong)meta, false);
 
-            // Return array.
+            var call = LLVM.BuildCall(Builder, fv2, args, "i" + instruction_id++);
+            if (Campy.Utils.Options.IsOn("jit_trace"))
+                System.Console.WriteLine(new VALUE(call));
+
+            var cast = LLVM.BuildIntToPtr(Builder, call, llvm_type, "i" + instruction_id++);
+            ValueRef new_obj = cast;
+
+            if (Campy.Utils.Options.IsOn("jit_trace"))
+                System.Console.WriteLine(new VALUE(new_obj));
 
             return Next;
         }
