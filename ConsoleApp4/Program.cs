@@ -27,11 +27,18 @@ namespace ConsoleApp4
         {
             StartDebugging();
             int[] xx = new int[4];
-            Parallel.For(4, i => xx[i] = i);
-            Parallel.For(10, i =>
+            object[] x2 = new object[4];
+            Parallel.For(4, i =>
             {
-                System.Console.WriteLine("hello world");
+                //var t = typeof(int);
+                int j = i;
+                xx[j] = j;
+                x2[j] = j;
             });
+            //Parallel.For(10, i =>
+            //{
+            //    System.Console.WriteLine("hello world");
+            //});
         }
     }
 }

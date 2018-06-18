@@ -496,6 +496,7 @@ function_space_specifier HEAP_PTR Heap_AllocType(tMD_TypeDef *pTypeDef) {
 }
 
 function_space_specifier tMD_TypeDef* Heap_GetType(HEAP_PTR heapEntry) {
+	if (heapEntry == NULL) return NULL;
 	tHeapEntry *pHeapEntry = GET_HEAPENTRY(heapEntry);
 	return pHeapEntry->pTypeDef;
 }

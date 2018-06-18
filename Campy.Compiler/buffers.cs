@@ -1563,6 +1563,8 @@
                 }
                 else
                 {
+                    if (bcl_type == IntPtr.Zero) return sb.ToString();
+
                     // Get all bcl fields of class object.
                     IntPtr[] fields = null;
                     unsafe

@@ -3523,7 +3523,7 @@
         {
             ValueRef new_obj;
 
-            // Get meta of object--right now.
+            // Get meta of object.
             var operand = this.Operand;
             var tr = operand as TypeReference;
             var meta = RUNTIME.GetBclType(tr);
@@ -3542,17 +3542,21 @@
             ValueRef fv2 = first_kv_pair._valueref;
             ValueRef[] args = new ValueRef[1];
 
-            args[0] = LLVM.BuildIntToPtr(Builder,
-                LLVM.ConstInt(LLVM.Int64Type(), (ulong) meta.ToInt64(), false),
-                LLVM.PointerType(LLVM.VoidType(), 0),
-                "i" + instruction_id++);
+            //args[0] = LLVM.BuildIntToPtr(Builder,
+            //    LLVM.ConstInt(LLVM.Int64Type(), (ulong)meta.ToInt64(), false),
+            //    LLVM.PointerType(LLVM.VoidType(), 0),
+            //    "i" + instruction_id++);
+            args[0] = LLVM.ConstInt(LLVM.Int64Type(), (ulong)meta.ToInt64(), false);
             var call = LLVM.BuildCall(Builder, fv2, args, "i" + instruction_id++);
-            new_obj = call;
-
-            // Stuff value on stack to pointer object.
-            var v = state._stack.Pop();
-
-
+            var type_casted = LLVM.BuildIntToPtr(Builder, call,
+                typeof(System.Object).ToMonoTypeReference().ToTypeRef(),
+                "i" + instruction_id++);
+            new_obj = type_casted;
+            // Stuff value in buffer of object.
+            var s = state._stack.Pop();
+            ValueRef v = LLVM.BuildPointerCast(Builder, new_obj, LLVM.PointerType(LLVM.TypeOf(s.V), 0),
+                "i" + instruction_id++);
+            ValueRef store = LLVM.BuildStore(Builder, s.V, v);
 
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(new VALUE(new_obj));
