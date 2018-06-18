@@ -25,11 +25,15 @@ namespace ConsoleApp4
 
         static void Main(string[] args)
         {
+            System.Int32[] jj = new System.Int32[3];
+
             StartDebugging();
             int[] xx = new int[4];
             object[] x2 = new object[4];
             Parallel.For(4, i =>
             {
+                //jj[0] = (object)1; int[] and System.Int32[] are the same --- array of value type.
+
                 //var t = typeof(int);
                 int j = i;
                 xx[j] = j;

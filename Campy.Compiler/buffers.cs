@@ -733,7 +733,22 @@
 
                 if (t_type.FullName.Equals("System.Object"))
                 {
-                    to_cpu = null;
+                    // I need to know what type I'm copying from to allocate a managed
+                    // object on CPU side.
+                    var bcl_type_of_object = RUNTIME.BclHeapGetType(from_gpu);
+                    var from_type_list = RUNTIME._type_to_bcltype.Where(t => { return t.Value == bcl_type_of_object; });
+                    var count = from_type_list.Count();
+                    var from_type = from_type_list.FirstOrDefault();
+                    var type = from_type.Key.ToSystemType();
+                    to_cpu = Activator.CreateInstance(type);
+                    var fields = to_cpu.GetType()
+                        .GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public).First();
+                    unsafe
+                    {
+                        int* vp = (int*)from_gpu;
+                        int v = *vp;
+                        fields.SetValue(to_cpu, v);
+                    }                     
                     return;
                 }
                 if (t_type.FullName.Equals("System.Int16"))
@@ -913,6 +928,9 @@
                         dims[kk] = (int)*long_ptr++;
 
                     _allocated_buffers[from_gpu] = to_cpu;
+                    // Verify.
+                    if (!_allocated_buffers.ContainsValue(to_cpu))
+                        throw new Exception("Added item to list, but can't verify.");
 
                     _copied_from_gpu.Add(to_array);
 
@@ -1050,6 +1068,7 @@
                     }
 
                     to_cpu = Activator.CreateInstance(t_type);
+
                     _allocated_buffers[ip] = to_cpu;
 
                     FieldInfo[] ffi = f_type.GetFields(
