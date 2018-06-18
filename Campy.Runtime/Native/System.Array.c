@@ -63,7 +63,8 @@ function_space_specifier tAsyncCall* System_Array_Internal_GetLength(PTR pThis_,
 }
 
 // Must return a boxed version of value-types
-function_space_specifier tAsyncCall* System_Array_Internal_GetValue(PTR pThis_, PTR pParams, PTR pReturnValue) {
+function_space_specifier tAsyncCall* System_Array_Internal_GetValue(PTR pThis_, PTR pParams, PTR pReturnValue)
+{
     tSystemArray *pArray = (tSystemArray*)pThis_;
     tMD_TypeDef *pArrayType;
     U32 index, elementSize;
