@@ -109,5 +109,10 @@ namespace Campy.Utils
             return t.IsValueType && !t.IsPrimitive;
         }
 
+        public static bool IsReferenceType(this Mono.Cecil.TypeReference t)
+        {
+            return ! t.IsValueType;
+        }
+
     }
 }

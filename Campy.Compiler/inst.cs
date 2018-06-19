@@ -1822,16 +1822,21 @@
                     Mono.Cecil.MethodReturnType rt = mr.MethodReturnType;
                     Mono.Cecil.TypeReference tr = rt.ReturnType;
                     var ret = tr.FullName != "System.Void";
-                    var HasScalarReturnValue = ret && !tr.IsStruct();
-                    var HasStructReturnValue = ret && tr.IsStruct();
-                    var HasThis = mr.HasThis;
+                    var HasScalarReturnValue = ret && !tr.IsStruct() && !tr.IsReferenceType();
+                    var HasStructReturnValue = ret && tr.IsStruct() && !tr.IsReferenceType();
+                    bool has_this = false;
+                    if (mr.HasThis) has_this = true;
+                    
+                    if (OpCode.Code == Code.Callvirt) has_this = true;
+                    bool is_explicit_this = mr.ExplicitThis;
+                    int xargs = (has_this && !is_explicit_this ? 1 : 0) + mr.Parameters.Count;
+
                     var NumberOfArguments = mr.Parameters.Count
-                                            + (HasThis ? 1 : 0)
+                                            + (has_this ? 1 : 0)
                                             + (HasStructReturnValue ? 1 : 0);
                     int locals = 0;
                     var NumberOfLocals = locals;
                     int xret = (HasScalarReturnValue || HasStructReturnValue) ? 1 : 0;
-                    int xargs = NumberOfArguments;
 
                     ValueRef fv = first_kv_pair.Value;
                     var t_fun = LLVM.TypeOf(fv);
@@ -1880,7 +1885,7 @@
                                 System.Console.WriteLine(new VALUE(store));
                         }
 
-                        if (HasThis)
+                        if (has_this)
                         {
                             t = state._stack.Pop();
                         }

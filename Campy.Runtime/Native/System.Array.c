@@ -163,6 +163,107 @@ function_space_specifier tAsyncCall* System_Array_Internal_SetValue(PTR pThis_, 
     return NULL;
 }
 
+// Must return a boxed version of value-types
+function_space_specifier tAsyncCall* System_Array_GetValue(PTR pThis_, PTR pParams, PTR pReturnValue)
+{
+    tSystemArray *pArray = (tSystemArray*)pThis_;
+    tMD_TypeDef *pArrayType;
+    U32 index, elementSize;
+    tMD_TypeDef *pElementType;
+    PTR pElement;
+
+    index = *(U32*)pParams;
+    pArrayType = Heap_GetType(pThis_);
+    pElementType = pArrayType->pArrayElementType;
+    elementSize = pElementType->arrayElementSize;
+    PTR beginning_of_elements = pArray->ptr_elements;
+    pElement = beginning_of_elements + elementSize * index;
+    if (pElementType->isValueType) {
+        // If it's a value-type, then box it
+        HEAP_PTR boxedValue;
+        if (pElementType->pGenericDefinition == _bcl_->types[TYPE_SYSTEM_NULLABLE]) {
+            // Nullable type, so box specially
+            if (*(U32*)pElement) {
+                // Nullable has value
+                boxedValue = Heap_AllocType(pElementType->ppClassTypeArgs[0]);
+                // Don't copy the .hasValue part
+                memcpy(boxedValue, pElement + 4, elementSize - 4);
+            } else {
+                // Nullable does not have value
+                boxedValue = NULL;
+            }
+        } else {
+            boxedValue = Heap_AllocType(pElementType);
+            memcpy(boxedValue, pElement, elementSize);
+        }
+        *(HEAP_PTR*)pReturnValue = boxedValue;
+    } else {
+        // This must be a reference type, so it must be 32-bits wide
+        *(U32*)pReturnValue = *(U32*)pElement;
+    }
+
+    return NULL;
+}
+
+// Value-types will be boxed
+function_space_specifier tAsyncCall* System_Array_SetValue(PTR pThis_, PTR pParams, PTR pReturnValue) {
+    tSystemArray *pArray = (tSystemArray*)pThis_;
+    tMD_TypeDef *pArrayType, *pObjType;
+    U32 index, elementSize;
+    HEAP_PTR obj;
+    tMD_TypeDef *pElementType;
+    PTR pElement;
+
+    pArrayType = Heap_GetType(pThis_);
+    void **p = (void**)pParams;
+    obj = *(HEAP_PTR*)p++;
+    pObjType = Heap_GetType(obj);
+    pElementType = pArrayType->pArrayElementType;
+    // Check to see if the Type is ok to put in the array
+    if (!(Type_IsAssignableFrom(pElementType, pObjType) ||
+          (pElementType->pGenericDefinition == _bcl_->types[TYPE_SYSTEM_NULLABLE] &&
+           pElementType->ppClassTypeArgs[0] == pObjType))) {
+        // Can't be done
+        *(U32*)pReturnValue = 0;
+        return NULL;
+    }
+
+    index = *(U32*)p++;
+
+#if defined(_MSC_VER) && defined(_DEBUG)
+    // Do a bounds-check
+    U32 len = *((&(pArray->rank)) + 1);
+    if (index >= len) {
+//      printf("[Array] Internal_SetValue() Bounds-check failed\n");
+        __debugbreak();
+    }
+#endif
+
+    elementSize = pElementType->arrayElementSize;
+    PTR beginning_of_elements = pArray->ptr_elements;
+    pElement = beginning_of_elements + elementSize * index;
+    if (pElementType->isValueType) {
+        if (pElementType->pGenericDefinition == _bcl_->types[TYPE_SYSTEM_NULLABLE]) {
+            // Nullable type, so treat specially
+            if (obj == NULL) {
+                memset(pElement, 0, elementSize);
+            } else {
+                *(U32*)pElement = 1;
+                memcpy(pElement + 4, obj, elementSize - 4);
+            }
+        } else {
+            // Get the value out of the box
+            memcpy(pElement, obj, elementSize);
+        }
+    } else {
+        // This must be a reference type, so it must be 32-bits wide
+        *(HEAP_PTR*)pElement = obj;
+    }
+    *(U32*)pReturnValue = 1;
+
+    return NULL;
+}
+
 function_space_specifier tAsyncCall* System_Array_Clear(PTR pThis_, PTR pParams, PTR pReturnValue) {
     tSystemArray *pArray;
     U32 index, length, elementSize;
@@ -236,7 +337,7 @@ function_space_specifier tAsyncCall* System_Array_Resize(PTR pThis_, PTR pParams
 
     pOldArray = (tSystemArray*)*ppArray_;
     U32 rank = *((&(pOldArray->rank)) + 1);
-	int len = *((&(pOldArray->rank)) + 2);;
+    int len = *((&(pOldArray->rank)) + 2);;
     oldSize = len;
 
     if (oldSize == newSize) {
@@ -289,23 +390,23 @@ function_space_specifier tAsyncCall* System_Array_Reverse(PTR pThis_, PTR pParam
 function_space_specifier HEAP_PTR SystemArray_NewVector(tMD_TypeDef *pArrayTypeDef, U32 rank, U32* lengths) {
     U32 heapSize;
     tSystemArray *pArray;
-	// The size of an array depends on the rank.
-	heapSize = sizeof(void*); // ptr to first element.
-	int next = sizeof(I64); // for rank
-	heapSize += next;
-	next = sizeof(I64) * rank;
-	heapSize += next;
-	next = 1;
-	for (int i = 0; i < rank; ++i) next *= lengths[i];
-	next = next * pArrayTypeDef->pArrayElementType->arrayElementSize;
-	heapSize += next;
-	pArray = (tSystemArray*)Heap_Alloc(pArrayTypeDef, heapSize);
-	pArray->ptr_elements = (PTR)((&(pArray->rank)) + 1 + rank);
-	pArray->rank = rank;
-	for (int i = 0; i < rank; ++i)
-	{
-		*((&(pArray->rank)) + 1 + i) = *lengths;
-	}
+    // The size of an array depends on the rank.
+    heapSize = sizeof(void*); // ptr to first element.
+    int next = sizeof(I64); // for rank
+    heapSize += next;
+    next = sizeof(I64) * rank;
+    heapSize += next;
+    next = 1;
+    for (int i = 0; i < rank; ++i) next *= lengths[i];
+    next = next * pArrayTypeDef->pArrayElementType->arrayElementSize;
+    heapSize += next;
+    pArray = (tSystemArray*)Heap_Alloc(pArrayTypeDef, heapSize);
+    pArray->ptr_elements = (PTR)((&(pArray->rank)) + 1 + rank);
+    pArray->rank = rank;
+    for (int i = 0; i < rank; ++i)
+    {
+        *((&(pArray->rank)) + 1 + i) = *lengths;
+    }
     return (HEAP_PTR)pArray;
 }
 
@@ -369,162 +470,162 @@ function_space_specifier void SystemArray_LoadElement(HEAP_PTR pThis_, U32 index
 function_space_specifier void SystemArray_LoadElementIndices(HEAP_PTR pThis_, U32 dim, U64* indices, U64* value)
 {
 #ifdef  __CUDA_ARCH__
-	int blockId = blockIdx.x + blockIdx.y * gridDim.x
-		+ gridDim.x * gridDim.y * blockIdx.z;
-	int threadId = blockId * (blockDim.x * blockDim.y * blockDim.z)
-		+ (threadIdx.z * (blockDim.x * blockDim.y))
-		+ (threadIdx.y * blockDim.x) + threadIdx.x;
+    int blockId = blockIdx.x + blockIdx.y * gridDim.x
+        + gridDim.x * gridDim.y * blockIdx.z;
+    int threadId = blockId * (blockDim.x * blockDim.y * blockDim.z)
+        + (threadIdx.z * (blockDim.x * blockDim.y))
+        + (threadIdx.y * blockDim.x) + threadIdx.x;
 #else
-	int threadId = 0;
+    int threadId = 0;
 #endif
-	tSystemArray *pArray = (tSystemArray*)pThis_;
-	tMD_TypeDef *pArrayTypeDef;
+    tSystemArray *pArray = (tSystemArray*)pThis_;
+    tMD_TypeDef *pArrayTypeDef;
 
-	pArrayTypeDef = Heap_GetType(pThis_);
-	U32 elemSize = pArrayTypeDef->pArrayElementType->arrayElementSize;
+    pArrayTypeDef = Heap_GetType(pThis_);
+    U32 elemSize = pArrayTypeDef->pArrayElementType->arrayElementSize;
 
-	PTR beginning_of_elements = pArray->ptr_elements;
-	PTR b1 = (PTR)&pArray->rank;
-	U64 * beginning_of_lengths = ((U64*)b1) + 1;
-	int index = 0;
-	for (int i = 0; i < dim; ++i)
-	{
-		int k = 1;
-		for (int j = i + 1; j < dim; ++j)
-		{
-			U64 x = beginning_of_lengths[j];
-			U32 y = (U32)x;
-			k = k * y;
-		}
-		index += indices[i] * k;
-	}
+    PTR beginning_of_elements = pArray->ptr_elements;
+    PTR b1 = (PTR)&pArray->rank;
+    U64 * beginning_of_lengths = ((U64*)b1) + 1;
+    int index = 0;
+    for (int i = 0; i < dim; ++i)
+    {
+        int k = 1;
+        for (int j = i + 1; j < dim; ++j)
+        {
+            U64 x = beginning_of_lengths[j];
+            U32 y = (U32)x;
+            k = k * y;
+        }
+        index += indices[i] * k;
+    }
 
-	switch (elemSize)
-	{
-		case 1:
-		{
-			*(U8*)value = *(((U8*)(beginning_of_elements)) + index);
-			break;
-		}
-		case 2:
-		{
-			*(U16*)value = *(((U16*)(beginning_of_elements)) + index);
-			break;
-		}
-		case 4:
-		{
-			*(U32*)value = *(((U32*)(beginning_of_elements)) + index);
-			break;
-		}
-		case 8:
-		{
-			*(U64*)value = *(((U64*)(beginning_of_elements)) + index);
-			break;
-		}
-		default:
-		{
-			memcpy(value, &beginning_of_elements[index * elemSize], elemSize);
-			break;
-		}
-	}
+    switch (elemSize)
+    {
+        case 1:
+        {
+            *(U8*)value = *(((U8*)(beginning_of_elements)) + index);
+            break;
+        }
+        case 2:
+        {
+            *(U16*)value = *(((U16*)(beginning_of_elements)) + index);
+            break;
+        }
+        case 4:
+        {
+            *(U32*)value = *(((U32*)(beginning_of_elements)) + index);
+            break;
+        }
+        case 8:
+        {
+            *(U64*)value = *(((U64*)(beginning_of_elements)) + index);
+            break;
+        }
+        default:
+        {
+            memcpy(value, &beginning_of_elements[index * elemSize], elemSize);
+            break;
+        }
+    }
 }
 
 function_space_specifier void SystemArray_StoreElementIndices(HEAP_PTR pThis_, U32 dim, U64* indices, U64* value) {
 #ifdef  __CUDA_ARCH__
-	int blockId = blockIdx.x + blockIdx.y * gridDim.x
-		+ gridDim.x * gridDim.y * blockIdx.z;
-	int threadId = blockId * (blockDim.x * blockDim.y * blockDim.z)
-		+ (threadIdx.z * (blockDim.x * blockDim.y))
-		+ (threadIdx.y * blockDim.x) + threadIdx.x;
+    int blockId = blockIdx.x + blockIdx.y * gridDim.x
+        + gridDim.x * gridDim.y * blockIdx.z;
+    int threadId = blockId * (blockDim.x * blockDim.y * blockDim.z)
+        + (threadIdx.z * (blockDim.x * blockDim.y))
+        + (threadIdx.y * blockDim.x) + threadIdx.x;
 #else
-	int threadId = 0;
+    int threadId = 0;
 #endif
-	tSystemArray *pArray = (tSystemArray*)pThis_;
-	tMD_TypeDef *pArrayTypeDef;
+    tSystemArray *pArray = (tSystemArray*)pThis_;
+    tMD_TypeDef *pArrayTypeDef;
 
-	pArrayTypeDef = Heap_GetType(pThis_);
-	U32 elemSize = pArrayTypeDef->pArrayElementType->arrayElementSize;
+    pArrayTypeDef = Heap_GetType(pThis_);
+    U32 elemSize = pArrayTypeDef->pArrayElementType->arrayElementSize;
 
-	PTR beginning_of_elements = pArray->ptr_elements;
-	PTR b1 = (PTR)&pArray->rank;
-	U64 * beginning_of_lengths = ((U64*)b1) + 1;
-	int index = 0;
-	for (int i = 0; i < dim; ++i)
-	{
-		int k = 1;
-		for (int j = i + 1; j < dim; ++j)
-		{
-			U64 x = beginning_of_lengths[j];
-			U32 y = (U32)x;
-			k = k * y;
-		}
-		index += indices[i] * k;
-	}
+    PTR beginning_of_elements = pArray->ptr_elements;
+    PTR b1 = (PTR)&pArray->rank;
+    U64 * beginning_of_lengths = ((U64*)b1) + 1;
+    int index = 0;
+    for (int i = 0; i < dim; ++i)
+    {
+        int k = 1;
+        for (int j = i + 1; j < dim; ++j)
+        {
+            U64 x = beginning_of_lengths[j];
+            U32 y = (U32)x;
+            k = k * y;
+        }
+        index += indices[i] * k;
+    }
 
-	switch (elemSize)
-	{
-		case 1:
-		{
-			*(((U8*)(beginning_of_elements)) + index) = *(U8*)value;
-			break;
-		}
-		case 2:
-		{
-			*(((U16*)(beginning_of_elements)) + index) = *(U16*)value;
-			break;
-		}
-		case 4:
-		{
-			U32 v = *(U32*)value;
-			*(((U32*)(beginning_of_elements)) + index) = v;
-			break;
-		}
-		case 8:
-		{
-			*(((U64*)(beginning_of_elements)) + index) = *(U64*)value;
-			break;
-		}
-		default:
-		{
-			memcpy(&beginning_of_elements[index * elemSize], value, elemSize);
-			break;
-		}
-	}
+    switch (elemSize)
+    {
+        case 1:
+        {
+            *(((U8*)(beginning_of_elements)) + index) = *(U8*)value;
+            break;
+        }
+        case 2:
+        {
+            *(((U16*)(beginning_of_elements)) + index) = *(U16*)value;
+            break;
+        }
+        case 4:
+        {
+            U32 v = *(U32*)value;
+            *(((U32*)(beginning_of_elements)) + index) = v;
+            break;
+        }
+        case 8:
+        {
+            *(((U64*)(beginning_of_elements)) + index) = *(U64*)value;
+            break;
+        }
+        default:
+        {
+            memcpy(&beginning_of_elements[index * elemSize], value, elemSize);
+            break;
+        }
+    }
 }
 
 function_space_specifier void SystemArray_LoadElementIndicesAddress(HEAP_PTR pThis_, U32 dim, U64* indices, HEAP_PTR * value_address)
 {
 #ifdef  __CUDA_ARCH__
-	int blockId = blockIdx.x + blockIdx.y * gridDim.x
-		+ gridDim.x * gridDim.y * blockIdx.z;
-	int threadId = blockId * (blockDim.x * blockDim.y * blockDim.z)
-		+ (threadIdx.z * (blockDim.x * blockDim.y))
-		+ (threadIdx.y * blockDim.x) + threadIdx.x;
+    int blockId = blockIdx.x + blockIdx.y * gridDim.x
+        + gridDim.x * gridDim.y * blockIdx.z;
+    int threadId = blockId * (blockDim.x * blockDim.y * blockDim.z)
+        + (threadIdx.z * (blockDim.x * blockDim.y))
+        + (threadIdx.y * blockDim.x) + threadIdx.x;
 #else
-	int threadId = 0;
+    int threadId = 0;
 #endif
-	tSystemArray *pArray = (tSystemArray*)pThis_;
-	tMD_TypeDef *pArrayTypeDef;
+    tSystemArray *pArray = (tSystemArray*)pThis_;
+    tMD_TypeDef *pArrayTypeDef;
 
-	pArrayTypeDef = Heap_GetType(pThis_);
-	U32 element_size = pArrayTypeDef->pArrayElementType->arrayElementSize;
+    pArrayTypeDef = Heap_GetType(pThis_);
+    U32 element_size = pArrayTypeDef->pArrayElementType->arrayElementSize;
 
-	PTR beginning_of_elements = pArray->ptr_elements;
-	PTR b1 = (PTR)&pArray->rank;
-	U64 * beginning_of_lengths = ((U64*)b1) + 1;
-	int index = 0;
-	for (int i = 0; i < dim; ++i)
-	{
-		int k = 1;
-		for (int j = i + 1; j < dim; ++j)
-		{
-			U64 x = beginning_of_lengths[j];
-			U32 y = (U32)x;
-			k = k * y;
-		}
-		index += indices[i] * k;
-	}
-	*value_address = (((U8*)(beginning_of_elements)) + index * element_size);
+    PTR beginning_of_elements = pArray->ptr_elements;
+    PTR b1 = (PTR)&pArray->rank;
+    U64 * beginning_of_lengths = ((U64*)b1) + 1;
+    int index = 0;
+    for (int i = 0; i < dim; ++i)
+    {
+        int k = 1;
+        for (int j = i + 1; j < dim; ++j)
+        {
+            U64 x = beginning_of_lengths[j];
+            U32 y = (U32)x;
+            k = k * y;
+        }
+        index += indices[i] * k;
+    }
+    *value_address = (((U8*)(beginning_of_elements)) + index * element_size);
 }
 
 function_space_specifier PTR SystemArray_LoadElementAddress(HEAP_PTR pThis_, U32 index) {
@@ -551,16 +652,16 @@ function_space_specifier U32 SystemArray_GetNumBytes(HEAP_PTR pThis_, tMD_TypeDe
 
 function_space_specifier int SystemArray_GetRank(HEAP_PTR pThis_)
 {
-	tSystemArray *pArray = (tSystemArray*)pThis_;
-	U64 p_len = pArray->rank;
-	return p_len;
+    tSystemArray *pArray = (tSystemArray*)pThis_;
+    U64 p_len = pArray->rank;
+    return p_len;
 }
 
 function_space_specifier U64* SystemArray_GetDims(HEAP_PTR pThis_)
 {
-	tSystemArray *pArray = (tSystemArray*)pThis_;
+    tSystemArray *pArray = (tSystemArray*)pThis_;
     PTR beginning_of_elements = pArray->ptr_elements;
-	PTR b1 = (PTR)&pArray->rank;
-	U64 * beginning_of_lengths = ((U64*)b1) + 1;
-	return beginning_of_lengths;
+    PTR b1 = (PTR)&pArray->rank;
+    U64 * beginning_of_lengths = ((U64*)b1) + 1;
+    return beginning_of_lengths;
 }
