@@ -27,7 +27,6 @@
         public object Operand { get { return Instruction.Operand; } }
         public static int instruction_id = 1;
         public BuilderRef Builder { get { return Block.LlvmInfo.Builder; } }
-        public ContextRef LLVMContext { get; set; }
         public List<VALUE> LLVMInstructions { get; private set; }
         public CFG.Vertex Block { get; set; }
         public virtual INST Next { get; set; }
@@ -87,7 +86,7 @@
             }
 
             ContextRef context_ref = LLVM.GetModuleContext(JITER.global_llvm_module);
-            var normalized_method_name = JITER.RenameToLegalLLVMName(
+            var normalized_method_name = Campy.Utils.JIT_HELPER.RenameToLegalLLVMName(
                 JITER.MethodName(this.Block._original_method_reference));
             MetadataRef sub;
             if (!debug_methods.ContainsKey(normalized_method_name))
@@ -1558,14 +1557,11 @@
         public override INST GenerateGenerics(STATE<TypeReference> state)
         {
             INST new_inst = this;
-
-            // Successor is fallthrough.
             object method = this.Operand;
-
-            if (method as Mono.Cecil.MethodReference == null)
-                throw new Exception();
+            if (method as Mono.Cecil.MethodReference == null) throw new Exception();
 
             Mono.Cecil.MethodReference mr = method as Mono.Cecil.MethodReference;
+
             bool has_this = false;
             if (mr.HasThis) has_this = true;
             if (OpCode.Code == Code.Callvirt) has_this = true;
@@ -1623,11 +1619,9 @@
 
         public override INST Convert(STATE<VALUE> state)
         {
-            // Successor is fallthrough.
             object method = this.Operand;
 
-            if (method as Mono.Cecil.MethodReference == null)
-                throw new Exception();
+            if (method as Mono.Cecil.MethodReference == null) throw new Exception();
 
             Mono.Cecil.MethodReference mr = method as Mono.Cecil.MethodReference;
 
@@ -3820,6 +3814,246 @@
             : base(i)
         {
         }
+
+        public override INST Convert(STATE<VALUE> state)
+        {
+            // Successor is fallthrough.
+            object method = this.Operand;
+            var ins = this.Instruction;
+
+            if (method as Mono.Cecil.MethodReference == null)
+                throw new Exception();
+
+            Mono.Cecil.MethodReference mr = method as Mono.Cecil.MethodReference;
+            var token = 0x06000000 | mr.MetadataToken.RID;
+
+            bool has_this = true;
+            bool is_explicit_this = mr.ExplicitThis;
+            has_this = has_this && !is_explicit_this;
+            int xargs = (has_this ? 1 : 0) + mr.Parameters.Count;
+
+            // Grab "this" from stack.
+            VALUE this_parameter = state._stack.PeekTop(xargs - 1);
+
+            // Get function with object and method ref/def table id.
+            unsafe
+            {
+                ValueRef[] args1 = new ValueRef[2];
+                var this_ptr = LLVM.BuildPtrToInt(Builder, this_parameter.V, LLVM.Int64Type(), "i" + instruction_id++);
+                args1[0] = this_ptr;
+                var v2 = LLVM.ConstInt(LLVM.Int32Type(), token, false);
+                args1[1] = v2;
+                var f = RUNTIME.PtxFunctions.Where(t => t._mangled_name == "_Z21MetaData_GetMethodJitPvi").First();
+                var addr_method = LLVM.BuildCall(Builder, f._valueref, args1, "");
+                if (Campy.Utils.Options.IsOn("jit_trace"))
+                    System.Console.WriteLine(new VALUE(addr_method));
+
+                // There are two ways a function can be called: with direct parameters,
+                // or with arrayed parameters. For now, we're going to assume that
+                // the function is direct parameters because it is generated from Campy
+                // JIT. So, generate code to get pointer to method, then call it.
+
+                var declaring_type = mr.DeclaringType;
+                bool has_return = mr.ReturnType.Name != "System.Void";
+                var name = JITER.MethodName(mr);
+                BuilderRef bu = this.Builder;
+
+                var context = LLVM.GetGlobalContext();
+
+                // Set up args, type casting if required, and set up declaration of method.
+                TypeRef[] lparams = new TypeRef[xargs];
+                ValueRef[] args = new ValueRef[xargs];
+                var pars = mr.Resolve().Parameters;
+                for (int k = mr.Parameters.Count - 1; k >= 0; --k)
+                {
+                    VALUE v = state._stack.Pop();
+                    TypeRef par = pars[k].ParameterType.ToTypeRef();
+                    ValueRef value = v.V;
+                    if (LLVM.TypeOf(value) != par)
+                    {
+                        if (LLVM.GetTypeKind(par) == TypeKind.StructTypeKind
+                            && LLVM.GetTypeKind(LLVM.TypeOf(value)) == TypeKind.PointerTypeKind)
+                        {
+                            value = LLVM.BuildLoad(Builder, value, "i" + instruction_id++);
+                        }
+                        else if (LLVM.GetTypeKind(par) == TypeKind.PointerTypeKind)
+                        {
+                            value = LLVM.BuildPointerCast(Builder, value, par, "i" + instruction_id++);
+                        }
+                        else
+                        {
+                            value = LLVM.BuildBitCast(Builder, value, par, "");
+                        }
+                    }
+                    lparams[k + xargs - mr.Parameters.Count] = par;
+                    args[k + xargs - mr.Parameters.Count] = value;
+                }
+
+                if (has_this)
+                {
+                    VALUE v = state._stack.Pop();
+                    TypeRef par = mr.DeclaringType.ToTypeRef();
+                    ValueRef value = v.V;
+                    if (LLVM.TypeOf(value) != par)
+                    {
+                        if (LLVM.GetTypeKind(par) == TypeKind.StructTypeKind
+                            && LLVM.GetTypeKind(LLVM.TypeOf(value)) == TypeKind.PointerTypeKind)
+                        {
+                            value = LLVM.BuildLoad(Builder, value, "i" + instruction_id++);
+                        }
+                        else if (LLVM.GetTypeKind(par) == TypeKind.PointerTypeKind)
+                        {
+                            value = LLVM.BuildPointerCast(Builder, value, par, "i" + instruction_id++);
+                        }
+                        else
+                        {
+                            value = LLVM.BuildBitCast(Builder, value, par, "");
+                        }
+                    }
+                    lparams[0] = par;
+                    args[0] = value;
+                }
+
+                TypeRef return_type;
+                if (has_return)
+                {
+                    return_type = mr.ReturnType.ToTypeRef();
+                }
+                else
+                {
+                    return_type = LLVM.VoidType();
+                }
+
+                // Declare pointer to method.
+                var function_type = LLVM.FunctionType(return_type, lparams, false);
+                var ptr_function_type = LLVM.PointerType(function_type, 0);
+                var ptr_method = LLVM.BuildIntToPtr(Builder, addr_method, ptr_function_type, "i" + instruction_id++);
+                var call = LLVM.BuildCall(Builder, ptr_method, args, "");
+                if (Campy.Utils.Options.IsOn("jit_trace"))
+                    System.Console.WriteLine(call.ToString());
+
+                if (has_return)
+                {
+                    state._stack.Push(new VALUE(call));
+                }
+
+                return Next;
+            }
+        }
+
+        //			case CIL_CALLVIRT:
+        //				{
+        //					tMD_MethodDef *pCallMethod;
+        //					tMD_TypeDef *pBoxCallType;
+        //					U32 derefRefType;
+        //
+        //					u32Value2 = 0;
+        //
+        //cilCallVirtConstrained:
+        //					pBoxCallType = NULL;
+        //					derefRefType = 0;
+        //
+        //					u32Value = GetUnalignedU32(pCIL, &cilOfs);
+        //					pCallMethod = MetaData_GetMethodDefFromDefRefOrSpec(pMetaData, u32Value, pMethodDef->pParentType->ppClassTypeArgs, pMethodDef->ppMethodTypeArgs);
+        //					if (pCallMethod->isFilled == 0) {
+        //						tMD_TypeDef *pTypeDef;
+        //						
+        //						pTypeDef = MetaData_GetTypeDefFromMethodDef(pCallMethod);
+        //						MetaData_Fill_TypeDef(pTypeDef, NULL, NULL);
+        //					}
+        //
+        //					if (u32Value2 != 0) {
+        //						// There is a 'constrained' prefix
+        //						tMD_TypeDef *pConstrainedType;
+        //
+        //						pConstrainedType = MetaData_GetTypeDefFromDefRefOrSpec(pMetaData, u32Value2, pMethodDef->pParentType->ppClassTypeArgs, pMethodDef->ppMethodTypeArgs);
+        //						if (TYPE_ISINTERFACE(pCallMethod->pParentType)) {
+        //							u32Value2 = 0xffffffff;
+        //							// Find the interface that we're dealing with
+        //							for (i=0; i<pConstrainedType->numInterfaces; i++) {
+        //								if (pConstrainedType->pInterfaceMaps[i].pInterface == pCallMethod->pParentType) {
+        //									u32Value2 = pConstrainedType->pInterfaceMaps[i].pVTableLookup[pCallMethod->vTableOfs];
+        //									break;
+        //								}
+        //							}
+        //							Assert(u32Value2 != 0xffffffff);
+        //							if (pConstrainedType->pVTable[u32Value2]->pParentType == pConstrainedType) {
+        //								// This method is implemented on this class, so make it a normal CALL op
+        //								op = CIL_CALL;
+        //								pCallMethod = pConstrainedType->pVTable[u32Value2];
+        //							}
+        //						} else {
+        //							if (pConstrainedType->isValueType) {
+        //								tMD_MethodDef *pImplMethod;
+        //								// If pConstraintedType directly implements the call then don't do anything
+        //								// otherwise the 'this' pointer must be boxed (BoxedCall)
+        //								pImplMethod = pConstrainedType->pVTable[pCallMethod->vTableOfs];
+        //								if (pImplMethod->pParentType == pConstrainedType) {
+        //									op = CIL_CALL;
+        //									pCallMethod = pImplMethod;
+        //								} else {
+        //									pBoxCallType = pConstrainedType;
+        //								}
+        //							} else {
+        //								// Reference-type, so dereference the PTR to 'this' and use that for the 'this' for the call.
+        //								derefRefType = 1;
+        //							}
+        //						}
+        //					}
+        //
+        //					// Pop stack type for each argument. Don't actually care what these are,
+        //					// except the last one which will be the 'this' object type of a non-static method
+        //					//printf("Call %s() - popping %d stack args\n", pCallMethod->name, pCallMethod->numberOfParameters);
+        //					for (i=0; i<pCallMethod->numberOfParameters; i++) {
+        //						pStackType = PopStackType();
+        //					}
+        //					// the stack type of the 'this' object will now be in stackType (if there is one)
+        //					if (METHOD_ISSTATIC(pCallMethod)) {
+        //						pStackType = types[TYPE_SYSTEM_OBJECT];
+        //					}
+        //					MetaData_Fill_TypeDef(pStackType, NULL, NULL);
+        //					if (TYPE_ISINTERFACE(pCallMethod->pParentType) && op == CIL_CALLVIRT) {
+        //						PushOp(JIT_CALL_INTERFACE);
+        //					} else if (pCallMethod->pParentType->pParent == types[TYPE_SYSTEM_MULTICASTDELEGATE]) {
+        //						PushOp(JIT_INVOKE_DELEGATE);
+        //					} else {
+        //						switch (pStackType->stackType)
+        //						{
+        //						case EVALSTACK_INTNATIVE: // Not really right, but it'll work on 32-bit
+        //						case EVALSTACK_O:
+        //							if (derefRefType) {
+        //								PushOp(JIT_DEREF_CALLVIRT);
+        //							} else {
+        //								if (pBoxCallType != NULL) {
+        //									PushOp(JIT_BOX_CALLVIRT);
+        //									PushPTR(pBoxCallType);
+        //								} else {
+        //									PushOp((op == CIL_CALL)?JIT_CALL_O:JIT_CALLVIRT_O);
+        //								}
+        //							}
+        //							break;
+        //						case EVALSTACK_PTR:
+        //						case EVALSTACK_VALUETYPE:
+        //							if (derefRefType) {
+        //								PushOp(JIT_DEREF_CALLVIRT);
+        //							} else if (pBoxCallType != NULL) {
+        //								PushOp(JIT_BOX_CALLVIRT);
+        //								PushPTR(pBoxCallType);
+        //							} else {
+        //								PushOp(JIT_CALL_PTR);
+        //							}
+        //							break;
+        //						default:
+        //							Crash("JITit(): Cannot CALL or CALLVIRT with stack type: %d", pStackType->stackType);
+        //						}
+        //					}
+        //					PushPTR(pCallMethod);
+        //
+        //					if (pCallMethod->pReturnType != NULL) {
+        //						PushStackType(pCallMethod->pReturnType);
+        //					}
+        //				}
+        //				break;
     }
 
     public class i_castclass : ConvertCallInst
@@ -4942,6 +5176,13 @@
         public i_ldftn(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+        }
+
+        public override INST GenerateGenerics(STATE<TypeReference> state)
+        {
+            
+            state._stack.Push(typeof(System.UInt32).ToMonoTypeReference());
+            return Next;
         }
     }
 

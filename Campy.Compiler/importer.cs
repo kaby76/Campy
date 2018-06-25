@@ -49,6 +49,24 @@ namespace Campy.Compiler
             _methods_avoid.Add("System.Void System.ArgumentOutOfRangeException::.ctor(System.String, System.String)");
         }
 
+        public void Add(ModuleDefinition module)
+        {
+            StackQueue<TypeDefinition> type_definitions = new StackQueue<TypeDefinition>();
+            StackQueue<TypeDefinition> type_definitions_closure = new StackQueue<TypeDefinition>();
+            foreach (TypeDefinition td in module.Types)
+                type_definitions.Push(td);
+            while (type_definitions.Count > 0)
+            {
+                TypeDefinition ty = type_definitions.Pop();
+                type_definitions_closure.Push(ty);
+                foreach (TypeDefinition ntd in ty.NestedTypes)
+                    type_definitions.Push(ntd);
+            }
+            foreach (TypeDefinition td in type_definitions_closure)
+                foreach (MethodDefinition definition in td.Methods)
+                    Add(definition);
+        }
+
         public void AnalyzeMethod(MethodReference method_reference)
         {
             Failed = false; // Might be dubious to reset here.
@@ -70,6 +88,23 @@ namespace Campy.Compiler
                 if (tuple.Item1.FullName == method_reference.FullName) return;
             }
             _methods_to_do.Push(new Tuple<MethodReference, List<TypeReference>>(method_reference, new List<TypeReference>()));
+        }
+
+        public void Add(MethodInfo reference)
+        {
+            String kernel_assembly_file_name = reference.DeclaringType.Assembly.Location;
+            Mono.Cecil.ModuleDefinition md = Mono.Cecil.ModuleDefinition.ReadModule(kernel_assembly_file_name);
+            MethodReference refer = md.ImportReference(reference);
+            Add(refer);
+        }
+
+        public void Add(Type type)
+        {
+            var mono_type = type.ToMonoTypeReference();
+            foreach (var m in mono_type.Resolve().Methods)
+            {
+                Add(m);
+            }
         }
 
         private List<string> _methods_avoid = new List<string>();

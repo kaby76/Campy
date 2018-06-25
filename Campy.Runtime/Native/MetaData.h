@@ -201,5 +201,6 @@ function_space_specifier tMD_TypeDef * MetaData_GetFieldType(tMD_FieldDef * pFie
 function_space_specifier unsigned int GetU32(unsigned char *pSource);
 function_space_specifier unsigned int GetU16(unsigned char *pSource);
 function_space_specifier unsigned long long GetU64(unsigned char *pSource);
-
 function_space_specifier void MetaData_PrintMetaData(tMetaData * meta);
+function_space_specifier void * MetaData_GetMethodJit(void * object_ptr, int table_ref);
+function_space_specifier void MetaData_SetMethodJit(void * method_ptr, void * bcl_type, int table_ref);

@@ -800,10 +800,10 @@ BB11_2:
 	.file	3 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\Types.h", 1528761008, 3617
 	.file	4 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v9.1\\include\\driver_types.h", 1509767883, 76644
 	.file	5 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\MethodState.h", 1528761008, 3043
-	.file	6 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\JIT.h", 1528761008, 4213
+	.file	6 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\JIT.h", 1529422184, 4273
 	.file	7 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\Thread.h", 1528761008, 4358
 	.file	8 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\MetaDataTables.h", 1529179351, 21039
-	.file	9 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\MetaData.h", 1528805462, 10426
+	.file	9 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\MetaData.h", 1529494318, 10619
 	.file	10 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\Generics.h", 1528761008, 2858
 
 .section .debug_info {
@@ -9789,7 +9789,7 @@ BB11_2:
  .b8 0
  .b32 0
  .b32 6
- .b32 63
+ .b32 67
  .b8 4
 
  .b32 9187

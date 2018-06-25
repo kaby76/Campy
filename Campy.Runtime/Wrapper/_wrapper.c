@@ -197,6 +197,16 @@ EXPORT void BclSystemArrayLoadElementIndicesAddress(void * bcl_object, unsigned 
 	SystemArray_LoadElementIndicesAddress((HEAP_PTR)bcl_object, dim, (U64*)indices, (HEAP_PTR*)value_address);
 }
 
+EXPORT void * BclMetaDataGetMethodJit(void * bcl_object, int table_id)
+{
+	return MetaData_GetMethodJit(bcl_object, table_id);
+}
+
+EXPORT void BclMetaDataSetMethodJit(void * method_ptr, void * bcl_type, int table_id)
+{
+	MetaData_SetMethodJit(method_ptr, bcl_type, table_id);
+}
+
 #ifdef __cplusplus
 }
 #endif

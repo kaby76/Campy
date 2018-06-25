@@ -35,6 +35,10 @@ struct tCombinedOpcodesMem_ {
 #endif
 
 struct tJITted_ {
+
+	// Actual LLVM code address of method.
+	void * code;
+
 	// The JITted opcodes
 	U32 *pOps;
 	// The maximum size of the evaluation stack

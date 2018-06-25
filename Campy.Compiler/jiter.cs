@@ -18,506 +18,6 @@ using FieldAttributes = Mono.Cecil.FieldAttributes;
 
 namespace Campy.Compiler
 {
-    public static class JIT_HELPER
-    {
-        public static TypeRef ToTypeRef(
-            this TypeReference tr,
-            Dictionary<Tuple<TypeReference, GenericParameter>, System.Type> generic_type_rewrite_rules = null,
-            int level = 0)
-        {
-            if (generic_type_rewrite_rules == null) generic_type_rewrite_rules = new Dictionary<Tuple<TypeReference, GenericParameter>, System.Type>();
-
-            // Search for type if already converted. Note, there are several caches to search, each
-            // containing types with different properties.
-            // Also, NB: we use full name for the conversion, as types can be similarly named but within
-            // different owning classes.
-            foreach (var kv in JITER.basic_llvm_types_created)
-            {
-                if (kv.Key.FullName == tr.FullName)
-                {
-                    return kv.Value;
-                }
-            }
-            foreach (var kv in JITER.previous_llvm_types_created_global)
-            {
-                if (kv.Key.FullName == tr.FullName)
-                    return kv.Value;
-            }
-            foreach (var kv in JITER.previous_llvm_types_created_global)
-            {
-                if (kv.Key.FullName == tr.FullName)
-                    return kv.Value;
-            }
-
-            tr = RUNTIME.RewriteType(tr);
-
-            try
-            {
-                // Check basic types using TypeDefinition.
-                // I don't know why, but Resolve() of System.Int32[] (an arrary) returns a simple System.Int32, not
-                // an array. If always true, then use TypeReference as much as possible.
-                // Resolve() also warps pointer types into just the element type. Really bad design in Mono!
-                // All I want is just the frigging information about the type. For example, to know if the
-                // type is a class, you have to convert it to a TypeDefinition because a TypeReference does
-                // not have IsClass property! Really really really poor design for a type system. Sure, keep
-                // a basic understanding of applied and defining occurences, but please, keep type information
-                // about! I cannot rail enough with this half-baked type system in Mono. It has caused so many
-                // problems!!!!!!!
-
-                TypeDefinition td = tr.Resolve();
-
-                var is_pointer = tr.IsPointer;
-                var is_reference = tr.IsByReference;
-                var is_array = tr.IsArray;
-                var is_value_type = tr.IsValueType;
-
-
-                if (is_pointer)
-                {
-                    
-                }
-
-                if (is_reference)
-                {
-                    // Convert the base type first.
-                    var base_type = ToTypeRef(td, generic_type_rewrite_rules, level + 1);
-                    // Add in pointer to type.
-                    TypeRef p = LLVM.PointerType(base_type, 0);
-                    return p;
-                }
-
-                GenericInstanceType git = tr as GenericInstanceType;
-                TypeDefinition gtd = tr as TypeDefinition;
-
-                // System.Array is not considered an "array", rather a "class". So, we need to handle
-                // this type.
-                if (tr.FullName == "System.Array")
-                {
-                    // Create a basic int[] and call it the day.
-                    var original_tr = tr;
-
-                    tr = typeof(int[]).ToMonoTypeReference();
-                    var p = tr.ToTypeRef(generic_type_rewrite_rules, level + 1);
-                    JITER.previous_llvm_types_created_global.Add(original_tr, p);
-                    return p;
-                }
-                else if (tr.IsArray)
-                {
-                    // Note: mono_type_reference.GetElementType() is COMPLETELY WRONG! It does not function the same
-                    // as system_type.GetElementType(). Use ArrayType.ElementType!
-                    var array_type = tr as ArrayType;
-                    var element_type = array_type.ElementType;
-                    // ContextRef c = LLVM.ContextCreate();
-                    ContextRef c = LLVM.GetModuleContext(JITER.global_llvm_module);
-                    string type_name = JITER.RenameToLegalLLVMName(tr.ToString());
-                    TypeRef s = LLVM.StructCreateNamed(c, type_name);
-                    TypeRef p = LLVM.PointerType(s, 0);
-                    JITER.previous_llvm_types_created_global.Add(tr, p);
-                    var e = ToTypeRef(element_type, generic_type_rewrite_rules, level + 1);
-                    LLVM.StructSetBody(s, new TypeRef[3]
-                    {
-                        LLVM.PointerType(e, 0)
-                        , LLVM.Int64Type()
-                        , LLVM.Int64Type()
-                    }, true);
-                    return p;
-                }
-                else if (tr.IsGenericParameter)
-                {
-                    foreach (var kvp in generic_type_rewrite_rules)
-                    {
-                        Tuple<TypeReference, GenericParameter> key = kvp.Key;
-                        var value = kvp.Value;
-                        if (key.Item1.FullName == tr.FullName // NOT COMPLETE!
-                            )
-                        {
-                            // Match, and substitute.
-                            var v = value;
-                            var mv = v.ToMonoTypeReference();
-                            var e = ToTypeRef(mv, generic_type_rewrite_rules, level + 1);
-                            JITER.previous_llvm_types_created_global.Add(tr, e);
-                            return e;
-                        }
-                    }
-                    throw new Exception("Cannot convert " + tr.Name);
-                }
-                else if (td != null && td.IsEnum)
-                {
-                    // Enums are any underlying type, e.g., one of { bool, char, int8,
-                    // unsigned int8, int16, unsigned int16, int32, unsigned int32, int64, unsigned int64, native int,
-                    // unsigned native int }.
-                    var bas = td.BaseType;
-                    Collection<FieldDefinition> fields = td.Fields;
-                    if (fields == null)
-                        throw new Exception("Cannot convert " + tr.Name);
-                    if (fields.Count == 0)
-                        throw new Exception("Cannot convert " + tr.Name);
-                    FieldDefinition field = fields[0];
-                    if (field == null)
-                        throw new Exception("Cannot convert " + tr.Name);
-                    var field_type = field.FieldType;
-                    if (field_type == null)
-                        throw new Exception("Cannot convert " + tr.Name);
-                    var va = ToTypeRef(field_type, generic_type_rewrite_rules, level + 1);
-                    return va;
-                }
-                else if (td != null && td.IsValueType)
-                {
-                    // Struct!!!!!
-                    Dictionary<Tuple<TypeReference, GenericParameter>, System.Type> additional = new Dictionary<Tuple<TypeReference, GenericParameter>, System.Type>();
-                    var gp = tr.GenericParameters;
-                    Mono.Collections.Generic.Collection<TypeReference> ga = null;
-                    if (git != null)
-                    {
-                        ga = git.GenericArguments;
-                        Mono.Collections.Generic.Collection<GenericParameter> gg = td.GenericParameters;
-                        // Map parameter to instantiated type.
-                        for (int i = 0; i < gg.Count; ++i)
-                        {
-                            GenericParameter pp = gg[i];
-                            TypeReference qq = ga[i];
-                            TypeReference trrr = pp as TypeReference;
-                            var system_type = qq.ToSystemType();
-                            Tuple<TypeReference, GenericParameter> tr_gp = new Tuple<TypeReference, GenericParameter>(tr, pp);
-                            if (system_type == null) throw new Exception("Failed to convert " + qq);
-                            additional[tr_gp] = system_type;
-                        }
-                    }
-
-                    // Create a struct type.
-                    ContextRef c = LLVM.GetModuleContext(JITER.global_llvm_module);
-                    string llvm_name = JITER.RenameToLegalLLVMName(tr.ToString());
-
-                    TypeRef s = LLVM.StructCreateNamed(c, llvm_name);
-                    
-                    // Structs are implemented as value types, but if this type is a pointer,
-                    // then return one.
-                    TypeRef p;
-                    if (is_pointer) p = LLVM.PointerType(s, 0);
-                    else p = s;
-
-                    JITER.previous_llvm_types_created_global.Add(tr, p);
-
-                    // Create array of typerefs as argument to StructSetBody below.
-                    // Note, tr is correct type, but tr.Resolve of a generic type turns the type
-                    // into an uninstantiated generic type. E.g., List<int> contains a generic T[] containing the
-                    // data. T could be a struct/value type, or T could be a class.
-
-                    var new_list = new Dictionary<Tuple<TypeReference, GenericParameter>, System.Type>(
-                        generic_type_rewrite_rules);
-                    foreach (var a in additional)
-                        new_list.Add(a.Key, a.Value);
-
-                    // This code should use this:  BUFFERS.Padding((long)ip, BUFFERS.Alignment(typeof(IntPtr))
-
-                    List<TypeRef> list = new List<TypeRef>();
-                    int offset = 0;
-                    var fields = td.Fields;
-                    foreach (var field in fields)
-                    {
-                        FieldAttributes attr = field.Attributes;
-                        if ((attr & FieldAttributes.Static) != 0)
-                        {
-                           
-                            continue;
-                        }
-
-                        TypeReference field_type = field.FieldType;
-                        TypeReference instantiated_field_type = field.FieldType;
-
-                        if (git != null)
-                        {
-                            Collection<TypeReference> generic_args = git.GenericArguments;
-                            if (field.FieldType.IsArray)
-                            {
-                                var field_type_as_array_type = field.FieldType as ArrayType;
-                                //var et = field.FieldType.GetElementType();
-                                var et = field_type_as_array_type.ElementType;
-                                var bbc = et.HasGenericParameters;
-                                var bbbbc = et.IsGenericParameter;
-                                var array = field.FieldType as ArrayType;
-                                int rank = array.Rank;
-                                if (bbc)
-                                {
-                                    instantiated_field_type = et.MakeGenericInstanceType(generic_args.ToArray());
-                                    instantiated_field_type = instantiated_field_type.MakeArrayType(rank);
-                                }
-                                else if (bbbbc)
-                                {
-                                    instantiated_field_type = generic_args.First();
-                                    instantiated_field_type = instantiated_field_type.MakeArrayType(rank);
-                                }
-                            }
-                            else
-                            {
-                                var et = field.FieldType;
-                                var bbc = et.HasGenericParameters;
-                                var bbbbc = et.IsGenericParameter;
-                                if (bbc)
-                                {
-                                    instantiated_field_type = et.MakeGenericInstanceType(generic_args.ToArray());
-                                }
-                                else if (bbbbc)
-                                {
-                                    instantiated_field_type = generic_args.First();
-                                }
-                            }
-                        }
-
-                        int field_size;
-                        int alignment;
-                        var ft =
-                            instantiated_field_type.ToSystemType();
-                        var array_or_class = (instantiated_field_type.IsArray || !instantiated_field_type.IsValueType);
-                        if (array_or_class)
-                        {
-                            field_size = BUFFERS.SizeOf(typeof(IntPtr));
-                            alignment = BUFFERS.Alignment(typeof(IntPtr));
-                            int padding = BUFFERS.Padding(offset, alignment);
-                            offset = offset + padding + field_size;
-                            if (padding != 0)
-                            {
-                                // Add in bytes to effect padding.
-                                for (int j = 0; j < padding; ++j)
-                                    list.Add(LLVM.Int8Type());
-                            }
-                            var field_converted_type = ToTypeRef(instantiated_field_type, new_list, level + 1);
-                            list.Add(field_converted_type);
-                        }
-                        else
-                        {
-                            field_size = BUFFERS.SizeOf(ft);
-                            alignment = BUFFERS.Alignment(ft);
-                            int padding = BUFFERS.Padding(offset, alignment);
-                            offset = offset + padding + field_size;
-                            if (padding != 0)
-                            {
-                                // Add in bytes to effect padding.
-                                for (int j = 0; j < padding; ++j)
-                                    list.Add(LLVM.Int8Type());
-                            }
-                            var field_converted_type = ToTypeRef(instantiated_field_type, new_list, level + 1);
-                            list.Add(field_converted_type);
-                        }
-                    }
-                    LLVM.StructSetBody(s, list.ToArray(), true);
-                    return p;
-                }
-                else if (td != null && td.IsClass)
-                {
-                    Dictionary<Tuple<TypeReference, GenericParameter>, System.Type> additional = new Dictionary<Tuple<TypeReference, GenericParameter>, System.Type>();
-                    var gp = tr.GenericParameters;
-                    Mono.Collections.Generic.Collection<TypeReference> ga = null;
-                    if (git != null)
-                    {
-                        ga = git.GenericArguments;
-                        Mono.Collections.Generic.Collection<GenericParameter> gg = td.GenericParameters;
-                        // Map parameter to instantiated type.
-                        for (int i = 0; i < gg.Count; ++i)
-                        {
-                            GenericParameter pp = gg[i]; // This is the parameter name, like "T".
-                            TypeReference qq = ga[i]; // This is the generic parameter, like System.Int32.
-                            var rewr = ToTypeRef(qq);
-                            TypeReference trrr = pp as TypeReference;
-                            var system_type = qq.ToSystemType();
-                            Tuple<TypeReference, GenericParameter> tr_gp = new Tuple<TypeReference, GenericParameter>(tr, pp);
-                            if (system_type == null) throw new Exception("Failed to convert " + qq);
-                            additional[tr_gp] = system_type;
-                        }
-                    }
-
-                    // Create a struct/class type.
-                    //ContextRef c = LLVM.ContextCreate();
-                    ContextRef c = LLVM.GetModuleContext(JITER.global_llvm_module);
-                    string llvm_name = JITER.RenameToLegalLLVMName(tr.ToString());
-                    TypeRef s = LLVM.StructCreateNamed(c, llvm_name);
-
-                    // Classes are always implemented as pointers.
-                    TypeRef p;
-                    p = LLVM.PointerType(s, 0);
-
-                    JITER.previous_llvm_types_created_global.Add(tr, p);
-
-                    // Create array of typerefs as argument to StructSetBody below.
-                    // Note, tr is correct type, but tr.Resolve of a generic type turns the type
-                    // into an uninstantiated generic type. E.g., List<int> contains a generic T[] containing the
-                    // data. T could be a struct/value type, or T could be a class.
-
-                    var new_list = new Dictionary<Tuple<TypeReference, GenericParameter>, System.Type>(
-                        generic_type_rewrite_rules);
-                    foreach (var a in additional)
-                        new_list.Add(a.Key, a.Value);
-
-                    List<TypeRef> list = new List<TypeRef>();
-                    int offset = 0;
-                    var fields = td.Fields;
-                    foreach (var field in fields)
-                    {
-                        FieldAttributes attr = field.Attributes;
-                        if ((attr & FieldAttributes.Static) != 0)
-                            continue;
-
-                        TypeReference field_type = field.FieldType;
-                        TypeReference instantiated_field_type = field.FieldType;
-
-                        if (git != null)
-                        {
-                            Collection<TypeReference> generic_args = git.GenericArguments;
-                            if (field.FieldType.IsArray)
-                            {
-                                var field_type_as_array_type = field.FieldType as ArrayType;
-                                //var et = field.FieldType.GetElementType();
-                                var et = field_type_as_array_type.ElementType;
-                                var bbc = et.HasGenericParameters;
-                                var bbbbc = et.IsGenericParameter;
-                                var array = field.FieldType as ArrayType;
-                                int rank = array.Rank;
-                                if (bbc)
-                                {
-                                    instantiated_field_type = et.MakeGenericInstanceType(generic_args.ToArray());
-                                    instantiated_field_type = instantiated_field_type.MakeArrayType(rank);
-                                }
-                                else if (bbbbc)
-                                {
-                                    instantiated_field_type = generic_args.First();
-                                    instantiated_field_type = instantiated_field_type.MakeArrayType(rank);
-                                }
-                            }
-                            else
-                            {
-                                var et = field.FieldType;
-                                var bbc = et.HasGenericParameters;
-                                var bbbbc = et.IsGenericParameter;
-                                if (bbc)
-                                {
-                                    instantiated_field_type = et.MakeGenericInstanceType(generic_args.ToArray());
-                                }
-                                else if (bbbbc)
-                                {
-                                    instantiated_field_type = generic_args.First();
-                                }
-                            }
-                        }
-
-
-                        int field_size;
-                        int alignment;
-                        var array_or_class = (instantiated_field_type.IsArray || !instantiated_field_type.IsValueType);
-                        if (array_or_class)
-                        {
-                            field_size = BUFFERS.SizeOf(typeof(IntPtr));
-                            alignment = BUFFERS.Alignment(typeof(IntPtr));
-                            int padding = BUFFERS.Padding(offset, alignment);
-                            offset = offset + padding + field_size;
-                            if (padding != 0)
-                            {
-                                // Add in bytes to effect padding.
-                                for (int j = 0; j < padding; ++j)
-                                    list.Add(LLVM.Int8Type());
-                            }
-                            var field_converted_type = ToTypeRef(instantiated_field_type, new_list, level + 1);
-                            list.Add(field_converted_type);
-                        }
-                        else
-                        {
-                            var ft =
-                                instantiated_field_type.ToSystemType();
-                            field_size = BUFFERS.SizeOf(ft);
-                            alignment = BUFFERS.Alignment(ft);
-                            int padding = BUFFERS.Padding(offset, alignment);
-                            offset = offset + padding + field_size;
-                            if (padding != 0)
-                            {
-                                // Add in bytes to effect padding.
-                                for (int j = 0; j < padding; ++j)
-                                    list.Add(LLVM.Int8Type());
-                            }
-                            var field_converted_type = ToTypeRef(instantiated_field_type, new_list, level + 1);
-                            list.Add(field_converted_type);
-                        }
-                    }
-                    LLVM.StructSetBody(s, list.ToArray(), true);
-                    return p;
-                }
-                else
-                    throw new Exception("Unknown type.");
-            }
-            catch (Exception e)
-            {
-                throw e;
-            }
-            finally
-            {
-
-            }
-        }
-
-        public static TypeReference InstantiateGeneric(this TypeReference type, CFG.Vertex bb)
-        {
-            if (type.IsGenericParameter)
-            {
-                // Go to basic block and get type.
-                var declaring_type = bb._original_method_reference.DeclaringType;
-                if (declaring_type.IsGenericInstance)
-                {
-                    var generic_type_of_declaring_type = declaring_type as GenericInstanceType;
-                    var generic_arguments = generic_type_of_declaring_type.GenericArguments;
-                    var new_arg = Campy.Utils.Class1.ConvertGenericParameterToTypeReference(type, generic_arguments);
-                    return new_arg;
-                }
-            }
-            return type;
-        }
-
-        public static VariableReference InstantiateGeneric(this VariableReference variable, CFG.Vertex bb)
-        {
-            var type = variable.VariableType;
-            if (type.IsGenericParameter)
-            {
-                // Go to basic block and get type.
-                var declaring_type = bb._original_method_reference.DeclaringType;
-                if (declaring_type.IsGenericInstance)
-                {
-                    var generic_type_of_declaring_type = declaring_type as GenericInstanceType;
-                    var generic_arguments = generic_type_of_declaring_type.GenericArguments;
-                    var new_arg = Campy.Utils.Class1.ConvertGenericParameterToTypeReference(type, generic_arguments);
-                    var new_var = new VariableDefinition(new_arg);
-                    return new_var;
-                }
-            }
-            return variable;
-        }
-
-        public static VariableDefinition InstantiateGeneric(this VariableDefinition variable, CFG.Vertex bb)
-        {
-            var type = variable.VariableType;
-            if (type.IsGenericParameter)
-            {
-                // Go to basic block and get type.
-                var declaring_type = bb._original_method_reference.DeclaringType;
-                if (declaring_type.IsGenericInstance)
-                {
-                    var generic_type_of_declaring_type = declaring_type as GenericInstanceType;
-                    var generic_arguments = generic_type_of_declaring_type.GenericArguments;
-                    var new_arg = Campy.Utils.Class1.ConvertGenericParameterToTypeReference(type, generic_arguments);
-                    var new_var = new VariableDefinition(new_arg);
-                    //new_var.IsPinned = variable.IsPinned;
-                    var a = variable.GetType().GetFields(System.Reflection.BindingFlags.Instance
-                                                         | System.Reflection.BindingFlags.NonPublic
-                                                         | System.Reflection.BindingFlags.Public);
-                    variable
-                        .GetType()
-                        .GetField("index", System.Reflection.BindingFlags.Instance
-                                           | System.Reflection.BindingFlags.NonPublic
-                                           | System.Reflection.BindingFlags.Public)
-                        .SetValue(new_var, variable.Index);
-                    return new_var;
-                }
-            }
-            return variable;
-        }
-
-    }
 
     static class PHASES
     {
@@ -584,12 +84,12 @@ namespace Campy.Compiler
             {
                 if (!bb.IsEntry) throw new Exception("Cannot handle dead code blocks.");
                 if (has_this)
-                    state._stack.Push(bb._method_definition.DeclaringType.InstantiateGeneric(bb));
+                    state._stack.Push(bb._method_definition.DeclaringType.InstantiateGeneric(bb._original_method_reference));
 
                 for (int i = 0; i < bb._method_definition.Parameters.Count; ++i)
                 {
                     var par = bb._method_definition.Parameters[i];
-                    var type = par.ParameterType.InstantiateGeneric(bb);
+                    var type = par.ParameterType.InstantiateGeneric(bb._original_method_reference);
                     if (Campy.Utils.Options.IsOn("jit_trace"))
                         System.Console.WriteLine(par);
                     state._stack.Push(type);
@@ -610,7 +110,7 @@ namespace Campy.Compiler
                 state._locals = state._stack.Section((int) state._stack.Count, locals);
                 for (int i = 0; i < locals; ++i)
                 {
-                    var tr = variables[i].VariableType.InstantiateGeneric(bb);
+                    var tr = variables[i].VariableType.InstantiateGeneric(bb._original_method_reference);
                     state._stack.Push(tr);
                 }
 
@@ -850,7 +350,7 @@ namespace Campy.Compiler
                         if (method.DeclaringType.IsGenericInstance && method.ContainsGenericParameter)
                         {
                             var git = method.DeclaringType as GenericInstanceType;
-                            type_reference_of_parameter = JITER.FromGenericParameterToTypeReference(
+                            type_reference_of_parameter = Campy.Utils.MonoInterop.FromGenericParameterToTypeReference(
                                 type_reference_of_parameter, git);
                         }
 
@@ -872,7 +372,7 @@ namespace Campy.Compiler
                 }
 
                 //mi2 = FromGenericParameterToTypeReference(typeof(void).ToMonoTypeReference(), null);
-                TYPE t_ret = new TYPE(JITER.FromGenericParameterToTypeReference(method.ReturnType,
+                TYPE t_ret = new TYPE(Campy.Utils.MonoInterop.FromGenericParameterToTypeReference(method.ReturnType,
                     method.DeclaringType as GenericInstanceType));
                 if (bb.HasStructReturnValue)
                 {
@@ -880,9 +380,14 @@ namespace Campy.Compiler
                 }
 
                 TypeRef ret_type = t_ret.IntermediateType;
-                TypeRef met_type = LLVM.FunctionType(ret_type, param_types, false);
-                ValueRef fun = LLVM.AddFunction(mod,
-                    JITER.RenameToLegalLLVMName(JITER.MethodName(method)), met_type);
+                TypeRef method_type = LLVM.FunctionType(ret_type, param_types, false);
+                string method_name = Campy.Utils.JIT_HELPER.RenameToLegalLLVMName(JITER.MethodName(method));
+                ValueRef fun = LLVM.AddFunction(mod, method_name, method_type);
+
+                var glob = LLVM.AddGlobal(mod, LLVM.PointerType(method_type, 0), "p_" + method_name);
+                LLVM.SetGlobalConstant(glob, true);
+                LLVM.SetInitializer(glob, fun);
+
                 BasicBlockRef entry = LLVM.AppendBasicBlock(fun, bb.Name.ToString());
                 bb.LlvmInfo.BasicBlock = entry;
                 bb.LlvmInfo.MethodValueRef = fun;
@@ -1003,12 +508,12 @@ namespace Campy.Compiler
                 // Convert any generic parameters to generic instance reference.
                 for (int i = 0; i < variables.Count; ++i)
                 {
-                    variables[i] = variables[i].InstantiateGeneric(bb);
+                    variables[i] = variables[i].InstantiateGeneric(bb._original_method_reference);
                 }
                 state._locals = state._stack.Section((int) state._stack.Count, locals);
                 for (int i = 0; i < locals; ++i)
                 {
-                    var tr = variables[i].VariableType.InstantiateGeneric(bb);
+                    var tr = variables[i].VariableType.InstantiateGeneric(bb._original_method_reference);
                     TYPE type = new TYPE(tr);
                     VALUE value;
                     if (LLVM.GetTypeKind(type.IntermediateType) == TypeKind.PointerTypeKind)
@@ -1314,7 +819,9 @@ namespace Campy.Compiler
                     // Make sure the target machine is set to sm_30 because we assume that as
                     // a minimum, and it's compatible with GPU BCL runtime. Besides, older versions
                     // are deprecated.
-                    ptx = ptx.Replace(".target sm_20", ".target sm_30");
+                    // sm_35 needed for declaring pointer to function, e.g.,
+                    // .visible .global .align 8 .u64 p_nn_3 = nn_3;
+                    ptx = ptx.Replace(".target sm_20", ".target sm_35");
 
                     // Make sure to fix the stupid end-of-line delimiters to be for Windows.
                     ptx = ptx.Replace("\n", "\r\n");
@@ -1343,13 +850,9 @@ namespace Campy.Compiler
     {
         private IMPORTER _importer;
         private CFG _mcfg;
-        private static int _nn_id = 0;
         public static ModuleRef global_llvm_module;
         private List<ModuleRef> all_llvm_modules;
         public static Dictionary<string, ValueRef> functions_in_internal_bcl_layer;
-        internal static Dictionary<TypeReference, TypeRef> basic_llvm_types_created;
-        internal static Dictionary<TypeReference, TypeRef> previous_llvm_types_created_global;
-        internal static Dictionary<string, string> _rename_to_legal_llvm_name_cache;
         public int _start_index;
         private static bool init;
         private Dictionary<MethodDefinition, IntPtr> method_to_image;
@@ -1372,9 +875,6 @@ namespace Campy.Compiler
             global_llvm_module = default(ModuleRef);
             all_llvm_modules = new List<ModuleRef>();
             functions_in_internal_bcl_layer = new Dictionary<string, ValueRef>();
-            basic_llvm_types_created = new Dictionary<TypeReference, TypeRef>();
-            previous_llvm_types_created_global = new Dictionary<TypeReference, TypeRef>();
-            _rename_to_legal_llvm_name_cache = new Dictionary<string, string>();
             method_to_image = new Dictionary<MethodDefinition, IntPtr>(
                 new LambdaComparer<MethodDefinition>((MethodDefinition a, MethodDefinition b) => a.FullName == b.FullName));
             done_major_init = false;
@@ -1389,62 +889,6 @@ namespace Campy.Compiler
             LLVM.InitializeAllTargetMCs();
             LLVM.InitializeAllTargetInfos();
             LLVM.InitializeAllAsmPrinters();
-
-            // For basic value types, they can also appear as
-            // reference types. We need to distinguish between the two.
-
-            basic_llvm_types_created.Add(
-                typeof(Int16).ToMonoTypeReference(),
-                LLVM.Int16Type());
-
-            basic_llvm_types_created.Add(
-                typeof(UInt16).ToMonoTypeReference(),
-                LLVM.Int16Type());
-
-            basic_llvm_types_created.Add(
-                typeof(Int32).ToMonoTypeReference(),
-                LLVM.Int32Type());
-
-            basic_llvm_types_created.Add(
-                typeof(UInt32).ToMonoTypeReference(),
-                LLVM.Int32Type());
-
-            basic_llvm_types_created.Add(
-                typeof(Int64).ToMonoTypeReference(),
-                LLVM.Int64Type());
-
-            basic_llvm_types_created.Add(
-                typeof(UInt64).ToMonoTypeReference(),
-                LLVM.Int64Type());
-
-            basic_llvm_types_created.Add(
-                typeof(float).ToMonoTypeReference(),
-                LLVM.FloatType());
-
-            basic_llvm_types_created.Add(
-                typeof(double).ToMonoTypeReference(),
-                LLVM.DoubleType());
-
-
-            basic_llvm_types_created.Add(
-                typeof(bool).ToMonoTypeReference(),
-                LLVM.Int32Type()); // Asking for trouble if one tries to map directly to 1 bit.
-
-            basic_llvm_types_created.Add(
-                typeof(char).ToMonoTypeReference(),
-                LLVM.Int8Type());
-
-            basic_llvm_types_created.Add(
-                typeof(void).ToMonoTypeReference(),
-                LLVM.VoidType());
-
-            basic_llvm_types_created.Add(
-                typeof(Mono.Cecil.TypeDefinition).ToMonoTypeReference(),
-                LLVM.PointerType(LLVM.VoidType(), 0));
-
-            basic_llvm_types_created.Add(
-                typeof(System.Type).ToMonoTypeReference(),
-                LLVM.PointerType(LLVM.VoidType(), 0));
 
             //basic_llvm_types_created.Add(
             //    typeof(string).ToMonoTypeReference(),
@@ -1556,45 +1000,12 @@ namespace Campy.Compiler
             return new_module;
         }
 
-        public static TypeReference FromGenericParameterToTypeReference(TypeReference type_reference_of_parameter, GenericInstanceType git)
-        {
-            if (git == null)
-                return type_reference_of_parameter;
-            Collection<TypeReference> genericArguments = git.GenericArguments;
-            TypeDefinition td = git.Resolve();
-
-            // Map parameter to actual type.
-
-            var t1 = type_reference_of_parameter.HasGenericParameters;
-            var t2 = type_reference_of_parameter.IsGenericInstance;
-            var t3 = type_reference_of_parameter.ContainsGenericParameter;
-            var t4 = type_reference_of_parameter.IsGenericParameter;
-
-
-            if (type_reference_of_parameter.IsGenericParameter)
-            {
-                var gp = type_reference_of_parameter as GenericParameter;
-                var num = gp.Position;
-                var yo = genericArguments.ToArray()[num];
-                type_reference_of_parameter = yo;
-            }
-            else if (type_reference_of_parameter.ContainsGenericParameter && type_reference_of_parameter.IsArray)
-            {
-                var array_type = type_reference_of_parameter as ArrayType;
-                var element_type = array_type.ElementType;
-                element_type = FromGenericParameterToTypeReference(element_type, git);
-                ArrayType art = element_type.MakeArrayType();
-                type_reference_of_parameter = art;
-            }
-            return type_reference_of_parameter;
-        }
-
         public static string MethodName(MethodReference mr)
         {
             return mr.FullName;
         }
 
-        private string CIL_to_LLVM_to_PTX(List<CFG.Vertex> basic_blocks_to_compile)
+        private string CilToPtx(List<CFG.Vertex> basic_blocks_to_compile)
         {
             basic_blocks_to_compile = basic_blocks_to_compile
                 .RemoveBasicBlocksAlreadyCompiled()
@@ -1610,6 +1021,11 @@ namespace Campy.Compiler
                 NameTableTrace();
 
             return basic_blocks_to_compile.TranslateToPTX();
+        }
+
+        public void Add(Type type)
+        {
+            _importer.Add(type);
         }
 
         public IntPtr Compile(MethodReference kernel_method, object kernel_target)
@@ -1648,7 +1064,7 @@ namespace Campy.Compiler
             Campy.Utils.TimePhase.Time("compiler      ", () =>
             {
                 // Compile methods.
-                ptx = CIL_to_LLVM_to_PTX(cs);
+                ptx = CilToPtx(cs);
             });
 
             if (ptx == "") throw new Exception(
@@ -1767,7 +1183,7 @@ namespace Campy.Compiler
             return bb;
         }
 
-        public CUfunction GetCudaFunction(MethodReference kernel_method, IntPtr image)
+        public CUmodule SetModule(MethodReference kernel_method, IntPtr image)
         {
             // Compiled previously. Look for basic block of entry.
             CFG.Vertex bb = _mcfg.Entries.Where(v =>
@@ -1776,7 +1192,29 @@ namespace Campy.Compiler
             CUmodule module = RUNTIME.InitializeModule(image);
             RUNTIME.RuntimeModule = module;
             SetBCLForModule(module);
-            var normalized_method_name = JITER.RenameToLegalLLVMName(JITER.MethodName(bb._original_method_reference));
+            return module;
+        }
+
+        public void StoreJits(CUmodule module)
+        {
+            foreach (var v in _mcfg.Entries)
+            {
+                var normalized_method_name = Campy.Utils.JIT_HELPER.RenameToLegalLLVMName(JITER.MethodName(v._original_method_reference));
+                var res = Cuda.cuModuleGetFunction(out CUfunction helloWorld, module, normalized_method_name);
+                Utils.CudaHelpers.CheckCudaError(res);
+                res = Cuda.cuModuleGetGlobal_v2(out IntPtr hw, out ulong z, module, "p_" + normalized_method_name);
+                var bcl_type = RUNTIME.GetBclType(v._original_method_reference.DeclaringType);
+                RUNTIME.BclMetaDataSetMethodJit(hw,
+                    bcl_type,
+                    (int)v._original_method_reference.MetadataToken.RID | 0x06000000);
+            }
+        }
+
+        public CUfunction GetCudaFunction(MethodReference kernel_method, CUmodule module)
+        {
+            CFG.Vertex bb = _mcfg.Entries.Where(v =>
+            v.IsEntry && v._original_method_reference.FullName == kernel_method.FullName).FirstOrDefault();
+            var normalized_method_name = Campy.Utils.JIT_HELPER.RenameToLegalLLVMName(JITER.MethodName(bb._original_method_reference));
             var res = Cuda.cuModuleGetFunction(out CUfunction helloWorld, module, normalized_method_name);
             Utils.CudaHelpers.CheckCudaError(res);
             return helloWorld;
@@ -1903,26 +1341,11 @@ namespace Campy.Compiler
             else return "unknown";
         }
 
-        /// <summary>
-        /// LLVM has a restriction in the names of methods and types different that the Name field of 
-        /// the type. For the moment, we rename to a simple identifier following the usual naming
-        /// convesions for variables (simple prefix, followed by underscore, then a whole number).
-        /// In addition, cache the name so we can rename consistently.
-        /// </summary>
-        /// <param name="before"></param>
-        /// <returns></returns>
-        public static string RenameToLegalLLVMName(string before)
-        {
-            if (_rename_to_legal_llvm_name_cache.ContainsKey(before))
-                return _rename_to_legal_llvm_name_cache[before];
-            _rename_to_legal_llvm_name_cache[before] = "nn_" + _nn_id++;
-            return _rename_to_legal_llvm_name_cache[before];
-        }
 
         public void NameTableTrace()
         {
             System.Console.WriteLine("Name mapping table.");
-            foreach (var tuple in _rename_to_legal_llvm_name_cache)
+            foreach (var tuple in JIT_HELPER._rename_to_legal_llvm_name_cache)
             {
                 System.Console.WriteLine(tuple.Key);
                 System.Console.WriteLine(tuple.Value);

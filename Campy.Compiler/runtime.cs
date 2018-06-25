@@ -103,6 +103,12 @@
         [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclSystemArrayLoadElementIndicesAddress")]
         public static extern IntPtr BclSystemArrayLoadElementIndicesAddress(IntPtr bcl_object, uint dim, IntPtr indices, IntPtr value_address);
 
+        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclMetaDataGetMethodJit")]
+        public static extern IntPtr BclMetaDataGetMethodJit(IntPtr bcl_object, int table_ref);
+
+        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclMetaDataSetMethodJit")]
+        public static extern IntPtr BclMetaDataSetMethodJit(IntPtr method_ptr, IntPtr bcl_object, int table_ref);
+
 
         // This table encodes runtime type information for rewriting BCL types. Use this to determine
         // what a type (represented in Mono.Cecil.TypeReference) in the user's program maps to

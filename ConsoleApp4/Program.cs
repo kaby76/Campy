@@ -5,6 +5,22 @@ using Campy;
 
 namespace ConsoleApp4
 {
+    class B
+    {
+        public virtual int Yo()
+        {
+            return 1;
+        }
+    }
+
+    class A : B
+    {
+        public override int Yo()
+        {
+            return 2;
+        }
+    }
+
     class Program
     {
         static void StartDebugging()
@@ -25,23 +41,17 @@ namespace ConsoleApp4
 
         static void Main(string[] args)
         {
-            System.Int32[] jj = new System.Int32[3];
-
+            var a = new A();
+            var b = new B();
+            Campy.Parallel.Compile(typeof(A));
+            Campy.Parallel.Compile(typeof(B));
+            B c = a;
+            System.Console.WriteLine(c.Yo());
             StartDebugging();
-            //int[] xx = new int[4];
-            //object[] x2 = new object[4];
-            //Parallel.For(4, i =>
-            //{
-            //    //jj[0] = (object)1; int[] and System.Int32[] are the same --- array of value type.
-
-            //    //var t = typeof(int);
-            //    int j = i;
-            //    xx[j] = j;
-            //    x2[j] = j;
-            //});
-            Parallel.For(10, i =>
+            int[] xx = new int[4];
+            Parallel.For(4, i =>
             {
-                System.Console.WriteLine("hello world");
+                xx[i] = c.Yo();
             });
         }
     }

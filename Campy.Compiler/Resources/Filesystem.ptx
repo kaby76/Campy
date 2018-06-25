@@ -2463,7 +2463,7 @@ BB24_2:
 
 	.file	1 "C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Filesystem.c", 1528288015, 5826
 	.file	2 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\_BCL_.h", 1527543991, 1811
-	.file	3 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\JIT.h", 1528761008, 4213
+	.file	3 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\JIT.h", 1529422184, 4273
 	.file	4 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\MetaDataTables.h", 1529179351, 21039
 	.file	5 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\Thread.h", 1528761008, 4358
 	.file	6 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v9.1\\include\\cuda_device_runtime_api.h", 1509767884, 14836
@@ -3760,7 +3760,7 @@ BB24_2:
  .b8 0
  .b32 0
  .b32 3
- .b32 101
+ .b32 105
  .b8 3
 
  .b32 1562

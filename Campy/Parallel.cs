@@ -95,7 +95,9 @@ namespace Campy
                     Campy.Utils.TimePhase.Time("compile     ", () =>
                     {
                         IntPtr image = Singleton._converter.Compile(method_reference, simpleKernel.Target);
-                        ptr_to_kernel = Singleton._converter.GetCudaFunction(method_reference, image);
+                        CUmodule module = Singleton._converter.SetModule(method_reference, image);
+                        Singleton._converter.StoreJits(module);
+                        ptr_to_kernel = Singleton._converter.GetCudaFunction(method_reference, module);
                     });
 
                     RUNTIME.CheckHeap();
@@ -206,6 +208,11 @@ namespace Campy
         public static void Options(UInt64 options)
         {
             JITER.Options(options);
+        }
+
+        public static void Compile(Type type)
+        {
+            Singleton._converter.Add(type);
         }
     }
 }

@@ -88,27 +88,27 @@ function_space_specifier void CommonInitTheBcl(void * g, size_t size, size_t fir
 	bcl->numCollections = 0;
 
 	// JIT_Execute
-	bcl->jitCodeInfo = (struct tJITCodeInfo_ *) malloc(JIT_OPCODE_MAXNUM * sizeof(struct tJITCodeInfo_));
+	bcl->jitCodeInfo = (struct tJITCodeInfo_ *) Gmalloc(JIT_OPCODE_MAXNUM * sizeof(struct tJITCodeInfo_));
 	memset(bcl->jitCodeInfo, 0, JIT_OPCODE_MAXNUM * sizeof(struct tJITCodeInfo_));
-	bcl->jitCodeGoNext = (struct tJITCodeInfo_ *) malloc(1 * sizeof(struct tJITCodeInfo_));
+	bcl->jitCodeGoNext = (struct tJITCodeInfo_ *) Gmalloc(1 * sizeof(struct tJITCodeInfo_));
 	memset(bcl->jitCodeGoNext, 0, 1 * sizeof(struct tJITCodeInfo_));
 
 	// MetaData
-	bcl->tableRowSize = (unsigned int *)malloc(MAX_TABLES * sizeof(unsigned int));
+	bcl->tableRowSize = (unsigned int *)Gmalloc(MAX_TABLES * sizeof(unsigned int));
 
 	// Pinvoke
 	bcl->pLoadedLibs = NULL;
 
 	// Sys
 	bcl->logLevel = 0;
-	bcl->methodName = (char *)malloc(2048 * sizeof(char));
+	bcl->methodName = (char *)Gmalloc(2048 * sizeof(char));
 	bcl->mallocForeverSize = 0;
 
 	// Type
 	bcl->pArrays = NULL;
 	bcl->genericArrayMethodsInited = 0;
 	struct tMD_MethodDef_ ** ppGenericArrayMethods;
-	bcl->ppGenericArrayMethods = (struct tMD_MethodDef_ **)malloc(GENERICARRAYMETHODS_NUM * sizeof(struct tMD_MethodDef_ *));
+	bcl->ppGenericArrayMethods = (struct tMD_MethodDef_ **)Gmalloc(GENERICARRAYMETHODS_NUM * sizeof(struct tMD_MethodDef_ *));
 	bcl->types = NULL;
 	bcl->numInitTypes = 0;
 

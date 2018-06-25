@@ -3652,7 +3652,7 @@ BB28_2:
 
 	.file	1 "C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/basics.c", 1529179351, 18505
 	.file	2 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\_BCL_.h", 1527543991, 1811
-	.file	3 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\JIT.h", 1528761008, 4213
+	.file	3 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\JIT.h", 1529422184, 4273
 	.file	4 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\MetaDataTables.h", 1529179351, 21039
 	.file	5 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\Thread.h", 1528761008, 4358
 	.file	6 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v9.1\\include\\cuda_device_runtime_api.h", 1509767884, 14836
@@ -4945,7 +4945,7 @@ BB28_2:
  .b8 0
  .b32 24
  .b32 3
- .b32 101
+ .b32 105
  .b8 5
 
  .b8 112
@@ -4958,7 +4958,7 @@ BB28_2:
  .b8 0
  .b32 1320
  .b32 3
- .b32 103
+ .b32 107
  .b8 0
 
  .b8 1
@@ -4972,7 +4972,7 @@ BB28_2:
  .b8 0
  .b32 1320
  .b32 3
- .b32 104
+ .b32 108
  .b8 8
 
  .b8 1
@@ -4991,7 +4991,7 @@ BB28_2:
  .b8 0
  .b32 1535
  .b32 3
- .b32 105
+ .b32 109
  .b8 16
 
  .b8 1

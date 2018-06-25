@@ -987,9 +987,9 @@ func_end12:
 
 	.file	1 "C:/Users/kenne/Documents/Campy2/Campy.Runtime/Native/Sys.c", 1528311204, 4493
 	.file	2 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\_BCL_.h", 1527543991, 1811
-	.file	3 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\JIT.h", 1528761008, 4213
+	.file	3 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\JIT.h", 1529422184, 4273
 	.file	4 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\MetaDataTables.h", 1529179351, 21039
-	.file	5 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\MetaData.h", 1528805462, 10426
+	.file	5 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\MetaData.h", 1529494318, 10619
 	.file	6 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\Generics.h", 1528761008, 2858
 	.file	7 "c:\\users\\kenne\\documents\\campy2\\campy.runtime\\native\\Thread.h", 1528761008, 4358
 	.file	8 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v9.1\\include\\cuda_device_runtime_api.h", 1509767884, 14836
@@ -2279,7 +2279,7 @@ func_end12:
  .b8 0
  .b32 0
  .b32 3
- .b32 101
+ .b32 105
  .b8 3
 
  .b32 1555
