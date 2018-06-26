@@ -1544,6 +1544,7 @@
                 // Reference type.
                 // Look up type in BCL of object pointer.
                 var bcl_type = RUNTIME.BclHeapGetType(obj);
+                if (bcl_type == IntPtr.Zero) return sb.ToString();
                 if (expected_bcl_type.IsArray)
                 {
                     var et = expected_bcl_type.GetElementType();

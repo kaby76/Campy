@@ -1028,6 +1028,8 @@ namespace Campy.Compiler
             _importer.Add(type);
         }
 
+        static bool done_stack = false;
+
         public IntPtr Compile(MethodReference kernel_method, object kernel_target)
         {
             if (method_to_image.TryGetValue(kernel_method.Resolve(), out IntPtr value))
@@ -1071,7 +1073,7 @@ namespace Campy.Compiler
                     "Change set for compilation empty, which means we compiled this before. But, it wasn't recorded.");
 
             IntPtr image = IntPtr.Zero;
-
+            
             Campy.Utils.TimePhase.Time("linker        ", () =>
             {
                 var current_directory = Directory.GetCurrentDirectory();
@@ -1081,11 +1083,14 @@ namespace Campy.Compiler
                 CudaHelpers.CheckCudaError(Cuda.cuMemGetInfo_v2(out ulong free_memory, out ulong total_memory));
                 if (Campy.Utils.Options.IsOn("jit_trace"))
                     System.Console.WriteLine("total memory " + total_memory + " free memory " + free_memory);
-                CudaHelpers.CheckCudaError(Cuda.cuCtxGetLimit(out ulong pvalue, CUlimit.CU_LIMIT_STACK_SIZE));
-                CudaHelpers.CheckCudaError(Cuda.cuCtxSetLimit(CUlimit.CU_LIMIT_STACK_SIZE, (uint)pvalue * 4));
-                if (Campy.Utils.Options.IsOn("jit_trace"))
-                    System.Console.WriteLine("Stack size " + pvalue);
-
+                if (!done_stack)
+                {
+                    CudaHelpers.CheckCudaError(Cuda.cuCtxGetLimit(out ulong pvalue, CUlimit.CU_LIMIT_STACK_SIZE));
+                    CudaHelpers.CheckCudaError(Cuda.cuCtxSetLimit(CUlimit.CU_LIMIT_STACK_SIZE, (uint)pvalue * 4));
+                    if (Campy.Utils.Options.IsOn("jit_trace"))
+                        System.Console.WriteLine("Stack size " + pvalue);
+                    done_stack = true;
+                }
                 // Add in all of the GPU BCL runtime required.
                 uint num_ops_link = 5;
                 var op_link = new CUjit_option[num_ops_link];
