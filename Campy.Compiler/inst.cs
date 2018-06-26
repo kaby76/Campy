@@ -3854,7 +3854,7 @@
                 // JIT. So, generate code to get pointer to method, then call it.
 
                 var declaring_type = mr.DeclaringType;
-                bool has_return = mr.ReturnType.Name != "System.Void";
+                bool has_return = mr.ReturnType.FullName != "System.Void";
                 var name = JITER.MethodName(mr);
                 BuilderRef bu = this.Builder;
 
