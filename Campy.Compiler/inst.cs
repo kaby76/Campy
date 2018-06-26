@@ -3918,7 +3918,7 @@
                 TypeRef return_type;
                 if (has_return)
                 {
-                    return_type = mr.ReturnType.ToTypeRef();
+                    return_type = mr.ReturnType.InstantiateGeneric(mr).ToTypeRef();
                 }
                 else
                 {

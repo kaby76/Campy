@@ -1206,7 +1206,8 @@ namespace Campy.Compiler
             {
                 var normalized_method_name = Campy.Utils.JIT_HELPER.RenameToLegalLLVMName(JITER.MethodName(v._original_method_reference));
                 var res = Cuda.cuModuleGetFunction(out CUfunction helloWorld, module, normalized_method_name);
-                Utils.CudaHelpers.CheckCudaError(res);
+                // Not every entry is going to be in module, so this isn't a problem if not found.
+                if (res != CUresult.CUDA_SUCCESS) continue;
                 res = Cuda.cuModuleGetGlobal_v2(out IntPtr hw, out ulong z, module, "p_" + normalized_method_name);
                 var bcl_type = RUNTIME.GetBclType(v._original_method_reference.DeclaringType);
                 RUNTIME.BclMetaDataSetMethodJit(hw,
