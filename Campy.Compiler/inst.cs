@@ -3863,11 +3863,12 @@
                 // Set up args, type casting if required, and set up declaration of method.
                 TypeRef[] lparams = new TypeRef[xargs];
                 ValueRef[] args = new ValueRef[xargs];
-                var pars = mr.Resolve().Parameters;
+                var pars = mr.Parameters;
                 for (int k = mr.Parameters.Count - 1; k >= 0; --k)
                 {
                     VALUE v = state._stack.Pop();
-                    TypeRef par = pars[k].ParameterType.ToTypeRef();
+                    var par_type = pars[k].ParameterType.InstantiateGeneric(mr);
+                    TypeRef par = par_type.ToTypeRef();
                     ValueRef value = v.V;
                     if (LLVM.TypeOf(value) != par)
                     {

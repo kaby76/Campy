@@ -733,6 +733,11 @@
 
                 if (t_type.FullName.Equals("System.Object"))
                 {
+                    if (from_gpu == IntPtr.Zero)
+                    {
+                        to_cpu = null;
+                        return;
+                    }
                     // I need to know what type I'm copying from to allocate a managed
                     // object on CPU side.
                     var bcl_type_of_object = RUNTIME.BclHeapGetType(from_gpu);

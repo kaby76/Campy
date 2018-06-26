@@ -5,32 +5,21 @@ using Campy;
 
 namespace ConsoleApp4
 {
-    class A
+    public class IntListSet
     {
-        public int X { get; set; }
-
-        public int Score(A b)
+        public static void IntListSetT()
         {
-            return X + b.X;
-        }
-    }
-
-    public class UnitTest1
-    {
-        public static void Test1()
-        {
-            A[] array = new A[10];
-            for (int i = 0; i < 10; ++i) array[i] = new A();
-
-            Campy.Parallel.For(10, i =>
-            {
-                array[i].X = i;
-            });
-
-            for (int i = 0; i < 10; i++)
-            {
-                if (array[i].X != i) throw new Exception();
-            }
+            // List of ints.
+            List<int> x = new List<int>();
+            int n = 4;
+            for (int i = 0; i < n; ++i) x.Add(0);
+            Campy.Parallel.For(n,
+                i =>
+                {
+                    x[i] = i;
+                });
+            for (int i = 0; i < n; ++i) if (x[i] != i)
+                    throw new Exception();
         }
     }
 
@@ -55,7 +44,7 @@ namespace ConsoleApp4
         static void Main(string[] args)
         {
             StartDebugging();
-            UnitTest1.Test1();
+            IntListSet.IntListSetT();
         }
     }
 }

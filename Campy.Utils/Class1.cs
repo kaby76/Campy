@@ -278,7 +278,7 @@ namespace Campy.Utils
         public static MethodReference MakeMethodReference(this MethodReference method, TypeReference declaringType)
         {
             var reference = new MethodReference(method.Name, method.ReturnType, declaringType);
-
+            reference.MetadataToken = method.MetadataToken;
             foreach (ParameterDefinition parameter in method.Parameters)
                 reference.Parameters.Add(new ParameterDefinition(parameter.ParameterType));
             return reference;
