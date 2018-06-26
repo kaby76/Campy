@@ -5,19 +5,32 @@ using Campy;
 
 namespace ConsoleApp4
 {
-    class B
+    class A
     {
-        public virtual int Yo()
+        public int X { get; set; }
+
+        public int Score(A b)
         {
-            return 1;
+            return X + b.X;
         }
     }
 
-    class A : B
+    public class UnitTest1
     {
-        public override int Yo()
+        public static void Test1()
         {
-            return 2;
+            A[] array = new A[10];
+            for (int i = 0; i < 10; ++i) array[i] = new A();
+
+            Campy.Parallel.For(10, i =>
+            {
+                array[i].X = i;
+            });
+
+            for (int i = 0; i < 10; i++)
+            {
+                if (array[i].X != i) throw new Exception();
+            }
         }
     }
 
@@ -41,18 +54,8 @@ namespace ConsoleApp4
 
         static void Main(string[] args)
         {
-            var a = new A();
-            var b = new B();
-            Campy.Parallel.Compile(typeof(A));
-            Campy.Parallel.Compile(typeof(B));
-            B c = a;
-            System.Console.WriteLine(c.Yo());
             StartDebugging();
-            int[] xx = new int[4];
-            Parallel.For(4, i =>
-            {
-                xx[i] = c.Yo();
-            });
+            UnitTest1.Test1();
         }
     }
 }

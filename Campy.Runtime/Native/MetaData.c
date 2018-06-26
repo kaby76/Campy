@@ -2152,19 +2152,31 @@ function_space_specifier void * MetaData_GetMethodJit(void * object_ptr, int tab
 	}
 
 	int vtable_offset = pCallMethod->vTableOfs;
-	if (vtable_offset < 0) return NULL;
-	tMD_MethodDef * vtable_entry = type->pVTable[vtable_offset];
-	tJITted * ptJITted = vtable_entry->pJITted;
-
-	if (ptJITted == NULL)
+	if (vtable_offset >= 0)
 	{
-		Gprintf("Warning--method %s JIT compiled object missing.\n", pCallMethod->name);
-		return NULL;
+		tMD_MethodDef * vtable_entry = type->pVTable[vtable_offset];
+		tJITted * ptJITted = vtable_entry->pJITted;
+		if (ptJITted == NULL)
+		{
+			Gprintf("Warning--method %s JIT compiled object missing.\n", pCallMethod->name);
+			return NULL;
+		}
+		void * call = (void *)ptJITted->code;
+		call = (void*)(*(U64*)call);
+		return call;
 	}
-
-	void * call = (void *)ptJITted->code;
-	call = (void*) (*(U64*)call);
-	return call;
+	else
+	{
+		tJITted * ptJITted = pCallMethod->pJITted;
+		if (ptJITted == NULL)
+		{
+			Gprintf("Warning--method %s JIT compiled object missing.\n", pCallMethod->name);
+			return NULL;
+		}
+		void * call = (void *)ptJITted->code;
+		call = (void*)(*(U64*)call);
+		return call;
+	}
 }
 
 function_space_specifier void MetaData_SetMethodJit(void * method_ptr, void * bcl_type, int token)
@@ -2185,14 +2197,27 @@ function_space_specifier void MetaData_SetMethodJit(void * method_ptr, void * bc
 	}
 
 	int vtable_offset = pCallMethod->vTableOfs;
-	if (vtable_offset < 0) return;
-	tMD_MethodDef * vtable_entry = type->pVTable[vtable_offset];
-	tJITted * ptJITted = vtable_entry->pJITted;
-	if (ptJITted == NULL)
+	if (vtable_offset >= 0)
 	{
-		vtable_entry->pJITted = (tJITted*)Gmalloc(sizeof(tJITted));
+		tMD_MethodDef * vtable_entry = type->pVTable[vtable_offset];
+		tJITted * ptJITted = vtable_entry->pJITted;
+		if (ptJITted == NULL)
+		{
+			vtable_entry->pJITted = (tJITted*)Gmalloc(sizeof(tJITted));
+			ptJITted = vtable_entry->pJITted;
+		}
+		ptJITted->code = method_ptr;
 	}
-	vtable_entry->pJITted->code = method_ptr;
+	else
+	{
+		tJITted * ptJITted = pCallMethod->pJITted;
+		if (ptJITted == NULL)
+		{
+			pCallMethod->pJITted = (tJITted*)Gmalloc(sizeof(tJITted));
+			ptJITted = pCallMethod->pJITted;
+		}
+		ptJITted->code = method_ptr;
+	}
 }
 
 

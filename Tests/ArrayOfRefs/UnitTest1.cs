@@ -18,25 +18,9 @@ namespace ArrayOfRefs
 
     public class UnitTest1
     {
-        static void StartDebugging()
-        {
-            Campy.Utils.Options.Set("graph_trace");
-            Campy.Utils.Options.Set("module_trace");
-            Campy.Utils.Options.Set("name_trace");
-            Campy.Utils.Options.Set("cfg_construction_trace");
-            Campy.Utils.Options.Set("dot_graph");
-            Campy.Utils.Options.Set("jit_trace");
-            Campy.Utils.Options.Set("memory_trace");
-            Campy.Utils.Options.Set("ptx_trace");
-            Campy.Utils.Options.Set("state_computation_trace");
-            Campy.Utils.Options.Set("continue_with_no_resolve");
-            Campy.Utils.Options.Set("copy_trace");
-            Campy.Utils.Options.Set("runtime_trace");
-        }
         [Fact]
         public void Test1()
         {
-            StartDebugging();
             A[] array = new A[10];
             for (int i = 0; i < 10; ++i) array[i] = new A();
 
