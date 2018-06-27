@@ -12,6 +12,7 @@ namespace Campy.Compiler
     using System.Reflection;
     using System;
     using Utils;
+    using Campy.Meta;
 
     internal class IMPORTER
     {

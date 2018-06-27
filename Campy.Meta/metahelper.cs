@@ -1,38 +1,405 @@
-﻿
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Mono.Cecil;
+using Mono.Cecil.Cil;
+using Mono.Cecil.Rocks;
+using Mono.Collections.Generic;
+using System.IO;
+using System.Reflection;
+using TypeAttributes = Mono.Cecil.TypeAttributes;
 using System.IO;
 using Mono.Cecil.Rocks;
 using Mono.Cecil.Cil;
 using System.Collections;
 using System.Collections.Generic;
+using Mono.Cecil;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using Swigged.LLVM;
 
-namespace Campy.Utils
+
+namespace Campy.Meta
 {
-    using Mono.Cecil;
-    using System;
-    using System.Collections.Generic;
-    using System.Diagnostics;
-    using System.Linq;
-    using Swigged.LLVM;
-
-    public static class TypeDefinitionEnumerator
+    public static class METAHELPER
     {
-        public static IEnumerable<TypeDefinition> GetBoxes(this TypeDefinition t)
+        // Create a type definition corresponding to a generic instance type. The generic instance type is
+        // first created using the generic type and generic arguments. Everything about the original type
+        // must be added to the new type definition.
+        public static TypeReference ConvertGenericInstanceTypeToNonGenericInstanceType(this TypeReference type)
         {
-            yield return t;
+            // Verify that type is generic instance.
+            if (type as GenericInstanceType == null)
+                return type;
 
-            if (t.HasNestedTypes)
+            // Get generic arguments and pass to method that does construction.
+            var args = (type as GenericInstanceType).GenericArguments.ToArray();
+
+            var uninstance = type.Resolve();
+
+            // Find if type has been created before.
+            var f = uninstance.Module.GetType(type.FullName);
+            if (f != null)
+                return f;
+            var any = _cache.Find(i => i.FullName == type.FullName);
+            if (any != null)
+                return any;
+
+            var m = MakeGenericInstanceTypeDefintionAux(uninstance, args);
+
+            var bb = type.Module.ImportReference(m);
+
+            return m;
+        }
+
+        private static List<TypeDefinition> _cache = new List<TypeDefinition>();
+
+        public static TypeReference ConvertGenericParameterToTypeReference(TypeReference type,
+            Collection<TypeReference> generic_arguments)
+        {
+            if (type as GenericParameter != null)
             {
-                foreach (TypeDefinition nested in t.NestedTypes)
+                var gp = type as GenericParameter;
+                var num = gp.Position;
+                var yo = generic_arguments.ToArray()[num];
+                type = yo;
+            }
+            if (type.IsArray)
+            {
+                var array_type = type as Mono.Cecil.ArrayType;
+                var element_type = array_type.ElementType;
+                var new_element_type = ConvertGenericParameterToTypeReference(element_type, generic_arguments);
+                if (element_type != new_element_type)
                 {
-                    foreach (TypeDefinition x in nested.GetBoxes())
-                        yield return x;
+                    var new_array_type = new ArrayType(new_element_type,
+                        array_type.Rank);
+                    type = new_array_type;
                 }
             }
-        }
-    }
 
-    public static class MonoInterop
-    {
+            if (type as GenericInstanceType != null)
+            {
+                // For generic instance types, it could contain a generic parameter.
+                // Substitute parameter if needed.
+                var git = type as GenericInstanceType;
+                var args = git.GenericArguments;
+                var new_args = git.GenericArguments.ToArray();
+                for (int i = 0; i < new_args.Length; ++i)
+                {
+                    var arg = args[i];
+                    var new_arg = ConvertGenericParameterToTypeReference(arg, generic_arguments);
+                    git.GenericArguments[i] = new_arg;
+                }
+            }
+            return type;
+        }
+
+        public static TypeReference ConvertGenericParameterToTypeReference(TypeReference type,
+            params TypeReference[] generic_arguments)
+        {
+            if (type as GenericParameter != null)
+            {
+                var gp = type as GenericParameter;
+                var num = gp.Position;
+                var yo = generic_arguments.ToArray()[num];
+                type = yo;
+            }
+            if (type.IsArray)
+            {
+                var array_type = type as Mono.Cecil.ArrayType;
+                var element_type = array_type.ElementType;
+                var new_element_type = ConvertGenericParameterToTypeReference(element_type, generic_arguments);
+                if (element_type != new_element_type)
+                {
+                    var new_array_type = new ArrayType(new_element_type,
+                        array_type.Rank);
+                    type = new_array_type;
+                }
+            }
+
+            if (type as GenericInstanceType != null)
+            {
+                // For generic instance types, it could contain a generic parameter.
+                // Substitute parameter if needed.
+                var git = type as GenericInstanceType;
+                var args = git.GenericArguments;
+                var new_args = git.GenericArguments.ToArray();
+                for (int i = 0; i < new_args.Length; ++i)
+                {
+                    var arg = args[i];
+                    var new_arg = ConvertGenericParameterToTypeReference(arg, generic_arguments);
+                    git.GenericArguments[i] = new_arg;
+                }
+            }
+            return type;
+        }
+
+        public static TypeDefinition MakeGenericInstanceTypeDefintionAux(TypeReference type, params TypeReference[] generic_arguments)
+        {
+            if (type.GenericParameters.Count != generic_arguments.Length)
+                throw new ArgumentException();
+
+            var instance = new GenericInstanceType(type);
+            foreach (var argument in generic_arguments)
+                instance.GenericArguments.Add(argument);
+
+            string name = instance.FullName.Substring(instance.Namespace.Length + 1);
+            TypeAttributes ta = type.Resolve().Attributes;
+
+            // First create the type definition.
+            TypeDefinition new_definition = new TypeDefinition(
+                instance.Namespace,
+                name,
+                ta, type.DeclaringType);
+
+            // Cache for uses that may pop up.
+            _cache.Add(new_definition);
+
+            // Add in all fields.
+            var fields = type.Resolve().Fields;
+            for (int i = 0; i < fields.Count; ++i)
+            {
+                var field = fields[i];
+                var field_definition = field as FieldDefinition;
+                var field_type = field_definition.FieldType;
+                var new_field_type = ConvertGenericParameterToTypeReference(field_type, generic_arguments);
+                var new_field_definition = new FieldDefinition(field_definition.Name,
+                        field_definition.Attributes,
+                        new_field_type);
+                new_field_definition.DeclaringType = new_definition;
+                new_definition.Fields.Insert(i, new_field_definition);
+            }
+
+            // Add in all properties.
+            var properties = type.Resolve().Properties;
+            for (int i = 0; i < properties.Count; ++i)
+            {
+                var property = properties[i];
+                var property_definition = property as PropertyDefinition;
+                var vv = property_definition.PropertyType as GenericParameter;
+                var new_property_type = property_definition.PropertyType;
+                new_property_type = ConvertGenericParameterToTypeReference(new_property_type, generic_arguments);
+                var new_property_definition = new PropertyDefinition(property_definition.Name,
+                    property_definition.Attributes,
+                    new_property_type);
+                new_property_definition.DeclaringType = new_definition;
+                new_definition.Properties.Insert(i, new_property_definition);
+            }
+
+            // Add in all methods.
+            var methods = type.Resolve().Methods;
+            for (int i = 0; i < methods.Count; ++i)
+            {
+                var method = methods[i];
+                var method_definition = method as MethodDefinition;
+
+                var ret = method_definition.ReturnType as GenericParameter;
+                var new_ret_type = method_definition.ReturnType;
+                new_ret_type = ConvertGenericParameterToTypeReference(new_ret_type, generic_arguments);
+                var new_method_definition = new MethodDefinition(method_definition.Name,
+                    method_definition.Attributes,
+                    new_definition);
+                new_method_definition.ReturnType = new_ret_type;
+                new_method_definition.HasThis = method_definition.HasThis;
+                foreach (var param in method_definition.Parameters)
+                {
+                    var parameter_type = param.ParameterType;
+                    var new_parameter_type = ConvertGenericParameterToTypeReference(parameter_type, generic_arguments);
+                    new_parameter_type = new_parameter_type.ConvertGenericInstanceTypeToNonGenericInstanceType();
+                    var new_param = new ParameterDefinition(
+                        param.Name,
+                        param.Attributes,
+                        new_parameter_type);
+                    new_method_definition.Parameters.Add(new_param);
+                }
+
+                new_definition.Methods.Insert(i, new_method_definition);
+                var new_body = new_method_definition.Body;
+                var body = method_definition.Body;
+                if (method_definition.Body != null)
+                {
+                    var worker = new_body.GetILProcessor();
+                    for (int j = 0; j < body.Instructions.Count; ++j)
+                    {
+                        Instruction n = body.Instructions[j];
+                        object operand = n.Operand;
+                        Instruction new_inst = n;
+
+                        var operand_type_reference = operand as TypeReference;
+                        if (operand_type_reference != null)
+                        {
+                            var tr = operand as TypeReference;
+                            var new_tr = ConvertGenericParameterToTypeReference(tr, generic_arguments);
+                            new_tr = new_tr.ConvertGenericInstanceTypeToNonGenericInstanceType();
+                            // fix instruction.
+                            new_inst.Operand = new_tr;
+                        }
+
+                        if (operand as FieldReference != null)
+                        {
+                            var c1 = operand as FieldReference;
+                            var c2 = c1.FieldType;
+                            if (c2 != null)
+                            {
+                                var new_c1_declaring_type = ConvertGenericParameterToTypeReference(c1.DeclaringType, generic_arguments);
+                                var new_c2 = ConvertGenericParameterToTypeReference(c2, generic_arguments);
+                                new_c2 = new_c2.ConvertGenericInstanceTypeToNonGenericInstanceType();
+
+                                var yofields = method_definition.DeclaringType.Fields;
+                                c1 = new FieldReference(c1.Name, new_c2);
+                                c1.DeclaringType = new_c1_declaring_type;
+                                new_inst = worker.Create(n.OpCode, c1);
+                                new_inst.Offset = n.Offset;
+                            }
+                        }
+
+                        new_method_definition.Body.Instructions.Insert(j, new_inst);
+                    }
+                }
+            }
+
+            type.Module.Types.Add(new_definition);
+            return new_definition;
+        }
+
+        public static TypeReference InstantiateGenericTypeReference(TypeReference type)
+        {
+            TypeReference result = type;
+
+            if (type.IsGenericInstance)
+            {
+                // Create non-generic type out of a generic type instance.
+                var git = type as GenericInstanceType;
+                result = git.ConvertGenericInstanceTypeToNonGenericInstanceType();
+            }
+
+            return result;
+        }
+
+        public static MethodReference MakeMethodReference(this MethodDefinition method)
+        {
+            var reference = new MethodReference(method.Name, method.ReturnType, method.DeclaringType);
+
+            foreach (ParameterDefinition parameter in method.Parameters)
+                reference.Parameters.Add(new ParameterDefinition(parameter.ParameterType));
+            return reference;
+        }
+
+        public static MethodReference MakeMethodReference(this MethodReference method, TypeReference declaringType)
+        {
+            var reference = new MethodReference(method.Name, method.ReturnType, declaringType);
+            reference.MetadataToken = method.MetadataToken;
+            foreach (ParameterDefinition parameter in method.Parameters)
+                reference.Parameters.Add(new ParameterDefinition(parameter.ParameterType));
+            return reference;
+        }
+
+        public static TypeReference MakeGenericType(TypeReference type, params
+            TypeReference[] arguments)
+        {
+            if (type.GenericParameters.Count != arguments.Length)
+                throw new ArgumentException();
+
+            var instance = new GenericInstanceType(type);
+            foreach (var argument in arguments)
+                instance.GenericArguments.Add(argument);
+
+            return instance;
+        }
+
+        public static MethodReference MakeHostInstanceGeneric(
+            MethodReference self,
+            params TypeReference[] args)
+        {
+            var reference = new MethodReference(
+                self.Name,
+                self.ReturnType,
+                self.DeclaringType.MakeGenericInstanceType(args))
+            {
+                HasThis = self.HasThis,
+                ExplicitThis = self.ExplicitThis,
+                CallingConvention = self.CallingConvention
+            };
+
+            foreach (var parameter in self.Parameters)
+                reference.Parameters.Add(new ParameterDefinition(parameter.ParameterType));
+
+            foreach (var genericParam in self.GenericParameters)
+                reference.GenericParameters.Add(new GenericParameter(genericParam.Name, reference));
+
+            return reference;
+        }
+
+
+        ///////////////////////////////////////////////////////////////////////////////////////////
+        // General routines associated with TypeReference accessors.
+        ///////////////////////////////////////////////////////////////////////////////////////////
+        // Resolving, correcting access functions
+
+        public static TypeReference ResolveDeclaringType(this TypeReference tr)
+        {
+            var dt = tr.DeclaringType;
+            return dt;
+        }
+
+        public static TypeReference ResolveGetElementType(this TypeReference tr)
+        {
+            var et = tr.GetElementType();
+            if (tr.IsGenericInstance)
+            {
+                var gtr = tr as GenericInstanceType;
+                var generic_arguments = gtr.GenericArguments;
+                var new_et = ConvertGenericParameterToTypeReference(et, generic_arguments);
+                et = new_et;
+            }
+            if (tr.IsArray)
+            {
+                var atr = tr as ArrayType;
+                et = atr.ElementType;
+            }
+            return et;
+        }
+
+        public static Collection<FieldReference> ResolveFields(this TypeReference tr)
+        {
+            // Resolve throws away type information of fields, attributes, properties, methods.
+            // This function performs a "resolve()" while retaining type information of generics.
+            TypeDefinition resolved = tr.Resolve();
+            Collection<FieldDefinition> resolved_fields = resolved.Fields;
+            Collection<FieldReference> result = new Collection<FieldReference>();
+            ModuleDefinition module = tr.Module;
+
+            // Turn FieldDefinition back into FieldReference.
+            if (tr.IsGenericInstance)
+            {
+                var gtr = tr as GenericInstanceType;
+                var generic_arguments = gtr.GenericArguments;
+                // For generics, convert any field defitions that use generic parameters into generic arguments.
+                foreach (FieldDefinition field in resolved_fields)
+                {
+                    // Add in all fields.
+                    var field_type = field.FieldType;
+                    var new_field_type = ConvertGenericParameterToTypeReference(field_type, generic_arguments);
+                    var new_field_reference = new FieldReference(field.Name,
+                        new_field_type,
+                        tr);
+                    result.Add(new_field_reference);
+                }
+            }
+            else
+            {
+                // For non-generics, just use the field definition--no need to create field reference from scratch.
+                foreach (FieldDefinition f in resolved_fields)
+                {
+                    FieldReference fr = f;
+                    result.Add(fr);
+                }
+            }
+            return result;
+        }
+
 
         public static Mono.Cecil.TypeReference ToMonoTypeReference(this System.Type type)
         {
@@ -115,7 +482,7 @@ namespace Campy.Utils
 
         public static bool IsReferenceType(this Mono.Cecil.TypeReference t)
         {
-            return ! t.IsValueType;
+            return !t.IsValueType;
         }
 
         public static TypeReference FromGenericParameterToTypeReference(TypeReference type_reference_of_parameter, GenericInstanceType git)
@@ -151,11 +518,10 @@ namespace Campy.Utils
             return type_reference_of_parameter;
         }
 
-
         public static TypeRef ToLlvmTypeRef(this Mono.Cecil.ParameterReference p, MethodReference method)
         {
             TypeReference type_reference_of_parameter = p.ParameterType;
-            
+
             if (method.DeclaringType.IsGenericInstance && method.ContainsGenericParameter)
             {
                 var git = method.DeclaringType as GenericInstanceType;
@@ -171,7 +537,7 @@ namespace Campy.Utils
             return _intermediate_type_ref;
         }
 
-        private static Mono.Cecil.TypeReference InitVerificationType(Mono.Cecil.TypeReference _cil_type)
+        public static Mono.Cecil.TypeReference InitVerificationType(Mono.Cecil.TypeReference _cil_type)
         {
             // Roughly encoding table on page 311.
             if (_cil_type.FullName == typeof(sbyte).ToMonoTypeReference().FullName)
@@ -208,7 +574,7 @@ namespace Campy.Utils
                 return _cil_type;
         }
 
-        private static Mono.Cecil.TypeReference InitStackVerificationType(Mono.Cecil.TypeReference _verification_type, Mono.Cecil.TypeReference _cil_type)
+        public static Mono.Cecil.TypeReference InitStackVerificationType(Mono.Cecil.TypeReference _verification_type, Mono.Cecil.TypeReference _cil_type)
         {
             if (_verification_type.FullName == typeof(sbyte).ToMonoTypeReference().FullName)
                 return typeof(int).ToMonoTypeReference();
@@ -227,20 +593,15 @@ namespace Campy.Utils
             else
                 return _cil_type;
         }
-    }
 
-    public static class JIT_HELPER
-    {
         internal static Dictionary<TypeReference, TypeRef> previous_llvm_types_created_global = new Dictionary<TypeReference, TypeRef>();
         public static Dictionary<string, string> _rename_to_legal_llvm_name_cache = new Dictionary<string, string>();
         internal static Dictionary<TypeReference, TypeRef> basic_llvm_types_created = new Dictionary<TypeReference, TypeRef>();
         private static int _nn_id = 0;
         private static bool init = false;
-  
+
         public static TypeRef ToTypeRef(
-            this TypeReference tr,
-            Dictionary<Tuple<TypeReference, GenericParameter>, System.Type> generic_type_rewrite_rules = null,
-            int level = 0)
+            this TypeReference tr)
         {
             if (!init)
             {
@@ -303,8 +664,6 @@ namespace Campy.Utils
                 init = true;
             }
 
-            if (generic_type_rewrite_rules == null) generic_type_rewrite_rules = new Dictionary<Tuple<TypeReference, GenericParameter>, System.Type>();
-
             // Search for type if already converted. Note, there are several caches to search, each
             // containing types with different properties.
             // Also, NB: we use full name for the conversion, as types can be similarly named but within
@@ -327,7 +686,7 @@ namespace Campy.Utils
                     return kv.Value;
             }
 
-            //tr = RUNTIME.RewriteType(tr);
+            tr = RUNTIME.RewriteType(tr);
 
             try
             {
@@ -348,18 +707,17 @@ namespace Campy.Utils
                 var is_reference = tr.IsByReference;
                 var is_array = tr.IsArray;
                 var is_value_type = tr.IsValueType;
+                GenericInstanceType git = tr as GenericInstanceType;
+                TypeDefinition gtd = tr as TypeDefinition;
 
                 if (is_reference)
                 {
                     // Convert the base type first.
-                    var base_type = ToTypeRef(td, generic_type_rewrite_rules, level + 1);
+                    var base_type = ToTypeRef(td);
                     // Add in pointer to type.
                     TypeRef p = LLVM.PointerType(base_type, 0);
                     return p;
                 }
-
-                GenericInstanceType git = tr as GenericInstanceType;
-                TypeDefinition gtd = tr as TypeDefinition;
 
                 // System.Array is not considered an "array", rather a "class". So, we need to handle
                 // this type.
@@ -369,7 +727,7 @@ namespace Campy.Utils
                     var original_tr = tr;
 
                     tr = typeof(int[]).ToMonoTypeReference();
-                    var p = tr.ToTypeRef(generic_type_rewrite_rules, level + 1);
+                    var p = tr.ToTypeRef();
                     previous_llvm_types_created_global.Add(original_tr, p);
                     return p;
                 }
@@ -385,7 +743,7 @@ namespace Campy.Utils
                     TypeRef s = LLVM.StructCreateNamed(c, type_name);
                     TypeRef p = LLVM.PointerType(s, 0);
                     previous_llvm_types_created_global.Add(tr, p);
-                    var e = ToTypeRef(element_type, generic_type_rewrite_rules, level + 1);
+                    var e = ToTypeRef(element_type);
                     LLVM.StructSetBody(s, new TypeRef[3]
                     {
                         LLVM.PointerType(e, 0)
@@ -396,21 +754,6 @@ namespace Campy.Utils
                 }
                 else if (tr.IsGenericParameter)
                 {
-                    foreach (var kvp in generic_type_rewrite_rules)
-                    {
-                        Tuple<TypeReference, GenericParameter> key = kvp.Key;
-                        var value = kvp.Value;
-                        if (key.Item1.FullName == tr.FullName // NOT COMPLETE!
-                            )
-                        {
-                            // Match, and substitute.
-                            var v = value;
-                            var mv = v.ToMonoTypeReference();
-                            var e = ToTypeRef(mv, generic_type_rewrite_rules, level + 1);
-                            previous_llvm_types_created_global.Add(tr, e);
-                            return e;
-                        }
-                    }
                     throw new Exception("Cannot convert " + tr.Name);
                 }
                 else if (td != null && td.IsEnum)
@@ -430,32 +773,14 @@ namespace Campy.Utils
                     var field_type = field.FieldType;
                     if (field_type == null)
                         throw new Exception("Cannot convert " + tr.Name);
-                    var va = ToTypeRef(field_type, generic_type_rewrite_rules, level + 1);
+                    var va = ToTypeRef(field_type);
                     return va;
                 }
                 else if (td != null && td.IsValueType)
                 {
                     // Struct!!!!!
-                    Dictionary<Tuple<TypeReference, GenericParameter>, System.Type> additional = new Dictionary<Tuple<TypeReference, GenericParameter>, System.Type>();
                     var gp = tr.GenericParameters;
                     Mono.Collections.Generic.Collection<TypeReference> ga = null;
-                    if (git != null)
-                    {
-                        ga = git.GenericArguments;
-                        Mono.Collections.Generic.Collection<GenericParameter> gg = td.GenericParameters;
-                        // Map parameter to instantiated type.
-                        for (int i = 0; i < gg.Count; ++i)
-                        {
-                            GenericParameter pp = gg[i];
-                            TypeReference qq = ga[i];
-                            TypeReference trrr = pp as TypeReference;
-                            var system_type = qq.ToSystemType();
-                            Tuple<TypeReference, GenericParameter> tr_gp = new Tuple<TypeReference, GenericParameter>(tr, pp);
-                            if (system_type == null) throw new Exception("Failed to convert " + qq);
-                            additional[tr_gp] = system_type;
-                        }
-                    }
-
                     // Create a struct type.
                     ContextRef c = LLVM.GetGlobalContext();
                     string llvm_name = RenameToLegalLLVMName(tr.ToString());
@@ -475,11 +800,6 @@ namespace Campy.Utils
                     // into an uninstantiated generic type. E.g., List<int> contains a generic T[] containing the
                     // data. T could be a struct/value type, or T could be a class.
 
-                    var new_list = new Dictionary<Tuple<TypeReference, GenericParameter>, System.Type>(
-                        generic_type_rewrite_rules);
-                    foreach (var a in additional)
-                        new_list.Add(a.Key, a.Value);
-
                     // This code should use this:  BUFFERS.Padding((long)ip, BUFFERS.Alignment(typeof(IntPtr))
 
                     List<TypeRef> list = new List<TypeRef>();
@@ -487,10 +807,9 @@ namespace Campy.Utils
                     var fields = td.Fields;
                     foreach (var field in fields)
                     {
-                        FieldAttributes attr = field.Attributes;
-                        if ((attr & FieldAttributes.Static) != 0)
+                        Mono.Cecil.FieldAttributes attr = field.Attributes;
+                        if ((attr & Mono.Cecil.FieldAttributes.Static) != 0)
                         {
-
                             continue;
                         }
 
@@ -553,7 +872,7 @@ namespace Campy.Utils
                                 for (int j = 0; j < padding; ++j)
                                     list.Add(LLVM.Int8Type());
                             }
-                            var field_converted_type = ToTypeRef(instantiated_field_type, new_list, level + 1);
+                            var field_converted_type = ToTypeRef(instantiated_field_type);
                             list.Add(field_converted_type);
                         }
                         else
@@ -568,7 +887,7 @@ namespace Campy.Utils
                                 for (int j = 0; j < padding; ++j)
                                     list.Add(LLVM.Int8Type());
                             }
-                            var field_converted_type = ToTypeRef(instantiated_field_type, new_list, level + 1);
+                            var field_converted_type = ToTypeRef(instantiated_field_type);
                             list.Add(field_converted_type);
                         }
                     }
@@ -577,7 +896,6 @@ namespace Campy.Utils
                 }
                 else if (td != null && td.IsClass)
                 {
-                    Dictionary<Tuple<TypeReference, GenericParameter>, System.Type> additional = new Dictionary<Tuple<TypeReference, GenericParameter>, System.Type>();
                     var gp = tr.GenericParameters;
                     Mono.Collections.Generic.Collection<TypeReference> ga = null;
                     if (git != null)
@@ -590,11 +908,6 @@ namespace Campy.Utils
                             GenericParameter pp = gg[i]; // This is the parameter name, like "T".
                             TypeReference qq = ga[i]; // This is the generic parameter, like System.Int32.
                             var rewr = ToTypeRef(qq);
-                            TypeReference trrr = pp as TypeReference;
-                            var system_type = qq.ToSystemType();
-                            Tuple<TypeReference, GenericParameter> tr_gp = new Tuple<TypeReference, GenericParameter>(tr, pp);
-                            if (system_type == null) throw new Exception("Failed to convert " + qq);
-                            additional[tr_gp] = system_type;
                         }
                     }
 
@@ -615,18 +928,13 @@ namespace Campy.Utils
                     // into an uninstantiated generic type. E.g., List<int> contains a generic T[] containing the
                     // data. T could be a struct/value type, or T could be a class.
 
-                    var new_list = new Dictionary<Tuple<TypeReference, GenericParameter>, System.Type>(
-                        generic_type_rewrite_rules);
-                    foreach (var a in additional)
-                        new_list.Add(a.Key, a.Value);
-
                     List<TypeRef> list = new List<TypeRef>();
                     int offset = 0;
                     var fields = td.Fields;
                     foreach (var field in fields)
                     {
-                        FieldAttributes attr = field.Attributes;
-                        if ((attr & FieldAttributes.Static) != 0)
+                        Mono.Cecil.FieldAttributes attr = field.Attributes;
+                        if ((attr & Mono.Cecil.FieldAttributes.Static) != 0)
                             continue;
 
                         TypeReference field_type = field.FieldType;
@@ -687,7 +995,7 @@ namespace Campy.Utils
                                 for (int j = 0; j < padding; ++j)
                                     list.Add(LLVM.Int8Type());
                             }
-                            var field_converted_type = ToTypeRef(instantiated_field_type, new_list, level + 1);
+                            var field_converted_type = ToTypeRef(instantiated_field_type);
                             list.Add(field_converted_type);
                         }
                         else
@@ -704,7 +1012,7 @@ namespace Campy.Utils
                                 for (int j = 0; j < padding; ++j)
                                     list.Add(LLVM.Int8Type());
                             }
-                            var field_converted_type = ToTypeRef(instantiated_field_type, new_list, level + 1);
+                            var field_converted_type = ToTypeRef(instantiated_field_type);
                             list.Add(field_converted_type);
                         }
                     }
@@ -720,7 +1028,6 @@ namespace Campy.Utils
             }
             finally
             {
-
             }
         }
 
@@ -734,7 +1041,7 @@ namespace Campy.Utils
                 {
                     var generic_type_of_declaring_type = declaring_type as GenericInstanceType;
                     var generic_arguments = generic_type_of_declaring_type.GenericArguments;
-                    var new_arg = Campy.Utils.Class1.ConvertGenericParameterToTypeReference(type, generic_arguments);
+                    var new_arg = ConvertGenericParameterToTypeReference(type, generic_arguments);
                     return new_arg;
                 }
             }
@@ -752,7 +1059,7 @@ namespace Campy.Utils
                 {
                     var generic_type_of_declaring_type = declaring_type as GenericInstanceType;
                     var generic_arguments = generic_type_of_declaring_type.GenericArguments;
-                    var new_arg = Campy.Utils.Class1.ConvertGenericParameterToTypeReference(type, generic_arguments);
+                    var new_arg = ConvertGenericParameterToTypeReference(type, generic_arguments);
                     var new_var = new VariableDefinition(new_arg);
                     return new_var;
                 }
@@ -771,7 +1078,7 @@ namespace Campy.Utils
                 {
                     var generic_type_of_declaring_type = declaring_type as GenericInstanceType;
                     var generic_arguments = generic_type_of_declaring_type.GenericArguments;
-                    var new_arg = Campy.Utils.Class1.ConvertGenericParameterToTypeReference(type, generic_arguments);
+                    var new_arg = ConvertGenericParameterToTypeReference(type, generic_arguments);
                     var new_var = new VariableDefinition(new_arg);
                     //new_var.IsPinned = variable.IsPinned;
                     var a = variable.GetType().GetFields(System.Reflection.BindingFlags.Instance
@@ -924,4 +1231,22 @@ namespace Campy.Utils
             return result;
         }
     }
+
+    public static class TypeDefinitionEnumerator
+    {
+        public static IEnumerable<TypeDefinition> GetBoxes(this TypeDefinition t)
+        {
+            yield return t;
+
+            if (t.HasNestedTypes)
+            {
+                foreach (TypeDefinition nested in t.NestedTypes)
+                {
+                    foreach (TypeDefinition x in nested.GetBoxes())
+                        yield return x;
+                }
+            }
+        }
+    }
+
 }

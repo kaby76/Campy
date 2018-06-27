@@ -5,30 +5,21 @@ using System.Text;
 
 namespace ConsoleApp4
 {
-    public class IfThenElse
+    public class JaggedArrayList
     {
-        public static void IfThenElseT()
+        public static void JaggedArrayListT()
         {
+            // List of ints.
+            List<List<int>> x = new List<List<int>>();
             int n = 4;
-
-            var t1 = new List<int>();
-            for (int i = 0; i < n; ++i) t1.Add(0);
-            Campy.Parallel.For(n, i =>
-            {
-                if (i % 2 == 0)
-                    t1[i] = i * 20;
-                else
-                    t1[i] = i * 30;
-            });
             for (int i = 0; i < n; ++i)
-                if (i % 2 == 0)
-                {
-                    if (t1[i] != i * 20) throw new Exception();
-                }
-                else
-                {
-                    if (t1[i] != i * 30) throw new Exception();
-                }
+                x.Add(new List<int>());
+            for (int i = 0; i < n; ++i)
+                x[i].Add(0);
+            Campy.Parallel.For(n, i => x[i][0] = i);
+            for (int i = 0; i < n; ++i)
+                if (x[i][0] != i)
+                    throw new Exception();
         }
     }
 
@@ -53,7 +44,7 @@ namespace ConsoleApp4
         static void Main(string[] args)
         {
             StartDebugging();
-            IfThenElse.IfThenElseT();
+            JaggedArrayList.JaggedArrayListT();
         }
     }
 }

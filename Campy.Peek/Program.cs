@@ -2,6 +2,7 @@
 using System.IO;
 using System.Runtime.InteropServices;
 using Campy.Compiler;
+using Campy.Meta;
 
 namespace Peek
 {

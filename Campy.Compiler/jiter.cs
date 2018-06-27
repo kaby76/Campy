@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reflection;
 using Campy.Graphs;
 using Campy.Utils;
+using Campy.Meta;
 using Mono.Cecil;
 using Swigged.LLVM;
 using System.Runtime.InteropServices;
@@ -314,7 +315,7 @@ namespace Campy.Compiler
                 List<ParameterDefinition> parameters = method.Parameters.ToList();
                 List<ParameterReference> instantiated_parameters = new List<ParameterReference>();
 
-                ModuleRef mod = JITER.global_llvm_module; // LLVM.ModuleCreateWithName(mn);
+                ModuleRef mod = RUNTIME.global_llvm_module; // LLVM.ModuleCreateWithName(mn);
                 bb.LlvmInfo.Module = mod;
 
                 uint count = (uint) bb.StackNumberOfArguments;
@@ -350,7 +351,7 @@ namespace Campy.Compiler
                         if (method.DeclaringType.IsGenericInstance && method.ContainsGenericParameter)
                         {
                             var git = method.DeclaringType as GenericInstanceType;
-                            type_reference_of_parameter = Campy.Utils.MonoInterop.FromGenericParameterToTypeReference(
+                            type_reference_of_parameter = METAHELPER.FromGenericParameterToTypeReference(
                                 type_reference_of_parameter, git);
                         }
 
@@ -372,7 +373,7 @@ namespace Campy.Compiler
                 }
 
                 //mi2 = FromGenericParameterToTypeReference(typeof(void).ToMonoTypeReference(), null);
-                TYPE t_ret = new TYPE(Campy.Utils.MonoInterop.FromGenericParameterToTypeReference(method.ReturnType,
+                TYPE t_ret = new TYPE(METAHELPER.FromGenericParameterToTypeReference(method.ReturnType,
                     method.DeclaringType as GenericInstanceType));
                 if (bb.HasStructReturnValue)
                 {
@@ -381,7 +382,7 @@ namespace Campy.Compiler
 
                 TypeRef ret_type = t_ret.IntermediateType;
                 TypeRef method_type = LLVM.FunctionType(ret_type, param_types, false);
-                string method_name = Campy.Utils.JIT_HELPER.RenameToLegalLLVMName(JITER.MethodName(method));
+                string method_name = METAHELPER.RenameToLegalLLVMName(JITER.MethodName(method));
                 ValueRef fun = LLVM.AddFunction(mod, method_name, method_type);
 
                 var glob = LLVM.AddGlobal(mod, LLVM.PointerType(method_type, 0), "p_" + method_name);
@@ -393,7 +394,7 @@ namespace Campy.Compiler
                 bb.LlvmInfo.MethodValueRef = fun;
                 var t_fun = LLVM.TypeOf(fun);
                 var t_fun_con = LLVM.GetTypeContext(t_fun);
-                var context = LLVM.GetModuleContext(JITER.global_llvm_module);
+                var context = LLVM.GetModuleContext(RUNTIME.global_llvm_module);
                 if (t_fun_con != context) throw new Exception("not equal");
                 //////////LLVM.VerifyFunction(fun, VerifierFailureAction.PrintMessageAction);
                 BuilderRef builder = LLVM.CreateBuilder();
@@ -419,7 +420,7 @@ namespace Campy.Compiler
                     var fun = lvv_ent.LlvmInfo.MethodValueRef;
                     var t_fun = LLVM.TypeOf(fun);
                     var t_fun_con = LLVM.GetTypeContext(t_fun);
-                    var context = LLVM.GetModuleContext(JITER.global_llvm_module);
+                    var context = LLVM.GetModuleContext(RUNTIME.global_llvm_module);
                     if (t_fun_con != context) throw new Exception("not equal");
                     //LLVM.VerifyFunction(fun, VerifierFailureAction.PrintMessageAction);
                     var llvm_bb = LLVM.AppendBasicBlock(fun, bb.Name.ToString());
@@ -483,7 +484,7 @@ namespace Campy.Compiler
                 var fun = bb.LlvmInfo.MethodValueRef;
                 var t_fun = LLVM.TypeOf(fun);
                 var t_fun_con = LLVM.GetTypeContext(t_fun);
-                var context = LLVM.GetModuleContext(JITER.global_llvm_module);
+                var context = LLVM.GetModuleContext(RUNTIME.global_llvm_module);
                 if (t_fun_con != context) throw new Exception("not equal");
 
                 for (uint i = 0; i < args; ++i)
@@ -762,7 +763,7 @@ namespace Campy.Compiler
 
         public static string TranslateToPTX(this List<CFG.Vertex> basic_blocks_to_compile)
         {
-            var module = JITER.global_llvm_module;
+            var module = RUNTIME.global_llvm_module;
             // Get basic block of entry.
             if (!basic_blocks_to_compile.Any())
                 return "";
@@ -793,7 +794,7 @@ namespace Campy.Compiler
             TargetMachineRef tmr = LLVM.CreateTargetMachine(t2, triple, "", "", CodeGenOptLevel.CodeGenLevelDefault,
                 RelocMode.RelocDefault, CodeModel.CodeModelKernel);
 //ContextRef context_ref = LLVM.ContextCreate();
-            ContextRef context_ref = LLVM.GetModuleContext(JITER.global_llvm_module);
+            ContextRef context_ref = LLVM.GetModuleContext(RUNTIME.global_llvm_module);
             ValueRef kernelMd = LLVM.MDNodeInContext(
                 context_ref, new ValueRef[3]
                 {
@@ -850,9 +851,6 @@ namespace Campy.Compiler
     {
         private IMPORTER _importer;
         private CFG _mcfg;
-        public static ModuleRef global_llvm_module;
-        private List<ModuleRef> all_llvm_modules;
-        public static Dictionary<string, ValueRef> functions_in_internal_bcl_layer;
         public int _start_index;
         private static bool init;
         private Dictionary<MethodDefinition, IntPtr> method_to_image;
@@ -872,19 +870,19 @@ namespace Campy.Compiler
         private JITER()
         {
             InitCuda();
-            global_llvm_module = default(ModuleRef);
-            all_llvm_modules = new List<ModuleRef>();
-            functions_in_internal_bcl_layer = new Dictionary<string, ValueRef>();
+            RUNTIME.global_llvm_module = default(ModuleRef);
+            RUNTIME.all_llvm_modules = new List<ModuleRef>();
+            RUNTIME.functions_in_internal_bcl_layer = new Dictionary<string, ValueRef>();
             method_to_image = new Dictionary<MethodDefinition, IntPtr>(
                 new LambdaComparer<MethodDefinition>((MethodDefinition a, MethodDefinition b) => a.FullName == b.FullName));
             done_major_init = false;
 
             _importer = IMPORTER.Singleton();
             _mcfg = _importer.Cfg;
-            global_llvm_module = CreateModule("global");
+            RUNTIME.global_llvm_module = CreateModule("global");
             LLVM.EnablePrettyStackTrace();
             var triple = LLVM.GetDefaultTargetTriple();
-            LLVM.SetTarget(global_llvm_module, triple);
+            LLVM.SetTarget(RUNTIME.global_llvm_module, triple);
             LLVM.InitializeAllTargets();
             LLVM.InitializeAllTargetMCs();
             LLVM.InitializeAllTargetInfos();
@@ -896,78 +894,78 @@ namespace Campy.Compiler
 
 
 
-            functions_in_internal_bcl_layer.Add("llvm.nvvm.read.ptx.sreg.tid.x",
+            RUNTIME.functions_in_internal_bcl_layer.Add("llvm.nvvm.read.ptx.sreg.tid.x",
                 LLVM.AddFunction(
-                    global_llvm_module,
+                    RUNTIME.global_llvm_module,
                     "llvm.nvvm.read.ptx.sreg.tid.x",
                     LLVM.FunctionType(LLVM.Int32Type(),
                         new TypeRef[] { }, false)));
-            functions_in_internal_bcl_layer.Add("llvm.nvvm.read.ptx.sreg.tid.y",
+            RUNTIME.functions_in_internal_bcl_layer.Add("llvm.nvvm.read.ptx.sreg.tid.y",
                 LLVM.AddFunction(
-                    global_llvm_module,
+                    RUNTIME.global_llvm_module,
                     "llvm.nvvm.read.ptx.sreg.tid.y",
                     LLVM.FunctionType(LLVM.Int32Type(),
                         new TypeRef[] { }, false)));
-            functions_in_internal_bcl_layer.Add("llvm.nvvm.read.ptx.sreg.tid.z",
+            RUNTIME.functions_in_internal_bcl_layer.Add("llvm.nvvm.read.ptx.sreg.tid.z",
                 LLVM.AddFunction(
-                    global_llvm_module,
+                    RUNTIME.global_llvm_module,
                     "llvm.nvvm.read.ptx.sreg.tid.z",
                     LLVM.FunctionType(LLVM.Int32Type(),
                         new TypeRef[] { }, false)));
 
-            functions_in_internal_bcl_layer.Add("llvm.nvvm.read.ptx.sreg.ctaid.x",
+            RUNTIME.functions_in_internal_bcl_layer.Add("llvm.nvvm.read.ptx.sreg.ctaid.x",
                 LLVM.AddFunction(
-                    global_llvm_module,
+                    RUNTIME.global_llvm_module,
                     "llvm.nvvm.read.ptx.sreg.ctaid.x",
                     LLVM.FunctionType(LLVM.Int32Type(),
                         new TypeRef[] { }, false)));
-            functions_in_internal_bcl_layer.Add("llvm.nvvm.read.ptx.sreg.ctaid.y",
+            RUNTIME.functions_in_internal_bcl_layer.Add("llvm.nvvm.read.ptx.sreg.ctaid.y",
                 LLVM.AddFunction(
-                    global_llvm_module,
+                    RUNTIME.global_llvm_module,
                     "llvm.nvvm.read.ptx.sreg.ctaid.y",
                     LLVM.FunctionType(LLVM.Int32Type(),
                         new TypeRef[] { }, false)));
-            functions_in_internal_bcl_layer.Add("llvm.nvvm.read.ptx.sreg.ctaid.z",
+            RUNTIME.functions_in_internal_bcl_layer.Add("llvm.nvvm.read.ptx.sreg.ctaid.z",
                 LLVM.AddFunction(
-                    global_llvm_module,
+                    RUNTIME.global_llvm_module,
                     "llvm.nvvm.read.ptx.sreg.ctaid.z",
                     LLVM.FunctionType(LLVM.Int32Type(),
                         new TypeRef[] { }, false)));
 
-            functions_in_internal_bcl_layer.Add("llvm.nvvm.read.ptx.sreg.ntid.x",
+            RUNTIME.functions_in_internal_bcl_layer.Add("llvm.nvvm.read.ptx.sreg.ntid.x",
                 LLVM.AddFunction(
-                    global_llvm_module,
+                    RUNTIME.global_llvm_module,
                     "llvm.nvvm.read.ptx.sreg.ntid.x",
                     LLVM.FunctionType(LLVM.Int32Type(),
                         new TypeRef[] { }, false)));
-            functions_in_internal_bcl_layer.Add("llvm.nvvm.read.ptx.sreg.ntid.y",
+            RUNTIME.functions_in_internal_bcl_layer.Add("llvm.nvvm.read.ptx.sreg.ntid.y",
                 LLVM.AddFunction(
-                    global_llvm_module,
+                    RUNTIME.global_llvm_module,
                     "llvm.nvvm.read.ptx.sreg.ntid.y",
                     LLVM.FunctionType(LLVM.Int32Type(),
                         new TypeRef[] { }, false)));
-            functions_in_internal_bcl_layer.Add("llvm.nvvm.read.ptx.sreg.ntid.z",
+            RUNTIME.functions_in_internal_bcl_layer.Add("llvm.nvvm.read.ptx.sreg.ntid.z",
                 LLVM.AddFunction(
-                    global_llvm_module,
+                    RUNTIME.global_llvm_module,
                     "llvm.nvvm.read.ptx.sreg.ntid.z",
                     LLVM.FunctionType(LLVM.Int32Type(),
                         new TypeRef[] { }, false)));
 
-            functions_in_internal_bcl_layer.Add("llvm.nvvm.read.ptx.sreg.nctaid.x",
+            RUNTIME.functions_in_internal_bcl_layer.Add("llvm.nvvm.read.ptx.sreg.nctaid.x",
                 LLVM.AddFunction(
-                    global_llvm_module,
+                    RUNTIME.global_llvm_module,
                     "llvm.nvvm.read.ptx.sreg.nctaid.x",
                     LLVM.FunctionType(LLVM.Int32Type(),
                         new TypeRef[] { }, false)));
-            functions_in_internal_bcl_layer.Add("llvm.nvvm.read.ptx.sreg.nctaid.y",
+            RUNTIME.functions_in_internal_bcl_layer.Add("llvm.nvvm.read.ptx.sreg.nctaid.y",
                 LLVM.AddFunction(
-                    global_llvm_module,
+                    RUNTIME.global_llvm_module,
                     "llvm.nvvm.read.ptx.sreg.nctaid.y",
                     LLVM.FunctionType(LLVM.Int32Type(),
                         new TypeRef[] { }, false)));
-            functions_in_internal_bcl_layer.Add("llvm.nvvm.read.ptx.sreg.nctaid.z",
+            RUNTIME.functions_in_internal_bcl_layer.Add("llvm.nvvm.read.ptx.sreg.nctaid.z",
                 LLVM.AddFunction(
-                    global_llvm_module,
+                    RUNTIME.global_llvm_module,
                     "llvm.nvvm.read.ptx.sreg.nctaid.z",
                     LLVM.FunctionType(LLVM.Int32Type(),
                         new TypeRef[] { }, false)));
@@ -996,7 +994,7 @@ namespace Campy.Compiler
         {
             var new_module = LLVM.ModuleCreateWithName(name);
             var context = LLVM.GetModuleContext(new_module);
-            all_llvm_modules.Add(new_module);
+            RUNTIME.all_llvm_modules.Add(new_module);
             return new_module;
         }
 
@@ -1204,7 +1202,7 @@ namespace Campy.Compiler
         {
             foreach (var v in _mcfg.Entries)
             {
-                var normalized_method_name = Campy.Utils.JIT_HELPER.RenameToLegalLLVMName(JITER.MethodName(v._original_method_reference));
+                var normalized_method_name = METAHELPER.RenameToLegalLLVMName(JITER.MethodName(v._original_method_reference));
                 var res = Cuda.cuModuleGetFunction(out CUfunction helloWorld, module, normalized_method_name);
                 // Not every entry is going to be in module, so this isn't a problem if not found.
                 if (res != CUresult.CUDA_SUCCESS) continue;
@@ -1220,7 +1218,7 @@ namespace Campy.Compiler
         {
             CFG.Vertex bb = _mcfg.Entries.Where(v =>
             v.IsEntry && v._original_method_reference.FullName == kernel_method.FullName).FirstOrDefault();
-            var normalized_method_name = Campy.Utils.JIT_HELPER.RenameToLegalLLVMName(JITER.MethodName(bb._original_method_reference));
+            var normalized_method_name = METAHELPER.RenameToLegalLLVMName(JITER.MethodName(bb._original_method_reference));
             var res = Cuda.cuModuleGetFunction(out CUfunction helloWorld, module, normalized_method_name);
             Utils.CudaHelpers.CheckCudaError(res);
             return helloWorld;
@@ -1351,7 +1349,7 @@ namespace Campy.Compiler
         public void NameTableTrace()
         {
             System.Console.WriteLine("Name mapping table.");
-            foreach (var tuple in JIT_HELPER._rename_to_legal_llvm_name_cache)
+            foreach (var tuple in METAHELPER._rename_to_legal_llvm_name_cache)
             {
                 System.Console.WriteLine(tuple.Key);
                 System.Console.WriteLine(tuple.Value);

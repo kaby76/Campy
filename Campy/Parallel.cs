@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using Campy.Compiler;
 using Campy.Utils;
+using Campy.Meta;
 using Mono.Cecil;
 using Swigged.Cuda;
 using Type = System.Type;

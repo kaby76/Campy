@@ -11,6 +11,7 @@
     using System.Text.RegularExpressions;
     using System;
     using Utils;
+    using Campy.Meta;
 
     /// <summary>
     /// Wrapper for CIL instructions that are implemented using Mono.Cecil.Cil.
@@ -50,7 +51,7 @@
             if (!done_this)
             {
                 done_this = true;
-                dib = LLVM.CreateDIBuilder(JITER.global_llvm_module);
+                dib = LLVM.CreateDIBuilder(RUNTIME.global_llvm_module);
             }
             var doc = SeqPoint.Document;
             string assembly_name = this.Block._original_method_reference.Module.FileName;
@@ -85,8 +86,8 @@
                 compile_unit = debug_compile_units[file_name];
             }
 
-            ContextRef context_ref = LLVM.GetModuleContext(JITER.global_llvm_module);
-            var normalized_method_name = Campy.Utils.JIT_HELPER.RenameToLegalLLVMName(
+            ContextRef context_ref = LLVM.GetModuleContext(RUNTIME.global_llvm_module);
+            var normalized_method_name = METAHELPER.RenameToLegalLLVMName(
                 JITER.MethodName(this.Block._original_method_reference));
             MetadataRef sub;
             if (!debug_methods.ContainsKey(normalized_method_name))
@@ -123,13 +124,13 @@
             }
 
             MetadataRef debug_location = LLVM.DIBuilderCreateDebugLocation(
-                LLVM.GetModuleContext(JITER.global_llvm_module),
+                LLVM.GetModuleContext(RUNTIME.global_llvm_module),
                 (uint)this.SeqPoint.StartLine,
                 (uint)this.SeqPoint.StartColumn,
                 lexical_scope,
                 default(MetadataRef)
                 );
-            var dv = LLVM.MetadataAsValue(LLVM.GetModuleContext(JITER.global_llvm_module), debug_location);
+            var dv = LLVM.MetadataAsValue(LLVM.GetModuleContext(RUNTIME.global_llvm_module), debug_location);
             LLVM.SetCurrentDebugLocation(Builder, dv);
 
             if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -1009,7 +1010,7 @@
                     if ((Size1 <= TargetPointerSizeInBits) &&
                         (Size2 <= TargetPointerSizeInBits))
                     {
-                        return new TYPE(TYPE.getIntNTy(LLVM.GetModuleContext(JITER.global_llvm_module),
+                        return new TYPE(TYPE.getIntNTy(LLVM.GetModuleContext(RUNTIME.global_llvm_module),
                             TargetPointerSizeInBits));
                     }
                 }
@@ -1018,7 +1019,7 @@
                     if (IsSub && Type2.isPointerTy())
                     {
                         // The difference of two managed pointers is a native int.
-                        return new TYPE(TYPE.getIntNTy(LLVM.GetModuleContext(JITER.global_llvm_module),
+                        return new TYPE(TYPE.getIntNTy(LLVM.GetModuleContext(RUNTIME.global_llvm_module),
                             TargetPointerSizeInBits));
                     }
                     else if (IsStrictlyAddOrSub && Type2IsInt && (Size1 >= Size2))
@@ -1073,7 +1074,7 @@
 
             TYPE CharPtrTy = new TYPE(
                 TYPE.getInt8PtrTy(
-                LLVM.GetModuleContext(JITER.global_llvm_module),
+                LLVM.GetModuleContext(RUNTIME.global_llvm_module),
                 BasePtr.T.getPointerAddressSpace()));
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(CharPtrTy);
@@ -1118,7 +1119,7 @@
             // Build an LLVM GEP for the resulting address.
             // For now we "flatten" to byte offsets.
             TYPE CharPtrTy = new TYPE(TYPE.getInt8PtrTy(
-                LLVM.GetModuleContext(JITER.global_llvm_module), BasePtr.T.getPointerAddressSpace()));
+                LLVM.GetModuleContext(RUNTIME.global_llvm_module), BasePtr.T.getPointerAddressSpace()));
             VALUE BasePtrCast = new VALUE(LLVM.BuildBitCast(Builder, BasePtr.V, CharPtrTy.IntermediateType, "i" + instruction_id++));
             VALUE NegOffset = new VALUE(LLVM.BuildNeg(Builder, Offset.V, "i" + instruction_id++));
             VALUE ResultPtr = new VALUE(LLVM.BuildGEP(Builder, BasePtrCast.V, new ValueRef[] { NegOffset.V }, "i" + instruction_id++));
@@ -1188,7 +1189,7 @@
                     // Arithmetic with overflow must use an appropriately-sized integer to
                     // perform the arithmetic, then convert the result back to the pointer
                     // type.
-                    ArithType = new TYPE(TYPE.getIntNTy(LLVM.GetModuleContext(JITER.global_llvm_module), TargetPointerSizeInBits));
+                    ArithType = new TYPE(TYPE.getIntNTy(LLVM.GetModuleContext(RUNTIME.global_llvm_module), TargetPointerSizeInBits));
                 }
             }
 
@@ -1331,24 +1332,24 @@
                 && _arg == 1)
             {
                 //threadId
-                var tidx = JITER.functions_in_internal_bcl_layer["llvm.nvvm.read.ptx.sreg.tid.x"];
-                var tidy = JITER.functions_in_internal_bcl_layer["llvm.nvvm.read.ptx.sreg.tid.y"];
-                var tidz = JITER.functions_in_internal_bcl_layer["llvm.nvvm.read.ptx.sreg.tid.z"];
+                var tidx = RUNTIME.functions_in_internal_bcl_layer["llvm.nvvm.read.ptx.sreg.tid.x"];
+                var tidy = RUNTIME.functions_in_internal_bcl_layer["llvm.nvvm.read.ptx.sreg.tid.y"];
+                var tidz = RUNTIME.functions_in_internal_bcl_layer["llvm.nvvm.read.ptx.sreg.tid.z"];
 
                 //blockIdx
-                var ctaidx = JITER.functions_in_internal_bcl_layer["llvm.nvvm.read.ptx.sreg.ctaid.x"];
-                var ctaidy = JITER.functions_in_internal_bcl_layer["llvm.nvvm.read.ptx.sreg.ctaid.y"];
-                var ctaidz = JITER.functions_in_internal_bcl_layer["llvm.nvvm.read.ptx.sreg.ctaid.z"];
+                var ctaidx = RUNTIME.functions_in_internal_bcl_layer["llvm.nvvm.read.ptx.sreg.ctaid.x"];
+                var ctaidy = RUNTIME.functions_in_internal_bcl_layer["llvm.nvvm.read.ptx.sreg.ctaid.y"];
+                var ctaidz = RUNTIME.functions_in_internal_bcl_layer["llvm.nvvm.read.ptx.sreg.ctaid.z"];
 
                 //blockDim
-                var ntidx = JITER.functions_in_internal_bcl_layer["llvm.nvvm.read.ptx.sreg.ntid.x"];
-                var ntidy = JITER.functions_in_internal_bcl_layer["llvm.nvvm.read.ptx.sreg.ntid.y"];
-                var ntidz = JITER.functions_in_internal_bcl_layer["llvm.nvvm.read.ptx.sreg.ntid.z"];
+                var ntidx = RUNTIME.functions_in_internal_bcl_layer["llvm.nvvm.read.ptx.sreg.ntid.x"];
+                var ntidy = RUNTIME.functions_in_internal_bcl_layer["llvm.nvvm.read.ptx.sreg.ntid.y"];
+                var ntidz = RUNTIME.functions_in_internal_bcl_layer["llvm.nvvm.read.ptx.sreg.ntid.z"];
 
                 //gridDim
-                var nctaidx = JITER.functions_in_internal_bcl_layer["llvm.nvvm.read.ptx.sreg.nctaid.x"];
-                var nctaidy = JITER.functions_in_internal_bcl_layer["llvm.nvvm.read.ptx.sreg.nctaid.y"];
-                var nctaidz = JITER.functions_in_internal_bcl_layer["llvm.nvvm.read.ptx.sreg.nctaid.z"];
+                var nctaidx = RUNTIME.functions_in_internal_bcl_layer["llvm.nvvm.read.ptx.sreg.nctaid.x"];
+                var nctaidy = RUNTIME.functions_in_internal_bcl_layer["llvm.nvvm.read.ptx.sreg.nctaid.y"];
+                var nctaidz = RUNTIME.functions_in_internal_bcl_layer["llvm.nvvm.read.ptx.sreg.nctaid.z"];
 
                 var v_tidx = LLVM.BuildCall(bb.LlvmInfo.Builder, tidx, new ValueRef[] { }, "tidx");
                 var v_tidy = LLVM.BuildCall(bb.LlvmInfo.Builder, tidy, new ValueRef[] { }, "tidy");
@@ -1657,7 +1658,7 @@
                 BuilderRef bu = this.Builder;
 
                 // Find the specific function called in BCL.
-                var xx = JITER.functions_in_internal_bcl_layer.Where(t => t.Key.Contains(mangled_name) || mangled_name.Contains(t.Key));
+                var xx = RUNTIME.functions_in_internal_bcl_layer.Where(t => t.Key.Contains(mangled_name) || mangled_name.Contains(t.Key));
                 var first_kv_pair = xx.FirstOrDefault();
                 if (first_kv_pair.Key == null)
                 {
@@ -1835,7 +1836,7 @@
                     ValueRef fv = first_kv_pair.Value;
                     var t_fun = LLVM.TypeOf(fv);
                     var t_fun_con = LLVM.GetTypeContext(t_fun);
-                    var context = LLVM.GetModuleContext(JITER.global_llvm_module);
+                    var context = LLVM.GetModuleContext(RUNTIME.global_llvm_module);
 
                     RUNTIME.BclNativeMethod mat = null;
                     foreach (RUNTIME.BclNativeMethod ci in RUNTIME.BclNativeMethods)
@@ -1934,7 +1935,7 @@
                 ValueRef fv = entry_corresponding_to_method_called.LlvmInfo.MethodValueRef;
                 var t_fun = LLVM.TypeOf(fv);
                 var t_fun_con = LLVM.GetTypeContext(t_fun);
-                var context = LLVM.GetModuleContext(JITER.global_llvm_module);
+                var context = LLVM.GetModuleContext(RUNTIME.global_llvm_module);
                 if (t_fun_con != context) throw new Exception("not equal");
                 //LLVM.VerifyFunction(fv, VerifierFailureAction.PrintMessageAction);
 
@@ -2937,7 +2938,7 @@
                     if (isPtrLoad)
                     {
                         var mono_field_type = field.FieldType;
-                        TypeRef type = mono_field_type.ToTypeRef(Block.OpsFromOriginal);
+                        TypeRef type = mono_field_type.ToTypeRef();
                         load = LLVM.BuildBitCast(Builder,
                             load, type, "i" + instruction_id++);
                         if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -3122,7 +3123,7 @@
                     if (isPtrLoad)
                     {
                         var mono_field_type = field.FieldType;
-                        TypeRef type = mono_field_type.ToTypeRef(Block.OpsFromOriginal);
+                        TypeRef type = mono_field_type.ToTypeRef();
                         value = LLVM.BuildBitCast(Builder,
                             value, type, "i" + instruction_id++);
                         if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -5343,7 +5344,7 @@
                 string demangled_name = "_Z31System_Array_Internal_GetLengthPhS_S_";
                 string full_name = "System.Int32 System.Array::Internal_GetLength()";
                 // Find the specific function called.
-                var xx = JITER.functions_in_internal_bcl_layer.Where(
+                var xx = RUNTIME.functions_in_internal_bcl_layer.Where(
                     t =>
                         t.Key.Contains(demangled_name)
                          || demangled_name.Contains(t.Key));
@@ -5351,7 +5352,7 @@
                 ValueRef fv = first_kv_pair.Value;
                 var t_fun = LLVM.TypeOf(fv);
                 var t_fun_con = LLVM.GetTypeContext(t_fun);
-                var context = LLVM.GetModuleContext(JITER.global_llvm_module);
+                var context = LLVM.GetModuleContext(RUNTIME.global_llvm_module);
 
                 RUNTIME.BclNativeMethod mat = null;
                 foreach (RUNTIME.BclNativeMethod ci in RUNTIME.BclNativeMethods)
@@ -5971,7 +5972,7 @@
                 ValueRef fv = the_entry.LlvmInfo.MethodValueRef;
                 var t_fun = LLVM.TypeOf(fv);
                 var t_fun_con = LLVM.GetTypeContext(t_fun);
-                var context = LLVM.GetModuleContext(JITER.global_llvm_module);
+                var context = LLVM.GetModuleContext(RUNTIME.global_llvm_module);
                 if (t_fun_con != context) throw new Exception("not equal");
 
                 // Set up args, type casting if required.
@@ -6052,7 +6053,7 @@
                 ValueRef fv = fffv._valueref;
                 var t_fun = LLVM.TypeOf(fv);
                 var t_fun_con = LLVM.GetTypeContext(t_fun);
-                var context = LLVM.GetModuleContext(JITER.global_llvm_module);
+                var context = LLVM.GetModuleContext(RUNTIME.global_llvm_module);
 
                 {
                     ValueRef[] args = new ValueRef[3];
@@ -6171,7 +6172,7 @@
                     ValueRef fv = the_entry.LlvmInfo.MethodValueRef;
                     var t_fun = LLVM.TypeOf(fv);
                     var t_fun_con = LLVM.GetTypeContext(t_fun);
-                    var context = LLVM.GetModuleContext(JITER.global_llvm_module);
+                    var context = LLVM.GetModuleContext(RUNTIME.global_llvm_module);
                     if (t_fun_con != context) throw new Exception("not equal");
 
                     // Set up args, type casting if required.

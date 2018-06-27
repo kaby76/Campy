@@ -1,4 +1,4 @@
-﻿namespace Campy.Compiler
+﻿namespace Campy.Meta
 {
     using MethodImplAttributes = Mono.Cecil.MethodImplAttributes;
     using Mono.Cecil.Cil;
@@ -63,7 +63,7 @@
         public static extern System.IntPtr BclGetArrayTypeDef(
             System.IntPtr element_type,
             int rank);
-        
+
         [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclGenericsGetGenericTypeFromCoreType")]
         public static extern System.IntPtr BclGenericsGetGenericTypeFromCoreType(
             System.IntPtr base_type,
@@ -83,7 +83,7 @@
         public static extern void BclSetField(System.IntPtr ptr, System.IntPtr bcl_field, System.IntPtr value);
 
         [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclGetFields")]
-        public static extern unsafe void BclGetFields(System.IntPtr bcl_type, System.IntPtr ** buf, int * len);
+        public static extern unsafe void BclGetFields(System.IntPtr bcl_type, System.IntPtr** buf, int* len);
 
         [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclGetFieldName")]
         public static extern IntPtr BclGetFieldName(System.IntPtr bcl_field);
@@ -109,12 +109,15 @@
         [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclMetaDataSetMethodJit")]
         public static extern IntPtr BclMetaDataSetMethodJit(IntPtr method_ptr, IntPtr bcl_object, int table_ref);
 
+        public static ModuleRef global_llvm_module;
+        public static List<ModuleRef> all_llvm_modules;
+        public static Dictionary<string, ValueRef> functions_in_internal_bcl_layer;
 
         // This table encodes runtime type information for rewriting BCL types. Use this to determine
         // what a type (represented in Mono.Cecil.TypeReference) in the user's program maps to
         // in the GPU base class layer (also represented in Mono.Cecil.TypeReference).
         private static Dictionary<TypeReference, TypeReference> _substituted_bcl = new Dictionary<TypeReference, TypeReference>();
- 
+
         private static Dictionary<string, TypeRef> _ptx_type_to_llvm_typeref = new Dictionary<string, TypeRef>()
         {
             {".b8", LLVM.Int8Type()},
@@ -491,7 +494,7 @@
             // on .LIB files. So begins the kludge...
             // Parse PTX files for all "visible" functions, and create LLVM declarations.
             // For "Internal Calls", these functions appear here, but also on the _internalCalls list.
-            var assembly = Assembly.GetAssembly(typeof(Campy.Compiler.RUNTIME));
+            var assembly = Assembly.GetAssembly(typeof(Campy.Meta.RUNTIME));
             var resource_names = assembly.GetManifestResourceNames();
             foreach (var resource_name in resource_names)
             {
@@ -518,7 +521,7 @@
                         if (Campy.Utils.Options.IsOn("runtime_trace"))
                             System.Console.WriteLine(mangled_name + " " + return_type + " " + parameters);
 
-                        if (JITER.functions_in_internal_bcl_layer.ContainsKey(mangled_name)) continue;
+                        if (RUNTIME.functions_in_internal_bcl_layer.ContainsKey(mangled_name)) continue;
 
                         TypeRef llvm_return_type = default(TypeRef);
                         TypeRef[] args;
@@ -566,7 +569,7 @@
                         }
 
                         var decl = LLVM.AddFunction(
-                            JITER.global_llvm_module,
+                            RUNTIME.global_llvm_module,
                             mangled_name,
                             LLVM.FunctionType(
                                 llvm_return_type,
@@ -581,7 +584,7 @@
                                                  + " "
                                                  + ptxf._valueref);
 
-                        JITER.functions_in_internal_bcl_layer.Add(mangled_name, decl);
+                        RUNTIME.functions_in_internal_bcl_layer.Add(mangled_name, decl);
                         _ptx_functions.Add(ptxf);
                     }
                 }
@@ -646,13 +649,44 @@
         public static IntPtr BclPtr { get; set; }
         public static ulong BclPtrSize { get; set; }
 
+        private static Dictionary<string, TypeReference> _complete_rewrite_list_of_types = new Dictionary<string, TypeReference>();
+
         public static TypeReference RewriteType(TypeReference tr)
         {
+            // Check if we rewrote type before. If so, return cached value.
+            // Otherwise, recursively construct new type complete with new component types based on BCL.
+            var found = _complete_rewrite_list_of_types.Where(t => t.Key == tr.FullName);
+            if (found.Any())
+            {
+                return found.First().Value;
+            }
+            // Rewrite with BCL if basic type.
             foreach (var kv in _substituted_bcl)
             {
                 if (kv.Key.FullName == tr.FullName)
                     tr = kv.Value;
             }
+
+            //// Type is complex, rewrite each part.
+            //var is_pointer = tr.IsPointer;
+            //var is_by_reference = tr.IsByReference;
+            //var is_array = tr.IsArray;
+            //var is_value_type = tr.IsValueType;
+            //var is_basic_type = tr.IsValueType && !tr.IsStruct();
+            //var git = tr as GenericInstanceType;
+            //var td = tr as TypeDefinition;
+            //var gp = tr as GenericParameter;
+
+            //var ta = tr.Resolve().Attributes;
+            //TypeDefinition new_definition = new TypeDefinition(
+            //    tr.Namespace,
+            //    tr.Name,
+            //    ta,
+            //    tr.DeclaringType);
+
+            //var ntr = new TypeReference(tr.Namespace, tr.Name, tr.Module, tr.Scope);
+
+
             return tr;
         }
 
@@ -661,7 +695,7 @@
             // Can't do anything if method isn't associated with a type.
             TypeReference declaring_type = method_reference.DeclaringType;
             if (declaring_type == null)
-                return null; 
+                return null;
 
             TypeDefinition declaring_type_resolved = declaring_type.Resolve();
             MethodDefinition method_definition = method_reference.Resolve();
@@ -702,8 +736,8 @@
 
             if (method_reference as GenericInstanceMethod != null)
             {
-                
-                
+
+
             }
 
             return new_method_reference;
@@ -741,7 +775,7 @@
             }
         }
 
-        internal static Dictionary<TypeReference, IntPtr> _type_to_bcltype = new Dictionary<TypeReference, IntPtr>();
+        public static Dictionary<TypeReference, IntPtr> _type_to_bcltype = new Dictionary<TypeReference, IntPtr>();
 
         public static IntPtr GetBclType(TypeReference type)
         {

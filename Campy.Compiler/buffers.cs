@@ -10,6 +10,7 @@
     using System.Text;
     using System;
     using Utils;
+    using Campy.Meta;
 
     /// <summary>
     /// This code marshals C#/Net data structures to/from the GPU implementation.
@@ -1547,7 +1548,7 @@
                 if (bcl_type == IntPtr.Zero) return sb.ToString();
                 if (expected_bcl_type.IsArray)
                 {
-                    var et = expected_bcl_type.GetElementType();
+                    var et = expected_bcl_type.ResolveGetElementType();
                     uint rank = (uint)RUNTIME.BclSystemArrayGetRank(obj);
                     IntPtr len_ptr = RUNTIME.BclSystemArrayGetDims(obj);
                     unsafe

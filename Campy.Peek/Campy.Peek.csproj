@@ -56,6 +56,10 @@
       <Project>{ced2299a-4f97-4fb7-bfa8-a61b50e9986d}</Project>
       <Name>Campy.Compiler</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Campy.Meta\Campy.Meta.csproj">
+      <Project>{f2cdced1-e357-4ee3-8bd7-f38599c7053b}</Project>
+      <Name>Campy.Meta</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="swigged.cuda">
