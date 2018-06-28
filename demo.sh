@@ -24,7 +24,7 @@ unameOut="$(uname -s)"
 case "${unameOut}" in
     Linux*)
         dotnet publish -r ubuntu.16.04-x64
-        cd bin/Debug/netcoreapp2.0/ubuntu.16.04-x64/publish/
+        cd bin/Debug/netcoreapp2.1/ubuntu.16.04-x64/publish/
         ./test
         ;;
     Darwin*)
@@ -33,12 +33,12 @@ case "${unameOut}" in
         ;;
     CYGWIN*)
         dotnet publish -r win10-x64
-        cd bin/Debug/netcoreapp2.0/win10-x64/publish/
+        cd bin/Debug/netcoreapp2.1/win10-x64/publish/
         ./test.exe
         ;;
     MINGW*)
         dotnet publish -r win10-x64
-        cd bin/Debug/netcoreapp2.0/win10-x64/publish/
+        cd bin/Debug/netcoreapp2.1/win10-x64/publish/
         ./test.exe
         ;;
     *)

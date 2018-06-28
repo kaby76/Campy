@@ -2,7 +2,7 @@
   "profiles": {
     "ConsoleApp1": {
       "commandName": "Project",
-      "workingDirectory": "C:\\Users\\kenne\\Documents\\Campy2\\ConsoleApp1\\bin\\Debug\\netcoreapp2.0\\",
+      "workingDirectory": "C:\\Users\\kenne\\Documents\\Campy2\\ConsoleApp1\\bin\\Debug\\netcoreapp2.1\\",
       "nativeDebugging": true
     }
   }

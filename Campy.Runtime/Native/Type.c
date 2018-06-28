@@ -348,7 +348,6 @@ function_space_specifier tMD_TypeDef* Type_GetTypeFromSig(tMetaData *pMetaData, 
 			for (int i = 0; i < numsizes; ++i)
 			{
 				U32 lobound = MetaData_DecodeUnsigned32BitInteger(pSig);
-				printf("lb = %d\n", lobound);
 			}
 			return Type_GetArrayTypeDef(pElementType, rank, ppClassTypeArgs, ppMethodTypeArgs);
 		}
