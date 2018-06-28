@@ -5,21 +5,27 @@ using System.Text;
 
 namespace ConsoleApp4
 {
-    public class JaggedArrayList
+    public class TwoDimArrayInts
     {
-        public static void JaggedArrayListT()
+        public static void TwoDimArrayIntsT()
         {
-            // List of ints.
-            List<List<int>> x = new List<List<int>>();
-            int n = 4;
-            for (int i = 0; i < n; ++i)
-                x.Add(new List<int>());
-            for (int i = 0; i < n; ++i)
-                x[i].Add(0);
-            Campy.Parallel.For(n, i => x[i][0] = i);
-            for (int i = 0; i < n; ++i)
-                if (x[i][0] != i)
-                    throw new Exception();
+            int e = 10;
+            int ex0 = 3;
+            int ex1 = 5;
+            int[,] b = new int[ex0, ex1];
+            for (int i = 0; i < ex0; ++i)
+                for (int j = 0; j < ex1; ++j)
+                    b[i, j] = i * 5 + j;
+            for (int i = 0; i < ex0; ++i)
+                for (int j = 0; j < ex1; ++j)
+                    System.Console.WriteLine(b[i, j]);
+            Campy.Parallel.For(3, d =>
+            {
+                b[d, d] = d;
+            });
+            if (b[0, 0] != 0) throw new Exception();
+            if (b[1, 1] != 1) throw new Exception();
+            if (b[2, 2] != 2) throw new Exception();
         }
     }
 
@@ -44,7 +50,7 @@ namespace ConsoleApp4
         static void Main(string[] args)
         {
             StartDebugging();
-            JaggedArrayList.JaggedArrayListT();
+            TwoDimArrayInts.TwoDimArrayIntsT();
         }
     }
 }

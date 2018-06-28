@@ -101,7 +101,7 @@
         public static extern IntPtr BclSystemArrayLoadElementIndices(IntPtr bcl_object, uint dim, IntPtr indices, IntPtr value);
 
         [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclSystemArrayLoadElementIndicesAddress")]
-        public static extern IntPtr BclSystemArrayLoadElementIndicesAddress(IntPtr bcl_object, uint dim, IntPtr indices, IntPtr value_address);
+        public static extern IntPtr BclSystemArrayLoadElementIndicesAddress(IntPtr bcl_object, IntPtr indices, IntPtr value_address);
 
         [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclMetaDataGetMethodJit")]
         public static extern IntPtr BclMetaDataGetMethodJit(IntPtr bcl_object, int table_ref);

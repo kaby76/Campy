@@ -179,7 +179,12 @@ EXPORT void * BclGetFieldType(void * bcl_field)
 
 EXPORT int BclSystemArrayGetRank(void * bcl_object)
 {
-	return SystemArray_GetRank((HEAP_PTR) bcl_object);
+	return SystemArray_GetRank((HEAP_PTR)bcl_object);
+}
+
+EXPORT void BclSystemArraySetRank(void * bcl_object, int rank)
+{
+	SystemArray_SetRank((HEAP_PTR)bcl_object, rank);
 }
 
 EXPORT void * BclSystemArrayGetDims(void * bcl_object)
@@ -187,14 +192,14 @@ EXPORT void * BclSystemArrayGetDims(void * bcl_object)
 	return SystemArray_GetDims((HEAP_PTR) bcl_object);
 }
 
-EXPORT void BclSystemArrayLoadElementIndices(void * bcl_object, unsigned int dim, void * indices, void * value)
+EXPORT void BclSystemArrayLoadElementIndices(void * bcl_object, void * indices, void * value)
 {
-	SystemArray_LoadElementIndices((HEAP_PTR)bcl_object, dim, (U64*)indices, (U64*)value);
+	SystemArray_LoadElementIndices((HEAP_PTR)bcl_object, (U64*)indices, (U64*)value);
 }
 
-EXPORT void BclSystemArrayLoadElementIndicesAddress(void * bcl_object, unsigned int dim, void * indices, void * value_address)
+EXPORT void BclSystemArrayLoadElementIndicesAddress(void * bcl_object, void * indices, void * value_address)
 {
-	SystemArray_LoadElementIndicesAddress((HEAP_PTR)bcl_object, dim, (U64*)indices, (HEAP_PTR*)value_address);
+	SystemArray_LoadElementIndicesAddress((HEAP_PTR)bcl_object, (U64*)indices, (HEAP_PTR*)value_address);
 }
 
 EXPORT void * BclMetaDataGetMethodJit(void * bcl_object, int table_id)

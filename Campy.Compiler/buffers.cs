@@ -1500,9 +1500,22 @@
             if (type.IsArray)
             {
                 var a = obj as Array;
-                for (int i = 0; i < a.Length; ++i)
+                var rank = a.Rank;
+                long total_size = 1;
+                for (int i = 0; i < rank; ++i)
+                    total_size *= a.GetLength(i);
+                for (int i = 0; i < total_size; ++i)
                 {
-                    var v = a.GetValue(i);
+                    int[] index = new int[rank];
+                    int c = i;
+                    for (int j = rank - 1; j >= 0; --j)
+                    {
+                        int ind_size = a.GetLength(j);
+                        var remainder = c % ind_size;
+                        c = c / a.GetLength(j);
+                        index[j] = remainder;
+                    }
+                    var v = a.GetValue(index);
                     sb.Append(Indent(level + 2, i.ToString() + ":" + PrintCpuObject(level + 2, v)));
                 }
                 return sb.ToString();
@@ -1570,7 +1583,7 @@
                             fixed (long* inds = index)
                             {
                                 void* address;
-                                RUNTIME.BclSystemArrayLoadElementIndicesAddress(obj, rank, (IntPtr)inds, (IntPtr)(& address));
+                                RUNTIME.BclSystemArrayLoadElementIndicesAddress(obj, (IntPtr)inds, (IntPtr)(& address));
                                 // In the case of a pointer, you have to deref the field.
                                 IntPtr fPtr = (IntPtr)address;
                                 var oPtr = fPtr;

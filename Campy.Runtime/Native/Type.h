@@ -44,16 +44,24 @@
 #define ELEMENT_TYPE_VALUETYPE	0x11
 #define ELEMENT_TYPE_CLASS		0x12
 #define ELEMENT_TYPE_VAR		0x13 // Generic argument type
-
+#define ELEMENT_TYPE_ARRAY      0x14
 #define ELEMENT_TYPE_GENERICINST 0x15
-
+#define ELEMENT_TYPE_TYPEDBYREF 0x16
+// ECMA 335 gap.
 #define ELEMENT_TYPE_INTPTR		0x18
 #define ELEMENT_TYPE_UINTPTR	0x19
-
+// ECMA 335 gap.
+#define ELEMENT_TYPE_FNPTR      0x1b
 #define ELEMENT_TYPE_OBJECT		0x1c
 #define ELEMENT_TYPE_SZARRAY	0x1d
 #define ELEMENT_TYPE_MVAR		0x1e
-
+#define ELEMENT_TYPE_CMOD_REQD  0x1f
+#define ELEMENT_TYPE_CMOD_OPT   0x20
+#define ELEMENT_TYPE_INTERNAL   0x21
+#define ELEMENT_TYPE_MODIFIER   0x40
+#define ELEMENT_TYPE_SENTINEL   0x41
+#define ELEMENT_TYPE_PINNED     0x45
+// Additional, unnamed numbers in ECMA 335, 0x50 to 0x55
 
 
 //extern function_space_specifier tMD_TypeDef **types;

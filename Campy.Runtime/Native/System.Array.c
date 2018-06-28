@@ -467,7 +467,7 @@ function_space_specifier void SystemArray_LoadElement(HEAP_PTR pThis_, U32 index
     }
 }
 
-function_space_specifier void SystemArray_LoadElementIndices(HEAP_PTR pThis_, U32 dim, U64* indices, U64* value)
+function_space_specifier void SystemArray_LoadElementIndices(HEAP_PTR pThis_, U64* indices, U64* value)
 {
 #ifdef  __CUDA_ARCH__
     int blockId = blockIdx.x + blockIdx.y * gridDim.x
@@ -483,22 +483,19 @@ function_space_specifier void SystemArray_LoadElementIndices(HEAP_PTR pThis_, U3
 
     pArrayTypeDef = Heap_GetType(pThis_);
     U32 elemSize = pArrayTypeDef->pArrayElementType->arrayElementSize;
-
+	int rank = pArray->rank;
     PTR beginning_of_elements = pArray->ptr_elements;
     PTR b1 = (PTR)&pArray->rank;
     U64 * beginning_of_lengths = ((U64*)b1) + 1;
-    int index = 0;
-    for (int i = 0; i < dim; ++i)
-    {
-        int k = 1;
-        for (int j = i + 1; j < dim; ++j)
-        {
-            U64 x = beginning_of_lengths[j];
-            U32 y = (U32)x;
-            k = k * y;
-        }
-        index += indices[i] * k;
-    }
+
+	int index = 0;
+	for (int d = 0; d < rank; ++d)
+	{
+		U64 x = beginning_of_lengths[d];
+		U32 y = (U32)x;
+		index = index * y;
+		index = index + indices[d];
+	}
 
     switch (elemSize)
     {
@@ -530,7 +527,8 @@ function_space_specifier void SystemArray_LoadElementIndices(HEAP_PTR pThis_, U3
     }
 }
 
-function_space_specifier void SystemArray_StoreElementIndices(HEAP_PTR pThis_, U32 dim, U64* indices, U64* value) {
+function_space_specifier void SystemArray_StoreElementIndices(HEAP_PTR pThis_, U64* indices, U64* value)
+{
 #ifdef  __CUDA_ARCH__
     int blockId = blockIdx.x + blockIdx.y * gridDim.x
         + gridDim.x * gridDim.y * blockIdx.z;
@@ -547,20 +545,18 @@ function_space_specifier void SystemArray_StoreElementIndices(HEAP_PTR pThis_, U
     U32 elemSize = pArrayTypeDef->pArrayElementType->arrayElementSize;
 
     PTR beginning_of_elements = pArray->ptr_elements;
+	int rank = pArray->rank;
     PTR b1 = (PTR)&pArray->rank;
     U64 * beginning_of_lengths = ((U64*)b1) + 1;
-    int index = 0;
-    for (int i = 0; i < dim; ++i)
-    {
-        int k = 1;
-        for (int j = i + 1; j < dim; ++j)
-        {
-            U64 x = beginning_of_lengths[j];
-            U32 y = (U32)x;
-            k = k * y;
-        }
-        index += indices[i] * k;
-    }
+
+	int index = 0;
+	for (int d = 0; d < rank; ++d)
+	{
+		U64 x = beginning_of_lengths[d];
+		U32 y = (U32)x;
+		index = index * y;
+		index = index + indices[d];
+	}
 
     switch (elemSize)
     {
@@ -593,7 +589,7 @@ function_space_specifier void SystemArray_StoreElementIndices(HEAP_PTR pThis_, U
     }
 }
 
-function_space_specifier void SystemArray_LoadElementIndicesAddress(HEAP_PTR pThis_, U32 dim, U64* indices, HEAP_PTR * value_address)
+function_space_specifier void SystemArray_LoadElementIndicesAddress(HEAP_PTR pThis_, U64* indices, HEAP_PTR * value_address)
 {
 #ifdef  __CUDA_ARCH__
     int blockId = blockIdx.x + blockIdx.y * gridDim.x
@@ -609,21 +605,18 @@ function_space_specifier void SystemArray_LoadElementIndicesAddress(HEAP_PTR pTh
 
     pArrayTypeDef = Heap_GetType(pThis_);
     U32 element_size = pArrayTypeDef->pArrayElementType->arrayElementSize;
-
+	int rank = pArray->rank;
     PTR beginning_of_elements = pArray->ptr_elements;
     PTR b1 = (PTR)&pArray->rank;
     U64 * beginning_of_lengths = ((U64*)b1) + 1;
+
     int index = 0;
-    for (int i = 0; i < dim; ++i)
-    {
-        int k = 1;
-        for (int j = i + 1; j < dim; ++j)
-        {
-            U64 x = beginning_of_lengths[j];
-            U32 y = (U32)x;
-            k = k * y;
-        }
-        index += indices[i] * k;
+	for (int d = 0; d < rank; ++d)
+	{
+		U64 x = beginning_of_lengths[d];
+		U32 y = (U32)x;
+		index = index * y;
+		index = index + indices[d];
     }
     *value_address = (((U8*)(beginning_of_elements)) + index * element_size);
 }
@@ -652,9 +645,15 @@ function_space_specifier U32 SystemArray_GetNumBytes(HEAP_PTR pThis_, tMD_TypeDe
 
 function_space_specifier int SystemArray_GetRank(HEAP_PTR pThis_)
 {
-    tSystemArray *pArray = (tSystemArray*)pThis_;
-    U64 p_len = pArray->rank;
-    return p_len;
+	tSystemArray *pArray = (tSystemArray*)pThis_;
+	U64 p_len = pArray->rank;
+	return p_len;
+}
+
+function_space_specifier void SystemArray_SetRank(HEAP_PTR pThis_, int rank)
+{
+	tSystemArray *pArray = (tSystemArray*)pThis_;
+	pArray->rank = rank;
 }
 
 function_space_specifier U64* SystemArray_GetDims(HEAP_PTR pThis_)
