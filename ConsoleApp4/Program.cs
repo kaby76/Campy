@@ -49,7 +49,7 @@ namespace ConsoleApp4
 
         static void Main(string[] args)
         {
-            //StartDebugging();
+            StartDebugging();
             TwoDimArrayInts.TwoDimArrayIntsT();
         }
     }
