@@ -426,10 +426,18 @@ namespace Campy.Meta
             return reference;
         }
 
-        public static TypeReference SubstituteMonoTypeReference(this Mono.Cecil.TypeReference type, Mono.Cecil.ModuleDefinition md)
+        public static TypeReference RewriteMonoTypeReference(this Mono.Cecil.TypeReference type)
         {
+            var new_type = type.SubstituteMonoTypeReference();
+            if (new_type == null) return type;
+            return new_type;
+        }
+
+        public static TypeReference SubstituteMonoTypeReference(this Mono.Cecil.TypeReference type)
+        {
+            Mono.Cecil.ModuleDefinition campy_bcl_runtime = Mono.Cecil.ModuleDefinition.ReadModule(RUNTIME.FindCoreLib());
             // ImportReference does not work as expected because the scope of the type found isn't in the module.
-            foreach (var tt in md.Types)
+            foreach (var tt in campy_bcl_runtime.Types)
             {
                 if (type.Name == tt.Name && type.Namespace == tt.Namespace)
                 {

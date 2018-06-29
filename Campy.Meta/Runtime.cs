@@ -19,38 +19,35 @@
         [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclHeapAlloc")]
         public static extern System.IntPtr BclHeapAlloc(System.IntPtr bcl_type);
 
-        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "SetOptions")]
-        public static extern void SetOptions(UInt64 options);
+        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclSizeOf")]
+        public static extern System.IntPtr BclSizeOf(System.IntPtr bcl_type);
+
+        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclSetOptions")]
+        public static extern void BclSetOptions(UInt64 options);
 
         [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "InitTheBcl")]
         public static extern void InitTheBcl(System.IntPtr a1, long a2, long a3, int a4);
 
-        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "InitFileSystem")]
-        public static extern void InitFileSystem();
+        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclInitFileSystem")]
+        public static extern void BclInitFileSystem();
 
-        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "GfsAddFile")]
-        public static extern void GfsAddFile(System.IntPtr name, System.IntPtr file, long length, System.IntPtr result);
+        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclAddFile")]
+        public static extern void BclAddFile(System.IntPtr name, System.IntPtr file, long length, System.IntPtr result);
 
-        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "InitializeBCL1")]
-        public static extern void InitializeBCL1();
+        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclContinueInit")]
+        public static extern void BclContinueInit();
 
-        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "InitializeBCL2")]
-        public static extern void InitializeBCL2();
+        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclCheckHeap")]
+        public static extern void BclCheckHeap();
 
-        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "CheckHeap")]
-        public static extern void CheckHeap();
-
-        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "GcCollect")]
-        public static extern void GcCollect();
+        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclGcCollect")]
+        public static extern void BclGcCollect();
 
         [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclAllocString")]
         public static extern IntPtr BclAllocString(int length, IntPtr chars);
 
         [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclArrayAlloc")]
-        public static extern System.IntPtr BclArrayAlloc(
-            System.IntPtr bcl_type,
-            int rank,
-            uint[] lengths);
+        public static extern System.IntPtr BclArrayAlloc(System.IntPtr bcl_type, int rank, uint[] lengths);
 
         [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclGetMetaOfType")]
         public static extern System.IntPtr BclGetMetaOfType(
@@ -60,42 +57,37 @@
             System.IntPtr nested);
 
         [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclGetArrayTypeDef")]
-        public static extern System.IntPtr BclGetArrayTypeDef(
-            System.IntPtr element_type,
-            int rank);
+        public static extern System.IntPtr BclGetArrayTypeDef(IntPtr element_type, int rank);
 
         [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclGenericsGetGenericTypeFromCoreType")]
-        public static extern System.IntPtr BclGenericsGetGenericTypeFromCoreType(
-            System.IntPtr base_type,
-            int count,
-            System.IntPtr[] args);
+        public static extern System.IntPtr BclGenericsGetGenericTypeFromCoreType(IntPtr base_type, int count, IntPtr[] args);
 
         [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclHeapGetType")]
-        public static extern System.IntPtr BclHeapGetType(System.IntPtr ptr);
+        public static extern System.IntPtr BclHeapGetType(IntPtr ptr);
 
         [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclFindFieldInType")]
-        public static extern System.IntPtr BclFindFieldInType(System.IntPtr ptr, [MarshalAs(UnmanagedType.LPStr)] string name);
+        public static extern System.IntPtr BclFindFieldInType(IntPtr ptr, [MarshalAs(UnmanagedType.LPStr)] string name);
 
         [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclGetField")]
-        public static extern System.IntPtr BclGetField(System.IntPtr ptr, System.IntPtr bcl_field);
+        public static extern System.IntPtr BclGetField(IntPtr ptr, IntPtr bcl_field);
 
         [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclSetField")]
-        public static extern void BclSetField(System.IntPtr ptr, System.IntPtr bcl_field, System.IntPtr value);
+        public static extern void BclSetField(IntPtr ptr, IntPtr bcl_field, IntPtr value);
 
         [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclGetFields")]
-        public static extern unsafe void BclGetFields(System.IntPtr bcl_type, System.IntPtr** buf, int* len);
+        public static extern unsafe void BclGetFields(IntPtr bcl_type, IntPtr** buf, int* len);
 
         [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclGetFieldName")]
-        public static extern IntPtr BclGetFieldName(System.IntPtr bcl_field);
+        public static extern IntPtr BclGetFieldName(IntPtr bcl_field);
 
         [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclGetFieldType")]
-        public static extern IntPtr BclGetFieldType(System.IntPtr bcl_field);
+        public static extern IntPtr BclGetFieldType(IntPtr bcl_field);
 
         [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclSystemArrayGetRank")]
-        public static extern int BclSystemArrayGetRank(System.IntPtr bcl_object);
+        public static extern int BclSystemArrayGetRank(IntPtr bcl_object);
 
         [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclSystemArrayGetDims")]
-        public static extern IntPtr BclSystemArrayGetDims(System.IntPtr bcl_object);
+        public static extern IntPtr BclSystemArrayGetDims(IntPtr bcl_object);
 
         [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclSystemArrayLoadElementIndices")]
         public static extern IntPtr BclSystemArrayLoadElementIndices(IntPtr bcl_object, uint dim, IntPtr indices, IntPtr value);
@@ -701,8 +693,7 @@
             MethodDefinition method_definition = method_reference.Resolve();
 
             // Can't do anything if the type isn't part of Campy BCL.
-            Mono.Cecil.ModuleDefinition campy_bcl_runtime = Mono.Cecil.ModuleDefinition.ReadModule(FindCoreLib());
-            TypeReference substituted_declaring_type = declaring_type.SubstituteMonoTypeReference(campy_bcl_runtime);
+            TypeReference substituted_declaring_type = declaring_type.SubstituteMonoTypeReference();
             if (substituted_declaring_type == null)
                 return null;
 
@@ -809,7 +800,7 @@
                     System.IntPtr[] args = new System.IntPtr[count];
                     for (int i = 0; i < count; ++i)
                         args[i] = (System.IntPtr)GetBclType(generic_arguments[i]);
-                    RUNTIME.CheckHeap();
+                    RUNTIME.BclCheckHeap();
                     result = BclGenericsGetGenericTypeFromCoreType(result, count, args);
                 }
                 else if (mt.IsArray)

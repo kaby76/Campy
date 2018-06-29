@@ -11,8 +11,8 @@ namespace Peek
         [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "InitTheBcl")]
         public static extern void InitTheBcl(System.IntPtr a1, long a2, long a25, int a3, System.IntPtr a4);
 
-        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "InitFileSystem")]
-        public static extern void InitFileSystem();
+        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclInitFileSystem")]
+        public static extern void BclInitFileSystem();
 
         [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "GfsAddFile")]
         public static extern void GfsAddFile(System.IntPtr name, System.IntPtr file, long length, System.IntPtr result);
@@ -43,7 +43,7 @@ namespace Peek
                 int max_threads = 1;
                 IntPtr b2 = buffers.New(sizeof(int*));
                 InitTheBcl(b, the_size, 2 * 16777216, max_threads, b2);
-                InitFileSystem();
+                RUNTIME.BclInitFileSystem();
                 // Set up corlib.dll in file system.
                 string full_path_assem = RUNTIME.FindCoreLib();
                 string assem = Path.GetFileName(full_path_assem);

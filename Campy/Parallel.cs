@@ -101,7 +101,7 @@ namespace Campy
                         ptr_to_kernel = Singleton._converter.GetCudaFunction(method_reference, module);
                     });
 
-                    RUNTIME.CheckHeap();
+                    RUNTIME.BclCheckHeap();
 
                     IntPtr[] parm1 = new IntPtr[1];
                     IntPtr[] parm2 = new IntPtr[1];
@@ -124,20 +124,20 @@ namespace Campy
                         // object.
                         if (bb.HasThis)
                         {
-                            RUNTIME.CheckHeap();
+                            RUNTIME.BclCheckHeap();
                             ptr = buffer.AddDataStructure(simpleKernel.Target);
                             parm1[0] = ptr;
-                            RUNTIME.CheckHeap();
+                            RUNTIME.BclCheckHeap();
                         }
 
                         {
-                            RUNTIME.CheckHeap();
+                            RUNTIME.BclCheckHeap();
                             Type btype = typeof(int);
                             var s = BUFFERS.SizeOf(btype);
                             var ptr2 = buffer.New(s);
                             // buffer.DeepCopyToImplementation(index, ptr2);
                             parm2[0] = ptr2;
-                            RUNTIME.CheckHeap();
+                            RUNTIME.BclCheckHeap();
                         }
                     });
 
@@ -151,7 +151,7 @@ namespace Campy
                         handle2 = GCHandle.Alloc(x2, GCHandleType.Pinned);
                         IntPtr pointer2 = handle2.AddrOfPinnedObject();
 
-                        RUNTIME.CheckHeap();
+                        RUNTIME.BclCheckHeap();
 
                         IntPtr[] kp = new IntPtr[] {pointer1, pointer2};
                         var res = CUresult.CUDA_SUCCESS;
@@ -188,9 +188,9 @@ namespace Campy
 
                     Campy.Utils.TimePhase.Time("kernel call", () =>
                     {
-                        RUNTIME.CheckHeap();
+                        RUNTIME.BclCheckHeap();
                         buffer.SynchDataStructures();
-                        RUNTIME.CheckHeap();
+                        RUNTIME.BclCheckHeap();
                     });
                 }
             }

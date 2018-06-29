@@ -125,7 +125,8 @@ function_space_specifier void Heap_Init() {
 // This works by returning the size of the type, unless the type is an array or a string,
 // which are the only two types that can have variable sizes
 
-static function_space_specifier U32 GetSize(tHeapEntry *pHeapEntry) {
+static function_space_specifier U32 GetSize(tHeapEntry *pHeapEntry)
+{
 	tMD_TypeDef *pType = pHeapEntry->pTypeDef;
 	if (pType == _bcl_->types[TYPE_SYSTEM_STRING]) {
 		// If it's a string, return the string length in bytes

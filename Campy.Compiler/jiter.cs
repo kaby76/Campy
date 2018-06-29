@@ -1245,12 +1245,12 @@ namespace Campy.Compiler
             stream.Dispose();
             var ptrx = Marshal.StringToHGlobalAnsi(assem);
             BUFFERS buffers = new BUFFERS();
-            RUNTIME.CheckHeap();
+            RUNTIME.BclCheckHeap();
             IntPtr pointer1 = buffers.New(assem.Length + 1);
-            RUNTIME.CheckHeap();
+            RUNTIME.BclCheckHeap();
             BUFFERS.Cp(pointer1, ptrx, assem.Length + 1);
             var pointer4 = buffers.New(sizeof(int));
-            RUNTIME.GfsAddFile(pointer1, corlib_bytes_intptr, corlib_bytes_handle_len, pointer4);
+            RUNTIME.BclAddFile(pointer1, corlib_bytes_intptr, corlib_bytes_handle_len, pointer4);
         }
 
         public void InitBCL()
@@ -1264,8 +1264,8 @@ namespace Campy.Compiler
                 RUNTIME.BclPtrSize = (ulong) the_size;
                 int max_threads = 16;
                 RUNTIME.InitTheBcl(b, the_size, 2 * 16777216, max_threads);
-                RUNTIME.SetOptions(_options);
-                RUNTIME.InitFileSystem();
+                RUNTIME.BclSetOptions(_options);
+                RUNTIME.BclInitFileSystem();
                 // Set up corlib.dll in file system.
                 string full_path_assem = RUNTIME.FindCoreLib();
                 string assem = Path.GetFileName(full_path_assem);
@@ -1281,9 +1281,8 @@ namespace Campy.Compiler
                 IntPtr pointer1 = buffers.New(assem.Length + 1);
                 BUFFERS.Cp(pointer1, ptrx, assem.Length + 1);
                 var pointer4 = buffers.New(sizeof(int));
-                RUNTIME.GfsAddFile(pointer1, corlib_bytes_intptr, corlib_bytes_handle_len, pointer4);
-                RUNTIME.InitializeBCL1();
-                RUNTIME.InitializeBCL2();
+                RUNTIME.BclAddFile(pointer1, corlib_bytes_intptr, corlib_bytes_handle_len, pointer4);
+                RUNTIME.BclContinueInit();
                 done_major_init = true;
             }
         }

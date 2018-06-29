@@ -23,7 +23,7 @@ EXPORT void InitTheBcl(void * g, size_t size, size_t first_overhead, int count)
 	InternalInitTheBcl(g, size, first_overhead, count);
 }
 
-EXPORT void CheckHeap()
+EXPORT void BclCheckHeap()
 {
 	if (_bcl_ && _bcl_->options & BCL_DEBUG_FUNCTION_ENTRY)
 		Gprintf("CheckHeap\n");
@@ -31,7 +31,7 @@ EXPORT void CheckHeap()
 	InternalCheckHeap();
 }
 
-EXPORT void SetOptions(U64 options)
+EXPORT void BclSetOptions(U64 options)
 {
 	if (_bcl_ && _bcl_->options & BCL_DEBUG_FUNCTION_ENTRY)
 		Gprintf("SetOptions\n");
@@ -39,12 +39,12 @@ EXPORT void SetOptions(U64 options)
 	InternalSetOptions(options);
 }
 
-EXPORT void InitFileSystem()
+EXPORT void BclInitFileSystem()
 {
 	InternalInitFileSystem();
 }
 
-EXPORT void GfsAddFile(void * name, void * file, size_t length, void * result)
+EXPORT void BclAddFile(void * name, void * file, size_t length, void * result)
 {
 	if (_bcl_ && _bcl_->options & BCL_DEBUG_FUNCTION_ENTRY)
 		Gprintf("GfsAddFile\n");
@@ -54,13 +54,9 @@ EXPORT void GfsAddFile(void * name, void * file, size_t length, void * result)
 	InternalGfsAddFile(name, file, length, result);
 }
 
-EXPORT void InitializeBCL1()
+EXPORT void BclContinueInit()
 {
 	InternalInitializeBCL1();
-}
-
-EXPORT void InitializeBCL2()
-{
 	InternalInitializeBCL2();
 }
 
@@ -70,6 +66,14 @@ EXPORT void* BclHeapAlloc(void* type_def)
 		Gprintf("BclHeapAlloc\n");
 	void * result = (void*)Heap_AllocType((tMD_TypeDef *)type_def);
 	return result;
+}
+
+EXPORT int BclSizeOf(void * bcl_type)
+{
+	if (_bcl_ && _bcl_->options & BCL_DEBUG_FUNCTION_ENTRY)
+		Gprintf("BclSizeOf\n");
+	tMD_TypeDef * pType = (tMD_TypeDef *)bcl_type;
+	return pType->instanceMemSize;
 }
 
 EXPORT void* BclGetArrayTypeDef(void* element_type_def, int rank)
@@ -105,10 +109,10 @@ EXPORT void* BclGenericsGetGenericTypeFromCoreType(void * c, U32 numTypeArgs, vo
 	return (void*)result;
 }
 
-EXPORT void GcCollect()
+EXPORT void BclGcCollect()
 {
 	if (_bcl_ && _bcl_->options & BCL_DEBUG_FUNCTION_ENTRY)
-		Gprintf("GcCollect\n");
+		Gprintf("BclGcCollect\n");
 	Heap_GarbageCollect();
 }
 
