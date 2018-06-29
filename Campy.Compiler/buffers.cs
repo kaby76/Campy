@@ -411,6 +411,24 @@
 
         private unsafe void DCToBclRefValue(object from_cpu, void* to_gpu)
         {
+            // For null reference, set to_gpu to null--assume that it's a reference or boxed type.
+            bool is_null = false;
+            try
+            {
+                if (from_cpu == null) is_null = true;
+                else if (from_cpu.Equals(null)) is_null = true;
+            }
+            catch (Exception)
+            {
+            }
+
+            if (is_null)
+            {
+                if (to_gpu == null) throw new Exception("Bad copy to.");
+                *(void**) to_gpu = null;
+                return;
+            }
+
             Type from_cpu_type = from_cpu.GetType();
             var bcl_type = from_cpu_type.ToMonoTypeReference().RewriteMonoTypeReference();
 
@@ -581,10 +599,6 @@
         // structure from the CPU.
         private unsafe void* DCToBcl(object from_cpu)
         {
-            // For value types, crash because we cannot "allocate" an object per se.
-            if (from_cpu.GetType().IsValueType)
-                throw new Exception("Trying to copy value type in DCToBcl");
-
             // For null reference, return null.
             bool is_null = false;
             try
@@ -597,6 +611,10 @@
             }
 
             if (is_null) return null;
+
+            // For value types, crash because we cannot "allocate" an object per se.
+            if (from_cpu.GetType().IsValueType)
+                throw new Exception("Trying to copy value type in DCToBcl");
 
             // Return previous cached object if copied before.
             if (_copied_to_gpu.Contains(from_cpu))
