@@ -2,49 +2,197 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Text;
+using Campy;
+using System.Linq;
 
 namespace ConsoleApp4
 {
-    public class ArrayTypesGetSet
+    public class BitonicSorter
     {
-        public static void ArrayTypesGetSetT()
+        public static void swap(ref int i, ref int j)
         {
-            int n = 4;
+            int t = i;
+            i = j;
+            j = t;
+        }
 
-            int[] t1 = new int[n];
-            Campy.Parallel.For(n, i => t1[i] = i);
-            for (int i = 0; i < n; ++i) if (t1[i] != i) throw new Exception();
-
-            float[] t2 = new float[n];
-            Campy.Parallel.For(n, i => t2[i] = 0.1f * i);
-            for (int i = 0; i < n; ++i) if (t2[i] != 0.1f * i) throw new Exception();
-
-            double[] t3 = new double[n];
-            Campy.Parallel.For(n, i => t3[i] = 0.1d * i);
-            for (int i = 0; i < n; ++i) if (t3[i] != 0.1d * i) throw new Exception();
-
-            System.UInt16[] t4 = new ushort[n];
-            Campy.Parallel.For(n, i => t4[i] = (ushort)(i + 1));
-            for (int i = 0; i < n; ++i) if (t4[i] != (ushort)(i + 1)) throw new Exception();
-
-            int[] t5 = new int[n];
-            Campy.Parallel.For(n, i => t5[i] = t1[i] * 2);
-            for (int i = 0; i < n; ++i) if (t5[i] != t1[i] * 2) throw new Exception();
-
-            float[] t6 = new float[n];
-            Campy.Parallel.For(n, i => t6[i] = 0.1f * i + t2[i]);
-            for (int i = 0; i < n; ++i) if (t6[i] != 0.1f * i + t2[i]) throw new Exception();
-
-            double[] t7 = new double[n];
-            Campy.Parallel.For(n, i => t7[i] = 0.1f * i - t3[i]);
-            for (int i = 0; i < n; ++i) if (t7[i] != 0.1f * i - t3[i]) throw new Exception();
-
-            System.UInt16[] t8 = new ushort[n];
-            Campy.Parallel.For(n, (i) =>
+        // [Bat 68]	K.E. Batcher: Sorting Networks and their Applications. Proc. AFIPS Spring Joint Comput. Conf., Vol. 32, 307-314 (1968)
+        // Work inefficient sort, because half the threads are unused.
+        public static void SeqBitonicSort1(int[] a)
+        {
+            uint N = (uint)a.Length;
+            int term = Bithacks.FloorLog2(N);
+            for (int kk = 2; kk <= N; kk *= 2)
             {
-                t8[i] = (ushort)(t4[i] + i + 1);
-            });
-            for (int i = 0; i < n; ++i) if (t8[i] != (ushort)(t4[i] + i + 1)) throw new Exception();
+                for (int jj = kk >> 1; jj > 0; jj = jj >> 1)
+                {
+                    int k = kk;
+                    int j = jj;
+                    for (int i = 0; i < N; ++i)
+                    {
+                        int ij = i ^ j;
+                        if (ij > i)
+                        {
+                            if ((i & k) == 0)
+                            {
+                                if (a[i] > a[ij]) swap(ref a[i], ref a[ij]);
+                            }
+                            else // ((i & k) != 0)
+                            {
+                                if (a[i] < a[ij]) swap(ref a[i], ref a[ij]);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        public static void BitonicSort1(int[] a)
+        {
+            Parallel.Sticky(a);
+            uint N = (uint)a.Length;
+            int term = Bithacks.FloorLog2(N);
+            for (int kk = 2; kk <= N; kk *= 2)
+            {
+                for (int jj = kk >> 1; jj > 0; jj = jj >> 1)
+                {
+                    int k = kk;
+                    int j = jj;
+                    Campy.Parallel.For((int)N, (i) =>
+                    {
+                        int ij = i ^ j;
+                        if (ij > i)
+                        {
+                            if ((i & k) == 0)
+                            {
+                                if (a[i] > a[ij]) swap(ref a[i], ref a[ij]);
+                            }
+                            else // ((i & k) != 0)
+                            {
+                                if (a[i] < a[ij]) swap(ref a[i], ref a[ij]);
+                            }
+                        }
+                    });
+                }
+            }
+            Parallel.Sync();
+        }
+
+        public static void SeqBitonicSort2(int[] a)
+        {
+            uint N = (uint)a.Length;
+            int log2n = Bithacks.FloorLog2(N);
+            for (int k = 0; k < log2n; ++k)
+            {
+                uint n2 = N / 2;
+                int twok = Bithacks.Power2(k);
+                for (int i = 0; i < n2; ++i)
+                {
+                    int imp2 = i % twok;
+                    int cross = imp2 + 2 * twok * (int)(i / twok);
+                    int paired = -1 - imp2 + 2 * twok * (int)((i + twok) / twok);
+                    if (a[cross] > a[paired])
+                    {
+                        int t = a[cross];
+                        a[cross] = a[paired];
+                        a[paired] = t;
+                    }
+                }
+                for (int j = k - 1; j >= 0; --j)
+                {
+                    int twoj = Bithacks.Power2(j);
+                    for (int i = 0; i < n2; ++i)
+                    {
+                        int imp2 = i % twoj;
+                        int cross = imp2 + 2 * twoj * (int)(i / twoj);
+                        int paired = cross + twoj;
+                        if (a[cross] > a[paired])
+                        {
+                            int t = a[cross];
+                            a[cross] = a[paired];
+                            a[paired] = t;
+                        }
+                    }
+                }
+            }
+        }
+
+        public static void BitonicSort2(int[] a)
+        {
+            Parallel.Sticky(a);
+            uint N = (uint)a.Length;
+            int log2n = Bithacks.FloorLog2(N);
+            for (int k = 0; k < log2n; ++k)
+            {
+                uint n2 = N / 2;
+                int twok = Bithacks.Power2(k);
+                Campy.Parallel.For((int)n2, i =>
+                {
+                    int imp2 = i % twok;
+                    int cross = imp2 + 2 * twok * (int)(i / twok);
+                    int paired = -1 - imp2 + 2 * twok * (int)((i + twok) / twok);
+                    if (a[cross] > a[paired])
+                    {
+                        int t = a[cross];
+                        a[cross] = a[paired];
+                        a[paired] = t;
+                    }
+                });
+                for (int j = k - 1; j >= 0; --j)
+                {
+                    int twoj = Bithacks.Power2(j);
+                    Campy.Parallel.For((int)n2, i =>
+                    {
+                        int imp2 = i % twoj;
+                        int cross = imp2 + 2 * twoj * (int)(i / twoj);
+                        int paired = cross + twoj;
+                        if (a[cross] > a[paired])
+                        {
+                            int t = a[cross];
+                            a[cross] = a[paired];
+                            a[paired] = t;
+                        }
+                    });
+                }
+            }
+            Parallel.Sync();
+        }
+    }
+
+    public class BitonicSortT
+    {
+        public static void BitonicSort()
+        {
+            Random rnd = new Random();
+            int N = 8;
+            {
+                int[] a = Enumerable.Range(0, N).ToArray().OrderBy(x => rnd.Next()).ToArray();
+                BitonicSorter.SeqBitonicSort1(a);
+                for (int i = 0; i < N; ++i)
+                    if (a[i] != i)
+                        throw new Exception();
+            }
+            {
+                int[] a = Enumerable.Range(0, N).ToArray().OrderBy(x => rnd.Next()).ToArray();
+                BitonicSorter.SeqBitonicSort2(a);
+                for (int i = 0; i < N; ++i)
+                    if (a[i] != i)
+                        throw new Exception();
+            }
+            {
+                int[] a = Enumerable.Range(0, N).ToArray().OrderBy(x => rnd.Next()).ToArray();
+                BitonicSorter.BitonicSort1(a);
+                for (int i = 0; i < N; ++i)
+                    if (a[i] != i)
+                        throw new Exception();
+            }
+            {
+                int[] a = Enumerable.Range(0, N).ToArray().OrderBy(x => rnd.Next()).ToArray();
+                BitonicSorter.BitonicSort2(a);
+                for (int i = 0; i < N; ++i)
+                    if (a[i] != i)
+                        throw new Exception();
+            }
         }
     }
 
@@ -69,7 +217,7 @@ namespace ConsoleApp4
         static void Main(string[] args)
         {
             StartDebugging();
-            ArrayTypesGetSet.ArrayTypesGetSetT();
+            BitonicSortT.BitonicSort();
         }
     }
 }
