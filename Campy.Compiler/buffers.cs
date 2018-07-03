@@ -169,7 +169,7 @@
                     System.Console.WriteLine();
                 }
 
-                DeepCopyFromImplementation(gpu_buffer_pointer, out object to, back_to_cpu.GetType());
+                unsafe { DCToCpu((void*)gpu_buffer_pointer); }
 
                 nuke.Push(back_to_cpu);
             }
@@ -409,195 +409,11 @@
             return 0;
         }
 
-        private unsafe void DCToBclRefValue(object from_cpu, void* to_gpu)
-        {
-            // For null reference, set to_gpu to null--assume that it's a reference or boxed type.
-            bool is_null = false;
-            try
-            {
-                if (from_cpu == null) is_null = true;
-                else if (from_cpu.Equals(null)) is_null = true;
-            }
-            catch (Exception)
-            {
-            }
-
-            if (is_null)
-            {
-                if (to_gpu == null) throw new Exception("Bad copy to.");
-                *(void**) to_gpu = null;
-                return;
-            }
-
-            Type from_cpu_type = from_cpu.GetType();
-            var bcl_type = from_cpu_type.ToMonoTypeReference().RewriteMonoTypeReference();
-
-            // Let's start with basic types.
-            if (from_cpu_type.FullName.Equals("System.Object"))
-            {
-                throw new Exception("Type is System.Object, but I don't know what to represent it as.");
-            }
-
-            if (from_cpu_type.FullName.Equals("System.Int16"))
-            {
-                Cp(to_gpu, from_cpu);
-                return;
-            }
-
-            if (from_cpu_type.FullName.Equals("System.Int32"))
-            {
-                Cp(to_gpu, from_cpu);
-                return;
-            }
-
-            if (from_cpu_type.FullName.Equals("System.Int64"))
-            {
-                Cp(to_gpu, from_cpu);
-                return;
-            }
-
-            if (from_cpu_type.FullName.Equals("System.UInt16"))
-            {
-                Cp(to_gpu, from_cpu);
-                return;
-            }
-
-            if (from_cpu_type.FullName.Equals("System.UInt32"))
-            {
-                Cp(to_gpu, from_cpu);
-                return;
-            }
-
-            if (from_cpu_type.FullName.Equals("System.UInt64"))
-            {
-                Cp(to_gpu, from_cpu);
-                return;
-            }
-
-            if (from_cpu_type.FullName.Equals("System.IntPtr"))
-            {
-                Cp(to_gpu, from_cpu);
-                return;
-            }
-
-            // Map boolean into byte.
-            if (from_cpu_type.FullName.Equals("System.Boolean"))
-            {
-                bool v = (bool) from_cpu;
-                System.Byte v2 = (System.Byte) (v ? 1 : 0);
-                Cp(to_gpu, v2);
-                return;
-            }
-
-            // Map char into uint16.
-            if (from_cpu_type.FullName.Equals("System.Char"))
-            {
-                Char v = (Char) from_cpu;
-                System.UInt16 v2 = (System.UInt16) v;
-                Cp(to_gpu, v2);
-                return;
-            }
-
-            if (from_cpu_type.FullName.Equals("System.Single"))
-            {
-                Cp(to_gpu, from_cpu);
-                return;
-            }
-
-            if (from_cpu_type.FullName.Equals("System.Double"))
-            {
-                Cp(to_gpu, from_cpu);
-                return;
-            }
-
-            if (from_cpu_type.IsEnum)
-            {
-                var bas = from_cpu_type.BaseType;
-                var fields = from_cpu_type.GetFields();
-                if (fields == null)
-                    throw new Exception("Cannot convert " + from_cpu_type.Name);
-                if (fields.Count() == 0)
-                    throw new Exception("Cannot convert " + from_cpu_type.Name);
-                var field = fields[0];
-                if (field == null)
-                    throw new Exception("Cannot convert " + from_cpu_type.Name);
-                var field_type = field.FieldType;
-                if (field_type == null)
-                    throw new Exception("Cannot convert " + from_cpu_type.Name);
-                // Cast to base type and call recursively to solve.
-                var v = Convert.ChangeType(from_cpu, field_type);
-                DCToBclRefValue(v, to_gpu);
-                return;
-            }
-
-            if (from_cpu_type.IsStruct())
-            {
-                // Classes are not copied if already copied before, AND
-                // if it isn't a closure object. Normally, we wouldn't copy anything,
-                // but it turns out some algorithms modify the closure, which has
-                // nested closure. So, we copy these objects.
-                if (!(from_cpu_type.Name.StartsWith("<>c__DisplayClass") ||
-                      from_cpu_type
-                          .GetCustomAttributes(typeof(System.Runtime.CompilerServices.CompilerGeneratedAttribute),
-                              false).Length > 0))
-                {
-                    if (_copied_to_gpu.Contains(from_cpu) && !from_cpu_type.IsStruct())
-                    {
-                        if (Campy.Utils.Options.IsOn("copy_trace"))
-                            System.Console.WriteLine("Not copying object to GPU -- already done.' " + from_cpu);
-                        // Full object already stuffed into implementation buffer.
-                        return;
-                    }
-                }
-                // Copy fields.
-                void* ip = to_gpu;
-                foreach (var fi in bcl_type.ResolveFields())
-                {
-                    var fit = from_cpu_type.GetField(fi.Name,
-                        System.Reflection.BindingFlags.Instance
-                        | System.Reflection.BindingFlags.NonPublic
-                        | System.Reflection.BindingFlags.Public
-                        | System.Reflection.BindingFlags.Static
-                    );
-                    if (fit == null) continue;
-                    object field_value = fit.GetValue(from_cpu);
-                    if (field_value != null && Campy.Utils.Options.IsOn("copy_trace"))
-                    {
-                        System.Console.WriteLine("Copying field " + field_value);
-                    }
-
-                    if (fi.FieldType.IsValueType)
-                    {
-                        DCToBclRefValue(field_value, ip);
-                    }
-                    else if (fi.FieldType.IsReferenceType())
-                    {
-                        var x = DCToBcl(field_value);
-                    }
-                    else throw new Exception("Unknown type.");
-
-                    var field_size = SizeOfRefOrValType(fi.FieldType);
-                    ip = (void*)((long)ip + field_size);
-                }
-
-                return;
-            }
-
-            if (from_cpu_type.IsClass)
-            {
-                var x = DCToBcl(from_cpu);
-                Cp(to_gpu, (IntPtr)x);
-                return;
-            }
-
-            throw new Exception("Rotten type");
-        }
-
         // For a reference, create a new object of the type in BCL, and copy. Then, return BCL reference.
         // For any value type, crash because the value had to have been boxed, which slows it down considerably.
         // Undoubtably, this routine has to understand the format of both the BCL and the object data
         // structure from the CPU.
-        private unsafe void* DCToBcl(object from_cpu)
+        private unsafe IntPtr DCToBcl(object from_cpu)
         {
             // For null reference, return null.
             bool is_null = false;
@@ -610,7 +426,7 @@
             {
             }
 
-            if (is_null) return null;
+            if (is_null) return IntPtr.Zero;
 
             // For value types, crash because we cannot "allocate" an object per se.
             if (from_cpu.GetType().IsValueType)
@@ -622,7 +438,7 @@
                 if (Campy.Utils.Options.IsOn("copy_trace"))
                     System.Console.WriteLine("Not copying object to GPU -- already done.' " + from_cpu);
                 // Full object already stuffed into implementation buffer.
-                return (void*) _allocated_objects[from_cpu];
+                return _allocated_objects[from_cpu];
             }
 
             if (Campy.Utils.Options.IsOn("copy_trace"))
@@ -634,14 +450,125 @@
 
             var result = New(from_cpu);
             _allocated_objects[from_cpu] = result;
-            var bcl_type = RUNTIME.BclHeapGetType(result);
-            if (bcl_type == IntPtr.Zero) throw new Exception();
 
+            DCToBclFields(from_cpu, (void*)result, null);
+
+            return result;
+        }
+
+	    // Copy from a C# object to a specific location given by a pointer.
+	    // Somewhat overloaded meaning here: from_cpu is a field value or object;
+	    // address implies a certain field or a reference to the BCL object;
+	    // field is which field of the BCL object, but it's not used; address implies
+        // which field.
+        private unsafe void DCToBclFields(object from_cpu, void* address, FieldReference field_ref)
+        {
+            // For null reference, set to_gpu to null--assume that it's a reference or boxed type.
+            bool is_null = false;
+            try
+            {
+                if (from_cpu == null) is_null = true;
+                else if (from_cpu.Equals(null)) is_null = true;
+            }
+            catch (Exception)
+            {
+            }
+            if (is_null)
+            {
+                if (address == null) throw new Exception("Bad copy to.");
+                *(void**)address = null;
+                return;
+            }
+            Type system_type = from_cpu.GetType();
+            var mono_type = system_type.ToMonoTypeReference().RewriteMonoTypeReference();
+            if (mono_type.FullName.Equals("System.Object"))
+            {
+                throw new Exception("Type is System.Object, but I don't know what to represent it as.");
+            }
+            if (mono_type.FullName.Equals("System.Int16"))
+            {
+                Cp(address, from_cpu);
+                return;
+            }
+            if (mono_type.FullName.Equals("System.Int32"))
+            {
+                Cp(address, from_cpu);
+                return;
+            }
+            if (mono_type.FullName.Equals("System.Int64"))
+            {
+                Cp(address, from_cpu);
+                return;
+            }
+            if (mono_type.FullName.Equals("System.UInt16"))
+            {
+                Cp(address, from_cpu);
+                return;
+            }
+            if (mono_type.FullName.Equals("System.UInt32"))
+            {
+                Cp(address, from_cpu);
+                return;
+            }
+            if (mono_type.FullName.Equals("System.UInt64"))
+            {
+                Cp(address, from_cpu);
+                return;
+            }
+            if (mono_type.FullName.Equals("System.IntPtr"))
+            {
+                Cp(address, from_cpu);
+                return;
+            }
+            if (mono_type.FullName.Equals("System.Boolean"))
+            {
+                bool v = (bool)from_cpu;
+                System.Byte v2 = (System.Byte)(v ? 1 : 0);
+                Cp(address, v2);
+                return;
+            }
+            if (mono_type.FullName.Equals("System.Char"))
+            {
+                Char v = (Char)from_cpu;
+                System.UInt16 v2 = (System.UInt16)v;
+                Cp(address, v2);
+                return;
+            }
+            if (mono_type.FullName.Equals("System.Single"))
+            {
+                Cp(address, from_cpu);
+                return;
+            }
+            if (mono_type.FullName.Equals("System.Double"))
+            {
+                Cp(address, from_cpu);
+                return;
+            }
+            if (system_type.IsEnum)
+            {
+                var bas = system_type.BaseType;
+                var fields = system_type.GetFields();
+                if (fields == null)
+                    throw new Exception("Cannot convert " + system_type.Name);
+                if (fields.Count() == 0)
+                    throw new Exception("Cannot convert " + system_type.Name);
+                var field = fields[0];
+                if (field == null)
+                    throw new Exception("Cannot convert " + system_type.Name);
+                var field_type = field.FieldType;
+                if (field_type == null)
+                    throw new Exception("Cannot convert " + system_type.Name);
+                // Cast to base type and call recursively to solve.
+                var v = Convert.ChangeType(from_cpu, field_type);
+                DCToBclFields(v, address, field_ref);
+                return;
+            }
             if (mono_type.FullName.Equals("System.String"))
             {
-                return (void*) result;
+                // When allocated, BCL sets up the string. So, nothing to do here,
+                // no further copying of from_cpu.
+                return;
             }
-
             if (mono_type.IsArray)
             {
                 var array = from_cpu as Array;
@@ -649,7 +576,7 @@
                 var bcl_etype = RUNTIME.GetBclType(etype);
 
                 uint[] lengths = new uint[array.Rank];
-                for (int i = 0; i < array.Rank; ++i) lengths[i] = (uint) array.GetLength(i);
+                for (int i = 0; i < array.Rank; ++i) lengths[i] = (uint)array.GetLength(i);
 
                 // An array is represented as a struct, Runtime::A.
                 // The data in the array is contained in the buffer following the length.
@@ -657,26 +584,60 @@
                 // Buffer.SizeOf(array) to get the representation buffer size.
                 // If the element is an array or a class, a buffer is allocated for each
                 // element, and an intptr used in the array.
-                Array a = (Array) from_cpu;
+                Array a = (Array)from_cpu;
                 int rank = a.Rank;
                 int len = a.Length;
                 int bytes = SizeOf(a);
 
-                var destIntPtr = (byte*) result;
+                var destIntPtr = (byte*)address;
                 byte* df_ptr = destIntPtr;
                 byte* df_rank = df_ptr + BUFFERS.SizeOf(typeof(IntPtr));
                 byte* df_length = df_rank + BUFFERS.SizeOf(typeof(Int64));
                 byte* df_elements = df_length + BUFFERS.SizeOf(typeof(Int64)) * rank;
-                Cp(df_ptr, (IntPtr) df_elements); // Copy df_elements to *df_ptr
+                Cp(df_ptr, (IntPtr)df_elements); // Copy df_elements to *df_ptr
                 Cp(df_rank, rank);
                 for (int i = 0; i < rank; ++i)
                     Cp(df_length + i * BUFFERS.SizeOf(typeof(Int64)), a.GetLength(i));
-                DCCpArrayToGpu(a, df_elements);
-                return (void*) result;
-            }
+                System.Type orig_element_type = from_cpu.GetType().GetElementType();
+                byte* ip = df_elements;
 
-            if (mono_type.IsReferenceType())
+                // As the array could be multi-dimensional, we need to do a copy in row major order.
+                // This is essentially the same as doing a number conversion to a string and vice versa
+                // over the total number of elements in the entire multi-dimensional array.
+                // See https://stackoverflow.com/questions/7123490/how-compiler-is-converting-integer-to-string-and-vice-versa
+                // https://eli.thegreenplace.net/2015/memory-layout-of-multi-dimensional-arrays/
+                long total_size = 1;
+                for (int i = 0; i < a.Rank; ++i) total_size *= a.GetLength(i);
+                for (int i = 0; i < total_size; ++i)
+                {
+                    int[] index = new int[a.Rank];
+                    string s = "";
+                    int c = i;
+                    for (int j = a.Rank - 1; j >= 0; --j)
+                    {
+                        int ind_size = a.GetLength(j);
+                        var remainder = c % ind_size;
+                        c = c / a.GetLength(j);
+                        index[j] = remainder;
+                        s = (char)((short)('0') + remainder) + s;
+                    }
+
+                    var from_element_value = a.GetValue(index);
+                    var to_element_type = from_element_value.GetType().ToMonoTypeReference().RewriteMonoTypeReference();
+                    var inc = SizeOfRefOrValType(to_element_type);
+                    DCToBclFields(from_element_value, ip, field_ref);
+                    ip = (byte*)((long)ip
+                                 + BUFFERS.Padding((long)ip, BUFFERS.Alignment(from_element_value.GetType()))
+                                 + inc);
+                }
+
+                RUNTIME.BclCheckHeap();
+                return;
+            }
+            if (mono_type.IsStruct() || mono_type.IsReferenceType())
             {
+                var bcl_type = RUNTIME.BclHeapGetType((IntPtr)address);
+                if (bcl_type == IntPtr.Zero) throw new Exception();
                 IntPtr[] fields = null;
                 IntPtr* buf;
                 int len;
@@ -695,980 +656,445 @@
                     var find = mono_fields.Where(t => t.Name == name);
                     var mono_field_reference = find.FirstOrDefault();
                     if (mono_field_reference == null) continue;
+                    // Simple name matching does not work because the meta is sufficiently different
+                    // between the framework used and the BCL framework. For example
+                    // in List<>, BCL names a field "_items", but Net Framework the field
+                    // "items". There is no guarentee that the field is in the same order
+                    // either.
                     var fit = system_type.GetField(mono_field_reference.Name,
                         System.Reflection.BindingFlags.Instance
                         | System.Reflection.BindingFlags.NonPublic
                         | System.Reflection.BindingFlags.Public
                         | System.Reflection.BindingFlags.Static
                     );
-                    if (fit == null) continue;
+                    if (fit == null)
+                    {
+                        fit = system_type.GetField("_" + mono_field_reference.Name,
+                            System.Reflection.BindingFlags.Instance
+                            | System.Reflection.BindingFlags.NonPublic
+                            | System.Reflection.BindingFlags.Public
+                            | System.Reflection.BindingFlags.Static
+                        );
+                    };
+                    if (fit == null)
+                    {
+                        throw new Exception("Unknown field " + mono_field_reference.Name);
+                    }
                     object field_value = fit.GetValue(from_cpu);
                     if (field_value != null && Campy.Utils.Options.IsOn("copy_trace"))
                         System.Console.WriteLine("Copying field " + field_value);
                     var mono_field_type = mono_field_reference.FieldType;
                     mono_field_type = mono_field_type.RewriteMonoTypeReference();
-                    var fPtr = RUNTIME.BclGetField(result, f);
+                    var fPtr = RUNTIME.BclGetField((IntPtr)address, f);
                     // In the case of a pointer, you have to deref the field.
                     var oPtr = fPtr;
-                    //if (!mono_field_type.IsValueType)
-                    //    oPtr = (IntPtr)Marshal.PtrToStructure(fPtr, typeof(IntPtr));
                     void* ip = (void*)oPtr;
-                    DCToBclRefValue(field_value, ip);
+                    if (mono_field_type.IsReferenceType())
+                        field_value = DCToBcl(field_value);
+                    DCToBclFields(field_value, ip, field_ref);
                     var field_size = SizeOfRefOrValType(mono_field_reference.FieldType);
                 }
 
-                return (void*)result;
+                return;
             }
-
-            throw new Exception("Unknown type.");
-        }
-
-        private unsafe void DCCpArrayToGpu(Array from_cpu, byte* to_gpu)
-        {
-            System.Type orig_element_type = from_cpu.GetType().GetElementType();
-            byte* ip = to_gpu;
-
-            // As the array could be multi-dimensional, we need to do a copy in row major order.
-            // This is essentially the same as doing a number conversion to a string and vice versa
-            // over the total number of elements in the entire multi-dimensional array.
-            // See https://stackoverflow.com/questions/7123490/how-compiler-is-converting-integer-to-string-and-vice-versa
-            // https://eli.thegreenplace.net/2015/memory-layout-of-multi-dimensional-arrays/
-            long total_size = 1;
-            for (int i = 0; i < from_cpu.Rank; ++i) total_size *= from_cpu.GetLength(i);
-            for (int i = 0; i < total_size; ++i)
-            {
-                int[] index = new int[from_cpu.Rank];
-                string s = "";
-                int c = i;
-                for (int j = from_cpu.Rank - 1; j >= 0; --j)
-                {
-                    int ind_size = from_cpu.GetLength(j);
-                    var remainder = c % ind_size;
-                    c = c / from_cpu.GetLength(j);
-                    index[j] = remainder;
-                    s = (char) ((short) ('0') + remainder) + s;
-                }
-
-                var from_element_value = from_cpu.GetValue(index);
-                var to_element_type = from_element_value.GetType().ToMonoTypeReference().RewriteMonoTypeReference();
-                var inc = SizeOfRefOrValType(to_element_type);
-                DCToBclRefValue(from_element_value, ip);
-                ip = (byte*) ((long) ip
-                              + BUFFERS.Padding((long) ip, BUFFERS.Alignment(from_element_value.GetType()))
-                              + inc);
-            }
-
-            RUNTIME.BclCheckHeap();
+	        throw new Exception("Rotten apples");
         }
 
 
-        private unsafe void DeepCopyToImplementation(object from_cpu, void* to_gpu)
+        private unsafe object DCToCpu(void* address)
         {
-            // Copy object to a buffer.
-            try
+            // Find managed object in BCL and copy to CPU.
+            // I need to know what type I'm copying from to allocate a managed
+            // object on CPU side.
+            var bcl_type_of_object = RUNTIME.BclHeapGetType((IntPtr)address);
+            if (bcl_type_of_object == IntPtr.Zero)
+                throw new Exception("Address does not correspond to BCL heap object reference.");
+
+            var list = _allocated_objects.Where(t =>
             {
-                {
-                    bool is_null = false;
-                    try
-                    {
-                        if (from_cpu == null) is_null = true;
-                        else if (from_cpu.Equals(null)) is_null = true;
-                    }
-                    catch (Exception)
-                    {
-                    }
-                    if (is_null)
-                    {
-                        throw new Exception("Unknown type of object.");
-                    }
-                }
-
-                System.Type from_cpu_type = from_cpu.GetType();
-
-                // Let's start with basic types.
-                if (from_cpu_type.FullName.Equals("System.Object"))
-                {
-                    throw new Exception("Type is System.Object, but I don't know what to represent it as.");
-                }
-                if (from_cpu_type.FullName.Equals("System.Int16"))
-                {
-                    Cp(to_gpu, from_cpu);
-                    return;
-                }
-                if (from_cpu_type.FullName.Equals("System.Int32"))
-                {
-                    Cp(to_gpu, from_cpu);
-                    return;
-                }
-                if (from_cpu_type.FullName.Equals("System.Int64"))
-                {
-                    Cp(to_gpu, from_cpu);
-                    return;
-                }
-                if (from_cpu_type.FullName.Equals("System.UInt16"))
-                {
-                    Cp(to_gpu, from_cpu);
-                    return;
-                }
-                if (from_cpu_type.FullName.Equals("System.UInt32"))
-                {
-                    Cp(to_gpu, from_cpu);
-                    return;
-                }
-                if (from_cpu_type.FullName.Equals("System.UInt64"))
-                {
-                    Cp(to_gpu, from_cpu);
-                    return;
-                }
-                if (from_cpu_type.FullName.Equals("System.IntPtr"))
-                {
-                    Cp(to_gpu, from_cpu);
-                    return;
-                }
-
-                // Map boolean into byte.
-                if (from_cpu_type.FullName.Equals("System.Boolean"))
-                {
-                    bool v = (bool)from_cpu;
-                    System.Byte v2 = (System.Byte)(v ? 1 : 0);
-                    Cp(to_gpu, v2);
-                    return;
-                }
-
-                // Map char into uint16.
-                if (from_cpu_type.FullName.Equals("System.Char"))
-                {
-                    Char v = (Char)from_cpu;
-                    System.UInt16 v2 = (System.UInt16)v;
-                    Cp(to_gpu, v2);
-                    return;
-                }
-                if (from_cpu_type.FullName.Equals("System.Single"))
-                {
-                    Cp(to_gpu, from_cpu);
-                    return;
-                }
-                if (from_cpu_type.FullName.Equals("System.Double"))
-                {
-                    Cp(to_gpu, from_cpu);
-                    return;
-                }
-
-                String name = from_cpu_type.FullName;
-                _type_name_map.TryGetValue(name, out string alt);
-                System.Reflection.TypeFilter tf = new System.Reflection.TypeFilter((System.Type t, object o) =>
-                {
-                    return t.FullName == name || t.FullName == alt;
-                });
-
-                var blittable_type = from_cpu_type;
-
-                if (from_cpu_type.FullName.Equals("System.String"))
-                {
-                    if (Campy.Utils.Options.IsOn("copy_trace"))
-                        System.Console.WriteLine("Adding object to 'copied_to_gpu' " + from_cpu);
-                    _copied_to_gpu.Add(from_cpu);
-
-                    string str = from_cpu as string;
-                    int length = str.Length;
-                    fixed (char* p = str)
-                    {
-                        // Create BCL string with value.
-                        var bcl_str = RUNTIME.BclAllocString(length, new IntPtr(p));
-                        Cp(to_gpu, bcl_str);
-                    }
-                    return;
-                }
-
-                if (from_cpu_type.IsArray)
-                {
-                    // First, make sure allocated object 
-                    if (_copied_to_gpu.Contains(from_cpu))
-                    {
-                        if (Campy.Utils.Options.IsOn("copy_trace"))
-                            System.Console.WriteLine("Not copying object to GPU -- already done.' " + from_cpu);
-                        // Full object already stuffed into implementation buffer.
-                    }
-                    else
-                    {
-                        if (Campy.Utils.Options.IsOn("copy_trace"))
-                            System.Console.WriteLine("Adding object to 'copied_to_gpu' " + from_cpu);
-                        _copied_to_gpu.Add(from_cpu);
-
-                        // An array is represented as a struct, Runtime::A.
-                        // The data in the array is contained in the buffer following the length.
-                        // The buffer allocated must be big enough to contain all data. Use
-                        // Buffer.SizeOf(array) to get the representation buffer size.
-                        // If the element is an array or a class, a buffer is allocated for each
-                        // element, and an intptr used in the array.
-                        Array a = (Array)from_cpu;
-                        int rank = a.Rank;
-                        int len = a.Length;
-                        int bytes = SizeOf(a);
-
-                        var destIntPtr = (byte*)to_gpu;
-                        byte* df_ptr = destIntPtr;
-                        byte* df_rank = df_ptr + BUFFERS.SizeOf(typeof(IntPtr));
-                        byte* df_length = df_rank + BUFFERS.SizeOf(typeof(Int64));
-                        byte* df_elements = df_length + BUFFERS.SizeOf(typeof(Int64)) * rank;
-                        Cp(df_ptr, (IntPtr)df_elements); // Copy df_elements to *df_ptr
-                        Cp(df_rank, rank);
-                        for (int i = 0; i < rank; ++i)
-                            Cp(df_length + i * BUFFERS.SizeOf(typeof(Int64)), a.GetLength(i));
-                        CpArrayToGpu(df_elements, a);
-                    }
-                    return;
-                }
-
-                if (from_cpu_type.IsEnum)
-                {
-                    var bas = from_cpu_type.BaseType;
-                    var fields = from_cpu_type.GetFields();
-                    if (fields == null)
-                        throw new Exception("Cannot convert " + from_cpu_type.Name);
-                    if (fields.Count() == 0)
-                        throw new Exception("Cannot convert " + from_cpu_type.Name);
-                    var field = fields[0];
-                    if (field == null)
-                        throw new Exception("Cannot convert " + from_cpu_type.Name);
-                    var field_type = field.FieldType;
-                    if (field_type == null)
-                        throw new Exception("Cannot convert " + from_cpu_type.Name);
-                    // Cast to base type and call recursively to solve.
-                    var v = Convert.ChangeType(from_cpu, field_type);
-                    DeepCopyToImplementation(v, to_gpu);
-                    return;
-                }
-
-                if (from_cpu_type.IsStruct() || from_cpu_type.IsClass)
-                {
-                    // Classes are not copied if already copied before, AND
-                    // if it isn't a closure object. Normally, we wouldn't copy anything,
-                    // but it turns out some algorithms modify the closure, which has
-                    // nested closure. So, we copy these objects.
-                    if (!(from_cpu_type.Name.StartsWith("<>c__DisplayClass") ||
-                        from_cpu_type
-                            .GetCustomAttributes(typeof(System.Runtime.CompilerServices.CompilerGeneratedAttribute),
-                        false).Length > 0))
-                    {
-                        if (_copied_to_gpu.Contains(from_cpu) && !from_cpu_type.IsStruct())
-                        {
-                            if (Campy.Utils.Options.IsOn("copy_trace"))
-                                System.Console.WriteLine("Not copying object to GPU -- already done.' " + from_cpu);
-                            // Full object already stuffed into implementation buffer.
-                            return;
-                        }
-                    }
-                    {
-                        if (!from_cpu_type.IsStruct())
-                        {
-                            if (Campy.Utils.Options.IsOn("copy_trace"))
-                                System.Console.WriteLine("Adding object to 'copied_to_gpu' " + from_cpu);
-                            _copied_to_gpu.Add(from_cpu);
-                        }
-
-                        System.Type f = from_cpu.GetType();
-                        System.Type tr = blittable_type;
-                        int size = SizeOf(tr);
-                        void* ip = to_gpu;
-                        var rffi = f.GetRuntimeFields();
-                        var ffi = f.GetFields(
-                            System.Reflection.BindingFlags.Instance
-                            | System.Reflection.BindingFlags.NonPublic
-                            | System.Reflection.BindingFlags.Public
-                            //| System.Reflection.BindingFlags.Static
-                        );
-                        var tfi = tr.GetFields(
-                            System.Reflection.BindingFlags.Instance
-                            | System.Reflection.BindingFlags.NonPublic
-                            | System.Reflection.BindingFlags.Public
-                            //| System.Reflection.BindingFlags.Static
-                        );
-
-                        foreach (System.Reflection.FieldInfo fi in ffi)
-                        {
-                            object field_value = fi.GetValue(from_cpu);
-                            if (field_value != null && Campy.Utils.Options.IsOn("copy_trace"))
-                                if (Campy.Utils.Options.IsOn("copy_trace"))
-                                {
-                                    System.Console.WriteLine("Copying field " + field_value);
-                                }
-
-                            String na = fi.Name;
-                            var tfield = tfi.Where(k => k.Name == fi.Name).FirstOrDefault();
-                            if (tfield == null) throw new ArgumentException("Field not found.");
-                            if (fi.FieldType.IsArray)
-                            {
-                                // Allocate a whole new buffer, copy to that, place buffer pointer into field at ip.
-                                ip = (void*)((long)ip + BUFFERS.Padding((long)ip, BUFFERS.Alignment(typeof(IntPtr))));
-                                if (field_value != null)
-                                {
-                                    Array ff = (Array)field_value;
-                                    var field_size = SizeOf(ff);
-                                    IntPtr gp;
-                                    if (_allocated_objects.ContainsKey(field_value))
-                                    {
-                                        gp = _allocated_objects[field_value];
-                                    }
-                                    else
-                                    {
-                                        if (Campy.Utils.Options.IsOn("copy_trace"))
-                                            System.Console.WriteLine("Allocating GPU buf " + field_value);
-                                        gp = New(ff);
-                                        _allocated_objects[field_value] = (IntPtr)gp;
-                                    }
-                                    DeepCopyToImplementation(gp, ip);
-                                    DeepCopyToImplementation(field_value, (void*)gp);
-                                }
-                                else
-                                {
-                                    field_value = IntPtr.Zero;
-                                    DeepCopyToImplementation(field_value, ip);
-                                }
-                                ip = (void*)((long)ip
-                                             + BUFFERS.SizeOf(typeof(IntPtr)));
-                            }
-                            else if (field_value as Delegate != null)
-                            {
-                                ip = (void*)((long)ip
-                                             + BUFFERS.SizeOf(typeof(IntPtr)));
-                            }
-                            else if (fi.FieldType.IsClass)
-                            {
-                                // Allocate a whole new buffer, copy to that, place buffer pointer into field at ip.
-                                if (field_value != null)
-                                {
-                                    ip = (void*)((long)ip + BUFFERS.Padding((long)ip, BUFFERS.Alignment(typeof(IntPtr))));
-                                    IntPtr gp;
-                                    if (_allocated_objects.ContainsKey(field_value))
-                                    {
-                                        gp = _allocated_objects[field_value];
-                                    }
-                                    else
-                                    {
-                                        if (Campy.Utils.Options.IsOn("copy_trace"))
-                                            System.Console.WriteLine("Allocating GPU buf " + field_value);
-                                        gp = New(field_value);
-                                        _allocated_objects[field_value] = (IntPtr)gp;
-                                    }
-                                    // Copy pointer to field.
-                                    DeepCopyToImplementation(gp, ip);
-                                    // Copy object to GPU.
-                                    DeepCopyToImplementation(field_value, (void*)gp);
-                                }
-                                else
-                                {
-                                    field_value = IntPtr.Zero;
-                                    DeepCopyToImplementation(field_value, ip);
-                                }
-                                ip = (void*)((long)ip
-                                             + BUFFERS.SizeOf(typeof(IntPtr)));
-                            }
-                            else if (fi.FieldType.IsStruct())
-                            {
-                                throw new Exception("Whoops.");
-                            }
-                            else
-                            {
-                                DeepCopyToImplementation(field_value, ip);
-                                var field_size = SizeOf(tfield.FieldType);
-                                ip = (void*)((long)ip + field_size);
-                            }
-                        }
-                    }
-                    return;
-                }
-
-                throw new Exception("Unknown type.");
-            }
-            catch (Exception e)
+                if (t.Value == (IntPtr) address) return true;
+                return false;
+            });
+            object cpu = null;
+            if (!list.Any())
             {
-                System.Console.WriteLine("Exception");
-                System.Console.WriteLine(e);
-                throw e;
+                var from_type_list = RUNTIME._type_to_bcltype.Where(t => { return t.Value == bcl_type_of_object; });
+                var count = from_type_list.Count();
+                var from_type = from_type_list.FirstOrDefault();
+                var type = from_type.Key.ToSystemType();
+                cpu = Activator.CreateInstance(type);
+                _allocated_objects[cpu] = (IntPtr)address;
             }
-            finally
+            else
             {
+                cpu = list.First().Key;
             }
+
+            if (cpu == null) throw new Exception("Copy to CPU object is null.");
+            if (_delayed_from_gpu.Contains(cpu))
+            {
+                if (Campy.Utils.Options.IsOn("copy_trace"))
+                    System.Console.WriteLine("Not copying to CPU "
+                                             + cpu
+                                             + " "
+                                             + RuntimeHelpers.GetHashCode(cpu)
+                                             + " because it is delayed.");
+                return cpu;
+            }
+            if (_never_copy_from_gpu.Contains(cpu))
+            {
+                if (Campy.Utils.Options.IsOn("copy_trace"))
+                    System.Console.WriteLine("Not copying to CPU "
+                                             + cpu
+                                             + " "
+                                             + RuntimeHelpers.GetHashCode(cpu)
+                                             + " because it never copied to GPU.");
+                return cpu;
+            }
+            if (_copied_from_gpu.Contains(cpu))
+            {
+                if (Campy.Utils.Options.IsOn("copy_trace"))
+                    System.Console.WriteLine("Not copying to CPU "
+                                             + cpu
+                                             + " "
+                                             + RuntimeHelpers.GetHashCode(cpu)
+                                             + " because it was copied back before.");
+                return cpu;
+            }
+
+            var type_of_cpu = cpu.GetType();
+            if (Campy.Utils.Options.IsOn("copy_trace"))
+                System.Console.WriteLine("Copying to CPU "
+                                         + cpu
+                                         + " "
+                                         + "of type "
+                                         + type_of_cpu.FullName
+                                         + " because it was copied to GPU.");
+
+
+            DCtoCpuRefValue(address, cpu, null);
+
+            return cpu;
         }
 
-        private unsafe void CpArrayToGpu(byte* to_gpu, Array from_cpu)
+        private unsafe void DCtoCpuRefValue(void* address, object target, FieldInfo target_field)
         {
-            System.Type orig_element_type = from_cpu.GetType().GetElementType();
-
-            // As the array could be multi-dimensional, we need to do a copy in row major order.
-            // This is essentially the same as doing a number conversion to a string and vice versa
-            // over the total number of elements in the entire multi-dimensional array.
-            // See https://stackoverflow.com/questions/7123490/how-compiler-is-converting-integer-to-string-and-vice-versa
-            // https://eli.thegreenplace.net/2015/memory-layout-of-multi-dimensional-arrays/
-            long total_size = 1;
-            for (int i = 0; i < from_cpu.Rank; ++i)
-                total_size *= from_cpu.GetLength(i);
-            for (int i = 0; i < total_size; ++i)
+            if (target_field == null)
             {
-                int[] index = new int[from_cpu.Rank];
-                string s = "";
-                int c = i;
-                for (int j = from_cpu.Rank - 1; j >= 0; --j)
+                System.Type system_type = target.GetType();
+                var mono_type = system_type.ToMonoTypeReference().RewriteMonoTypeReference();
+                var bcl_type = RUNTIME.BclHeapGetType((IntPtr)address);
+                if (bcl_type == IntPtr.Zero) throw new Exception();
+                if (system_type.IsArray)
                 {
-                    int ind_size = from_cpu.GetLength(j);
-                    var remainder = c % ind_size;
-                    c = c / from_cpu.GetLength(j);
-                    index[j] = remainder;
-                    s = (char)((short)('0') + remainder) + s;
-                }
-                //sdfg
-                var from_element_value = from_cpu.GetValue(index);
-                if (orig_element_type.FullName == "System.String")
-                {
-                    if (from_element_value != null)
-                    {
-                        int size_element = 4 + 2 * ((string)from_element_value).Length;
-                        if (_allocated_objects.ContainsKey(from_element_value))
-                        {
-                            IntPtr gp = _allocated_objects[from_element_value];
-                            DeepCopyToImplementation(gp, to_gpu);
-                        }
-                        else
-                        {
-                            if (Campy.Utils.Options.IsOn("copy_trace"))
-                                System.Console.WriteLine("Allocating GPU buf " + from_element_value);
-                            IntPtr gp = New(size_element);
-                            DeepCopyToImplementation(from_element_value, (void*)gp);
-                            DeepCopyToImplementation(gp, to_gpu);
-                        }
-                        to_gpu = (byte*)((long)to_gpu
-                                     + BUFFERS.Padding((long)to_gpu, BUFFERS.Alignment(typeof(IntPtr)))
-                                     + BUFFERS.SizeOf(typeof(IntPtr)));
-                    }
-                    else
-                    {
-                        from_element_value = IntPtr.Zero;
-                        DeepCopyToImplementation(from_element_value, to_gpu);
-                        to_gpu = (byte*)((long)to_gpu
-                                     + BUFFERS.Padding((long)to_gpu, BUFFERS.Alignment(typeof(IntPtr)))
-                                     + BUFFERS.SizeOf(typeof(IntPtr)));
-                    }
-                }
-                else if (orig_element_type.IsArray)
-                {
-                    if (from_element_value != null)
-                    {
-                        Array array = from_element_value as Array;
-                        // Each element is a pointer.
-                        var size_element = SizeOf(array);
-                        IntPtr gp;
-                        if (_allocated_objects.ContainsKey(from_element_value))
-                        {
-                            gp = _allocated_objects[from_element_value];
-                        }
-                        else
-                        {
-                            if (Campy.Utils.Options.IsOn("copy_trace"))
-                                System.Console.WriteLine("Allocating GPU buf " + size_element);
-                            gp = New(from_element_value);
-                            //gp = New(size_element);
-                            _allocated_objects[from_element_value] = (IntPtr)gp;
-                        }
-                        DeepCopyToImplementation(gp, to_gpu);
-                        DeepCopyToImplementation(from_element_value, (void*)gp);
+                    if ((IntPtr)address == IntPtr.Zero)
+                        throw new Exception("from address null.");
 
-                        to_gpu = (byte*)((long)to_gpu
-                                     + BUFFERS.Padding((long)to_gpu, BUFFERS.Alignment(typeof(IntPtr)))
-                                     + BUFFERS.SizeOf(typeof(IntPtr)));
-                    }
-                    else
-                    {
-                        from_element_value = IntPtr.Zero;
-                        DeepCopyToImplementation(from_element_value, to_gpu);
-                        to_gpu = (byte*)((long)to_gpu
-                                     + BUFFERS.Padding((long)to_gpu, BUFFERS.Alignment(typeof(IntPtr)))
-                                     + BUFFERS.SizeOf(typeof(IntPtr)));
-                    }
-                }
-                else if (orig_element_type.IsClass)
-                {
-                    if (from_element_value != null)
-                    {
-                        // Each element is a pointer.
-                        IntPtr gp;
-                        if (_allocated_objects.ContainsKey(from_element_value))
-                        {
-                            gp = _allocated_objects[from_element_value];
-                        }
-                        else
-                        {
-                            if (Campy.Utils.Options.IsOn("copy_trace"))
-                                System.Console.WriteLine("Allocating GPU buf");
-                            gp = New(from_element_value);
-                            _allocated_objects[from_element_value] = (IntPtr)gp;
-                        }
-                        DeepCopyToImplementation(gp, to_gpu);
-                        DeepCopyToImplementation(from_element_value, (void*)gp);
+                    if (target == null)
+                        throw new Exception("target null.");
 
-                        to_gpu = (byte*)((long)to_gpu
-                                     + BUFFERS.Padding((long)to_gpu, BUFFERS.Alignment(typeof(IntPtr)))
-                                     + BUFFERS.SizeOf(typeof(IntPtr)));
-                    }
-                    else
-                    {
-                        from_element_value = IntPtr.Zero;
-                        DeepCopyToImplementation(from_element_value, to_gpu);
-                        to_gpu = (byte*)((long)to_gpu
-                                     + BUFFERS.Padding((long)to_gpu, BUFFERS.Alignment(typeof(IntPtr)))
-                                     + BUFFERS.SizeOf(typeof(IntPtr)));
-                    }
-                }
-                else
-                {
-                    int size_element = BUFFERS.SizeOf(from_element_value.GetType());
-                    DeepCopyToImplementation(from_element_value, to_gpu);
-                    to_gpu = (byte*)((long)to_gpu
-                        + BUFFERS.Padding((long)to_gpu, BUFFERS.Alignment(from_element_value.GetType()))
-                        + size_element);
-                }
-            }
-            RUNTIME.BclCheckHeap();
-        }
-
-
-
-
-        private unsafe void DeepCopyFromImplementation(IntPtr from_gpu, out object to_cpu, System.Type target_type)
-        {
-            try
-            {
-                System.Type t_type = target_type;
-                System.Type f_type = t_type;
-
-                if (t_type.FullName.Equals("System.Object"))
-                {
-                    if (from_gpu == IntPtr.Zero)
-                    {
-                        to_cpu = null;
-                        return;
-                    }
-                    // I need to know what type I'm copying from to allocate a managed
-                    // object on CPU side.
-                    var bcl_type_of_object = RUNTIME.BclHeapGetType(from_gpu);
-                    var from_type_list = RUNTIME._type_to_bcltype.Where(t => { return t.Value == bcl_type_of_object; });
-                    var count = from_type_list.Count();
-                    var from_type = from_type_list.FirstOrDefault();
-                    var type = from_type.Key.ToSystemType();
-                    to_cpu = Activator.CreateInstance(type);
-                    var fields = to_cpu.GetType()
-                        .GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public).First();
-                    unsafe
-                    {
-                        int* vp = (int*)from_gpu;
-                        int v = *vp;
-                        fields.SetValue(to_cpu, v);
-                    }                     
-                    return;
-                }
-                if (t_type.FullName.Equals("System.Int16"))
-                {
-                    object o = Marshal.PtrToStructure<System.Int16>(from_gpu);
-                    to_cpu = o;
-                    return;
-                }
-                if (t_type.FullName.Equals("System.Int32"))
-                {
-                    object o = Marshal.PtrToStructure<System.Int32>(from_gpu);
-                    to_cpu = o;
-                    return;
-                }
-                if (t_type.FullName.Equals("System.Int64"))
-                {
-                    object o = Marshal.PtrToStructure<System.Int64>(from_gpu);
-                    to_cpu = o;
-                    return;
-                }
-                if (t_type.FullName.Equals("System.UInt16"))
-                {
-                    object o = Marshal.PtrToStructure<System.UInt16>(from_gpu);
-                    to_cpu = o;
-                    return;
-                }
-                if (t_type.FullName.Equals("System.UInt32"))
-                {
-                    object o = Marshal.PtrToStructure<System.UInt32>(from_gpu);
-                    to_cpu = o;
-                    return;
-                }
-                if (t_type.FullName.Equals("System.UInt64"))
-                {
-                    object o = Marshal.PtrToStructure<System.UInt64>(from_gpu);
-                    to_cpu = o;
-                    return;
-                }
-                if (t_type.FullName.Equals("System.IntPtr"))
-                {
-                    object o = Marshal.PtrToStructure<System.IntPtr>(from_gpu);
-                    to_cpu = o;
-                    return;
-                }
-
-                // Map boolean into byte.
-                if (t_type.FullName.Equals("System.Boolean"))
-                {
-                    byte v = *(byte*)from_gpu;
-                    to_cpu = (System.Boolean)(v == 1 ? true : false);
-                    return;
-                }
-
-                // Map char into uint16.
-                if (t_type.FullName.Equals("System.Char"))
-                {
-                    to_cpu = (System.Char)from_gpu;
-                    return;
-                }
-                if (t_type.FullName.Equals("System.Single"))
-                {
-                    object o = Marshal.PtrToStructure<System.Single>(from_gpu);
-                    to_cpu = o;
-                    return;
-                }
-                if (t_type.FullName.Equals("System.Double"))
-                {
-                    object o = Marshal.PtrToStructure<System.Double>(from_gpu);
-                    to_cpu = o;
-                    return;
-                }
-
-                if (t_type.FullName.Equals("System.String"))
-                {
-                    // For now, assume data exists on GPU. Perform memcpy using CUDA.
-                    int* block = stackalloc int[1];
-                    IntPtr intptr = new IntPtr(block);
-                    var res = Cuda.cuMemcpyDtoH_v2(intptr, from_gpu, sizeof(int));
-                    int len = *block;
-                    short* block2 = stackalloc short[len + 1];
-                    var intptr2 = new IntPtr(block2);
-                    Cuda.cuMemcpyDtoH_v2(intptr2, from_gpu + sizeof(int), (uint)len * sizeof(short));
-                    block2[len] = 0;
-                    to_cpu = new string((char*)intptr2);
-                    if (Campy.Utils.Options.IsOn("copy_trace"))
-                        System.Console.WriteLine("Copy from GPU " + to_cpu);
-                    return;
-                }
-
-                if (t_type.IsEnum)
-                {
-                    var bas = t_type.BaseType;
-                    var fields = t_type.GetFields();
-                    if (fields == null)
-                        throw new Exception("Cannot convert " + t_type.Name);
-                    if (fields.Count() == 0)
-                        throw new Exception("Cannot convert " + t_type.Name);
-                    var field = fields[0];
-                    if (field == null)
-                        throw new Exception("Cannot convert " + t_type.Name);
-                    var field_type = field.FieldType;
-                    if (field_type == null)
-                        throw new Exception("Cannot convert " + t_type.Name);
-                    DeepCopyFromImplementation(from_gpu, out object v, field_type);
-                    //var w = Convert.ChangeType(v, t_type);
-                    var w = Enum.Parse(t_type, v.ToString());
-                    to_cpu = w;
-                    return;
-                }
-
-                if (t_type.IsArray)
-                {
-                    if (from_gpu == IntPtr.Zero)
-                    {
-                        to_cpu = null;
-                        return;
-                    }
-
-                    Array to_array = (Array)_allocated_objects.Where(p => p.Value == from_gpu).Select(p => p.Key)
-                        .FirstOrDefault();
-
-                    to_cpu = to_array;
-
-                    if (to_cpu != null)
-                    {
-                        if (_delayed_from_gpu.Contains(to_cpu))
-                        {
-                            if (Campy.Utils.Options.IsOn("copy_trace"))
-                                System.Console.WriteLine("Not copying to CPU "
-                                                         + to_cpu
-                                                         + " "
-                                                         + RuntimeHelpers.GetHashCode(to_cpu)
-                                                         + " because it is delayed.");
-                            return;
-                        }
-                        if (_never_copy_from_gpu.Contains(to_cpu))
-                        {
-                            if (Campy.Utils.Options.IsOn("copy_trace"))
-                                System.Console.WriteLine("Not copying to CPU "
-                                                         + to_cpu
-                                                         + " "
-                                                         + RuntimeHelpers.GetHashCode(to_cpu)
-                                                         + " because it never copied to GPU.");
-                            return;
-                        }
-                        if (_copied_from_gpu.Contains(to_cpu))
-                        {
-                            if (Campy.Utils.Options.IsOn("copy_trace"))
-                                System.Console.WriteLine("Not copying to CPU "
-                                                         + to_cpu
-                                                         + " "
-                                                         + RuntimeHelpers.GetHashCode(to_cpu)
-                                                         + " because it never copied to GPU.");
-                            return;
-                        }
-                    }
-
-                    if (Campy.Utils.Options.IsOn("copy_trace"))
-                        System.Console.WriteLine("Copying to CPU "
-                                                 + to_cpu
-                                                 + " "
-                                                 + RuntimeHelpers.GetHashCode(to_cpu)
-                                                 + " because it was copied to the GPU.");
-
-                    // "from" is assumed to be a unmanaged buffer
-                    // with record Runtime.A used.
-                    long* long_ptr = (long*)((long)(byte*)from_gpu);
+                    long* long_ptr = (long*)((long)(byte*)address);
                     long_ptr++;
                     int rank = (int)*long_ptr++;
-
-                    System.Type to_element_type = t_type.GetElementType();
+                    System.Type to_element_type = system_type.GetElementType();
                     System.Type from_element_type = to_element_type;
                     if (to_element_type.IsArray || to_element_type.IsClass)
                         from_element_type = typeof(IntPtr);
                     int[] dims = new int[rank];
                     for (int kk = 0; kk < rank; ++kk)
                         dims[kk] = (int)*long_ptr++;
-
-                    _allocated_buffers[from_gpu] = to_cpu;
-                    // Verify.
-                    if (!_allocated_buffers.ContainsValue(to_cpu))
-                        throw new Exception("Added item to list, but can't verify.");
-
-                    _copied_from_gpu.Add(to_array);
-
-                    CpArraytoCpu((void*)long_ptr, to_array, from_element_type);
-                    if (Campy.Utils.Options.IsOn("copy_trace"))
-                        System.Console.WriteLine("Copy from GPU " + to_cpu);
+                    Array to_array = (Array) target;
+                    CpArraytoCpu((void*)address, to_array, from_element_type);
                     return;
                 }
-
-                if (t_type.IsClass)
+                if (system_type.FullName.Equals("System.String"))
                 {
-                    IntPtr ip = from_gpu;
-                    if (from_gpu == IntPtr.Zero)
-                    {
-                        to_cpu = null;
-                        return;
-                    }
-
-                    to_cpu = _allocated_objects.Where(p => p.Value == ip).Select(p => p.Key)
-                        .FirstOrDefault();
-
-                    _allocated_buffers[from_gpu] = to_cpu;
-
-                    if (to_cpu != null)
-                    {
-                        if (_delayed_from_gpu.Contains(to_cpu))
-                        {
-                            if (Campy.Utils.Options.IsOn("copy_trace"))
-                                System.Console.WriteLine("Not copying to CPU "
-                                                         + to_cpu
-                                                         + " "
-                                                         + RuntimeHelpers.GetHashCode(to_cpu)
-                                                         + " because it is delayed.");
-                            return;
-                        }
-                        if (_never_copy_from_gpu.Contains(to_cpu))
-                        {
-                            if (Campy.Utils.Options.IsOn("copy_trace"))
-                                System.Console.WriteLine("Not copying to CPU "
-                                                         + to_cpu
-                                                         + " "
-                                                         + RuntimeHelpers.GetHashCode(to_cpu)
-                                                         + " because it never copied to GPU.");
-                            return;
-                        }
-                        if (_copied_from_gpu.Contains(to_cpu))
-                        {
-                            if (Campy.Utils.Options.IsOn("copy_trace"))
-                                System.Console.WriteLine("Not copying to CPU "
-                                                         + to_cpu
-                                                         + " "
-                                                         + RuntimeHelpers.GetHashCode(to_cpu)
-                                                         + " because it was copied back before.");
-                            return;
-                        }
-                    }
-
+                    // For now, assume data exists on GPU. Perform memcpy using CUDA.
+                    int* block = stackalloc int[1];
+                    IntPtr intptr = new IntPtr(block);
+                    var res = Cuda.cuMemcpyDtoH_v2(intptr, (IntPtr)address, sizeof(int));
+                    int len = *block;
+                    short* block2 = stackalloc short[len + 1];
+                    var intptr2 = new IntPtr(block2);
+                    Cuda.cuMemcpyDtoH_v2(intptr2, (IntPtr)address + sizeof(int), (uint)len * sizeof(short));
+                    block2[len] = 0;
+                    var o = new string((char*)intptr2);
                     if (Campy.Utils.Options.IsOn("copy_trace"))
-                        System.Console.WriteLine("Copying to CPU "
-                                                 + to_cpu
-                                                 + " "
-                                                 + RuntimeHelpers.GetHashCode(to_cpu)
-                                                 + " because it was copied to GPU.");
-
-                    FieldInfo[] all_from_fieldinfo = f_type.GetFields(
-                        System.Reflection.BindingFlags.Instance
-                        | System.Reflection.BindingFlags.NonPublic
-                        | System.Reflection.BindingFlags.Public
-                    //| System.Reflection.BindingFlags.Static
-                    );
-                    FieldInfo[] all_to_fieldinfo = t_type.GetFields(
-                        System.Reflection.BindingFlags.Instance
-                        | System.Reflection.BindingFlags.NonPublic
-                        | System.Reflection.BindingFlags.Public
-                    //| System.Reflection.BindingFlags.Static
-                    );
-
-                    for (int i = 0; i < all_from_fieldinfo.Length; ++i)
-                    {
-                        var from_fieldinfo = all_from_fieldinfo[i];
-                        var to_fieldinfo = all_to_fieldinfo.Where(k => k.Name == from_fieldinfo.Name).FirstOrDefault();
-                        if (to_fieldinfo == null) throw new ArgumentException("Field not found.");
-                        // Note, special case all field types.
-                        if (to_fieldinfo.FieldType.IsArray)
-                        {
-                            ip = (IntPtr)((long)ip + BUFFERS.Padding((long)ip, BUFFERS.Alignment(typeof(IntPtr))));
-                            int field_size = BUFFERS.SizeOf(typeof(IntPtr));
-                            IntPtr ipv = (IntPtr)Marshal.PtrToStructure<IntPtr>(ip);
-                            if (ipv == IntPtr.Zero)
-                            {
-                            }
-                            else if (_allocated_buffers.ContainsKey(ipv))
-                            {
-                                object tooo = _allocated_buffers[ipv];
-                                to_fieldinfo.SetValue(to_cpu, tooo);
-                            }
-                            else
-                            {
-                                DeepCopyFromImplementation(ipv, out object tooo, to_fieldinfo.FieldType);
-                                to_fieldinfo.SetValue(to_cpu, tooo);
-                            }
-                            ip = (IntPtr)((long)ip + field_size);
-                        }
-                        else if (to_fieldinfo.FieldType.IsClass)
-                        {
-                            ip = (IntPtr)((long)ip + BUFFERS.Padding((long)ip, BUFFERS.Alignment(typeof(IntPtr))));
-                            int field_size = BUFFERS.SizeOf(typeof(IntPtr));
-                            IntPtr ipv = (IntPtr)Marshal.PtrToStructure<IntPtr>(ip);
-                            DeepCopyFromImplementation(ipv, out object tooo, to_fieldinfo.FieldType);
-                            to_fieldinfo.SetValue(to_cpu, tooo);
-                            ip = (IntPtr)((long)ip + field_size);
-                        }
-                        else
-                        {
-                            int field_size = BUFFERS.SizeOf(from_fieldinfo.FieldType);
-                            ip = (IntPtr)((long)ip + BUFFERS.Padding((long)ip, BUFFERS.Alignment(from_fieldinfo.FieldType)));
-                            DeepCopyFromImplementation(ip, out object tooo, to_fieldinfo.FieldType);
-                            to_fieldinfo.SetValue(to_cpu, tooo);
-                            ip = (IntPtr)((long)ip + field_size);
-                        }
-                    }
-                    if (Campy.Utils.Options.IsOn("copy_trace"))
-                        System.Console.WriteLine("Copy from GPU " + to_cpu);
-
+                        System.Console.WriteLine("Copy from GPU " + o);
+                    target_field.SetValue(target, o);
                     return;
                 }
-
-                if (t_type.IsStruct())
+                if (system_type.IsClass)
                 {
-                    IntPtr ip = from_gpu;
-                    if (ip == IntPtr.Zero)
+                    IntPtr[] fields = null;
+                    IntPtr* buf;
+                    int len;
+                    RUNTIME.BclGetFields(bcl_type, &buf, &len);
+                    fields = new IntPtr[len];
+                    for (int i = 0; i < len; ++i) fields[i] = buf[i];
+                    var mono_fields = mono_type.ResolveFields().ToArray();
+
+                    // Copy fields.
+                    for (int i = 0; i < fields.Length; ++i)
                     {
-                        to_cpu = null;
-                        return;
+                        var f = fields[i];
+                        var ptrName = RUNTIME.BclGetFieldName(f);
+                        string name = Marshal.PtrToStringAnsi(ptrName);
+                        var fBclType = RUNTIME.BclGetFieldType(f);
+                        var find = mono_fields.Where(t => t.Name == name);
+                        var mono_field_reference = find.FirstOrDefault();
+                        if (mono_field_reference == null) continue;
+
+                        string system_type_field_name = mono_field_reference.Name;
+                        var fit = system_type.GetField(system_type_field_name,
+                            System.Reflection.BindingFlags.Instance
+                            | System.Reflection.BindingFlags.NonPublic
+                            | System.Reflection.BindingFlags.Public
+                            | System.Reflection.BindingFlags.Static
+                        );
+                        if (fit == null)
+                        {
+                            system_type_field_name = "_" + system_type_field_name;
+                            fit = system_type.GetField(system_type_field_name,
+                                System.Reflection.BindingFlags.Instance
+                                | System.Reflection.BindingFlags.NonPublic
+                                | System.Reflection.BindingFlags.Public
+                                | System.Reflection.BindingFlags.Static
+                            );
+                        }
+
+                        ;
+                        if (fit == null)
+                        {
+                            throw new Exception("Unknown field " + mono_field_reference.Name);
+                        }
+
+                        // Get from BCL the address of the field.
+                        var mono_field_type = mono_field_reference.FieldType;
+                        mono_field_type = mono_field_type.RewriteMonoTypeReference();
+                        var fPtr = (void*) RUNTIME.BclGetField((IntPtr) address, f);
+                        object field_value = null;
+                        if (mono_field_type.IsReferenceType())
+                        {
+                            void* new_fptr = *(void**) fPtr;
+                           // field_value = DCToCpu(new_fptr);
+                            //fPtr = new_fptr;
+                        }
+
+                        DCtoCpuRefValue(fPtr, target, fit);
+                        if (field_value != null && Campy.Utils.Options.IsOn("copy_trace"))
+                            System.Console.WriteLine("Copying field " + field_value);
                     }
-
-                    to_cpu = Activator.CreateInstance(t_type);
-
-                    _allocated_buffers[ip] = to_cpu;
-
-                    FieldInfo[] ffi = f_type.GetFields(
-                        System.Reflection.BindingFlags.Instance
-                        | System.Reflection.BindingFlags.NonPublic
-                        | System.Reflection.BindingFlags.Public
-                    //| System.Reflection.BindingFlags.Static
-                    );
-                    FieldInfo[] tfi = t_type.GetFields(
-                        System.Reflection.BindingFlags.Instance
-                        | System.Reflection.BindingFlags.NonPublic
-                        | System.Reflection.BindingFlags.Public
-                    //| System.Reflection.BindingFlags.Static
-                    );
-
-                    for (int i = 0; i < ffi.Length; ++i)
-                    {
-                        var ffield = ffi[i];
-                        var tfield = tfi.Where(k => k.Name == ffield.Name).FirstOrDefault();
-                        if (tfield == null) throw new ArgumentException("Field not found.");
-                        // Note, special case all field types.
-                        if (tfield.FieldType.IsArray)
-                        {
-                            ip = (IntPtr)((long)ip + BUFFERS.Padding((long)ip, BUFFERS.Alignment(typeof(IntPtr))));
-                            int field_size = BUFFERS.SizeOf(typeof(IntPtr));
-                            IntPtr ipv = (IntPtr)Marshal.PtrToStructure<IntPtr>(ip);
-                            if (ipv == IntPtr.Zero)
-                            {
-                            }
-                            else if (_allocated_buffers.ContainsKey(ipv))
-                            {
-                                object tooo = _allocated_buffers[ipv];
-                                tfield.SetValue(to_cpu, tooo);
-                            }
-                            else
-                            {
-                                DeepCopyFromImplementation(ipv, out object tooo, tfield.FieldType);
-                                tfield.SetValue(to_cpu, tooo);
-                            }
-                            ip = (IntPtr)((long)ip + field_size);
-                        }
-                        else if (tfield.FieldType.IsClass)
-                        {
-                            ip = (IntPtr)((long)ip + BUFFERS.Padding((long)ip, BUFFERS.Alignment(typeof(IntPtr))));
-                            int field_size = BUFFERS.SizeOf(typeof(IntPtr));
-                            IntPtr ipv = (IntPtr)Marshal.PtrToStructure<IntPtr>(ip);
-                            if (_allocated_buffers.ContainsKey(ipv))
-                            {
-                                object tooo = _allocated_buffers[ipv];
-                                tfield.SetValue(to_cpu, tooo);
-                            }
-                            else
-                            {
-                                DeepCopyFromImplementation(ipv, out object tooo, tfield.FieldType);
-                                tfield.SetValue(to_cpu, tooo);
-                            }
-                            ip = (IntPtr)((long)ip + field_size);
-                        }
-                        else
-                        {
-                            int field_size = BUFFERS.SizeOf(ffield.FieldType);
-                            ip = (IntPtr)((long)ip + BUFFERS.Padding((long)ip, BUFFERS.Alignment(ffield.FieldType)));
-                            DeepCopyFromImplementation(ip, out object tooo, tfield.FieldType);
-                            tfield.SetValue(to_cpu, tooo);
-                            ip = (IntPtr)((long)ip + field_size);
-                        }
-                    }
-                    if (Campy.Utils.Options.IsOn("copy_trace"))
-                        System.Console.WriteLine("Copy from GPU " + to_cpu);
 
                     return;
                 }
-
                 throw new Exception("Unknown type.");
             }
-            catch (Exception e)
+
             {
-                System.Console.WriteLine("Exception");
-                System.Console.WriteLine(e);
-                throw e;
+                System.Type system_type = target_field.FieldType;
+                var mono_type = system_type.ToMonoTypeReference().RewriteMonoTypeReference();
+                if (system_type.FullName.Equals("System.Object"))
+                {
+                    if (address == null)
+                    {
+                        target_field.SetValue(target, null);
+                        return;
+                    }
+
+                    var v = DCToCpu(address);
+                    target_field.SetValue(target, v);
+                    return;
+                }
+                if (system_type.FullName.Equals("System.Int16"))
+                {
+                    object o = Marshal.PtrToStructure<System.Int16>((IntPtr) address);
+                    try
+                    {
+                        target_field.SetValue(target, o);
+                    }
+                    catch
+                    {
+                    }
+                    return;
+                }
+                if (system_type.FullName.Equals("System.Int32"))
+                {
+                    object o = Marshal.PtrToStructure<System.Int32>((IntPtr) address);
+                    try
+                    {
+                        target_field.SetValue(target, o);
+                    }
+                    catch
+                    {
+                    }
+                    return;
+                }
+                if (system_type.FullName.Equals("System.Int64"))
+                {
+                    object o = Marshal.PtrToStructure<System.Int64>((IntPtr) address);
+                    try
+                    {
+                        target_field.SetValue(target, o);
+                    }
+                    catch
+                    {
+                    }
+                    return;
+                }
+                if (system_type.FullName.Equals("System.UInt16"))
+                {
+                    object o = Marshal.PtrToStructure<System.UInt16>((IntPtr) address);
+                    try
+                    {
+                        target_field.SetValue(target, o);
+                    }
+                    catch
+                    {
+                    }
+                    return;
+                }
+                if (system_type.FullName.Equals("System.UInt32"))
+                {
+                    object o = Marshal.PtrToStructure<System.UInt32>((IntPtr) address);
+                    try
+                    {
+                        target_field.SetValue(target, o);
+                    }
+                    catch
+                    {
+                    }
+                    return;
+                }
+                if (system_type.FullName.Equals("System.UInt64"))
+                {
+                    object o = Marshal.PtrToStructure<System.UInt64>((IntPtr) address);
+                    try
+                    {
+                        target_field.SetValue(target, o);
+                    }
+                    catch
+                    {
+                    }
+                    return;
+                }
+                if (system_type.FullName.Equals("System.IntPtr"))
+                {
+                    object o = Marshal.PtrToStructure<System.IntPtr>((IntPtr) address);
+                    try
+                    {
+                        target_field.SetValue(target, o);
+                    }
+                    catch
+                    {
+                    }
+                    return;
+                }
+                if (system_type.FullName.Equals("System.Boolean"))
+                {
+                    byte v = *(byte*) address;
+                    try
+                    {
+                        target_field.SetValue(target, v);
+                    }
+                    catch
+                    {
+                    }
+                    return;
+                }
+                if (system_type.FullName.Equals("System.Char"))
+                {
+
+                    var c = *(short*) address;
+                    var to_cpu = (Char) c;
+                    try
+                    {
+                        target_field.SetValue(target, to_cpu);
+                    }
+                    catch
+                    {
+                    }
+                    return;
+                }
+                if (system_type.FullName.Equals("System.Single"))
+                {
+                    object o = Marshal.PtrToStructure<System.Single>((IntPtr) address);
+                    try
+                    {
+                        target_field.SetValue(target, o);
+                    }
+                    catch
+                    {
+                    }
+                    return;
+                }
+                if (system_type.FullName.Equals("System.Double"))
+                {
+                    object o = Marshal.PtrToStructure<System.Double>((IntPtr) address);
+                    try
+                    {
+                        target_field.SetValue(target, o);
+                    }
+                    catch
+                    {
+                    }
+                    return;
+                }
+                if (system_type.IsEnum)
+                {
+                    object o = null;
+                    try
+                    {
+                        target_field.SetValue(target, o);
+                    }
+                    catch
+                    {
+                    }
+                    return;
+                }
+                if (system_type.FullName.Equals("System.String"))
+                {
+                    var ip = *(void**)address;
+                    var o = DCToCpu(ip);
+                    try
+                    {
+                        target_field.SetValue(target, o);
+                    }
+                    catch
+                    {
+                    }
+                    return;
+                }
+                if (system_type.IsArray)
+                {
+                    var ip = * (void**)address;
+                    var o = DCToCpu(ip);
+                    try
+                    {
+                        target_field.SetValue(target, o);
+                    }
+                    catch
+                    {
+                    }
+                    return;
+                }
+                if (system_type.IsClass)
+                {
+                    var ip = *(void**) address;
+                    var o = DCToCpu(ip);
+                    try
+                    {
+                        target_field.SetValue(target, o);
+                    }
+                    catch
+                    {
+                    }
+                    return;
+                }
             }
-            finally
-            {
-            }
+            throw new Exception("Unknown type.");
         }
+
 
         private unsafe void CpArraytoCpu(void* from_gpu, Array to_cpu, System.Type from_element_type)
         {
@@ -1676,11 +1102,9 @@
             if (!to_type.IsArray)
                 throw new Exception("Expecting array.");
             var to_element_type = to_cpu.GetType().GetElementType();
-            IntPtr mem = (IntPtr)from_gpu;
             for (int i = 0; i < to_cpu.Length; ++i)
             {
                 int[] index = new int[to_cpu.Rank];
-                string s = "";
                 int c = i;
                 for (int j = to_cpu.Rank - 1; j >= 0; --j)
                 {
@@ -1688,53 +1112,164 @@
                     var remainder = c % ind_size;
                     c = c / to_cpu.GetLength(j);
                     index[j] = remainder;
-                    s = (char)((short)('0') + remainder) + s;
                 }
-                //sdfg
+
+                IntPtr mem;
+                fixed (int* inds = index)
+                {
+                    RUNTIME.BclSystemArrayLoadElementIndicesAddress((IntPtr) from_gpu, (IntPtr) inds, (IntPtr) (&mem));
+                }
+
                 if (to_element_type.IsArray || to_element_type.IsClass)
                 {
-                    object obj = Marshal.PtrToStructure(mem, typeof(IntPtr));
-                    IntPtr obj_intptr = (IntPtr) obj;
-                    DeepCopyFromImplementation(obj_intptr, out object to_obj, to_cpu.GetType().GetElementType());
-                    to_cpu.SetValue(to_obj, index);
+                    object obj = Marshal.PtrToStructure((IntPtr)mem, typeof(IntPtr));
+                    IntPtr obj_intptr = (IntPtr)obj;
+                    var ob2 = DCToCpu((void*)obj_intptr);
+                    to_cpu.SetValue(ob2, index);
                     mem = new IntPtr((long)mem + SizeOf(typeof(IntPtr)));
                 }
                 else
                 {
-                    DeepCopyFromImplementation(mem, out object to_obj, to_cpu.GetType().GetElementType());
-                    to_cpu.SetValue(to_obj, index);
-                    int from_size_element = BUFFERS.SizeOf(from_element_type);
-                    mem = new IntPtr((long)mem + from_size_element);
+                    //if (to_element_type.FullName.Equals("System.Object"))
+                    //{
+                    //    if (address == null)
+                    //    {
+                    //        to_cpu.SetValue(to_obj, index);
+                    //        target_field.SetValue(target, null);
+                    //        return;
+                    //    }
+
+                    //    var v = DCToCpu(address);
+                    //    target_field.SetValue(target, v);
+                    //    return;
+                    //}
+                    if (to_element_type.FullName.Equals("System.Int16"))
+                    {
+                        object o = Marshal.PtrToStructure<System.Int16>(mem);
+                        try
+                        {
+                            to_cpu.SetValue(o, index);
+                        }
+                        catch
+                        {
+                        }
+                        return;
+                    }
+                    if (to_element_type.FullName.Equals("System.Int32"))
+                    {
+                        object o = Marshal.PtrToStructure<System.Int32>(mem);
+                        try
+                        {
+                            to_cpu.SetValue(o, index);
+                        }
+                        catch
+                        {
+                        }
+                    }
+                    if (to_element_type.FullName.Equals("System.Int64"))
+                    {
+                        object o = Marshal.PtrToStructure<System.Int64>(mem);
+                        try
+                        {
+                            to_cpu.SetValue(o, index);
+                        }
+                        catch
+                        {
+                        }
+                    }
+                    if (to_element_type.FullName.Equals("System.UInt16"))
+                    {
+                        object o = Marshal.PtrToStructure<System.UInt16>(mem);
+                        try
+                        {
+                            to_cpu.SetValue(o, index);
+                        }
+                        catch
+                        {
+                        }
+                    }
+                    if (to_element_type.FullName.Equals("System.UInt32"))
+                    {
+                        object o = Marshal.PtrToStructure<System.UInt32>(mem);
+                        try
+                        {
+                            to_cpu.SetValue(o, index);
+                        }
+                        catch
+                        {
+                        }
+                    }
+                    if (to_element_type.FullName.Equals("System.UInt64"))
+                    {
+                        object o = Marshal.PtrToStructure<System.UInt64>(mem);
+                        try
+                        {
+                            to_cpu.SetValue(o, index);
+                        }
+                        catch
+                        {
+                        }
+                    }
+                    if (to_element_type.FullName.Equals("System.IntPtr"))
+                    {
+                        object o = Marshal.PtrToStructure<System.IntPtr>(mem);
+                        try
+                        {
+                            to_cpu.SetValue(o, index);
+                        }
+                        catch
+                        {
+                        }
+                    }
+                    if (to_element_type.FullName.Equals("System.Boolean"))
+                    {
+                        object o = Marshal.PtrToStructure<byte>(mem);
+                        try
+                        {
+                            to_cpu.SetValue(o, index);
+                        }
+                        catch
+                        {
+                        }
+                    }
+                    if (to_element_type.FullName.Equals("System.Char"))
+                    {
+
+                        object o = Marshal.PtrToStructure<short>(mem);
+                        try
+                        {
+                            to_cpu.SetValue(o, index);
+                        }
+                        catch
+                        {
+                        }
+                    }
+                    if (to_element_type.FullName.Equals("System.Single"))
+                    {
+                        object o = Marshal.PtrToStructure<System.Single>(mem);
+                        try
+                        {
+                            to_cpu.SetValue(o, index);
+                        }
+                        catch
+                        {
+                        }
+                    }
+                    if (to_element_type.FullName.Equals("System.Double"))
+                    {
+                        object o = Marshal.PtrToStructure<System.Double>(mem);
+                        try
+                        {
+                            to_cpu.SetValue(o, index);
+                        }
+                        catch
+                        {
+                        }
+                    }
                 }
             }
         }
 
-        public static string OutputType(System.Type type)
-        {
-            if (type.IsArray)
-            {
-                return type.GetElementType().FullName + "[]";
-            }
-            if (type.IsValueType && !type.IsStruct())
-            {
-                return type.FullName;
-            }
-            StringBuilder sb = new StringBuilder();
-            var fields = type.GetFields(
-                System.Reflection.BindingFlags.Instance
-                | System.Reflection.BindingFlags.NonPublic
-                | System.Reflection.BindingFlags.Public
-                //| System.Reflection.BindingFlags.Static
-            );
-            if (type.IsValueType && type.IsStruct())
-                sb.Append("struct {").AppendLine();
-            else if (type.IsClass)
-                sb.Append("class {").AppendLine();
-            foreach (var field in fields)
-                sb.AppendFormat("{0} = {1}", field.Name, field.FieldType.Name).AppendLine();
-            sb.Append("}").AppendLine();
-            return sb.ToString();
-        }
 
         /// <summary>
         /// Allocated a GPU buffer.
@@ -1823,6 +1358,7 @@
                 RUNTIME.BclCheckHeap();
                 IntPtr result = RUNTIME.BclArrayAlloc(bcl_type, array.Rank, lengths);
                 RUNTIME.BclCheckHeap();
+                var bcl_type_of_object = RUNTIME.BclHeapGetType((IntPtr)result);
                 return result;
             }
 
