@@ -261,7 +261,7 @@
             }
             else if (type.IsStruct() || type.IsClass)
             {
-                var fields = type.GetFields(
+                var fields = type.SafeFields(
                     System.Reflection.BindingFlags.Instance
                     | System.Reflection.BindingFlags.NonPublic
                     | System.Reflection.BindingFlags.Public
@@ -985,9 +985,10 @@
                 if (system_type.FullName.Equals("System.Boolean"))
                 {
                     byte v = *(byte*) address;
+                    bool w = v == 0 ? false : true;
                     try
                     {
-                        target_field.SetValue(target, v);
+                        target_field.SetValue(target, w);
                     }
                     catch
                     {
@@ -1441,9 +1442,14 @@
             else
             {
                 // Print out value as string.
-                var fields = obj.GetType().GetFields(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
+                var object_type = obj.GetType();
+                var methods = object_type.GetMethods(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
+                var fields = object_type.SafeFields(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
                 foreach (var f in fields)
                 {
+                    var ft = f.FieldType;
+                    if (ft.BaseType == typeof(MulticastDelegate))
+                        continue;
                     var v = f.GetValue(obj);
                     sb.Append(Indent(level + 2, f.Name.ToString() + ":" + PrintCpuObject(level + 2, v)));
                 }
@@ -1542,6 +1548,10 @@
                         if (field_definition != null && field_definition.IsStatic) continue;
                         var mono_field_type = mono_fields[i].FieldType;
                         mono_field_type = mono_field_type.RewriteMonoTypeReference();
+                        if (mono_field_type.FullName == "Campy.SimpleKernel")
+                            continue;
+                        if (mono_field_type.IsSubclassOf(typeof(MulticastDelegate).ToMonoTypeReference()))
+                            continue;
                         var ptrName = RUNTIME.BclGetFieldName(f);
                         string name = Marshal.PtrToStringAnsi(ptrName);
                         var fBclType = RUNTIME.BclGetFieldType(f);

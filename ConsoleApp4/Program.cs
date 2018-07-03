@@ -7,32 +7,136 @@ using System.Linq;
 
 namespace ConsoleApp4
 {
-    public class JaggedArray
+    class OddEvenSort
     {
-        public static void JaggedArrayT()
+        public static void swap(ref int i, ref int j)
         {
-            int[][] jagged_array = new int[][]
+            int t = i;
+            i = j;
+            j = t;
+        }
+
+        public static void Seq(int[] a)
+        {
+            int N = a.Length;
+            bool sorted = false;
+            while (!sorted)
             {
-                new int[] {1, 3, 5, 7, 9},
-                new int[] {0, 2, 4, 6},
-                new int[] {11, 22}
-            };
-            Campy.Parallel.For(3, i =>
+                sorted = true;
+                int n2 = N / 2;
+                for (int i = 0; i < n2; ++i)
+                {
+                    int j = i * 2;
+                    if (a[j] > a[j + 1])
+                    {
+                        swap(ref a[j], ref a[j + 1]);
+                        sorted = false;
+                    }
+                }
+
+                for (int i = 0; i < n2 - 1; ++i)
+                {
+                    int j = i * 2 + 1;
+                    if (a[j] > a[j + 1])
+                    {
+                        swap(ref a[j], ref a[j + 1]);
+                        sorted = false;
+                    }
+                }
+            }
+        }
+
+        public static void Par(int[] a)
+        {
+            Campy.Parallel.Sticky(a);
+            int N = a.Length;
+            bool sorted = false;
+            while (!sorted)
             {
-                jagged_array[i][0] = i; //jagged_array[i].Length;
-            });
-            for (int i = 0; i < 3; ++i)
-                if (jagged_array[i][0] != i) // jagged_array[i].Length)
-                    throw new Exception();
-            Campy.Parallel.For(3, i =>
+                sorted = true;
+                int n2 = N / 2;
+                Campy.Parallel.For(n2, i =>
+                {
+                    int j = i * 2;
+                    if (a[j] > a[j + 1])
+                    {
+                        swap(ref a[j], ref a[j + 1]);
+                        sorted = false;
+                    }
+                });
+                Campy.Parallel.For(n2 - 1, i =>
+                {
+                    int j = i * 2 + 1;
+                    if (a[j] > a[j + 1])
+                    {
+                        swap(ref a[j], ref a[j + 1]);
+                        sorted = false;
+                    }
+                });
+            }
+
+            Campy.Parallel.Sync();
+        }
+
+        // Adapted from http://www.iti.fh-flensburg.de/lang/algorithmen/sortieren/networks/oemen.htm
+
+        /** sorts a piece of length n of the array
+         * starting at position lo
+         */
+        public static void Rec(int[] a, int lo, int n)
+        {
+            if (n > 1)
             {
-                jagged_array[i][0] = jagged_array[i].Length;
-            });
-            for (int i = 0; i < 3; ++i)
-                if (jagged_array[i][0] != jagged_array[i].Length)
-                    throw new Exception();
+                int m = n / 2;
+                Rec(a, lo, m);
+                Rec(a, lo + m, m);
+                RecMerge(a, lo, n, 1);
+            }
+        }
+
+        /** lo is the starting position and
+         * n is the length of the piece to be merged,
+         * r is the distance of the elements to be compared
+         */
+        public static void RecMerge(int[] a, int lo, int n, int r)
+        {
+            int m = r * 2;
+            if (m < n)
+            {
+                RecMerge(a, lo, n, m); // even subsequence
+                RecMerge(a, lo + r, n, m); // odd subsequence
+                for (int i = lo + r; i + r < lo + n; i += m)
+                    if (a[i] > a[i + r])
+                        swap(ref a[i], ref a[i + r]);
+            }
+            else if (a[lo] > a[lo + r])
+                swap(ref a[lo], ref a[lo + r]);
         }
     }
+
+    public class UnitTest1
+    {
+        public static void Test1()
+        {
+            Random rnd = new Random();
+            int N = 8;
+            {
+                int[] a = Enumerable.Range(0, N).ToArray().OrderBy(x => rnd.Next()).ToArray();
+                OddEvenSort.Seq(a);
+                for (int i = 0; i < N; ++i)
+                    if (a[i] != i)
+                        throw new Exception();
+            }
+            {
+                int[] a = Enumerable.Range(0, N).ToArray().OrderBy(x => rnd.Next()).ToArray();
+                OddEvenSort.Par(a);
+                for (int i = 0; i < N; ++i)
+                    if (a[i] != i)
+                        throw new Exception();
+            }
+        }
+    }
+
 
     class Program
     {
@@ -55,7 +159,7 @@ namespace ConsoleApp4
         static void Main(string[] args)
         {
             StartDebugging();
-            JaggedArray.JaggedArrayT();
+            UnitTest1.Test1();
         }
     }
 }

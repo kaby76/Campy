@@ -362,6 +362,19 @@ namespace Campy.Meta
             return et;
         }
 
+        public static List<FieldInfo> SafeFields(this Type type, BindingFlags binding_attr)
+        {
+            List<FieldInfo> safe_list = new List<FieldInfo>();
+            var fields = type.GetFields(binding_attr);
+            foreach (var field in fields)
+            {
+                if (field.FieldType.IsSubclassOf(typeof(MulticastDelegate)))
+                    continue;
+                safe_list.Add(field);
+            }
+            return safe_list;
+        }
+
         public static Collection<FieldReference> ResolveFields(this TypeReference tr)
         {
             // Resolve throws away type information of fields, attributes, properties, methods.
@@ -379,8 +392,10 @@ namespace Campy.Meta
                 // For generics, convert any field defitions that use generic parameters into generic arguments.
                 foreach (FieldDefinition field in resolved_fields)
                 {
-                    // Add in all fields.
+                    // Add in all fields, except Multicast delegate.
                     var field_type = field.FieldType;
+                    if (field_type.FullName == typeof(MulticastDelegate).FullName)
+                        continue;
                     var new_field_type = ConvertGenericParameterToTypeReference(field_type, generic_arguments);
                     var new_field_reference = new FieldReference(field.Name,
                         new_field_type,
@@ -394,6 +409,8 @@ namespace Campy.Meta
                 foreach (FieldDefinition f in resolved_fields)
                 {
                     FieldReference fr = f;
+                    if (fr.FullName == typeof(MulticastDelegate).FullName)
+                        continue;
                     result.Add(fr);
                 }
             }
@@ -486,6 +503,20 @@ namespace Campy.Meta
         public static bool IsStruct(this Mono.Cecil.TypeReference t)
         {
             return t.IsValueType && !t.IsPrimitive;
+        }
+
+        public static bool IsSubclassOf(this TypeReference t, TypeReference b)
+        {
+            var r = t.Resolve();
+            if (r == null) return false;
+            while (r != null)
+            {
+                if (r.FullName == b.FullName) return true;
+                var r2 = r.BaseType;
+                if (r2 != null) r = r2.Resolve();
+                else r = null;
+            }
+            return false;
         }
 
         public static bool IsReferenceType(this Mono.Cecil.TypeReference t)
@@ -1089,7 +1120,7 @@ namespace Campy.Meta
                     var new_arg = ConvertGenericParameterToTypeReference(type, generic_arguments);
                     var new_var = new VariableDefinition(new_arg);
                     //new_var.IsPinned = variable.IsPinned;
-                    var a = variable.GetType().GetFields(System.Reflection.BindingFlags.Instance
+                    var a = variable.GetType().SafeFields(System.Reflection.BindingFlags.Instance
                                                          | System.Reflection.BindingFlags.NonPublic
                                                          | System.Reflection.BindingFlags.Public);
                     variable
@@ -1208,7 +1239,7 @@ namespace Campy.Meta
             }
             else if (type.IsStruct() || type.IsClass)
             {
-                var fields = type.GetFields(
+                var fields = type.SafeFields(
                     System.Reflection.BindingFlags.Instance
                     | System.Reflection.BindingFlags.NonPublic
                     | System.Reflection.BindingFlags.Public
