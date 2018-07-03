@@ -678,7 +678,9 @@
                     };
                     if (fit == null)
                     {
-                        throw new Exception("Unknown field " + mono_field_reference.Name);
+                        if (Campy.Utils.Options.IsOn("copy_trace"))
+                            System.Console.WriteLine("Unknown field in source " + mono_field_reference.Name + ". Ignoring.");
+                        continue;
                     }
                     object field_value = fit.GetValue(from_cpu);
                     if (field_value != null && Campy.Utils.Options.IsOn("copy_trace"))
@@ -862,25 +864,17 @@
                                 | System.Reflection.BindingFlags.Static
                             );
                         }
-
-                        ;
                         if (fit == null)
                         {
-                            throw new Exception("Unknown field " + mono_field_reference.Name);
+                            if (Campy.Utils.Options.IsOn("copy_trace"))
+                                System.Console.WriteLine("Unknown field in source " + mono_field_reference.Name + ". Ignoring.");
+                            continue;
                         }
-
                         // Get from BCL the address of the field.
                         var mono_field_type = mono_field_reference.FieldType;
                         mono_field_type = mono_field_type.RewriteMonoTypeReference();
                         var fPtr = (void*) RUNTIME.BclGetField((IntPtr) address, f);
                         object field_value = null;
-                        if (mono_field_type.IsReferenceType())
-                        {
-                            void* new_fptr = *(void**) fPtr;
-                           // field_value = DCToCpu(new_fptr);
-                            //fPtr = new_fptr;
-                        }
-
                         DCtoCpuRefValue(fPtr, target, fit);
                         if (field_value != null && Campy.Utils.Options.IsOn("copy_trace"))
                             System.Console.WriteLine("Copying field " + field_value);
