@@ -451,17 +451,15 @@
             var result = New(from_cpu);
             _allocated_objects[from_cpu] = result;
 
-            DCToBclFields(from_cpu, (void*)result, null);
+            DCToBclValue(from_cpu, (void*)result);
 
             return result;
         }
 
 	    // Copy from a C# object to a specific location given by a pointer.
-	    // Somewhat overloaded meaning here: from_cpu is a field value or object;
-	    // address implies a certain field or a reference to the BCL object;
-	    // field is which field of the BCL object, but it's not used; address implies
-        // which field.
-        private unsafe void DCToBclFields(object from_cpu, void* address, FieldReference field_ref)
+	    // Note, the location where this object is copied to is the size of the object,
+        // not a reference.
+        private unsafe void DCToBclValue(object from_cpu, void* address)
         {
             // For null reference, set to_gpu to null--assume that it's a reference or boxed type.
             bool is_null = false;
@@ -560,7 +558,7 @@
                     throw new Exception("Cannot convert " + system_type.Name);
                 // Cast to base type and call recursively to solve.
                 var v = Convert.ChangeType(from_cpu, field_type);
-                DCToBclFields(v, address, field_ref);
+                DCToBclValue(v, address);
                 return;
             }
             if (mono_type.FullName.Equals("System.String"))
@@ -574,10 +572,8 @@
                 var array = from_cpu as Array;
                 var etype = array.GetType().GetElementType().ToMonoTypeReference().RewriteMonoTypeReference();
                 var bcl_etype = RUNTIME.GetBclType(etype);
-
                 uint[] lengths = new uint[array.Rank];
                 for (int i = 0; i < array.Rank; ++i) lengths[i] = (uint)array.GetLength(i);
-
                 // An array is represented as a struct, Runtime::A.
                 // The data in the array is contained in the buffer following the length.
                 // The buffer allocated must be big enough to contain all data. Use
@@ -611,7 +607,6 @@
                 for (int i = 0; i < total_size; ++i)
                 {
                     int[] index = new int[a.Rank];
-                    string s = "";
                     int c = i;
                     for (int j = a.Rank - 1; j >= 0; --j)
                     {
@@ -619,16 +614,19 @@
                         var remainder = c % ind_size;
                         c = c / a.GetLength(j);
                         index[j] = remainder;
-                        s = (char)((short)('0') + remainder) + s;
                     }
-
                     var from_element_value = a.GetValue(index);
-                    var to_element_type = from_element_value.GetType().ToMonoTypeReference().RewriteMonoTypeReference();
-                    var inc = SizeOfRefOrValType(to_element_type);
-                    DCToBclFields(from_element_value, ip, field_ref);
-                    ip = (byte*)((long)ip
-                                 + BUFFERS.Padding((long)ip, BUFFERS.Alignment(from_element_value.GetType()))
-                                 + inc);
+                    var to_element_mono_type = from_element_value.GetType().ToMonoTypeReference().RewriteMonoTypeReference();
+                    // Note individual elements are copied here, but for reference types,
+                    // the reference value is placed in the array.
+                    IntPtr mem;
+                    fixed (int* inds = index)
+                    {
+                        RUNTIME.BclSystemArrayLoadElementIndicesAddress((IntPtr)address, (IntPtr)inds, (IntPtr)(&mem));
+                    }
+                    if (to_element_mono_type.IsReferenceType())
+                        from_element_value = DCToBcl(from_element_value);
+                    DCToBclValue(from_element_value, (void*)mem);
                 }
 
                 RUNTIME.BclCheckHeap();
@@ -693,7 +691,7 @@
                     void* ip = (void*)oPtr;
                     if (mono_field_type.IsReferenceType())
                         field_value = DCToBcl(field_value);
-                    DCToBclFields(field_value, ip, field_ref);
+                    DCToBclValue(field_value, ip);
                     var field_size = SizeOfRefOrValType(mono_field_reference.FieldType);
                 }
 
@@ -1107,14 +1105,13 @@
                     c = c / to_cpu.GetLength(j);
                     index[j] = remainder;
                 }
-
                 IntPtr mem;
                 fixed (int* inds = index)
                 {
                     RUNTIME.BclSystemArrayLoadElementIndicesAddress((IntPtr) from_gpu, (IntPtr) inds, (IntPtr) (&mem));
                 }
-
-                if (to_element_type.IsArray || to_element_type.IsClass)
+                var to_element_mono_type = to_element_type.ToMonoTypeReference().RewriteMonoTypeReference();
+                if (to_element_mono_type.IsReferenceType())
                 {
                     object obj = Marshal.PtrToStructure((IntPtr)mem, typeof(IntPtr));
                     IntPtr obj_intptr = (IntPtr)obj;
@@ -1124,19 +1121,6 @@
                 }
                 else
                 {
-                    //if (to_element_type.FullName.Equals("System.Object"))
-                    //{
-                    //    if (address == null)
-                    //    {
-                    //        to_cpu.SetValue(to_obj, index);
-                    //        target_field.SetValue(target, null);
-                    //        return;
-                    //    }
-
-                    //    var v = DCToCpu(address);
-                    //    target_field.SetValue(target, v);
-                    //    return;
-                    //}
                     if (to_element_type.FullName.Equals("System.Int16"))
                     {
                         object o = Marshal.PtrToStructure<System.Int16>(mem);

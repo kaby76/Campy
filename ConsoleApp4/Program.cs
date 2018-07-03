@@ -7,30 +7,30 @@ using System.Linq;
 
 namespace ConsoleApp4
 {
-    public class IfThenElse
+    public class JaggedArray
     {
-        public static void IfThenElseT()
+        public static void JaggedArrayT()
         {
-            int n = 4;
-
-            var t1 = new List<int>();
-            for (int i = 0; i < n; ++i) t1.Add(0);
-            Campy.Parallel.For(n, i =>
+            int[][] jagged_array = new int[][]
             {
-                if (i % 2 == 0)
-                    t1[i] = i * 20;
-                else
-                    t1[i] = i * 30;
+                new int[] {1, 3, 5, 7, 9},
+                new int[] {0, 2, 4, 6},
+                new int[] {11, 22}
+            };
+            Campy.Parallel.For(3, i =>
+            {
+                jagged_array[i][0] = i; //jagged_array[i].Length;
             });
-            for (int i = 0; i < n; ++i)
-                if (i % 2 == 0)
-                {
-                    if (t1[i] != i * 20) throw new Exception();
-                }
-                else
-                {
-                    if (t1[i] != i * 30) throw new Exception();
-                }
+            for (int i = 0; i < 3; ++i)
+                if (jagged_array[i][0] != i) // jagged_array[i].Length)
+                    throw new Exception();
+            Campy.Parallel.For(3, i =>
+            {
+                jagged_array[i][0] = jagged_array[i].Length;
+            });
+            for (int i = 0; i < 3; ++i)
+                if (jagged_array[i][0] != jagged_array[i].Length)
+                    throw new Exception();
         }
     }
 
@@ -55,7 +55,7 @@ namespace ConsoleApp4
         static void Main(string[] args)
         {
             StartDebugging();
-            IfThenElse.IfThenElseT();
+            JaggedArray.JaggedArrayT();
         }
     }
 }
