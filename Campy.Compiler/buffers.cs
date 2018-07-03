@@ -706,9 +706,9 @@
             // Find managed object in BCL and copy to CPU.
             // I need to know what type I'm copying from to allocate a managed
             // object on CPU side.
+            if (address == (void*)0) return null;
             var bcl_type_of_object = RUNTIME.BclHeapGetType((IntPtr)address);
-            if (bcl_type_of_object == IntPtr.Zero)
-                throw new Exception("Address does not correspond to BCL heap object reference.");
+            if (bcl_type_of_object == IntPtr.Zero) return null;
 
             var list = _allocated_objects.Where(t =>
             {
