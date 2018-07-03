@@ -7,136 +7,28 @@ using System.Linq;
 
 namespace ConsoleApp4
 {
-    class OddEvenSort
+    public class TwoDimArrayInts
     {
-        public static void swap(ref int i, ref int j)
+        public static void TwoDimArrayIntsT()
         {
-            int t = i;
-            i = j;
-            j = t;
-        }
-
-        public static void Seq(int[] a)
-        {
-            int N = a.Length;
-            bool sorted = false;
-            while (!sorted)
+            int e = 10;
+            int ex0 = 3;
+            int ex1 = 5;
+            int[,] b = new int[ex0, ex1];
+            for (int i = 0; i < ex0; ++i)
+            for (int j = 0; j < ex1; ++j)
+                b[i, j] = (i + 1) * (j + 1);
+            Campy.Parallel.For(5, d =>
             {
-                sorted = true;
-                int n2 = N / 2;
-                for (int i = 0; i < n2; ++i)
-                {
-                    int j = i * 2;
-                    if (a[j] > a[j + 1])
-                    {
-                        swap(ref a[j], ref a[j + 1]);
-                        sorted = false;
-                    }
-                }
-
-                for (int i = 0; i < n2 - 1; ++i)
-                {
-                    int j = i * 2 + 1;
-                    if (a[j] > a[j + 1])
-                    {
-                        swap(ref a[j], ref a[j + 1]);
-                        sorted = false;
-                    }
-                }
-            }
-        }
-
-        public static void Par(int[] a)
-        {
-            Campy.Parallel.Sticky(a);
-            int N = a.Length;
-            bool sorted = false;
-            while (!sorted)
-            {
-                sorted = true;
-                int n2 = N / 2;
-                Campy.Parallel.For(n2, i =>
-                {
-                    int j = i * 2;
-                    if (a[j] > a[j + 1])
-                    {
-                        swap(ref a[j], ref a[j + 1]);
-                        sorted = false;
-                    }
-                });
-                Campy.Parallel.For(n2 - 1, i =>
-                {
-                    int j = i * 2 + 1;
-                    if (a[j] > a[j + 1])
-                    {
-                        swap(ref a[j], ref a[j + 1]);
-                        sorted = false;
-                    }
-                });
-            }
-
-            Campy.Parallel.Sync();
-        }
-
-        // Adapted from http://www.iti.fh-flensburg.de/lang/algorithmen/sortieren/networks/oemen.htm
-
-        /** sorts a piece of length n of the array
-         * starting at position lo
-         */
-        public static void Rec(int[] a, int lo, int n)
-        {
-            if (n > 1)
-            {
-                int m = n / 2;
-                Rec(a, lo, m);
-                Rec(a, lo + m, m);
-                RecMerge(a, lo, n, 1);
-            }
-        }
-
-        /** lo is the starting position and
-         * n is the length of the piece to be merged,
-         * r is the distance of the elements to be compared
-         */
-        public static void RecMerge(int[] a, int lo, int n, int r)
-        {
-            int m = r * 2;
-            if (m < n)
-            {
-                RecMerge(a, lo, n, m); // even subsequence
-                RecMerge(a, lo + r, n, m); // odd subsequence
-                for (int i = lo + r; i + r < lo + n; i += m)
-                    if (a[i] > a[i + r])
-                        swap(ref a[i], ref a[i + r]);
-            }
-            else if (a[lo] > a[lo + r])
-                swap(ref a[lo], ref a[lo + r]);
+                b[d % 3, d] = 33 + d;
+            });
+            if (b[0, 0] != 33) throw new Exception();
+            if (b[1, 1] != 34) throw new Exception();
+            if (b[2, 2] != 35) throw new Exception();
+            if (b[0, 3] != 36) throw new Exception();
+            if (b[1, 4] != 37) throw new Exception();
         }
     }
-
-    public class UnitTest1
-    {
-        public static void Test1()
-        {
-            Random rnd = new Random();
-            int N = 8;
-            {
-                int[] a = Enumerable.Range(0, N).ToArray().OrderBy(x => rnd.Next()).ToArray();
-                OddEvenSort.Seq(a);
-                for (int i = 0; i < N; ++i)
-                    if (a[i] != i)
-                        throw new Exception();
-            }
-            {
-                int[] a = Enumerable.Range(0, N).ToArray().OrderBy(x => rnd.Next()).ToArray();
-                OddEvenSort.Par(a);
-                for (int i = 0; i < N; ++i)
-                    if (a[i] != i)
-                        throw new Exception();
-            }
-        }
-    }
-
 
     class Program
     {
@@ -159,7 +51,7 @@ namespace ConsoleApp4
         static void Main(string[] args)
         {
             StartDebugging();
-            UnitTest1.Test1();
+            TwoDimArrayInts.TwoDimArrayIntsT();
         }
     }
 }

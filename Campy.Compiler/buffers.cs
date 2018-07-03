@@ -606,7 +606,7 @@
                 for (int i = 0; i < a.Rank; ++i) total_size *= a.GetLength(i);
                 for (int i = 0; i < total_size; ++i)
                 {
-                    int[] index = new int[a.Rank];
+                    Int64[] index = new Int64[a.Rank];
                     int c = i;
                     for (int j = a.Rank - 1; j >= 0; --j)
                     {
@@ -620,7 +620,7 @@
                     // Note individual elements are copied here, but for reference types,
                     // the reference value is placed in the array.
                     IntPtr mem;
-                    fixed (int* inds = index)
+                    fixed (Int64* inds = index)
                     {
                         RUNTIME.BclSystemArrayLoadElementIndicesAddress((IntPtr)address, (IntPtr)inds, (IntPtr)(&mem));
                     }
@@ -709,7 +709,7 @@
             if (address == (void*)0) return null;
             var bcl_type_of_object = RUNTIME.BclHeapGetType((IntPtr)address);
             if (bcl_type_of_object == IntPtr.Zero) return null;
-
+            var mono_type_of_bcl_type = RUNTIME.GetMonoTypeFromBclType(bcl_type_of_object);
             var list = _allocated_objects.Where(t =>
             {
                 if (t.Value == (IntPtr) address) return true;
@@ -718,10 +718,8 @@
             object cpu = null;
             if (!list.Any())
             {
-                var from_type_list = RUNTIME._type_to_bcltype.Where(t => { return t.Value == bcl_type_of_object; });
-                var count = from_type_list.Count();
-                var from_type = from_type_list.FirstOrDefault();
-                var type = from_type.Key.ToSystemType();
+                var from_type = RUNTIME.GetMonoTypeFromBclType(bcl_type_of_object);
+                var type = from_type.ToSystemType();
                 cpu = Activator.CreateInstance(type);
                 _allocated_objects[cpu] = (IntPtr)address;
             }
@@ -1097,7 +1095,7 @@
             var to_element_type = to_cpu.GetType().GetElementType();
             for (int i = 0; i < to_cpu.Length; ++i)
             {
-                int[] index = new int[to_cpu.Rank];
+                Int64[] index = new Int64[to_cpu.Rank];
                 int c = i;
                 for (int j = to_cpu.Rank - 1; j >= 0; --j)
                 {
@@ -1107,7 +1105,7 @@
                     index[j] = remainder;
                 }
                 IntPtr mem;
-                fixed (int* inds = index)
+                fixed (Int64* inds = index)
                 {
                     RUNTIME.BclSystemArrayLoadElementIndicesAddress((IntPtr) from_gpu, (IntPtr) inds, (IntPtr) (&mem));
                 }
@@ -1425,7 +1423,7 @@
                     total_size *= a.GetLength(i);
                 for (int i = 0; i < total_size; ++i)
                 {
-                    int[] index = new int[rank];
+                    Int64[] index = new Int64[rank];
                     int c = i;
                     for (int j = rank - 1; j >= 0; --j)
                     {
@@ -1495,7 +1493,7 @@
                         for (int i = 0; i < rank; ++i) total_size *= lens[i];
                         for (int i = 0; i < total_size; ++i)
                         {
-                            long[] index = new long[rank];
+                            Int64[] index = new Int64[rank];
                             long c = i;
                             for (int j = (int)rank - 1; j >= 0; --j)
                             {

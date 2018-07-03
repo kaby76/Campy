@@ -766,7 +766,7 @@
             }
         }
 
-        public static Dictionary<TypeReference, IntPtr> _type_to_bcltype = new Dictionary<TypeReference, IntPtr>();
+        private static Dictionary<TypeReference, IntPtr> _type_to_bcltype = new Dictionary<TypeReference, IntPtr>();
 
         public static IntPtr GetBclType(TypeReference type)
         {
@@ -814,12 +814,20 @@
                 {
                     result = BclGetMetaOfType(mt_assembly_name, mt_name_space, mt_name, result);
                 }
-                if (!_type_to_bcltype.ContainsKey(mt))
+                if (!_type_to_bcltype.Where(t => t.Key.FullName == mt.FullName).Any())
                 {
                     _type_to_bcltype[mt] = result;
                 }
             }
             return result;
+        }
+
+        public static TypeReference GetMonoTypeFromBclType(IntPtr bcl_type)
+        {
+            var possible = _type_to_bcltype.Where(t => t.Value == bcl_type);
+            if (!possible.Any()) return null;
+            if (possible.Count() > 1) return null;
+            return possible.First().Key;
         }
     }
 }

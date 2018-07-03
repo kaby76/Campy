@@ -190,8 +190,9 @@ function_space_specifier tMD_TypeDef* MetaData_GetTypeDefFromName(tMetaData *pMe
     U32 i;
 	tMD_TypeDef* result = 0;
 
-	// Open corlib.dll as a substitution, and try to find.
-	if (strcmp(pMetaData->file_name, "corlib.dll") != 0)
+	// Open corlib.dll as a substitution if this is mscorlib, and try to find.
+	if (strcmp(pMetaData->file_name, "mscorlib.dll") == 0 ||
+		strcmp(pMetaData->file_name, "mscorlib") == 0)
 	{
 		result = MetaData_GetTypeDefFromFullName("corlib.dll", nameSpace, name);
 		if (result) return result;

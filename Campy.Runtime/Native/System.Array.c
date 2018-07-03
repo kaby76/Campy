@@ -488,7 +488,7 @@ function_space_specifier void SystemArray_LoadElementIndices(HEAP_PTR pThis_, U6
     PTR b1 = (PTR)&pArray->rank;
     U64 * beginning_of_lengths = ((U64*)b1) + 1;
 
-	int index = 0;
+	U64 index = 0;
 	for (int d = 0; d < rank; ++d)
 	{
 		U64 x = beginning_of_lengths[d];
@@ -549,7 +549,7 @@ function_space_specifier void SystemArray_StoreElementIndices(HEAP_PTR pThis_, U
     PTR b1 = (PTR)&pArray->rank;
     U64 * beginning_of_lengths = ((U64*)b1) + 1;
 
-	int index = 0;
+	U64 index = 0;
 	for (int d = 0; d < rank; ++d)
 	{
 		U64 x = beginning_of_lengths[d];
@@ -610,7 +610,7 @@ function_space_specifier void SystemArray_LoadElementIndicesAddress(HEAP_PTR pTh
     PTR b1 = (PTR)&pArray->rank;
     U64 * beginning_of_lengths = ((U64*)b1) + 1;
 
-    int index = 0;
+    U64 index = 0;
 	for (int d = 0; d < rank; ++d)
 	{
 		U64 x = beginning_of_lengths[d];
