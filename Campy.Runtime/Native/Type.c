@@ -299,6 +299,25 @@ function_space_specifier tMD_TypeDef* Type_GetTypeFromSig(tMetaData *pMetaData, 
 				return ppClassTypeArgs[entry];
 			}
 
+		case ELEMENT_TYPE_ARRAY:
+			{
+				tMD_TypeDef *pElementType;
+				pElementType = Type_GetTypeFromSig(pMetaData, pSig, ppClassTypeArgs, ppMethodTypeArgs);
+				U32 rank = MetaData_DecodeUnsigned32BitInteger(pSig);
+				U32 numsizes;
+				numsizes = MetaData_DecodeUnsigned32BitInteger(pSig);
+				for (int i = 0; i < numsizes; ++i)
+				{
+					U32 size = MetaData_DecodeUnsigned32BitInteger(pSig);
+				}
+				numsizes = MetaData_DecodeUnsigned32BitInteger(pSig);
+				for (int i = 0; i < numsizes; ++i)
+				{
+					U32 lobound = MetaData_DecodeUnsigned32BitInteger(pSig);
+				}
+				return Type_GetArrayTypeDef(pElementType, rank, ppClassTypeArgs, ppMethodTypeArgs);
+			}
+
 		case ELEMENT_TYPE_GENERICINST:
 			{
 				tMD_TypeDef *pType;
@@ -333,24 +352,6 @@ function_space_specifier tMD_TypeDef* Type_GetTypeFromSig(tMetaData *pMetaData, 
 				return ppMethodTypeArgs[entry];
 			}
 
-		case ELEMENT_TYPE_ARRAY:
-		{
-			tMD_TypeDef *pElementType;
-			pElementType = Type_GetTypeFromSig(pMetaData, pSig, ppClassTypeArgs, ppMethodTypeArgs);
-			U32 rank = MetaData_DecodeUnsigned32BitInteger(pSig);
-			U32 numsizes;
-			numsizes = MetaData_DecodeUnsigned32BitInteger(pSig);
-			for (int i = 0; i < numsizes; ++i)
-			{
-				U32 size = MetaData_DecodeUnsigned32BitInteger(pSig);
-			}
-			numsizes = MetaData_DecodeUnsigned32BitInteger(pSig);
-			for (int i = 0; i < numsizes; ++i)
-			{
-				U32 lobound = MetaData_DecodeUnsigned32BitInteger(pSig);
-			}
-			return Type_GetArrayTypeDef(pElementType, rank, ppClassTypeArgs, ppMethodTypeArgs);
-		}
 
 		default:
 			Crash("Type_GetTypeFromSig(): Cannot handle signature element type: 0x%02x", entry);

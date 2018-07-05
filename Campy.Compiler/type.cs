@@ -38,8 +38,7 @@ namespace Campy.Compiler
 
         public TYPE(Mono.Cecil.TypeReference mono_type)
         {
-            mono_type = RUNTIME.RewriteType(mono_type);
-            _cil_type = mono_type;
+            _cil_type = mono_type.RewriteMonoTypeReference();
             _verification_type = METAHELPER.InitVerificationType(_cil_type);
             _stack_verification_type = METAHELPER.InitStackVerificationType(_verification_type, _cil_type);
             _intermediate_type_ref = _stack_verification_type.ToTypeRef();

@@ -466,7 +466,7 @@
                 var to_mono = t_system_type.ToMonoTypeReference();
 
                 // Add entry for converting intrinsic NET BCL type to GPU BCL type.
-                _substituted_bcl.Add(to_mono, bcl_type);
+                //_substituted_bcl.Add(to_mono, bcl_type);
 
                 foreach (var m in bcl_type.Methods)
                 {
@@ -641,47 +641,6 @@
         public static IntPtr BclPtr { get; set; }
         public static ulong BclPtrSize { get; set; }
 
-        private static Dictionary<string, TypeReference> _complete_rewrite_list_of_types = new Dictionary<string, TypeReference>();
-
-        public static TypeReference RewriteType(TypeReference tr)
-        {
-            // Check if we rewrote type before. If so, return cached value.
-            // Otherwise, recursively construct new type complete with new component types based on BCL.
-            var found = _complete_rewrite_list_of_types.Where(t => t.Key == tr.FullName);
-            if (found.Any())
-            {
-                return found.First().Value;
-            }
-            // Rewrite with BCL if basic type.
-            foreach (var kv in _substituted_bcl)
-            {
-                if (kv.Key.FullName == tr.FullName)
-                    tr = kv.Value;
-            }
-
-            //// Type is complex, rewrite each part.
-            //var is_pointer = tr.IsPointer;
-            //var is_by_reference = tr.IsByReference;
-            //var is_array = tr.IsArray;
-            //var is_value_type = tr.IsValueType;
-            //var is_basic_type = tr.IsValueType && !tr.IsStruct();
-            //var git = tr as GenericInstanceType;
-            //var td = tr as TypeDefinition;
-            //var gp = tr as GenericParameter;
-
-            //var ta = tr.Resolve().Attributes;
-            //TypeDefinition new_definition = new TypeDefinition(
-            //    tr.Namespace,
-            //    tr.Name,
-            //    ta,
-            //    tr.DeclaringType);
-
-            //var ntr = new TypeReference(tr.Namespace, tr.Name, tr.Module, tr.Scope);
-
-
-            return tr;
-        }
-
         public static MethodReference SubstituteMethod(MethodReference method_reference)
         {
             // Can't do anything if method isn't associated with a type.
@@ -785,7 +744,7 @@
             while (chain.Any())
             {
                 var tr = chain.Pop();
-                var mt = RUNTIME.RewriteType(tr);
+                var mt = tr.RewriteMonoTypeReference();
                 var mt_assembly_name = mt.Scope.Name;
                 var mt_name_space = mt.Namespace;
                 var mt_name = mt.Name;

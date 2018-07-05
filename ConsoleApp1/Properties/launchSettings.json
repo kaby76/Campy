@@ -1,7 +1,8 @@
 {
   "profiles": {
     "ConsoleApp1": {
-      "commandName": "Project",
+      "commandName": "Executable",
+      "executablePath": "C:\\Users\\kenne\\Documents\\Campy2\\ConsoleApp1\\bin\\Debug\\netcoreapp2.1\\publish\\ConsoleApp1.exe",
       "workingDirectory": "C:\\Users\\kenne\\Documents\\Campy2\\ConsoleApp1\\bin\\Debug\\netcoreapp2.1\\",
       "nativeDebugging": true
     }

@@ -16,8 +16,8 @@ namespace GradientDescent
             var b = new Vector(new Collection<double> {2, -8});
             var x = new Vector(new Collection<double> {-2, -2});
             var r = SD.SteepestDescent(A, b, x);
-            if ((r[0] - 2) >= 1.0e-5) throw new Exception();
-            if ((r[1] + 2) >= 1.0e-5) throw new Exception();
+            if ((r[0] - 2) >= 1.0e-2) throw new Exception();
+            if ((r[1] + 2) >= 1.0e-2) throw new Exception();
         }
     }
 
@@ -134,7 +134,7 @@ namespace GradientDescent
                 Vector r = b - A * x;
                 double rr = r * r;
                 double rAr = r * (A * r);
-                if (Math.Abs(rAr) <= 1.0e-10) break;
+                if (Math.Abs(rAr) <= 1.0e-3) break;
                 double a = (double) rr / (double) rAr;
                 x = x + (a * r);
             }

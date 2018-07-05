@@ -1579,7 +1579,7 @@
                     // Grab "this" from stack and generate the type.
                     var this_parameter = state._stack.PeekTop(xargs-1);
                     var declaring_type = mr.DeclaringType;
-                    var new_type = this_parameter.ConvertGenericInstanceTypeToNonGenericInstanceType();
+                    var new_type = this_parameter;
 
                     // Get the method from the non-generic (real instance) type.
                     mr = new_type.Resolve().Methods.Where(j =>
@@ -5844,28 +5844,7 @@
             if (mr.DeclaringType.HasGenericParameters)
             {
                 throw new Exception("can't handle.");
-                // Instantiate a generic type and rewrite the
-                // instruction with new target.
-                // Try "this".
-                // Grab "this" from stack and generate the type.
-                var this_parameter = state._stack.PeekTop(xargs - 1);
-                var declaring_type = mr.DeclaringType;
-                var new_type = this_parameter.ConvertGenericInstanceTypeToNonGenericInstanceType();
 
-                // Get the method from the non-generic (real instance) type.
-                mr = new_type.Resolve().Methods.Where(j =>
-                {
-                    if (j.Name != mr.Name) return false;
-                    if (j.Parameters.Count != mr.Parameters.Count) return false;
-                    return true;
-                }).First();
-
-                // Create new instruction to replace this one.
-                var worker = this.Body.GetILProcessor();
-                Instruction new_mono_inst = worker.Create(
-                    this.OpCode, mr);
-                new_mono_inst.Offset = this.Instruction.Offset;
-                new_inst = Wrap(new_mono_inst, this.Body, this.Block, this.SeqPoint);
             }
 
             {
