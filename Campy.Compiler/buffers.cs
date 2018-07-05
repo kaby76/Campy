@@ -456,8 +456,8 @@
             return result;
         }
 
-	    // Copy from a C# object to a specific location given by a pointer.
-	    // Note, the location where this object is copied to is the size of the object,
+        // Copy from a C# object to a specific location given by a pointer.
+        // Note, the location where this object is copied to is the size of the object,
         // not a reference.
         private unsafe void DCToBclValue(object from_cpu, void* address)
         {
@@ -477,69 +477,77 @@
                 *(void**)address = null;
                 return;
             }
+
+
             Type system_type = from_cpu.GetType();
-            var mono_type = system_type.ToMonoTypeReference().RewriteMonoTypeReference();
+            TypeReference mono_type = system_type.ToMonoTypeReference().RewriteMonoTypeReference();
+
+            DCToBclValueAux(from_cpu, system_type, mono_type, address);
+        }
+
+        private unsafe void DCToBclValueAux(object from_cpu, Type system_type, TypeReference mono_type, void* address)
+        {
             if (mono_type.FullName.Equals("System.Object"))
             {
                 throw new Exception("Type is System.Object, but I don't know what to represent it as.");
             }
             if (mono_type.FullName.Equals("System.Int16"))
             {
-                Cp(address, from_cpu);
+                Marshal.StructureToPtr(from_cpu, (IntPtr)address, false);
                 return;
             }
             if (mono_type.FullName.Equals("System.Int32"))
             {
-                Cp(address, from_cpu);
+                Marshal.StructureToPtr(from_cpu, (IntPtr)address, false);
                 return;
             }
             if (mono_type.FullName.Equals("System.Int64"))
             {
-                Cp(address, from_cpu);
+                Marshal.StructureToPtr(from_cpu, (IntPtr)address, false);
                 return;
             }
             if (mono_type.FullName.Equals("System.UInt16"))
             {
-                Cp(address, from_cpu);
+                Marshal.StructureToPtr(from_cpu, (IntPtr)address, false);
                 return;
             }
             if (mono_type.FullName.Equals("System.UInt32"))
             {
-                Cp(address, from_cpu);
+                Marshal.StructureToPtr(from_cpu, (IntPtr)address, false);
                 return;
             }
             if (mono_type.FullName.Equals("System.UInt64"))
             {
-                Cp(address, from_cpu);
+                Marshal.StructureToPtr(from_cpu, (IntPtr)address, false);
                 return;
             }
             if (mono_type.FullName.Equals("System.IntPtr"))
             {
-                Cp(address, from_cpu);
+                Marshal.StructureToPtr(from_cpu, (IntPtr)address, false);
                 return;
             }
             if (mono_type.FullName.Equals("System.Boolean"))
             {
                 bool v = (bool)from_cpu;
                 System.Byte v2 = (System.Byte)(v ? 1 : 0);
-                Cp(address, v2);
+                Marshal.StructureToPtr(v2, (IntPtr)address, false);
                 return;
             }
             if (mono_type.FullName.Equals("System.Char"))
             {
                 Char v = (Char)from_cpu;
                 System.UInt16 v2 = (System.UInt16)v;
-                Cp(address, v2);
+                Marshal.StructureToPtr(v2, (IntPtr)address, false);
                 return;
             }
             if (mono_type.FullName.Equals("System.Single"))
             {
-                Cp(address, from_cpu);
+                Marshal.StructureToPtr(from_cpu, (IntPtr)address, false);
                 return;
             }
             if (mono_type.FullName.Equals("System.Double"))
             {
-                Cp(address, from_cpu);
+                Marshal.StructureToPtr(from_cpu, (IntPtr)address, false);
                 return;
             }
             if (system_type.IsEnum)
@@ -595,6 +603,14 @@
                 for (int i = 0; i < rank; ++i)
                     Cp(df_length + i * BUFFERS.SizeOf(typeof(Int64)), a.GetLength(i));
                 System.Type orig_element_type = from_cpu.GetType().GetElementType();
+                var to_element_mono_type = orig_element_type.ToMonoTypeReference().RewriteMonoTypeReference();
+                bool is_ref = to_element_mono_type.IsReferenceType();
+                if (is_ref)
+                {
+                    orig_element_type = typeof(IntPtr);
+                    to_element_mono_type = orig_element_type.ToMonoTypeReference().RewriteMonoTypeReference();
+                }
+
                 byte* ip = df_elements;
 
                 // As the array could be multi-dimensional, we need to do a copy in row major order.
@@ -616,7 +632,6 @@
                         index[j] = remainder;
                     }
                     var from_element_value = a.GetValue(index);
-                    var to_element_mono_type = from_element_value.GetType().ToMonoTypeReference().RewriteMonoTypeReference();
                     // Note individual elements are copied here, but for reference types,
                     // the reference value is placed in the array.
                     IntPtr mem;
@@ -624,9 +639,9 @@
                     {
                         RUNTIME.BclSystemArrayLoadElementIndicesAddress((IntPtr)address, (IntPtr)inds, (IntPtr)(&mem));
                     }
-                    if (to_element_mono_type.IsReferenceType())
+                    if (is_ref)
                         from_element_value = DCToBcl(from_element_value);
-                    DCToBclValue(from_element_value, (void*)mem);
+                    DCToBclValueAux(from_element_value, orig_element_type, to_element_mono_type, (void*)mem);
                 }
 
                 RUNTIME.BclCheckHeap();
@@ -697,7 +712,7 @@
 
                 return;
             }
-	        throw new Exception("Rotten apples");
+            throw new Exception("Rotten apples");
         }
 
 
@@ -1384,9 +1399,7 @@
 
         private static unsafe void Cp(void* destPtr, object src)
         {
-            RUNTIME.BclCheckHeap();
             Marshal.StructureToPtr(src, (IntPtr)destPtr, false);
-            RUNTIME.BclCheckHeap();
         }
 
         public static string Indent(int size, string value)
