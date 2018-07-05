@@ -967,11 +967,11 @@
                 {
                     return Type1;
                 }
-                if ((Size1 == TargetPointerSizeInBits) && (Size1 > Size2))
+                if (Size1 > Size2)
                 {
                     return Type1;
                 }
-                if ((Size2 == TargetPointerSizeInBits) && (Size2 > Size1))
+                if (Size2 > Size1)
                 {
                     return Type2;
                 }
@@ -3867,9 +3867,13 @@
                         {
                             value = LLVM.BuildPointerCast(Builder, value, par, "i" + instruction_id++);
                         }
+                        else if (LLVM.GetTypeKind(LLVM.TypeOf(value)) == TypeKind.IntegerTypeKind)
+                        {
+                            value = LLVM.BuildIntCast(Builder, value, par, "i" + instruction_id++);
+                        }
                         else
                         {
-                            value = LLVM.BuildBitCast(Builder, value, par, "");
+                            value = LLVM.BuildBitCast(Builder, value, par, "i" + instruction_id++);
                         }
                     }
                     lparams[k + xargs - mr.Parameters.Count] = par;
@@ -3891,6 +3895,10 @@
                         else if (LLVM.GetTypeKind(par) == TypeKind.PointerTypeKind)
                         {
                             value = LLVM.BuildPointerCast(Builder, value, par, "i" + instruction_id++);
+                        }
+                        else if (LLVM.GetTypeKind(LLVM.TypeOf(value)) == TypeKind.IntegerTypeKind)
+                        {
+                            value = LLVM.BuildIntCast(Builder, value, par, "i" + instruction_id++);
                         }
                         else
                         {

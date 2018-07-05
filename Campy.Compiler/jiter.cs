@@ -521,6 +521,8 @@ namespace Campy.Compiler
                         value = new VALUE(LLVM.ConstPointerNull(type.IntermediateType));
                     else if (LLVM.GetTypeKind(type.IntermediateType) == TypeKind.DoubleTypeKind)
                         value = new VALUE(LLVM.ConstReal(LLVM.DoubleType(), 0));
+                    else if (LLVM.GetTypeKind(type.IntermediateType) == TypeKind.FloatTypeKind)
+                        value = new VALUE(LLVM.ConstReal(LLVM.FloatType(), 0));
                     else if (LLVM.GetTypeKind(type.IntermediateType) == TypeKind.IntegerTypeKind)
                         value = new VALUE(LLVM.ConstInt(type.IntermediateType, (ulong) 0, true));
                     else if (LLVM.GetTypeKind(type.IntermediateType) == TypeKind.StructTypeKind)
