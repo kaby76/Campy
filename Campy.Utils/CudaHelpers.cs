@@ -19,7 +19,7 @@ namespace Campy.Utils
             int[] blocks = new int[10];
             for (int j = 0; j < max_dimensionality; ++j)
                 blocks[j] = 1;
-            int[] max_threads = new int[] { 1024, 1024, 64 };
+            int[] max_threads = new int[] { 1024/4, 1024/4, 64/4 };
             int[] max_blocks = new int[] { 65535, 65535, 65535 };
             int[] threads = new int[10];
             for (int j = 0; j < max_dimensionality; ++j)
