@@ -113,7 +113,7 @@ namespace ConsoleApp4
 
         static void Main(string[] args)
         {
-            StartDebugging();
+            //StartDebugging();
             UnitTest1.StringSearchT();
         }
     }
