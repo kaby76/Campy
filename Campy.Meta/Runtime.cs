@@ -104,12 +104,6 @@
         public static ModuleRef global_llvm_module;
         public static List<ModuleRef> all_llvm_modules;
         public static Dictionary<string, ValueRef> functions_in_internal_bcl_layer;
-
-        // This table encodes runtime type information for rewriting BCL types. Use this to determine
-        // what a type (represented in Mono.Cecil.TypeReference) in the user's program maps to
-        // in the GPU base class layer (also represented in Mono.Cecil.TypeReference).
-        private static Dictionary<TypeReference, TypeReference> _substituted_bcl = new Dictionary<TypeReference, TypeReference>();
-
         private static Dictionary<string, TypeRef> _ptx_type_to_llvm_typeref = new Dictionary<string, TypeRef>()
         {
             {".b8", LLVM.Int8Type()},
@@ -159,24 +153,19 @@
                     var a = cust_attrs.First();
                     if (a.AttributeType.FullName == "System.GPUBCLAttribute")
                     {
-                        var arg = a.ConstructorArguments.First();
-                        var v = arg.Value;
-                        var s = (string)v;
-                        _native_name = s;
-                        //string mangled_name = "_Z" + _native_name.Length + _native_name + "PhS_S_";
-                        //CampyConverter.built_in_functions.Add(mangled_name,
-                        //    LLVM.AddFunction(
-                        //        CampyConverter.global_llvm_module,
-                        //        mangled_name,
-                        //        LLVM.FunctionType(LLVM.Int64Type(),
-                        //            new TypeRef[]
-                        //            {
-                        //                    LLVM.PointerType(LLVM.VoidType(), 0), // "this"
-                        //                    LLVM.PointerType(LLVM.VoidType(), 0), // params in a block.
-                        //                    LLVM.PointerType(LLVM.VoidType(), 0) // return value block.
-                        //            }, false)));
+                        var arg1 = a.ConstructorArguments[0];
+                        var v1 = arg1.Value;
+                        var s1 = (string)v1;
+                        _short_name = s1;
+                        var arg2 = a.ConstructorArguments[1];
+                        var v2 = arg2.Value;
+                        var s2 = (string)v2;
+                        _native_name = s2;
                     }
                 }
+
+                if (_native_name == null && !md.IsInternalCall)
+                    ;
             }
         }
 
@@ -465,9 +454,6 @@
 
                 var to_mono = t_system_type.ToMonoTypeReference();
 
-                // Add entry for converting intrinsic NET BCL type to GPU BCL type.
-                //_substituted_bcl.Add(to_mono, bcl_type);
-
                 foreach (var m in bcl_type.Methods)
                 {
                     var x = m.ImplAttributes;
@@ -487,6 +473,85 @@
             // Parse PTX files for all "visible" functions, and create LLVM declarations.
             // For "Internal Calls", these functions appear here, but also on the _internalCalls list.
             var assembly = Assembly.GetAssembly(typeof(Campy.Meta.RUNTIME));
+            List<MethodReference> methods_in_bcl = new List<MethodReference>();
+            Mono.Cecil.ModuleDefinition campy_bcl_runtime = Mono.Cecil.ModuleDefinition.ReadModule(RUNTIME.FindCoreLib());
+            Stack<TypeReference> consider_list = new Stack<TypeReference>();
+            Stack<TypeReference> types_in_bcl = new Stack<TypeReference>();
+            foreach (var type in campy_bcl_runtime.Types)
+            {
+                consider_list.Push(type);
+            }
+            while (consider_list.Any())
+            {
+                var type = consider_list.Pop();
+                types_in_bcl.Push(type);
+                var r = type.Resolve();
+                if (r == null) continue;
+                foreach (var nested in r.NestedTypes)
+                    consider_list.Push(nested);
+            }
+            while (types_in_bcl.Any())
+            {
+                var type = types_in_bcl.Pop();
+                var r = type.Resolve();
+                if (r == null) continue;
+                foreach (var method in r.Methods)
+                {
+                    // add into list of method calls for BCL.
+                    methods_in_bcl.Add(method);
+                }
+            }
+            var internal_methods_in_bcl = methods_in_bcl.Where(
+                m =>
+                {
+                    var rm = m.Resolve();
+                    if (rm == null) return false;
+                    var x = rm.ImplAttributes;
+                    if ((x & MethodImplAttributes.InternalCall) != 0)
+                        return true;
+                    else
+                        return false;
+                }).ToList();
+            var internal_methods_in_bcl2 = methods_in_bcl.Where(
+                m =>
+                {
+                    var rm = m.Resolve();
+                    if (rm == null) return false;
+                    var x = rm.IsInternalCall;
+                    if (x)
+                        return true;
+                    else
+                        return false;
+                }).ToList();
+            var internal_virtual_methods_in_bcl2 = internal_methods_in_bcl.Where(
+                m =>
+                {
+                    var rm = m.Resolve();
+                    return rm.IsVirtual;
+                }).ToList();
+            foreach (var m in methods_in_bcl)
+            {
+                var r = m.Resolve();
+                if (r == null) continue;
+                if (r.IsInternalCall)
+                {
+                    System.Console.WriteLine(r.FullName);
+                    var a = r.Attributes;
+                    if ((a & Mono.Cecil.MethodAttributes.Assembly) != 0) System.Console.Write(" | Assembly");
+                    if ((a & Mono.Cecil.MethodAttributes.Static) != 0) System.Console.Write(" | Static");
+                    if ((a & Mono.Cecil.MethodAttributes.Abstract) != 0) System.Console.Write(" | Abstract");
+                    if ((a & Mono.Cecil.MethodAttributes.Final) != 0) System.Console.Write(" | Final");
+                    if ((a & Mono.Cecil.MethodAttributes.Private) != 0) System.Console.Write(" | Private");
+                    if ((a & Mono.Cecil.MethodAttributes.Public) != 0) System.Console.Write(" | Public");
+                    if ((a & Mono.Cecil.MethodAttributes.Virtual) != 0) System.Console.Write(" | Virtual");
+                    if ((a & Mono.Cecil.MethodAttributes.NewSlot) != 0) System.Console.Write(" | NewSlot");
+                    if ((a & Mono.Cecil.MethodAttributes.ReuseSlot) != 0) System.Console.Write(" | ReuseSlot");
+                    if ((a & Mono.Cecil.MethodAttributes.CheckAccessOnOverride) != 0) System.Console.Write(" | CheckAccessOnOverride");
+                    if ((a & Mono.Cecil.MethodAttributes.VtableLayoutMask) != 0) System.Console.Write(" | VtableLayoutMask");
+                    System.Console.WriteLine(" " +r.IsUnmanagedExport);
+                }
+            }
+
             var resource_names = assembly.GetManifestResourceNames();
             foreach (var resource_name in resource_names)
             {

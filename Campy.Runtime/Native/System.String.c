@@ -123,6 +123,8 @@ function_space_specifier tAsyncCall* System_String_get_Chars(PTR pThis_, PTR pPa
 
 	return NULL;
 }
+__device__ void* p_System_String_get_Chars = (void*)System_String_get_Chars;
+
 
 function_space_specifier tAsyncCall* System_String_InternalConcat(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tSystemString *s0, *s1, *ret;

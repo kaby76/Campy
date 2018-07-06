@@ -822,6 +822,8 @@
                 }
                 if (system_type.FullName.Equals("System.String"))
                 {
+                    return;
+
                     // For now, assume data exists on GPU. Perform memcpy using CUDA.
                     int* block = stackalloc int[1];
                     IntPtr intptr = new IntPtr(block);
@@ -1107,7 +1109,8 @@
             var to_type = to_cpu.GetType();
             if (!to_type.IsArray)
                 throw new Exception("Expecting array.");
-            var to_element_type = to_cpu.GetType().GetElementType();
+            Type to_element_type = to_cpu.GetType().GetElementType();
+            TypeReference to_element_mono_type = to_element_type.ToMonoTypeReference().RewriteMonoTypeReference();
             for (int i = 0; i < to_cpu.Length; ++i)
             {
                 Int64[] index = new Int64[to_cpu.Rank];
@@ -1124,7 +1127,6 @@
                 {
                     RUNTIME.BclSystemArrayLoadElementIndicesAddress((IntPtr) from_gpu, (IntPtr) inds, (IntPtr) (&mem));
                 }
-                var to_element_mono_type = to_element_type.ToMonoTypeReference().RewriteMonoTypeReference();
                 if (to_element_mono_type.IsReferenceType())
                 {
                     object obj = Marshal.PtrToStructure((IntPtr)mem, typeof(IntPtr));

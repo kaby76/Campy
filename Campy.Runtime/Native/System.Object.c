@@ -31,6 +31,7 @@ function_space_specifier tAsyncCall* System_Object_Equals(PTR pThis_, PTR pParam
 
 	return NULL;
 }
+__device__ void* p_System_Object_Equals = (void*)System_Object_Equals;
 
 function_space_specifier tAsyncCall* System_Object_Clone(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	HEAP_PTR obj, clone;
@@ -47,6 +48,7 @@ function_space_specifier tAsyncCall* System_Object_GetHashCode(PTR pThis_, PTR p
 	*(U32*)pReturnValue = static_cast<unsigned>(reinterpret_cast<uintptr_t>(pThis_));
 	return NULL;
 }
+__device__ void* p_System_Object_GetHashCode = (void*)System_Object_GetHashCode;
 
 function_space_specifier tAsyncCall* System_Object_GetType(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	HEAP_PTR typeObject;

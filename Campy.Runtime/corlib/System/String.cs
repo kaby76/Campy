@@ -40,41 +40,40 @@ namespace System {
         private int length;
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        [System.GPUBCLAttribute("System_String_ctor_CharInt32")]
+	[System.GPUBCLAttribute("System_String_ctor_CharInt32","_Z28System_String_ctor_CharInt32PhS_S_")]
         extern public String(char c, int count);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         extern public String(char[] chars);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        [System.GPUBCLAttribute("System_String_ctor_CharAIntInt")]
         extern public String(char[] chars, int startIndex, int length);
 
         #region Private Internal Calls
         
         [MethodImpl(MethodImplOptions.InternalCall)]
-        [System.GPUBCLAttribute("System_String_ctor_StringIntInt")]
+        [System.GPUBCLAttribute("System_String_ctor_StringIntInt","_Z31System_String_ctor_StringIntIntPhS_S_")]
         extern private String(string str, int startIndex, int length);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        [GPUBCLAttribute("System_String_InternalConcat")]
+        [GPUBCLAttribute("System_String_InternalConcat","_Z28System_String_InternalConcatPhS_S_")]
         extern private static string InternalConcat(string str0, string str1);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        [GPUBCLAttribute("System_String_InternalReplace")]
+        [GPUBCLAttribute("System_String_InternalReplace","_Z29System_String_InternalReplacePhS_S_")]
         extern private string InternalReplace(string oldValue, string newValue);
 
         // trimType: bit 0 = start; bit 1 = end
         [MethodImpl(MethodImplOptions.InternalCall)]
-        [GPUBCLAttribute("System_String_InternalTrim")]
+        [GPUBCLAttribute("System_String_InternalTrim","_Z26System_String_InternalTrimPhS_S_")]
         extern private string InternalTrim(char[] trimChars, int trimType);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        [GPUBCLAttribute("System_String_InternalIndexOf")]
+        [GPUBCLAttribute("System_String_InternalIndexOf","_Z29System_String_InternalIndexOfPhS_S_")]
         extern private int InternalIndexOf(char value, int startIndex, int count, bool forwards);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        [GPUBCLAttribute("System_String_InternalIndexOfAny")]
+        [GPUBCLAttribute("System_String_InternalIndexOfAny","_Z32System_String_InternalIndexOfAnyPhS_S_")]
         extern private int InternalIndexOfAny(char[] anyOf, int startIndex, int count, bool forward);
 
         #endregion
@@ -88,7 +87,7 @@ namespace System {
         [IndexerName("Chars")]
         extern virtual public char this[int index] {
             [MethodImpl(MethodImplOptions.InternalCall)]
-            [GPUBCLAttribute("System_String_get_Chars")]
+            [GPUBCLAttribute("System_String_get_Chars","_Z23System_String_get_CharsPhS_S_")]
             get;
         }
 
@@ -561,11 +560,11 @@ namespace System {
         }
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        [GPUBCLAttribute("System_String_Equals")]
+        [GPUBCLAttribute("System_String_Equals","_Z20System_String_EqualsPhS_S_")]
         extern public static bool Equals(string a, string b);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        [GPUBCLAttribute("System_String_GetHashCode")]
+        [GPUBCLAttribute("System_String_GetHashCode","_Z25System_String_GetHashCodePhS_S_")]
         extern public override int GetHashCode();
 
         #endregion

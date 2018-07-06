@@ -174,6 +174,7 @@ namespace System {
         }
 
         [MethodImpl(MethodImplOptions.InternalCall)]
+	[GPUBCLAttribute("System_Array_Internal_GetLength", "_Z31System_Array_Internal_GetLengthPhS_S_")]
         extern private int Internal_GetLength();
 
         [MethodImpl(MethodImplOptions.InternalCall)]

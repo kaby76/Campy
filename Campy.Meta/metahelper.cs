@@ -517,7 +517,7 @@ namespace Campy.Meta
 
                 basic_llvm_types_created.Add(
                     typeof(char).ToMonoTypeReference(),
-                    LLVM.Int8Type());
+                    LLVM.Int16Type());
 
                 basic_llvm_types_created.Add(
                     typeof(void).ToMonoTypeReference(),

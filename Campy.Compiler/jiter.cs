@@ -1214,6 +1214,33 @@ namespace Campy.Compiler
                     bcl_type,
                     (int)v._original_method_reference.MetadataToken.RID | 0x06000000);
             }
+            // Some of the BCL have virtual functions, particularly internal methods. Make sure these
+            // are added.
+            foreach (var caller in INST.CallInstructions)
+            {
+                CFG.Vertex n = caller.Block;
+                var operand = caller.Operand;
+                var method_reference = operand as MethodReference;
+                var md = method_reference.Resolve();
+                if (md == null) continue;
+                if (!md.IsVirtual) continue;
+                foreach (RUNTIME.BclNativeMethod ci in RUNTIME.BclNativeMethods)
+                {
+                    if (ci._full_name == method_reference.FullName)
+                    {
+                        string the_name = ci._native_name;
+                        var res = Cuda.cuModuleGetFunction(out CUfunction helloWorld, module, ci._native_name);
+                        // Not every entry is going to be in module, so this isn't a problem if not found.
+                        if (res != CUresult.CUDA_SUCCESS) continue;
+                        res = Cuda.cuModuleGetGlobal_v2(out IntPtr hw, out ulong z, module, "p_" + ci._short_name);
+                        var bcl_type = RUNTIME.GetBclType(method_reference.DeclaringType);
+                        RUNTIME.BclMetaDataSetMethodJit(hw,
+                            bcl_type,
+                            (int)method_reference.MetadataToken.RID | 0x06000000);
+                        break;
+                    }
+                }
+            }
         }
 
         public CUfunction GetCudaFunction(MethodReference kernel_method, CUmodule module)

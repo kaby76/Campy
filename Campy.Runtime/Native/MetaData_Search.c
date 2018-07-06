@@ -76,6 +76,7 @@ function_space_specifier U32 MetaData_CompareNameAndSig(STRING name, BLOB_ sigBl
 	}
 	return 0;
 }
+__device__ void * p_MetaData_CompareNameAndSig = (void*)MetaData_CompareNameAndSig;
 
 function_space_specifier static tMD_MethodDef* FindMethodInType(tMD_TypeDef *pTypeDef, STRING name, tMetaData *pSigMetaData, BLOB_ sigBlob, tMD_TypeDef **ppClassTypeArgs, tMD_TypeDef **ppMethodTypeArgs) {
 	U32 i;

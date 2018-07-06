@@ -23,12 +23,12 @@
 using System;
 
 namespace System.Runtime.CompilerServices {
-	public static class RuntimeHelpers {
+    public static class RuntimeHelpers {
 
-		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-        [GPUBCLAttribute("System_Runtime_CompilerServices_InitializeArray")]
-		extern public static void InitializeArray(Array array, RuntimeFieldHandle fldHandle);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        [GPUBCLAttribute("System_Runtime_CompilerServices_InitializeArray","_Z47System_Runtime_CompilerServices_InitializeArrayPhS_S_")]
+        extern public static void InitializeArray(Array array, RuntimeFieldHandle fldHandle);
 
-	}
+    }
 }
 #endif

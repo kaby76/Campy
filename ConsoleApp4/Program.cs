@@ -84,8 +84,12 @@ namespace ConsoleApp4
             });
 
             for (int i = 0; i < n; ++i)
+            {
+                if (found[i] != 0)
+                    System.Console.WriteLine("Non-zero entry at " + i);
                 if (found[i] != found2[i])
                     throw new Exception();
+            }
         }
     }
 
