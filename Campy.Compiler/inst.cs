@@ -2144,6 +2144,10 @@
 
         public override unsafe INST Convert(STATE<VALUE> state)
         {
+            // NB: the result of comparisons is a 32-bit quantity, not a bool
+            // It must be 32 bits because that is what the spec says.
+            // ceq instruction -- page 346 of ecma
+
             VALUE v2 = state._stack.Pop();
             VALUE v1 = state._stack.Pop();
             // TODO Undoubtably, this will be much more complicated than my initial stab.
@@ -2158,38 +2162,12 @@
                 else op = _uint_pred[(int) Predicate];
 
                 cmp = LLVM.BuildICmp(Builder, op, v1.V, v2.V, "i" + instruction_id++);
-                if (Next != null)
-                {
-                    //var t = Next.GetType();
-                    //if (t == typeof(i_brfalse))
-                    //{
-                    //    // Push, Pop, branch -> combine
-                    //    return Next;
-                    //}
-                    //else if (t == typeof(i_brfalse_s))
-                    //{
-                    //    // Push, Pop, branch -> combine
-                    //    return Next;
-                    //}
-                    //else if (t == typeof(i_brtrue))
-                    //{
-                    //    // Push, Pop, branch -> combine
-                    //    return Next;
-                    //}
-                    //else if (t == typeof(i_brtrue_s))
-                    //{
-                    //    // Push, Pop, branch -> combine
-                    //    return Next;
-                    //}
-                }
-
                 // Set up for push of 0/1.
                 var return_type = new TYPE(typeof(bool));
                 var ret_llvm = LLVM.BuildZExt(Builder, cmp, return_type.IntermediateType, "");
                 var ret = new VALUE(ret_llvm, return_type);
                 if (Campy.Utils.Options.IsOn("jit_trace"))
                     System.Console.WriteLine(ret);
-
                 state._stack.Push(ret);
             }
             else if (t1.isPointerTy() && t2.isPointerTy())
@@ -2946,186 +2924,188 @@
         }
 
         public override INST GenerateGenerics(STATE<TypeReference> state)
-        {
+        {   // stfld, page 427 of ecma 335
             var v = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(v.ToString());
-
             var o = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(o.ToString());
-
             return this;
         }
 
         public override unsafe INST Convert(STATE<VALUE> state)
-        {
+        {   // stfld, page 427 of ecma 335
+            var operand = this.Operand;
+            if (operand as FieldReference == null) throw new Exception("Error in parsing stfld.");
+            var field_reference = operand as FieldReference;
+            VALUE v = state._stack.Pop();
+            if (Campy.Utils.Options.IsOn("jit_trace"))
+                System.Console.WriteLine(v);
+            VALUE o = state._stack.Pop();
+            if (Campy.Utils.Options.IsOn("jit_trace"))
+                System.Console.WriteLine(o);
+            TypeRef tr = LLVM.TypeOf(o.V);
+            bool isPtr = o.T.isPointerTy();
+            bool isArr = o.T.isArrayTy();
+            bool isSt = o.T.isStructTy();
+            bool is_ptr = false;
+            if (isPtr)
             {
-                VALUE v = state._stack.Pop();
-                if (Campy.Utils.Options.IsOn("jit_trace"))
-                    System.Console.WriteLine(v);
+                uint offset = 0;
+                var yy = this.Instruction.Operand;
+                var field = yy as Mono.Cecil.FieldReference;
+                if (yy == null) throw new Exception("Cannot convert.");
+                var declaring_type_tr = field.DeclaringType;
+                var declaring_type = declaring_type_tr.Resolve();
 
-                VALUE o = state._stack.Pop();
-                if (Campy.Utils.Options.IsOn("jit_trace"))
-                    System.Console.WriteLine(o);
-
-                TypeRef tr = LLVM.TypeOf(o.V);
-                bool isPtr = o.T.isPointerTy();
-                bool isArr = o.T.isArrayTy();
-                bool isSt = o.T.isStructTy();
-                bool is_ptr = false;
-                if (isPtr)
+                // need to take into account padding fields. Unfortunately,
+                // LLVM does not name elements in a struct/class. So, we must
+                // compute padding and adjust.
+                int size = 0;
+                foreach (var f in declaring_type.Fields)
                 {
-                    uint offset = 0;
-                    var yy = this.Instruction.Operand;
-                    var field = yy as Mono.Cecil.FieldReference;
-                    if (yy == null) throw new Exception("Cannot convert.");
-                    var declaring_type_tr = field.DeclaringType;
-                    var declaring_type = declaring_type_tr.Resolve();
+                    var attr = f.Attributes;
+                    if ((attr & FieldAttributes.Static) != 0)
+                        continue;
 
-                    // need to take into account padding fields. Unfortunately,
-                    // LLVM does not name elements in a struct/class. So, we must
-                    // compute padding and adjust.
-                    int size = 0;
-                    foreach (var f in declaring_type.Fields)
+                    int field_size;
+                    int alignment;
+                    var array_or_class = (f.FieldType.IsArray || !f.FieldType.IsValueType);
+                    if (array_or_class)
                     {
-                        var attr = f.Attributes;
-                        if ((attr & FieldAttributes.Static) != 0)
-                            continue;
-
-                        int field_size;
-                        int alignment;
-                        var array_or_class = (f.FieldType.IsArray || !f.FieldType.IsValueType);
-                        if (array_or_class)
-                        {
-                            field_size = BUFFERS.SizeOf(typeof(IntPtr));
-                            alignment = BUFFERS.Alignment(typeof(IntPtr));
-                        }
-                        else
-                        {
-                            var ft = f.FieldType.ToSystemType();
-                            field_size = BUFFERS.SizeOf(ft);
-                            alignment = BUFFERS.Alignment(ft);
-                        }
-                        int padding = BUFFERS.Padding(size, alignment);
-                        size = size + padding + field_size;
-                        if (padding != 0)
-                        {
-                            // Add in bytes to effect padding.
-                            for (int j = 0; j < padding; ++j)
-                                offset++;
-                        }
-
-                        if (f.Name == field.Name)
-                        {
-                            is_ptr = f.FieldType.IsArray || f.FieldType.IsPointer;
-                            break;
-                        }
-                        offset++;
+                        field_size = BUFFERS.SizeOf(typeof(IntPtr));
+                        alignment = BUFFERS.Alignment(typeof(IntPtr));
+                    }
+                    else
+                    {
+                        var ft = f.FieldType.ToSystemType();
+                        field_size = BUFFERS.SizeOf(ft);
+                        alignment = BUFFERS.Alignment(ft);
                     }
 
-                    var dst = LLVM.BuildStructGEP(Builder, o.V, offset, "i" + instruction_id++);
-                    if (Campy.Utils.Options.IsOn("jit_trace"))
-                        System.Console.WriteLine(new VALUE(dst));
+                    int padding = BUFFERS.Padding(size, alignment);
+                    size = size + padding + field_size;
+                    if (padding != 0)
+                    {
+                        // Add in bytes to effect padding.
+                        for (int j = 0; j < padding; ++j)
+                            offset++;
+                    }
 
-                    var dd = LLVM.TypeOf(dst);
-                    var ddd = LLVM.GetElementType(dd);
-                    var src = v;
-                    TypeRef stype = LLVM.TypeOf(src.V);
-                    TypeRef dtype = ddd;
+                    if (f.Name == field.Name)
+                    {
+                        is_ptr = f.FieldType.IsArray || f.FieldType.IsPointer;
+                        break;
+                    }
 
-                    /* Trunc */
-                    if (stype == LLVM.Int64Type()
-                        && (dtype == LLVM.Int32Type() || dtype == LLVM.Int16Type() || dtype == LLVM.Int8Type() || dtype == LLVM.Int1Type()))
-                        src = new VALUE(LLVM.BuildTrunc(Builder, src.V, dtype, "i" + instruction_id++));
-                    else if (stype == LLVM.Int32Type()
-                             && (dtype == LLVM.Int16Type() || dtype == LLVM.Int8Type() || dtype == LLVM.Int1Type()))
-                        src = new VALUE(LLVM.BuildTrunc(Builder, src.V, dtype, "i" + instruction_id++));
-                    else if (stype == LLVM.Int16Type()
-                             && (dtype == LLVM.Int8Type() || dtype == LLVM.Int1Type()))
-                        src = new VALUE(LLVM.BuildTrunc(Builder, src.V, dtype, "i" + instruction_id++));
-
-                    var store = LLVM.BuildStore(Builder, src.V, dst);
-                    if (Campy.Utils.Options.IsOn("jit_trace"))
-                        System.Console.WriteLine(new VALUE(store));
+                    offset++;
                 }
-                else if (isSt)
+
+                var dst = LLVM.BuildStructGEP(Builder, o.V, offset, "i" + instruction_id++);
+                if (Campy.Utils.Options.IsOn("jit_trace"))
+                    System.Console.WriteLine(new VALUE(dst));
+
+                var dd = LLVM.TypeOf(dst);
+                var ddd = LLVM.GetElementType(dd);
+                var src = v;
+                TypeRef stype = LLVM.TypeOf(src.V);
+                TypeRef dtype = ddd;
+
+                /* Trunc */
+                if (stype == LLVM.Int64Type()
+                    && (dtype == LLVM.Int32Type() || dtype == LLVM.Int16Type() || dtype == LLVM.Int8Type() ||
+                        dtype == LLVM.Int1Type()))
+                    src = new VALUE(LLVM.BuildTrunc(Builder, src.V, dtype, "i" + instruction_id++));
+                else if (stype == LLVM.Int32Type()
+                         && (dtype == LLVM.Int16Type() || dtype == LLVM.Int8Type() || dtype == LLVM.Int1Type()))
+                    src = new VALUE(LLVM.BuildTrunc(Builder, src.V, dtype, "i" + instruction_id++));
+                else if (stype == LLVM.Int16Type()
+                         && (dtype == LLVM.Int8Type() || dtype == LLVM.Int1Type()))
+                    src = new VALUE(LLVM.BuildTrunc(Builder, src.V, dtype, "i" + instruction_id++));
+
+                var store = LLVM.BuildStore(Builder, src.V, dst);
+                if (Campy.Utils.Options.IsOn("jit_trace"))
+                    System.Console.WriteLine(new VALUE(store));
+            }
+            else if (isSt)
+            {
+                uint offset = 0;
+                var yy = this.Instruction.Operand;
+                var field = yy as Mono.Cecil.FieldReference;
+                if (yy == null) throw new Exception("Cannot convert.");
+                var declaring_type_tr = field.DeclaringType;
+                var declaring_type = declaring_type_tr.Resolve();
+
+                // need to take into account padding fields. Unfortunately,
+                // LLVM does not name elements in a struct/class. So, we must
+                // compute padding and adjust.
+                int size = 0;
+                foreach (var f in declaring_type.Fields)
                 {
-                    uint offset = 0;
-                    var yy = this.Instruction.Operand;
-                    var field = yy as Mono.Cecil.FieldReference;
-                    if (yy == null) throw new Exception("Cannot convert.");
-                    var declaring_type_tr = field.DeclaringType;
-                    var declaring_type = declaring_type_tr.Resolve();
+                    var attr = f.Attributes;
+                    if ((attr & FieldAttributes.Static) != 0)
+                        continue;
 
-                    // need to take into account padding fields. Unfortunately,
-                    // LLVM does not name elements in a struct/class. So, we must
-                    // compute padding and adjust.
-                    int size = 0;
-                    foreach (var f in declaring_type.Fields)
+                    int field_size;
+                    int alignment;
+                    var array_or_class = (f.FieldType.IsArray || !f.FieldType.IsValueType);
+                    if (array_or_class)
                     {
-                        var attr = f.Attributes;
-                        if ((attr & FieldAttributes.Static) != 0)
-                            continue;
-
-                        int field_size;
-                        int alignment;
-                        var array_or_class = (f.FieldType.IsArray || !f.FieldType.IsValueType);
-                        if (array_or_class)
-                        {
-                            field_size = BUFFERS.SizeOf(typeof(IntPtr));
-                            alignment = BUFFERS.Alignment(typeof(IntPtr));
-                        }
-                        else
-                        {
-                            var ft = f.FieldType.ToSystemType();
-                            field_size = BUFFERS.SizeOf(ft);
-                            alignment = BUFFERS.Alignment(ft);
-                        }
-                        int padding = BUFFERS.Padding(size, alignment);
-                        size = size + padding + field_size;
-                        if (padding != 0)
-                        {
-                            // Add in bytes to effect padding.
-                            for (int j = 0; j < padding; ++j)
-                                offset++;
-                        }
-
-                        if (f.Name == field.Name)
-                        {
-                            is_ptr = f.FieldType.IsArray || f.FieldType.IsPointer;
-                            break;
-                        }
-                        offset++;
+                        field_size = BUFFERS.SizeOf(typeof(IntPtr));
+                        alignment = BUFFERS.Alignment(typeof(IntPtr));
+                    }
+                    else
+                    {
+                        var ft = f.FieldType.ToSystemType();
+                        field_size = BUFFERS.SizeOf(ft);
+                        alignment = BUFFERS.Alignment(ft);
                     }
 
-                    var value = LLVM.BuildExtractValue(Builder, o.V, offset, "i" + instruction_id++);
+                    int padding = BUFFERS.Padding(size, alignment);
+                    size = size + padding + field_size;
+                    if (padding != 0)
+                    {
+                        // Add in bytes to effect padding.
+                        for (int j = 0; j < padding; ++j)
+                            offset++;
+                    }
+
+                    if (f.Name == field.Name)
+                    {
+                        is_ptr = f.FieldType.IsArray || f.FieldType.IsPointer;
+                        break;
+                    }
+
+                    offset++;
+                }
+
+                var value = LLVM.BuildExtractValue(Builder, o.V, offset, "i" + instruction_id++);
+                if (Campy.Utils.Options.IsOn("jit_trace"))
+                    System.Console.WriteLine(new VALUE(value));
+
+                var load_value = new VALUE(value);
+                bool isPtrLoad = load_value.T.isPointerTy();
+                if (isPtrLoad)
+                {
+                    var mono_field_type = field.FieldType;
+                    TypeRef type = mono_field_type.ToTypeRef();
+                    value = LLVM.BuildBitCast(Builder,
+                        value, type, "i" + instruction_id++);
                     if (Campy.Utils.Options.IsOn("jit_trace"))
                         System.Console.WriteLine(new VALUE(value));
-
-                    var load_value = new VALUE(value);
-                    bool isPtrLoad = load_value.T.isPointerTy();
-                    if (isPtrLoad)
-                    {
-                        var mono_field_type = field.FieldType;
-                        TypeRef type = mono_field_type.ToTypeRef();
-                        value = LLVM.BuildBitCast(Builder,
-                            value, type, "i" + instruction_id++);
-                        if (Campy.Utils.Options.IsOn("jit_trace"))
-                            System.Console.WriteLine(new VALUE(value));
-                    }
-
-                    var store = LLVM.BuildStore(Builder, v.V, value);
-                    if (Campy.Utils.Options.IsOn("jit_trace"))
-                        System.Console.WriteLine(new VALUE(store));
-                }
-                else
-                {
-                    throw new Exception("Value type ldfld not implemented!");
                 }
 
-                return Next;
+                var store = LLVM.BuildStore(Builder, v.V, value);
+                if (Campy.Utils.Options.IsOn("jit_trace"))
+                    System.Console.WriteLine(new VALUE(store));
             }
+            else
+            {
+                throw new Exception("Value type ldfld not implemented!");
+            }
+
+            return Next;
         }
     }
 
@@ -3602,25 +3582,53 @@
         }
 
         public override INST GenerateGenerics(STATE<TypeReference> state)
-        {
+        {   // brfalse, page 340 of ecma 335
             var v = state._stack.Pop();
             return this;
         }
 
         public override unsafe INST Convert(STATE<VALUE> state)
-        {
+        {   // brfalse, page 340 of ecma 335
             object operand = this.Operand;
             Instruction instruction = operand as Instruction;
             var v = state._stack.Pop();
+            var value = v.V;
             var edge1 = Block._graph.SuccessorEdges(Block).ToList()[0];
             var s1 = edge1.To;
             var edge2 = Block._graph.SuccessorEdges(Block).ToList()[1];
             var s2 = edge2.To;
-            // We need to compare the value popped with 0/1.
-            var v2 = LLVM.ConstInt(LLVM.Int32Type(), 1, false);
-            var v3 = LLVM.BuildICmp(Builder, IntPredicate.IntEQ, v.V, v2, "i" + instruction_id++);
-
-            // Now, in order to select the correct branch, we need to know what
+            ValueRef condition;
+            var type_of_value = LLVM.TypeOf(v.V);
+            if (LLVM.GetTypeKind(type_of_value) == TypeKind.PointerTypeKind)
+            {
+                var cast = LLVM.BuildPtrToInt(Builder, v.V, LLVM.Int64Type(), "i" + instruction_id++);
+                var v2 = LLVM.ConstInt(LLVM.Int64Type(), 0, false);
+                condition = LLVM.BuildICmp(Builder, IntPredicate.IntEQ, cast, v2, "i" + instruction_id++);
+            }
+            else if (LLVM.GetTypeKind(type_of_value) == TypeKind.IntegerTypeKind)
+            {
+                if (type_of_value == LLVM.Int8Type() || type_of_value == LLVM.Int16Type())
+                {
+                    value = LLVM.BuildIntCast(Builder, value, LLVM.Int32Type(), "i" + instruction_id++);
+                    if (Campy.Utils.Options.IsOn("jit_trace"))
+                        System.Console.WriteLine(new VALUE(value));
+                    var v2 = LLVM.ConstInt(LLVM.Int32Type(), 0, false);
+                    condition = LLVM.BuildICmp(Builder, IntPredicate.IntEQ, value, v2, "i" + instruction_id++);
+                }
+                else if (type_of_value == LLVM.Int32Type())
+                {
+                    var v2 = LLVM.ConstInt(LLVM.Int32Type(), 0, false);
+                    condition = LLVM.BuildICmp(Builder, IntPredicate.IntEQ, value, v2, "i" + instruction_id++);
+                }
+                else if (type_of_value == LLVM.Int64Type())
+                {
+                    var v2 = LLVM.ConstInt(LLVM.Int64Type(), 0, false);
+                    condition = LLVM.BuildICmp(Builder, IntPredicate.IntEQ, value, v2, "i" + instruction_id++);
+                }
+                else throw new Exception("Unhandled type in brfalse.s");
+            }
+            else throw new Exception("Unhandled type in brfalse.s");
+            // In order to select the correct branch, we need to know what
             // edge represents the "true" branch. During construction, there is
             // no guarentee that the order is consistent.
             var owner = Block._graph.Vertices.Where(
@@ -3633,7 +3641,7 @@
                 s1 = s2;
                 s2 = true_node;
             }
-            LLVM.BuildCondBr(Builder, v3, s2.LlvmInfo.BasicBlock, s1.LlvmInfo.BasicBlock);
+            LLVM.BuildCondBr(Builder, condition, s2.LlvmInfo.BasicBlock, s1.LlvmInfo.BasicBlock);
             return Next;
         }
     }
@@ -3654,25 +3662,53 @@
         }
 
         public override INST GenerateGenerics(STATE<TypeReference> state)
-        {
+        {   // brfalse.s, page 340 of ecma 335
             var v = state._stack.Pop();
             return this;
         }
 
         public override unsafe INST Convert(STATE<VALUE> state)
-        {
+        {   // brfalse.s, page 340 of ecma 335
             object operand = this.Operand;
             Instruction instruction = operand as Instruction;
             var v = state._stack.Pop();
+            var value = v.V;
             var edge1 = Block._graph.SuccessorEdges(Block).ToList()[0];
             var s1 = edge1.To;
             var edge2 = Block._graph.SuccessorEdges(Block).ToList()[1];
             var s2 = edge2.To;
-            // We need to compare the value popped with 0/1.
-            var v2 = LLVM.ConstInt(LLVM.Int32Type(), 1, false);
-            var v3 = LLVM.BuildICmp(Builder, IntPredicate.IntEQ, v.V, v2, "i" + instruction_id++);
-
-            // Now, in order to select the correct branch, we need to know what
+            ValueRef condition;
+            var type_of_value = LLVM.TypeOf(v.V);
+            if (LLVM.GetTypeKind(type_of_value) == TypeKind.PointerTypeKind)
+            {
+                var cast = LLVM.BuildPtrToInt(Builder, v.V, LLVM.Int64Type(), "i" + instruction_id++);
+                var v2 = LLVM.ConstInt(LLVM.Int64Type(), 0, false);
+                condition = LLVM.BuildICmp(Builder, IntPredicate.IntEQ, cast, v2, "i" + instruction_id++);
+            }
+            else if (LLVM.GetTypeKind(type_of_value) == TypeKind.IntegerTypeKind)
+            {
+                if (type_of_value == LLVM.Int8Type() || type_of_value == LLVM.Int16Type())
+                {
+                    value = LLVM.BuildIntCast(Builder, value, LLVM.Int32Type(), "i" + instruction_id++);
+                    if (Campy.Utils.Options.IsOn("jit_trace"))
+                        System.Console.WriteLine(new VALUE(value));
+                    var v2 = LLVM.ConstInt(LLVM.Int32Type(), 0, false);
+                    condition = LLVM.BuildICmp(Builder, IntPredicate.IntEQ, value, v2, "i" + instruction_id++);
+                }
+                else if (type_of_value == LLVM.Int32Type())
+                {
+                    var v2 = LLVM.ConstInt(LLVM.Int32Type(), 0, false);
+                    condition = LLVM.BuildICmp(Builder, IntPredicate.IntEQ, value, v2, "i" + instruction_id++);
+                }
+                else if (type_of_value == LLVM.Int64Type())
+                {
+                    var v2 = LLVM.ConstInt(LLVM.Int64Type(), 0, false);
+                    condition = LLVM.BuildICmp(Builder, IntPredicate.IntEQ, value, v2, "i" + instruction_id++);
+                }
+                else throw new Exception("Unhandled type in brfalse.s");
+            }
+            else throw new Exception("Unhandled type in brfalse.s");
+            // In order to select the correct branch, we need to know what
             // edge represents the "true" branch. During construction, there is
             // no guarentee that the order is consistent.
             var owner = Block._graph.Vertices.Where(
@@ -3685,7 +3721,7 @@
                 s1 = s2;
                 s2 = true_node;
             }
-            LLVM.BuildCondBr(Builder, v3, s2.LlvmInfo.BasicBlock, s1.LlvmInfo.BasicBlock);
+            LLVM.BuildCondBr(Builder, condition, s2.LlvmInfo.BasicBlock, s1.LlvmInfo.BasicBlock);
             return Next;
         }
     }
@@ -5435,7 +5471,7 @@
         }
 
         public override INST GenerateGenerics(STATE<TypeReference> state)
-        {
+        {   // ldsfld (load static field), ecma 335 page 410
             var operand = this.Operand;
             var operand_field_reference = operand as FieldReference;
             if (operand_field_reference == null)
@@ -5446,15 +5482,14 @@
         }
 
         public override unsafe INST Convert(STATE<VALUE> state)
-        {
+        {   // ldsfld (load static field), ecma 335 page 410
             var operand = this.Operand;
             var operand_field_reference = operand as FieldReference;
             if (operand_field_reference == null)
                 throw new Exception("Unknown field type");
             var ft = operand_field_reference.FieldType;
-            
+            // Call meta to get static field.
             state._stack.Push(new VALUE(LLVM.ConstInt(LLVM.Int32Type(), 0, false)));
-
             return Next;
         }
     }
@@ -5646,63 +5681,57 @@
         }
 
         public override INST GenerateGenerics(STATE<TypeReference> state)
-        {
+        {   // newarr, page 416 of ecma 335
             var v = state._stack.Pop();
-
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(v.ToString());
-
-            // Call meta system to get type and create array of the given type and size.
             object operand = this.Operand;
-
-            // Get the type of object array to create.
             TypeReference type = operand as TypeReference;
-            
-            // Declare an array of type.
             TypeReference new_array_type = new ArrayType(type, 1 /* 1D array */);
-
             state._stack.Push(new_array_type);
-
             return this;
         }
 
         public override unsafe INST Convert(STATE<VALUE> state)
-        {
-            // Call meta system to get type and create array of the given type and size.
+        {   // newarr, page 416 of ecma 335
             object operand = this.Operand;
-
-            // Get the type of object array to create.
             TypeReference element_type = operand as TypeReference;
-
-            // Declare an array of type.
             TypeReference new_array_type = new ArrayType(element_type, 1 /* 1D array */);
             var meta = RUNTIME.GetBclType(new_array_type);
-            var llvm_type = new_array_type.ToTypeRef();
-
-            // Generate code to allocate object.
+            var array_type_to_create = new_array_type.ToTypeRef();
             var xx2 = RUNTIME.PtxFunctions.ToList();
             var xx = xx2.Where(t => { return t._mangled_name == "_Z21SystemArray_NewVectorP12tMD_TypeDef_jPj"; });
             RUNTIME.PtxFunction first_kv_pair = xx.FirstOrDefault();
-            if (first_kv_pair == null)
-                throw new Exception("Yikes.");
+            if (first_kv_pair == null) throw new Exception("Yikes.");
             ValueRef fv2 = first_kv_pair._valueref;
             ValueRef[] args = new ValueRef[3];
-            var length_buffer = LLVM.BuildAlloca(Builder, LLVM.Int32Type(), "i" + instruction_id++);
+            var length_buffer = LLVM.BuildAlloca(Builder, LLVM.ArrayType(LLVM.Int32Type(), (uint)1), "i" + instruction_id++);
             LLVM.SetAlignment(length_buffer, 64);
+            var base_of_lengths = LLVM.BuildPointerCast(Builder, length_buffer, LLVM.PointerType(LLVM.Int32Type(), 0), "i" + instruction_id++);
+            int rank = 1;
+            for (int i = 0; i < rank; ++i)
+            {
+                VALUE len = state._stack.Pop();
+                if (Campy.Utils.Options.IsOn("jit_trace"))
+                    System.Console.WriteLine(len);
+                ValueRef[] id = new ValueRef[1] { LLVM.ConstInt(LLVM.Int32Type(), (ulong)i, true) };
+                var add = LLVM.BuildInBoundsGEP(Builder, base_of_lengths, id, "i" + instruction_id++);
+                var lcast = LLVM.BuildIntCast(Builder, len.V, LLVM.Int32Type(), "i" + instruction_id++);
+                ValueRef store = LLVM.BuildStore(Builder, lcast, add);
+                if (Campy.Utils.Options.IsOn("jit_trace"))
+                    System.Console.WriteLine(new VALUE(store));
+            }
             args[2] = LLVM.BuildPtrToInt(Builder, length_buffer, LLVM.Int64Type(), "i" + instruction_id++);
-            args[1] = LLVM.ConstInt(LLVM.Int32Type(), (ulong)1, false);
+            args[1] = LLVM.ConstInt(LLVM.Int32Type(), (ulong)rank, false);
             args[0] = LLVM.ConstInt(LLVM.Int64Type(), (ulong)meta, false);
-
             var call = LLVM.BuildCall(Builder, fv2, args, "i" + instruction_id++);
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(new VALUE(call));
-
-            var cast = LLVM.BuildIntToPtr(Builder, call, llvm_type, "i" + instruction_id++);
-            ValueRef new_obj = cast;
-
+            var new_obj = LLVM.BuildIntToPtr(Builder, call, array_type_to_create, "i" + instruction_id++);
+            var stack_result = new VALUE(new_obj);
             if (Campy.Utils.Options.IsOn("jit_trace"))
-                System.Console.WriteLine(new VALUE(new_obj));
-
+                System.Console.WriteLine(stack_result);
+            state._stack.Push(stack_result);
             return Next;
         }
     }
