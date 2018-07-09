@@ -31,49 +31,6 @@ namespace Campy.Compiler
         {
             // Set up a state that is a copy of another state.
             _stack = new StackQueue<T>();
-            int in_level = -1;
-            int args = bb.StackNumberOfArguments;
-            bool scalar_ret = bb.HasScalarReturnValue;
-            bool struct_ret = bb.HasStructReturnValue;
-            bool has_this = bb.HasThis;
-            int locals = bb.StackNumberOfLocals;
-            // Use predecessor information to get initial stack size.
-            if (bb.IsEntry)
-            {
-                in_level = bb.StackNumberOfLocals + bb.StackNumberOfArguments;
-            }
-            else
-            {
-                foreach (CFG.Vertex pred in bb._graph.PredecessorNodes(bb))
-                {
-                    // Do not consider interprocedural edges when computing stack size.
-                    if (pred._original_method_reference != bb._original_method_reference)
-                        throw new Exception("Interprocedural edge should not exist.");
-                    // If predecessor has not been visited, warn and do not consider.
-                    // Warn if predecessor does not concur with another predecessor.
-                    if (in_level != -1 && states_out.ContainsKey(pred) && states_out[pred]._stack.Count != in_level)
-                    {
-                        System.Console.Error.WriteLine("Inconsistent stack size on inputs to basic block " + bb);
-                        foreach (CFG.Vertex error_pred in bb._graph.PredecessorNodes(bb))
-                        {
-                            System.Console.Error.WriteLine("Predecessor " + error_pred
-                                                           + " has stack size on exit of "
-                                + states_out[error_pred]._stack.Count);
-                        }
-                        throw new Exception("Miscalculation in stack size "
-                                            + "for basic block " + bb);
-                    }
-                    if (states_out.ContainsKey(pred))
-                        in_level = states_out[pred]._stack.Count;
-                }
-            }
-            if (in_level == -1)
-            {
-                throw new Exception("Predecessor edge computation screwed up.");
-            }
-
-            int level = in_level;
-
             custom_initializer(this, states_in, states_out, bb);
         }
 

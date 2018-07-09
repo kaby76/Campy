@@ -110,6 +110,8 @@
             public bool HasStructReturnValue { get; set; }
             public Vertex Entry { get; set; }
             public bool IsEntry { get { return Entry == this; } }
+            public bool IsCatch { get; set; }
+            public TypeReference CatchType { get; set; }
             public int StackNumberOfLocals { get; set; }
             public int StackNumberOfArguments { get; set; }
 

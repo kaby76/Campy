@@ -274,6 +274,19 @@ namespace Campy.Compiler
                 }
             }
 
+            // Get try-catch blocks and add those split points.
+            foreach (var eh in body.ExceptionHandlers)
+            {
+                var start = eh.TryStart;
+                var end = eh.TryEnd;
+                // Split at start.
+                var find = basic_block.Instructions.Where(ins =>
+                    ins.Instruction.Offset == start.Offset
+                    && !split_point.Contains(ins.Instruction)).FirstOrDefault();
+                if (find == null) continue;
+                split_point.Add(find.Instruction);
+            }
+
             // Note, we assume that these splits are within the same method.
             // Order the list according to offset from beginning of the method.
             List<Instruction> ordered_leader_list = new List<Mono.Cecil.Cil.Instruction>();
@@ -386,7 +399,6 @@ namespace Campy.Compiler
                     case Mono.Cecil.Cil.FlowControl.Meta:
                     case Mono.Cecil.Cil.FlowControl.Next:
                     case Mono.Cecil.Cil.FlowControl.Phi:
-                    //case Mono.Cecil.Cil.FlowControl.Return:
                     case Mono.Cecil.Cil.FlowControl.Throw:
                         {
                             int next = method_definition.Body.Instructions.ToList().FindIndex(
@@ -412,8 +424,76 @@ namespace Campy.Compiler
                             Cfg.AddEdge(new CFG.Edge(){From = node, To = target_node});
                         }
                         break;
+                    case Mono.Cecil.Cil.FlowControl.Return:
+                        if (last_instruction.Instruction.OpCode.Code == Code.Endfinally)
+                        {
+                            // Although the exception handling is like a procedure call,
+                            // local variables are all accessible. So, we need to copy stack
+                            // values around. In addition, we have to create a fall through
+                            // even though there is stack unwinding.
+                            int next = method_definition.Body.Instructions.ToList().FindIndex(
+                                n =>
+                                {
+                                    var r = n == last_instruction.Instruction &&
+                                            n.Offset == last_instruction.Instruction.Offset
+                                        ;
+                                    return r;
+                                }
+                            );
+                            if (next < 0)
+                                break;
+                            next += 1;
+                            if (next >= method_definition.Body.Instructions.Count)
+                                break;
+                            var next_instruction = method_definition.Body.Instructions[next];
+                            var owner = Cfg.Vertices.Where(
+                                n => n.Instructions.Where(ins => ins.Instruction == next_instruction).Any()).ToList();
+                            if (owner.Count != 1)
+                                throw new Exception("Cannot find instruction!");
+                            CFG.Vertex target_node = owner.FirstOrDefault();
+                            Cfg.AddEdge(new CFG.Edge() { From = node, To = target_node });
+                        }
+                        break;
                 }
             }
+
+            // Add in edges for exception handler blocks.
+            foreach (var eh in body.ExceptionHandlers)
+            {
+                Instruction try_start = eh.TryStart;
+                Instruction try_end = eh.TryEnd;
+                var try_block = list_new_nodes.Where(
+                    n =>
+                    {
+                        var last = n.Instructions.First().Instruction;
+                        if (last.Offset == try_start.Offset)
+                            return true;
+                        else
+                            return false;
+                    }).First();
+                var handler_start = eh.HandlerStart;
+                var handler_end = eh.HandlerEnd;
+                var handler_block = list_new_nodes.Where(
+                    n =>
+                    {
+                        var last = n.Instructions.First().Instruction;
+                        if (last.Offset == handler_start.Offset)
+                            return true;
+                        else
+                            return false;
+                    }).First();
+                if (eh.HandlerType == ExceptionHandlerType.Catch)
+                {
+                    handler_block.IsCatch = true;
+                    handler_block.CatchType = eh.CatchType.RewriteMonoTypeReference();
+                }
+                var preds = Cfg.PredecessorNodes(try_block);
+                if (!preds.Any())
+                    throw new Exception("Predecessors of try block messed up.");
+                foreach (var p in preds)
+                    Cfg.AddEdge(new CFG.Edge() { From = p, To = handler_block });
+            }
+
             Cfg.OutputDotGraph();
             Cfg.OutputEntireGraph();
         }

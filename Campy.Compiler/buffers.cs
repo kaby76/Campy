@@ -784,6 +784,7 @@
                                          + type_of_cpu.FullName
                                          + " because it was copied to GPU.");
 
+            _copied_from_gpu.Add(cpu);
 
             DCtoCpuRefValue(address, cpu, null);
 

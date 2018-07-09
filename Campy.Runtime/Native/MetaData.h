@@ -191,8 +191,8 @@ function_space_specifier void MetaData_GetConstant(tMetaData *pThis, IDX_TABLE i
 
 
 // Not sure where to put this, but this seems best.
-function_space_specifier void MetaData_SetField(HEAP_PTR object, tMD_FieldDef * pField, HEAP_PTR value);
 function_space_specifier void * MetaData_GetField(HEAP_PTR object, tMD_FieldDef * pField);
+function_space_specifier void * MetaData_GetStaticField(tMD_FieldDef * pField);
 function_space_specifier void MetaData_GetFields(tMD_TypeDef * pTypeDef, tMD_FieldDef*** out_buf, int * out_len);
 function_space_specifier char * MetaData_GetFieldName(tMD_FieldDef * pFieldDef);
 function_space_specifier tMD_TypeDef * MetaData_GetFieldType(tMD_FieldDef * pFieldDef);

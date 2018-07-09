@@ -12,6 +12,7 @@
     using System;
     using Utils;
     using Campy.Meta;
+    using System.Runtime.InteropServices;
 
     /// <summary>
     /// Wrapper for CIL instructions that are implemented using Mono.Cecil.Cil.
@@ -2715,204 +2716,201 @@
 
         public override unsafe INST Convert(STATE<VALUE> state)
         {
+            VALUE v = state._stack.Pop();
+            if (Campy.Utils.Options.IsOn("jit_trace"))
+                System.Console.WriteLine(v);
+            TypeRef tr = LLVM.TypeOf(v.V);
+            bool isPtr = v.T.isPointerTy();
+            bool isArr = v.T.isArrayTy();
+            bool isSt = v.T.isStructTy();
+            if (isPtr)
             {
-                VALUE v = state._stack.Pop();
-                if (Campy.Utils.Options.IsOn("jit_trace"))
-                    System.Console.WriteLine(v);
+                uint offset = 0;
+                object yy = this.Instruction.Operand;
+                FieldReference field = yy as Mono.Cecil.FieldReference;
+                if (yy == null) throw new Exception("Cannot convert.");
 
-                TypeRef tr = LLVM.TypeOf(v.V);
-                bool isPtr = v.T.isPointerTy();
-                bool isArr = v.T.isArrayTy();
-                bool isSt = v.T.isStructTy();
+                // The instruction may be generic, even if the method
+                // is an instance. Convert field to generic instance type reference
+                // if it is a generic, in the context of this basic block.
 
-                if (isPtr)
+                TypeReference declaring_type_tr = field.DeclaringType;
+                TypeDefinition declaring_type = declaring_type_tr.Resolve();
+
+                if (!declaring_type.IsGenericInstance && declaring_type.HasGenericParameters)
                 {
-                    uint offset = 0;
-                    object yy = this.Instruction.Operand;
-                    FieldReference field = yy as Mono.Cecil.FieldReference;
-                    if (yy == null) throw new Exception("Cannot convert.");
-
-                    // The instruction may be generic, even if the method
-                    // is an instance. Convert field to generic instance type reference
-                    // if it is a generic, in the context of this basic block.
-
-                    TypeReference declaring_type_tr = field.DeclaringType;
-                    TypeDefinition declaring_type = declaring_type_tr.Resolve();
-
-                    if (!declaring_type.IsGenericInstance && declaring_type.HasGenericParameters)
-                    {
-                        // This is a red flag. We need to come up with a generic instance for type.
-                        declaring_type_tr = this.Block._original_method_reference.DeclaringType;
-                    }
-                    
-                    // need to take into account padding fields. Unfortunately,
-                    // LLVM does not name elements in a struct/class. So, we must
-                    // compute padding and adjust.
-                    int size = 0;
-                    foreach (var f in declaring_type.Fields)
-                    {
-                        var attr = f.Attributes;
-                        if ((attr & FieldAttributes.Static) != 0)
-                            continue;
-
-                        int field_size;
-                        int alignment;
-                        var array_or_class = (f.FieldType.IsArray || !f.FieldType.IsValueType);
-                        if (array_or_class)
-                        {
-                            field_size = BUFFERS.SizeOf(typeof(IntPtr));
-                            alignment = BUFFERS.Alignment(typeof(IntPtr));
-                        }
-                        else
-                        {
-                            var ft = f.FieldType.ToSystemType();
-                            field_size = BUFFERS.SizeOf(ft);
-                            alignment = BUFFERS.Alignment(ft);
-                        }
-                        int padding = BUFFERS.Padding(size, alignment);
-                        size = size + padding + field_size;
-                        if (padding != 0)
-                        {
-                            // Add in bytes to effect padding.
-                            for (int j = 0; j < padding; ++j)
-                                offset++;
-                        }
-
-                        if (f.Name == field.Name)
-                            break;
-                        offset++;
-                    }
-
-                    var tt = LLVM.TypeOf(v.V);
-                    if (Campy.Utils.Options.IsOn("jit_trace"))
-                        System.Console.WriteLine(LLVM.PrintTypeToString(tt));
-
-                    var addr = LLVM.BuildStructGEP(Builder, v.V, offset, "i" + instruction_id++);
-                    if (Campy.Utils.Options.IsOn("jit_trace"))
-                        System.Console.WriteLine(new VALUE(addr));
-
-                    var load = LLVM.BuildLoad(Builder, addr, "i" + instruction_id++);
-                    if (Campy.Utils.Options.IsOn("jit_trace"))
-                        System.Console.WriteLine(new VALUE(load));
-
-
-                    //var you = Converter.FromGenericParameterToTypeReference(field.FieldType,
-                    //    declaring_type_tr as GenericInstanceType);
-                    //// Add extra load for pointer types like objects and arrays.
-                    //var array_or_classyou  = (you.IsArray || !you.IsValueType);
-                    //if (array_or_classyou)
-                    //{
-                    //    load = LLVM.BuildLoad(Builder, load, "");
-                    //    if (Campy.Utils.Options.IsOn("jit_trace"))
-                    //        System.Console.WriteLine(new Value(load));
-                    //}
-
-                    bool xInt = LLVM.GetTypeKind(tt) == TypeKind.IntegerTypeKind;
-                    bool xP = LLVM.GetTypeKind(tt) == TypeKind.PointerTypeKind;
-                    bool xA = LLVM.GetTypeKind(tt) == TypeKind.ArrayTypeKind;
-
-                    // If load result is a pointer, then cast it to proper type.
-                    // This is because I had to avoid recursive data types in classes
-                    // as LLVM cannot handle these at all. So, all pointer types
-                    // were defined as void* in the LLVM field.
-
-                    var load_value = new VALUE(load);
-                    bool isPtrLoad = load_value.T.isPointerTy();
-                    //if (isPtrLoad)
-                    //{
-                    //    var mono_field_type = field.FieldType;
-                    //    TypeRef type = Converter.ToTypeRef(
-                    //        mono_field_type,
-                    //        Block.OpsFromOriginal);
-                    //    load = LLVM.BuildBitCast(Builder,
-                    //        load, type, "");
-                    //    if (Campy.Utils.Options.IsOn("jit_trace"))
-                    //        System.Console.WriteLine(new Value(load));
-                    //}
-
-                    state._stack.Push(new VALUE(load));
+                    // This is a red flag. We need to come up with a generic instance for type.
+                    declaring_type_tr = this.Block._original_method_reference.DeclaringType;
                 }
-                else
+
+                // need to take into account padding fields. Unfortunately,
+                // LLVM does not name elements in a struct/class. So, we must
+                // compute padding and adjust.
+                int size = 0;
+                foreach (var f in declaring_type.Fields)
                 {
-                    uint offset = 0;
-                    var yy = this.Instruction.Operand;
-                    var field = yy as Mono.Cecil.FieldReference;
-                    if (yy == null) throw new Exception("Cannot convert.");
-                    var declaring_type_tr = field.DeclaringType;
-                    var declaring_type = declaring_type_tr.Resolve();
+                    var attr = f.Attributes;
+                    if ((attr & FieldAttributes.Static) != 0)
+                        continue;
 
-                    // need to take into account padding fields. Unfortunately,
-                    // LLVM does not name elements in a struct/class. So, we must
-                    // compute padding and adjust.
-                    int size = 0;
-                    foreach (var f in declaring_type.Fields)
+                    int field_size;
+                    int alignment;
+                    var array_or_class = (f.FieldType.IsArray || !f.FieldType.IsValueType);
+                    if (array_or_class)
                     {
-                        var attr = f.Attributes;
-                        if ((attr & FieldAttributes.Static) != 0)
-                            continue;
-
-                        int field_size;
-                        int alignment;
+                        field_size = BUFFERS.SizeOf(typeof(IntPtr));
+                        alignment = BUFFERS.Alignment(typeof(IntPtr));
+                    }
+                    else
+                    {
                         var ft = f.FieldType.ToSystemType();
-                        var array_or_class = (f.FieldType.IsArray || !f.FieldType.IsValueType);
-                        if (array_or_class)
-                        {
-                            field_size = BUFFERS.SizeOf(typeof(IntPtr));
-                            alignment = BUFFERS.Alignment(typeof(IntPtr));
-                        }
-                        else
-                        {
-                            field_size = BUFFERS.SizeOf(ft);
-                            alignment = BUFFERS.Alignment(ft);
-                        }
-                        int padding = BUFFERS.Padding(size, alignment);
-                        size = size + padding + field_size;
-                        if (padding != 0)
-                        {
-                            // Add in bytes to effect padding.
-                            for (int j = 0; j < padding; ++j)
-                                offset++;
-                        }
-
-                        if (f.Name == field.Name)
-                            break;
-                        offset++;
+                        field_size = BUFFERS.SizeOf(ft);
+                        alignment = BUFFERS.Alignment(ft);
                     }
 
-                    var tt = LLVM.TypeOf(v.V);
-                    if (Campy.Utils.Options.IsOn("jit_trace"))
-                        System.Console.WriteLine(LLVM.PrintTypeToString(tt));
-
-                    var load = LLVM.BuildExtractValue(Builder, v.V, offset, "i" + instruction_id++);
-                    if (Campy.Utils.Options.IsOn("jit_trace"))
-                        System.Console.WriteLine(new VALUE(load));
-
-                    bool xInt = LLVM.GetTypeKind(tt) == TypeKind.IntegerTypeKind;
-                    bool xP = LLVM.GetTypeKind(tt) == TypeKind.PointerTypeKind;
-                    bool xA = LLVM.GetTypeKind(tt) == TypeKind.ArrayTypeKind;
-
-                    // If load result is a pointer, then cast it to proper type.
-                    // This is because I had to avoid recursive data types in classes
-                    // as LLVM cannot handle these at all. So, all pointer types
-                    // were defined as void* in the LLVM field.
-
-                    var load_value = new VALUE(load);
-                    bool isPtrLoad = load_value.T.isPointerTy();
-                    if (isPtrLoad)
+                    int padding = BUFFERS.Padding(size, alignment);
+                    size = size + padding + field_size;
+                    if (padding != 0)
                     {
-                        var mono_field_type = field.FieldType;
-                        TypeRef type = mono_field_type.ToTypeRef();
-                        load = LLVM.BuildBitCast(Builder,
-                            load, type, "i" + instruction_id++);
-                        if (Campy.Utils.Options.IsOn("jit_trace"))
-                            System.Console.WriteLine(new VALUE(load));
+                        // Add in bytes to effect padding.
+                        for (int j = 0; j < padding; ++j)
+                            offset++;
                     }
 
-                    state._stack.Push(new VALUE(load));
+                    if (f.Name == field.Name)
+                        break;
+                    offset++;
                 }
 
-                return Next;
+                var tt = LLVM.TypeOf(v.V);
+                if (Campy.Utils.Options.IsOn("jit_trace"))
+                    System.Console.WriteLine(LLVM.PrintTypeToString(tt));
+
+                var addr = LLVM.BuildStructGEP(Builder, v.V, offset, "i" + instruction_id++);
+                if (Campy.Utils.Options.IsOn("jit_trace"))
+                    System.Console.WriteLine(new VALUE(addr));
+
+                var load = LLVM.BuildLoad(Builder, addr, "i" + instruction_id++);
+                if (Campy.Utils.Options.IsOn("jit_trace"))
+                    System.Console.WriteLine(new VALUE(load));
+
+
+                //var you = Converter.FromGenericParameterToTypeReference(field.FieldType,
+                //    declaring_type_tr as GenericInstanceType);
+                //// Add extra load for pointer types like objects and arrays.
+                //var array_or_classyou  = (you.IsArray || !you.IsValueType);
+                //if (array_or_classyou)
+                //{
+                //    load = LLVM.BuildLoad(Builder, load, "");
+                //    if (Campy.Utils.Options.IsOn("jit_trace"))
+                //        System.Console.WriteLine(new Value(load));
+                //}
+
+                bool xInt = LLVM.GetTypeKind(tt) == TypeKind.IntegerTypeKind;
+                bool xP = LLVM.GetTypeKind(tt) == TypeKind.PointerTypeKind;
+                bool xA = LLVM.GetTypeKind(tt) == TypeKind.ArrayTypeKind;
+
+                // If load result is a pointer, then cast it to proper type.
+                // This is because I had to avoid recursive data types in classes
+                // as LLVM cannot handle these at all. So, all pointer types
+                // were defined as void* in the LLVM field.
+
+                var load_value = new VALUE(load);
+                bool isPtrLoad = load_value.T.isPointerTy();
+                //if (isPtrLoad)
+                //{
+                //    var mono_field_type = field.FieldType;
+                //    TypeRef type = Converter.ToTypeRef(
+                //        mono_field_type,
+                //        Block.OpsFromOriginal);
+                //    load = LLVM.BuildBitCast(Builder,
+                //        load, type, "");
+                //    if (Campy.Utils.Options.IsOn("jit_trace"))
+                //        System.Console.WriteLine(new Value(load));
+                //}
+
+                state._stack.Push(new VALUE(load));
             }
+            else
+            {
+                uint offset = 0;
+                var yy = this.Instruction.Operand;
+                var field = yy as Mono.Cecil.FieldReference;
+                if (yy == null) throw new Exception("Cannot convert.");
+                var declaring_type_tr = field.DeclaringType;
+                var declaring_type = declaring_type_tr.Resolve();
+
+                // need to take into account padding fields. Unfortunately,
+                // LLVM does not name elements in a struct/class. So, we must
+                // compute padding and adjust.
+                int size = 0;
+                foreach (var f in declaring_type.Fields)
+                {
+                    var attr = f.Attributes;
+                    if ((attr & FieldAttributes.Static) != 0)
+                        continue;
+
+                    int field_size;
+                    int alignment;
+                    var ft = f.FieldType.ToSystemType();
+                    var array_or_class = (f.FieldType.IsArray || !f.FieldType.IsValueType);
+                    if (array_or_class)
+                    {
+                        field_size = BUFFERS.SizeOf(typeof(IntPtr));
+                        alignment = BUFFERS.Alignment(typeof(IntPtr));
+                    }
+                    else
+                    {
+                        field_size = BUFFERS.SizeOf(ft);
+                        alignment = BUFFERS.Alignment(ft);
+                    }
+
+                    int padding = BUFFERS.Padding(size, alignment);
+                    size = size + padding + field_size;
+                    if (padding != 0)
+                    {
+                        // Add in bytes to effect padding.
+                        for (int j = 0; j < padding; ++j)
+                            offset++;
+                    }
+
+                    if (f.Name == field.Name)
+                        break;
+                    offset++;
+                }
+
+                var tt = LLVM.TypeOf(v.V);
+                if (Campy.Utils.Options.IsOn("jit_trace"))
+                    System.Console.WriteLine(LLVM.PrintTypeToString(tt));
+
+                var load = LLVM.BuildExtractValue(Builder, v.V, offset, "i" + instruction_id++);
+                if (Campy.Utils.Options.IsOn("jit_trace"))
+                    System.Console.WriteLine(new VALUE(load));
+
+                bool xInt = LLVM.GetTypeKind(tt) == TypeKind.IntegerTypeKind;
+                bool xP = LLVM.GetTypeKind(tt) == TypeKind.PointerTypeKind;
+                bool xA = LLVM.GetTypeKind(tt) == TypeKind.ArrayTypeKind;
+
+                // If load result is a pointer, then cast it to proper type.
+                // This is because I had to avoid recursive data types in classes
+                // as LLVM cannot handle these at all. So, all pointer types
+                // were defined as void* in the LLVM field.
+
+                var load_value = new VALUE(load);
+                bool isPtrLoad = load_value.T.isPointerTy();
+                if (isPtrLoad)
+                {
+                    var mono_field_type = field.FieldType;
+                    TypeRef type = mono_field_type.ToTypeRef();
+                    load = LLVM.BuildBitCast(Builder,
+                        load, type, "i" + instruction_id++);
+                    if (Campy.Utils.Options.IsOn("jit_trace"))
+                        System.Console.WriteLine(new VALUE(load));
+                }
+
+                state._stack.Push(new VALUE(load));
+            }
+            return Next;
         }
     }
 
@@ -4415,6 +4413,23 @@
             : base(i)
         {
         }
+
+        public override INST GenerateGenerics(STATE<TypeReference> state)
+        {   // leave.* page 372 of ecma 335
+            var edges = Block._graph.SuccessorEdges(Block).ToList();
+            if (edges.Count > 1)
+                throw new Exception("There shouldn't be more than one edge from a leave instruction.");
+            return this;
+        }
+
+        public override unsafe INST Convert(STATE<VALUE> state)
+        {   // leave.* page 372 of ecma 335
+            var edge = Block._graph.SuccessorEdges(Block).ToList()[0];
+            var s = edge.To;
+            // Build a branch to appease LLVM.
+            var br = LLVM.BuildBr(Builder, s.LlvmInfo.BasicBlock);
+            return Next;
+        }
     }
 
     public class i_initblk : INST
@@ -5445,12 +5460,9 @@
         {
             ValueRef nul = LLVM.ConstPointerNull(LLVM.PointerType(LLVM.VoidType(), 0));
             var v = new VALUE(nul);
-
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(v);
-            
             state._stack.Push(v);
-
             return Next;
         }
     }
@@ -5484,12 +5496,44 @@
         public override unsafe INST Convert(STATE<VALUE> state)
         {   // ldsfld (load static field), ecma 335 page 410
             var operand = this.Operand;
-            var operand_field_reference = operand as FieldReference;
-            if (operand_field_reference == null)
+            var mono_field_reference = operand as FieldReference;
+            if (mono_field_reference == null)
                 throw new Exception("Unknown field type");
-            var ft = operand_field_reference.FieldType;
-            // Call meta to get static field.
-            state._stack.Push(new VALUE(LLVM.ConstInt(LLVM.Int32Type(), 0, false)));
+            var type = mono_field_reference.ResolveDeclaringType();
+            var mono_field_type = mono_field_reference.FieldType;
+            mono_field_type = mono_field_type.RewriteMonoTypeReference();
+            var llvm_field_type = mono_field_type.ToTypeRef();
+            // Call meta to get static field. This can be done now because
+            // the address of the static field does not change.
+            var bcl_type = RUNTIME.GetBclType(type);
+            if (bcl_type == IntPtr.Zero) throw new Exception();
+            IntPtr[] fields = null;
+            IntPtr* buf;
+            int len;
+            RUNTIME.BclGetFields(bcl_type, &buf, &len);
+            fields = new IntPtr[len];
+            for (int i = 0; i < len; ++i) fields[i] = buf[i];
+            var mono_fields = type.ResolveFields().ToArray();
+            var find = fields.Where(f =>
+            {
+                var ptrName = RUNTIME.BclGetFieldName(f);
+                string name = Marshal.PtrToStringAnsi(ptrName);
+                return name == mono_field_type.Name;
+            });
+            var first = find.FirstOrDefault();
+            if (first == null) throw new Exception("Cannot find field--ldsfld");
+            var ptr = RUNTIME.BclGetStaticField(first);
+            bool isArr = mono_field_type.IsArray;
+            bool isSt = mono_field_type.IsStruct();
+            bool isRef = mono_field_type.IsReferenceType();
+            if (Campy.Utils.Options.IsOn("jit_trace"))
+            System.Console.WriteLine(LLVM.PrintTypeToString(llvm_field_type));
+            var address = LLVM.ConstInt(LLVM.Int64Type(), (ulong)ptr, false);
+            var f1 = LLVM.BuildIntToPtr(Builder, address, llvm_field_type, "i" + instruction_id++);
+            var load = LLVM.BuildLoad(Builder, f1, "i" + instruction_id++);
+            if (Campy.Utils.Options.IsOn("jit_trace"))
+                System.Console.WriteLine(new VALUE(load));
+            state._stack.Push(new VALUE(load));
             return Next;
         }
     }
@@ -5581,6 +5625,22 @@
             : base(i)
         {
         }
+
+        public override INST GenerateGenerics(STATE<TypeReference> state)
+        {   // leave.* page 372 of ecma 335
+            var edges = Block._graph.SuccessorEdges(Block).ToList();
+            if (edges.Count > 1)
+                throw new Exception("There shouldn't be more than one edge from a leave instruction.");
+            return this;
+        }
+
+        public override unsafe INST Convert(STATE<VALUE> state)
+        {   // leave.* page 372 of ecma 335
+            var edge = Block._graph.SuccessorEdges(Block).ToList()[0];
+            var s = edge.To;
+            var br = LLVM.BuildBr(Builder, s.LlvmInfo.BasicBlock);
+            return Next;
+        }
     }
 
     public class i_leave_s : INST
@@ -5588,6 +5648,22 @@
         public i_leave_s(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+        }
+
+        public override INST GenerateGenerics(STATE<TypeReference> state)
+        {   // leave.* page 372 of ecma 335
+            var edges = Block._graph.SuccessorEdges(Block).ToList();
+            if (edges.Count > 1)
+                throw new Exception("There shouldn't be more than one edge from a leave instruction.");
+            return this;
+        }
+
+        public override unsafe INST Convert(STATE<VALUE> state)
+        {   // leave.* page 372 of ecma 335
+            var edge = Block._graph.SuccessorEdges(Block).ToList()[0];
+            var s = edge.To;
+            var br = LLVM.BuildBr(Builder, s.LlvmInfo.BasicBlock);
+            return Next;
         }
     }
 
@@ -6658,6 +6734,54 @@
         public i_stsfld(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+        }
+
+        public override INST GenerateGenerics(STATE<TypeReference> state)
+        {   // stsfld (store static field), ecma 335 page 429
+            state._stack.Pop();
+            return this;
+        }
+
+        public override unsafe INST Convert(STATE<VALUE> state)
+        {   // stsfld (store static field), ecma 335 page 429
+            var value = state._stack.Pop();
+            var operand = this.Operand;
+            var mono_field_reference = operand as FieldReference;
+            if (mono_field_reference == null)
+                throw new Exception("Unknown field type");
+            var type = mono_field_reference.ResolveDeclaringType();
+            var mono_field_type = mono_field_reference.FieldType;
+            mono_field_type = mono_field_type.RewriteMonoTypeReference();
+            var llvm_field_type = mono_field_type.ToTypeRef();
+            // Call meta to get static field. This can be done now because
+            // the address of the static field does not change.
+            var bcl_type = RUNTIME.GetBclType(type);
+            if (bcl_type == IntPtr.Zero) throw new Exception();
+            IntPtr[] fields = null;
+            IntPtr* buf;
+            int len;
+            RUNTIME.BclGetFields(bcl_type, &buf, &len);
+            fields = new IntPtr[len];
+            for (int i = 0; i < len; ++i) fields[i] = buf[i];
+            var mono_fields = type.ResolveFields().ToArray();
+            var find = fields.Where(f =>
+            {
+                var ptrName = RUNTIME.BclGetFieldName(f);
+                string name = Marshal.PtrToStringAnsi(ptrName);
+                return name == mono_field_type.Name;
+            });
+            var first = find.FirstOrDefault();
+            if (first == null) throw new Exception("Cannot find field--ldsfld");
+            var ptr = RUNTIME.BclGetStaticField(first);
+            bool isArr = mono_field_type.IsArray;
+            bool isSt = mono_field_type.IsStruct();
+            bool isRef = mono_field_type.IsReferenceType();
+            if (Campy.Utils.Options.IsOn("jit_trace"))
+                System.Console.WriteLine(LLVM.PrintTypeToString(llvm_field_type));
+            var address = LLVM.ConstInt(LLVM.Int64Type(), (ulong)ptr, false);
+            var f1 = LLVM.BuildIntToPtr(Builder, address, llvm_field_type, "i" + instruction_id++);
+            LLVM.BuildStore(Builder, value.V, f1);
+            return Next;
         }
     }
 

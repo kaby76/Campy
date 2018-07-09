@@ -71,8 +71,8 @@
         [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclGetField")]
         public static extern System.IntPtr BclGetField(IntPtr ptr, IntPtr bcl_field);
 
-        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclSetField")]
-        public static extern void BclSetField(IntPtr ptr, IntPtr bcl_field, IntPtr value);
+        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclGetStaticField")]
+        public static extern System.IntPtr BclGetStaticField(IntPtr bcl_field);
 
         [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclGetFields")]
         public static extern unsafe void BclGetFields(IntPtr bcl_type, IntPtr** buf, int* len);
@@ -100,6 +100,8 @@
 
         [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclMetaDataSetMethodJit")]
         public static extern IntPtr BclMetaDataSetMethodJit(IntPtr method_ptr, IntPtr bcl_object, int table_ref);
+
+
 
         public static ModuleRef global_llvm_module;
         public static List<ModuleRef> all_llvm_modules;

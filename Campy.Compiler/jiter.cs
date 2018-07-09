@@ -49,6 +49,7 @@ namespace Campy.Compiler
             bool scalar_ret = bb.HasScalarReturnValue;
             bool struct_ret = bb.HasStructReturnValue;
             bool has_this = bb.HasThis;
+            bool is_catch = bb.IsCatch;
             int locals = bb.StackNumberOfLocals;
             // Use predecessor information to get initial stack size.
             if (bb.IsEntry)
@@ -136,7 +137,10 @@ namespace Campy.Compiler
                     var vx = other._stack[i];
                     state._stack.Push(vx);
                 }
-
+                if (is_catch)
+                {
+                    state._stack.Push(bb.CatchType);
+                }
                 state._struct_ret = state._stack.Section(other._struct_ret.Base, other._struct_ret.Len);
                 state._this = state._stack.Section(other._this.Base, other._this.Len);
                 state._arguments = state._stack.Section(other._arguments.Base, other._arguments.Len);
@@ -171,7 +175,10 @@ namespace Campy.Compiler
                     var value = states_out[pred]._stack[i];
                     state._stack[i] = value;
                 }
-
+                if (is_catch)
+                {
+                    state._stack.Push(bb.CatchType);
+                }
                 var other = states_out[p_llvm_node];
                 state._struct_ret = state._stack.Section(other._struct_ret.Base, other._struct_ret.Len);
                 state._this = state._stack.Section(other._this.Base, other._this.Len);
@@ -445,6 +452,7 @@ namespace Campy.Compiler
             bool scalar_ret = bb.HasScalarReturnValue;
             bool struct_ret = bb.HasStructReturnValue;
             bool has_this = bb.HasThis;
+            bool is_catch = bb.IsCatch;
             int locals = bb.StackNumberOfLocals;
             // Use predecessor information to get initial stack size.
             if (bb.IsEntry)
@@ -547,6 +555,12 @@ namespace Campy.Compiler
                     VALUE value = new VALUE(LLVM.ConstInt(LLVM.Int32Type(), (ulong) 0, true));
                     state._stack.Push(value);
                 }
+
+                if (is_catch)
+                {
+                    state._stack.Push(new VALUE(LLVM.ConstPointerNull(bb.CatchType.ToTypeRef())));
+                }
+
             }
             else if (bb._graph.Predecessors(bb).Count() == 1)
             {
@@ -562,6 +576,10 @@ namespace Campy.Compiler
                 {
                     var vx = other._stack[i];
                     state._stack.Push(vx);
+                }
+                if (is_catch)
+                {
+                    state._stack.Push(new VALUE(LLVM.ConstPointerNull(bb.CatchType.ToTypeRef())));
                 }
 
                 state._struct_ret = state._stack.Section(other._struct_ret.Base, other._struct_ret.Len);
@@ -606,6 +624,10 @@ namespace Campy.Compiler
                     ValueRef res = LLVM.BuildPhi(bb.LlvmInfo.Builder, tr, "i" + INST.instruction_id++);
                     bb.LlvmInfo.Phi.Add(res);
                     state._stack[i] = new VALUE(res);
+                }
+                if (is_catch)
+                {
+                    state._stack.Push(new VALUE(LLVM.ConstPointerNull(bb.CatchType.ToTypeRef())));
                 }
 
                 var other = states_out[p_llvm_node];

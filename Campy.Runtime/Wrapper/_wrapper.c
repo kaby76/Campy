@@ -159,9 +159,9 @@ EXPORT void * BclGetField(void * bcl_object, void * bcl_field)
 	return (void *)MetaData_GetField((HEAP_PTR)bcl_object, (tMD_FieldDef *)bcl_field);
 }
 
-EXPORT void BclSetField(void * bcl_object, void * bcl_field, void * value)
+EXPORT void * BclGetStaticField(void * bcl_field)
 {
-	MetaData_SetField((HEAP_PTR)bcl_object, (tMD_FieldDef *)bcl_field, (HEAP_PTR)value);
+	return (void *)MetaData_GetStaticField((tMD_FieldDef *)bcl_field);
 }
 
 EXPORT void BclGetFields(void * bcl_type, void * out_buf, void * out_len)

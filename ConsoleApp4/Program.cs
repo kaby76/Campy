@@ -29,10 +29,28 @@ namespace ConsoleApp4
         static void Main(string[] args)
         {
             StartDebugging();
+            //Campy.Parallel.For(3, i =>
+            //{
+            //    //System.Console.WriteLine(i); // no explicit conversion.
+            //    System.Console.WriteLine(i.ToString()); // value converted explicitly in code.
+            //});
             Campy.Parallel.For(3, i =>
             {
-                //System.Console.WriteLine(i); // no explicit conversion.
-                System.Console.WriteLine(i.ToString()); // value converted explicitly in code.
+                int j = i;
+                int k = 0;
+                try
+                {
+                    int m = 1;
+                    k = -2*i;
+                }
+                catch (Exception e)
+                {
+                    j = -i;
+                }
+                finally
+                {
+                    k = j;
+                }
             });
         }
     }

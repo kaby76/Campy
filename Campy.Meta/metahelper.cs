@@ -175,6 +175,12 @@ namespace Campy.Meta
             return dt;
         }
 
+        public static TypeReference ResolveDeclaringType(this FieldReference fr)
+        {
+            var dt = fr.DeclaringType;
+            return dt;
+        }
+
         public static TypeReference ResolveGetElementType(this TypeReference tr)
         {
             var et = tr.GetElementType();
