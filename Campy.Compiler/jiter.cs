@@ -214,49 +214,58 @@ namespace Campy.Compiler
             Dictionary<CFG.Vertex, STATE<TypeReference>>
                 states_out = new Dictionary<CFG.Vertex, STATE<TypeReference>>();
 
-            // propagate type information and create new basic blocks for nodes that have
-            // specific generic type information.
-            foreach (var bb in order)
+            try
             {
-                if (Campy.Utils.Options.IsOn("state_computation_trace"))
-                    System.Console.WriteLine("Generic computations for node " + bb.Name);
 
-                // Create new stack state with predecessor information, basic block/function
-                // information.
-                var state_in = new STATE<TypeReference>(visited, states_in, states_out, bb, InitStateGenerics);
-
-                if (Campy.Utils.Options.IsOn("state_computation_trace"))
+                // propagate type information and create new basic blocks for nodes that have
+                // specific generic type information.
+                foreach (var bb in order)
                 {
-                    System.Console.WriteLine("state in");
-                    state_in.OutputTrace(new String(' ', 4));
-                }
-
-                var state_out = new STATE<TypeReference>(state_in);
-                states_in[bb] = state_in;
-                states_out[bb] = state_out;
-
-                if (Campy.Utils.Options.IsOn("state_computation_trace"))
-                {
-                    bb.OutputEntireNode();
-                    state_in.OutputTrace(new String(' ', 4));
-                }
-
-                INST last_inst = null;
-                for (int i = 0; i < bb.Instructions.Count; ++i)
-                {
-                    var inst = bb.Instructions[i];
-                    if (Campy.Utils.Options.IsOn("jit_trace"))
-                        System.Console.WriteLine(inst);
-                    last_inst = inst;
-                    inst = inst.GenerateGenerics(state_out);
-                    // Rewrite instruction.
-                    if (inst != last_inst)
-                        bb.Instructions[i] = inst;
                     if (Campy.Utils.Options.IsOn("state_computation_trace"))
-                        state_out.OutputTrace(new String(' ', 4));
-                }
+                        System.Console.WriteLine("Generic computations for node " + bb.Name);
 
-                visited[bb] = true;
+                    // Create new stack state with predecessor information, basic block/function
+                    // information.
+                    var state_in = new STATE<TypeReference>(visited, states_in, states_out, bb, InitStateGenerics);
+
+                    if (Campy.Utils.Options.IsOn("state_computation_trace"))
+                    {
+                        System.Console.WriteLine("state in");
+                        state_in.OutputTrace(new String(' ', 4));
+                    }
+
+                    var state_out = new STATE<TypeReference>(state_in);
+                    states_in[bb] = state_in;
+                    states_out[bb] = state_out;
+
+                    if (Campy.Utils.Options.IsOn("state_computation_trace"))
+                    {
+                        bb.OutputEntireNode();
+                        state_in.OutputTrace(new String(' ', 4));
+                    }
+
+                    INST last_inst = null;
+                    for (int i = 0; i < bb.Instructions.Count; ++i)
+                    {
+                        var inst = bb.Instructions[i];
+                        if (Campy.Utils.Options.IsOn("jit_trace"))
+                            System.Console.WriteLine(inst);
+                        last_inst = inst;
+                        inst = inst.GenerateGenerics(state_out);
+                        // Rewrite instruction.
+                        if (inst != last_inst)
+                            bb.Instructions[i] = inst;
+                        if (Campy.Utils.Options.IsOn("state_computation_trace"))
+                            state_out.OutputTrace(new String(' ', 4));
+                    }
+
+                    visited[bb] = true;
+                }
+            }
+            catch (Exception e)
+            {
+                _mcfg.OutputEntireGraph();
+                throw e;
             }
         }
 

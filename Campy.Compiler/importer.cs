@@ -355,17 +355,23 @@ namespace Campy.Compiler
                             // Two cases: i.Operand is a single instruction, or an array of instructions.
                             if (last_instruction.Operand as Mono.Cecil.Cil.Instruction != null)
                             {
-                                Mono.Cecil.Cil.Instruction target_instruction =
-                                    last_instruction.Operand as Mono.Cecil.Cil.Instruction;
-                                CFG.Vertex target_node = list_new_nodes.FirstOrDefault(
-                                    (CFG.Vertex x) =>
-                                    {
-                                        if (!fixed_comparer.Equals(x.Instructions.First().Instruction, target_instruction))
-                                            return false;
-                                        return true;
-                                    });
-                                if (target_node != null)
-                                    Cfg.AddEdge(new CFG.Edge(){From = node, To = target_node});
+                                // Handel leave instructions with code below.
+                                if (!(last_instruction.OpCode.Code == Code.Leave ||
+                                      last_instruction.OpCode.Code == Code.Leave_S))
+                                {
+                                    Mono.Cecil.Cil.Instruction target_instruction =
+                                        last_instruction.Operand as Mono.Cecil.Cil.Instruction;
+                                    CFG.Vertex target_node = list_new_nodes.FirstOrDefault(
+                                        (CFG.Vertex x) =>
+                                        {
+                                            if (!fixed_comparer.Equals(x.Instructions.First().Instruction,
+                                                target_instruction))
+                                                return false;
+                                            return true;
+                                        });
+                                    if (target_node != null)
+                                        Cfg.AddEdge(new CFG.Edge() {From = node, To = target_node});
+                                }
                             }
                             else if (last_instruction.Operand as Mono.Cecil.Cil.Instruction[] != null)
                             {
@@ -457,42 +463,153 @@ namespace Campy.Compiler
                 }
             }
 
-            // Add in edges for exception handler blocks.
+            // Get inclusive start/exclusive end ranges of try/catch/finally.
+            Dictionary<int, int> exclusive_eh_range = new Dictionary<int, int>();
             foreach (var eh in body.ExceptionHandlers)
             {
-                Instruction try_start = eh.TryStart;
-                Instruction try_end = eh.TryEnd;
-                var try_block = list_new_nodes.Where(
-                    n =>
-                    {
-                        var last = n.Instructions.First().Instruction;
-                        if (last.Offset == try_start.Offset)
-                            return true;
-                        else
-                            return false;
-                    }).First();
-                var handler_start = eh.HandlerStart;
-                var handler_end = eh.HandlerEnd;
-                var handler_block = list_new_nodes.Where(
-                    n =>
-                    {
-                        var last = n.Instructions.First().Instruction;
-                        if (last.Offset == handler_start.Offset)
-                            return true;
-                        else
-                            return false;
-                    }).First();
-                if (eh.HandlerType == ExceptionHandlerType.Catch)
+                int try_start = eh.TryStart.Offset;
+                int eh_end = eh.TryEnd != null ? eh.TryEnd.Offset : 0;
+                if (eh.TryEnd != null && eh.TryEnd.Offset > eh_end)
                 {
-                    handler_block.IsCatch = true;
-                    handler_block.CatchType = eh.CatchType.RewriteMonoTypeReference();
+                    eh_end = eh.TryEnd.Offset;
                 }
-                var preds = Cfg.PredecessorNodes(try_block);
-                if (!preds.Any())
-                    throw new Exception("Predecessors of try block messed up.");
-                foreach (var p in preds)
-                    Cfg.AddEdge(new CFG.Edge() { From = p, To = handler_block });
+                if (eh.HandlerEnd != null && eh.HandlerEnd.Offset > eh_end)
+                {
+                    eh_end = eh.HandlerEnd.Offset;
+                }
+                exclusive_eh_range[try_start] = eh_end;
             }
+            // Get inclusive start/inclusive end ranges of try/catch/finally.
+            Dictionary<int, int> inclusive_eh_range = new Dictionary<int, int>();
+            foreach (var pair in exclusive_eh_range)
+            {
+                int previous_instruction_address = 0;
+                foreach (var i in body.Instructions)
+                {
+                    if (pair.Value == i.Offset)
+                    {
+                        inclusive_eh_range[pair.Key] = previous_instruction_address;
+                        break;
+                    }
+                    previous_instruction_address = i.Offset;
+                }
+            }
+            // Get "finally" blocks for each try, if there is one.
+            Dictionary<int, CFG.Vertex> try_finally_block = new Dictionary<int, CFG.Vertex>();
+            foreach (var eh in body.ExceptionHandlers)
+            {
+                if (eh.HandlerType == ExceptionHandlerType.Finally)
+                {
+                    var finally_entry_block = list_new_nodes.Where(
+                        n =>
+                        {
+                            var first = n.Instructions.First().Instruction;
+                            if (first.Offset == eh.HandlerStart.Offset)
+                                return true;
+                            else
+                                return false;
+                        }).First();
+                    try_finally_block[eh.TryStart.Offset] = finally_entry_block;
+                }
+            }
+            // Set block properties.
+            foreach (var eh in body.ExceptionHandlers)
+            {
+                var block = list_new_nodes.Where(
+                    n =>
+                    {
+                        var first = n.Instructions.First().Instruction;
+                        if (first.Offset == eh.HandlerStart.Offset)
+                            return true;
+                        else
+                            return false;
+                    }).First();
+                block.CatchType = eh.CatchType;
+                block.IsCatch = eh.HandlerType == ExceptionHandlerType.Catch;
+                block.ExceptionHandler = eh;
+            }
+            // Get "try" block for each try.
+            Dictionary<int, CFG.Vertex> try_entry_block = new Dictionary<int, CFG.Vertex>();
+            foreach (var pair in inclusive_eh_range)
+            {
+                int start = pair.Key;
+                var entry_block = list_new_nodes.Where(
+                    n =>
+                    {
+                        var first = n.Instructions.First().Instruction;
+                        if (first.Offset == start)
+                            return true;
+                        else
+                            return false;
+                    }).First();
+                try_entry_block[start] = entry_block;
+            }
+            // Get entry block for each exception handler.
+            Dictionary<int, CFG.Vertex> eh_entry_block = new Dictionary<int, CFG.Vertex>();
+            foreach (var eh in body.ExceptionHandlers)
+            {
+                int start = eh.HandlerStart.Offset;
+                var entry_block = list_new_nodes.Where(
+                    n =>
+                    {
+                        var first = n.Instructions.First().Instruction;
+                        if (first.Offset == start)
+                            return true;
+                        else
+                            return false;
+                    }).First();
+                eh_entry_block[start] = entry_block;
+            }
+
+            foreach (var eh in body.ExceptionHandlers)
+            {
+                int start = eh.TryStart.Offset;
+                var try_block = try_entry_block[start];
+                int eh_start = eh.HandlerStart.Offset;
+                var eh_block = eh_entry_block[eh_start];
+                if (eh.HandlerType == ExceptionHandlerType.Finally) continue;
+                foreach (var prev in list_new_nodes.First()._graph.Predecessors(try_block))
+                    Cfg.AddEdge(new CFG.Edge() { From = prev, To = eh_block });
+            }
+
+            // Go through all CIL "leave" instructions and draw up edges. Any leave to end of
+            // endfinally block requires edge to finally block, not the following instruction.
+            foreach (var node in list_new_nodes)
+            {
+                int node_instruction_count = node.Instructions.Count;
+                INST leave_instruction = node.Instructions[node_instruction_count - 1];
+                Mono.Cecil.Cil.OpCode opcode = leave_instruction.OpCode;
+                Mono.Cecil.Cil.FlowControl flow_control = opcode.FlowControl;
+                if (!(leave_instruction.OpCode.Code == Code.Leave || leave_instruction.OpCode.Code == Code.Leave_S))
+                    continue;
+
+                // Link up any leave instructions
+                object operand = leave_instruction.Operand;
+                Mono.Cecil.Cil.Instruction single_instruction = operand as Mono.Cecil.Cil.Instruction;
+                Mono.Cecil.Cil.Instruction[] array_of_instructions = operand as Mono.Cecil.Cil.Instruction[];
+                if (single_instruction == null) throw new Exception("Malformed leave instruction.");
+                KeyValuePair<int, int> pair = inclusive_eh_range.Where(p => p.Key <= leave_instruction.Instruction.Offset
+                                                         && leave_instruction.Instruction.Offset <= p.Value).FirstOrDefault();
+                // pair indicates what try/catch/finally block. If not in a try/catch/finally,
+                // draw edge to destination. If the destination is outside try/catch/finally,
+                // draw edge to destination.
+                if (pair.Value == 0 || single_instruction.Offset >= pair.Key && single_instruction.Offset <= pair.Value)
+                {
+                    var whereever = list_new_nodes.Where(
+                        n =>
+                        {
+                            var first = n.Instructions.First().Instruction;
+                            if (first.Offset == single_instruction.Offset)
+                                return true;
+                            else
+                                return false;
+                        }).First();
+                    Cfg.AddEdge(new CFG.Edge() { From = node, To = whereever });
+                    continue;
+                }
+                Cfg.AddEdge(new CFG.Edge() { From = node, To = try_finally_block[pair.Key] });
+            }
+
 
             Cfg.OutputDotGraph();
             Cfg.OutputEntireGraph();

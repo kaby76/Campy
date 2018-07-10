@@ -34,6 +34,7 @@ namespace ConsoleApp4
             //    //System.Console.WriteLine(i); // no explicit conversion.
             //    System.Console.WriteLine(i.ToString()); // value converted explicitly in code.
             //});
+            int l = 0;
             Campy.Parallel.For(3, i =>
             {
                 int j = i;
@@ -49,7 +50,8 @@ namespace ConsoleApp4
                 }
                 finally
                 {
-                    k = j;
+                    k = 55;
+                    l = k;
                 }
             });
         }

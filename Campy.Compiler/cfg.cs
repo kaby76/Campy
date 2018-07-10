@@ -1,4 +1,6 @@
-﻿namespace Campy.Compiler
+﻿using Mono.Cecil.Cil;
+
+namespace Campy.Compiler
 {
     using Campy.Graphs;
     using Mono.Cecil;
@@ -111,6 +113,7 @@
             public Vertex Entry { get; set; }
             public bool IsEntry { get { return Entry == this; } }
             public bool IsCatch { get; set; }
+            public Mono.Cecil.Cil.ExceptionHandler ExceptionHandler { get; set; }
             public TypeReference CatchType { get; set; }
             public int StackNumberOfLocals { get; set; }
             public int StackNumberOfArguments { get; set; }

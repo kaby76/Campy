@@ -4426,7 +4426,7 @@
         {   // leave.* page 372 of ecma 335
             var edge = Block._graph.SuccessorEdges(Block).ToList()[0];
             var s = edge.To;
-            // Build a branch to appease LLVM.
+            // Build a branch to appease LLVM. CUDA does not seem to support exception handling.
             var br = LLVM.BuildBr(Builder, s.LlvmInfo.BasicBlock);
             return Next;
         }
