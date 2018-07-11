@@ -67,12 +67,11 @@ namespace ConsoleApp4
         static void Main(string[] args)
         {
             StartDebugging();
-            TestMethod1();
-            //Campy.Parallel.For(3, i =>
-            //{
-            //    //System.Console.WriteLine(i); // no explicit conversion.
-            //    System.Console.WriteLine(i.ToString()); // value converted explicitly in code.
-            //});
+            Campy.Parallel.For(3, i =>
+            {
+                //System.Console.WriteLine(i); // no explicit conversion.
+                System.Console.WriteLine(i.ToString()); // value converted explicitly in code.
+            });
         }
     }
 }

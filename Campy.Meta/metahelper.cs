@@ -112,6 +112,10 @@ namespace Campy.Meta
         public static MethodReference MakeMethodReference(this MethodDefinition method)
         {
             var reference = new MethodReference(method.Name, method.ReturnType, method.DeclaringType);
+            reference.MetadataToken = method.MetadataToken;
+            reference.HasThis = method.HasThis;
+            reference.ExplicitThis = method.ExplicitThis;
+            reference.CallingConvention = method.CallingConvention;
 
             foreach (ParameterDefinition parameter in method.Parameters)
                 reference.Parameters.Add(new ParameterDefinition(parameter.ParameterType));
@@ -122,6 +126,9 @@ namespace Campy.Meta
         {
             var reference = new MethodReference(method.Name, method.ReturnType, declaringType);
             reference.MetadataToken = method.MetadataToken;
+            reference.HasThis = method.HasThis;
+            reference.ExplicitThis = method.ExplicitThis;
+            reference.CallingConvention = method.CallingConvention;
             foreach (ParameterDefinition parameter in method.Parameters)
                 reference.Parameters.Add(new ParameterDefinition(parameter.ParameterType));
             return reference;
@@ -151,7 +158,8 @@ namespace Campy.Meta
             {
                 HasThis = self.HasThis,
                 ExplicitThis = self.ExplicitThis,
-                CallingConvention = self.CallingConvention
+                CallingConvention = self.CallingConvention,
+                MetadataToken = self.MetadataToken
             };
 
             foreach (var parameter in self.Parameters)

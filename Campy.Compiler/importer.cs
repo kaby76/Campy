@@ -607,7 +607,21 @@ namespace Campy.Compiler
                     Cfg.AddEdge(new CFG.Edge() { From = node, To = whereever });
                     continue;
                 }
-                Cfg.AddEdge(new CFG.Edge() { From = node, To = try_finally_block[pair.Key] });
+                if (try_finally_block.ContainsKey(pair.Key))
+                    Cfg.AddEdge(new CFG.Edge() { From = node, To = try_finally_block[pair.Key] });
+                else
+                {
+                    var whereever = list_new_nodes.Where(
+                        n =>
+                        {
+                            var first = n.Instructions.First().Instruction;
+                            if (first.Offset == single_instruction.Offset)
+                                return true;
+                            else
+                                return false;
+                        }).First();
+                    Cfg.AddEdge(new CFG.Edge() { From = node, To = whereever } );
+                }
             }
 
 
