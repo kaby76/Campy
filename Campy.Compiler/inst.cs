@@ -2161,7 +2161,6 @@
                 IntPredicate op;
                 if (IsSigned) op = _int_pred[(int) Predicate];
                 else op = _uint_pred[(int) Predicate];
-
                 cmp = LLVM.BuildICmp(Builder, op, v1.V, v2.V, "i" + instruction_id++);
                 // Set up for push of 0/1.
                 var return_type = new TYPE(typeof(bool));
@@ -2174,8 +2173,16 @@
             else if (t1.isPointerTy() && t2.isPointerTy())
             {
                 // Cast pointers to integer, then compare.
-                var diff = LLVM.BuildPtrDiff(Builder, v1.V, v2.V, "i" + instruction_id++);
-                var ret = new VALUE(diff);
+                var i1 = LLVM.BuildPtrToInt(Builder, v1.V, LLVM.Int64Type(), "i" + instruction_id++);
+                var i2 = LLVM.BuildPtrToInt(Builder, v2.V, LLVM.Int64Type(), "i" + instruction_id++);
+                IntPredicate op;
+                if (IsSigned) op = _int_pred[(int)Predicate];
+                else op = _uint_pred[(int)Predicate];
+                cmp = LLVM.BuildICmp(Builder, op, i1, i2, "i" + instruction_id++);
+                // Set up for push of 0/1.
+                var return_type = new TYPE(typeof(bool));
+                var ret_llvm = LLVM.BuildZExt(Builder, cmp, return_type.IntermediateType, "");
+                var ret = new VALUE(ret_llvm, return_type);
                 if (Campy.Utils.Options.IsOn("jit_trace"))
                     System.Console.WriteLine(ret);
                 state._stack.Push(ret);
@@ -3572,6 +3579,14 @@
         }
     }
 
+    public class i_break : INST
+    {
+        public i_break(Mono.Cecil.Cil.Instruction i)
+            : base(i)
+        {
+        }
+    }
+
     public class i_brfalse : INST
     {
         public i_brfalse(Mono.Cecil.Cil.Instruction i)
@@ -3591,10 +3606,6 @@
             Instruction instruction = operand as Instruction;
             var v = state._stack.Pop();
             var value = v.V;
-            var edge1 = Block._graph.SuccessorEdges(Block).ToList()[0];
-            var s1 = edge1.To;
-            var edge2 = Block._graph.SuccessorEdges(Block).ToList()[1];
-            var s2 = edge2.To;
             ValueRef condition;
             var type_of_value = LLVM.TypeOf(v.V);
             if (LLVM.GetTypeKind(type_of_value) == TypeKind.PointerTypeKind)
@@ -3630,25 +3641,17 @@
             // edge represents the "true" branch. During construction, there is
             // no guarentee that the order is consistent.
             var owner = Block._graph.Vertices.Where(
-                n => n.Instructions.Where(ins => ins.Instruction == instruction).Any()).ToList();
+                n => n.Instructions.Where(ins => ins.Instruction.Offset == instruction.Offset).Any()).ToList();
             if (owner.Count != 1)
                 throw new Exception("Cannot find instruction!");
-            CFG.Vertex true_node = owner.FirstOrDefault();
-            if (s2 == true_node)
-            {
-                s1 = s2;
-                s2 = true_node;
-            }
-            LLVM.BuildCondBr(Builder, condition, s2.LlvmInfo.BasicBlock, s1.LlvmInfo.BasicBlock);
+            var edge1 = Block._graph.SuccessorEdges(Block).ToList()[0];
+            var s1 = edge1.To;
+            var edge2 = Block._graph.SuccessorEdges(Block).ToList()[1];
+            var s2 = edge2.To;
+            CFG.Vertex then_node = owner.FirstOrDefault();
+            CFG.Vertex else_node = s1 == then_node ? s2 : s1;
+            LLVM.BuildCondBr(Builder, condition, then_node.LlvmInfo.BasicBlock, else_node.LlvmInfo.BasicBlock);
             return Next;
-        }
-    }
-
-    public class i_break : INST
-    {
-        public i_break(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
         }
     }
 
@@ -3671,10 +3674,6 @@
             Instruction instruction = operand as Instruction;
             var v = state._stack.Pop();
             var value = v.V;
-            var edge1 = Block._graph.SuccessorEdges(Block).ToList()[0];
-            var s1 = edge1.To;
-            var edge2 = Block._graph.SuccessorEdges(Block).ToList()[1];
-            var s2 = edge2.To;
             ValueRef condition;
             var type_of_value = LLVM.TypeOf(v.V);
             if (LLVM.GetTypeKind(type_of_value) == TypeKind.PointerTypeKind)
@@ -3710,16 +3709,16 @@
             // edge represents the "true" branch. During construction, there is
             // no guarentee that the order is consistent.
             var owner = Block._graph.Vertices.Where(
-                n => n.Instructions.Where(ins => ins.Instruction == instruction).Any()).ToList();
+                n => n.Instructions.Where(ins => ins.Instruction.Offset == instruction.Offset).Any()).ToList();
             if (owner.Count != 1)
                 throw new Exception("Cannot find instruction!");
-            CFG.Vertex true_node = owner.FirstOrDefault();
-            if (s2 == true_node)
-            {
-                s1 = s2;
-                s2 = true_node;
-            }
-            LLVM.BuildCondBr(Builder, condition, s2.LlvmInfo.BasicBlock, s1.LlvmInfo.BasicBlock);
+            var edge1 = Block._graph.SuccessorEdges(Block).ToList()[0];
+            var s1 = edge1.To;
+            var edge2 = Block._graph.SuccessorEdges(Block).ToList()[1];
+            var s2 = edge2.To;
+            CFG.Vertex then_node = owner.FirstOrDefault();
+            CFG.Vertex else_node = s1 == then_node ? s2 : s1;
+            LLVM.BuildCondBr(Builder, condition, then_node.LlvmInfo.BasicBlock, else_node.LlvmInfo.BasicBlock);
             return Next;
         }
     }
@@ -3738,32 +3737,57 @@
         }
 
         public override unsafe INST Convert(STATE<VALUE> state)
-        {
+        {   // brtrue, page 341 of ecma 335
             object operand = this.Operand;
             Instruction instruction = operand as Instruction;
             var v = state._stack.Pop();
+            var value = v.V;
+            ValueRef condition;
+            var type_of_value = LLVM.TypeOf(v.V);
+            if (LLVM.GetTypeKind(type_of_value) == TypeKind.PointerTypeKind)
+            {
+                var cast = LLVM.BuildPtrToInt(Builder, v.V, LLVM.Int64Type(), "i" + instruction_id++);
+                // Verify an object, as according to spec. We'll do that using BCL.
+                var v2 = LLVM.ConstInt(LLVM.Int64Type(), 0, false);
+                condition = LLVM.BuildICmp(Builder, IntPredicate.IntNE, cast, v2, "i" + instruction_id++);
+            }
+            else if (LLVM.GetTypeKind(type_of_value) == TypeKind.IntegerTypeKind)
+            {
+                if (type_of_value == LLVM.Int8Type() || type_of_value == LLVM.Int16Type())
+                {
+                    value = LLVM.BuildIntCast(Builder, value, LLVM.Int32Type(), "i" + instruction_id++);
+                    if (Campy.Utils.Options.IsOn("jit_trace"))
+                        System.Console.WriteLine(new VALUE(value));
+                    var v2 = LLVM.ConstInt(LLVM.Int32Type(), 0, false);
+                    condition = LLVM.BuildICmp(Builder, IntPredicate.IntNE, value, v2, "i" + instruction_id++);
+                }
+                else if (type_of_value == LLVM.Int32Type())
+                {
+                    var v2 = LLVM.ConstInt(LLVM.Int32Type(), 0, false);
+                    condition = LLVM.BuildICmp(Builder, IntPredicate.IntNE, value, v2, "i" + instruction_id++);
+                }
+                else if (type_of_value == LLVM.Int64Type())
+                {
+                    var v2 = LLVM.ConstInt(LLVM.Int64Type(), 0, false);
+                    condition = LLVM.BuildICmp(Builder, IntPredicate.IntNE, value, v2, "i" + instruction_id++);
+                }
+                else throw new Exception("Unhandled type in brtrue");
+            }
+            else throw new Exception("Unhandled type in brtrue");
+            // In order to select the correct branch, we need to know what
+            // edge represents the "true" branch. During construction, there is
+            // no guarentee that the order is consistent.
+            var owner = Block._graph.Vertices.Where(
+                n => n.Instructions.Where(ins => ins.Instruction.Offset == instruction.Offset).Any()).ToList();
+            if (owner.Count != 1)
+                throw new Exception("Cannot find instruction!");
             var edge1 = Block._graph.SuccessorEdges(Block).ToList()[0];
             var s1 = edge1.To;
             var edge2 = Block._graph.SuccessorEdges(Block).ToList()[1];
             var s2 = edge2.To;
-            // We need to compare the value popped with 0/1.
-            var v2 = LLVM.ConstInt(LLVM.Int32Type(), 1, false);
-            var v3 = LLVM.BuildICmp(Builder, IntPredicate.IntEQ, v.V, v2, "i" + instruction_id++);
-
-            // Now, in order to select the correct branch, we need to know what
-            // edge represents the "true" branch. During construction, there is
-            // no guarentee that the order is consistent.
-            var owner = Block._graph.Vertices.Where(
-                n => n.Instructions.Where(ins => ins.Instruction == instruction).Any()).ToList();
-            if (owner.Count != 1)
-                throw new Exception("Cannot find instruction!");
-            CFG.Vertex true_node = owner.FirstOrDefault();
-            if (s2 == true_node)
-            {
-                s1 = s2;
-                s2 = true_node;
-            }
-            LLVM.BuildCondBr(Builder, v3, s1.LlvmInfo.BasicBlock, s2.LlvmInfo.BasicBlock);
+            CFG.Vertex then_node = owner.FirstOrDefault();
+            CFG.Vertex else_node = s1 == then_node ? s2 : s1;
+            LLVM.BuildCondBr(Builder, condition, then_node.LlvmInfo.BasicBlock, else_node.LlvmInfo.BasicBlock);
             return Next;
         }
     }
@@ -3782,32 +3806,56 @@
         }
 
         public override unsafe INST Convert(STATE<VALUE> state)
-        {
+        {   // brtrue, page 341 of ecma 335
             object operand = this.Operand;
             Instruction instruction = operand as Instruction;
             var v = state._stack.Pop();
+            var value = v.V;
+            ValueRef condition;
+            var type_of_value = LLVM.TypeOf(v.V);
+            if (LLVM.GetTypeKind(type_of_value) == TypeKind.PointerTypeKind)
+            {
+                var cast = LLVM.BuildPtrToInt(Builder, v.V, LLVM.Int64Type(), "i" + instruction_id++);
+                var v2 = LLVM.ConstInt(LLVM.Int64Type(), 0, false);
+                condition = LLVM.BuildICmp(Builder, IntPredicate.IntNE, cast, v2, "i" + instruction_id++);
+            }
+            else if (LLVM.GetTypeKind(type_of_value) == TypeKind.IntegerTypeKind)
+            {
+                if (type_of_value == LLVM.Int8Type() || type_of_value == LLVM.Int16Type())
+                {
+                    value = LLVM.BuildIntCast(Builder, value, LLVM.Int32Type(), "i" + instruction_id++);
+                    if (Campy.Utils.Options.IsOn("jit_trace"))
+                        System.Console.WriteLine(new VALUE(value));
+                    var v2 = LLVM.ConstInt(LLVM.Int32Type(), 0, false);
+                    condition = LLVM.BuildICmp(Builder, IntPredicate.IntNE, value, v2, "i" + instruction_id++);
+                }
+                else if (type_of_value == LLVM.Int32Type())
+                {
+                    var v2 = LLVM.ConstInt(LLVM.Int32Type(), 0, false);
+                    condition = LLVM.BuildICmp(Builder, IntPredicate.IntNE, value, v2, "i" + instruction_id++);
+                }
+                else if (type_of_value == LLVM.Int64Type())
+                {
+                    var v2 = LLVM.ConstInt(LLVM.Int64Type(), 0, false);
+                    condition = LLVM.BuildICmp(Builder, IntPredicate.IntNE, value, v2, "i" + instruction_id++);
+                }
+                else throw new Exception("Unhandled type in brtrue");
+            }
+            else throw new Exception("Unhandled type in brtrue");
+            // In order to select the correct branch, we need to know what
+            // edge represents the "true" branch. During construction, there is
+            // no guarentee that the order is consistent.
+            var owner = Block._graph.Vertices.Where(
+                n => n.Instructions.Where(ins => ins.Instruction.Offset == instruction.Offset).Any()).ToList();
+            if (owner.Count != 1)
+                throw new Exception("Cannot find instruction!");
             var edge1 = Block._graph.SuccessorEdges(Block).ToList()[0];
             var s1 = edge1.To;
             var edge2 = Block._graph.SuccessorEdges(Block).ToList()[1];
             var s2 = edge2.To;
-            // We need to compare the value popped with 0/1.
-            var v2 = LLVM.ConstInt(LLVM.Int32Type(), 1, false);
-            var v3 = LLVM.BuildICmp(Builder, IntPredicate.IntEQ, v.V, v2, "i" + instruction_id++);
-
-            // Now, in order to select the correct branch, we need to know what
-            // edge represents the "true" branch. During construction, there is
-            // no guarentee that the order is consistent.
-            var owner = Block._graph.Vertices.Where(
-                n => n.Instructions.Where(ins => ins.Instruction == instruction).Any()).ToList();
-            if (owner.Count != 1)
-                throw new Exception("Cannot find instruction!");
-            CFG.Vertex true_node = owner.FirstOrDefault();
-            if (s2 == true_node)
-            {
-                s1 = s2;
-                s2 = true_node;
-            }
-            LLVM.BuildCondBr(Builder, v3, s1.LlvmInfo.BasicBlock, s2.LlvmInfo.BasicBlock);
+            CFG.Vertex then_node = owner.FirstOrDefault();
+            CFG.Vertex else_node = s1 == then_node ? s2 : s1;
+            LLVM.BuildCondBr(Builder, condition, then_node.LlvmInfo.BasicBlock, else_node.LlvmInfo.BasicBlock);
             return Next;
         }
     }
