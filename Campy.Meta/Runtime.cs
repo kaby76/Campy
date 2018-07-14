@@ -443,7 +443,7 @@
             var runtime = new RUNTIME();
 
             // Find corlib.dll. It could be anywhere, but let's check the usual spots.
-            Mono.Cecil.ModuleDefinition md = Mono.Cecil.ModuleDefinition.ReadModule(FindCoreLib());
+            Mono.Cecil.ModuleDefinition md = Campy.Meta.StickyReadMod.StickyReadModule(FindCoreLib());
             foreach (var bcl_type in md.GetTypes())
             {
                 // Filter out <Module> and <PrivateImplementationDetails>, among possible others.
@@ -476,7 +476,7 @@
             // For "Internal Calls", these functions appear here, but also on the _internalCalls list.
             var assembly = Assembly.GetAssembly(typeof(Campy.Meta.RUNTIME));
             List<MethodReference> methods_in_bcl = new List<MethodReference>();
-            Mono.Cecil.ModuleDefinition campy_bcl_runtime = Mono.Cecil.ModuleDefinition.ReadModule(RUNTIME.FindCoreLib());
+            Mono.Cecil.ModuleDefinition campy_bcl_runtime = Campy.Meta.StickyReadMod.StickyReadModule(RUNTIME.FindCoreLib());
             Stack<TypeReference> consider_list = new Stack<TypeReference>();
             Stack<TypeReference> types_in_bcl = new Stack<TypeReference>();
             foreach (var type in campy_bcl_runtime.Types)
@@ -690,7 +690,7 @@
         {
             var runtime = new RUNTIME();
             TypeReference result = null;
-            Mono.Cecil.ModuleDefinition md = Mono.Cecil.ModuleDefinition.ReadModule(FindCoreLib());
+            Mono.Cecil.ModuleDefinition md = Campy.Meta.StickyReadMod.StickyReadModule(FindCoreLib());
             foreach (var bcl_type in md.GetTypes())
             {
                 if (bcl_type.FullName == type.FullName)
@@ -771,12 +771,13 @@
                 if (i.OpCode.FlowControl == FlowControl.Call)
                 {
                     object method = i.Operand;
-
-                    if (method as Mono.Cecil.MethodReference == null)
-                        throw new Exception();
-
                     var method_reference = method as Mono.Cecil.MethodReference;
                     TypeReference mr_dt = method_reference.DeclaringType;
+
+                    method_reference = method_reference.FixGenericMethods();
+
+                    if (method_reference.ContainsGenericParameter)
+                        throw new Exception("method reference contains generic " + method_reference.FullName);
 
                     var bcl_substitute = SubstituteMethod(method_reference);
                     if (bcl_substitute != null)

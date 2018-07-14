@@ -67,11 +67,65 @@ namespace ConsoleApp4
         static void Main(string[] args)
         {
             StartDebugging();
-            Campy.Parallel.For(3, i =>
+            //Campy.Parallel.For(3, i =>
+            //{
+            //    //System.Console.WriteLine(i); // no explicit conversion.
+            //    System.Console.WriteLine(i.ToString()); // value converted explicitly in code.
+            //});
+            // List of ints.
+            List<int> x = new List<int>();
+            int n = 4;
+            for (int i = 0; i < n; ++i) x.Add(0);
+            Campy.Parallel.For(n, i =>
             {
-                //System.Console.WriteLine(i); // no explicit conversion.
-                System.Console.WriteLine(i.ToString()); // value converted explicitly in code.
+                x[i] = i;
             });
+            for (int i = 0; i < n; ++i) if (x[i] != i)
+                    throw new Exception();
+            //bool c1;
+            //bool c2;
+            //bool c3;
+            //bool c4;
+            //bool c5;
+            //bool c6;
+            //bool c7;
+            //bool c8;
+            //int a = 1;
+            //int b = 1;
+            //int c = 2;
+            //Campy.Parallel.For(1, i =>
+            //{
+            //    c1 = a > c;
+            //    c2 = a < c;
+            //    c3 = a >= c;
+            //    c4 = a <= c;
+            //    c5 = a == c;
+            //    c6 = a == b;
+            //    c7 = a != b;
+            //    c8 = a != c;
+            //});
+            //int c1;
+            //int c2;
+            //int c3;
+            //int c4;
+            //int c5;
+            //int c6;
+            //int c7;
+            //int c8;
+            //int a = 1;
+            //int b = 1;
+            //int c = 2;
+            //Campy.Parallel.For(1, i =>
+            //{
+            //    c1 = a > c ? 0 : 2;
+            //    c2 = a < c ? 0 : 2;
+            //    c3 = a >= c ? 0 : 2;
+            //    c4 = a <= c ? 0 : 2;
+            //    c5 = a == c ? 0 : 2;
+            //    c6 = a == b ? 0 : 2;
+            //    c7 = a != b ? 0 : 2;
+            //    c8 = a != c ? 0 : 2;
+            //});
         }
     }
 }

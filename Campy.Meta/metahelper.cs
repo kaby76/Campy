@@ -171,6 +171,39 @@ namespace Campy.Meta
             return reference;
         }
 
+        public static MethodReference MakeAltInstanceGeneric(
+            MethodReference self,
+            params TypeReference[] generic_arguments)
+        {
+            TypeReference parent = self.DeclaringType;
+            if (self.DeclaringType.GenericParameters.Count != 0)
+                parent = self.DeclaringType.MakeGenericInstanceType(generic_arguments);
+
+            var reference = new MethodReference(
+                self.Name,
+                self.ReturnType,
+                parent);
+
+            reference.HasThis = self.HasThis;
+            reference.ExplicitThis = self.ExplicitThis;
+            reference.CallingConvention = self.CallingConvention;
+            reference.MetadataToken = self.MetadataToken;
+
+            foreach (var parameter in self.Parameters)
+            {
+                var yo = ConvertGenericParameterToTypeReference(parameter.ParameterType, generic_arguments);
+                ParameterDefinition new_parameter_definition = new ParameterDefinition(yo);
+                reference.Parameters.Add(new_parameter_definition);
+            }
+
+            foreach (var genericParam in self.GenericParameters)
+                reference.GenericParameters.Add(new GenericParameter(genericParam.Name, reference));
+
+            var new_met = self.Module.ImportReference(reference);
+
+            return new_met;
+        }
+
 
         ///////////////////////////////////////////////////////////////////////////////////////////
         // General routines associated with TypeReference accessors.
@@ -262,11 +295,23 @@ namespace Campy.Meta
             return result;
         }
 
+        public static MethodReference FixGenericMethods(this MethodReference method_reference)
+        {
+            if (method_reference == null) throw new Exception("Null method reference in FixGenericMethods");
+            var result = method_reference;
+            var declaring_type = method_reference.DeclaringType;
+            var generic_type_of_declaring_type = declaring_type as GenericInstanceType;
+            if (generic_type_of_declaring_type == null) return result;
+            var generic_arguments = generic_type_of_declaring_type.GenericArguments;
+            var args = generic_arguments.ToArray();
+            result = MakeAltInstanceGeneric(method_reference, args);
+            return result;
+        }
 
         public static Mono.Cecil.TypeReference ToMonoTypeReference(this System.Type type)
         {
             String kernel_assembly_file_name = type.Assembly.Location;
-            Mono.Cecil.ModuleDefinition md = Mono.Cecil.ModuleDefinition.ReadModule(kernel_assembly_file_name);
+            Mono.Cecil.ModuleDefinition md = Campy.Meta.StickyReadMod.StickyReadModule(kernel_assembly_file_name);
             string ecma_name = type.FullName.Replace("+", "/");
             var reference = md.GetType(ecma_name);
             if (reference != null) return reference;
@@ -297,7 +342,7 @@ namespace Campy.Meta
 
         public static TypeReference SubstituteMonoTypeReference(this Mono.Cecil.TypeReference type)
         {
-            Mono.Cecil.ModuleDefinition campy_bcl_runtime = Mono.Cecil.ModuleDefinition.ReadModule(RUNTIME.FindCoreLib());
+            Mono.Cecil.ModuleDefinition campy_bcl_runtime = Campy.Meta.StickyReadMod.StickyReadModule(RUNTIME.FindCoreLib());
             // ImportReference does not work as expected because the scope of the type found isn't in the module.
             foreach (var tt in campy_bcl_runtime.Types)
             {

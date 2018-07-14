@@ -16,7 +16,7 @@ namespace Campy.Compiler
 
     internal class IMPORTER
     {
-        private StackQueue<Tuple<MethodReference, List<TypeReference>>> _methods_to_do;
+        private StackQueue<MethodReference> _methods_to_do;
         private List<string> _methods_done;
 
         public bool Failed
@@ -43,7 +43,7 @@ namespace Campy.Compiler
         private IMPORTER()
         {
             Cfg = new CFG();
-            _methods_to_do = new StackQueue<Tuple<MethodReference, List<TypeReference>>>();
+            _methods_to_do = new StackQueue<MethodReference>();
             _methods_done = new List<string>();
             _methods_avoid.Add("System.Void System.ThrowHelper::ThrowArgumentOutOfRangeException()");
             _methods_avoid.Add("System.Void System.ThrowHelper::ThrowArgumentOutOfRangeException()");
@@ -86,15 +86,27 @@ namespace Campy.Compiler
             if (_methods_done.Contains(method_reference.FullName)) return;
             foreach (var tuple in _methods_to_do)
             {
-                if (tuple.Item1.FullName == method_reference.FullName) return;
+                if (tuple.FullName == method_reference.FullName) return;
             }
-            _methods_to_do.Push(new Tuple<MethodReference, List<TypeReference>>(method_reference, new List<TypeReference>()));
+
+            if (method_reference.ContainsGenericParameter)
+            {
+                throw new Exception("method " + method_reference.FullName + " contains generic parameter.");
+            }
+
+            foreach (var p in method_reference.Parameters)
+            {
+                if (p.ParameterType.ContainsGenericParameter)
+                    throw new Exception("method " + method_reference.FullName + " contains generic parameter.");
+            }
+
+            _methods_to_do.Push(method_reference);
         }
 
         public void Add(MethodInfo reference)
         {
             String kernel_assembly_file_name = reference.DeclaringType.Assembly.Location;
-            Mono.Cecil.ModuleDefinition md = Mono.Cecil.ModuleDefinition.ReadModule(kernel_assembly_file_name);
+            Mono.Cecil.ModuleDefinition md = Campy.Meta.StickyReadMod.StickyReadModule(kernel_assembly_file_name);
             MethodReference refer = md.ImportReference(reference);
             Add(refer);
         }
@@ -116,12 +128,12 @@ namespace Campy.Compiler
             {
                 int change_set_id = this.Cfg.StartChangeSet();
 
-                Tuple<MethodReference, List<TypeReference>> definition = _methods_to_do.Pop();
+                MethodReference reference = _methods_to_do.Pop();
 
                 if (Campy.Utils.Options.IsOn("jit_trace"))
-                    System.Console.WriteLine("ExtractBasicBlocks for " + definition.Item1.FullName);
+                    System.Console.WriteLine("ExtractBasicBlocks for " + reference.FullName);
 
-                ExtractBasicBlocksOfMethod(definition);
+                ExtractBasicBlocksOfMethod(reference);
 
                 var blocks = this.Cfg.PopChangeSet(change_set_id);
 
@@ -140,19 +152,14 @@ namespace Campy.Compiler
             // Set that path for the god damn resolver.
             var fucking_directory_path = Campy.Utils.CampyInfo.PathOfCampy();
             var full_frigging_path_of_assembly_file = fucking_directory_path + "\\" + assembly_file_name;
-            var resolver = new DefaultAssemblyResolver();
-            resolver.AddSearchDirectory(fucking_directory_path);
-            if (File.Exists(full_frigging_path_of_assembly_file))
-                assembly_file_name = full_frigging_path_of_assembly_file;
-            ModuleDefinition module = ModuleDefinition.ReadModule(
+            ModuleDefinition module = Campy.Meta.StickyReadMod.StickyReadModule(
                 assembly_file_name,
-                new ReaderParameters { AssemblyResolver = resolver, ReadSymbols = true});
+                new ReaderParameters { ReadSymbols = true});
             return module;
         }
 
-        private void ExtractBasicBlocksOfMethod(Tuple<MethodReference, List<TypeReference>> definition)
+        private void ExtractBasicBlocksOfMethod(MethodReference method_reference)
         {
-            MethodReference method_reference = definition.Item1;
             MethodReference original_method_reference = method_reference;
             _methods_done.Add(original_method_reference.FullName);
             MethodDefinition method_definition = Rewrite(original_method_reference);

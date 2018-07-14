@@ -81,12 +81,8 @@ namespace Campy
                 {
                     System.Reflection.MethodInfo method_info = simpleKernel.Method;
                     String kernel_assembly_file_name = method_info.DeclaringType.Assembly.Location;
-                    string p = Path.GetDirectoryName(kernel_assembly_file_name);
-                    var resolver = new DefaultAssemblyResolver();
-                    resolver.AddSearchDirectory(p);
-                    Mono.Cecil.ModuleDefinition md = Mono.Cecil.ModuleDefinition.ReadModule(
-                        kernel_assembly_file_name,
-                        new ReaderParameters { AssemblyResolver = resolver, ReadSymbols = true });
+                    Mono.Cecil.ModuleDefinition md = Campy.Meta.StickyReadMod.StickyReadModule(
+                        kernel_assembly_file_name, new ReaderParameters { ReadSymbols = true });
                     MethodReference method_reference = md.ImportReference(method_info);
 
                     CUfunction ptr_to_kernel = default(CUfunction);
