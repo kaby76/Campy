@@ -90,7 +90,14 @@ namespace Campy.Meta
                     type = new_array_type;
                 }
             }
-
+            if (type as ByReferenceType != null)
+            {
+                var gp = type as ByReferenceType;
+                var x = gp.GetElementType();
+                var new_x = ConvertGenericParameterToTypeReference(x, generic_arguments);
+                var new_type = new ByReferenceType(new_x);
+                type = new_type;
+            }
             if (type as GenericInstanceType != null)
             {
                 // For generic instance types, it could contain a generic parameter.
@@ -199,6 +206,8 @@ namespace Campy.Meta
             foreach (var genericParam in self.GenericParameters)
                 reference.GenericParameters.Add(new GenericParameter(genericParam.Name, reference));
 
+            reference.ReturnType = ConvertGenericParameterToTypeReference(reference.ReturnType, generic_arguments);
+
             var new_met = self.Module.ImportReference(reference);
 
             return new_met;
@@ -305,6 +314,8 @@ namespace Campy.Meta
             var generic_arguments = generic_type_of_declaring_type.GenericArguments;
             var args = generic_arguments.ToArray();
             result = MakeAltInstanceGeneric(method_reference, args);
+            if (result.ContainsGenericParameter)
+                throw new Exception("method reference contains generic " + result.FullName);
             return result;
         }
 

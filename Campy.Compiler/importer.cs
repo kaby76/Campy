@@ -162,14 +162,13 @@ namespace Campy.Compiler
         {
             MethodReference original_method_reference = method_reference;
             _methods_done.Add(original_method_reference.FullName);
-            MethodDefinition method_definition = Rewrite(original_method_reference);
+            method_reference = Rewrite(original_method_reference);
+            MethodDefinition method_definition = method_reference.Resolve();
             if (method_definition == null || method_definition.Body == null)
                 return;
-            _methods_done.Add(method_definition.FullName);
             int change_set = Cfg.StartChangeSet();
             int instruction_count = method_definition.Body.Instructions.Count;
             List<Instruction> split_point = new List<Instruction>();
-            // Each method is a leader of a block.
             CFG.Vertex basic_block = (CFG.Vertex)Cfg.AddVertex(new CFG.Vertex(){Name = Cfg.NewNodeNumber().ToString()});
             basic_block._method_definition = method_definition;
             basic_block._original_method_reference = original_method_reference;
@@ -197,10 +196,13 @@ namespace Campy.Compiler
             {
                 Mono.Cecil.Cil.Instruction instruction = body.Instructions[j];
                 INST wrapped_instruction = INST.Wrap(instruction,
-                    body,
                     basic_block, sequence_points.Where(sp => { return sp.Offset == instruction.Offset; }).FirstOrDefault());
                 basic_block.Instructions.Add(wrapped_instruction);
             }
+
+            // Perform any substitutions of individual instructions.
+            var inss = basic_block.Instructions.ToArray();
+            RUNTIME.RewriteCilCodeBlock(inss);
 
             // Accumulate targets of jumps. These are split points for block "v".
             // Accumalated splits are in "leader_list" following this for-loop.
@@ -708,17 +710,12 @@ namespace Campy.Compiler
             return result;
         }
 
-        private MethodDefinition Rewrite(MethodReference method_reference)
+        private MethodReference Rewrite(MethodReference method_reference)
         {
             // Perform any substitution of this method reference.
             MethodReference new_method_reference = RUNTIME.SubstituteMethod(method_reference);
-            method_reference = new_method_reference != null ? new_method_reference : method_reference; 
-            MethodDefinition method_definition = method_reference.Resolve();
-            // Perform any substitutions of individual instructions.
-            if (!(method_definition == null || method_definition.Body == null))
-                RUNTIME.RewriteCilCodeBlock(method_definition.Body);
-            // Return method definition for further analysis.
-            return method_definition;
+            method_reference = new_method_reference != null ? new_method_reference : method_reference;
+            return method_reference;
         }
     }
 }

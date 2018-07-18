@@ -13,15 +13,16 @@
     using Utils;
     using Campy.Meta;
     using System.Runtime.InteropServices;
+    using Campy.Compiler.Graph;
 
     /// <summary>
     /// Wrapper for CIL instructions that are implemented using Mono.Cecil.Cil.
     /// This class adds basic block graph structure on top of these instructions. There
     /// is no semantics encoded in the wrapper.
     /// </summary>
-    public class INST
+    public class INST : Campy.Compiler.Graph.IInst
     {
-        public Mono.Cecil.Cil.Instruction Instruction { get; private set; }
+        public Mono.Cecil.Cil.Instruction Instruction { get; set; }
         public Mono.Cecil.Cil.MethodBody Body { get; private set; }
         public static List<INST> CallInstructions { get; private set; } = new List<INST>();
         public override string ToString() { return Instruction.ToString(); }
@@ -160,7 +161,7 @@
             }
         }
 
-        static public INST Wrap(Mono.Cecil.Cil.Instruction i, Mono.Cecil.Cil.MethodBody body, CFG.Vertex block, SequencePoint sp)
+        static public INST Wrap(Mono.Cecil.Cil.Instruction i, CFG.Vertex block, SequencePoint sp)
         {
             // Wrap instruction with semantics, def/use/kill properties.
             Mono.Cecil.Cil.OpCode op = i.OpCode;
@@ -830,8 +831,12 @@
                     throw new Exception("Unknown instruction type " + i);
             }
             wrapped_inst.SeqPoint = sp;
-            wrapped_inst.Body = body;
             return wrapped_inst;
+        }
+
+        public void Replace(Instruction inst)
+        {
+            this.Instruction = inst;
         }
     }
 
@@ -1346,7 +1351,7 @@
                     Instruction new_mono_inst = worker.Create(
                         this.OpCode, mr);
                     new_mono_inst.Offset = this.Instruction.Offset;
-                    new_inst = Wrap(new_mono_inst, this.Body, this.Block, this.SeqPoint);
+                    new_inst.Replace(new_mono_inst);
                 }
             }
 

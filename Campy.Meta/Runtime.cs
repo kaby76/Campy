@@ -13,6 +13,7 @@
     using System.Text.RegularExpressions;
     using System;
     using Utils;
+    using Campy.Compiler.Graph;
 
     public class RUNTIME
     {
@@ -760,34 +761,27 @@
             return new_method_reference;
         }
 
-        public static void RewriteCilCodeBlock(Mono.Cecil.Cil.MethodBody body)
+        public static void RewriteCilCodeBlock(IInst[] instructions)
         {
-            for (int j = 0; j < body.Instructions.Count; ++j)
+            for (int j = 0; j < instructions.Length; ++j)
             {
-                Instruction i = body.Instructions[j];
-
-                var inst_to_insert = i;
-
-                if (i.OpCode.FlowControl == FlowControl.Call)
+                IInst i = instructions[j];
+                if (i.Instruction.OpCode.FlowControl == FlowControl.Call)
                 {
-                    object method = i.Operand;
+                    object method = i.Instruction.Operand;
                     var method_reference = method as Mono.Cecil.MethodReference;
                     TypeReference mr_dt = method_reference.DeclaringType;
-
                     method_reference = method_reference.FixGenericMethods();
-
                     if (method_reference.ContainsGenericParameter)
                         throw new Exception("method reference contains generic " + method_reference.FullName);
-
                     var bcl_substitute = SubstituteMethod(method_reference);
                     if (bcl_substitute != null)
                     {
                         CallSite cs = new CallSite(typeof(void).ToMonoTypeReference());
-                        body.Instructions.RemoveAt(j);
-                        var worker = body.GetILProcessor();
-                        Instruction new_inst = worker.Create(i.OpCode, bcl_substitute);
-                        new_inst.Offset = i.Offset;
-                        body.Instructions.Insert(j, new_inst);
+                       // var worker = body.GetILProcessor();
+                        Instruction new_inst = null;// worker.Create(i.Instruction.OpCode, bcl_substitute);
+                        new_inst.Offset = i.Instruction.Offset;
+                        i.Replace(new_inst);
                     }
                 }
             }
