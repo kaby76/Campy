@@ -168,7 +168,7 @@ namespace Campy.Compiler
                 return;
             int change_set = Cfg.StartChangeSet();
             int instruction_count = method_definition.Body.Instructions.Count;
-            List<Instruction> split_point = new List<Instruction>();
+            List<INST> split_point = new List<INST>();
             CFG.Vertex basic_block = (CFG.Vertex)Cfg.AddVertex(new CFG.Vertex(){Name = Cfg.NewNodeNumber().ToString()});
             basic_block._method_definition = method_definition;
             basic_block._original_method_reference = original_method_reference;
@@ -201,8 +201,12 @@ namespace Campy.Compiler
             }
 
             // Perform any substitutions of individual instructions.
-            var inss = basic_block.Instructions.ToArray();
-            RUNTIME.RewriteCilCodeBlock(inss);
+            {
+                var inss = basic_block.Instructions.ToArray();
+                RUNTIME.RewriteCilCodeBlock(inss);
+                basic_block.Instructions = inss.ToList();
+            }
+            var instructions_before_splits = basic_block.Instructions.ToList();
 
             // Accumulate targets of jumps. These are split points for block "v".
             // Accumalated splits are in "leader_list" following this for-loop.
@@ -228,26 +232,52 @@ namespace Campy.Compiler
                             Mono.Cecil.Cil.Instruction[] array_of_instructions = operand as Mono.Cecil.Cil.Instruction[];
                             if (single_instruction != null)
                             {
-                                if (!split_point.Contains(single_instruction,
-                                    new LambdaComparer<Instruction>(
-                                        (Instruction a, Instruction b)
-                                        => a.Offset == b.Offset
-                                           && a.OpCode == b.OpCode
-                                           )))
-                                    split_point.Add(single_instruction);
+                                INST sp = null;
+                                for (int i = 0; i < basic_block.Instructions.Count(); ++i)
+                                {
+                                    if (basic_block.Instructions[i].Offset == single_instruction.Offset
+                                        && basic_block.Instructions[i].OpCode == single_instruction.OpCode)
+                                    {
+                                        sp = basic_block.Instructions[i];
+                                        break;
+                                    }
+                                }
+                                if (sp == null) throw new Exception("Instruction go to not found.");
+                                bool found = false;
+                                foreach (INST split in split_point)
+                                    if (split.Offset == sp.Offset && split.OpCode == sp.OpCode)
+                                    {
+                                        found = true;
+                                        break;
+                                    }
+                                if (! found)
+                                    split_point.Add(sp);
                             }
                             else if (array_of_instructions != null)
                             {
                                 foreach (var ins in array_of_instructions)
                                 {
                                     Debug.Assert(ins != null);
-                                    if (!split_point.Contains(single_instruction,
-                                        new LambdaComparer<Instruction>(
-                                            (Instruction a, Instruction b)
-                                                => a.Offset == b.Offset
-                                                   && a.OpCode == b.OpCode
-                                                   )))
-                                        split_point.Add(ins);
+                                    INST sp = null;
+                                    for (int i = 0; i < basic_block.Instructions.Count(); ++i)
+                                    {
+                                        if (basic_block.Instructions[i].Offset == ins.Offset
+                                            && basic_block.Instructions[i].OpCode == ins.OpCode)
+                                        {
+                                            sp = basic_block.Instructions[i];
+                                            break;
+                                        }
+                                    }
+                                    if (sp == null) throw new Exception("Instruction go to not found.");
+                                    bool found = false;
+                                    foreach (INST split in split_point)
+                                        if (split.Offset == sp.Offset && split.OpCode == sp.OpCode)
+                                        {
+                                            found = true;
+                                            break;
+                                        }
+                                    if (!found)
+                                        split_point.Add(sp);
                                 }
                             }
                             else
@@ -270,13 +300,26 @@ namespace Campy.Compiler
                             if (j + 1 < instruction_count)
                             {
                                 var ins = basic_block.Instructions[j + 1].Instruction;
-                                if (!split_point.Contains(ins,
-                                    new LambdaComparer<Instruction>(
-                                        (Instruction a, Instruction b)
-                                            => a.Offset == b.Offset
-                                               && a.OpCode == b.OpCode
-                                               )))
-                                    split_point.Add(ins);
+                                INST sp = null;
+                                for (int i = 0; i < basic_block.Instructions.Count(); ++i)
+                                {
+                                    if (basic_block.Instructions[i].Offset == ins.Offset
+                                        && basic_block.Instructions[i].OpCode == ins.OpCode)
+                                    {
+                                        sp = basic_block.Instructions[i];
+                                        break;
+                                    }
+                                }
+                                if (sp == null) throw new Exception("Instruction go to not found.");
+                                bool found = false;
+                                foreach (INST split in split_point)
+                                    if (split.Offset == sp.Offset && split.OpCode == sp.OpCode)
+                                    {
+                                        found = true;
+                                        break;
+                                    }
+                                if (!found)
+                                    split_point.Add(sp);
                             }
                         }
                         break;
@@ -288,27 +331,43 @@ namespace Campy.Compiler
             {
                 var start = eh.TryStart;
                 var end = eh.TryEnd;
-                // Split at start.
-                var find = basic_block.Instructions.Where(ins =>
-                    ins.Instruction.Offset == start.Offset
-                    && !split_point.Contains(ins.Instruction)).FirstOrDefault();
-                if (find == null) continue;
-                split_point.Add(find.Instruction);
+                // Split at try start.
+                Instruction ins = start;
+                INST sp = null;
+                for (int i = 0; i < basic_block.Instructions.Count(); ++i)
+                {
+                    if (basic_block.Instructions[i].Offset == ins.Offset
+                        && basic_block.Instructions[i].OpCode == ins.OpCode)
+                    {
+                        sp = basic_block.Instructions[i];
+                        break;
+                    }
+                }
+                if (sp == null) throw new Exception("Instruction go to not found.");
+                bool found = false;
+                foreach (INST split in split_point)
+                    if (split.Offset == sp.Offset && split.OpCode == sp.OpCode)
+                    {
+                        found = true;
+                        break;
+                    }
+                if (!found)
+                    split_point.Add(sp);
             }
 
             // Note, we assume that these splits are within the same method.
             // Order the list according to offset from beginning of the method.
-            List<Instruction> ordered_leader_list = new List<Mono.Cecil.Cil.Instruction>();
+            List<INST> ordered_leader_list = new List<INST>();
             for (int j = 0; j < instruction_count; ++j)
             {
                 // Order jump targets. These denote locations
                 // where to split blocks. However, it's ordered,
                 // so that splitting is done from last instruction in block
                 // to first instruction in block.
-                Mono.Cecil.Cil.Instruction i = method_definition.Body.Instructions[j];
+                INST i = basic_block.Instructions[j];
                 if (split_point.Contains(i,
-                    new LambdaComparer<Instruction>(
-                        (Instruction a, Instruction b)
+                    new LambdaComparer<INST>(
+                        (INST a, INST b)
                             =>
                         {
                             if (a.Offset != b.Offset)
@@ -325,16 +384,31 @@ namespace Campy.Compiler
                     "Mono Cecil giving weird results for instruction operand type casting. Size of original split points not the same as order list of split points.");
  
             // Split block at all jump targets.
-            foreach (var i in ordered_leader_list)
+            foreach (INST i in ordered_leader_list)
             {
-                var owner = Cfg.Vertices.Where(
-                    n => n.Instructions.Where(ins => ins.Instruction == i).Any()).ToList();
+                var owner = Cfg.PeekChangeSet(change_set).Where(
+                    n => n.Instructions.Where(ins =>
+                    {
+                        if (ins.Offset != i.Offset)
+                            return false;
+                        if (ins.OpCode != i.OpCode)
+                            return false;
+                        return true;
+                    }
+                ).Any()).ToList();
                 // Check if there are multiple nodes with the same instruction or if there isn't
                 // any node found containing the instruction. Either way, it's a programming error.
                 if (owner.Count != 1)
                     throw new Exception("Cannot find instruction!");
                 CFG.Vertex target_node = owner.FirstOrDefault();
-                var j = target_node.Instructions.FindIndex(a => a.Instruction == i);
+                var j = target_node.Instructions.FindIndex(a =>
+                {
+                    if (a.Offset != i.Offset)
+                        return false;
+                    if (a.OpCode != i.OpCode)
+                        return false;
+                    return true;
+                });
                 CFG.Vertex new_node = Split(target_node, j);
             }
 
@@ -347,6 +421,9 @@ namespace Campy.Compiler
 
             // Add in all edges.
             var list_new_nodes = Cfg.PopChangeSet(change_set);
+
+            list_new_nodes.ThreadInstructions();
+
             foreach (var node in list_new_nodes)
             {
                 int node_instruction_count = node.Instructions.Count;
@@ -416,26 +493,21 @@ namespace Campy.Compiler
                     case Mono.Cecil.Cil.FlowControl.Phi:
                     case Mono.Cecil.Cil.FlowControl.Throw:
                         {
-                            int next = method_definition.Body.Instructions.ToList().FindIndex(
+                            int next = instructions_before_splits.FindIndex(
                                            n =>
                                            {
-                                               var r = n == last_instruction.Instruction &&
-                                                       n.Offset == last_instruction.Instruction.Offset
-                                                   ;
+                                               var r = n == last_instruction;
                                                return r;
                                            }
                                    );
                             if (next < 0)
                                 break;
                             next += 1;
-                            if (next >= method_definition.Body.Instructions.Count)
+                            if (next >= instructions_before_splits.Count)
                                 break;
-                            var next_instruction = method_definition.Body.Instructions[next];
-                            var owner = Cfg.Vertices.Where(
-                                n => n.Instructions.Where(ins => ins.Instruction == next_instruction).Any()).ToList();
-                            if (owner.Count != 1)
-                                throw new Exception("Cannot find instruction!");
-                            CFG.Vertex target_node = owner.FirstOrDefault();
+                            var next_instruction = instructions_before_splits[next];
+                            var owner = next_instruction.Block;
+                            CFG.Vertex target_node = owner;
                             Cfg.AddEdge(new CFG.Edge(){From = node, To = target_node});
                         }
                         break;
@@ -446,26 +518,21 @@ namespace Campy.Compiler
                             // local variables are all accessible. So, we need to copy stack
                             // values around. In addition, we have to create a fall through
                             // even though there is stack unwinding.
-                            int next = method_definition.Body.Instructions.ToList().FindIndex(
-                                n =>
-                                {
-                                    var r = n == last_instruction.Instruction &&
-                                            n.Offset == last_instruction.Instruction.Offset
-                                        ;
-                                    return r;
-                                }
-                            );
+                            int next = instructions_before_splits.FindIndex(
+                                           n =>
+                                           {
+                                               var r = n == last_instruction;
+                                               return r;
+                                           }
+                                   );
                             if (next < 0)
                                 break;
                             next += 1;
-                            if (next >= method_definition.Body.Instructions.Count)
+                            if (next >= instructions_before_splits.Count)
                                 break;
-                            var next_instruction = method_definition.Body.Instructions[next];
-                            var owner = Cfg.Vertices.Where(
-                                n => n.Instructions.Where(ins => ins.Instruction == next_instruction).Any()).ToList();
-                            if (owner.Count != 1)
-                                throw new Exception("Cannot find instruction!");
-                            CFG.Vertex target_node = owner.FirstOrDefault();
+                            var next_instruction = instructions_before_splits[next];
+                            var owner = next_instruction.Block;
+                            CFG.Vertex target_node = owner;
                             Cfg.AddEdge(new CFG.Edge() { From = node, To = target_node });
                         }
                         break;

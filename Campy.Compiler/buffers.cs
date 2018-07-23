@@ -1272,7 +1272,7 @@
         /// </summary>
         public IntPtr New(int bytes)
         {
-            if (true)
+            if (JITER.using_cuda)
             {
                 // Let's try allocating a block of memory on the host. cuMemHostAlloc allocates bytesize
                 // bytes of host memory that is page-locked and accessible to the device.
@@ -1298,20 +1298,21 @@
             //    else System.Console.WriteLine("Did not work.");
             //}
 
-//            {
-//                // Allocate Unified Memory.
-//                var size = bytes;
-//                var res = Cuda.cuMemAllocManaged(out IntPtr pointer, (uint)size, (uint)Swigged.Cuda.CUmemAttach_flags.CU_MEM_ATTACH_GLOBAL);
-//                if (Campy.Utils.Options.IsOn("memory_trace"))
-//                    System.Console.WriteLine("Cu Alloc (" + bytes + " bytes) " + pointer);
-//                Utils.CudaHelpers.CheckCudaError(res);
-//                return pointer;
-//            }
+            //            {
+            //                // Allocate Unified Memory.
+            //                var size = bytes;
+            //                var res = Cuda.cuMemAllocManaged(out IntPtr pointer, (uint)size, (uint)Swigged.Cuda.CUmemAttach_flags.CU_MEM_ATTACH_GLOBAL);
+            //                if (Campy.Utils.Options.IsOn("memory_trace"))
+            //                    System.Console.WriteLine("Cu Alloc (" + bytes + " bytes) " + pointer);
+            //                Utils.CudaHelpers.CheckCudaError(res);
+            //                return pointer;
+            //            }
 
-            //if (false)
-            //{
-            //    return Marshal.AllocHGlobal(bytes);
-            //}
+            if (!JITER.using_cuda)
+            {
+                return Marshal.AllocHGlobal(bytes);
+            }
+            return IntPtr.Zero;
         }
 
         public IntPtr New(object obj)

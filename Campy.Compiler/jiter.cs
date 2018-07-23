@@ -886,6 +886,7 @@ namespace Campy.Compiler
         private CFG _mcfg;
         public int _start_index;
         private static bool init;
+        public static bool using_cuda = true;
         private Dictionary<MethodDefinition, IntPtr> method_to_image;
         private bool done_major_init;
         private static JITER _singleton;
@@ -1017,9 +1018,16 @@ namespace Campy.Compiler
         {
             // Initialize CUDA if it hasn't been done before.
             if (init) return;
-            Utils.CudaHelpers.CheckCudaError(Cuda.cuInit(0));
-            Utils.CudaHelpers.CheckCudaError(Cuda.cuDevicePrimaryCtxReset(0));
-            Utils.CudaHelpers.CheckCudaError(Cuda.cuCtxCreate_v2(out CUcontext pctx, 0, 0));
+            try
+            {
+                Utils.CudaHelpers.CheckCudaError(Cuda.cuInit(0));
+                Utils.CudaHelpers.CheckCudaError(Cuda.cuDevicePrimaryCtxReset(0));
+                Utils.CudaHelpers.CheckCudaError(Cuda.cuCtxCreate_v2(out CUcontext pctx, 0, 0));
+            }
+            catch (Exception e)
+            {
+                using_cuda = false;
+            }
             init = true;
         }
 

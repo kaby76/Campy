@@ -27,6 +27,7 @@
         public static List<INST> CallInstructions { get; private set; } = new List<INST>();
         public override string ToString() { return Instruction.ToString(); }
         public Mono.Cecil.Cil.OpCode OpCode { get { return Instruction.OpCode; } }
+        public int Offset { get { return Instruction.Offset; } }
         public object Operand { get { return Instruction.Operand; } }
         public static int instruction_id = 1;
         public BuilderRef Builder { get { return Block.LlvmInfo.Builder; } }
@@ -1318,7 +1319,7 @@
             object method = this.Operand;
             if (method as Mono.Cecil.MethodReference == null) throw new Exception();
             Mono.Cecil.MethodReference orig_mr = method as Mono.Cecil.MethodReference;
-            var mr = orig_mr.FixGenericMethods();
+            var mr = orig_mr;
 
             bool has_this = false;
             if (mr.HasThis) has_this = true;
@@ -1354,6 +1355,8 @@
                     new_inst.Replace(new_mono_inst);
                 }
             }
+
+            mr = mr.FixGenericMethods();
 
             {
                 var name = JITER.MethodName(mr);

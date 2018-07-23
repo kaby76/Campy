@@ -54,6 +54,16 @@ namespace Campy.Compiler
             throw new Exception("Unknown change set.");
         }
 
+        public List<Vertex> PeekChangeSet(int num)
+        {
+            if (_change_set.ContainsKey(num))
+            {
+                List<CFG.Vertex> list = _change_set[num];
+                return list;
+            }
+            throw new Exception("Unknown change set.");
+        }
+
         public override Vertex AddVertex(Vertex v)
         {
             foreach (var vertex in Vertices)

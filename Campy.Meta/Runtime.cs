@@ -106,6 +106,7 @@
 
         public static ModuleRef global_llvm_module;
         public static List<ModuleRef> all_llvm_modules;
+        public static Mono.Cecil.Cil.ILProcessor worker;
         public static Dictionary<string, ValueRef> functions_in_internal_bcl_layer;
         private static Dictionary<string, TypeRef> _ptx_type_to_llvm_typeref = new Dictionary<string, TypeRef>()
         {
@@ -770,16 +771,17 @@
                 {
                     object method = i.Instruction.Operand;
                     var method_reference = method as Mono.Cecil.MethodReference;
-                    TypeReference mr_dt = method_reference.DeclaringType;
-                    method_reference = method_reference.FixGenericMethods();
-                    if (method_reference.ContainsGenericParameter)
-                        throw new Exception("method reference contains generic " + method_reference.FullName);
+                    //TypeReference mr_dt = method_reference.DeclaringType;
+                    //method_reference = method_reference.FixGenericMethods();
+                    //if (method_reference.ContainsGenericParameter)
+                    //    throw new Exception("method reference contains generic " + method_reference.FullName);
                     var bcl_substitute = SubstituteMethod(method_reference);
                     if (bcl_substitute != null)
                     {
+                        if (worker == null)
+                            worker = bcl_substitute.Resolve().Body.GetILProcessor();
                         CallSite cs = new CallSite(typeof(void).ToMonoTypeReference());
-                       // var worker = body.GetILProcessor();
-                        Instruction new_inst = null;// worker.Create(i.Instruction.OpCode, bcl_substitute);
+                        Instruction new_inst = worker.Create(i.Instruction.OpCode, bcl_substitute);
                         new_inst.Offset = i.Instruction.Offset;
                         i.Replace(new_inst);
                     }
