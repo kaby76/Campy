@@ -41,17 +41,17 @@ namespace Campy.Utils
             _items.AddRange(other._items);
         }
 
-        public int Size()
+        public virtual int Size()
         {
             return _top;
         }
 
-        public int Count
+        public virtual int Count
         {
             get { return _top; }
         }
 
-        public T Pop()
+        public virtual T Pop()
         {
             if (_top >= _size)
             {
@@ -74,7 +74,7 @@ namespace Campy.Utils
             }
         }
 
-        public T this[int n]
+        public virtual T this[int n]
         {
             get
             {
@@ -86,7 +86,7 @@ namespace Campy.Utils
             }
         }
 
-        public T PeekTop(int n = 0)
+        public virtual T PeekTop(int n = 0)
         {
             if (_top >= _size)
             {
@@ -107,7 +107,7 @@ namespace Campy.Utils
             }
         }
 
-        public T PeekBottom(int n)
+        public virtual T PeekBottom(int n)
         {
             if (_top >= _size)
             {
@@ -122,7 +122,7 @@ namespace Campy.Utils
             return cur;
         }
 
-        public void Push(T value)
+        public virtual void Push(T value)
         {
             if (_top >= _size)
             {
@@ -134,7 +134,7 @@ namespace Campy.Utils
             _items[_top++] = value;
         }
 
-        public void Push(IEnumerable<T> collection)
+        public virtual void Push(IEnumerable<T> collection)
         {
             foreach (T t in collection)
             {
@@ -149,7 +149,7 @@ namespace Campy.Utils
             }
         }
 
-        public void PushMultiple(params T[] values)
+        public virtual void PushMultiple(params T[] values)
         {
             int count = values.Length;
             for (int i = 0; i < count; i++)
@@ -158,13 +158,13 @@ namespace Campy.Utils
             }
         }
 
-        public void EnqueueTop(T value)
+        public virtual void EnqueueTop(T value)
         {
             // Same as "Push(value)".
             Push(value);
         }
 
-        public void EnqueueBottom(T value)
+        public virtual void EnqueueBottom(T value)
         {
             if (_top >= _size)
             {
@@ -178,13 +178,13 @@ namespace Campy.Utils
             ++_top;
         }
 
-        public T DequeueTop()
+        public virtual T DequeueTop()
         {
             // Same as "Pop()".
             return Pop();
         }
 
-        public T DequeueBottom()
+        public virtual T DequeueBottom()
         {
             if (_top >= _size)
             {
@@ -206,12 +206,12 @@ namespace Campy.Utils
             }
         }
 
-        public bool Contains(T item)
+        public virtual bool Contains(T item)
         {
             return _items.Contains(item);
         }
 
-        public System.Collections.Generic.IEnumerator<T> GetEnumerator()
+        public virtual System.Collections.Generic.IEnumerator<T> GetEnumerator()
         {
             for (int i = _top - 1; i >= 0; i--)
             {
@@ -219,13 +219,13 @@ namespace Campy.Utils
             }
         }
 
-        public ListSection<T> Section(int start, int length)
+        public virtual ListSection<T> Section(int start, int length)
         {
             ListSection<T> result = new ListSection<T>(_items, start, length);
             return result;
         }
 
-        public ListSection<T> Section(int length)
+        public virtual ListSection<T> Section(int length)
         {
             ListSection<T> result = new ListSection<T>(_items, this._top, length);
             return result;

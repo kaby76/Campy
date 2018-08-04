@@ -39,9 +39,9 @@ namespace Campy.Compiler
             return weeded;
         }
 
-        private static void InitStateGenerics(STATE<TypeReference> state,
-            Dictionary<CFG.Vertex, STATE<TypeReference>> states_in,
-            Dictionary<CFG.Vertex, STATE<TypeReference>> states_out,
+        private static void InitStateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state,
+            Dictionary<CFG.Vertex, STATE<TypeReference, SafeStackQueue<TypeReference>>> states_in,
+            Dictionary<CFG.Vertex, STATE<TypeReference, SafeStackQueue<TypeReference>>> states_out,
             CFG.Vertex bb)
         {
             int in_level = -1;
@@ -86,12 +86,12 @@ namespace Campy.Compiler
             {
                 if (!bb.IsEntry) throw new Exception("Cannot handle dead code blocks.");
                 if (has_this)
-                    state._stack.Push(bb._method_definition.DeclaringType.InstantiateGeneric(bb._original_method_reference));
+                    state._stack.Push(bb._original_method_reference.DeclaringType);
 
                 for (int i = 0; i < bb._method_definition.Parameters.Count; ++i)
                 {
-                    var par = bb._method_definition.Parameters[i];
-                    var type = par.ParameterType.InstantiateGeneric(bb._original_method_reference);
+                    var par = bb._original_method_reference.Parameters[i];
+                    var type = par.ParameterType;
                     if (Campy.Utils.Options.IsOn("jit_trace"))
                         System.Console.WriteLine(par);
                     state._stack.Push(type);
@@ -108,7 +108,7 @@ namespace Campy.Compiler
                 // Set up locals. I'm making an assumption that there is a 
                 // one to one and in order mapping of the locals with that
                 // defined for the method body by Mono.
-                Collection<VariableDefinition> variables = bb.RewrittenCalleeSignature.Resolve().Body.Variables;
+                Collection<VariableDefinition> variables = bb._original_method_reference.Resolve().Body.Variables;
                 state._locals = state._stack.Section((int) state._stack.Count, locals);
                 for (int i = 0; i < locals; ++i)
                 {
@@ -210,9 +210,9 @@ namespace Campy.Compiler
             var order = ordered_list.Where(v => work_names.Contains(v.Name)).ToList();
 
             Dictionary<CFG.Vertex, bool> visited = new Dictionary<CFG.Vertex, bool>();
-            Dictionary<CFG.Vertex, STATE<TypeReference>> states_in = new Dictionary<CFG.Vertex, STATE<TypeReference>>();
-            Dictionary<CFG.Vertex, STATE<TypeReference>>
-                states_out = new Dictionary<CFG.Vertex, STATE<TypeReference>>();
+            Dictionary<CFG.Vertex, STATE<TypeReference, SafeStackQueue<TypeReference>>> states_in = new Dictionary<CFG.Vertex, STATE<TypeReference, SafeStackQueue<TypeReference>>>();
+            Dictionary<CFG.Vertex, STATE<TypeReference, SafeStackQueue<TypeReference>>>
+                states_out = new Dictionary<CFG.Vertex, STATE<TypeReference, SafeStackQueue<TypeReference>>>();
 
             try
             {
@@ -226,7 +226,7 @@ namespace Campy.Compiler
 
                     // Create new stack state with predecessor information, basic block/function
                     // information.
-                    var state_in = new STATE<TypeReference>(visited, states_in, states_out, bb, InitStateGenerics);
+                    var state_in = new STATE<TypeReference, SafeStackQueue<TypeReference>>(visited, states_in, states_out, bb, InitStateGenerics);
 
                     if (Campy.Utils.Options.IsOn("state_computation_trace"))
                     {
@@ -234,7 +234,7 @@ namespace Campy.Compiler
                         state_in.OutputTrace(new String(' ', 4));
                     }
 
-                    var state_out = new STATE<TypeReference>(state_in);
+                    var state_out = new STATE<TypeReference, SafeStackQueue<TypeReference>>(state_in);
                     states_in[bb] = state_in;
                     states_out[bb] = state_out;
 
@@ -251,10 +251,7 @@ namespace Campy.Compiler
                         if (Campy.Utils.Options.IsOn("jit_trace"))
                             System.Console.WriteLine(inst);
                         last_inst = inst;
-                        inst = inst.GenerateGenerics(state_out);
-                        // Rewrite instruction.
-                        if (inst != last_inst)
-                            bb.Instructions[i] = inst;
+                        inst.GenerateGenerics(state_out);
                         if (Campy.Utils.Options.IsOn("state_computation_trace"))
                             state_out.OutputTrace(new String(' ', 4));
                     }
@@ -299,12 +296,11 @@ namespace Campy.Compiler
                 var ret = tr.FullName != "System.Void";
                 bb.HasScalarReturnValue = ret && !tr.IsStruct();
                 bb.HasStructReturnValue = ret && tr.IsStruct();
-                bb.RewrittenCalleeSignature = bb._method_definition;
                 bb.HasThis = bb._method_definition.HasThis;
                 bb.StackNumberOfArguments = bb._method_definition.Parameters.Count
                                             + (bb.HasThis ? 1 : 0)
                                             + (bb.HasStructReturnValue ? 1 : 0);
-                Mono.Cecil.MethodReference mr = bb.RewrittenCalleeSignature;
+                Mono.Cecil.MethodReference mr = bb._original_method_reference;
                 int locals = mr.Resolve().Body.Variables.Count;
                 bb.StackNumberOfLocals = locals;
             }
@@ -451,9 +447,9 @@ namespace Campy.Compiler
             return basic_blocks_to_compile;
         }
 
-        private static void InitState(STATE<VALUE> state,
-            Dictionary<CFG.Vertex, STATE<VALUE>> states_in,
-            Dictionary<CFG.Vertex, STATE<VALUE>> states_out,
+        private static void InitState(STATE<VALUE, StackQueue<VALUE>> state,
+            Dictionary<CFG.Vertex, STATE<VALUE, StackQueue<VALUE>>> states_in,
+            Dictionary<CFG.Vertex, STATE<VALUE, StackQueue<VALUE>>> states_out,
             CFG.Vertex bb)
         {
             int in_level = -1;
@@ -522,7 +518,7 @@ namespace Campy.Compiler
 
                 // Set up locals. I'm making an assumption that the locals here
                 // correspond exactly with those reported by Mono.
-                Collection<VariableDefinition> variables = bb.RewrittenCalleeSignature.Resolve().Body.Variables;
+                Collection<VariableDefinition> variables = bb._original_method_reference.Resolve().Body.Variables;
                 // Convert any generic parameters to generic instance reference.
                 for (int i = 0; i < variables.Count; ++i)
                 {
@@ -670,8 +666,8 @@ namespace Campy.Compiler
             var order = ordered_list.Where(v => work_names.Contains(v.Name)).ToList();
 
             Dictionary<CFG.Vertex, bool> visited = new Dictionary<CFG.Vertex, bool>();
-            Dictionary<CFG.Vertex, STATE<VALUE>> states_in = new Dictionary<CFG.Vertex, STATE<VALUE>>();
-            Dictionary<CFG.Vertex, STATE<VALUE>> states_out = new Dictionary<CFG.Vertex, STATE<VALUE>>();
+            Dictionary<CFG.Vertex, STATE<VALUE, StackQueue<VALUE>>> states_in = new Dictionary<CFG.Vertex, STATE<VALUE, StackQueue<VALUE>>>();
+            Dictionary<CFG.Vertex, STATE<VALUE, StackQueue<VALUE>>> states_out = new Dictionary<CFG.Vertex, STATE<VALUE, StackQueue<VALUE>>>();
 
             // Emit LLVM IR code, based on state and per-instruction simulation on that state.
             foreach (var ob in order)
@@ -683,7 +679,7 @@ namespace Campy.Compiler
 
                 // Create new stack state with predecessor information, basic block/function
                 // information.
-                var state_in = new STATE<VALUE>(visited, states_in, states_out, bb, InitState);
+                var state_in = new STATE<VALUE, StackQueue<VALUE>>(visited, states_in, states_out, bb, InitState);
 
                 if (Campy.Utils.Options.IsOn("state_computation_trace"))
                 {
@@ -691,7 +687,7 @@ namespace Campy.Compiler
                     state_in.OutputTrace(new String(' ', 4));
                 }
 
-                var state_out = new STATE<VALUE>(state_in);
+                var state_out = new STATE<VALUE, StackQueue<VALUE>>(state_in);
                 states_in[bb] = state_in;
                 states_out[bb] = state_out;
 
@@ -709,7 +705,7 @@ namespace Campy.Compiler
                         System.Console.WriteLine(inst);
                     last_inst = inst;
                     inst.DebuggerInfo();
-                    inst = inst.Convert(state_out);
+                    inst.Convert(state_out);
                     if (Campy.Utils.Options.IsOn("state_computation_trace"))
                         state_out.OutputTrace(new String(' ', 4));
                 }

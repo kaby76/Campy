@@ -23,26 +23,101 @@ using Swigged.LLVM;
 
 namespace Campy.Meta
 {
+    public class YOYO
+    {
+
+        public static List<GenericParameter> GetContainedGenericParameters(MemberReference type, List<GenericParameter> list = null)
+        {
+            if (list == null) list = new List<GenericParameter>();
+            if (type.DeclaringType != null)
+            {
+                GetContainedGenericParameters(type.DeclaringType, list);
+            }
+            if (type is FieldReference field_reference)
+            {
+                GetContainedGenericParameters(field_reference.FieldType, list);
+                return list;
+            }
+            if (type is FunctionPointerType function_pointer_type)
+            {
+                foreach (ParameterDefinition pd in function_pointer_type.Parameters)
+                {
+                    GetContainedGenericParameters(pd.ParameterType, list);
+                }
+                GetContainedGenericParameters(function_pointer_type.ReturnType, list);
+                return list;
+            }
+            if (type is GenericInstanceMethod gim)
+            {
+                foreach (var a in gim.GenericArguments)
+                    GetContainedGenericParameters(a, list);
+                return list;
+            }
+            if (type is GenericInstanceType git)
+            {
+                foreach (var a in git.GenericArguments)
+                    GetContainedGenericParameters(a, list);
+                return list;
+            }
+            if (type is GenericParameter gp)
+            {
+                list.Add(gp);
+                return list;
+            }
+            if (type is MethodReference method_reference)
+            {
+                foreach (ParameterDefinition pd in method_reference.Parameters)
+                {
+                    GetContainedGenericParameters(pd.ParameterType, list);
+                }
+                GetContainedGenericParameters(method_reference.ReturnType, list);
+                return list;
+            }
+            if (type is MethodSpecification method_specification)
+            {
+                GetContainedGenericParameters(method_specification.ElementMethod, list);
+                return list;
+            }
+            if (type is OptionalModifierType modifier_type)
+            {
+                GetContainedGenericParameters(modifier_type.ModifierType, list);
+                return list;
+            }
+            if (type is RequiredModifierType required_modifier_type)
+            {
+                GetContainedGenericParameters(required_modifier_type.ModifierType, list);
+                return list;
+            }
+            if (type is TypeSpecification type_specification)
+            {
+                GetContainedGenericParameters(type_specification.ElementType, list);
+                return list;
+            }
+            return null;
+        }
+    }
+
     public static class METAHELPER
     {
 
         private static List<TypeDefinition> _cache = new List<TypeDefinition>();
 
-        public static TypeReference ConvertGenericParameterToTypeReference(TypeReference type,
-            Collection<TypeReference> generic_arguments)
+        public static TypeReference Deresolve(this TypeReference type,
+            TypeReference context,
+            TypeReference argument_context)
         {
-            if (type as GenericParameter != null)
+            if (!type.ContainsGenericParameter) return type;
+            var gps = YOYO.GetContainedGenericParameters(type);
+            bool method_defined = gps.Where(t => t.DeclaringMethod != null).Any();
+            bool type_defined = gps.Where(t => t.DeclaringType != null).Any();
+            if (method_defined && type_defined)
             {
-                var gp = type as GenericParameter;
-                var num = gp.Position;
-                var yo = generic_arguments.ToArray()[num];
-                type = yo;
             }
             if (type.IsArray)
             {
                 var array_type = type as Mono.Cecil.ArrayType;
                 var element_type = array_type.ElementType;
-                var new_element_type = ConvertGenericParameterToTypeReference(element_type, generic_arguments);
+                var new_element_type = Deresolve(element_type, context, argument_context);
                 if (element_type != new_element_type)
                 {
                     var new_array_type = new ArrayType(new_element_type,
@@ -50,55 +125,18 @@ namespace Campy.Meta
                     type = new_array_type;
                 }
             }
-
-            if (type as GenericInstanceType != null)
-            {
-                // For generic instance types, it could contain a generic parameter.
-                // Substitute parameter if needed.
-                var git = type as GenericInstanceType;
-                var args = git.GenericArguments;
-                var new_args = git.GenericArguments.ToArray();
-                for (int i = 0; i < new_args.Length; ++i)
-                {
-                    var arg = args[i];
-                    var new_arg = ConvertGenericParameterToTypeReference(arg, generic_arguments);
-                    git.GenericArguments[i] = new_arg;
-                }
-            }
-            return type;
-        }
-
-        public static TypeReference ConvertGenericParameterToTypeReference(TypeReference type,
-            params TypeReference[] generic_arguments)
-        {
-            if (type as GenericParameter != null)
-            {
-                var gp = type as GenericParameter;
-                var num = gp.Position;
-                var yo = generic_arguments.ToArray()[num];
-                type = yo;
-            }
-            if (type.IsArray)
-            {
-                var array_type = type as Mono.Cecil.ArrayType;
-                var element_type = array_type.ElementType;
-                var new_element_type = ConvertGenericParameterToTypeReference(element_type, generic_arguments);
-                if (element_type != new_element_type)
-                {
-                    var new_array_type = new ArrayType(new_element_type,
-                        array_type.Rank);
-                    type = new_array_type;
-                }
-            }
-            if (type as ByReferenceType != null)
+            else if (type as ByReferenceType != null)
             {
                 var gp = type as ByReferenceType;
                 var x = gp.GetElementType();
-                var new_x = ConvertGenericParameterToTypeReference(x, generic_arguments);
-                var new_type = new ByReferenceType(new_x);
-                type = new_type;
+                if (method_defined && argument_context as ByReferenceType != null)
+                {
+                    var ar = argument_context as ByReferenceType;
+                    argument_context = ar.ElementType;
+                }
+                type = new ByReferenceType(Deresolve(x, context, argument_context));
             }
-            if (type as GenericInstanceType != null)
+            else if (type as GenericInstanceType != null)
             {
                 // For generic instance types, it could contain a generic parameter.
                 // Substitute parameter if needed.
@@ -108,83 +146,101 @@ namespace Campy.Meta
                 for (int i = 0; i < new_args.Length; ++i)
                 {
                     var arg = args[i];
-                    var new_arg = ConvertGenericParameterToTypeReference(arg, generic_arguments);
+                    var new_arg = arg.Deresolve(context, argument_context);
                     git.GenericArguments[i] = new_arg;
                 }
+            }
+            else if (type as GenericParameter != null)
+            {
+                var gp = type as GenericParameter;
+                if (gp.DeclaringMethod != null)
+                {
+                    type = argument_context;
+                }
+                else if (gp.DeclaringType != null)
+                {
+                    var context_git = context as GenericInstanceType;
+                    if (context_git == null)
+                        throw new Exception("Can't do much with type that contains generics without context.");
+                    var generic_arguments = context_git.GenericArguments;
+                    var generic_parameters = type.GenericParameters;
+                    if (generic_arguments.Count() > 0)
+                    {
+                        // Try to rewrite with parameter with argument.
+                        var num = gp.Position;
+                        var yo = generic_arguments.ToArray()[num];
+                        type = yo;
+                    }
+                }
+            }
+
+            if (type.ContainsGenericParameter)
+            {
+                throw new Exception("Deresolve did not work.");
             }
             return type;
         }
 
+        //public static MethodReference MakeMethodReference(this MethodDefinition method)
+        //{
+        //    var reference = new MethodReference(method.Name, method.ReturnType, method.DeclaringType);
+        //    reference.MetadataToken = method.MetadataToken;
+        //    reference.HasThis = method.HasThis;
+        //    reference.ExplicitThis = method.ExplicitThis;
+        //    reference.CallingConvention = method.CallingConvention;
 
-        public static MethodReference MakeMethodReference(this MethodDefinition method)
-        {
-            var reference = new MethodReference(method.Name, method.ReturnType, method.DeclaringType);
-            reference.MetadataToken = method.MetadataToken;
-            reference.HasThis = method.HasThis;
-            reference.ExplicitThis = method.ExplicitThis;
-            reference.CallingConvention = method.CallingConvention;
+        //    foreach (ParameterDefinition parameter in method.Parameters)
+        //        reference.Parameters.Add(new ParameterDefinition(parameter.ParameterType));
+        //    return reference;
+        //}
 
-            foreach (ParameterDefinition parameter in method.Parameters)
-                reference.Parameters.Add(new ParameterDefinition(parameter.ParameterType));
-            return reference;
-        }
+        //public static MethodReference MakeMethodReference(this MethodReference method, TypeReference declaringType)
+        //{
+        //    var reference = new MethodReference(method.Name, method.ReturnType, declaringType);
+        //    reference.MetadataToken = method.MetadataToken;
+        //    reference.HasThis = method.HasThis;
+        //    reference.ExplicitThis = method.ExplicitThis;
+        //    reference.CallingConvention = method.CallingConvention;
+        //    foreach (ParameterDefinition parameter in method.Parameters)
+        //        reference.Parameters.Add(new ParameterDefinition(parameter.ParameterType));
+        //    return reference;
+        //}
 
-        public static MethodReference MakeMethodReference(this MethodReference method, TypeReference declaringType)
-        {
-            var reference = new MethodReference(method.Name, method.ReturnType, declaringType);
-            reference.MetadataToken = method.MetadataToken;
-            reference.HasThis = method.HasThis;
-            reference.ExplicitThis = method.ExplicitThis;
-            reference.CallingConvention = method.CallingConvention;
-            foreach (ParameterDefinition parameter in method.Parameters)
-                reference.Parameters.Add(new ParameterDefinition(parameter.ParameterType));
-            return reference;
-        }
+        //public static TypeReference MakeGenericType(TypeReference type, params
+        //    TypeReference[] arguments)
+        //{
+        //    if (type.GenericParameters.Count != arguments.Length)
+        //        throw new ArgumentException();
 
-        public static TypeReference MakeGenericType(TypeReference type, params
+        //    var instance = new GenericInstanceType(type);
+        //    foreach (var argument in arguments)
+        //        instance.GenericArguments.Add(argument);
+
+        //    return instance;
+        //}
+
+        public static MethodReference Deresolve(
+            this MethodReference self,
+            TypeReference declaring_type,
             TypeReference[] arguments)
         {
-            if (type.GenericParameters.Count != arguments.Length)
-                throw new ArgumentException();
-
-            var instance = new GenericInstanceType(type);
-            foreach (var argument in arguments)
-                instance.GenericArguments.Add(argument);
-
-            return instance;
-        }
-
-        public static MethodReference MakeHostInstanceGeneric(
-            MethodReference self,
-            params TypeReference[] args)
-        {
-            var reference = new MethodReference(
-                self.Name,
-                self.ReturnType,
-                self.DeclaringType.MakeGenericInstanceType(args))
+            string a = declaring_type.FullName;
+            if (a.Contains("List") || a.Contains("Dictionary"))
             {
-                HasThis = self.HasThis,
-                ExplicitThis = self.ExplicitThis,
-                CallingConvention = self.CallingConvention,
-                MetadataToken = self.MetadataToken
-            };
 
-            foreach (var parameter in self.Parameters)
-                reference.Parameters.Add(new ParameterDefinition(parameter.ParameterType));
+            }
 
-            foreach (var genericParam in self.GenericParameters)
-                reference.GenericParameters.Add(new GenericParameter(genericParam.Name, reference));
+            if (declaring_type.ContainsGenericParameter)
+                throw new Exception("Declaring type contains generic parameter.");
 
-            return reference;
-        }
+            var generic_type_of_declaring_type = declaring_type as GenericInstanceType;
+            Collection<TypeReference> generic_arguments = generic_type_of_declaring_type?.GenericArguments;
+            if (generic_arguments == null) generic_arguments = new Collection<TypeReference>();
 
-        public static MethodReference MakeAltInstanceGeneric(
-            MethodReference self,
-            params TypeReference[] generic_arguments)
-        {
-            TypeReference parent = self.DeclaringType;
-            if (self.DeclaringType.GenericParameters.Count != 0)
-                parent = self.DeclaringType.MakeGenericInstanceType(generic_arguments);
+            TypeReference parent = declaring_type;
+
+            //if (self.DeclaringType.GenericParameters.Count != 0)
+            //    parent = self.DeclaringType.MakeGenericInstanceType(args);
 
             var reference = new MethodReference(
                 self.Name,
@@ -196,9 +252,10 @@ namespace Campy.Meta
             reference.CallingConvention = self.CallingConvention;
             reference.MetadataToken = self.MetadataToken;
 
-            foreach (var parameter in self.Parameters)
+            for (int i = 0; i < self.Parameters.Count(); ++i)
             {
-                var yo = ConvertGenericParameterToTypeReference(parameter.ParameterType, generic_arguments);
+                var parameter = self.Parameters[i];
+                var yo = Deresolve(parameter.ParameterType, declaring_type, arguments[i]);
                 ParameterDefinition new_parameter_definition = new ParameterDefinition(yo);
                 reference.Parameters.Add(new_parameter_definition);
             }
@@ -206,11 +263,62 @@ namespace Campy.Meta
             foreach (var genericParam in self.GenericParameters)
                 reference.GenericParameters.Add(new GenericParameter(genericParam.Name, reference));
 
-            reference.ReturnType = ConvertGenericParameterToTypeReference(reference.ReturnType, generic_arguments);
+            reference.ReturnType = reference.ReturnType.Deresolve(declaring_type, null);
 
             var new_met = self.Module.ImportReference(reference);
+            if (new_met.ContainsGenericParameter)
+            {
+                throw new Exception("Deresolve did not work.");
+            }
 
             return new_met;
+        }
+
+        public static MethodReference SubstituteMethod2(this MethodReference method_reference)
+        {
+            // Can't do anything if method isn't associated with a type.
+            TypeReference declaring_type = method_reference.DeclaringType;
+            if (declaring_type == null)
+                return null;
+            TypeDefinition declaring_type_resolved = declaring_type.Resolve();
+            MethodDefinition method_definition_resolved = method_reference.Resolve();
+            TypeReference substituted_declaring_type = declaring_type.RewriteMonoTypeReference();
+            if (substituted_declaring_type != declaring_type)
+                throw new Exception("Wrong place to rewrite function.");
+            return method_reference;
+        }
+
+
+        public static MethodReference SubstituteMethod(
+            this MethodReference method_reference,
+            TypeReference parent,
+            TypeReference[] method_arguments)
+        {
+            TypeReference declaring_type = method_reference.DeclaringType;
+            if (declaring_type == null) return null;
+            TypeReference substituted_declaring_type = declaring_type.RewriteMonoTypeReference();
+            if (substituted_declaring_type.ContainsGenericParameter)
+                substituted_declaring_type = substituted_declaring_type.Deresolve(parent, null);
+            TypeDefinition substituted_declaring_type_definition = substituted_declaring_type.Resolve();
+            if (substituted_declaring_type_definition == null) return null;
+            var method_definition_resolved = method_reference.Resolve();
+            var substituted_method_definition = substituted_declaring_type_definition.Methods
+                .Where(m =>
+                {
+                    if (m.Name != method_definition_resolved.Name) return false;
+                    if (m.Parameters.Count != method_definition_resolved.Parameters.Count) return false;
+                    for (int i = 0; i < m.Parameters.Count; ++i)
+                    {
+                        // Should do a comparison of paramter types.
+                        var p1 = m.Parameters[i];
+                        var p2 = method_definition_resolved.Parameters[i];
+                    }
+                    return true;
+                }).FirstOrDefault();
+            if (substituted_method_definition == null)
+                throw new Exception("Cannot find " + method_definition_resolved.FullName);
+            var new_method_reference = substituted_method_definition.Deresolve(substituted_declaring_type, method_arguments);
+            return new_method_reference;
         }
 
 
@@ -236,9 +344,7 @@ namespace Campy.Meta
             var et = tr.GetElementType();
             if (tr.IsGenericInstance)
             {
-                var gtr = tr as GenericInstanceType;
-                var generic_arguments = gtr.GenericArguments;
-                var new_et = ConvertGenericParameterToTypeReference(et, generic_arguments);
+                var new_et = et.Deresolve(tr, null);
                 et = new_et;
             }
             if (tr.IsArray)
@@ -283,7 +389,7 @@ namespace Campy.Meta
                     var field_type = field.FieldType;
                     if (field_type.FullName == typeof(MulticastDelegate).FullName)
                         continue;
-                    var new_field_type = ConvertGenericParameterToTypeReference(field_type, generic_arguments);
+                    var new_field_type = field_type.Deresolve(tr, null);
                     var new_field_reference = new FieldReference(field.Name,
                         new_field_type,
                         tr);
@@ -304,16 +410,12 @@ namespace Campy.Meta
             return result;
         }
 
-        public static MethodReference FixGenericMethods(this MethodReference method_reference)
+        public static MethodReference FixGenericMethods(this MethodReference method_reference, MethodReference context)
         {
             if (method_reference == null) throw new Exception("Null method reference in FixGenericMethods");
             var result = method_reference;
             var declaring_type = method_reference.DeclaringType;
-            var generic_type_of_declaring_type = declaring_type as GenericInstanceType;
-            if (generic_type_of_declaring_type == null) return result;
-            var generic_arguments = generic_type_of_declaring_type.GenericArguments;
-            var args = generic_arguments.ToArray();
-            result = MakeAltInstanceGeneric(method_reference, args);
+            result = method_reference.Deresolve(declaring_type, null);
             if (result.ContainsGenericParameter)
                 throw new Exception("method reference contains generic " + result.FullName);
             return result;
@@ -353,6 +455,10 @@ namespace Campy.Meta
 
         public static TypeReference SubstituteMonoTypeReference(this Mono.Cecil.TypeReference type)
         {
+            string scope = type.Scope.Name;
+            if (scope.Contains("corlib") && !scope.Contains("mscorlib"))
+                return type;
+
             Mono.Cecil.ModuleDefinition campy_bcl_runtime = Campy.Meta.StickyReadMod.StickyReadModule(RUNTIME.FindCoreLib());
             // ImportReference does not work as expected because the scope of the type found isn't in the module.
             foreach (var tt in campy_bcl_runtime.Types)
@@ -973,17 +1079,14 @@ namespace Campy.Meta
 
         public static TypeReference InstantiateGeneric(this TypeReference type, MethodReference mr)
         {
-            if (type.IsGenericParameter)
+            if (!type.ContainsGenericParameter) return type;
+            var declaring_type = mr.DeclaringType;
+            if (declaring_type.IsGenericInstance)
             {
-                // Go to basic block and get type.
-                var declaring_type = mr.DeclaringType;
-                if (declaring_type.IsGenericInstance)
-                {
-                    var generic_type_of_declaring_type = declaring_type as GenericInstanceType;
-                    var generic_arguments = generic_type_of_declaring_type.GenericArguments;
-                    var new_arg = ConvertGenericParameterToTypeReference(type, generic_arguments);
-                    return new_arg;
-                }
+                var generic_type_of_declaring_type = declaring_type as GenericInstanceType;
+                var generic_arguments = generic_type_of_declaring_type.GenericArguments;
+                var new_arg = type.Deresolve(declaring_type, null);
+                return new_arg;
             }
             return type;
         }
@@ -999,7 +1102,7 @@ namespace Campy.Meta
                 {
                     var generic_type_of_declaring_type = declaring_type as GenericInstanceType;
                     var generic_arguments = generic_type_of_declaring_type.GenericArguments;
-                    var new_arg = ConvertGenericParameterToTypeReference(type, generic_arguments);
+                    var new_arg = type.Deresolve(declaring_type, null);
                     var new_var = new VariableDefinition(new_arg);
                     return new_var;
                 }
@@ -1018,7 +1121,7 @@ namespace Campy.Meta
                 {
                     var generic_type_of_declaring_type = declaring_type as GenericInstanceType;
                     var generic_arguments = generic_type_of_declaring_type.GenericArguments;
-                    var new_arg = ConvertGenericParameterToTypeReference(type, generic_arguments);
+                    var new_arg = type.Deresolve(declaring_type, null);
                     var new_var = new VariableDefinition(new_arg);
                     //new_var.IsPinned = variable.IsPinned;
                     var a = variable.GetType().SafeFields(System.Reflection.BindingFlags.Instance

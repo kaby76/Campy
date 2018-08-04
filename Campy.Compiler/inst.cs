@@ -141,13 +141,13 @@
 
         }
 
-        public virtual INST GenerateGenerics(STATE<TypeReference> state)
+        public virtual void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             throw new Exception("Must have an implementation for GenerateGenerics! The instruction is: "
                                 + this.ToString());
         }
 
-        public virtual unsafe INST Convert(STATE<VALUE> state)
+        public virtual unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
         {
             throw new Exception("Must have an implementation for Convert! The instruction is: "
                                 + this.ToString());
@@ -848,7 +848,7 @@
         {
         }
 
-        public override INST GenerateGenerics(STATE<TypeReference> state)
+        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var rhs = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -861,11 +861,9 @@
             var result = lhs;
 
             state._stack.Push(result);
-
-            return this;
         }
 
-        public override unsafe INST Convert(STATE<VALUE> state)
+        public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
         {
             var rhs = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -880,7 +878,6 @@
                 System.Console.WriteLine(result);
 
             state._stack.Push(result);
-            return Next;
         }
 
         class BinaryInstTable
@@ -1313,7 +1310,7 @@
         {
         }
 
-        public override INST GenerateGenerics(STATE<TypeReference> state)
+        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             INST new_inst = this;
             object method = this.Operand;
@@ -1327,63 +1324,56 @@
             bool is_explicit_this = mr.ExplicitThis;
             int xargs = (has_this && !is_explicit_this ? 1 : 0) + mr.Parameters.Count;
 
-            if (mr.DeclaringType != null && mr.DeclaringType.HasGenericParameters)
+            List<TypeReference> args = new List<TypeReference>();
+            for (int k = 0; k < xargs; ++k)
             {
-                // Instantiate a generic type and rewrite the
-                // instruction with new target.
-                // Try "this".
-                if (has_this && !is_explicit_this)
-                {
-                    // Grab "this" from stack and generate the type.
-                    var this_parameter = state._stack.PeekTop(xargs - 1);
-                    var declaring_type = mr.DeclaringType;
-                    var new_type = this_parameter;
+                var v = state._stack.Pop();
+                args.Insert(0, v);
+            }
+            var args_array = args.ToArray();
 
-                    // Get the method from the non-generic (real instance) type.
-                    mr = new_type.Resolve().Methods.Where(j =>
-                    {
-                        if (j.Name != mr.Name) return false;
-                        if (j.Parameters.Count != mr.Parameters.Count) return false;
-                        return true;
-                    }).First();
+            mr = mr.SubstituteMethod(this.Block._original_method_reference.DeclaringType, args_array);
 
-                    // Create new instruction to replace this one.
-                    var worker = this.Body.GetILProcessor();
-                    Instruction new_mono_inst = worker.Create(
-                        this.OpCode, mr);
-                    new_mono_inst.Offset = this.Instruction.Offset;
-                    new_inst.Replace(new_mono_inst);
-                }
+            if (mr.ReturnType.FullName != "System.Void")
+            {
+                state._stack.Push(mr.ReturnType);
             }
 
-            mr = mr.FixGenericMethods();
+            //var declaring_type = mr.DeclaringType;
+            //var declaring_type_resolved = declaring_type.Resolve();
+            //if (mr.ContainsGenericParameter)
+            //{
+            //    if (has_this && !is_explicit_this)
+            //    {
+            //        // Grab "this" from stack and generate the type.
+            //        var this_parameter = state._stack.PeekTop(xargs - 1);
+            //        var new_type = this_parameter;
 
-            {
-                var name = JITER.MethodName(mr);
+            //        // Get the method from the non-generic (real instance) type.
+            //        var new_mr = new_type.Resolve().Methods.Where(j =>
+            //        {
+            //            if (j.Name != mr.Name) return false;
+            //            if (j.Parameters.Count != mr.Parameters.Count) return false;
+            //            return true;
+            //        }).FirstOrDefault();
 
-                // Set up args, type casting if required.
-                for (int k = 0; k < xargs; ++k)
-                {
-                    var v = state._stack.Pop();
-                }
-
-                if (mr.ReturnType.FullName != "System.Void")
-                {
-                    state._stack.Push(mr.ReturnType);
-                }
-            }
+            //        // Create new method with "this".
+            //        if (new_mr != null)
+            //        {
+            //            mr = new_mr.Deresolve(new_type);
+            //        }
+            //    }
+            //}
 
             IMPORTER.Singleton().Add(mr);
-
-            return new_inst;
         }
 
-        public override unsafe INST Convert(STATE<VALUE> state)
+        public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
         {
             object method = this.Operand;
             if (method as Mono.Cecil.MethodReference == null) throw new Exception();
             Mono.Cecil.MethodReference orig_mr = method as Mono.Cecil.MethodReference;
-            var mr = orig_mr.FixGenericMethods();
+            var mr = orig_mr.FixGenericMethods(this.Block._original_method_reference);
 
             // Two general cases here: (1) Calling a method that is in CIL. (2) calling
             // a BCL method that has no CIL body.
@@ -1486,7 +1476,7 @@
                                 if (Campy.Utils.Options.IsOn("jit_trace"))
                                     System.Console.WriteLine(call.ToString());
                             }
-                            return Next;
+                            return;
                         }
                         else if (mr.Name == "Get")
                         {
@@ -1547,7 +1537,7 @@
                                 if (Campy.Utils.Options.IsOn("jit_trace"))
                                     System.Console.WriteLine(result);
                             }
-                            return Next;
+                            return;
                         }
                     }
                     throw new Exception("Unknown, internal, function for which there is no body and no C/C++ code. "
@@ -1796,8 +1786,6 @@
                 }
 
             }
-
-            return Next;
         }
     }
 
@@ -1813,17 +1801,15 @@
         {
         }
 
-        public override INST GenerateGenerics(STATE<TypeReference> state)
+        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var value = state._arguments[_arg];
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(value.ToString());
             state._stack.Push(value);
-
-            return this;
         }
 
-        public override unsafe INST Convert(STATE<VALUE> state)
+        public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
         {
             // For ldarg.1 of a compiler generated closure method, generate code
             // to create an int index for the thread.
@@ -1904,7 +1890,6 @@
                     System.Console.WriteLine(value.ToString());
                 state._stack.Push(value);
             }
-            return Next;
         }
     }
 
@@ -1916,26 +1901,22 @@
         {
         }
 
-        public override INST GenerateGenerics(STATE<TypeReference> state)
+        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var value = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(value);
 
             state._arguments[_arg] = value;
-
-            return this;
         }
 
-        public override unsafe INST Convert(STATE<VALUE> state)
+        public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
         {
             VALUE value = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(value);
 
             state._arguments[_arg] = value;
-
-            return Next;
         }
     }
 
@@ -1951,22 +1932,19 @@
         {
         }
 
-        public override INST GenerateGenerics(STATE<TypeReference> state)
+        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var value = typeof(System.Int32).ToMonoTypeReference();
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(value);
 
             state._stack.Push(value);
-
-            return this;
         }
 
-        public override unsafe INST Convert(STATE<VALUE> state)
+        public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
         {
             VALUE value = new VALUE(LLVM.ConstInt(LLVM.Int32Type(), (ulong)_arg, true));
             state._stack.Push(value);
-            return Next;
         }
     }
 
@@ -1978,22 +1956,19 @@
         {
         }
 
-        public override INST GenerateGenerics(STATE<TypeReference> state)
+        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var value = typeof(System.Int64).ToMonoTypeReference();
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(value);
 
             state._stack.Push(value);
-
-            return this;
         }
 
-        public override unsafe INST Convert(STATE<VALUE> state)
+        public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
         {
             VALUE value = new VALUE(LLVM.ConstInt(LLVM.Int64Type(), (ulong)_arg, true));
             state._stack.Push(value);
-            return Next;
         }
     }
 
@@ -2005,22 +1980,19 @@
         {
         }
 
-        public override INST GenerateGenerics(STATE<TypeReference> state)
+        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var value = typeof(System.Single).ToMonoTypeReference();
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(value);
 
             state._stack.Push(value);
-
-            return this;
         }
 
-        public override unsafe INST Convert(STATE<VALUE> state)
+        public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
         {
             VALUE value = new VALUE(LLVM.ConstReal(LLVM.FloatType(), _arg));
             state._stack.Push(value);
-            return Next;
         }
     }
 
@@ -2032,22 +2004,19 @@
         {
         }
 
-        public override INST GenerateGenerics(STATE<TypeReference> state)
+        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var value = typeof(System.Double).ToMonoTypeReference();
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(value);
 
             state._stack.Push(value);
-
-            return this;
         }
 
-        public override unsafe INST Convert(STATE<VALUE> state)
+        public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
         {
             VALUE value = new VALUE(LLVM.ConstReal(LLVM.DoubleType(), _arg));
             state._stack.Push(value);
-            return Next;
         }
     }
 
@@ -2062,18 +2031,16 @@
         {
         }
 
-        public override INST GenerateGenerics(STATE<TypeReference> state)
+        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var v = state._locals[_arg];
             state._stack.Push(v);
-            return this;
         }
 
-        public override unsafe INST Convert(STATE<VALUE> state)
+        public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
         {
             var v = state._locals[_arg];
             state._stack.Push(v);
-            return Next;
         }
     }
 
@@ -2088,18 +2055,16 @@
         {
         }
 
-        public override INST GenerateGenerics(STATE<TypeReference> state)
+        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var v = state._stack.Pop();
             state._locals[_arg] = v;
-            return this;
         }
 
-        public override unsafe INST Convert(STATE<VALUE> state)
+        public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
         {
             var v = state._stack.Pop();
             state._locals[_arg] = v;
-            return Next;
         }
     }
 
@@ -2143,15 +2108,14 @@
         public virtual PredicateType Predicate { get; set; }
         public virtual bool IsSigned { get; set; }
 
-        public override INST GenerateGenerics(STATE<TypeReference> state)
+        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var v2 = state._stack.Pop();
             var v1 = state._stack.Pop();
             state._stack.Push(v1);
-            return this;
         }
 
-        public override unsafe INST Convert(STATE<VALUE> state)
+        public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
         {
             // NB: the result of comparisons is a 32-bit quantity, not a bool
             // It must be 32 bits because that is what the spec says.
@@ -2198,8 +2162,6 @@
             else
                 throw new Exception("Unhandled binary operation for given types. "
                                     + t1 + " " + t2);
-
-            return Next;
         }
     }
 
@@ -2252,14 +2214,13 @@
         public virtual PredicateType Predicate { get; set; }
         public virtual bool IsSigned { get; set; }
 
-        public override INST GenerateGenerics(STATE<TypeReference> state)
+        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var v2 = state._stack.Pop();
             var v1 = state._stack.Pop();
-            return this;
         }
 
-        public override unsafe INST Convert(STATE<VALUE> state)
+        public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
         {
             VALUE v2 = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -2300,7 +2261,7 @@
                     s2 = true_node;
                 }
                 LLVM.BuildCondBr(Builder, cmp, s1.LlvmInfo.BasicBlock, s2.LlvmInfo.BasicBlock);
-                return Next;
+                return;
             }
             if (t1.isFloatingPointTy() && t2.isFloatingPointTy())
             {
@@ -2328,7 +2289,7 @@
                     s2 = true_node;
                 }
                 LLVM.BuildCondBr(Builder, cmp, s1.LlvmInfo.BasicBlock, s2.LlvmInfo.BasicBlock);
-                return Next;
+                return;
             }
             throw new Exception("Unhandled compare and branch.");
         }
@@ -2429,14 +2390,13 @@
         {
         }
 
-        public override INST GenerateGenerics(STATE<TypeReference> state)
+        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var s = state._stack.Pop();
             state._stack.Push(s);
-            return this;
         }
 
-        public override unsafe INST Convert(STATE<VALUE> state)
+        public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
         {
             VALUE s = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -2447,7 +2407,6 @@
                 System.Console.WriteLine(d.ToString());
 
             state._stack.Push(d);
-            return Next;
         }
     }
 
@@ -2490,16 +2449,17 @@
         {
         }
 
-        public override INST GenerateGenerics(STATE<TypeReference> state)
+        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var i = state._stack.Pop();
             var a = state._stack.Pop();
             var e = a.GetElementType();
-            state._stack.Push(e);
-            return this;
+            var ar = a as ArrayType;
+            var e2 = ar.ElementType;
+            state._stack.Push(e2);
         }
 
-        public override unsafe INST Convert(STATE<VALUE> state)
+        public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
         {
             VALUE i = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -2555,7 +2515,6 @@
             }
 
             state._stack.Push(new VALUE(load));
-            return Next;
         }
     }
 
@@ -2570,7 +2529,7 @@
         {
         }
 
-        public override INST GenerateGenerics(STATE<TypeReference> state)
+        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var v = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -2581,10 +2540,9 @@
                 System.Console.WriteLine(i.ToString());
 
             var a = state._stack.Pop();
-            return this;
         }
 
-        public override unsafe INST Convert(STATE<VALUE> state)
+        public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
         {
             VALUE v = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -2638,8 +2596,6 @@
             var store = LLVM.BuildStore(Builder, value, gep);
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(new VALUE(store));
-
-            return Next;
         }
     }
 
@@ -2651,7 +2607,7 @@
         {
         }
 
-        public override INST GenerateGenerics(STATE<TypeReference> state)
+        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var i = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -2667,10 +2623,9 @@
             var v = new Mono.Cecil.ByReferenceType(e);
 
             state._stack.Push(v);
-            return this;
         }
 
-        public override unsafe INST Convert(STATE<VALUE> state)
+        public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
         {
             VALUE i = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -2699,7 +2654,6 @@
                 System.Console.WriteLine(result);
 
             state._stack.Push(result);
-            return Next;
         }
     }
 
@@ -2710,7 +2664,7 @@
         {
         }
 
-        public override INST GenerateGenerics(STATE<TypeReference> state)
+        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {   // stfld, page 427 of ecma 335
             var v = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -2718,10 +2672,9 @@
             var o = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(o.ToString());
-            return this;
         }
 
-        public override unsafe INST Convert(STATE<VALUE> state)
+        public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
         {   // stfld, page 427 of ecma 335
             var operand = this.Operand;
             if (operand as FieldReference == null) throw new Exception("Error in parsing stfld.");
@@ -2891,8 +2844,6 @@
             {
                 throw new Exception("Value type ldfld not implemented!");
             }
-
-            return Next;
         }
     }
 
@@ -2907,15 +2858,14 @@
         {
         }
 
-        public override INST GenerateGenerics(STATE<TypeReference> state)
+        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var i = state._stack.Pop();
             var v = i.GetElementType();
             state._stack.Push(v);
-            return this;
         }
 
-        public override unsafe INST Convert(STATE<VALUE> state)
+        public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
         {
             VALUE v = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -2954,7 +2904,6 @@
             }
 
             state._stack.Push(new VALUE(load));
-            return Next;
         }
     }
 
@@ -2969,7 +2918,7 @@
         {
         }
 
-        public override INST GenerateGenerics(STATE<TypeReference> state)
+        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var v = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -2978,11 +2927,9 @@
             var o = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(o.ToString());
-
-            return this;
         }
 
-        public override unsafe INST Convert(STATE<VALUE> state)
+        public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
         {
             VALUE src = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -3009,8 +2956,6 @@
             var zz = LLVM.BuildStore(Builder, src.V, a.V);
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine("Store = " + new VALUE(zz).ToString());
-
-            return Next;
         }
     }
 
@@ -3262,16 +3207,16 @@
         {
         }
 
-        public override INST GenerateGenerics(STATE<TypeReference> state)
+        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var operand = this.Operand;
             var tr = operand as TypeReference;
+            tr = tr.InstantiateGeneric(this.Block._original_method_reference);
             var v = state._stack.Pop();
             state._stack.Push(tr);
-            return this;
         }
 
-        public override unsafe INST Convert(STATE<VALUE> state)
+        public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
         {
             ValueRef new_obj;
 
@@ -3314,8 +3259,6 @@
                 System.Console.WriteLine(new VALUE(new_obj));
 
             state._stack.Push(new VALUE(new_obj));
-
-            return Next;
         }
     }
 
@@ -3326,17 +3269,15 @@
         {
         }
 
-        public override INST GenerateGenerics(STATE<TypeReference> state)
+        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
-            return this;
         }
 
-        public override unsafe INST Convert(STATE<VALUE> state)
+        public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
         {
             var edge = Block._graph.SuccessorEdges(Block).ToList()[0];
             var s = edge.To;
             var br = LLVM.BuildBr(Builder, s.LlvmInfo.BasicBlock);
-            return Next;
         }
     }
 
@@ -3347,17 +3288,15 @@
         {
         }
 
-        public override INST GenerateGenerics(STATE<TypeReference> state)
+        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
-            return this;
         }
 
-        public override unsafe INST Convert(STATE<VALUE> state)
+        public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
         {
             var edge = Block._graph.SuccessorEdges(Block).ToList()[0];
             var s = edge.To;
             var br = LLVM.BuildBr(Builder, s.LlvmInfo.BasicBlock);
-            return Next;
         }
     }
 
@@ -3376,13 +3315,12 @@
         {
         }
 
-        public override INST GenerateGenerics(STATE<TypeReference> state)
+        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {   // brfalse, page 340 of ecma 335
             var v = state._stack.Pop();
-            return this;
         }
 
-        public override unsafe INST Convert(STATE<VALUE> state)
+        public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
         {   // brfalse, page 340 of ecma 335
             object operand = this.Operand;
             Instruction instruction = operand as Instruction;
@@ -3440,7 +3378,6 @@
             CFG.Vertex then_node = owner.FirstOrDefault();
             CFG.Vertex else_node = s1 == then_node ? s2 : s1;
             LLVM.BuildCondBr(Builder, condition, then_node.LlvmInfo.BasicBlock, else_node.LlvmInfo.BasicBlock);
-            return Next;
         }
     }
 
@@ -3451,13 +3388,12 @@
         {
         }
 
-        public override INST GenerateGenerics(STATE<TypeReference> state)
+        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {   // brfalse.s, page 340 of ecma 335
             var v = state._stack.Pop();
-            return this;
         }
 
-        public override unsafe INST Convert(STATE<VALUE> state)
+        public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
         {   // brfalse.s, page 340 of ecma 335
             object operand = this.Operand;
             Instruction instruction = operand as Instruction;
@@ -3515,7 +3451,6 @@
             CFG.Vertex then_node = owner.FirstOrDefault();
             CFG.Vertex else_node = s1 == then_node ? s2 : s1;
             LLVM.BuildCondBr(Builder, condition, then_node.LlvmInfo.BasicBlock, else_node.LlvmInfo.BasicBlock);
-            return Next;
         }
     }
 
@@ -3526,13 +3461,12 @@
         {
         }
 
-        public override INST GenerateGenerics(STATE<TypeReference> state)
+        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var v = state._stack.Pop();
-            return this;
         }
 
-        public override unsafe INST Convert(STATE<VALUE> state)
+        public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
         {   // brtrue, page 341 of ecma 335
             object operand = this.Operand;
             Instruction instruction = operand as Instruction;
@@ -3584,7 +3518,6 @@
             CFG.Vertex then_node = owner.FirstOrDefault();
             CFG.Vertex else_node = s1 == then_node ? s2 : s1;
             LLVM.BuildCondBr(Builder, condition, then_node.LlvmInfo.BasicBlock, else_node.LlvmInfo.BasicBlock);
-            return Next;
         }
     }
 
@@ -3595,13 +3528,12 @@
         {
         }
 
-        public override INST GenerateGenerics(STATE<TypeReference> state)
+        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var v = state._stack.Pop();
-            return this;
         }
 
-        public override unsafe INST Convert(STATE<VALUE> state)
+        public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
         {   // brtrue, page 341 of ecma 335
             object operand = this.Operand;
             Instruction instruction = operand as Instruction;
@@ -3652,7 +3584,6 @@
             CFG.Vertex then_node = owner.FirstOrDefault();
             CFG.Vertex else_node = s1 == then_node ? s2 : s1;
             LLVM.BuildCondBr(Builder, condition, then_node.LlvmInfo.BasicBlock, else_node.LlvmInfo.BasicBlock);
-            return Next;
         }
     }
 
@@ -3679,12 +3610,13 @@
         {
         }
 
-        public override unsafe INST Convert(STATE<VALUE> state)
+        public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
         {
             object method = this.Operand;
             if (method as Mono.Cecil.MethodReference == null) throw new Exception();
             Mono.Cecil.MethodReference orig_mr = method as Mono.Cecil.MethodReference;
-            var mr = orig_mr.FixGenericMethods();
+            orig_mr = orig_mr.SubstituteMethod(null, null);
+            var mr = orig_mr.FixGenericMethods(this.Block._original_method_reference);
             var token = 0x06000000 | mr.MetadataToken.RID;
             bool has_this = true;
             bool is_explicit_this = mr.ExplicitThis;
@@ -3811,14 +3743,21 @@
                 if (Campy.Utils.Options.IsOn("jit_trace"))
                     System.Console.WriteLine(call.ToString());
             }
-            return Next;
         }
     }
 
-    public class i_castclass : ConvertCallInst
+    public class i_castclass : INST
     {
         public i_castclass(Mono.Cecil.Cil.Instruction i)
             : base(i)
+        {
+        }
+
+        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
+        {
+        }
+
+        public override void Convert(STATE<VALUE, StackQueue<VALUE>> state)
         {
         }
     }
@@ -3886,6 +3825,15 @@
         public i_constrained(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+        }
+
+        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
+        {
+        }
+
+        public override void Convert(STATE<VALUE, StackQueue<VALUE>> state)
+        {
+            base.Convert(state);
         }
     }
 
@@ -4225,20 +4173,18 @@
         {
         }
 
-        public override INST GenerateGenerics(STATE<TypeReference> state)
+        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var rhs = state._stack.Pop();
             state._stack.Push(rhs);
             state._stack.Push(rhs);
-            return this;
         }
 
-        public override unsafe INST Convert(STATE<VALUE> state)
+        public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
         {
             var rhs = state._stack.Pop();
             state._stack.Push(rhs);
             state._stack.Push(rhs);
-            return Next;
         }
 
     }
@@ -4258,21 +4204,19 @@
         {
         }
 
-        public override INST GenerateGenerics(STATE<TypeReference> state)
+        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {   // leave.* page 372 of ecma 335
             var edges = Block._graph.SuccessorEdges(Block).ToList();
             if (edges.Count > 1)
                 throw new Exception("There shouldn't be more than one edge from a leave instruction.");
-            return this;
         }
 
-        public override unsafe INST Convert(STATE<VALUE> state)
+        public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
         {   // leave.* page 372 of ecma 335
             var edge = Block._graph.SuccessorEdges(Block).ToList()[0];
             var s = edge.To;
             // Build a branch to appease LLVM. CUDA does not seem to support exception handling.
             var br = LLVM.BuildBr(Builder, s.LlvmInfo.BasicBlock);
-            return Next;
         }
     }
 
@@ -4289,6 +4233,11 @@
         public i_initobj(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+        }
+
+        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
+        {   // initobj – initialize the value at an address page 400
+            var d = state._stack.Pop();
         }
     }
 
@@ -4938,7 +4887,7 @@
         {
         }
 
-        public override INST GenerateGenerics(STATE<TypeReference> state)
+        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {   // ldfld, page 406 of ecma 335
             var v = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -4946,12 +4895,11 @@
             var operand = this.Instruction.Operand;
             var field = operand as Mono.Cecil.FieldReference;
             if (field == null) throw new Exception("Cannot convert ldfld.");
-            var value = field.FieldType;
+            var value = field.FieldType.InstantiateGeneric(this.Block._original_method_reference);
             state._stack.Push(value);
-            return this;
         }
 
-        public override unsafe INST Convert(STATE<VALUE> state)
+        public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
         {   // ldfld, page 405 of ecma 335
             VALUE v = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -5147,7 +5095,6 @@
 
                 state._stack.Push(new VALUE(load));
             }
-            return Next;
         }
     }
 
@@ -5158,7 +5105,7 @@
         {
         }
 
-        public override INST GenerateGenerics(STATE<TypeReference> state)
+        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {   // ldflda, page 407 of ecma 335
             var v = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -5166,9 +5113,9 @@
             var operand = this.Instruction.Operand;
             var field = operand as Mono.Cecil.FieldReference;
             if (field == null) throw new Exception("Cannot convert ldfld.");
-            var value = new ByReferenceType(field.FieldType);
+            var type = field.FieldType.Deresolve(this.Block._original_method_reference.DeclaringType, null);
+            var value = new ByReferenceType(type);
             state._stack.Push(value);
-            return this;
         }
     }
 
@@ -5179,11 +5126,9 @@
         {
         }
 
-        public override INST GenerateGenerics(STATE<TypeReference> state)
+        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
-            
             state._stack.Push(typeof(System.UInt32).ToMonoTypeReference());
-            return Next;
         }
     }
 
@@ -5291,16 +5236,15 @@
         {
         }
 
-        public override INST GenerateGenerics(STATE<TypeReference> state)
+        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var a = state._stack.Pop();
             state._stack.Push(typeof(System.UInt32).ToMonoTypeReference());
-            return this;
         }
 
         // For array implementation, see https://www.codeproject.com/Articles/3467/Arrays-UNDOCUMENTED
 
-        public override unsafe INST Convert(STATE<VALUE> state)
+        public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
         {
             //VALUE v = state._stack.Pop();
             //if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -5424,7 +5368,6 @@
             }
 
             //state._stack.Push(new VALUE(load));
-            return Next;
         }
     }
 
@@ -5519,20 +5462,18 @@
         {
         }
 
-        public override INST GenerateGenerics(STATE<TypeReference> state)
+        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             state._stack.Push(typeof(System.Object).ToMonoTypeReference());
-            return this;
         }
 
-        public override unsafe INST Convert(STATE<VALUE> state)
+        public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
         {
             ValueRef nul = LLVM.ConstPointerNull(LLVM.PointerType(LLVM.VoidType(), 0));
             var v = new VALUE(nul);
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(v);
             state._stack.Push(v);
-            return Next;
         }
     }
 
@@ -5541,6 +5482,15 @@
         public i_ldobj(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+        }
+
+        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
+        {   // ldobj, copy a value from an address to the stack, ecma 335, page 409
+            var v = state._stack.Pop();
+            object operand = this.Operand;
+            var o = operand as TypeReference;
+            var p = o.Deresolve(this.Block._original_method_reference.DeclaringType, null);
+            state._stack.Push(p);
         }
     }
 
@@ -5551,7 +5501,7 @@
         {
         }
 
-        public override INST GenerateGenerics(STATE<TypeReference> state)
+        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {   // ldsfld (load static field), ecma 335 page 410
             var operand = this.Operand;
             var operand_field_reference = operand as FieldReference;
@@ -5559,10 +5509,9 @@
                 throw new Exception("Unknown field type");
             var ft = operand_field_reference.FieldType;
             state._stack.Push(ft);
-            return this;
         }
 
-        public override unsafe INST Convert(STATE<VALUE> state)
+        public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
         {   // ldsfld (load static field), ecma 335 page 410
             var operand = this.Operand;
             var mono_field_reference = operand as FieldReference;
@@ -5603,7 +5552,6 @@
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(new VALUE(load));
             state._stack.Push(new VALUE(load));
-            return Next;
         }
     }
 
@@ -5622,7 +5570,7 @@
         {
         }
 
-        public override INST GenerateGenerics(STATE<TypeReference> state)
+        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var v = typeof(string).ToMonoTypeReference();
             
@@ -5630,11 +5578,9 @@
                 System.Console.WriteLine(v.ToString());
 
             state._stack.Push(v);
-
-            return this;
         }
 
-        public override unsafe INST Convert(STATE<VALUE> state)
+        public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
         {
             // Call SystemString_FromCharPtrASCII and push new string object on the stack.
             // _Z29SystemString_FromCharPtrASCIIPc
@@ -5667,8 +5613,6 @@
 
                 state._stack.Push(new VALUE(cast));
             }
-
-            return Next;
         }
     }
 
@@ -5676,6 +5620,17 @@
     {
         public i_ldtoken(Mono.Cecil.Cil.Instruction i)
             : base(i)
+        {
+        }
+
+        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
+        {   // ldtoken (load token handle), ecma 335 page 413
+            var t = typeof(System.RuntimeTypeHandle).ToMonoTypeReference().SubstituteMonoTypeReference();
+            var v = t.Deresolve(this.Block._original_method_reference.DeclaringType, null);
+            state._stack.Push(v);
+        }
+
+        public override void Convert(STATE<VALUE, StackQueue<VALUE>> state)
         {
         }
     }
@@ -5695,20 +5650,18 @@
         {
         }
 
-        public override INST GenerateGenerics(STATE<TypeReference> state)
+        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {   // leave.* page 372 of ecma 335
             var edges = Block._graph.SuccessorEdges(Block).ToList();
             if (edges.Count > 1)
                 throw new Exception("There shouldn't be more than one edge from a leave instruction.");
-            return this;
         }
 
-        public override unsafe INST Convert(STATE<VALUE> state)
+        public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
         {   // leave.* page 372 of ecma 335
             var edge = Block._graph.SuccessorEdges(Block).ToList()[0];
             var s = edge.To;
             var br = LLVM.BuildBr(Builder, s.LlvmInfo.BasicBlock);
-            return Next;
         }
     }
 
@@ -5719,20 +5672,18 @@
         {
         }
 
-        public override INST GenerateGenerics(STATE<TypeReference> state)
+        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {   // leave.* page 372 of ecma 335
             var edges = Block._graph.SuccessorEdges(Block).ToList();
             if (edges.Count > 1)
                 throw new Exception("There shouldn't be more than one edge from a leave instruction.");
-            return this;
         }
 
-        public override unsafe INST Convert(STATE<VALUE> state)
+        public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
         {   // leave.* page 372 of ecma 335
             var edge = Block._graph.SuccessorEdges(Block).ToList()[0];
             var s = edge.To;
             var br = LLVM.BuildBr(Builder, s.LlvmInfo.BasicBlock);
-            return Next;
         }
     }
 
@@ -5783,7 +5734,7 @@
         {
         }
 
-        public override INST GenerateGenerics(STATE<TypeReference> state)
+        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var v = state._stack.Pop();
 
@@ -5791,11 +5742,9 @@
                 System.Console.WriteLine(v.ToString());
 
             state._stack.Push(v);
-
-            return this;
         }
 
-        public override unsafe INST Convert(STATE<VALUE> state)
+        public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
         {
             var rhs = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -5813,8 +5762,6 @@
                 System.Console.WriteLine(new VALUE(neg));
 
             state._stack.Push(new VALUE(neg));
-
-            return Next;
         }
     }
 
@@ -5825,19 +5772,19 @@
         {
         }
 
-        public override INST GenerateGenerics(STATE<TypeReference> state)
+        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {   // newarr, page 416 of ecma 335
             var v = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(v.ToString());
             object operand = this.Operand;
             TypeReference type = operand as TypeReference;
-            TypeReference new_array_type = new ArrayType(type, 1 /* 1D array */);
+            var actual_element_type = type.Deresolve(this.Block._original_method_reference.DeclaringType, null);
+            TypeReference new_array_type = new ArrayType(actual_element_type, 1 /* 1D array */);
             state._stack.Push(new_array_type);
-            return this;
         }
 
-        public override unsafe INST Convert(STATE<VALUE> state)
+        public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
         {   // newarr, page 416 of ecma 335
             object operand = this.Operand;
             TypeReference element_type = operand as TypeReference;
@@ -5877,7 +5824,6 @@
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(stack_result);
             state._stack.Push(stack_result);
-            return Next;
         }
     }
 
@@ -5888,7 +5834,7 @@
         {
         }
 
-        public override INST GenerateGenerics(STATE<TypeReference> state)
+        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             INST new_inst = this;
 
@@ -5904,41 +5850,37 @@
                 of the contructor. */
                 mr.Parameters.Count;
 
+            var fn = mr.GetType().FullName;
+
+            // We need to make sure the declaring type is completely de-resolved.
+
+            List<TypeReference> args = new List<TypeReference>();
+            for (int k = 0; k < xargs; ++k)
+            {
+                var v = state._stack.Pop();
+                args.Insert(0, v);
+            }
+            var args_array = args.ToArray();
+            if (mr.DeclaringType.ContainsGenericParameter)
+            {
+                var dt = mr.DeclaringType.Deresolve(this.Block._original_method_reference.DeclaringType, null);
+                mr = mr.Deresolve(dt, args_array);
+            }
+
             if (mr.DeclaringType == null)
-            {
                 throw new Exception("can't handle.");
-            }
-
             if (mr.DeclaringType.HasGenericParameters)
-            {
                 throw new Exception("can't handle.");
-
-            }
-
+            if (mr.ReturnType.FullName != "System.Void")
             {
-                var name = JITER.MethodName(mr);
-
-                // Set up args, type casting if required.
-                for (int k = 0; k < xargs; ++k)
-                {
-                    var v = state._stack.Pop();
-                }
-
-                if (mr.ReturnType.FullName != "System.Void")
-                {
-                    throw new Exception(
-                        "Constructor has a return type, but they should never have a type. Something is wrong.");
-                }
-
-                state._stack.Push(mr.DeclaringType);
+                throw new Exception(
+                    "Constructor has a return type, but they should never have a type. Something is wrong.");
             }
-
+            state._stack.Push(mr.DeclaringType);
             IMPORTER.Singleton().Add(mr);
-
-            return this;
         }
 
-        public override unsafe INST Convert(STATE<VALUE> state)
+        public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
         {
             // The JIT of a call instructure requires a little explanation. The operand
             // for the instruction is a MethodReference, which is a C# method of some type.
@@ -6236,8 +6178,6 @@
                     state._stack.Push(new VALUE(new_obj));
                 }
             }
-
-            return Next;
         }
     }
 
@@ -6256,14 +6196,12 @@
         {
         }
 
-        public override INST GenerateGenerics(STATE<TypeReference> state)
+        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
-            return this;
         }
 
-        public override unsafe INST Convert(STATE<VALUE> state)
+        public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
         {
-            return Next;
         }
     }
 
@@ -6290,16 +6228,14 @@
         {
         }
 
-        public override INST GenerateGenerics(STATE<TypeReference> state)
+        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             state._stack.Pop();
-            return this;
         }
 
-        public override unsafe INST Convert(STATE<VALUE> state)
+        public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
         {
             state._stack.Pop();
-            return Next;
         }
     }
 
@@ -6350,7 +6286,7 @@
         {
         }
 
-        public override INST GenerateGenerics(STATE<TypeReference> state)
+        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             // There are really two different stacks here:
             // one for the called method, and the other for the caller of the method.
@@ -6373,10 +6309,9 @@
             else if (this.Block.HasStructReturnValue)
             {
             }
-            return this;
         }
 
-        public override unsafe INST Convert(STATE<VALUE> state)
+        public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
         {
             // There are really two different stacks here:
             // one for the called method, and the other for the caller of the method.
@@ -6407,7 +6342,6 @@
                     System.Console.WriteLine(new VALUE(store));
                 var i = LLVM.BuildRetVoid(Builder);
             }
-            return Next;
         }
     }
 
@@ -6426,7 +6360,7 @@
         {
         }
 
-        public override INST GenerateGenerics(STATE<TypeReference> state)
+        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var rhs = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -6441,11 +6375,9 @@
                 System.Console.WriteLine(result);
 
             state._stack.Push(result);
-
-            return this;
         }
 
-        public override unsafe INST Convert(STATE<VALUE> state)
+        public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
         {
             var rhs = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -6460,8 +6392,6 @@
                 System.Console.WriteLine(new VALUE(result));
 
             state._stack.Push(new VALUE(result));
-
-            return Next;
         }
     }
 
@@ -6472,7 +6402,7 @@
         {
         }
 
-        public override INST GenerateGenerics(STATE<TypeReference> state)
+        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var rhs = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -6487,11 +6417,9 @@
                 System.Console.WriteLine(result);
 
             state._stack.Push(result);
-
-            return this;
         }
 
-        public override unsafe INST Convert(STATE<VALUE> state)
+        public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
         {
             var rhs = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -6506,8 +6434,6 @@
                 System.Console.WriteLine(new VALUE(result));
 
             state._stack.Push(new VALUE(result));
-
-            return Next;
         }
     }
 
@@ -6526,7 +6452,7 @@
         {
         }
 
-        public override INST GenerateGenerics(STATE<TypeReference> state)
+        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var value = typeof(System.IntPtr).ToMonoTypeReference();
             object operand = this.Operand;
@@ -6535,10 +6461,9 @@
                 state._stack.Push(value);
             else
                 throw new Exception("Unimplemented sizeof");
-            return this;
         }
 
-        public override unsafe INST Convert(STATE<VALUE> state)
+        public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
         {
             object operand = this.Operand;
             System.Type t = operand.GetType();
@@ -6546,7 +6471,6 @@
                 state._stack.Push(new VALUE(LLVM.ConstInt(LLVM.Int32Type(), 8, false)));
             else
                 throw new Exception("Unimplemented sizeof");
-            return Next;
         }
     }
 
@@ -6796,6 +6720,15 @@
             : base(i)
         {
         }
+
+        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
+        {   //  stobj – store a value at an address , page 428
+            var s = state._stack.Pop();
+            var d = state._stack.Pop();
+            object operand = this.Operand;
+            var o = operand as TypeReference;
+            var p = o.Deresolve(this.Block._original_method_reference.DeclaringType, null);
+        }
     }
 
     public class i_stsfld : INST
@@ -6805,13 +6738,12 @@
         {
         }
 
-        public override INST GenerateGenerics(STATE<TypeReference> state)
+        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {   // stsfld (store static field), ecma 335 page 429
             state._stack.Pop();
-            return this;
         }
 
-        public override unsafe INST Convert(STATE<VALUE> state)
+        public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
         {   // stsfld (store static field), ecma 335 page 429
             var value = state._stack.Pop();
             var operand = this.Operand;
@@ -6850,7 +6782,6 @@
             var address = LLVM.ConstInt(LLVM.Int64Type(), (ulong)ptr, false);
             var f1 = LLVM.BuildIntToPtr(Builder, address, llvm_field_type, "i" + instruction_id++);
             LLVM.BuildStore(Builder, value.V, f1);
-            return Next;
         }
     }
 
@@ -6901,22 +6832,18 @@
         {
         }
 
-        public override INST GenerateGenerics(STATE<TypeReference> state)
+        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var rhs = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(rhs);
-
-            return this;
         }
 
-        public override unsafe INST Convert(STATE<VALUE> state)
+        public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
         {
             var rhs = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(rhs);
-
-            return Next;
         }
     }
 

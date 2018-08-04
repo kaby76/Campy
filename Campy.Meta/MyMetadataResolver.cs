@@ -204,7 +204,7 @@
 
             return result;
         }
-        
+
         MethodDefinition GetMethod(TypeDefinition type, MethodReference reference)
         {
             while (type != null)

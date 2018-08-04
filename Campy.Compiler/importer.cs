@@ -200,12 +200,12 @@ namespace Campy.Compiler
                 basic_block.Instructions.Add(wrapped_instruction);
             }
 
-            // Perform any substitutions of individual instructions.
-            {
-                var inss = basic_block.Instructions.ToArray();
-                RUNTIME.RewriteCilCodeBlock(inss);
-                basic_block.Instructions = inss.ToList();
-            }
+            //// Perform any substitutions of individual instructions.
+            //{
+            //    var inss = basic_block.Instructions.ToArray();
+            //    RUNTIME.RewriteCilCodeBlock(basic_block._original_method_reference, inss);
+            //    basic_block.Instructions = inss.ToList();
+            //}
             var instructions_before_splits = basic_block.Instructions.ToList();
 
             // Accumulate targets of jumps. These are split points for block "v".
@@ -780,7 +780,7 @@ namespace Campy.Compiler
         private MethodReference Rewrite(MethodReference method_reference)
         {
             // Perform any substitution of this method reference.
-            MethodReference new_method_reference = RUNTIME.SubstituteMethod(method_reference);
+            MethodReference new_method_reference = method_reference.SubstituteMethod2();
             method_reference = new_method_reference != null ? new_method_reference : method_reference;
             return method_reference;
         }

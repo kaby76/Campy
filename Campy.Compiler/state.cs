@@ -4,10 +4,10 @@ using Campy.Utils;
 
 namespace Campy.Compiler
 {
-    public class STATE<T>
+    public class STATE<T, STACK> where STACK : StackQueue<T>, new()
     {
         // See ECMA 335, page 82.
-        public StackQueue<T> _stack;
+        public STACK _stack;
         public ListSection<T> _struct_ret; // Pointer to _stack, if there is a "this" pointer.
         public ListSection<T> _this; // Pointer to _stack, if there is a "this" pointer.
         public ListSection<T> _arguments; // Pointer to _stack, if there are parameters for the method.
@@ -15,7 +15,7 @@ namespace Campy.Compiler
 
         public STATE()
         {
-            _stack = new StackQueue<T>();
+            _stack = new STACK();
             _this = null;
             _arguments = null;
             _locals = null;
@@ -23,20 +23,20 @@ namespace Campy.Compiler
         }
 
         public STATE(Dictionary<CFG.Vertex, bool> visited,
-            Dictionary<CFG.Vertex, STATE<T>> states_in,
-            Dictionary<CFG.Vertex, STATE<T>> states_out,
+            Dictionary<CFG.Vertex, STATE<T, STACK>> states_in,
+            Dictionary<CFG.Vertex, STATE<T, STACK>> states_out,
             CFG.Vertex bb,
-            Action<STATE<T>, Dictionary<CFG.Vertex, STATE<T>>,Dictionary<CFG.Vertex, STATE<T>>,CFG.Vertex> custom_initializer
+            Action<STATE<T, STACK>, Dictionary<CFG.Vertex, STATE<T, STACK>>,Dictionary<CFG.Vertex, STATE<T, STACK>>,CFG.Vertex> custom_initializer
             )
         {
             // Set up a state that is a copy of another state.
-            _stack = new StackQueue<T>();
+            _stack = new STACK();
             custom_initializer(this, states_in, states_out, bb);
         }
 
-        public STATE(STATE<T> other)
+        public STATE(STATE<T, STACK> other)
         {
-            _stack = new StackQueue<T>();
+            _stack = new STACK();
             for (int i = 0; i < other._stack.Count; ++i)
             {
                 _stack.Push(other._stack.PeekBottom(i));

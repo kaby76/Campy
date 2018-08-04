@@ -106,7 +106,6 @@ namespace Campy.Compiler
             }
             public Dictionary<Tuple<TypeReference, GenericParameter>, System.Type> OpsFromOriginal { get; set; } = new Dictionary<Tuple<TypeReference, GenericParameter>, System.Type>();
             public Tuple<Tuple<TypeReference, GenericParameter>, System.Type> OpFromPreviousNode { get; set; }
-            public MethodReference RewrittenCalleeSignature { get; set; }
             public List<INST> Instructions { get; set; } = new List<INST>();
             public CFG _graph { get; set; }
             public LLVMINFO LlvmInfo;
