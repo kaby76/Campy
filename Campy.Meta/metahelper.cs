@@ -255,7 +255,8 @@ namespace Campy.Meta
             for (int i = 0; i < self.Parameters.Count(); ++i)
             {
                 var parameter = self.Parameters[i];
-                var yo = Deresolve(parameter.ParameterType, declaring_type, arguments[i]);
+                TypeReference argument = arguments == null ? null : arguments[i];
+                var yo = Deresolve(parameter.ParameterType, declaring_type, argument);
                 ParameterDefinition new_parameter_definition = new ParameterDefinition(yo);
                 reference.Parameters.Add(new_parameter_definition);
             }
@@ -310,8 +311,9 @@ namespace Campy.Meta
                     for (int i = 0; i < m.Parameters.Count; ++i)
                     {
                         // Should do a comparison of paramter types.
-                        var p1 = m.Parameters[i];
-                        var p2 = method_definition_resolved.Parameters[i];
+                        var p1 = m.Parameters[i].ParameterType;
+                        var p2 = method_definition_resolved.Parameters[i].ParameterType;
+                        if (p1.Name != p2.Name) return false;
                     }
                     return true;
                 }).FirstOrDefault();
@@ -940,7 +942,7 @@ namespace Campy.Meta
                     LLVM.StructSetBody(s, list.ToArray(), true);
                     return p;
                 }
-                else if (td != null && td.IsClass)
+                else if (td != null && (td.IsClass || td.IsInterface))
                 {
                     var gp = tr.GenericParameters;
                     Mono.Collections.Generic.Collection<TypeReference> ga = null;
@@ -976,10 +978,11 @@ namespace Campy.Meta
 
                     List<TypeRef> list = new List<TypeRef>();
                     int offset = 0;
-                    var fields = td.Fields;
+                    var fieldso = td.Fields;
+                    var fields = tr.ResolveFields();
                     foreach (var field in fields)
                     {
-                        Mono.Cecil.FieldAttributes attr = field.Attributes;
+                        Mono.Cecil.FieldAttributes attr = field.Resolve().Attributes;
                         if ((attr & Mono.Cecil.FieldAttributes.Static) != 0)
                             continue;
 

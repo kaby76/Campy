@@ -24,14 +24,25 @@ namespace ConsoleApp4
             Campy.Utils.Options.Set("copy_trace");
             Campy.Utils.Options.Set("runtime_trace");
         }
+        public static void IntListSetT()
+        {
+            // List of ints.
+            List<int> x = new List<int>();
+            int n = 4;
+            for (int i = 0; i < n; ++i) x.Add(0);
+            Campy.Parallel.For(n, i => x[i] = i);
+            for (int i = 0; i < n; ++i) if (x[i] != i)
+                    throw new Exception();
+        }
 
         static void Main(string[] args)
         {
             StartDebugging();
-            Campy.Parallel.For(3, i =>
-            {
-                System.Console.WriteLine(i.ToString());
-            });
+            //Campy.Parallel.For(3, i =>
+            //{
+            //    System.Console.WriteLine(i.ToString());
+            //});
+            IntListSetT();
         }
     }
 }

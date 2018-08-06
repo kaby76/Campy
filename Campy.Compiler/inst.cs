@@ -1317,13 +1317,11 @@
             if (method as Mono.Cecil.MethodReference == null) throw new Exception();
             Mono.Cecil.MethodReference orig_mr = method as Mono.Cecil.MethodReference;
             var mr = orig_mr;
-
             bool has_this = false;
             if (mr.HasThis) has_this = true;
             if (OpCode.Code == Code.Callvirt) has_this = true;
             bool is_explicit_this = mr.ExplicitThis;
             int xargs = (has_this && !is_explicit_this ? 1 : 0) + mr.Parameters.Count;
-
             List<TypeReference> args = new List<TypeReference>();
             for (int k = 0; k < xargs; ++k)
             {
@@ -1331,40 +1329,11 @@
                 args.Insert(0, v);
             }
             var args_array = args.ToArray();
-
-            mr = mr.SubstituteMethod(this.Block._original_method_reference.DeclaringType, args_array);
-
+            mr = orig_mr.SubstituteMethod(this.Block._original_method_reference.DeclaringType, args_array);
             if (mr.ReturnType.FullName != "System.Void")
             {
                 state._stack.Push(mr.ReturnType);
             }
-
-            //var declaring_type = mr.DeclaringType;
-            //var declaring_type_resolved = declaring_type.Resolve();
-            //if (mr.ContainsGenericParameter)
-            //{
-            //    if (has_this && !is_explicit_this)
-            //    {
-            //        // Grab "this" from stack and generate the type.
-            //        var this_parameter = state._stack.PeekTop(xargs - 1);
-            //        var new_type = this_parameter;
-
-            //        // Get the method from the non-generic (real instance) type.
-            //        var new_mr = new_type.Resolve().Methods.Where(j =>
-            //        {
-            //            if (j.Name != mr.Name) return false;
-            //            if (j.Parameters.Count != mr.Parameters.Count) return false;
-            //            return true;
-            //        }).FirstOrDefault();
-
-            //        // Create new method with "this".
-            //        if (new_mr != null)
-            //        {
-            //            mr = new_mr.Deresolve(new_type);
-            //        }
-            //    }
-            //}
-
             IMPORTER.Singleton().Add(mr);
         }
 
@@ -3508,7 +3477,14 @@
             // edge represents the "true" branch. During construction, there is
             // no guarentee that the order is consistent.
             var owner = Block._graph.Vertices.Where(
-                n => n.Instructions.Where(ins => ins.Instruction.Offset == instruction.Offset).Any()).ToList();
+				n => n.Instructions.Where(ins =>
+			{
+				if (n.Entry._original_method_reference != Block.Entry._original_method_reference)
+					return false;
+				if (ins.Instruction.Offset != instruction.Offset)
+					return false;
+				return true;
+			}).Any()).ToList();
             if (owner.Count != 1)
                 throw new Exception("Cannot find instruction!");
             var edge1 = Block._graph.SuccessorEdges(Block).ToList()[0];
@@ -3574,7 +3550,14 @@
             // edge represents the "true" branch. During construction, there is
             // no guarentee that the order is consistent.
             var owner = Block._graph.Vertices.Where(
-                n => n.Instructions.Where(ins => ins.Instruction.Offset == instruction.Offset).Any()).ToList();
+				n => n.Instructions.Where(ins =>
+			{
+				if (n.Entry._original_method_reference != Block.Entry._original_method_reference)
+					return false;
+				if (ins.Instruction.Offset != instruction.Offset)
+					return false;
+				return true;
+			}).Any()).ToList();
             if (owner.Count != 1)
                 throw new Exception("Cannot find instruction!");
             var edge1 = Block._graph.SuccessorEdges(Block).ToList()[0];
@@ -5536,10 +5519,10 @@
             {
                 var ptrName = RUNTIME.BclGetFieldName(f);
                 string name = Marshal.PtrToStringAnsi(ptrName);
-                return name == mono_field_type.Name;
+                return name == mono_field_reference.Name;
             });
-            var first = find.FirstOrDefault();
-            if (first == null) throw new Exception("Cannot find field--ldsfld");
+            IntPtr first = find.FirstOrDefault();
+            if (first == IntPtr.Zero) throw new Exception("Cannot find field--ldsfld");
             var ptr = RUNTIME.BclGetStaticField(first);
             bool isArr = mono_field_type.IsArray;
             bool isSt = mono_field_type.IsStruct();
