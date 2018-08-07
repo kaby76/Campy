@@ -451,13 +451,6 @@
                 // Filter out <Module> and <PrivateImplementationDetails>, among possible others.
                 Regex regex = new Regex(@"^[<]\w+[>]");
                 if (regex.IsMatch(bcl_type.FullName)) continue;
-
-                // Try to map the type into native NET type. Some things just won't.
-                var t_system_type = System.Type.GetType(bcl_type.FullName);
-                if (t_system_type == null) continue;
-
-                var to_mono = t_system_type.ToMonoTypeReference();
-
                 foreach (var m in bcl_type.Methods)
                 {
                     var x = m.ImplAttributes;
@@ -465,7 +458,6 @@
                     {
                         if (Campy.Utils.Options.IsOn("runtime_trace"))
                             System.Console.WriteLine("Internal call set up " + bcl_type + " " + m);
-
                         _internalCalls.Add(new BclNativeMethod(bcl_type, m));
                     }
                 }

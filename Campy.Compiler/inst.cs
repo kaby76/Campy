@@ -3177,12 +3177,13 @@
         }
 
         public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
-        {
-            var operand = this.Operand;
-            var tr = operand as TypeReference;
-            tr = tr.InstantiateGeneric(this.Block._original_method_reference);
-            var v = state._stack.Pop();
-            state._stack.Push(tr);
+        {   // box – convert a boxable value to its boxed form, page 394
+            var typetok = this.Operand;
+            var tr = typetok as TypeReference;
+            var tr2 = tr.RewriteMonoTypeReference();
+            var v = tr2.Deresolve(this.Block._original_method_reference.DeclaringType, null);
+            TypeReference v2 = state._stack.Pop();
+            state._stack.Push(v);
         }
 
         public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
@@ -3192,6 +3193,8 @@
             // Get meta of object.
             var operand = this.Operand;
             var tr = operand as TypeReference;
+            tr = tr.RewriteMonoTypeReference();
+            tr = tr.Deresolve(this.Block._original_method_reference.DeclaringType, null);
             var meta = RUNTIME.GetBclType(tr);
 
             // Generate code to allocate object and stuff.
@@ -3330,15 +3333,15 @@
             // edge represents the "true" branch. During construction, there is
             // no guarentee that the order is consistent.
             var owner = Block._graph.Vertices.Where(
-				n => n.Instructions.Where(ins =>
-				{
-					if (n.Entry._original_method_reference != Block.Entry._original_method_reference)
-						return false;
-					if (ins.Instruction.Offset != instruction.Offset)
-						return false;
-					return true;
-				}).Any()).ToList();
-			if (owner.Count != 1)
+                n => n.Instructions.Where(ins =>
+                {
+                    if (n.Entry._original_method_reference != Block.Entry._original_method_reference)
+                        return false;
+                    if (ins.Instruction.Offset != instruction.Offset)
+                        return false;
+                    return true;
+                }).Any()).ToList();
+            if (owner.Count != 1)
                 throw new Exception("Cannot find instruction!");
             var edge1 = Block._graph.SuccessorEdges(Block).ToList()[0];
             var s1 = edge1.To;
@@ -3477,14 +3480,14 @@
             // edge represents the "true" branch. During construction, there is
             // no guarentee that the order is consistent.
             var owner = Block._graph.Vertices.Where(
-				n => n.Instructions.Where(ins =>
-			{
-				if (n.Entry._original_method_reference != Block.Entry._original_method_reference)
-					return false;
-				if (ins.Instruction.Offset != instruction.Offset)
-					return false;
-				return true;
-			}).Any()).ToList();
+                n => n.Instructions.Where(ins =>
+                {
+                    if (n.Entry._original_method_reference != Block.Entry._original_method_reference)
+                        return false;
+                    if (ins.Instruction.Offset != instruction.Offset)
+                        return false;
+                    return true;
+                }).Any()).ToList();
             if (owner.Count != 1)
                 throw new Exception("Cannot find instruction!");
             var edge1 = Block._graph.SuccessorEdges(Block).ToList()[0];
@@ -3550,14 +3553,14 @@
             // edge represents the "true" branch. During construction, there is
             // no guarentee that the order is consistent.
             var owner = Block._graph.Vertices.Where(
-				n => n.Instructions.Where(ins =>
-			{
-				if (n.Entry._original_method_reference != Block.Entry._original_method_reference)
-					return false;
-				if (ins.Instruction.Offset != instruction.Offset)
-					return false;
-				return true;
-			}).Any()).ToList();
+                n => n.Instructions.Where(ins =>
+                {
+                    if (n.Entry._original_method_reference != Block.Entry._original_method_reference)
+                        return false;
+                    if (ins.Instruction.Offset != instruction.Offset)
+                        return false;
+                    return true;
+                }).Any()).ToList();
             if (owner.Count != 1)
                 throw new Exception("Cannot find instruction!");
             var edge1 = Block._graph.SuccessorEdges(Block).ToList()[0];
@@ -3738,6 +3741,10 @@
 
         public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
+            var typetok = Operand;
+            var tr = typetok as TypeReference;
+            var tr2 = tr.RewriteMonoTypeReference();
+            var v = tr2.Deresolve(this.Block._original_method_reference.DeclaringType, null);
         }
 
         public override void Convert(STATE<VALUE, StackQueue<VALUE>> state)
@@ -4220,7 +4227,32 @@
 
         public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {   // initobj – initialize the value at an address page 400
-            var d = state._stack.Pop();
+            var dst = state._stack.Pop();
+        }
+
+        public override void Convert(STATE<VALUE, StackQueue<VALUE>> state)
+        {   // initobj – initialize the value at an address page 400
+            var dst = state._stack.Pop();
+            var typetok = this.Operand as TypeReference;
+            if (typetok == null) throw new Exception("Unknown operand for instruction: " + this.Instruction);
+            if (typetok.IsStruct())
+            {
+
+            }
+            else if (typetok.IsValueType)
+            {
+
+            }
+            else
+            {
+                ValueRef nul = LLVM.ConstPointerNull(LLVM.PointerType(LLVM.VoidType(), 0));
+                var v = new VALUE(nul);
+                if (Campy.Utils.Options.IsOn("jit_trace"))
+                    System.Console.WriteLine(v);
+                var zz = LLVM.BuildStore(Builder, v.V, dst.V);
+                if (Campy.Utils.Options.IsOn("jit_trace"))
+                    System.Console.WriteLine("Store = " + new VALUE(zz).ToString());
+            }
         }
     }
 
@@ -4229,6 +4261,21 @@
         public i_isinst(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+        }
+
+        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
+        {   // isinst – test if an object is an instance of a class or interface, page 401
+            var typetok = Operand;
+            var tr = typetok as TypeReference;
+            var tr2 = tr.RewriteMonoTypeReference();
+            var v = tr2.Deresolve(this.Block._original_method_reference.DeclaringType, null);
+            state._stack.Pop();
+            state._stack.Push(v);
+        }
+
+        public override void Convert(STATE<VALUE, StackQueue<VALUE>> state)
+        {
+            throw new Exception();
         }
     }
 
@@ -5472,6 +5519,7 @@
             var v = state._stack.Pop();
             object operand = this.Operand;
             var o = operand as TypeReference;
+            o = o.RewriteMonoTypeReference();
             var p = o.Deresolve(this.Block._original_method_reference.DeclaringType, null);
             state._stack.Push(p);
         }
@@ -5500,7 +5548,9 @@
             var mono_field_reference = operand as FieldReference;
             if (mono_field_reference == null)
                 throw new Exception("Unknown field type");
-            var type = mono_field_reference.ResolveDeclaringType();
+            var type = mono_field_reference.DeclaringType;
+            type = type.RewriteMonoTypeReference();
+            type = type.Deresolve(this.Block._original_method_reference.DeclaringType, null);
             var mono_field_type = mono_field_reference.FieldType;
             mono_field_type = mono_field_type.RewriteMonoTypeReference();
             var llvm_field_type = mono_field_type.ToTypeRef();
@@ -5529,8 +5579,9 @@
             bool isRef = mono_field_type.IsReferenceType();
             if (Campy.Utils.Options.IsOn("jit_trace"))
             System.Console.WriteLine(LLVM.PrintTypeToString(llvm_field_type));
+            var ptr_llvm_field_type = LLVM.PointerType(llvm_field_type, 0);
             var address = LLVM.ConstInt(LLVM.Int64Type(), (ulong)ptr, false);
-            var f1 = LLVM.BuildIntToPtr(Builder, address, llvm_field_type, "i" + instruction_id++);
+            var f1 = LLVM.BuildIntToPtr(Builder, address, ptr_llvm_field_type, "i" + instruction_id++);
             var load = LLVM.BuildLoad(Builder, f1, "i" + instruction_id++);
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(new VALUE(load));
@@ -5608,7 +5659,7 @@
 
         public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {   // ldtoken (load token handle), ecma 335 page 413
-            var t = typeof(System.RuntimeTypeHandle).ToMonoTypeReference().SubstituteMonoTypeReference();
+            var t = typeof(System.RuntimeTypeHandle).ToMonoTypeReference().RewriteMonoTypeReference();
             var v = t.Deresolve(this.Block._original_method_reference.DeclaringType, null);
             state._stack.Push(v);
         }
@@ -5762,6 +5813,7 @@
                 System.Console.WriteLine(v.ToString());
             object operand = this.Operand;
             TypeReference type = operand as TypeReference;
+            type = type.RewriteMonoTypeReference();
             var actual_element_type = type.Deresolve(this.Block._original_method_reference.DeclaringType, null);
             TypeReference new_array_type = new ArrayType(actual_element_type, 1 /* 1D array */);
             state._stack.Push(new_array_type);
@@ -5771,6 +5823,9 @@
         {   // newarr, page 416 of ecma 335
             object operand = this.Operand;
             TypeReference element_type = operand as TypeReference;
+            element_type = element_type.RewriteMonoTypeReference();
+            element_type = element_type.Deresolve(this.Block._original_method_reference.DeclaringType, null);
+
             TypeReference new_array_type = new ArrayType(element_type, 1 /* 1D array */);
             var meta = RUNTIME.GetBclType(new_array_type);
             var array_type_to_create = new_array_type.ToTypeRef();
@@ -6710,7 +6765,42 @@
             var d = state._stack.Pop();
             object operand = this.Operand;
             var o = operand as TypeReference;
+            o = o.RewriteMonoTypeReference();
             var p = o.Deresolve(this.Block._original_method_reference.DeclaringType, null);
+        }
+
+        public override void Convert(STATE<VALUE, StackQueue<VALUE>> state)
+        {   //  stobj – store a value at an address, page 428
+            var src = state._stack.Pop();
+            if (Campy.Utils.Options.IsOn("jit_trace"))
+                System.Console.WriteLine(src);
+            var dst = state._stack.Pop();
+            if (Campy.Utils.Options.IsOn("jit_trace"))
+                System.Console.WriteLine(dst);
+            object operand = this.Operand;
+            var o = operand as TypeReference;
+            o = o.RewriteMonoTypeReference();
+            var p = o.Deresolve(this.Block._original_method_reference.DeclaringType, null);
+            if (Campy.Utils.Options.IsOn("jit_trace"))
+                System.Console.WriteLine(p);
+
+            TypeRef stype = LLVM.TypeOf(src.V);
+            TypeRef dtype = LLVM.TypeOf(dst.V);
+
+            if (stype == LLVM.Int64Type()
+                  && (dtype == LLVM.Int32Type() || dtype == LLVM.Int16Type() || dtype == LLVM.Int8Type() || dtype == LLVM.Int1Type()))
+                src = new VALUE(LLVM.BuildTrunc(Builder, src.V, dtype, "i" + instruction_id++));
+            else if (stype == LLVM.Int32Type()
+                  && (dtype == LLVM.Int16Type() || dtype == LLVM.Int8Type() || dtype == LLVM.Int1Type()))
+                src = new VALUE(LLVM.BuildTrunc(Builder, src.V, dtype, "i" + instruction_id++));
+            else if (stype == LLVM.Int16Type()
+                  && (dtype == LLVM.Int8Type() || dtype == LLVM.Int1Type()))
+                src = new VALUE(LLVM.BuildTrunc(Builder, src.V, dtype, "i" + instruction_id++));
+            else if (LLVM.GetTypeKind(stype) == TypeKind.PointerTypeKind)
+                ;
+            var zz = LLVM.BuildStore(Builder, src.V, dst.V);
+            if (Campy.Utils.Options.IsOn("jit_trace"))
+                System.Console.WriteLine("Store = " + new VALUE(zz).ToString());
         }
     }
 
@@ -6752,10 +6842,10 @@
             {
                 var ptrName = RUNTIME.BclGetFieldName(f);
                 string name = Marshal.PtrToStringAnsi(ptrName);
-                return name == mono_field_type.Name;
+                return name == mono_field_reference.Name;
             });
-            var first = find.FirstOrDefault();
-            if (first == null) throw new Exception("Cannot find field--ldsfld");
+            IntPtr first = find.FirstOrDefault();
+            if (first == IntPtr.Zero) throw new Exception("Cannot find field--stsfld");
             var ptr = RUNTIME.BclGetStaticField(first);
             bool isArr = mono_field_type.IsArray;
             bool isSt = mono_field_type.IsStruct();

@@ -657,6 +657,14 @@ namespace Campy.Meta
                 // reference types. We need to distinguish between the two.
 
                 basic_llvm_types_created.Add(
+                    typeof(sbyte).ToMonoTypeReference(),
+                    LLVM.Int8Type());
+
+                basic_llvm_types_created.Add(
+                    typeof(byte).ToMonoTypeReference(),
+                    LLVM.Int8Type());
+
+                basic_llvm_types_created.Add(
                     typeof(Int16).ToMonoTypeReference(),
                     LLVM.Int16Type());
 

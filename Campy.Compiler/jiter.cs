@@ -1096,6 +1096,18 @@ namespace Campy.Compiler
                 }
             });
 
+            int num_instructions = 0;
+            int num_blocks = cs.Count();
+            int num_entries = 0;
+            foreach (var b in cs)
+            {
+                if (b.IsEntry) ++num_entries;
+                num_instructions += b.Instructions.Count();
+            }
+            System.Console.WriteLine("Number of blocks       " + num_blocks);
+            System.Console.WriteLine("Number of methods      " + num_entries);
+            System.Console.WriteLine("Number of instructions " + num_instructions);
+
             string ptx = null;
 
             Campy.Utils.TimePhase.Time("compiler      ", () =>
