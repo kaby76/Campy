@@ -1330,6 +1330,7 @@
             }
             var args_array = args.ToArray();
             mr = orig_mr.SubstituteMethod(this.Block._original_method_reference.DeclaringType, args_array);
+            if (mr == null) return; // Can't do anything with this.
             if (mr.ReturnType.FullName != "System.Void")
             {
                 state._stack.Push(mr.ReturnType);
@@ -2220,8 +2221,15 @@
                 // edge represents the "true" branch. During construction, there is
                 // no guarentee that the order is consistent.
                 var owner = Block._graph.Vertices.Where(
-                    n => n.Instructions.Where(ins => ins.Instruction == this.Instruction).Any()).ToList();
-                if (owner.Count != 1)
+					n => n.Instructions.Where(ins =>
+                    {
+                        if (n.Entry._original_method_reference != Block.Entry._original_method_reference)
+                            return false;
+                        if (ins.Instruction.Offset != this.Instruction.Offset)
+                            return false;
+                        return true;
+                    }).Any()).ToList();
+                if (owner.Count() != 1)
                     throw new Exception("Cannot find instruction!");
                 CFG.Vertex true_node = owner.FirstOrDefault();
                 if (s2 == true_node)
@@ -2248,8 +2256,15 @@
                 // edge represents the "true" branch. During construction, there is
                 // no guarentee that the order is consistent.
                 var owner = Block._graph.Vertices.Where(
-                    n => n.Instructions.Where(ins => ins.Instruction == this.Instruction).Any()).ToList();
-                if (owner.Count != 1)
+                    n => n.Instructions.Where(ins =>
+                    {
+                        if (n.Entry._original_method_reference != Block.Entry._original_method_reference)
+                            return false;
+                        if (ins.Instruction.Offset != this.Instruction.Offset)
+                            return false;
+                        return true;
+                    }).Any()).ToList();
+                if (owner.Count() != 1)
                     throw new Exception("Cannot find instruction!");
                 CFG.Vertex true_node = owner.FirstOrDefault();
                 if (s2 == true_node)
@@ -6061,7 +6076,8 @@
                 if (first_kv_pair == null)
                     throw new Exception("Yikes.");
 
-                RUNTIME.PtxFunction fffv = RUNTIME.PtxFunctions.Where(t => t._short_name == first_kv_pair._native_name).First();
+                RUNTIME.PtxFunction fffv = RUNTIME.PtxFunctions.Where(t =>
+                t._short_name == first_kv_pair._native_name).FirstOrDefault();
                 ValueRef fv = fffv._valueref;
                 var t_fun = LLVM.TypeOf(fv);
                 var t_fun_con = LLVM.GetTypeContext(t_fun);

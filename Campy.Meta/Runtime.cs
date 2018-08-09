@@ -108,6 +108,9 @@
         public static List<ModuleRef> all_llvm_modules;
         public static Mono.Cecil.Cil.ILProcessor worker;
         public static Dictionary<string, ValueRef> functions_in_internal_bcl_layer;
+
+        public static Dictionary<string, TypeReference> all_types = new Dictionary<string, TypeReference>();
+
         private static Dictionary<string, TypeRef> _ptx_type_to_llvm_typeref = new Dictionary<string, TypeRef>()
         {
             {".b8", LLVM.Int8Type()},
@@ -430,16 +433,6 @@
             // _system_type_to_mono_type_for_bcl -- associates types in GPU BCL with NET Core/NET Framework/... in user program.
             // Note, there seems to be an underlying bug in System.Type.GetType for certain generics, like System.Collections.Generic.HashSet.
             // The method returns null.
-            var xx = typeof(System.Collections.Generic.HashSet<>);
-            var x2 = typeof(System.Collections.Generic.HashSet<int>);
-            var yy = System.Type.GetType("System.Collections.Generic.HashSet");
-            var y2 = System.Type.GetType("System.Collections.Generic.HashSet<>");
-            var y3 = System.Type.GetType("System.Collections.Generic.HashSet`1");
-            var y4 = System.Type.GetType("System.Collections.Generic.HashSet<T>");
-            var y5 = System.Type.GetType(xx.FullName);
-            var y6 = System.Type.GetType(@"System.Collections.Generic.HashSet`1[System.Int32]");
-            var y7 = System.Type.GetType(@"System.Collections.Generic.Dictionary`2[System.String,System.String]");
-            var y8 = System.Type.GetType(x2.FullName);
 
             // Set up _substituted_bcl.
             var runtime = new RUNTIME();
@@ -469,8 +462,16 @@
             // Parse PTX files for all "visible" functions, and create LLVM declarations.
             // For "Internal Calls", these functions appear here, but also on the _internalCalls list.
             var assembly = Assembly.GetAssembly(typeof(Campy.Meta.RUNTIME));
-            List<MethodReference> methods_in_bcl = new List<MethodReference>();
+            List<MethodReference> bcl_runtime_csharp_methods = new List<MethodReference>();
+
+            System.Console.WriteLine();
             Mono.Cecil.ModuleDefinition campy_bcl_runtime = Campy.Meta.StickyReadMod.StickyReadModule(RUNTIME.FindCoreLib());
+            foreach (var tt in campy_bcl_runtime.Types)
+            {
+                System.Console.WriteLine("Adding type " + tt.FullName);
+                all_types.Add(tt.FullName, tt);
+            }
+
             Stack<TypeReference> consider_list = new Stack<TypeReference>();
             Stack<TypeReference> types_in_bcl = new Stack<TypeReference>();
             foreach (var type in campy_bcl_runtime.Types)
@@ -494,10 +495,10 @@
                 foreach (var method in r.Methods)
                 {
                     // add into list of method calls for BCL.
-                    methods_in_bcl.Add(method);
+                    bcl_runtime_csharp_methods.Add(method);
                 }
             }
-            var internal_methods_in_bcl = methods_in_bcl.Where(
+            var internal_methods_in_bcl = bcl_runtime_csharp_methods.Where(
                 m =>
                 {
                     var rm = m.Resolve();
@@ -508,7 +509,7 @@
                     else
                         return false;
                 }).ToList();
-            var internal_methods_in_bcl2 = methods_in_bcl.Where(
+            var internal_methods_in_bcl2 = bcl_runtime_csharp_methods.Where(
                 m =>
                 {
                     var rm = m.Resolve();

@@ -5,19 +5,8 @@ using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
 using Mono.Collections.Generic;
-using System.IO;
 using System.Reflection;
-using TypeAttributes = Mono.Cecil.TypeAttributes;
-using System.IO;
-using Mono.Cecil.Rocks;
-using Mono.Cecil.Cil;
-using System.Collections;
-using System.Collections.Generic;
-using Mono.Cecil;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using Swigged.LLVM;
 
 
@@ -173,11 +162,6 @@ namespace Campy.Meta
                     }
                 }
             }
-
-            if (type.ContainsGenericParameter)
-            {
-                throw new Exception("Deresolve did not work.");
-            }
             return type;
         }
 
@@ -289,7 +273,6 @@ namespace Campy.Meta
             return method_reference;
         }
 
-
         public static MethodReference SubstituteMethod(
             this MethodReference method_reference,
             TypeReference parent,
@@ -303,6 +286,7 @@ namespace Campy.Meta
             TypeDefinition substituted_declaring_type_definition = substituted_declaring_type.Resolve();
             if (substituted_declaring_type_definition == null) return null;
             var method_definition_resolved = method_reference.Resolve();
+            if (method_definition_resolved == null) return null;
             var substituted_method_definition = substituted_declaring_type_definition.Methods
                 .Where(m =>
                 {
@@ -442,12 +426,6 @@ namespace Campy.Meta
             return Type.GetType(y, true);
         }
 
-        public static Mono.Cecil.TypeReference SubstituteMonoTypeReference(this System.Type type, Mono.Cecil.ModuleDefinition md)
-        {
-            var reference = md.ImportReference(type);
-            return reference;
-        }
-
         public static TypeReference RewriteMonoTypeReference(this Mono.Cecil.TypeReference type)
         {
             var new_type = type.SubstituteMonoTypeReference();
@@ -457,26 +435,57 @@ namespace Campy.Meta
 
         public static TypeReference SubstituteMonoTypeReference(this Mono.Cecil.TypeReference type)
         {
+            // No need to look if already done.
             string scope = type.Scope.Name;
-            if (scope.Contains("corlib") && !scope.Contains("mscorlib"))
-                return type;
+            if (scope.Contains("corlib") && !scope.Contains("mscorlib")) return type;
 
-            Mono.Cecil.ModuleDefinition campy_bcl_runtime = Campy.Meta.StickyReadMod.StickyReadModule(RUNTIME.FindCoreLib());
-            // ImportReference does not work as expected because the scope of the type found isn't in the module.
-            foreach (var tt in campy_bcl_runtime.Types)
+            if (type as ArrayType != null)
             {
-                if (type.Name == tt.Name && type.Namespace == tt.Namespace)
+                var array_type = type as Mono.Cecil.ArrayType;
+                var element_type = array_type.ElementType;
+                var new_element_type = element_type.SubstituteMonoTypeReference();
+                if (element_type != new_element_type)
                 {
-                    if (type as GenericInstanceType != null)
-                    {
-                        TypeReference[] args = (type as GenericInstanceType).GenericArguments.ToArray();
-                        GenericInstanceType de = tt.MakeGenericInstanceType(args);
-                        return de;
-                    }
-                    return tt;
+                    var new_array_type = new ArrayType(new_element_type, array_type.Rank);
+                    type = new_array_type;
                 }
+                return type;
             }
-            return null;
+            else if (type as ByReferenceType != null)
+            {
+                var gp = type as ByReferenceType;
+                var x = gp.GetElementType();
+                type = new ByReferenceType(x.SubstituteMonoTypeReference());
+                return type;
+            }
+            else if (type as GenericInstanceType != null)
+            {
+                // For generic instance types, it could contain a generic parameter.
+                // Substitute parameter if needed.
+                var git = type as GenericInstanceType;
+                var args = git.GenericArguments;
+                var new_args = git.GenericArguments.ToArray();
+                for (int i = 0; i < new_args.Length; ++i)
+                {
+                    var arg = args[i];
+                    var new_arg = arg.SubstituteMonoTypeReference();
+                    new_args[i] = new_arg;
+                }
+                var type_def = type.Resolve();
+                var new_type = type_def.SubstituteMonoTypeReference();
+                GenericInstanceType de = new_type.MakeGenericInstanceType(new_args);
+                return de;
+            }
+            else if (type as GenericParameter != null)
+            {
+                return type;
+            }
+            else
+            {
+                RUNTIME.all_types.TryGetValue(type.Resolve().FullName, out TypeReference value);
+                if (value == null) return type;
+                return value;
+            }
         }
 
         public static System.Reflection.MethodBase ToSystemMethodInfo(this Mono.Cecil.MethodDefinition md)

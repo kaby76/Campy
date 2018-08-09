@@ -1322,7 +1322,6 @@
 
             Type type = obj.GetType();
             Mono.Cecil.ModuleDefinition campy_bcl_runtime = Campy.Meta.StickyReadMod.StickyReadModule(RUNTIME.FindCoreLib());
-            TypeReference substituted_type = type.SubstituteMonoTypeReference(campy_bcl_runtime);
 
             if (type.FullName == "System.String")
             {
