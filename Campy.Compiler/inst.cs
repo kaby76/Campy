@@ -3612,137 +3612,144 @@
         }
 
         public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
-        {
+        {   // callvirt – call a method associated, at runtime, with an object, page 396.
             object method = this.Operand;
             if (method as Mono.Cecil.MethodReference == null) throw new Exception();
             Mono.Cecil.MethodReference orig_mr = method as Mono.Cecil.MethodReference;
             orig_mr = orig_mr.SubstituteMethod(null, null);
             var mr = orig_mr.FixGenericMethods(this.Block._original_method_reference);
-            var token = 0x06000000 | mr.MetadataToken.RID;
+            var md = mr.Resolve();
+            bool is_virtual = md.IsVirtual;
             bool has_this = true;
             bool is_explicit_this = mr.ExplicitThis;
             has_this = has_this && !is_explicit_this;
             int xargs = (has_this ? 1 : 0) + mr.Parameters.Count;
-            VALUE this_parameter = state._stack.PeekTop(xargs - 1);
-            ValueRef[] args1 = new ValueRef[2];
-            var this_ptr = LLVM.BuildPtrToInt(Builder, this_parameter.V, LLVM.Int64Type(), "i" + instruction_id++);
-            args1[0] = this_ptr;
-            var v2 = LLVM.ConstInt(LLVM.Int32Type(), token, false);
-            args1[1] = v2;
-            var f = RUNTIME.PtxFunctions.Where(t => t._mangled_name == "_Z21MetaData_GetMethodJitPvi").First();
-            var addr_method = LLVM.BuildCall(Builder, f._valueref, args1, "");
-            if (Campy.Utils.Options.IsOn("jit_trace"))
-                System.Console.WriteLine(new VALUE(addr_method));
-            bool has_return = mr.ReturnType.FullName != "System.Void";
-            TypeRef[] lparams = new TypeRef[xargs];
-            ValueRef[] args = new ValueRef[xargs];
-            var pars = mr.Parameters;
-            for (int k = mr.Parameters.Count - 1; k >= 0; --k)
+            // callvirt can be called for non-virtual functions!!!!!!!! BS!
+            // Switch appropriately.
+           // if (!is_virtual) throw new Exception("Fucked.");
             {
-                VALUE v = state._stack.Pop();
-                var par_type = pars[k].ParameterType.InstantiateGeneric(mr);
-                TypeRef par = par_type.ToTypeRef();
-                ValueRef value = v.V;
-                if (LLVM.TypeOf(value) != par)
-                {
-                    if (LLVM.GetTypeKind(par) == TypeKind.StructTypeKind
-                        && LLVM.GetTypeKind(LLVM.TypeOf(value)) == TypeKind.PointerTypeKind)
-                        value = LLVM.BuildLoad(Builder, value, "i" + instruction_id++);
-                    else if (LLVM.GetTypeKind(par) == TypeKind.PointerTypeKind)
-                        value = LLVM.BuildPointerCast(Builder, value, par, "i" + instruction_id++);
-                    else if (LLVM.GetTypeKind(LLVM.TypeOf(value)) == TypeKind.IntegerTypeKind)
-                        value = LLVM.BuildIntCast(Builder, value, par, "i" + instruction_id++);
-                    else
-                        value = LLVM.BuildBitCast(Builder, value, par, "i" + instruction_id++);
-                }
-                lparams[k + xargs - mr.Parameters.Count] = par;
-                args[k + xargs - mr.Parameters.Count] = value;
-            }
-            if (has_this)
-            {
-                VALUE v = state._stack.Pop();
-                TypeRef par = mr.DeclaringType.ToTypeRef();
-                ValueRef value = v.V;
-                if (LLVM.TypeOf(value) != par)
-                {
-                    if (LLVM.GetTypeKind(par) == TypeKind.StructTypeKind
-                        && LLVM.GetTypeKind(LLVM.TypeOf(value)) == TypeKind.PointerTypeKind)
-                        value = LLVM.BuildLoad(Builder, value, "i" + instruction_id++);
-                    else if (LLVM.GetTypeKind(par) == TypeKind.PointerTypeKind)
-                        value = LLVM.BuildPointerCast(Builder, value, par, "i" + instruction_id++);
-                    else if (LLVM.GetTypeKind(LLVM.TypeOf(value)) == TypeKind.IntegerTypeKind)
-                        value = LLVM.BuildIntCast(Builder, value, par, "i" + instruction_id++);
-                    else
-                        value = LLVM.BuildBitCast(Builder, value, par, "");
-                }
-                lparams[0] = par;
-                args[0] = value;
-            }
-            TypeRef return_type = has_return ?
-                mr.ReturnType.InstantiateGeneric(mr).ToTypeRef() : LLVM.Int64Type();
-
-            // There are two ways a function can be called: with direct parameters,
-            // or with arrayed parameters. One way is "direct" where parameters are
-            // passed as is. This occurs for Campy JIT code. The other way is "indirect"
-            // where the parameters are passed via arrays. This occurs for BCL internal
-            // functions.
-
-            CFG.Vertex the_entry = this.Block._graph.Vertices.Where(v =>
-                (v.IsEntry && JITER.MethodName(v._original_method_reference) == mr.FullName)).ToList().FirstOrDefault();
-
-            if (the_entry != null)
-            {
-                var function_type = LLVM.FunctionType(return_type, lparams, false);
-                var ptr_function_type = LLVM.PointerType(function_type, 0);
-                var ptr_method = LLVM.BuildIntToPtr(Builder, addr_method, ptr_function_type, "i" + instruction_id++);
-                var call = LLVM.BuildCall(Builder, ptr_method, args, "");
+                VALUE this_parameter = state._stack.PeekTop(xargs - 1);
+                ValueRef[] args1 = new ValueRef[2];
+                var this_ptr = LLVM.BuildPtrToInt(Builder, this_parameter.V, LLVM.Int64Type(), "i" + instruction_id++);
+                args1[0] = this_ptr;
+                var token = 0x06000000 | mr.MetadataToken.RID;
+                var v2 = LLVM.ConstInt(LLVM.Int32Type(), token, false);
+                args1[1] = v2;
+                var f = RUNTIME.PtxFunctions.Where(t => t._mangled_name == "_Z21MetaData_GetMethodJitPvi").First();
+                var addr_method = LLVM.BuildCall(Builder, f._valueref, args1, "");
                 if (Campy.Utils.Options.IsOn("jit_trace"))
-                    System.Console.WriteLine(call.ToString());
-                if (has_return)
+                    System.Console.WriteLine(new VALUE(addr_method));
+                bool has_return = mr.ReturnType.FullName != "System.Void";
+                TypeRef[] lparams = new TypeRef[xargs];
+                ValueRef[] args = new ValueRef[xargs];
+                var pars = mr.Parameters;
+                for (int k = mr.Parameters.Count - 1; k >= 0; --k)
                 {
-                    state._stack.Push(new VALUE(call));
+                    VALUE v = state._stack.Pop();
+                    var par_type = pars[k].ParameterType.InstantiateGeneric(mr);
+                    TypeRef par = par_type.ToTypeRef();
+                    ValueRef value = v.V;
+                    if (LLVM.TypeOf(value) != par)
+                    {
+                        if (LLVM.GetTypeKind(par) == TypeKind.StructTypeKind
+                            && LLVM.GetTypeKind(LLVM.TypeOf(value)) == TypeKind.PointerTypeKind)
+                            value = LLVM.BuildLoad(Builder, value, "i" + instruction_id++);
+                        else if (LLVM.GetTypeKind(par) == TypeKind.PointerTypeKind)
+                            value = LLVM.BuildPointerCast(Builder, value, par, "i" + instruction_id++);
+                        else if (LLVM.GetTypeKind(LLVM.TypeOf(value)) == TypeKind.IntegerTypeKind)
+                            value = LLVM.BuildIntCast(Builder, value, par, "i" + instruction_id++);
+                        else
+                            value = LLVM.BuildBitCast(Builder, value, par, "i" + instruction_id++);
+                    }
+                    lparams[k + xargs - mr.Parameters.Count] = par;
+                    args[k + xargs - mr.Parameters.Count] = value;
                 }
-            }
-            else
-            {
-                TypeRef[] internal_lparams = new TypeRef[3];
-                ValueRef[] internal_args = new ValueRef[3];
-                TypeRef internal_return_type = LLVM.VoidType();
-                internal_lparams[0] = internal_lparams[1] = internal_lparams[2] = LLVM.Int64Type();
-                var function_type = LLVM.FunctionType(internal_return_type, internal_lparams, false);
-                var ptr_function_type = LLVM.PointerType(function_type, 0);
-                var ptr_method = LLVM.BuildIntToPtr(Builder, addr_method, ptr_function_type, "i" + instruction_id++);
-                var parameter_type = LLVM.ArrayType(LLVM.Int64Type(), (uint)args.Count()-1);
-                var arg_buffer = LLVM.BuildAlloca(Builder, parameter_type, "i" + instruction_id++);
-                LLVM.SetAlignment(arg_buffer, 64);
-                var base_of_args = LLVM.BuildPointerCast(Builder, arg_buffer,
-                    LLVM.PointerType(LLVM.Int64Type(), 0), "i" + instruction_id++);
-                for (int i = 1; i < args.Count(); ++i)
+                if (has_this)
                 {
-                    var im1 = i - 1;
-                    ValueRef[] index = new ValueRef[1] { LLVM.ConstInt(LLVM.Int32Type(), (ulong)im1, true) };
-                    var add = LLVM.BuildInBoundsGEP(Builder, base_of_args, index, "i" + instruction_id++);
-                    ValueRef v = LLVM.BuildPointerCast(Builder, add, LLVM.PointerType(LLVM.TypeOf(args[i]), 0), "i" + instruction_id++);
-                    ValueRef store = LLVM.BuildStore(Builder, args[i], v);
+                    VALUE v = state._stack.Pop();
+                    TypeRef par = mr.DeclaringType.ToTypeRef();
+                    ValueRef value = v.V;
+                    if (LLVM.TypeOf(value) != par)
+                    {
+                        if (LLVM.GetTypeKind(par) == TypeKind.StructTypeKind
+                            && LLVM.GetTypeKind(LLVM.TypeOf(value)) == TypeKind.PointerTypeKind)
+                            value = LLVM.BuildLoad(Builder, value, "i" + instruction_id++);
+                        else if (LLVM.GetTypeKind(par) == TypeKind.PointerTypeKind)
+                            value = LLVM.BuildPointerCast(Builder, value, par, "i" + instruction_id++);
+                        else if (LLVM.GetTypeKind(LLVM.TypeOf(value)) == TypeKind.IntegerTypeKind)
+                            value = LLVM.BuildIntCast(Builder, value, par, "i" + instruction_id++);
+                        else
+                            value = LLVM.BuildBitCast(Builder, value, par, "");
+                    }
+                    lparams[0] = par;
+                    args[0] = value;
+                }
+                TypeRef return_type = has_return ?
+                    mr.ReturnType.InstantiateGeneric(mr).ToTypeRef() : LLVM.Int64Type();
+
+                // There are two ways a function can be called: with direct parameters,
+                // or with arrayed parameters. One way is "direct" where parameters are
+                // passed as is. This occurs for Campy JIT code. The other way is "indirect"
+                // where the parameters are passed via arrays. This occurs for BCL internal
+                // functions.
+
+                CFG.Vertex the_entry = this.Block._graph.Vertices.Where(v =>
+                    (v.IsEntry && JITER.MethodName(v._original_method_reference) == mr.FullName)).ToList().FirstOrDefault();
+
+                if (the_entry != null)
+                {
+                    var function_type = LLVM.FunctionType(return_type, lparams, false);
+                    var ptr_function_type = LLVM.PointerType(function_type, 0);
+                    var ptr_method = LLVM.BuildIntToPtr(Builder, addr_method, ptr_function_type, "i" + instruction_id++);
+                    var call = LLVM.BuildCall(Builder, ptr_method, args, "");
                     if (Campy.Utils.Options.IsOn("jit_trace"))
-                        System.Console.WriteLine(new VALUE(store));
+                        System.Console.WriteLine(call.ToString());
+                    if (has_return)
+                    {
+                        state._stack.Push(new VALUE(call));
+                    }
                 }
-                ValueRef return_buffer = LLVM.BuildAlloca(Builder, return_type, "i" + instruction_id++);
-                LLVM.SetAlignment(return_buffer, 64);
-                var pt = LLVM.BuildPtrToInt(Builder, args[0], LLVM.Int64Type(), "i" + instruction_id++);
-                var pp = LLVM.BuildPtrToInt(Builder, arg_buffer, LLVM.Int64Type(), "i" + instruction_id++);
-                var pr = LLVM.BuildPtrToInt(Builder, return_buffer, LLVM.Int64Type(), "i" + instruction_id++);
-                internal_args[0] = pt;
-                internal_args[1] = pp;
-                internal_args[2] = pr;
-                var call = LLVM.BuildCall(Builder, ptr_method, internal_args, "");
-                if (has_return)
+                else
                 {
-                    var load = LLVM.BuildLoad(Builder, return_buffer, "i" + instruction_id++);
-                    state._stack.Push(new VALUE(load));
+                    TypeRef[] internal_lparams = new TypeRef[3];
+                    ValueRef[] internal_args = new ValueRef[3];
+                    TypeRef internal_return_type = LLVM.VoidType();
+                    internal_lparams[0] = internal_lparams[1] = internal_lparams[2] = LLVM.Int64Type();
+                    var function_type = LLVM.FunctionType(internal_return_type, internal_lparams, false);
+                    var ptr_function_type = LLVM.PointerType(function_type, 0);
+                    var ptr_method = LLVM.BuildIntToPtr(Builder, addr_method, ptr_function_type, "i" + instruction_id++);
+                    var parameter_type = LLVM.ArrayType(LLVM.Int64Type(), (uint)args.Count() - 1);
+                    var arg_buffer = LLVM.BuildAlloca(Builder, parameter_type, "i" + instruction_id++);
+                    LLVM.SetAlignment(arg_buffer, 64);
+                    var base_of_args = LLVM.BuildPointerCast(Builder, arg_buffer,
+                        LLVM.PointerType(LLVM.Int64Type(), 0), "i" + instruction_id++);
+                    for (int i = 1; i < args.Count(); ++i)
+                    {
+                        var im1 = i - 1;
+                        ValueRef[] index = new ValueRef[1] { LLVM.ConstInt(LLVM.Int32Type(), (ulong)im1, true) };
+                        var add = LLVM.BuildInBoundsGEP(Builder, base_of_args, index, "i" + instruction_id++);
+                        ValueRef v = LLVM.BuildPointerCast(Builder, add, LLVM.PointerType(LLVM.TypeOf(args[i]), 0), "i" + instruction_id++);
+                        ValueRef store = LLVM.BuildStore(Builder, args[i], v);
+                        if (Campy.Utils.Options.IsOn("jit_trace"))
+                            System.Console.WriteLine(new VALUE(store));
+                    }
+                    ValueRef return_buffer = LLVM.BuildAlloca(Builder, return_type, "i" + instruction_id++);
+                    LLVM.SetAlignment(return_buffer, 64);
+                    var pt = LLVM.BuildPtrToInt(Builder, args[0], LLVM.Int64Type(), "i" + instruction_id++);
+                    var pp = LLVM.BuildPtrToInt(Builder, arg_buffer, LLVM.Int64Type(), "i" + instruction_id++);
+                    var pr = LLVM.BuildPtrToInt(Builder, return_buffer, LLVM.Int64Type(), "i" + instruction_id++);
+                    internal_args[0] = pt;
+                    internal_args[1] = pp;
+                    internal_args[2] = pr;
+                    var call = LLVM.BuildCall(Builder, ptr_method, internal_args, "");
+                    if (has_return)
+                    {
+                        var load = LLVM.BuildLoad(Builder, return_buffer, "i" + instruction_id++);
+                        state._stack.Push(new VALUE(load));
+                    }
+                    if (Campy.Utils.Options.IsOn("jit_trace"))
+                        System.Console.WriteLine(call.ToString());
                 }
-                if (Campy.Utils.Options.IsOn("jit_trace"))
-                    System.Console.WriteLine(call.ToString());
             }
         }
     }
@@ -4289,8 +4296,12 @@
         }
 
         public override void Convert(STATE<VALUE, StackQueue<VALUE>> state)
-        {
-            throw new Exception();
+        {   // isinst – test if an object is an instance of a class or interface, page 401
+            var typetok = Operand;
+            var tr = typetok as TypeReference;
+            var tr2 = tr.RewriteMonoTypeReference();
+            var v = tr2.Deresolve(this.Block._original_method_reference.DeclaringType, null);
+            // No change for now.
         }
     }
 
@@ -5676,13 +5687,104 @@
 
         public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {   // ldtoken (load token handle), ecma 335 page 413
-            var t = typeof(System.RuntimeTypeHandle).ToMonoTypeReference().RewriteMonoTypeReference();
-            var v = t.Deresolve(this.Block._original_method_reference.DeclaringType, null);
-            state._stack.Push(v);
+            var rth = typeof(System.RuntimeTypeHandle).ToMonoTypeReference().RewriteMonoTypeReference();
+            var v = rth.Deresolve(this.Block._original_method_reference.DeclaringType, null);
+			state._stack.Push(v);
+            // Parse System.RuntimeTypeHandle.ctor(IntPtr). We'll make
+            // a call to that in code generation.
+            var list = rth.Resolve().Methods.Where(m => m.FullName.Contains("ctor")).ToList();
+            if (list.Count() != 1) throw new Exception("There should be only one constructor for System.RuntimeTypeHandle.");
+            var mr = list.First();
+            IMPORTER.Singleton().Add(mr);
         }
 
         public override void Convert(STATE<VALUE, StackQueue<VALUE>> state)
-        {
+        {   // ldtoken (load token handle), ecma 335 page 413
+            // Load System.RuntimeTypeHandle for arg.
+            var arg = this.Operand as TypeReference;
+            if (arg == null) throw new Exception("Cannot parse ldtoken type for whatever reason.");
+            var arg2 = arg.RewriteMonoTypeReference();
+            var v = arg2.Deresolve(this.Block._original_method_reference.DeclaringType, null);
+            var meta = RUNTIME.GetBclType(v);
+            var rth = typeof(System.RuntimeTypeHandle).ToMonoTypeReference().RewriteMonoTypeReference();
+            var type = rth.Deresolve(this.Block._original_method_reference.DeclaringType, null);
+            var llvm_type = type.ToTypeRef();
+            ValueRef new_obj;
+            {
+                // Generate code to allocate object and stuff.
+                var xx1 = RUNTIME.BclNativeMethods.ToList();
+                var xx2 = RUNTIME.PtxFunctions.ToList();
+                var xx = xx2
+                    .Where(t => { return t._mangled_name == "_Z23Heap_AllocTypeVoidStarsPv"; });
+                var xxx = xx.ToList();
+                RUNTIME.PtxFunction first_kv_pair = xx.FirstOrDefault();
+                if (first_kv_pair == null)
+                    throw new Exception("Yikes.");
+                ValueRef fv2 = first_kv_pair._valueref;
+                ValueRef[] args = new ValueRef[1];
+                args[0] = LLVM.ConstInt(LLVM.Int64Type(), (ulong)meta.ToInt64(), false);
+                var call = LLVM.BuildCall(Builder, fv2, args, "i" + instruction_id++);
+                var cast = LLVM.BuildIntToPtr(Builder, call, llvm_type, "i" + instruction_id++);
+                new_obj = cast;
+                if (Campy.Utils.Options.IsOn("jit_trace"))
+                    System.Console.WriteLine(new VALUE(new_obj));
+                state._stack.Push(new VALUE(new_obj));
+            }
+            state._stack.Push(new VALUE(LLVM.ConstInt(LLVM.Int64Type(), (ulong)meta.ToInt64(), false)));
+            {
+                var t = typeof(System.RuntimeTypeHandle).ToMonoTypeReference().RewriteMonoTypeReference();
+                var list = rth.Resolve().Methods.Where(m => m.FullName.Contains("ctor")).ToList();
+                if (list.Count() != 1) throw new Exception("There should be only one constructor for System.RuntimeTypeHandle.");
+                var mr = list.First();
+                // Find bb entry.
+                CFG.Vertex entry_corresponding_to_method_called = this.Block._graph.Vertices.Where(node
+                    =>
+                {
+                    if (node.IsEntry && JITER.MethodName(node._original_method_reference) == mr.FullName)
+                        return true;
+                    return false;
+                }).ToList().FirstOrDefault();
+                if (entry_corresponding_to_method_called == null) throw new Exception("Cannot find constructor for System.RuntimeTypeHandle.");
+
+                int xret = (entry_corresponding_to_method_called.HasScalarReturnValue || entry_corresponding_to_method_called.HasStructReturnValue) ? 1 : 0;
+                int xargs = entry_corresponding_to_method_called.StackNumberOfArguments;
+                var name = JITER.MethodName(mr);
+                BuilderRef bu = this.Builder;
+                ValueRef fv = entry_corresponding_to_method_called.LlvmInfo.MethodValueRef;
+                var t_fun = LLVM.TypeOf(fv);
+                var t_fun_con = LLVM.GetTypeContext(t_fun);
+                var context = LLVM.GetModuleContext(RUNTIME.global_llvm_module);
+                if (t_fun_con != context) throw new Exception("not equal");
+                ValueRef[] args = new ValueRef[xargs];
+                // No return.
+                for (int k = xargs - 1; k >= 0; --k)
+                {
+                    VALUE a = state._stack.Pop();
+                    ValueRef par = LLVM.GetParam(fv, (uint)k);
+                    ValueRef value = a.V;
+                    if (LLVM.TypeOf(value) != LLVM.TypeOf(par))
+                    {
+                        if (LLVM.GetTypeKind(LLVM.TypeOf(par)) == TypeKind.StructTypeKind
+                            && LLVM.GetTypeKind(LLVM.TypeOf(value)) == TypeKind.PointerTypeKind)
+                        {
+                            value = LLVM.BuildLoad(Builder, value, "i" + instruction_id++);
+                        }
+                        else if (LLVM.GetTypeKind(LLVM.TypeOf(par)) == TypeKind.PointerTypeKind)
+                        {
+                            value = LLVM.BuildPointerCast(Builder, value, LLVM.TypeOf(par), "i" + instruction_id++);
+                        }
+                        else
+                        {
+                            value = LLVM.BuildBitCast(Builder, value, LLVM.TypeOf(par), "i" + instruction_id++);
+                        }
+                    }
+                    args[k] = value;
+                }
+                var call = LLVM.BuildCall(Builder, fv, args, "");
+                if (Campy.Utils.Options.IsOn("jit_trace"))
+                    System.Console.WriteLine(call.ToString());
+                state._stack.Push(new VALUE(new_obj));
+            }
         }
     }
 

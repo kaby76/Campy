@@ -7,6 +7,36 @@ using System.Linq;
 
 namespace ConsoleApp4
 {
+    // A simple test from https://stackoverflow.com/questions/48157879/alea-i32-is-not-struct-type
+
+    class A
+    {
+        public int X { get; set; }
+
+        public int Score(A b)
+        {
+            return X + b.X;
+        }
+    }
+
+    public class UnitTest1
+    {
+        public static void Test1()
+        {
+            A[] array = new A[10];
+            for (int i = 0; i < 10; ++i) array[i] = new A();
+
+            Campy.Parallel.For(10, i =>
+            {
+                array[i].X = i;
+            });
+
+            for (int i = 0; i < 10; i++)
+            {
+                if (array[i].X != i) throw new Exception();
+            }
+        }
+    }
     class Program
     {
         static void StartDebugging()
@@ -28,10 +58,13 @@ namespace ConsoleApp4
         static void Main(string[] args)
         {
             StartDebugging();
-            Campy.Parallel.For(3, i =>
-            {
-                System.Console.WriteLine(i.ToString());
-            });
+            UnitTest1.Test1();
+
+
+            //Campy.Parallel.For(3, i =>
+            //{
+            //    System.Console.WriteLine(i.ToString());
+            //});
         }
     }
 }

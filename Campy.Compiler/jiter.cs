@@ -1267,23 +1267,29 @@ namespace Campy.Compiler
             {
                 CFG.Vertex n = caller.Block;
                 var operand = caller.Operand;
-                var method_reference = operand as MethodReference;
-                var md = method_reference.Resolve();
+                var method = operand as MethodReference;
+                if (method as Mono.Cecil.MethodReference == null) throw new Exception();
+                Mono.Cecil.MethodReference orig_mr = method as Mono.Cecil.MethodReference;
+                var new_mr = orig_mr.SubstituteMethod(null, null);
+                if (new_mr == null) new_mr = orig_mr;
+                var mr = orig_mr.FixGenericMethods(n._original_method_reference);
+                var md = mr.Resolve();
                 if (md == null) continue;
-                if (!md.IsVirtual) continue;
+                if (!md.IsVirtual)
+                    continue;
                 foreach (RUNTIME.BclNativeMethod ci in RUNTIME.BclNativeMethods)
                 {
-                    if (ci._full_name == method_reference.FullName)
+                    if (ci._full_name == mr.FullName)
                     {
                         string the_name = ci._native_name;
                         var res = Cuda.cuModuleGetFunction(out CUfunction helloWorld, module, ci._native_name);
                         // Not every entry is going to be in module, so this isn't a problem if not found.
                         if (res != CUresult.CUDA_SUCCESS) continue;
                         res = Cuda.cuModuleGetGlobal_v2(out IntPtr hw, out ulong z, module, "p_" + ci._short_name);
-                        var bcl_type = RUNTIME.GetBclType(method_reference.DeclaringType);
+                        var bcl_type = RUNTIME.GetBclType(mr.DeclaringType);
                         RUNTIME.BclMetaDataSetMethodJit(hw,
                             bcl_type,
-                            (int)method_reference.MetadataToken.RID | 0x06000000);
+                            (int)mr.MetadataToken.RID | 0x06000000);
                         break;
                     }
                 }
