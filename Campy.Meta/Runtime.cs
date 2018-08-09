@@ -107,9 +107,21 @@
         public static ModuleRef global_llvm_module;
         public static List<ModuleRef> all_llvm_modules;
         public static Mono.Cecil.Cil.ILProcessor worker;
-        public static Dictionary<string, ValueRef> functions_in_internal_bcl_layer;
-
+        public static Dictionary<string, ValueRef> _bcl_runtime_csharp_internal_to_valueref;
         public static Dictionary<string, TypeReference> all_types = new Dictionary<string, TypeReference>();
+        // This table encodes runtime type information for rewriting internal calls in the native portion of
+        // the BCL for the GPU. It was originally encoded in dna/internal.c. However, it's easier and
+        // safer to derive the information from the C# portion of the BCL using System.Reflection.
+        //
+        // Why is this information needed? In Inst.c, I need to make a call of a function to the runtime.
+        // I only have PTX files, which removes the type information from the signature of
+        // the original call (it is all three parameters of void*).
+        private static List<BclNativeMethod> _bcl_runtime_csharp_methods_labeled_internal = new List<BclNativeMethod>();
+
+        // This table is a record of all '.visible' functions in a generated PTX file. Use this name when calling
+        // functions in PTX/LLVM.
+        private static List<PtxFunction> _ptx_functions = new List<PtxFunction>();
+
 
         private static Dictionary<string, TypeRef> _ptx_type_to_llvm_typeref = new Dictionary<string, TypeRef>()
         {
@@ -179,7 +191,6 @@
         public class PtxFunction
         {
             public string _mangled_name;
-            public string _short_name;
             public ValueRef _valueref;
 
             public PtxFunction(string mangled_name, ValueRef value_ref)
@@ -189,19 +200,6 @@
             }
         }
 
-        // This table encodes runtime type information for rewriting internal calls in the native portion of
-        // the BCL for the GPU. It was originally encoded in dna/internal.c. However, it's easier and
-        // safer to derive the information from the C# portion of the BCL using System.Reflection.
-        //
-        // Why is this information needed? In Inst.c, I need to make a call of a function to the runtime.
-        // I only have PTX files, which removes the type information from the signature of
-        // the original call (it is all three parameters of void*).
-        private static List<BclNativeMethod> _internalCalls = new List<BclNativeMethod>();
-
-        // This table is a record of all '.visible' functions in a generated PTX file. Use this name when calling
-        // functions in PTX/LLVM.
-        private static List<PtxFunction> _ptx_functions = new List<PtxFunction>();
-
         private class InternalCallEnumerable : IEnumerable<BclNativeMethod>
         {
             public InternalCallEnumerable()
@@ -210,7 +208,7 @@
 
             public IEnumerator<BclNativeMethod> GetEnumerator()
             {
-                foreach (var key in _internalCalls)
+                foreach (var key in _bcl_runtime_csharp_methods_labeled_internal)
                 {
                     yield return key;
                 }
@@ -451,7 +449,7 @@
                     {
                         if (Campy.Utils.Options.IsOn("runtime_trace"))
                             System.Console.WriteLine("Internal call set up " + bcl_type + " " + m);
-                        _internalCalls.Add(new BclNativeMethod(bcl_type, m));
+                        _bcl_runtime_csharp_methods_labeled_internal.Add(new BclNativeMethod(bcl_type, m));
                     }
                 }
             }
@@ -575,7 +573,7 @@
                         if (Campy.Utils.Options.IsOn("runtime_trace"))
                             System.Console.WriteLine(mangled_name + " " + return_type + " " + parameters);
 
-                        if (RUNTIME.functions_in_internal_bcl_layer.ContainsKey(mangled_name)) continue;
+                        if (RUNTIME._bcl_runtime_csharp_internal_to_valueref.ContainsKey(mangled_name)) continue;
 
                         TypeRef llvm_return_type = default(TypeRef);
                         TypeRef[] args;
@@ -634,11 +632,9 @@
                         if (Campy.Utils.Options.IsOn("runtime_trace"))
                             System.Console.WriteLine(ptxf._mangled_name
                                                  + " "
-                                                 + ptxf._short_name
-                                                 + " "
                                                  + ptxf._valueref);
 
-                        RUNTIME.functions_in_internal_bcl_layer.Add(mangled_name, decl);
+                        RUNTIME._bcl_runtime_csharp_internal_to_valueref.Add(mangled_name, decl);
                         _ptx_functions.Add(ptxf);
                     }
                 }

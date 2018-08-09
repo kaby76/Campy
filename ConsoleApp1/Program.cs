@@ -5,57 +5,28 @@ using System.Text;
 
 namespace ConsoleApp1
 {
-    public class ListsGaloreBasic
+    public class TwoDimArrayInts
     {
-        public static void ListsGaloreBasicT()
+        public static void TwoDimArrayIntsT()
         {
-            int n = 4;
-
-            var t1 = new List<int>();
-            for (int i = 0; i < n; ++i) t1.Add(0);
-            Campy.Parallel.For(n, i => t1[i] = i);
-            for (int i = 0; i < n; ++i) if (t1[i] != i) throw new Exception();
-
-            var t2 = new List<float>();
-            for (int i = 0; i < n; ++i) t2.Add(0);
-            Campy.Parallel.For(n, i => t2[i] = 0.1f * i);
-            for (int i = 0; i < n; ++i) if (t2[i] != 0.1f * i) throw new Exception();
-
-            var t3 = new List<double>();
-            for (int i = 0; i < n; ++i) t3.Add(0);
-            Campy.Parallel.For(n, i => t3[i] = 0.1d * i);
-            for (int i = 0; i < n; ++i) if (t3[i] != 0.1d * i) throw new Exception();
-
-            var t4 = new List<ushort>();
-            for (int i = 0; i < n; ++i) t4.Add(0);
-            Campy.Parallel.For(n, i => t4[i] = (ushort)(i + 1));
-            for (int i = 0; i < n; ++i) if (t4[i] != (ushort)(i + 1)) throw new Exception();
-
-            var t5 = new List<int>();
-            for (int i = 0; i < n; ++i) t5.Add(0);
-            Campy.Parallel.For(n, i => t5[i] = t1[i] * 2);
-            for (int i = 0; i < n; ++i) if (t5[i] != t1[i] * 2) throw new Exception();
-
-            var t6 = new List<float>();
-            for (int i = 0; i < n; ++i) t6.Add(0);
-            Campy.Parallel.For(n, i => t6[i] = 0.1f * i + t2[i]);
-            for (int i = 0; i < n; ++i) if (t6[i] != 0.1f * i + t2[i]) throw new Exception();
-
-            var t7 = new List<double>();
-            for (int i = 0; i < n; ++i) t7.Add(0);
-            Campy.Parallel.For(n, i => t7[i] = 0.1f * i - t3[i]);
-            for (int i = 0; i < n; ++i) if (t7[i] != 0.1f * i - t3[i]) throw new Exception();
-
-            var t8 = new List<ushort>();
-            for (int i = 0; i < n; ++i) t8.Add(0);
-            Campy.Parallel.For(n, (i) =>
+            int e = 10;
+            int ex0 = 3;
+            int ex1 = 5;
+            int[,] b = new int[ex0, ex1];
+            for (int i = 0; i < ex0; ++i)
+                for (int j = 0; j < ex1; ++j)
+                    b[i, j] = (i + 1) * (j + 1);
+            Campy.Parallel.For(5, d =>
             {
-                t8[i] = (ushort)(t4[i] + i + 1);
+                b[d % 3, d] = 33 + d;
             });
-            for (int i = 0; i < n; ++i) if (t8[i] != (ushort)(t4[i] + i + 1)) throw new Exception();
+            if (b[0, 0] != 33) throw new Exception();
+            if (b[1, 1] != 34) throw new Exception();
+            if (b[2, 2] != 35) throw new Exception();
+            if (b[0, 3] != 36) throw new Exception();
+            if (b[1, 4] != 37) throw new Exception();
         }
     }
-
     class Program
     {
         static void StartDebugging()
@@ -77,8 +48,7 @@ namespace ConsoleApp1
         static void Main(string[] args)
         {
             StartDebugging();
-            ListsGaloreBasic.ListsGaloreBasicT();
-
+            TwoDimArrayInts.TwoDimArrayIntsT();
         }
     }
 }

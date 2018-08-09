@@ -1377,7 +1377,7 @@
                 BuilderRef bu = this.Builder;
 
                 // Find the specific function called in BCL.
-                var xx = RUNTIME.functions_in_internal_bcl_layer.Where(t => t.Key.Contains(mangled_name) || mangled_name.Contains(t.Key));
+                var xx = RUNTIME._bcl_runtime_csharp_internal_to_valueref.Where(t => t.Key.Contains(mangled_name) || mangled_name.Contains(t.Key));
                 var first_kv_pair = xx.FirstOrDefault();
                 if (first_kv_pair.Key == null)
                 {
@@ -1790,24 +1790,24 @@
                 && _arg == 1)
             {
                 //threadId
-                var tidx = RUNTIME.functions_in_internal_bcl_layer["llvm.nvvm.read.ptx.sreg.tid.x"];
-                var tidy = RUNTIME.functions_in_internal_bcl_layer["llvm.nvvm.read.ptx.sreg.tid.y"];
-                var tidz = RUNTIME.functions_in_internal_bcl_layer["llvm.nvvm.read.ptx.sreg.tid.z"];
+                var tidx = RUNTIME._bcl_runtime_csharp_internal_to_valueref["llvm.nvvm.read.ptx.sreg.tid.x"];
+                var tidy = RUNTIME._bcl_runtime_csharp_internal_to_valueref["llvm.nvvm.read.ptx.sreg.tid.y"];
+                var tidz = RUNTIME._bcl_runtime_csharp_internal_to_valueref["llvm.nvvm.read.ptx.sreg.tid.z"];
 
                 //blockIdx
-                var ctaidx = RUNTIME.functions_in_internal_bcl_layer["llvm.nvvm.read.ptx.sreg.ctaid.x"];
-                var ctaidy = RUNTIME.functions_in_internal_bcl_layer["llvm.nvvm.read.ptx.sreg.ctaid.y"];
-                var ctaidz = RUNTIME.functions_in_internal_bcl_layer["llvm.nvvm.read.ptx.sreg.ctaid.z"];
+                var ctaidx = RUNTIME._bcl_runtime_csharp_internal_to_valueref["llvm.nvvm.read.ptx.sreg.ctaid.x"];
+                var ctaidy = RUNTIME._bcl_runtime_csharp_internal_to_valueref["llvm.nvvm.read.ptx.sreg.ctaid.y"];
+                var ctaidz = RUNTIME._bcl_runtime_csharp_internal_to_valueref["llvm.nvvm.read.ptx.sreg.ctaid.z"];
 
                 //blockDim
-                var ntidx = RUNTIME.functions_in_internal_bcl_layer["llvm.nvvm.read.ptx.sreg.ntid.x"];
-                var ntidy = RUNTIME.functions_in_internal_bcl_layer["llvm.nvvm.read.ptx.sreg.ntid.y"];
-                var ntidz = RUNTIME.functions_in_internal_bcl_layer["llvm.nvvm.read.ptx.sreg.ntid.z"];
+                var ntidx = RUNTIME._bcl_runtime_csharp_internal_to_valueref["llvm.nvvm.read.ptx.sreg.ntid.x"];
+                var ntidy = RUNTIME._bcl_runtime_csharp_internal_to_valueref["llvm.nvvm.read.ptx.sreg.ntid.y"];
+                var ntidz = RUNTIME._bcl_runtime_csharp_internal_to_valueref["llvm.nvvm.read.ptx.sreg.ntid.z"];
 
                 //gridDim
-                var nctaidx = RUNTIME.functions_in_internal_bcl_layer["llvm.nvvm.read.ptx.sreg.nctaid.x"];
-                var nctaidy = RUNTIME.functions_in_internal_bcl_layer["llvm.nvvm.read.ptx.sreg.nctaid.y"];
-                var nctaidz = RUNTIME.functions_in_internal_bcl_layer["llvm.nvvm.read.ptx.sreg.nctaid.z"];
+                var nctaidx = RUNTIME._bcl_runtime_csharp_internal_to_valueref["llvm.nvvm.read.ptx.sreg.nctaid.x"];
+                var nctaidy = RUNTIME._bcl_runtime_csharp_internal_to_valueref["llvm.nvvm.read.ptx.sreg.nctaid.y"];
+                var nctaidz = RUNTIME._bcl_runtime_csharp_internal_to_valueref["llvm.nvvm.read.ptx.sreg.nctaid.z"];
 
                 var v_tidx = LLVM.BuildCall(bb.LlvmInfo.Builder, tidx, new ValueRef[] { }, "tidx");
                 var v_tidy = LLVM.BuildCall(bb.LlvmInfo.Builder, tidy, new ValueRef[] { }, "tidy");
@@ -5218,6 +5218,7 @@
         public i_ldind_i(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+			_dst = new TYPE(typeof(int));
         }
     }
 
@@ -5244,6 +5245,7 @@
         public i_ldind_ref(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+			_dst = new TYPE(typeof(object));
         }
     }
 
@@ -5261,7 +5263,7 @@
         public i_ldind_u2(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-             _dst = new TYPE(typeof(ushort));
+			_dst = new TYPE(typeof(ushort));
         }
     }
 
@@ -5332,7 +5334,7 @@
                 string demangled_name = "_Z31System_Array_Internal_GetLengthPhS_S_";
                 string full_name = "System.Int32 System.Array::Internal_GetLength()";
                 // Find the specific function called.
-                var xx = RUNTIME.functions_in_internal_bcl_layer.Where(
+                var xx = RUNTIME._bcl_runtime_csharp_internal_to_valueref.Where(
                     t =>
                         t.Key.Contains(demangled_name)
                          || demangled_name.Contains(t.Key));
@@ -6076,8 +6078,8 @@
                 if (first_kv_pair == null)
                     throw new Exception("Yikes.");
 
-                RUNTIME.PtxFunction fffv = RUNTIME.PtxFunctions.Where(t =>
-                t._short_name == first_kv_pair._native_name).FirstOrDefault();
+                RUNTIME.PtxFunction fffv = RUNTIME.PtxFunctions.Where(
+                    t => first_kv_pair._native_name.Contains(t._mangled_name)).FirstOrDefault();
                 ValueRef fv = fffv._valueref;
                 var t_fun = LLVM.TypeOf(fv);
                 var t_fun_con = LLVM.GetTypeContext(t_fun);
@@ -6677,6 +6679,7 @@
         public i_stind_i(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+			_dst = new TYPE(typeof(int)); // native and c# int the same.
         }
     }
 
@@ -6703,6 +6706,7 @@
         public i_stind_ref(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
+			_dst = new TYPE(typeof(object));
         }
     }
 
