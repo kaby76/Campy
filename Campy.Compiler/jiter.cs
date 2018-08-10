@@ -1272,7 +1272,7 @@ namespace Campy.Compiler
                 Mono.Cecil.MethodReference orig_mr = method as Mono.Cecil.MethodReference;
                 var new_mr = orig_mr.SubstituteMethod(null, null);
                 if (new_mr == null) new_mr = orig_mr;
-                var mr = orig_mr.FixGenericMethods(n._original_method_reference);
+                var mr = new_mr.FixGenericMethods(n._original_method_reference);
                 var md = mr.Resolve();
                 if (md == null) continue;
                 if (!md.IsVirtual)
