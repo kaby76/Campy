@@ -354,6 +354,31 @@ namespace Campy.Meta
             return safe_list;
         }
 
+        public static Collection<FieldReference> MyGetFields(this TypeReference type)
+        {
+            // Get all fields, including parent chain, but not statics.
+            Collection<FieldReference> result = new Collection<FieldReference>();
+            Stack<TypeReference> chain = new Stack<TypeReference>();
+            var p = type;
+            while (p != null)
+            {
+                chain.Push(p);
+                var bt = p.Resolve().BaseType;
+                p = bt?.Deresolve(p, null);
+            }
+            while (chain.Any())
+            {
+                var q = chain.Pop();
+                foreach (var f in q.ResolveFields())
+                {
+                    if (f.Resolve().IsStatic)
+                        continue;
+                    result.Add(f);
+                }
+            }
+            return result;
+        }
+
         public static Collection<FieldReference> ResolveFields(this TypeReference tr)
         {
             // Resolve throws away type information of fields, attributes, properties, methods.
@@ -869,10 +894,11 @@ namespace Campy.Meta
 
                     List<TypeRef> list = new List<TypeRef>();
                     int offset = 0;
+                    var myfields = tr.MyGetFields();
                     var fields = td.Fields;
-                    foreach (var field in fields)
+                    foreach (var field in myfields)
                     {
-                        Mono.Cecil.FieldAttributes attr = field.Attributes;
+                        Mono.Cecil.FieldAttributes attr = field.Resolve().Attributes;
                         if ((attr & Mono.Cecil.FieldAttributes.Static) != 0)
                         {
                             continue;
@@ -996,8 +1022,9 @@ namespace Campy.Meta
                     List<TypeRef> list = new List<TypeRef>();
                     int offset = 0;
                     var fieldso = td.Fields;
+                    var myfields = tr.MyGetFields();
                     var fields = tr.ResolveFields();
-                    foreach (var field in fields)
+                    foreach (var field in myfields)
                     {
                         Mono.Cecil.FieldAttributes attr = field.Resolve().Attributes;
                         if ((attr & Mono.Cecil.FieldAttributes.Static) != 0)
