@@ -496,57 +496,6 @@
                     bcl_runtime_csharp_methods.Add(method);
                 }
             }
-            var internal_methods_in_bcl = bcl_runtime_csharp_methods.Where(
-                m =>
-                {
-                    var rm = m.Resolve();
-                    if (rm == null) return false;
-                    var x = rm.ImplAttributes;
-                    if ((x & MethodImplAttributes.InternalCall) != 0)
-                        return true;
-                    else
-                        return false;
-                }).ToList();
-            var internal_methods_in_bcl2 = bcl_runtime_csharp_methods.Where(
-                m =>
-                {
-                    var rm = m.Resolve();
-                    if (rm == null) return false;
-                    var x = rm.IsInternalCall;
-                    if (x)
-                        return true;
-                    else
-                        return false;
-                }).ToList();
-            var internal_virtual_methods_in_bcl2 = internal_methods_in_bcl.Where(
-                m =>
-                {
-                    var rm = m.Resolve();
-                    return rm.IsVirtual;
-                }).ToList();
-            //foreach (var m in methods_in_bcl)
-            //{
-            //    var r = m.Resolve();
-            //    if (r == null) continue;
-            //    if (r.IsInternalCall)
-            //    {
-            //        System.Console.WriteLine(r.FullName);
-            //        var a = r.Attributes;
-            //        if ((a & Mono.Cecil.MethodAttributes.Assembly) != 0) System.Console.Write(" | Assembly");
-            //        if ((a & Mono.Cecil.MethodAttributes.Static) != 0) System.Console.Write(" | Static");
-            //        if ((a & Mono.Cecil.MethodAttributes.Abstract) != 0) System.Console.Write(" | Abstract");
-            //        if ((a & Mono.Cecil.MethodAttributes.Final) != 0) System.Console.Write(" | Final");
-            //        if ((a & Mono.Cecil.MethodAttributes.Private) != 0) System.Console.Write(" | Private");
-            //        if ((a & Mono.Cecil.MethodAttributes.Public) != 0) System.Console.Write(" | Public");
-            //        if ((a & Mono.Cecil.MethodAttributes.Virtual) != 0) System.Console.Write(" | Virtual");
-            //        if ((a & Mono.Cecil.MethodAttributes.NewSlot) != 0) System.Console.Write(" | NewSlot");
-            //        if ((a & Mono.Cecil.MethodAttributes.ReuseSlot) != 0) System.Console.Write(" | ReuseSlot");
-            //        if ((a & Mono.Cecil.MethodAttributes.CheckAccessOnOverride) != 0) System.Console.Write(" | CheckAccessOnOverride");
-            //        if ((a & Mono.Cecil.MethodAttributes.VtableLayoutMask) != 0) System.Console.Write(" | VtableLayoutMask");
-            //        System.Console.WriteLine(" " +r.IsUnmanagedExport);
-            //    }
-            //}
-
             var resource_names = assembly.GetManifestResourceNames();
             foreach (var resource_name in resource_names)
             {

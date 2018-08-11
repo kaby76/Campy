@@ -99,11 +99,13 @@
                     dib,
                     file, new MetadataRef[0], 0, DIFlags.DIFlagNoReturn);
                 sub = LLVM.DIBuilderCreateFunction(dib, file,
-                    normalized_method_name,
-                    normalized_method_name,
+                    normalized_method_name, (uint)normalized_method_name.Length,
+                    normalized_method_name, (uint)normalized_method_name.Length,
                     file,
                     (uint) this.SeqPoint.StartLine,
-                    sub_type, 1, 1, (uint) this.SeqPoint.StartLine, 0, 0);
+                    sub_type,
+                    true, true,
+                    (uint) this.SeqPoint.StartLine, 0, false);
 
                 debug_methods[normalized_method_name] = sub;
                 LLVM.SetSubprogram(this.Block.LlvmInfo.MethodValueRef, sub);
