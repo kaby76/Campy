@@ -853,11 +853,11 @@
         public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var rhs = state._stack.Pop();
-            if (Campy.Utils.Options.IsOn("jit_trace"))
+            if (Campy.Utils.Options.IsOn("detailed_import_computation_trace"))
                 System.Console.WriteLine(rhs);
 
             var lhs = state._stack.Pop();
-            if (Campy.Utils.Options.IsOn("jit_trace"))
+            if (Campy.Utils.Options.IsOn("detailed_import_computation_trace"))
                 System.Console.WriteLine(lhs);
 
             var result = lhs;
@@ -1765,7 +1765,7 @@
         public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var value = state._arguments[_arg];
-            if (Campy.Utils.Options.IsOn("jit_trace"))
+            if (Campy.Utils.Options.IsOn("detailed_import_computation_trace"))
                 System.Console.WriteLine(value.ToString());
             state._stack.Push(value);
         }
@@ -1865,7 +1865,7 @@
         public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var value = state._stack.Pop();
-            if (Campy.Utils.Options.IsOn("jit_trace"))
+            if (Campy.Utils.Options.IsOn("detailed_import_computation_trace"))
                 System.Console.WriteLine(value);
 
             state._arguments[_arg] = value;
@@ -1896,7 +1896,7 @@
         public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var value = typeof(System.Int32).ToMonoTypeReference();
-            if (Campy.Utils.Options.IsOn("jit_trace"))
+            if (Campy.Utils.Options.IsOn("detailed_import_computation_trace"))
                 System.Console.WriteLine(value);
 
             state._stack.Push(value);
@@ -1920,7 +1920,7 @@
         public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var value = typeof(System.Int64).ToMonoTypeReference();
-            if (Campy.Utils.Options.IsOn("jit_trace"))
+            if (Campy.Utils.Options.IsOn("detailed_import_computation_trace"))
                 System.Console.WriteLine(value);
 
             state._stack.Push(value);
@@ -1944,7 +1944,7 @@
         public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var value = typeof(System.Single).ToMonoTypeReference();
-            if (Campy.Utils.Options.IsOn("jit_trace"))
+            if (Campy.Utils.Options.IsOn("detailed_import_computation_trace"))
                 System.Console.WriteLine(value);
 
             state._stack.Push(value);
@@ -1968,7 +1968,7 @@
         public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var value = typeof(System.Double).ToMonoTypeReference();
-            if (Campy.Utils.Options.IsOn("jit_trace"))
+            if (Campy.Utils.Options.IsOn("detailed_import_computation_trace"))
                 System.Console.WriteLine(value);
 
             state._stack.Push(value);
@@ -2507,11 +2507,11 @@
         public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var v = state._stack.Pop();
-            if (Campy.Utils.Options.IsOn("jit_trace"))
+            if (Campy.Utils.Options.IsOn("detailed_import_computation_trace"))
                 System.Console.WriteLine(v.ToString());
 
             var i = state._stack.Pop();
-            if (Campy.Utils.Options.IsOn("jit_trace"))
+            if (Campy.Utils.Options.IsOn("detailed_import_computation_trace"))
                 System.Console.WriteLine(i.ToString());
 
             var a = state._stack.Pop();
@@ -2585,11 +2585,11 @@
         public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var i = state._stack.Pop();
-            if (Campy.Utils.Options.IsOn("jit_trace"))
+            if (Campy.Utils.Options.IsOn("detailed_import_computation_trace"))
                 System.Console.WriteLine(i.ToString());
 
             var a = state._stack.Pop();
-            if (Campy.Utils.Options.IsOn("jit_trace"))
+            if (Campy.Utils.Options.IsOn("detailed_import_computation_trace"))
                 System.Console.WriteLine(a.ToString());
 
             var e = a.GetElementType();
@@ -2642,10 +2642,10 @@
         public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {   // stfld, page 427 of ecma 335
             var v = state._stack.Pop();
-            if (Campy.Utils.Options.IsOn("jit_trace"))
+            if (Campy.Utils.Options.IsOn("detailed_import_computation_trace"))
                 System.Console.WriteLine(v.ToString());
             var o = state._stack.Pop();
-            if (Campy.Utils.Options.IsOn("jit_trace"))
+            if (Campy.Utils.Options.IsOn("detailed_import_computation_trace"))
                 System.Console.WriteLine(o.ToString());
         }
 
@@ -2896,11 +2896,11 @@
         public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var v = state._stack.Pop();
-            if (Campy.Utils.Options.IsOn("jit_trace"))
+            if (Campy.Utils.Options.IsOn("detailed_import_computation_trace"))
                 System.Console.WriteLine(v.ToString());
 
             var o = state._stack.Pop();
-            if (Campy.Utils.Options.IsOn("jit_trace"))
+            if (Campy.Utils.Options.IsOn("detailed_import_computation_trace"))
                 System.Console.WriteLine(o.ToString());
         }
 
@@ -4936,7 +4936,7 @@
         public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {   // ldfld, page 406 of ecma 335
             var v = state._stack.Pop();
-            if (Campy.Utils.Options.IsOn("jit_trace"))
+            if (Campy.Utils.Options.IsOn("detailed_import_computation_trace"))
                 System.Console.WriteLine(v.ToString());
             var operand = this.Instruction.Operand;
             var field = operand as Mono.Cecil.FieldReference;
@@ -5154,7 +5154,7 @@
         public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {   // ldflda, page 407 of ecma 335
             var v = state._stack.Pop();
-            if (Campy.Utils.Options.IsOn("jit_trace"))
+            if (Campy.Utils.Options.IsOn("detailed_import_computation_trace"))
                 System.Console.WriteLine(v.ToString());
             var operand = this.Instruction.Operand;
             var field = operand as Mono.Cecil.FieldReference;
@@ -5828,7 +5828,7 @@
         {
             var v = typeof(string).ToMonoTypeReference();
             
-            if (Campy.Utils.Options.IsOn("jit_trace"))
+            if (Campy.Utils.Options.IsOn("detailed_import_computation_trace"))
                 System.Console.WriteLine(v.ToString());
 
             state._stack.Push(v);
@@ -6083,7 +6083,7 @@
         {
             var v = state._stack.Pop();
 
-            if (Campy.Utils.Options.IsOn("jit_trace"))
+            if (Campy.Utils.Options.IsOn("detailed_import_computation_trace"))
                 System.Console.WriteLine(v.ToString());
 
             state._stack.Push(v);
@@ -6120,7 +6120,7 @@
         public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {   // newarr, page 416 of ecma 335
             var v = state._stack.Pop();
-            if (Campy.Utils.Options.IsOn("jit_trace"))
+            if (Campy.Utils.Options.IsOn("detailed_import_computation_trace"))
                 System.Console.WriteLine(v.ToString());
             object operand = this.Operand;
             TypeReference type = operand as TypeReference;
@@ -6713,15 +6713,15 @@
         public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var rhs = state._stack.Pop();
-            if (Campy.Utils.Options.IsOn("jit_trace"))
+            if (Campy.Utils.Options.IsOn("detailed_import_computation_trace"))
                 System.Console.WriteLine(rhs);
 
             var lhs = state._stack.Pop();
-            if (Campy.Utils.Options.IsOn("jit_trace"))
+            if (Campy.Utils.Options.IsOn("detailed_import_computation_trace"))
                 System.Console.WriteLine(lhs);
 
             var result = lhs;
-            if (Campy.Utils.Options.IsOn("jit_trace"))
+            if (Campy.Utils.Options.IsOn("detailed_import_computation_trace"))
                 System.Console.WriteLine(result);
 
             state._stack.Push(result);
@@ -6755,15 +6755,15 @@
         public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var rhs = state._stack.Pop();
-            if (Campy.Utils.Options.IsOn("jit_trace"))
+            if (Campy.Utils.Options.IsOn("detailed_import_computation_trace"))
                 System.Console.WriteLine(rhs);
 
             var lhs = state._stack.Pop();
-            if (Campy.Utils.Options.IsOn("jit_trace"))
+            if (Campy.Utils.Options.IsOn("detailed_import_computation_trace"))
                 System.Console.WriteLine(lhs);
 
             var result = lhs;
-            if (Campy.Utils.Options.IsOn("jit_trace"))
+            if (Campy.Utils.Options.IsOn("detailed_import_computation_trace"))
                 System.Console.WriteLine(result);
 
             state._stack.Push(result);
@@ -7222,7 +7222,7 @@
         public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var rhs = state._stack.Pop();
-            if (Campy.Utils.Options.IsOn("jit_trace"))
+            if (Campy.Utils.Options.IsOn("detailed_import_computation_trace"))
                 System.Console.WriteLine(rhs);
         }
 

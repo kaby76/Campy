@@ -101,7 +101,7 @@ namespace Campy.Compiler
             }
 
             if (Campy.Utils.Options.IsOn("overview_import_computation_trace"))
-                System.Console.WriteLine("Adding in " + method_reference.FullName);
+                System.Console.WriteLine("Queueing " + method_reference.FullName);
 
             _methods_to_do.Push(method_reference);
         }
@@ -130,17 +130,11 @@ namespace Campy.Compiler
             while (_methods_to_do.Count > 0)
             {
                 int change_set_id = this.Cfg.StartChangeSet();
-
                 MethodReference reference = _methods_to_do.Pop();
-
                 ExtractBasicBlocksOfMethod(reference);
-
                 var blocks = this.Cfg.PopChangeSet(change_set_id);
-
                 blocks.ComputeBasicMethodProperties();
-
                 blocks.ThreadInstructions();
-
                 blocks.PropagateTypesAndPerformCallClosure();
             }
         }

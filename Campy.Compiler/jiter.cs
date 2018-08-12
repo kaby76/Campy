@@ -92,7 +92,7 @@ namespace Campy.Compiler
                 {
                     var par = bb._original_method_reference.Parameters[i];
                     var type = par.ParameterType;
-                    if (Campy.Utils.Options.IsOn("jit_trace"))
+                    if (Campy.Utils.Options.IsOn("detailed_import_computation_trace"))
                         System.Console.WriteLine(par);
                     state._stack.Push(type);
                 }
@@ -219,14 +219,12 @@ namespace Campy.Compiler
 
                 // propagate type information and create new basic blocks for nodes that have
                 // specific generic type information.
+                if (Campy.Utils.Options.IsOn("overview_import_computation_trace"))
+                    System.Console.WriteLine("Computing call closure ...");
                 foreach (var bb in order)
                 {
                     if (Campy.Utils.Options.IsOn("overview_import_computation_trace"))
-                        System.Console.WriteLine("Computing transitive closure of calls for node "
-                            + bb.Name
-                            + " { "
-                            + bb._original_method_reference.FullName
-                            + " }");
+                        System.Console.Write(bb.Name + " ");
 
                     // Create new stack state with predecessor information, basic block/function
                     // information.
@@ -268,6 +266,8 @@ namespace Campy.Compiler
                 _mcfg.OutputEntireGraph();
                 throw e;
             }
+            if (Campy.Utils.Options.IsOn("overview_import_computation_trace"))
+                System.Console.WriteLine();
         }
 
         public static List<CFG.Vertex> ThreadInstructions(this List<CFG.Vertex> basic_blocks_to_compile)
@@ -292,9 +292,6 @@ namespace Campy.Compiler
         {
             foreach (CFG.Vertex bb in basic_blocks_to_compile)
             {
-                if (Campy.Utils.Options.IsOn("jit_trace"))
-                    System.Console.WriteLine("Compile part 1, node " + bb);
-
                 Mono.Cecil.MethodReturnType rt = bb._method_definition.MethodReturnType;
                 Mono.Cecil.TypeReference tr = rt.ReturnType;
                 var ret = tr.FullName != "System.Void";
