@@ -219,8 +219,6 @@ namespace Campy.Compiler
 
                 // propagate type information and create new basic blocks for nodes that have
                 // specific generic type information.
-                if (Campy.Utils.Options.IsOn("overview_import_computation_trace"))
-                    System.Console.WriteLine("Computing call closure ...");
                 foreach (var bb in order)
                 {
                     if (Campy.Utils.Options.IsOn("overview_import_computation_trace"))
@@ -253,7 +251,7 @@ namespace Campy.Compiler
                         if (Campy.Utils.Options.IsOn("detailed_import_computation_trace"))
                             System.Console.WriteLine(inst);
                         last_inst = inst;
-                        inst.GenerateGenerics(state_out);
+                        inst.CallClosure(state_out);
                         if (Campy.Utils.Options.IsOn("detailed_import_computation_trace"))
                             state_out.OutputTrace(new String(' ', 4));
                     }

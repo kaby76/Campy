@@ -101,7 +101,9 @@ namespace Campy.Compiler
             }
 
             if (Campy.Utils.Options.IsOn("overview_import_computation_trace"))
-                System.Console.WriteLine("Queueing " + method_reference.FullName);
+            {
+                System.Console.WriteLine(" -> " + method_reference.FullName);
+            }
 
             _methods_to_do.Push(method_reference);
         }
@@ -131,6 +133,8 @@ namespace Campy.Compiler
             {
                 int change_set_id = this.Cfg.StartChangeSet();
                 MethodReference reference = _methods_to_do.Pop();
+                if (Campy.Utils.Options.IsOn("overview_import_computation_trace"))
+                    System.Console.WriteLine("Importing " + reference.FullName);
                 ExtractBasicBlocksOfMethod(reference);
                 var blocks = this.Cfg.PopChangeSet(change_set_id);
                 blocks.ComputeBasicMethodProperties();
@@ -197,12 +201,6 @@ namespace Campy.Compiler
                 basic_block.Instructions.Add(wrapped_instruction);
             }
 
-            //// Perform any substitutions of individual instructions.
-            //{
-            //    var inss = basic_block.Instructions.ToArray();
-            //    RUNTIME.RewriteCilCodeBlock(basic_block._original_method_reference, inss);
-            //    basic_block.Instructions = inss.ToList();
-            //}
             var instructions_before_splits = basic_block.Instructions.ToList();
 
             // Accumulate targets of jumps. These are split points for block "v".

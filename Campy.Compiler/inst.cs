@@ -143,7 +143,7 @@
 
         }
 
-        public virtual void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
+        public virtual void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             throw new Exception("Must have an implementation for GenerateGenerics! The instruction is: "
                                 + this.ToString());
@@ -850,7 +850,7 @@
         {
         }
 
-        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
+        public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var rhs = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("detailed_import_computation_trace"))
@@ -1308,13 +1308,13 @@
 
     public class ConvertCallInst : INST
     {
-        MethodReference deresolved_arg = null;
+        MethodReference call_closure_method = null;
 
         public ConvertCallInst(Instruction i) : base(i)
         {
         }
 
-        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
+        public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             INST new_inst = this;
             object method = this.Operand;
@@ -1334,18 +1334,22 @@
             }
             var args_array = args.ToArray();
             mr = orig_mr.SubstituteMethod(this.Block._original_method_reference.DeclaringType, args_array);
-            if (mr == null) return; // Can't do anything with this.
+            if (mr == null)
+            {
+                call_closure_method = orig_mr;
+                return; // Can't do anything with this.
+            }
             if (mr.ReturnType.FullName != "System.Void")
             {
                 state._stack.Push(mr.ReturnType);
             }
-            deresolved_arg = mr;
+            call_closure_method = mr;
             IMPORTER.Singleton().Add(mr);
         }
 
         public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
         {
-            var mr = deresolved_arg;
+            var mr = call_closure_method;
 
             // Two general cases here: (1) Calling a method that is in CIL. (2) calling
             // a BCL method that has no CIL body.
@@ -1762,7 +1766,7 @@
         {
         }
 
-        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
+        public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var value = state._arguments[_arg];
             if (Campy.Utils.Options.IsOn("detailed_import_computation_trace"))
@@ -1862,7 +1866,7 @@
         {
         }
 
-        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
+        public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var value = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("detailed_import_computation_trace"))
@@ -1893,7 +1897,7 @@
         {
         }
 
-        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
+        public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var value = typeof(System.Int32).ToMonoTypeReference();
             if (Campy.Utils.Options.IsOn("detailed_import_computation_trace"))
@@ -1917,7 +1921,7 @@
         {
         }
 
-        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
+        public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var value = typeof(System.Int64).ToMonoTypeReference();
             if (Campy.Utils.Options.IsOn("detailed_import_computation_trace"))
@@ -1941,7 +1945,7 @@
         {
         }
 
-        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
+        public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var value = typeof(System.Single).ToMonoTypeReference();
             if (Campy.Utils.Options.IsOn("detailed_import_computation_trace"))
@@ -1965,7 +1969,7 @@
         {
         }
 
-        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
+        public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var value = typeof(System.Double).ToMonoTypeReference();
             if (Campy.Utils.Options.IsOn("detailed_import_computation_trace"))
@@ -1992,7 +1996,7 @@
         {
         }
 
-        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
+        public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var v = state._locals[_arg];
             state._stack.Push(v);
@@ -2016,7 +2020,7 @@
         {
         }
 
-        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
+        public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var v = state._stack.Pop();
             state._locals[_arg] = v;
@@ -2069,7 +2073,7 @@
         public virtual PredicateType Predicate { get; set; }
         public virtual bool IsSigned { get; set; }
 
-        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
+        public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var v2 = state._stack.Pop();
             var v1 = state._stack.Pop();
@@ -2175,7 +2179,7 @@
         public virtual PredicateType Predicate { get; set; }
         public virtual bool IsSigned { get; set; }
 
-        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
+        public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var v2 = state._stack.Pop();
             var v1 = state._stack.Pop();
@@ -2365,7 +2369,7 @@
         {
         }
 
-        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
+        public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var s = state._stack.Pop();
             state._stack.Push(s);
@@ -2424,7 +2428,7 @@
         {
         }
 
-        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
+        public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var i = state._stack.Pop();
             var a = state._stack.Pop();
@@ -2504,7 +2508,7 @@
         {
         }
 
-        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
+        public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var v = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("detailed_import_computation_trace"))
@@ -2582,7 +2586,7 @@
         {
         }
 
-        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
+        public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var i = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("detailed_import_computation_trace"))
@@ -2639,7 +2643,7 @@
         {
         }
 
-        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
+        public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {   // stfld, page 427 of ecma 335
             var v = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("detailed_import_computation_trace"))
@@ -2833,7 +2837,7 @@
         {
         }
 
-        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
+        public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var i = state._stack.Pop();
             var v = i.GetElementType();
@@ -2893,7 +2897,7 @@
         {
         }
 
-        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
+        public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var v = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("detailed_import_computation_trace"))
@@ -3177,17 +3181,20 @@
 
     public class i_box : INST
     {
+        TypeReference call_closure_typetok = null;
+
         public i_box(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
 
-        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
+        public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {   // box – convert a boxable value to its boxed form, page 394
             var typetok = this.Operand;
             var tr = typetok as TypeReference;
             var tr2 = tr.RewriteMonoTypeReference();
             var v = tr2.Deresolve(this.Block._original_method_reference.DeclaringType, null);
+            call_closure_typetok = v;
             TypeReference v2 = state._stack.Pop();
             state._stack.Push(v);
         }
@@ -3247,7 +3254,7 @@
         {
         }
 
-        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
+        public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
         }
 
@@ -3266,7 +3273,7 @@
         {
         }
 
-        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
+        public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
         }
 
@@ -3293,7 +3300,7 @@
         {
         }
 
-        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
+        public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {   // brfalse, page 340 of ecma 335
             var v = state._stack.Pop();
         }
@@ -3366,7 +3373,7 @@
         {
         }
 
-        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
+        public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {   // brfalse.s, page 340 of ecma 335
             var v = state._stack.Pop();
         }
@@ -3439,7 +3446,7 @@
         {
         }
 
-        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
+        public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var v = state._stack.Pop();
         }
@@ -3513,7 +3520,7 @@
         {
         }
 
-        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
+        public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var v = state._stack.Pop();
         }
@@ -3595,20 +3602,51 @@
         }
     }
 
-    public class i_callvirt : ConvertCallInst
+    public class i_callvirt : INST
     {
+        MethodReference call_closure_method = null;
+
         public i_callvirt(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
 
-        public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
-        {   // callvirt – call a method associated, at runtime, with an object, page 396.
+        public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
+        {
+            INST new_inst = this;
             object method = this.Operand;
             if (method as Mono.Cecil.MethodReference == null) throw new Exception();
             Mono.Cecil.MethodReference orig_mr = method as Mono.Cecil.MethodReference;
-            orig_mr = orig_mr.SubstituteMethod(null, null);
-            var mr = orig_mr.FixGenericMethods(this.Block._original_method_reference);
+            var mr = orig_mr;
+            bool has_this = false;
+            if (mr.HasThis) has_this = true;
+            if (OpCode.Code == Code.Callvirt) has_this = true;
+            bool is_explicit_this = mr.ExplicitThis;
+            int xargs = (has_this && !is_explicit_this ? 1 : 0) + mr.Parameters.Count;
+            List<TypeReference> args = new List<TypeReference>();
+            for (int k = 0; k < xargs; ++k)
+            {
+                var v = state._stack.Pop();
+                args.Insert(0, v);
+            }
+            var args_array = args.ToArray();
+            mr = orig_mr.SubstituteMethod(this.Block._original_method_reference.DeclaringType, args_array);
+            if (mr == null)
+            {
+                call_closure_method = orig_mr;
+                return; // Can't do anything with this.
+            }
+            if (mr.ReturnType.FullName != "System.Void")
+            {
+                state._stack.Push(mr.ReturnType);
+            }
+            call_closure_method = mr;
+            IMPORTER.Singleton().Add(mr);
+        }
+
+        public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
+        {   // callvirt – call a method associated, at runtime, with an object, page 396.
+            var mr = this.call_closure_method;
             var md = mr.Resolve();
             bool is_virtual = md.IsVirtual;
             bool has_this = true;
@@ -3747,17 +3785,20 @@
 
     public class i_castclass : INST
     {
+        TypeReference call_closure_typetok = null;
+
         public i_castclass(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
 
-        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
+        public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var typetok = Operand;
             var tr = typetok as TypeReference;
             var tr2 = tr.RewriteMonoTypeReference();
             var v = tr2.Deresolve(this.Block._original_method_reference.DeclaringType, null);
+            call_closure_typetok = v;
         }
 
         public override void Convert(STATE<VALUE, StackQueue<VALUE>> state)
@@ -3830,7 +3871,7 @@
         {
         }
 
-        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
+        public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
         }
 
@@ -4175,7 +4216,7 @@
         {
         }
 
-        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
+        public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var rhs = state._stack.Pop();
             state._stack.Push(rhs);
@@ -4206,7 +4247,7 @@
         {
         }
 
-        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
+        public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {   // leave.* page 372 of ecma 335
             var edges = Block._graph.SuccessorEdges(Block).ToList();
             if (edges.Count > 1)
@@ -4237,7 +4278,7 @@
         {
         }
 
-        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
+        public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {   // initobj – initialize the value at an address page 400
             var dst = state._stack.Pop();
         }
@@ -4270,17 +4311,20 @@
 
     public class i_isinst : INST
     {
+        TypeReference call_closure_typetok = null;
+
         public i_isinst(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
 
-        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
+        public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {   // isinst – test if an object is an instance of a class or interface, page 401
             var typetok = Operand;
             var tr = typetok as TypeReference;
             var tr2 = tr.RewriteMonoTypeReference();
             var v = tr2.Deresolve(this.Block._original_method_reference.DeclaringType, null);
+            call_closure_typetok = v;
             state._stack.Pop();
             state._stack.Push(v);
         }
@@ -4933,7 +4977,7 @@
         {
         }
 
-        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
+        public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {   // ldfld, page 406 of ecma 335
             var v = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("detailed_import_computation_trace"))
@@ -5151,7 +5195,7 @@
         {
         }
 
-        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
+        public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {   // ldflda, page 407 of ecma 335
             var v = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("detailed_import_computation_trace"))
@@ -5374,7 +5418,7 @@
         {
         }
 
-        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
+        public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             state._stack.Push(typeof(System.UInt32).ToMonoTypeReference());
         }
@@ -5486,7 +5530,7 @@
         {
         }
 
-        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
+        public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var a = state._stack.Pop();
             state._stack.Push(typeof(System.UInt32).ToMonoTypeReference());
@@ -5712,7 +5756,7 @@
         {
         }
 
-        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
+        public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             state._stack.Push(typeof(System.Object).ToMonoTypeReference());
         }
@@ -5734,7 +5778,7 @@
         {
         }
 
-        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
+        public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {   // ldobj, copy a value from an address to the stack, ecma 335, page 409
             var v = state._stack.Pop();
             object operand = this.Operand;
@@ -5752,7 +5796,7 @@
         {
         }
 
-        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
+        public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {   // ldsfld (load static field), ecma 335 page 410
             var operand = this.Operand;
             var operand_field_reference = operand as FieldReference;
@@ -5824,7 +5868,7 @@
         {
         }
 
-        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
+        public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var v = typeof(string).ToMonoTypeReference();
             
@@ -5877,7 +5921,7 @@
         {
         }
 
-        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
+        public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {   // ldtoken (load token handle), ecma 335 page 413
             var rth = typeof(System.RuntimeTypeHandle).ToMonoTypeReference().RewriteMonoTypeReference();
             var v = rth.Deresolve(this.Block._original_method_reference.DeclaringType, null);
@@ -5995,7 +6039,7 @@
         {
         }
 
-        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
+        public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {   // leave.* page 372 of ecma 335
             var edges = Block._graph.SuccessorEdges(Block).ToList();
             if (edges.Count > 1)
@@ -6017,7 +6061,7 @@
         {
         }
 
-        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
+        public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {   // leave.* page 372 of ecma 335
             var edges = Block._graph.SuccessorEdges(Block).ToList();
             if (edges.Count > 1)
@@ -6079,7 +6123,7 @@
         {
         }
 
-        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
+        public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var v = state._stack.Pop();
 
@@ -6117,7 +6161,7 @@
         {
         }
 
-        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
+        public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {   // newarr, page 416 of ecma 335
             var v = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("detailed_import_computation_trace"))
@@ -6183,7 +6227,7 @@
         {
         }
 
-        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
+        public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             INST new_inst = this;
 
@@ -6546,7 +6590,7 @@
         {
         }
 
-        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
+        public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
         }
 
@@ -6578,7 +6622,7 @@
         {
         }
 
-        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
+        public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             state._stack.Pop();
         }
@@ -6636,7 +6680,7 @@
         {
         }
 
-        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
+        public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             // There are really two different stacks here:
             // one for the called method, and the other for the caller of the method.
@@ -6710,7 +6754,7 @@
         {
         }
 
-        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
+        public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var rhs = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("detailed_import_computation_trace"))
@@ -6752,7 +6796,7 @@
         {
         }
 
-        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
+        public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var rhs = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("detailed_import_computation_trace"))
@@ -6802,7 +6846,7 @@
         {
         }
 
-        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
+        public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var value = typeof(System.IntPtr).ToMonoTypeReference();
             object operand = this.Operand;
@@ -7073,7 +7117,7 @@
         {
         }
 
-        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
+        public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {   //  stobj – store a value at an address , page 428
             var s = state._stack.Pop();
             var d = state._stack.Pop();
@@ -7125,7 +7169,7 @@
         {
         }
 
-        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
+        public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {   // stsfld (store static field), ecma 335 page 429
             state._stack.Pop();
         }
@@ -7219,7 +7263,7 @@
         {
         }
 
-        public override void GenerateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
+        public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var rhs = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("detailed_import_computation_trace"))

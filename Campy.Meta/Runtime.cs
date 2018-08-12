@@ -466,7 +466,6 @@
             Mono.Cecil.ModuleDefinition campy_bcl_runtime = Campy.Meta.StickyReadMod.StickyReadModule(RUNTIME.FindCoreLib());
             foreach (var tt in campy_bcl_runtime.Types)
             {
-                System.Console.WriteLine("Adding type " + tt.FullName);
                 all_types.Add(tt.FullName, tt);
             }
 
