@@ -1308,6 +1308,8 @@
 
     public class ConvertCallInst : INST
     {
+        MethodReference deresolved_arg = null;
+
         public ConvertCallInst(Instruction i) : base(i)
         {
         }
@@ -1337,15 +1339,13 @@
             {
                 state._stack.Push(mr.ReturnType);
             }
+            deresolved_arg = mr;
             IMPORTER.Singleton().Add(mr);
         }
 
         public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
         {
-            object method = this.Operand;
-            if (method as Mono.Cecil.MethodReference == null) throw new Exception();
-            Mono.Cecil.MethodReference orig_mr = method as Mono.Cecil.MethodReference;
-            var mr = orig_mr.FixGenericMethods(this.Block._original_method_reference);
+            var mr = deresolved_arg;
 
             // Two general cases here: (1) Calling a method that is in CIL. (2) calling
             // a BCL method that has no CIL body.
@@ -1543,17 +1543,6 @@
                     var t_fun = LLVM.TypeOf(fv);
                     var t_fun_con = LLVM.GetTypeContext(t_fun);
                     var context = LLVM.GetModuleContext(RUNTIME.global_llvm_module);
-
-                    RUNTIME.BclNativeMethod mat = null;
-                    foreach (RUNTIME.BclNativeMethod ci in RUNTIME.BclNativeMethods)
-                    {
-                        if (ci._full_name == full_name)
-                        {
-                            mat = ci;
-                            break;
-                        }
-                    }
-
                     {
                         ValueRef[] args = new ValueRef[3];
 
@@ -1593,8 +1582,8 @@
 
                         // Set up return. For now, always allocate buffer.
                         // Note function return is type of third parameter.
-                        var return_type = mat._returnType.ToTypeRef();
-                        if (mat._returnType.FullName == "System.Void")
+                        var return_type = mr.ReturnType.ToTypeRef();
+                        if (mr.ReturnType.FullName == "System.Void")
                             return_type = typeof(IntPtr).ToMonoTypeReference().ToTypeRef();
                         var return_buffer = LLVM.BuildAlloca(Builder, return_type, "i" + instruction_id++);
                         LLVM.SetAlignment(return_buffer, 64);

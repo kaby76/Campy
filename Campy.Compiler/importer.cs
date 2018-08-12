@@ -100,6 +100,9 @@ namespace Campy.Compiler
                     throw new Exception("method " + method_reference.FullName + " contains generic parameter.");
             }
 
+            if (Campy.Utils.Options.IsOn("overview_import_computation_trace"))
+                System.Console.WriteLine("Adding in " + method_reference.FullName);
+
             _methods_to_do.Push(method_reference);
         }
 
@@ -129,9 +132,6 @@ namespace Campy.Compiler
                 int change_set_id = this.Cfg.StartChangeSet();
 
                 MethodReference reference = _methods_to_do.Pop();
-
-                if (Campy.Utils.Options.IsOn("jit_trace"))
-                    System.Console.WriteLine("ExtractBasicBlocks for " + reference.FullName);
 
                 ExtractBasicBlocksOfMethod(reference);
 
@@ -703,9 +703,10 @@ namespace Campy.Compiler
                 }
             }
 
-
-            Cfg.OutputDotGraph();
-            Cfg.OutputEntireGraph();
+            if (Campy.Utils.Options.IsOn("detailed_import_computation_trace"))
+                Cfg.OutputDotGraph();
+            if (Campy.Utils.Options.IsOn("detailed_import_computation_trace"))
+                Cfg.OutputEntireGraph();
         }
 
         private CFG.Vertex Split(CFG.Vertex node, int i)

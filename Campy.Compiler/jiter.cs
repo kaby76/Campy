@@ -221,14 +221,18 @@ namespace Campy.Compiler
                 // specific generic type information.
                 foreach (var bb in order)
                 {
-                    if (Campy.Utils.Options.IsOn("state_computation_trace"))
-                        System.Console.WriteLine("Generic computations for node " + bb.Name);
+                    if (Campy.Utils.Options.IsOn("overview_import_computation_trace"))
+                        System.Console.WriteLine("Computing transitive closure of calls for node "
+                            + bb.Name
+                            + " { "
+                            + bb._original_method_reference.FullName
+                            + " }");
 
                     // Create new stack state with predecessor information, basic block/function
                     // information.
                     var state_in = new STATE<TypeReference, SafeStackQueue<TypeReference>>(visited, states_in, states_out, bb, InitStateGenerics);
 
-                    if (Campy.Utils.Options.IsOn("state_computation_trace"))
+                    if (Campy.Utils.Options.IsOn("detailed_import_computation_trace"))
                     {
                         System.Console.WriteLine("state in");
                         state_in.OutputTrace(new String(' ', 4));
@@ -238,7 +242,7 @@ namespace Campy.Compiler
                     states_in[bb] = state_in;
                     states_out[bb] = state_out;
 
-                    if (Campy.Utils.Options.IsOn("state_computation_trace"))
+                    if (Campy.Utils.Options.IsOn("detailed_import_computation_trace"))
                     {
                         bb.OutputEntireNode();
                         state_in.OutputTrace(new String(' ', 4));
@@ -248,11 +252,11 @@ namespace Campy.Compiler
                     for (int i = 0; i < bb.Instructions.Count; ++i)
                     {
                         var inst = bb.Instructions[i];
-                        if (Campy.Utils.Options.IsOn("jit_trace"))
+                        if (Campy.Utils.Options.IsOn("detailed_import_computation_trace"))
                             System.Console.WriteLine(inst);
                         last_inst = inst;
                         inst.GenerateGenerics(state_out);
-                        if (Campy.Utils.Options.IsOn("state_computation_trace"))
+                        if (Campy.Utils.Options.IsOn("detailed_import_computation_trace"))
                             state_out.OutputTrace(new String(' ', 4));
                     }
 

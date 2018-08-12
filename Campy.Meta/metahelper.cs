@@ -117,7 +117,7 @@ namespace Campy.Meta
             else if (type as ByReferenceType != null)
             {
                 var gp = type as ByReferenceType;
-                var x = gp.GetElementType();
+                var x = gp.ElementType;
                 if (method_defined && argument_context as ByReferenceType != null)
                 {
                     var ar = argument_context as ByReferenceType;

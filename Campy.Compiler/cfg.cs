@@ -179,8 +179,6 @@ namespace Campy.Compiler
 
         public void OutputEntireGraph()
         {
-            if (!Campy.Utils.Options.IsOn("graph_trace"))
-                return;
             System.Console.WriteLine("Graph:");
             System.Console.WriteLine();
             System.Console.WriteLine("List of entry blocks:");
@@ -217,9 +215,6 @@ namespace Campy.Compiler
 
         public void OutputDotGraph()
         {
-            if (!Campy.Utils.Options.IsOn("dot_graph"))
-                return;
-
             Dictionary<CFG.Vertex,bool> visited = new Dictionary<CFG.Vertex, bool>();
             Console.WriteLine("digraph {");
             foreach (var n in Edges)
