@@ -1110,6 +1110,14 @@ namespace Campy.Meta
                         }
                     }
                     LLVM.StructSetBody(s, list.ToArray(), true);
+
+                    if (Utils.Options.IsOn("name_trace"))
+                    {
+                        System.Console.WriteLine();
+                        System.Console.WriteLine("TypeRef definition " + tr.FullName);
+                        System.Console.WriteLine(" == " + s.ToString());
+                    }
+
                     return p;
                 }
                 else

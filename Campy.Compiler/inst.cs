@@ -2638,6 +2638,9 @@
 
     public class ConvertStoreField : INST
     {
+        TypeReference call_closure_value = null;
+        TypeReference call_closure_object = null;
+
         public ConvertStoreField(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
@@ -2651,6 +2654,11 @@
             var o = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("detailed_import_computation_trace"))
                 System.Console.WriteLine(o.ToString());
+            var operand = this.Operand;
+            if (operand as FieldReference == null) throw new Exception("Error in parsing stfld.");
+            var field_reference = operand as FieldReference;
+            call_closure_value = v;
+            call_closure_object = o;
         }
 
         public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
@@ -2675,14 +2683,17 @@
                 var yy = this.Instruction.Operand;
                 var field = yy as Mono.Cecil.FieldReference;
                 if (yy == null) throw new Exception("Cannot convert.");
+
+                var declaring_type = call_closure_object;
                 var declaring_type_tr = field.DeclaringType;
-                var declaring_type = declaring_type_tr.Resolve();
+                var declaring_type_field = declaring_type_tr.Resolve();
 
                 // need to take into account padding fields. Unfortunately,
                 // LLVM does not name elements in a struct/class. So, we must
                 // compute padding and adjust.
                 int size = 0;
-                foreach (var f in declaring_type.MyGetFields())
+                var all_fields = declaring_type.MyGetFields();
+                foreach (var f in all_fields)
                 {
                     var attr = f.Resolve().Attributes;
                     if ((attr & FieldAttributes.Static) != 0)
@@ -2743,6 +2754,18 @@
                          && (dtype == LLVM.Int8Type() || dtype == LLVM.Int1Type()))
                     src = new VALUE(LLVM.BuildTrunc(Builder, src.V, dtype, "i" + instruction_id++));
 
+                if (LLVM.TypeOf(src.V) != dtype)
+                {
+                    if (LLVM.GetTypeKind(LLVM.TypeOf(src.V)) == TypeKind.PointerTypeKind)
+                    {
+                        src = new VALUE(LLVM.BuildPointerCast(Builder, src.V, dtype, "i" + instruction_id++));
+                    }
+                    else
+                    {
+                        src = new VALUE(LLVM.BuildBitCast(Builder, src.V, dtype, "i" + instruction_id++));
+                    }
+                }
+
                 var store = LLVM.BuildStore(Builder, src.V, dst);
                 if (Campy.Utils.Options.IsOn("jit_trace"))
                     System.Console.WriteLine(new VALUE(store));
@@ -2753,8 +2776,10 @@
                 var yy = this.Instruction.Operand;
                 var field = yy as Mono.Cecil.FieldReference;
                 if (yy == null) throw new Exception("Cannot convert.");
+
+                var declaring_type = call_closure_object;
                 var declaring_type_tr = field.DeclaringType;
-                var declaring_type = declaring_type_tr.Resolve();
+                var declaring_type_field = declaring_type_tr.Resolve();
 
                 // need to take into account padding fields. Unfortunately,
                 // LLVM does not name elements in a struct/class. So, we must
@@ -4298,7 +4323,9 @@
             }
             else
             {
-                ValueRef nul = LLVM.ConstPointerNull(LLVM.PointerType(LLVM.VoidType(), 0));
+                var pt = LLVM.TypeOf(dst.V);
+                var t = LLVM.GetElementType(pt);
+                ValueRef nul = LLVM.ConstPointerNull(t);
                 var v = new VALUE(nul);
                 if (Campy.Utils.Options.IsOn("jit_trace"))
                     System.Console.WriteLine(v);
@@ -6222,6 +6249,8 @@
 
     public class i_newobj : INST
     {
+        MethodReference call_closure_method = null;
+
         public i_newobj(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
@@ -6230,23 +6259,14 @@
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             INST new_inst = this;
-
-            // Successor is fallthrough.
             object method = this.Operand;
-
-            if (method as Mono.Cecil.MethodReference == null)
-                throw new Exception();
-
-            Mono.Cecil.MethodReference mr = method as Mono.Cecil.MethodReference;
+            if (method as Mono.Cecil.MethodReference == null) throw new Exception();
+            Mono.Cecil.MethodReference orig_mr = method as Mono.Cecil.MethodReference;
+            var mr = orig_mr;
             int xargs = /* always pass "this", but it does not count because newobj
                 creates the object. So, it is just the number of standard parameters
                 of the contructor. */
                 mr.Parameters.Count;
-
-            var fn = mr.GetType().FullName;
-
-            // We need to make sure the declaring type is completely de-resolved.
-
             List<TypeReference> args = new List<TypeReference>();
             for (int k = 0; k < xargs; ++k)
             {
@@ -6254,12 +6274,12 @@
                 args.Insert(0, v);
             }
             var args_array = args.ToArray();
-            if (mr.DeclaringType.ContainsGenericParameter)
+            mr = orig_mr.SubstituteMethod(this.Block._original_method_reference.DeclaringType, args_array);
+            if (mr == null)
             {
-                var dt = mr.DeclaringType.Deresolve(this.Block._original_method_reference.DeclaringType, null);
-                mr = mr.Deresolve(dt, args_array);
+                call_closure_method = orig_mr;
+                return; // Can't do anything with this.
             }
-
             if (mr.DeclaringType == null)
                 throw new Exception("can't handle.");
             if (mr.DeclaringType.HasGenericParameters)
@@ -7164,6 +7184,9 @@
 
     public class i_stsfld : INST
     {
+        TypeReference call_closure_type = null;
+        TypeReference call_closure_field_type = null;
+
         public i_stsfld(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
@@ -7172,6 +7195,12 @@
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {   // stsfld (store static field), ecma 335 page 429
             state._stack.Pop();
+            var operand = this.Operand;
+            var mono_field_reference = operand as FieldReference;
+            if (mono_field_reference == null) throw new Exception("Unknown field type");
+            call_closure_type = mono_field_reference.ResolveDeclaringType();
+            var mono_field_type = mono_field_reference.FieldType;
+            call_closure_field_type = mono_field_type.RewriteMonoTypeReference();
         }
 
         public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
@@ -7179,15 +7208,10 @@
             var value = state._stack.Pop();
             var operand = this.Operand;
             var mono_field_reference = operand as FieldReference;
-            if (mono_field_reference == null)
-                throw new Exception("Unknown field type");
-            var type = mono_field_reference.ResolveDeclaringType();
-            var mono_field_type = mono_field_reference.FieldType;
-            mono_field_type = mono_field_type.RewriteMonoTypeReference();
-            var llvm_field_type = mono_field_type.ToTypeRef();
+            var type_f1 = call_closure_field_type.ToTypeRef();
             // Call meta to get static field. This can be done now because
             // the address of the static field does not change.
-            var bcl_type = RUNTIME.GetBclType(type);
+            var bcl_type = RUNTIME.GetBclType(call_closure_type);
             if (bcl_type == IntPtr.Zero) throw new Exception();
             IntPtr[] fields = null;
             IntPtr* buf;
@@ -7195,7 +7219,7 @@
             RUNTIME.BclGetFields(bcl_type, &buf, &len);
             fields = new IntPtr[len];
             for (int i = 0; i < len; ++i) fields[i] = buf[i];
-            var mono_fields = type.ResolveFields().ToArray();
+            var mono_fields = call_closure_type.ResolveFields().ToArray();
             var find = fields.Where(f =>
             {
                 var ptrName = RUNTIME.BclGetFieldName(f);
@@ -7205,14 +7229,18 @@
             IntPtr first = find.FirstOrDefault();
             if (first == IntPtr.Zero) throw new Exception("Cannot find field--stsfld");
             var ptr = RUNTIME.BclGetStaticField(first);
-            bool isArr = mono_field_type.IsArray;
-            bool isSt = mono_field_type.IsStruct();
-            bool isRef = mono_field_type.IsReferenceType();
             if (Campy.Utils.Options.IsOn("jit_trace"))
-                System.Console.WriteLine(LLVM.PrintTypeToString(llvm_field_type));
+                System.Console.WriteLine(LLVM.PrintTypeToString(type_f1));
             var address = LLVM.ConstInt(LLVM.Int64Type(), (ulong)ptr, false);
-            var f1 = LLVM.BuildIntToPtr(Builder, address, llvm_field_type, "i" + instruction_id++);
-            LLVM.BuildStore(Builder, value.V, f1);
+            var f1 = LLVM.BuildIntToPtr(Builder, address, type_f1, "i" + instruction_id++);
+            var type_f2 = LLVM.PointerType(type_f1, 0);
+            var f2 = LLVM.BuildPointerCast(Builder, f1, type_f2, "i" + instruction_id++);
+            var src = value.V;
+            if (LLVM.TypeOf(value.V) != type_f1)
+            {
+                src = LLVM.BuildPointerCast(Builder, src, type_f1, "i" + instruction_id++);
+            }
+            LLVM.BuildStore(Builder, src, f2);
         }
     }
 

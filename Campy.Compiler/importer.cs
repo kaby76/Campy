@@ -161,8 +161,8 @@ namespace Campy.Compiler
             MethodReference original_method_reference = method_reference;
             _methods_done.Add(original_method_reference.FullName);
 
-            MethodReference new_method_reference = original_method_reference.SubstituteMethod2();
-            method_reference = new_method_reference != null ? new_method_reference : original_method_reference;
+  //          MethodReference new_method_reference = original_method_reference.SubstituteMethod2();
+  //          method_reference = new_method_reference != null ? new_method_reference : original_method_reference;
 
             MethodDefinition method_definition = method_reference.Resolve();
             if (method_definition == null || method_definition.Body == null)
