@@ -358,16 +358,20 @@ namespace Campy.Compiler
                     foreach (var p in parameters)
                     {
                         TypeReference type_reference_of_parameter = p.ParameterType;
-
                         if (method.DeclaringType.IsGenericInstance && method.ContainsGenericParameter)
                         {
                             var git = method.DeclaringType as GenericInstanceType;
                             type_reference_of_parameter = METAHELPER.FromGenericParameterToTypeReference(
                                 type_reference_of_parameter, git);
                         }
-
                         TYPE t = new TYPE(type_reference_of_parameter);
-                        param_types[current++] = t.IntermediateType;
+                        param_types[current] = t.IntermediateType;
+                        // For structs passed as a parameter, it's always a pointer.
+                        if (type_reference_of_parameter.IsValueType
+                            && type_reference_of_parameter.Resolve().IsStruct()
+                            && !type_reference_of_parameter.Resolve().IsEnum)
+                            param_types[current] = LLVM.PointerType(param_types[current], 0);
+                        current++;
                     }
 
                     if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -801,7 +805,8 @@ namespace Campy.Compiler
             if (Campy.Utils.Options.IsOn("module_trace"))
                 LLVM.DumpModule(module);
 
-            LLVM.DIBuilderFinalize(INST.dib);
+            if (!Campy.Utils.Options.IsOn("debug_info_off"))
+                LLVM.DIBuilderFinalize(INST.dib);
 
             MyString error = new MyString();
             LLVM.VerifyModule(module, VerifierFailureAction.PrintMessageAction, error);

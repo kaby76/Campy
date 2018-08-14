@@ -45,6 +45,9 @@
 
         public virtual void DebuggerInfo()
         {
+            if (Campy.Utils.Options.IsOn("debug_info_off"))
+                return;
+
             JITER converter = JITER.Singleton;
             if (this.SeqPoint == null)
                 return;
@@ -1700,17 +1703,13 @@
                         {
                             if (LLVM.GetTypeKind(LLVM.TypeOf(par)) == TypeKind.StructTypeKind
                                 && LLVM.GetTypeKind(LLVM.TypeOf(value)) == TypeKind.PointerTypeKind)
-                            {
                                 value = LLVM.BuildLoad(Builder, value, "i" + instruction_id++);
-                            }
                             else if (LLVM.GetTypeKind(LLVM.TypeOf(par)) == TypeKind.PointerTypeKind)
-                            {
                                 value = LLVM.BuildPointerCast(Builder, value, LLVM.TypeOf(par), "i" + instruction_id++);
-                            }
+                            else if (LLVM.GetTypeKind(LLVM.TypeOf(value)) == TypeKind.IntegerTypeKind)
+                                value = LLVM.BuildIntCast(Builder, value, LLVM.TypeOf(par), "i" + instruction_id++);
                             else
-                            {
                                 value = LLVM.BuildBitCast(Builder, value, LLVM.TypeOf(par), "i" + instruction_id++);
-                            }
                         }
                         args[k] = value;
                     }
@@ -1761,6 +1760,7 @@
     public class ConvertLdArgInst : INST
     {
         public int _arg;
+        TypeReference call_closure_arg_type = null;
 
         public ConvertLdArgInst(Mono.Cecil.Cil.Instruction i) : base(i)
         {
@@ -1771,6 +1771,7 @@
             var value = state._arguments[_arg];
             if (Campy.Utils.Options.IsOn("detailed_import_computation_trace"))
                 System.Console.WriteLine(value.ToString());
+            call_closure_arg_type = value;
             state._stack.Push(value);
         }
 
@@ -1851,6 +1852,12 @@
             else
             {
                 VALUE value = state._arguments[_arg];
+                //if (this.Instruction.OpCode.Code == Code.Ldarga || this.Instruction.OpCode.Code == Code.Ldarga_S)
+                //{
+                //    var v = value.V;
+                //    v = LLVM.BuildStructGEP(Builder, v, 0, "i" + instruction_id++);
+                //    value = new VALUE(v);
+                //}
                 if (Campy.Utils.Options.IsOn("jit_trace"))
                     System.Console.WriteLine(value.ToString());
                 state._stack.Push(value);
@@ -2036,6 +2043,9 @@
 
     public class ConvertCompareInst : INST
     {
+        TypeReference call_closure_lhs = null;
+        TypeReference call_closure_rhs = null;
+
         public ConvertCompareInst(Mono.Cecil.Cil.Instruction i) : base(i)
         {
         }
@@ -2077,6 +2087,8 @@
         {
             var v2 = state._stack.Pop();
             var v1 = state._stack.Pop();
+            call_closure_lhs = v1;
+            call_closure_rhs = v2;
             state._stack.Push(v1);
         }
 
@@ -2091,14 +2103,37 @@
             // TODO Undoubtably, this will be much more complicated than my initial stab.
             TYPE t1 = v1.T;
             TYPE t2 = v2.T;
+            ValueRef v1_v = v1.V;
+            ValueRef v2_v = v2.V;
             ValueRef cmp = default(ValueRef);
             // Deal with various combinations of types.
             if (t1.isIntegerTy() && t2.isIntegerTy())
             {
+                var t1_t = t1.IntermediateType;
+                var t2_t = t2.IntermediateType;
+                var w1 = LLVM.GetIntTypeWidth(t1_t);
+                var w2 = LLVM.GetIntTypeWidth(t2_t);
+                var s1 = !call_closure_lhs.Name.Contains("UInt");
+                var s2 = !call_closure_rhs.Name.Contains("UInt");
+                if (w1 != w2 && s1 != s2) throw new Exception("Sign extention not the same?");
+                if (w1 > w2)
+                {
+                    if (s1)
+                        v2_v = LLVM.BuildSExt(Builder, v2_v, t1_t, "i" + instruction_id++);
+                    else
+                        v2_v = LLVM.BuildZExt(Builder, v2_v, t1_t, "i" + instruction_id++);
+                }
+                else if (w1 < w2)
+                {
+                    if (s1)
+                        v1_v = LLVM.BuildSExt(Builder, v1_v, t2_t, "i" + instruction_id++);
+                    else
+                        v1_v = LLVM.BuildZExt(Builder, v1_v, t2_t, "i" + instruction_id++);
+                }
                 IntPredicate op;
                 if (IsSigned) op = _int_pred[(int) Predicate];
                 else op = _uint_pred[(int) Predicate];
-                cmp = LLVM.BuildICmp(Builder, op, v1.V, v2.V, "i" + instruction_id++);
+                cmp = LLVM.BuildICmp(Builder, op, v1_v, v2_v, "i" + instruction_id++);
                 // Set up for push of 0/1.
                 var return_type = new TYPE(typeof(bool));
                 var ret_llvm = LLVM.BuildZExt(Builder, cmp, return_type.IntermediateType, "");
@@ -2914,6 +2949,8 @@
     public class ConvertStoreIndirect : INST
     {
         protected TYPE _dst;
+        protected TypeReference _call_closure_value_type = null;
+        protected TypeReference _call_closure_ref_type = null;
         protected bool _check_overflow;
         protected bool _from_unsigned;
 
@@ -2927,10 +2964,11 @@
             var v = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("detailed_import_computation_trace"))
                 System.Console.WriteLine(v.ToString());
-
+            _call_closure_value_type = v;
             var o = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("detailed_import_computation_trace"))
                 System.Console.WriteLine(o.ToString());
+            _call_closure_ref_type = o;
         }
 
         public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
@@ -2944,7 +2982,19 @@
                 System.Console.WriteLine(a);
 
             TypeRef stype = LLVM.TypeOf(src.V);
-            TypeRef dtype = _dst.IntermediateType;
+            TypeRef dtype;
+            if (_dst == null)
+            {
+                // Determine target type dynamically.
+                var t = this._call_closure_ref_type as ByReferenceType;
+                if (t == null) throw new Exception("Cannot convert target type to by reference type.");
+                var t2 = t.ElementType;
+                dtype = t2.ToTypeRef();
+            }
+            else
+            {
+                dtype = _dst.IntermediateType;
+            }
 
             /* Trunc */
             if (stype == LLVM.Int64Type()
@@ -2956,7 +3006,19 @@
             else if (stype == LLVM.Int16Type()
                   && (dtype == LLVM.Int8Type() || dtype == LLVM.Int1Type()))
                 src = new VALUE(LLVM.BuildTrunc(Builder, src.V, dtype, "i" + instruction_id++));
-                        
+
+            if (LLVM.TypeOf(src.V) != dtype)
+            {
+                if (LLVM.GetTypeKind(LLVM.TypeOf(src.V)) == TypeKind.PointerTypeKind)
+                {
+                    src = new VALUE(LLVM.BuildPointerCast(Builder, src.V, dtype, "i" + instruction_id++));
+                }
+                else
+                {
+                    src = new VALUE(LLVM.BuildBitCast(Builder, src.V, dtype, "i" + instruction_id++));
+                }
+            }
+
             var zz = LLVM.BuildStore(Builder, src.V, a.V);
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine("Store = " + new VALUE(zz).ToString());
@@ -6275,6 +6337,7 @@
             }
             var args_array = args.ToArray();
             mr = orig_mr.SubstituteMethod(this.Block._original_method_reference.DeclaringType, args_array);
+            call_closure_method = mr;
             if (mr == null)
             {
                 call_closure_method = orig_mr;
@@ -6400,6 +6463,13 @@
                 // "All internal constructors MUST allocate their own 'this' objects"
                 // So, we don't call any allocator here, just the internal function in the BCL,
                 // as that function will do the allocation over on the GPU.
+                //
+                // Also note: these calls are to internal constructors, which have a signature
+                // of three args of type void* (in C). When the constructor code, in CUDA, is compiled,
+                // the arguments are Int64. So, all parameters must be cast to Int64 in LLVM.
+                //
+                // Variable "method" is the signature as appears from C#, not C++, nor PTX.
+                //
                 Mono.Cecil.MethodReturnType cs_method_return_type_aux = method.MethodReturnType;
                 Mono.Cecil.TypeReference cs_method_return_type = cs_method_return_type_aux.ReturnType;
                 var cs_has_ret = cs_method_return_type.FullName != "System.Void";
@@ -6445,20 +6515,9 @@
 
                 {
                     ValueRef[] args = new ValueRef[3];
-
-                    // Set up "this".
-                    ValueRef nul = LLVM.ConstPointerNull(LLVM.PointerType(LLVM.VoidType(), 0));
+                    ValueRef nul = LLVM.ConstInt(LLVM.Int64Type(), 0, false);
                     VALUE t = new VALUE(nul);
-
-                    // Pop all parameters and stuff into params buffer. Note, "this" and
-                    // "return" are separate parameters in GPU BCL runtime C-functions,
-                    // unfortunately, reminates of the DNA runtime I decided to use.
-                    var entry = this.Block.Entry.LlvmInfo.BasicBlock;
-                    var beginning = LLVM.GetFirstInstruction(entry);
-                    //LLVM.PositionBuilderBefore(Builder, beginning);
-                    var parameter_type = LLVM.ArrayType(
-                        LLVM.Int64Type(),
-                        (uint)method.Parameters.Count);
+                    var parameter_type = LLVM.ArrayType(LLVM.Int64Type(), (uint)method.Parameters.Count);
                     var param_buffer = LLVM.BuildAlloca(Builder, parameter_type, "i"+instruction_id++);
                     LLVM.SetAlignment(param_buffer, 64);
                     var base_of_parameters = LLVM.BuildPointerCast(Builder, param_buffer,
@@ -6494,12 +6553,9 @@
                     //LLVM.PositionBuilderAtEnd(Builder, this.Block.BasicBlock);
 
                     // Set up call.
-                    var pt = LLVM.BuildPointerCast(Builder, t.V,
-                        LLVM.PointerType(LLVM.VoidType(), 0), "i" + instruction_id++);
-                    var pp = LLVM.BuildPointerCast(Builder, param_buffer,
-                        LLVM.PointerType(LLVM.VoidType(), 0), "i" + instruction_id++);
-                    var pr = LLVM.BuildPointerCast(Builder, native_return_buffer,
-                        LLVM.PointerType(LLVM.VoidType(), 0), "i" + instruction_id++);
+                    var pt = LLVM.BuildPtrToInt(Builder, t.V, LLVM.Int64Type(), "i" + instruction_id++);
+                    var pp = LLVM.BuildPtrToInt(Builder, param_buffer, LLVM.Int64Type(), "i" + instruction_id++);
+                    var pr = LLVM.BuildPtrToInt(Builder, native_return_buffer, LLVM.Int64Type(), "i" + instruction_id++);
 
                     args[0] = pt;
                     args[1] = pp;
@@ -6568,7 +6624,11 @@
                     for (int k = nargs - 1; k >= 1; --k)
                     {
                         VALUE v = state._stack.Pop();
+                        if (Campy.Utils.Options.IsOn("jit_trace"))
+                            System.Console.WriteLine(v);
                         ValueRef par = LLVM.GetParam(fv, (uint)k);
+                        if (Campy.Utils.Options.IsOn("jit_trace"))
+                            System.Console.WriteLine(par.ToString());
                         ValueRef value = v.V;
                         if (LLVM.TypeOf(value) != LLVM.TypeOf(par))
                         {
@@ -6702,14 +6762,6 @@
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
-            // There are really two different stacks here:
-            // one for the called method, and the other for the caller of the method.
-            // When returning, the stack of the method is pretty much unchanged.
-            // In fact the top of stack often contains the return value from the method.
-            // Back in the caller, the stack is popped of all arguments to the callee.
-            // And, the return value is pushed on the top of stack.
-            // This is handled by the call instruction.
-
             if (!(this.Block.HasStructReturnValue || this.Block.HasScalarReturnValue))
             {
             }
@@ -6727,14 +6779,6 @@
 
         public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
         {
-            // There are really two different stacks here:
-            // one for the called method, and the other for the caller of the method.
-            // When returning, the stack of the method is pretty much unchanged.
-            // In fact the top of stack often contains the return value from the method.
-            // Back in the caller, the stack is popped of all arguments to the callee.
-            // And, the return value is pushed on the top of stack.
-            // This is handled by the call instruction.
-
             if (!(this.Block.HasStructReturnValue || this.Block.HasScalarReturnValue))
             {
                 var i = LLVM.BuildRetVoid(Builder);
@@ -6744,7 +6788,21 @@
                 // See this on struct return--https://groups.google.com/forum/#!topic/llvm-dev/RSnV-Vr17nI
                 // The following fails for structs, so do not do this for struct returns.
                 var v = state._stack.Pop();
-                var i = LLVM.BuildRet(Builder, v.V);
+                var value = v.V;
+                var r = this.Block._original_method_reference.ReturnType.ToTypeRef();
+                if (LLVM.TypeOf(value) != r)
+                {
+                    if (LLVM.GetTypeKind(r) == TypeKind.StructTypeKind
+                        && LLVM.GetTypeKind(LLVM.TypeOf(value)) == TypeKind.PointerTypeKind)
+                        value = LLVM.BuildLoad(Builder, value, "i" + instruction_id++);
+                    else if (LLVM.GetTypeKind(r) == TypeKind.PointerTypeKind)
+                        value = LLVM.BuildPointerCast(Builder, value, r, "i" + instruction_id++);
+                    else if (LLVM.GetTypeKind(LLVM.TypeOf(value)) == TypeKind.IntegerTypeKind)
+                        value = LLVM.BuildIntCast(Builder, value, r, "i" + instruction_id++);
+                    else
+                        value = LLVM.BuildBitCast(Builder, value, r, "i" + instruction_id++);
+                }
+                var i = LLVM.BuildRet(Builder, value);
                 state._stack.Push(new VALUE(i));
             }
             else if (this.Block.HasStructReturnValue)
@@ -7064,7 +7122,7 @@
         public i_stind_ref(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
-			_dst = new TYPE(typeof(object));
+			_dst = null; // dynamic target type.
         }
     }
 
