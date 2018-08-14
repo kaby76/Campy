@@ -30,6 +30,7 @@
         public int Offset { get { return Instruction.Offset; } }
         public object Operand { get { return Instruction.Operand; } }
         public static int instruction_id = 1;
+        private static bool init = false;
         public BuilderRef Builder { get { return Block.LlvmInfo.Builder; } }
         public List<VALUE> LLVMInstructions { get; private set; }
         public CFG.Vertex Block { get; set; }
@@ -42,6 +43,231 @@
         public static DIBuilderRef dib;
         private static bool done_this;
         public UInt32 TargetPointerSizeInBits = 64;
+        delegate INST wrap_func(Mono.Cecil.Cil.Instruction i);
+        static Dictionary<Mono.Cecil.Cil.Code, wrap_func> wrappers =
+            new Dictionary<Mono.Cecil.Cil.Code, wrap_func>() {
+                { Mono.Cecil.Cil.Code.Add,              i_add.factory },
+                { Mono.Cecil.Cil.Code.Add_Ovf,          i_add_ovf.factory },
+                { Mono.Cecil.Cil.Code.Add_Ovf_Un,       i_add_ovf_un.factory },
+                { Mono.Cecil.Cil.Code.And,              i_and.factory },
+                { Mono.Cecil.Cil.Code.Arglist,          i_arglist.factory },
+                { Mono.Cecil.Cil.Code.Beq,              i_beq.factory },
+                { Mono.Cecil.Cil.Code.Beq_S,            i_beq_s.factory },
+                { Mono.Cecil.Cil.Code.Bge,              i_bge.factory },
+                { Mono.Cecil.Cil.Code.Bge_S,            i_bge_s.factory },
+                { Mono.Cecil.Cil.Code.Bge_Un,           i_bge_un.factory },
+                { Mono.Cecil.Cil.Code.Bge_Un_S,         i_bge_un_s.factory },
+                { Mono.Cecil.Cil.Code.Bgt,              i_bgt.factory },
+                { Mono.Cecil.Cil.Code.Bgt_S,            i_bgt_s.factory },
+                { Mono.Cecil.Cil.Code.Bgt_Un,           i_bgt_un.factory },
+                { Mono.Cecil.Cil.Code.Bgt_Un_S,         i_bgt_un_s.factory },
+                { Mono.Cecil.Cil.Code.Ble,              i_ble.factory },
+                { Mono.Cecil.Cil.Code.Ble_S,            i_ble_s.factory },
+                { Mono.Cecil.Cil.Code.Ble_Un,           i_ble_un.factory },
+                { Mono.Cecil.Cil.Code.Ble_Un_S,         i_ble_un_s.factory },
+                { Mono.Cecil.Cil.Code.Blt,              i_blt.factory },
+                { Mono.Cecil.Cil.Code.Blt_S,            i_blt_s.factory },
+                { Mono.Cecil.Cil.Code.Blt_Un,           i_blt_un.factory },
+                { Mono.Cecil.Cil.Code.Blt_Un_S,         i_blt_un_s.factory },
+                { Mono.Cecil.Cil.Code.Bne_Un,           i_bne_un.factory },
+                { Mono.Cecil.Cil.Code.Bne_Un_S,         i_bne_un_s.factory },
+                { Mono.Cecil.Cil.Code.Box,              i_box.factory },
+                { Mono.Cecil.Cil.Code.Br,               i_br.factory },
+                { Mono.Cecil.Cil.Code.Br_S,             i_br_s.factory },
+                { Mono.Cecil.Cil.Code.Break,            i_break.factory },
+                { Mono.Cecil.Cil.Code.Brfalse,          i_brfalse.factory },
+                { Mono.Cecil.Cil.Code.Brfalse_S,        i_brfalse_s.factory },
+                { Mono.Cecil.Cil.Code.Brtrue,           i_brtrue.factory },
+                { Mono.Cecil.Cil.Code.Brtrue_S,         i_brtrue_s.factory },
+                { Mono.Cecil.Cil.Code.Call,             i_call.factory },
+                { Mono.Cecil.Cil.Code.Calli,            i_calli.factory },
+                { Mono.Cecil.Cil.Code.Callvirt,         i_callvirt.factory },
+                { Mono.Cecil.Cil.Code.Castclass,        i_castclass.factory },
+                { Mono.Cecil.Cil.Code.Ceq,              i_ceq.factory },
+                { Mono.Cecil.Cil.Code.Cgt,              i_cgt.factory },
+                { Mono.Cecil.Cil.Code.Cgt_Un,           i_cgt_un.factory },
+                { Mono.Cecil.Cil.Code.Ckfinite,         i_ckfinite.factory },
+                { Mono.Cecil.Cil.Code.Clt,              i_clt.factory },
+                { Mono.Cecil.Cil.Code.Clt_Un,           i_clt_un.factory },
+                { Mono.Cecil.Cil.Code.Constrained,      i_constrained.factory },
+                { Mono.Cecil.Cil.Code.Conv_I1,          i_conv_i1.factory },
+                { Mono.Cecil.Cil.Code.Conv_I2,          i_conv_i2.factory },
+                { Mono.Cecil.Cil.Code.Conv_I4,          i_conv_i4.factory },
+                { Mono.Cecil.Cil.Code.Conv_I8,          i_conv_i8.factory },
+                { Mono.Cecil.Cil.Code.Conv_I,           i_conv_i.factory },
+                { Mono.Cecil.Cil.Code.Conv_Ovf_I1,      i_conv_ovf_i1.factory },
+                { Mono.Cecil.Cil.Code.Conv_Ovf_I1_Un,   i_conv_ovf_i1_un.factory },
+                { Mono.Cecil.Cil.Code.Conv_Ovf_I2,      i_conv_ovf_i2.factory },
+                { Mono.Cecil.Cil.Code.Conv_Ovf_I2_Un,   i_conv_ovf_i2_un.factory },
+                { Mono.Cecil.Cil.Code.Conv_Ovf_I4,      i_conv_ovf_i4.factory },
+                { Mono.Cecil.Cil.Code.Conv_Ovf_I4_Un,   i_conv_ovf_i4_un.factory },
+                { Mono.Cecil.Cil.Code.Conv_Ovf_I8,      i_conv_ovf_i8.factory },
+                { Mono.Cecil.Cil.Code.Conv_Ovf_I8_Un,   i_conv_ovf_i8_un.factory },
+                { Mono.Cecil.Cil.Code.Conv_Ovf_I,       i_conv_ovf_i.factory },
+                { Mono.Cecil.Cil.Code.Conv_Ovf_I_Un,    i_conv_ovf_i_un.factory },
+                { Mono.Cecil.Cil.Code.Conv_Ovf_U1,      i_conv_ovf_u1.factory },
+                { Mono.Cecil.Cil.Code.Conv_Ovf_U1_Un,   i_conv_ovf_u1_un.factory },
+                { Mono.Cecil.Cil.Code.Conv_Ovf_U2,      i_conv_ovf_u2.factory },
+                { Mono.Cecil.Cil.Code.Conv_Ovf_U2_Un,   i_conv_ovf_u2_un.factory },
+                { Mono.Cecil.Cil.Code.Conv_Ovf_U4,      i_conv_ovf_u4.factory },
+                { Mono.Cecil.Cil.Code.Conv_Ovf_U4_Un,   i_conv_ovf_u4_un.factory },
+                { Mono.Cecil.Cil.Code.Conv_Ovf_U8,      i_conv_ovf_u8.factory },
+                { Mono.Cecil.Cil.Code.Conv_Ovf_U8_Un,   i_conv_ovf_u8_un.factory },
+                { Mono.Cecil.Cil.Code.Conv_Ovf_U,       i_conv_ovf_u.factory },
+                { Mono.Cecil.Cil.Code.Conv_Ovf_U_Un,    i_conv_ovf_u_un.factory },
+                { Mono.Cecil.Cil.Code.Conv_R4,          i_conv_r4.factory },
+                { Mono.Cecil.Cil.Code.Conv_R8,          i_conv_r8.factory },
+                { Mono.Cecil.Cil.Code.Conv_R_Un,        i_conv_r_un.factory },
+                { Mono.Cecil.Cil.Code.Conv_U1,          i_conv_u1.factory },
+                { Mono.Cecil.Cil.Code.Conv_U2,          i_conv_u2.factory },
+                { Mono.Cecil.Cil.Code.Conv_U4,          i_conv_u4.factory },
+                { Mono.Cecil.Cil.Code.Conv_U8,          i_conv_u8.factory },
+                { Mono.Cecil.Cil.Code.Conv_U,           i_conv_u.factory },
+                { Mono.Cecil.Cil.Code.Cpblk,            i_cpblk.factory },
+                { Mono.Cecil.Cil.Code.Cpobj,            i_cpobj.factory },
+                { Mono.Cecil.Cil.Code.Div,              i_div.factory },
+                { Mono.Cecil.Cil.Code.Div_Un,           i_div_un.factory },
+                { Mono.Cecil.Cil.Code.Dup,              i_dup.factory },
+                { Mono.Cecil.Cil.Code.Endfilter,        i_endfilter.factory },
+                { Mono.Cecil.Cil.Code.Endfinally,       i_endfinally.factory },
+                { Mono.Cecil.Cil.Code.Initblk,          i_initblk.factory },
+                { Mono.Cecil.Cil.Code.Initobj,          i_initobj.factory },
+                { Mono.Cecil.Cil.Code.Isinst,           i_isinst.factory },
+                { Mono.Cecil.Cil.Code.Jmp,              i_jmp.factory },
+                { Mono.Cecil.Cil.Code.Ldarg,            i_ldarg.factory },
+                { Mono.Cecil.Cil.Code.Ldarg_0,          i_ldarg_0.factory },
+                { Mono.Cecil.Cil.Code.Ldarg_1,          i_ldarg_1.factory },
+                { Mono.Cecil.Cil.Code.Ldarg_2,          i_ldarg_2.factory },
+                { Mono.Cecil.Cil.Code.Ldarg_3,          i_ldarg_3.factory },
+                { Mono.Cecil.Cil.Code.Ldarg_S,          i_ldarg_s.factory },
+                { Mono.Cecil.Cil.Code.Ldarga,           i_ldarga.factory },
+                { Mono.Cecil.Cil.Code.Ldarga_S,         i_ldarga_s.factory },
+                { Mono.Cecil.Cil.Code.Ldc_I4,           i_ldc_i4.factory },
+                { Mono.Cecil.Cil.Code.Ldc_I4_0,         i_ldc_i4_0.factory },
+                { Mono.Cecil.Cil.Code.Ldc_I4_1,         i_ldc_i4_1.factory },
+                { Mono.Cecil.Cil.Code.Ldc_I4_2,         i_ldc_i4_2.factory },
+                { Mono.Cecil.Cil.Code.Ldc_I4_3,         i_ldc_i4_3.factory },
+                { Mono.Cecil.Cil.Code.Ldc_I4_4,         i_ldc_i4_4.factory },
+                { Mono.Cecil.Cil.Code.Ldc_I4_5,         i_ldc_i4_5.factory },
+                { Mono.Cecil.Cil.Code.Ldc_I4_6,         i_ldc_i4_6.factory },
+                { Mono.Cecil.Cil.Code.Ldc_I4_7,         i_ldc_i4_7.factory },
+                { Mono.Cecil.Cil.Code.Ldc_I4_8,         i_ldc_i4_8.factory },
+                { Mono.Cecil.Cil.Code.Ldc_I4_M1,        i_ldc_i4_m1.factory },
+                { Mono.Cecil.Cil.Code.Ldc_I4_S,         i_ldc_i4_s.factory },
+                { Mono.Cecil.Cil.Code.Ldc_I8,           i_ldc_i8.factory },
+                { Mono.Cecil.Cil.Code.Ldc_R4,           i_ldc_r4.factory },
+                { Mono.Cecil.Cil.Code.Ldc_R8,           i_ldc_r8.factory },
+                { Mono.Cecil.Cil.Code.Ldelem_Any,       i_ldelem_any.factory },
+                { Mono.Cecil.Cil.Code.Ldelem_I1,        i_ldelem_i1.factory },
+                { Mono.Cecil.Cil.Code.Ldelem_I2,        i_ldelem_i2.factory },
+                { Mono.Cecil.Cil.Code.Ldelem_I4,        i_ldelem_i4.factory },
+                { Mono.Cecil.Cil.Code.Ldelem_I8,        i_ldelem_i8.factory },
+                { Mono.Cecil.Cil.Code.Ldelem_I,         i_ldelem_i.factory },
+                { Mono.Cecil.Cil.Code.Ldelem_R4,        i_ldelem_r4.factory },
+                { Mono.Cecil.Cil.Code.Ldelem_R8,        i_ldelem_r8.factory },
+                { Mono.Cecil.Cil.Code.Ldelem_Ref,       i_ldelem_ref.factory },
+                { Mono.Cecil.Cil.Code.Ldelem_U1,        i_ldelem_u1.factory },
+                { Mono.Cecil.Cil.Code.Ldelem_U2,        i_ldelem_u2.factory },
+                { Mono.Cecil.Cil.Code.Ldelem_U4,        i_ldelem_u4.factory },
+                { Mono.Cecil.Cil.Code.Ldelema,          i_ldelema.factory },
+                { Mono.Cecil.Cil.Code.Ldfld,            i_ldfld.factory },
+                { Mono.Cecil.Cil.Code.Ldflda,           i_ldflda.factory },
+                { Mono.Cecil.Cil.Code.Ldftn,            i_ldftn.factory },
+                { Mono.Cecil.Cil.Code.Ldind_I1,         i_ldind_i1.factory },
+                { Mono.Cecil.Cil.Code.Ldind_I2,         i_ldind_i2.factory },
+                { Mono.Cecil.Cil.Code.Ldind_I4,         i_ldind_i4.factory },
+                { Mono.Cecil.Cil.Code.Ldind_I8,         i_ldind_i8.factory },
+                { Mono.Cecil.Cil.Code.Ldind_I,          i_ldind_i.factory },
+                { Mono.Cecil.Cil.Code.Ldind_R4,         i_ldind_r4.factory },
+                { Mono.Cecil.Cil.Code.Ldind_R8,         i_ldind_r8.factory },
+                { Mono.Cecil.Cil.Code.Ldind_Ref,        i_ldind_ref.factory },
+                { Mono.Cecil.Cil.Code.Ldind_U1,         i_ldind_u1.factory },
+                { Mono.Cecil.Cil.Code.Ldind_U2,         i_ldind_u2.factory },
+                { Mono.Cecil.Cil.Code.Ldind_U4,         i_ldind_u4.factory },
+                { Mono.Cecil.Cil.Code.Ldlen,            i_ldlen.factory },
+                { Mono.Cecil.Cil.Code.Ldloc,            i_ldloc.factory },
+                { Mono.Cecil.Cil.Code.Ldloc_0,          i_ldloc_0.factory },
+                { Mono.Cecil.Cil.Code.Ldloc_1,          i_ldloc_1.factory },
+                { Mono.Cecil.Cil.Code.Ldloc_2,          i_ldloc_2.factory },
+                { Mono.Cecil.Cil.Code.Ldloc_3,          i_ldloc_3.factory },
+                { Mono.Cecil.Cil.Code.Ldloc_S,          i_ldloc_s.factory },
+                { Mono.Cecil.Cil.Code.Ldloca,           i_ldloca.factory },
+                { Mono.Cecil.Cil.Code.Ldloca_S,         i_ldloca_s.factory },
+                { Mono.Cecil.Cil.Code.Ldnull,           i_ldnull.factory },
+                { Mono.Cecil.Cil.Code.Ldobj,            i_ldobj.factory },
+                { Mono.Cecil.Cil.Code.Ldsfld,           i_ldsfld.factory },
+                { Mono.Cecil.Cil.Code.Ldsflda,          i_ldsflda.factory },
+                { Mono.Cecil.Cil.Code.Ldstr,            i_ldstr.factory },
+                { Mono.Cecil.Cil.Code.Ldtoken,          i_ldtoken.factory },
+                { Mono.Cecil.Cil.Code.Ldvirtftn,        i_ldvirtftn.factory },
+                { Mono.Cecil.Cil.Code.Leave,            i_leave.factory },
+                { Mono.Cecil.Cil.Code.Leave_S,          i_leave_s.factory },
+                { Mono.Cecil.Cil.Code.Localloc,         i_localloc.factory },
+                { Mono.Cecil.Cil.Code.Mkrefany,         i_mkrefany.factory },
+                { Mono.Cecil.Cil.Code.Mul,              i_mul.factory },
+                { Mono.Cecil.Cil.Code.Mul_Ovf,          i_mul_ovf.factory },
+                { Mono.Cecil.Cil.Code.Mul_Ovf_Un,       i_mul_ovf_un.factory },
+                { Mono.Cecil.Cil.Code.Neg,              i_neg.factory },
+                { Mono.Cecil.Cil.Code.Newarr,           i_newarr.factory },
+                { Mono.Cecil.Cil.Code.Newobj,           i_newobj.factory },
+                { Mono.Cecil.Cil.Code.No,               i_no.factory },
+                { Mono.Cecil.Cil.Code.Nop,              i_nop.factory },
+                { Mono.Cecil.Cil.Code.Not,              i_not.factory },
+                { Mono.Cecil.Cil.Code.Or,               i_or.factory },
+                { Mono.Cecil.Cil.Code.Pop,              i_pop.factory },
+                { Mono.Cecil.Cil.Code.Readonly,         i_readonly.factory },
+                { Mono.Cecil.Cil.Code.Refanytype,       i_refanytype.factory },
+                { Mono.Cecil.Cil.Code.Refanyval,        i_refanyval.factory },
+                { Mono.Cecil.Cil.Code.Rem,              i_rem.factory },
+                { Mono.Cecil.Cil.Code.Rem_Un,           i_rem_un.factory },
+                { Mono.Cecil.Cil.Code.Ret,              i_ret.factory },
+                { Mono.Cecil.Cil.Code.Rethrow,          i_rethrow.factory },
+                { Mono.Cecil.Cil.Code.Shl,              i_shl.factory },
+                { Mono.Cecil.Cil.Code.Shr,              i_shr.factory },
+                { Mono.Cecil.Cil.Code.Shr_Un,           i_shr_un.factory },
+                { Mono.Cecil.Cil.Code.Sizeof,           i_sizeof.factory },
+                { Mono.Cecil.Cil.Code.Starg,            i_starg.factory },
+                { Mono.Cecil.Cil.Code.Starg_S,          i_starg_s.factory },
+                { Mono.Cecil.Cil.Code.Stelem_Any,       i_stelem_any.factory },
+                { Mono.Cecil.Cil.Code.Stelem_I1,        i_stelem_i1.factory },
+                { Mono.Cecil.Cil.Code.Stelem_I2,        i_stelem_i2.factory },
+                { Mono.Cecil.Cil.Code.Stelem_I4,        i_stelem_i4.factory },
+                { Mono.Cecil.Cil.Code.Stelem_I8,        i_stelem_i8.factory },
+                { Mono.Cecil.Cil.Code.Stelem_I,         i_stelem_i.factory },
+                { Mono.Cecil.Cil.Code.Stelem_R4,        i_stelem_r4.factory },
+                { Mono.Cecil.Cil.Code.Stelem_R8,        i_stelem_r8.factory },
+                { Mono.Cecil.Cil.Code.Stelem_Ref,       i_stelem_ref.factory },
+                { Mono.Cecil.Cil.Code.Stfld,            i_stfld.factory },
+                { Mono.Cecil.Cil.Code.Stind_I1,         i_stind_i1.factory },
+                { Mono.Cecil.Cil.Code.Stind_I2,         i_stind_i2.factory },
+                { Mono.Cecil.Cil.Code.Stind_I4,         i_stind_i4.factory },
+                { Mono.Cecil.Cil.Code.Stind_I8,         i_stind_i8.factory },
+                { Mono.Cecil.Cil.Code.Stind_I,          i_stind_i.factory },
+                { Mono.Cecil.Cil.Code.Stind_R4,         i_stind_r4.factory },
+                { Mono.Cecil.Cil.Code.Stind_R8,         i_stind_r8.factory },
+                { Mono.Cecil.Cil.Code.Stind_Ref,        i_stind_ref.factory },
+                { Mono.Cecil.Cil.Code.Stloc,            i_stloc.factory },
+                { Mono.Cecil.Cil.Code.Stloc_0,          i_stloc_0.factory },
+                { Mono.Cecil.Cil.Code.Stloc_1,          i_stloc_1.factory },
+                { Mono.Cecil.Cil.Code.Stloc_2,          i_stloc_2.factory },
+                { Mono.Cecil.Cil.Code.Stloc_3,          i_stloc_3.factory },
+                { Mono.Cecil.Cil.Code.Stloc_S,          i_stloc_s.factory },
+                { Mono.Cecil.Cil.Code.Stobj,            i_stobj.factory },
+                { Mono.Cecil.Cil.Code.Stsfld,           i_stsfld.factory },
+                { Mono.Cecil.Cil.Code.Sub,              i_sub.factory },
+                { Mono.Cecil.Cil.Code.Sub_Ovf,          i_sub_ovf.factory },
+                { Mono.Cecil.Cil.Code.Sub_Ovf_Un,       i_sub_ovf_un.factory },
+                { Mono.Cecil.Cil.Code.Switch,           i_switch.factory },
+                { Mono.Cecil.Cil.Code.Tail,             i_tail.factory },
+                { Mono.Cecil.Cil.Code.Throw,            i_throw.factory },
+                { Mono.Cecil.Cil.Code.Unaligned,        i_unaligned.factory },
+                { Mono.Cecil.Cil.Code.Unbox,            i_unbox.factory },
+                { Mono.Cecil.Cil.Code.Unbox_Any,        i_unbox_any.factory },
+                { Mono.Cecil.Cil.Code.Volatile,         i_volatile.factory },
+                { Mono.Cecil.Cil.Code.Xor,              i_xor.factory },
+          };
+
+        static wrap_func[] wrappers_array;
 
         public virtual void DebuggerInfo()
         {
@@ -172,670 +398,35 @@
             // Wrap instruction with semantics, def/use/kill properties.
             Mono.Cecil.Cil.OpCode op = i.OpCode;
             INST wrapped_inst;
-            switch (op.Code)
+            if (!init)
             {
-                case Mono.Cecil.Cil.Code.Add:
-                    wrapped_inst = new i_add(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Add_Ovf:
-                    wrapped_inst = new i_add_ovf(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Add_Ovf_Un:
-                    wrapped_inst = new i_add_ovf_un(i);
-                    break;
-                case Mono.Cecil.Cil.Code.And:
-                    wrapped_inst = new i_and(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Arglist:
-                    wrapped_inst = new i_arglist(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Beq:
-                    wrapped_inst = new i_beq(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Beq_S:
-                    wrapped_inst = new i_beq(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Bge:
-                    wrapped_inst = new i_bge(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Bge_S:
-                    wrapped_inst = new i_bge_s(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Bge_Un:
-                    wrapped_inst = new i_bge_un(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Bge_Un_S:
-                    wrapped_inst = new i_bge_un_s(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Bgt:
-                    wrapped_inst = new i_bgt(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Bgt_S:
-                    wrapped_inst = new i_bgt_s(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Bgt_Un:
-                    wrapped_inst = new i_bgt_un(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Bgt_Un_S:
-                    wrapped_inst = new i_bgt_un_s(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ble:
-                    wrapped_inst = new i_ble(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ble_S:
-                    wrapped_inst = new i_ble_s(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ble_Un:
-                    wrapped_inst = new i_ble_un(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ble_Un_S:
-                    wrapped_inst = new i_ble_un_s(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Blt:
-                    wrapped_inst = new i_blt(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Blt_S:
-                    wrapped_inst = new i_blt_s(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Blt_Un:
-                    wrapped_inst = new i_blt_un(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Blt_Un_S:
-                    wrapped_inst = new i_blt_un_s(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Bne_Un:
-                    wrapped_inst = new i_bne_un(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Bne_Un_S:
-                    wrapped_inst = new i_bne_un_s(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Box:
-                    wrapped_inst = new i_box(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Br:
-                    wrapped_inst = new i_br(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Br_S:
-                    wrapped_inst = new i_br_s(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Break:
-                    wrapped_inst = new i_break(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Brfalse:
-                    wrapped_inst = new i_brfalse(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Brfalse_S:
-                    wrapped_inst = new i_brfalse_s(i);
-                    break;
-                // Missing brnull
-                // Missing brzero
-                case Mono.Cecil.Cil.Code.Brtrue:
-                    wrapped_inst = new i_brtrue(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Brtrue_S:
-                    wrapped_inst = new i_brtrue_s(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Call:
-                    wrapped_inst = new i_call(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Calli:
-                    wrapped_inst = new i_calli(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Callvirt:
-                    wrapped_inst = new i_callvirt(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Castclass:
-                    wrapped_inst = new i_castclass(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ceq:
-                    wrapped_inst = new i_ceq(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Cgt:
-                    wrapped_inst = new i_cgt(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Cgt_Un:
-                    wrapped_inst = new i_cgt_un(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ckfinite:
-                    wrapped_inst = new i_ckfinite(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Clt:
-                    wrapped_inst = new i_clt(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Clt_Un:
-                    wrapped_inst = new i_clt_un(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Constrained:
-                    wrapped_inst = new i_constrained(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Conv_I1:
-                    wrapped_inst = new i_conv_i1(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Conv_I2:
-                    wrapped_inst = new i_conv_i2(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Conv_I4:
-                    wrapped_inst = new i_conv_i4(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Conv_I8:
-                    wrapped_inst = new i_conv_i8(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Conv_I:
-                    wrapped_inst = new i_conv_i(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Conv_Ovf_I1:
-                    wrapped_inst = new i_conv_ovf_i1(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Conv_Ovf_I1_Un:
-                    wrapped_inst = new i_conv_ovf_i1_un(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Conv_Ovf_I2:
-                    wrapped_inst = new i_conv_ovf_i2(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Conv_Ovf_I2_Un:
-                    wrapped_inst = new i_conv_ovf_i2_un(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Conv_Ovf_I4:
-                    wrapped_inst = new i_conv_ovf_i4(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Conv_Ovf_I4_Un:
-                    wrapped_inst = new i_conv_ovf_i4_un(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Conv_Ovf_I8:
-                    wrapped_inst = new i_conv_ovf_i8(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Conv_Ovf_I8_Un:
-                    wrapped_inst = new i_conv_ovf_i8_un(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Conv_Ovf_I:
-                    wrapped_inst = new i_conv_ovf_i(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Conv_Ovf_I_Un:
-                    wrapped_inst = new i_conv_ovf_i_un(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Conv_Ovf_U1:
-                    wrapped_inst = new i_conv_ovf_u1(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Conv_Ovf_U1_Un:
-                    wrapped_inst = new i_conv_ovf_u1_un(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Conv_Ovf_U2:
-                    wrapped_inst = new i_conv_ovf_u2(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Conv_Ovf_U2_Un:
-                    wrapped_inst = new i_conv_ovf_u2_un(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Conv_Ovf_U4:
-                    wrapped_inst = new i_conv_ovf_u4(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Conv_Ovf_U4_Un:
-                    wrapped_inst = new i_conv_ovf_u4_un(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Conv_Ovf_U8:
-                    wrapped_inst = new i_conv_ovf_u8(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Conv_Ovf_U8_Un:
-                    wrapped_inst = new i_conv_ovf_u8_un(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Conv_Ovf_U:
-                    wrapped_inst = new i_conv_ovf_u(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Conv_Ovf_U_Un:
-                    wrapped_inst = new i_conv_ovf_u_un(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Conv_R4:
-                    wrapped_inst = new i_conv_r4(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Conv_R8:
-                    wrapped_inst = new i_conv_r8(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Conv_R_Un:
-                    wrapped_inst = new i_conv_r_un(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Conv_U1:
-                    wrapped_inst = new i_conv_u1(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Conv_U2:
-                    wrapped_inst = new i_conv_u2(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Conv_U4:
-                    wrapped_inst = new i_conv_u4(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Conv_U8:
-                    wrapped_inst = new i_conv_u8(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Conv_U:
-                    wrapped_inst = new i_conv_u(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Cpblk:
-                    wrapped_inst = new i_cpblk(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Cpobj:
-                    wrapped_inst = new i_cpobj(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Div:
-                    wrapped_inst = new i_div(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Div_Un:
-                    wrapped_inst = new i_div_un(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Dup:
-                    wrapped_inst = new i_dup(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Endfilter:
-                    wrapped_inst = new i_endfilter(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Endfinally:
-                    wrapped_inst = new i_endfinally(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Initblk:
-                    wrapped_inst = new i_initblk(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Initobj:
-                    wrapped_inst = new i_initobj(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Isinst:
-                    wrapped_inst = new i_isinst(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Jmp:
-                    wrapped_inst = new i_jmp(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ldarg:
-                    wrapped_inst = new i_ldarg(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ldarg_0:
-                    wrapped_inst = new i_ldarg_0(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ldarg_1:
-                    wrapped_inst = new i_ldarg_1(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ldarg_2:
-                    wrapped_inst = new i_ldarg_2(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ldarg_3:
-                    wrapped_inst = new i_ldarg_3(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ldarg_S:
-                    wrapped_inst = new i_ldarg_s(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ldarga:
-                    wrapped_inst = new i_ldarga(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ldarga_S:
-                    wrapped_inst = new i_ldarga_s(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ldc_I4:
-                    wrapped_inst = new i_ldc_i4(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ldc_I4_0:
-                    wrapped_inst = new i_ldc_i4_0(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ldc_I4_1:
-                    wrapped_inst = new i_ldc_i4_1(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ldc_I4_2:
-                    wrapped_inst = new i_ldc_i4_2(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ldc_I4_3:
-                    wrapped_inst = new i_ldc_i4_3(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ldc_I4_4:
-                    wrapped_inst = new i_ldc_i4_4(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ldc_I4_5:
-                    wrapped_inst = new i_ldc_i4_5(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ldc_I4_6:
-                    wrapped_inst = new i_ldc_i4_6(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ldc_I4_7:
-                    wrapped_inst = new i_ldc_i4_7(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ldc_I4_8:
-                    wrapped_inst = new i_ldc_i4_8(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ldc_I4_M1:
-                    wrapped_inst = new i_ldc_i4_m1(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ldc_I4_S:
-                    wrapped_inst = new i_ldc_i4_s(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ldc_I8:
-                    wrapped_inst = new i_ldc_i8(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ldc_R4:
-                    wrapped_inst = new i_ldc_r4(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ldc_R8:
-                    wrapped_inst = new i_ldc_r8(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ldelem_Any:
-                    wrapped_inst = new i_ldelem_any(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ldelem_I1:
-                    wrapped_inst = new i_ldelem_i1(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ldelem_I2:
-                    wrapped_inst = new i_ldelem_i2(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ldelem_I4:
-                    wrapped_inst = new i_ldelem_i4(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ldelem_I8:
-                    wrapped_inst = new i_ldelem_i8(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ldelem_I:
-                    wrapped_inst = new i_ldelem_i(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ldelem_R4:
-                    wrapped_inst = new i_ldelem_r4(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ldelem_R8:
-                    wrapped_inst = new i_ldelem_r8(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ldelem_Ref:
-                    wrapped_inst = new i_ldelem_ref(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ldelem_U1:
-                    wrapped_inst = new i_ldelem_u1(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ldelem_U2:
-                    wrapped_inst = new i_ldelem_u2(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ldelem_U4:
-                    wrapped_inst = new i_ldelem_u4(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ldelema:
-                    wrapped_inst = new i_ldelema(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ldfld:
-                    wrapped_inst = new i_ldfld(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ldflda:
-                    wrapped_inst = new i_ldflda(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ldftn:
-                    wrapped_inst = new i_ldftn(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ldind_I1:
-                    wrapped_inst = new i_ldind_i1(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ldind_I2:
-                    wrapped_inst = new i_ldind_i2(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ldind_I4:
-                    wrapped_inst = new i_ldind_i4(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ldind_I8:
-                    wrapped_inst = new i_ldind_i8(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ldind_I:
-                    wrapped_inst = new i_ldind_i(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ldind_R4:
-                    wrapped_inst = new i_ldind_r4(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ldind_R8:
-                    wrapped_inst = new i_ldind_r8(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ldind_Ref:
-                    wrapped_inst = new i_ldind_ref(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ldind_U1:
-                    wrapped_inst = new i_ldind_u1(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ldind_U2:
-                    wrapped_inst = new i_ldind_u2(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ldind_U4:
-                    wrapped_inst = new i_ldind_u4(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ldlen:
-                    wrapped_inst = new i_ldlen(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ldloc:
-                    wrapped_inst = new i_ldloc(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ldloc_0:
-                    wrapped_inst = new i_ldloc_0(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ldloc_1:
-                    wrapped_inst = new i_ldloc_1(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ldloc_2:
-                    wrapped_inst = new i_ldloc_2(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ldloc_3:
-                    wrapped_inst = new i_ldloc_3(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ldloc_S:
-                    wrapped_inst = new i_ldloc_s(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ldloca:
-                    wrapped_inst = new i_ldloca(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ldloca_S:
-                    wrapped_inst = new i_ldloca_s(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ldnull:
-                    wrapped_inst = new i_ldnull(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ldobj:
-                    wrapped_inst = new i_ldobj(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ldsfld:
-                    wrapped_inst = new i_ldsfld(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ldsflda:
-                    wrapped_inst = new i_ldsflda(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ldstr:
-                    wrapped_inst = new i_ldstr(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ldtoken:
-                    wrapped_inst = new i_ldtoken(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ldvirtftn:
-                    wrapped_inst = new i_ldvirtftn(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Leave:
-                    wrapped_inst = new i_leave(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Leave_S:
-                    wrapped_inst = new i_leave_s(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Localloc:
-                    wrapped_inst = new i_localloc(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Mkrefany:
-                    wrapped_inst = new i_mkrefany(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Mul:
-                    wrapped_inst = new i_mul(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Mul_Ovf:
-                    wrapped_inst = new i_mul_ovf(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Mul_Ovf_Un:
-                    wrapped_inst = new i_mul_ovf_un(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Neg:
-                    wrapped_inst = new i_neg(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Newarr:
-                    wrapped_inst = new i_newarr(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Newobj:
-                    wrapped_inst = new i_newobj(i);
-                    break;
-                case Mono.Cecil.Cil.Code.No:
-                    wrapped_inst = new i_no(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Nop:
-                    wrapped_inst = new i_nop(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Not:
-                    wrapped_inst = new i_not(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Or:
-                    wrapped_inst = new i_or(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Pop:
-                    wrapped_inst = new i_pop(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Readonly:
-                    wrapped_inst = new i_readonly(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Refanytype:
-                    wrapped_inst = new i_refanytype(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Refanyval:
-                    wrapped_inst = new i_refanyval(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Rem:
-                    wrapped_inst = new i_rem(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Rem_Un:
-                    wrapped_inst = new i_rem_un(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Ret:
-                    wrapped_inst = new i_ret(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Rethrow:
-                    wrapped_inst = new i_rethrow(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Shl:
-                    wrapped_inst = new i_shl(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Shr:
-                    wrapped_inst = new i_shr(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Shr_Un:
-                    wrapped_inst = new i_shr_un(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Sizeof:
-                    wrapped_inst = new i_sizeof(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Starg:
-                    wrapped_inst = new i_starg(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Starg_S:
-                    wrapped_inst = new i_starg_s(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Stelem_Any:
-                    wrapped_inst = new i_stelem_any(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Stelem_I1:
-                    wrapped_inst = new i_stelem_i1(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Stelem_I2:
-                    wrapped_inst = new i_stelem_i2(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Stelem_I4:
-                    wrapped_inst = new i_stelem_i4(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Stelem_I8:
-                    wrapped_inst = new i_stelem_i8(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Stelem_I:
-                    wrapped_inst = new i_stelem_i(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Stelem_R4:
-                    wrapped_inst = new i_stelem_r4(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Stelem_R8:
-                    wrapped_inst = new i_stelem_r8(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Stelem_Ref:
-                    wrapped_inst = new i_stelem_ref(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Stfld:
-                    wrapped_inst = new i_stfld(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Stind_I1:
-                    wrapped_inst = new i_stind_i1(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Stind_I2:
-                    wrapped_inst = new i_stind_i2(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Stind_I4:
-                    wrapped_inst = new i_stind_i4(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Stind_I8:
-                    wrapped_inst = new i_stind_i8(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Stind_I:
-                    wrapped_inst = new i_stind_i(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Stind_R4:
-                    wrapped_inst = new i_stind_r4(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Stind_R8:
-                    wrapped_inst = new i_stind_r8(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Stind_Ref:
-                    wrapped_inst = new i_stind_ref(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Stloc:
-                    wrapped_inst = new i_stloc(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Stloc_0:
-                    wrapped_inst = new i_stloc_0(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Stloc_1:
-                    wrapped_inst = new i_stloc_1(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Stloc_2:
-                    wrapped_inst = new i_stloc_2(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Stloc_3:
-                    wrapped_inst = new i_stloc_3(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Stloc_S:
-                    wrapped_inst = new i_stloc_s(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Stobj:
-                    wrapped_inst = new i_stobj(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Stsfld:
-                    wrapped_inst = new i_stsfld(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Sub:
-                    wrapped_inst = new i_sub(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Sub_Ovf:
-                    wrapped_inst = new i_sub_ovf(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Sub_Ovf_Un:
-                    wrapped_inst = new i_sub_ovf_un(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Switch:
-                    wrapped_inst = new i_switch(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Tail:
-                    wrapped_inst = new i_tail(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Throw:
-                    wrapped_inst = new i_throw(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Unaligned:
-                    wrapped_inst = new i_unaligned(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Unbox:
-                    wrapped_inst = new i_unbox(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Unbox_Any:
-                    wrapped_inst = new i_unbox_any(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Volatile:
-                    wrapped_inst = new i_volatile(i);
-                    break;
-                case Mono.Cecil.Cil.Code.Xor:
-                    wrapped_inst = new i_xor(i);
-                    break;
-                default:
-                    throw new Exception("Unknown instruction type " + i);
+                int max = 0;
+                foreach (var p in wrappers)
+                {
+                    max = max < (int)p.Key ? (int)p.Key : max;
+                }
+                wrappers_array = new wrap_func[max + 1];
+                foreach (var p in wrappers)
+                {
+                    if (wrappers_array[(int)p.Key] != null) throw new Exception("Duplicate key?");
+                    wrappers_array[(int)p.Key] = p.Value;
+                }
+                foreach (object item in Enum.GetValues(typeof(Mono.Cecil.Cil.Code)))
+                {
+                    var pp = (int)item;
+                    if (wrappers_array[pp] == null) throw new Exception("Missing enum value for OpCode.");
+                }
+                for (int j = 0; j < max; ++j)
+                {
+                    for (int k = j+1; k < max; ++k)
+                    {
+                        if (wrappers_array[j] != null && wrappers_array[j] == wrappers_array[k]) throw new Exception("Duplicate in OpCode table.");
+                    }
+                }
+                init = true;
             }
+            var w = wrappers_array[(int)op.Code];
+            wrapped_inst = w(i);
             wrapped_inst.SeqPoint = sp;
             return wrapped_inst;
         }
@@ -1308,7 +899,6 @@
         public bool UseExplicitZeroDivideChecks { get; set; }
     }
 
-
     public class ConvertCallInst : INST
     {
         MethodReference call_closure_method = null;
@@ -1753,10 +1343,6 @@
         }
     }
 
-    /// <summary>
-    /// The LoadArgInst is a class for representing Load Arg instructions. The purpose to
-    /// provide a representation of the arg operand of the instruction.
-    /// </summary>
     public class ConvertLdArgInst : INST
     {
         public int _arg;
@@ -1892,10 +1478,6 @@
         }
     }
 
-    /// <summary>
-    /// The LDCInstI4 and LDCInstI8 are classes for representing load constant instructions. The constant
-    /// of the instruction is encoded here.
-    /// </summary>
     public class ConvertLDCInstI4 : INST
     {
         public Int32 _arg;
@@ -1992,12 +1574,10 @@
         }
     }
 
-    /// <summary>
-    /// The LdLoc is a class for representing load local instructions.
-    /// </summary>
     public class ConvertLdLoc : INST
     {
         public int _arg;
+        TypeReference call_closure_local_type = null;
 
         public ConvertLdLoc(Instruction i) : base(i)
         {
@@ -2006,6 +1586,7 @@
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var v = state._locals[_arg];
+            call_closure_local_type = v;
             state._stack.Push(v);
         }
 
@@ -2016,9 +1597,6 @@
         }
     }
 
-    /// <summary>
-    /// The StLoc is a class for representing store local instructions.
-    /// </summary>
     public class ConvertStLoc : INST
     {
         public int _arg;
@@ -2039,7 +1617,6 @@
             state._locals[_arg] = v;
         }
     }
-
 
     public class ConvertCompareInst : INST
     {
@@ -2251,7 +1828,7 @@
                 // edge represents the "true" branch. During construction, there is
                 // no guarentee that the order is consistent.
                 var owner = Block._graph.Vertices.Where(
-					n => n.Instructions.Where(ins =>
+                    n => n.Instructions.Where(ins =>
                     {
                         if (n.Entry._original_method_reference != Block.Entry._original_method_reference)
                             return false;
@@ -2612,7 +2189,6 @@
                 System.Console.WriteLine(new VALUE(store));
         }
     }
-
 
     public class ConvertLoadElementA : INST
     {
@@ -3026,251 +2602,163 @@
     }
 
 
-
     public class i_add : BinaryOpInst
     {
-        public i_add(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_add(i); }
+        private i_add(Mono.Cecil.Cil.Instruction i) : base(i) { }
     }
 
     public class i_add_ovf : BinaryOpInst
     {
-        public i_add_ovf(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_add_ovf(i); }
+        private i_add_ovf(Mono.Cecil.Cil.Instruction i) : base(i) { }
     }
 
     public class i_add_ovf_un : BinaryOpInst
     {
-        public i_add_ovf_un(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_add_ovf_un(i); }
+        private i_add_ovf_un(Mono.Cecil.Cil.Instruction i) : base(i) { }
     }
 
     public class i_and : BinaryOpInst
     {
-        public i_and(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_and(i); }
+        private i_and(Mono.Cecil.Cil.Instruction i) : base(i) { }
     }
 
     public class i_arglist : INST
     {
-        public i_arglist(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_arglist(i); }
+        private i_arglist(Mono.Cecil.Cil.Instruction i) : base(i) { }
     }
 
     public class i_beq : ConvertCompareAndBranchInst
     {
-        public i_beq(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            Predicate = PredicateType.eq;
-            IsSigned = true;
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_beq(i); }
+        private i_beq(Mono.Cecil.Cil.Instruction i) : base(i) { Predicate = PredicateType.eq; IsSigned = true; }
     }
 
     public class i_beq_s : ConvertCompareAndBranchInst
     {
-        public i_beq_s(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            Predicate = PredicateType.eq;
-            IsSigned = true;
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_beq_s(i); }
+        private i_beq_s(Mono.Cecil.Cil.Instruction i) : base(i) { Predicate = PredicateType.eq; IsSigned = true; }
     }
 
     public class i_bge : ConvertCompareAndBranchInst
     {
-        public i_bge(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            Predicate = PredicateType.ge;
-            IsSigned = true;
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_bge(i); }
+        private i_bge(Mono.Cecil.Cil.Instruction i) : base(i) { Predicate = PredicateType.ge; IsSigned = true; }
     }
 
     public class i_bge_un : ConvertCompareAndBranchInst
     {
-        public i_bge_un(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            Predicate = PredicateType.ge;
-            IsSigned = false;
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_bge_un(i); }
+        private i_bge_un(Mono.Cecil.Cil.Instruction i) : base(i) { Predicate = PredicateType.ge; IsSigned = false; }
     }
 
     public class i_bge_un_s : ConvertCompareAndBranchInst
     {
-        public i_bge_un_s(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            Predicate = PredicateType.ge;
-            IsSigned = false;
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_bge_un_s(i); }
+        private i_bge_un_s(Mono.Cecil.Cil.Instruction i) : base(i) { Predicate = PredicateType.ge; IsSigned = false; }
     }
 
     public class i_bge_s : ConvertCompareAndBranchInst
     {
-        public i_bge_s(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            Predicate = PredicateType.ge;
-            IsSigned = true;
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_bge_s(i); }
+        private i_bge_s(Mono.Cecil.Cil.Instruction i) : base(i) { Predicate = PredicateType.ge; IsSigned = true; }
     }
 
     public class i_bgt : ConvertCompareAndBranchInst
     {
-        public i_bgt(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            Predicate = PredicateType.gt;
-            IsSigned = true;
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_bgt(i); }
+        private i_bgt(Mono.Cecil.Cil.Instruction i) : base(i) { Predicate = PredicateType.gt; IsSigned = true; }
     }
 
     public class i_bgt_s : ConvertCompareAndBranchInst
     {
-        public i_bgt_s(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            Predicate = PredicateType.gt;
-            IsSigned = true;
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_bgt_s(i); }
+        private i_bgt_s(Mono.Cecil.Cil.Instruction i) : base(i) { Predicate = PredicateType.gt; IsSigned = true; }
     }
 
     public class i_bgt_un : ConvertCompareAndBranchInst
     {
-        public i_bgt_un(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            Predicate = PredicateType.gt;
-            IsSigned = false;
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_bgt_un(i); }
+        private i_bgt_un(Mono.Cecil.Cil.Instruction i) : base(i) { Predicate = PredicateType.gt; IsSigned = false; }
     }
 
     public class i_bgt_un_s : ConvertCompareAndBranchInst
     {
-        public i_bgt_un_s(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            Predicate = PredicateType.gt;
-            IsSigned = false;
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_bgt_un_s(i); }
+        private i_bgt_un_s(Mono.Cecil.Cil.Instruction i) : base(i) { Predicate = PredicateType.gt; IsSigned = false; }
     }
 
     public class i_ble : ConvertCompareAndBranchInst
     {
-        public i_ble(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            Predicate = PredicateType.le;
-            IsSigned = true;
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ble(i); }
+        private i_ble(Mono.Cecil.Cil.Instruction i) : base(i) { Predicate = PredicateType.le; IsSigned = true; }
     }
 
     public class i_ble_s : ConvertCompareAndBranchInst
     {
-        public i_ble_s(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            Predicate = PredicateType.le;
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ble_s(i); }
+        private i_ble_s(Mono.Cecil.Cil.Instruction i) : base(i) { Predicate = PredicateType.le; }
     }
 
     public class i_ble_un : ConvertCompareAndBranchInst
     {
-        public i_ble_un(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            Predicate = PredicateType.le;
-            IsSigned = false;
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ble_un(i); }
+        private i_ble_un(Mono.Cecil.Cil.Instruction i) : base(i) { Predicate = PredicateType.le; IsSigned = false; }
     }
 
     public class i_ble_un_s : ConvertCompareAndBranchInst
     {
-        public i_ble_un_s(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            Predicate = PredicateType.le;
-            IsSigned = false;
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ble_un_s(i); }
+        private i_ble_un_s(Mono.Cecil.Cil.Instruction i) : base(i) { Predicate = PredicateType.le; IsSigned = false; }
     }
 
     public class i_blt : ConvertCompareAndBranchInst
     {
-        public i_blt(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            Predicate = PredicateType.lt;
-            IsSigned = true;
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_blt(i); }
+        private i_blt(Mono.Cecil.Cil.Instruction i) : base(i) { Predicate = PredicateType.lt; IsSigned = true; }
     }
 
     public class i_blt_s : ConvertCompareAndBranchInst
     {
-        public i_blt_s(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            Predicate = PredicateType.lt;
-            IsSigned = true;
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_blt_s(i); }
+        private i_blt_s(Mono.Cecil.Cil.Instruction i) : base(i) { Predicate = PredicateType.lt; IsSigned = true; }
     }
 
     public class i_blt_un : ConvertCompareAndBranchInst
     {
-        public i_blt_un(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            Predicate = PredicateType.lt;
-            IsSigned = false;
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_blt_un(i); }
+        private i_blt_un(Mono.Cecil.Cil.Instruction i) : base(i) { Predicate = PredicateType.lt; IsSigned = false; }
     }
 
     public class i_blt_un_s : ConvertCompareAndBranchInst
     {
-        public i_blt_un_s(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            Predicate = PredicateType.lt;
-            IsSigned = false;
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_blt_un_s(i); }
+        private i_blt_un_s(Mono.Cecil.Cil.Instruction i) : base(i) { Predicate = PredicateType.lt; IsSigned = false; }
     }
 
     public class i_bne_un : ConvertCompareAndBranchInst
     {
-        public i_bne_un(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            Predicate = PredicateType.ne;
-            IsSigned = false;
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_bne_un(i); }
+        private i_bne_un(Mono.Cecil.Cil.Instruction i) : base(i) { Predicate = PredicateType.ne; IsSigned = false; }
     }
 
     public class i_bne_un_s : ConvertCompareAndBranchInst
     {
-        public i_bne_un_s(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            Predicate = PredicateType.ne;
-            IsSigned = false;
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_bne_un_s(i); }
+        private i_bne_un_s(Mono.Cecil.Cil.Instruction i) : base(i) { Predicate = PredicateType.ne; IsSigned = false; }
     }
 
     public class i_box : INST
     {
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_box(i); }
+
         TypeReference call_closure_typetok = null;
 
-        public i_box(Mono.Cecil.Cil.Instruction i)
+        private i_box(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -3336,7 +2824,9 @@
 
     public class i_br : INST
     {
-        public i_br(Mono.Cecil.Cil.Instruction i)
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_br(i); }
+
+        private i_br(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -3355,7 +2845,9 @@
 
     public class i_br_s : INST
     {
-        public i_br_s(Mono.Cecil.Cil.Instruction i)
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_br_s(i); }
+
+        private i_br_s(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -3374,18 +2866,15 @@
 
     public class i_break : INST
     {
-        public i_break(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_break(i); }
+        private i_break(Mono.Cecil.Cil.Instruction i) : base(i) { }
     }
 
     public class i_brfalse : INST
     {
-        public i_brfalse(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_brfalse(i); }
+
+        private i_brfalse(Mono.Cecil.Cil.Instruction i) : base(i) { }
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {   // brfalse, page 340 of ecma 335
@@ -3455,7 +2944,9 @@
 
     public class i_brfalse_s : INST
     {
-        public i_brfalse_s(Mono.Cecil.Cil.Instruction i)
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_brfalse_s(i); }
+
+        private i_brfalse_s(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
         }
@@ -3528,10 +3019,9 @@
 
     public class i_brtrue : INST
     {
-        public i_brtrue(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_brtrue(i); }
+
+        private i_brtrue(Mono.Cecil.Cil.Instruction i) : base(i) { }
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
@@ -3602,10 +3092,9 @@
 
     public class i_brtrue_s : INST
     {
-        public i_brtrue_s(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_brtrue_s(i); }
+
+        private i_brtrue_s(Mono.Cecil.Cil.Instruction i) : base(i) { }
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
@@ -3675,28 +3164,23 @@
 
     public class i_call : ConvertCallInst
     {
-        public i_call(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_call(i); }
+        private i_call(Mono.Cecil.Cil.Instruction i) : base(i) { }
     }
 
     public class i_calli : ConvertCallInst
     {
-        public i_calli(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_calli(i); }
+        private i_calli(Mono.Cecil.Cil.Instruction i) : base(i) { }
     }
 
     public class i_callvirt : INST
     {
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_callvirt(i); }
+
         MethodReference call_closure_method = null;
 
-        public i_callvirt(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        private i_callvirt(Mono.Cecil.Cil.Instruction i) : base(i) { }
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
@@ -3872,12 +3356,11 @@
 
     public class i_castclass : INST
     {
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_castclass(i); }
+
         TypeReference call_closure_typetok = null;
 
-        public i_castclass(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        private i_castclass(Mono.Cecil.Cil.Instruction i) : base(i) { }
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
@@ -3895,413 +3378,274 @@
 
     public class i_ceq : ConvertCompareInst
     {
-        public i_ceq(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            Predicate = PredicateType.eq;
-            IsSigned = true;
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ceq(i); }
+        private i_ceq(Mono.Cecil.Cil.Instruction i) : base(i) { Predicate = PredicateType.eq; IsSigned = true; }
     }
 
     public class i_cgt : ConvertCompareInst
     {
-        public i_cgt(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            Predicate = PredicateType.gt;
-            IsSigned = true;
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_cgt(i); }
+        private i_cgt(Mono.Cecil.Cil.Instruction i) : base(i) { Predicate = PredicateType.gt; IsSigned = true; }
     }
 
     public class i_cgt_un : ConvertCompareInst
     {
-        public i_cgt_un(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            Predicate = PredicateType.gt;
-            IsSigned = false;
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_cgt_un(i); }
+        private i_cgt_un(Mono.Cecil.Cil.Instruction i) : base(i) { Predicate = PredicateType.gt; IsSigned = false; }
     }
 
     public class i_ckfinite : INST
     {
-        public i_ckfinite(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ckfinite(i); }
+        private i_ckfinite(Mono.Cecil.Cil.Instruction i) : base(i) { }
     }
 
     public class i_clt : ConvertCompareInst
     {
-        public i_clt(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            Predicate = PredicateType.lt;
-            IsSigned = true;
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_clt(i); }
+        private i_clt(Mono.Cecil.Cil.Instruction i) : base(i) { Predicate = PredicateType.lt; IsSigned = true; }
     }
 
     public class i_clt_un : ConvertCompareInst
     {
-        public i_clt_un(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            Predicate = PredicateType.lt;
-            IsSigned = false;
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_clt_un(i); }
+        private i_clt_un(Mono.Cecil.Cil.Instruction i) : base(i) { Predicate = PredicateType.lt; IsSigned = false; }
     }
 
     public class i_constrained : INST
     {
-        public i_constrained(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
-
-        public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
-        {
-        }
-
-        public override void Convert(STATE<VALUE, StackQueue<VALUE>> state)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_constrained(i); }
+        private i_constrained(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state) { }
+        public override void Convert(STATE<VALUE, StackQueue<VALUE>> state) { }
     }
 
     public class i_conv_i1 : ConvertConvInst
     {
-        public i_conv_i1(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            _dst = new TYPE(typeof(sbyte));
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_conv_i1(i); }
+        private i_conv_i1(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(sbyte)); }
     }
 
     public class i_conv_i2 : ConvertConvInst
     {
-        public i_conv_i2(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            _dst = new TYPE(typeof(short));
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_conv_i2(i); }
+        private i_conv_i2(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(short)); }
     }
 
     public class i_conv_i4 : ConvertConvInst
     {
-        public i_conv_i4(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            _dst = new TYPE(typeof(int));
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_conv_i4(i); }
+        private i_conv_i4(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(int)); }
     }
 
     public class i_conv_i8 : ConvertConvInst
     {
-        public i_conv_i8(Mono.Cecil.Cil.Instruction i)
-                : base(i)
-        {
-            _dst = new TYPE(typeof(long));
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_conv_i8(i); }
+        private i_conv_i8(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(long)); }
     }
 
     public class i_conv_i : ConvertConvInst
     {
-        public i_conv_i(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            _dst = new TYPE(typeof(int));
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_conv_i(i); }
+        private i_conv_i(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(int)); }
     }
 
     public class i_conv_ovf_i1 : ConvertConvOvfInst
     {
-        public i_conv_ovf_i1(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            _dst = new TYPE(typeof(sbyte));
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_i1(i); }
+        private i_conv_ovf_i1(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(sbyte)); }
     }
 
     public class i_conv_ovf_i1_un : ConvertConvOvfUnsInst
     {
-        public i_conv_ovf_i1_un(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            _dst = new TYPE(typeof(sbyte));
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_i1_un(i); }
+        private i_conv_ovf_i1_un(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(sbyte)); }
     }
 
     public class i_conv_ovf_i2 : ConvertConvOvfInst
     {
-        public i_conv_ovf_i2(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            _dst = new TYPE(typeof(short));
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_i2(i); }
+        private i_conv_ovf_i2(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(short)); }
     }
 
     public class i_conv_ovf_i2_un : ConvertConvOvfUnsInst
     {
-        public i_conv_ovf_i2_un(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            _dst = new TYPE(typeof(short));
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_i2_un(i); }
+        private i_conv_ovf_i2_un(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(short)); }
     }
 
     public class i_conv_ovf_i4 : ConvertConvOvfInst
     {
-        public i_conv_ovf_i4(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            _dst = new TYPE(typeof(int));
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_i4(i); }
+        private i_conv_ovf_i4(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(int)); }
     }
 
     public class i_conv_ovf_i4_un : ConvertConvOvfUnsInst
     {
-        public i_conv_ovf_i4_un(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            _dst = new TYPE(typeof(int));
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_i4_un(i); }
+        private i_conv_ovf_i4_un(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(int)); }
     }
 
     public class i_conv_ovf_i8 : ConvertConvOvfInst
     {
-        public i_conv_ovf_i8(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            _dst = new TYPE(typeof(long));
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_i8(i); }
+        private i_conv_ovf_i8(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(long)); }
     }
 
     public class i_conv_ovf_i8_un : ConvertConvOvfUnsInst
     {
-        public i_conv_ovf_i8_un(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            _dst = new TYPE(typeof(long));
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_i8_un(i); }
+        private i_conv_ovf_i8_un(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(long)); }
     }
 
     public class i_conv_ovf_i : ConvertConvOvfInst
     {
-        public i_conv_ovf_i(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            _dst = new TYPE(typeof(int));
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_i(i); }
+        private i_conv_ovf_i(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(int)); }
     }
 
     public class i_conv_ovf_i_un : ConvertConvOvfUnsInst
     {
-        public i_conv_ovf_i_un(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            _dst = new TYPE(typeof(int));
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_i_un(i); }
+        private i_conv_ovf_i_un(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(int)); }
     }
 
     public class i_conv_ovf_u1 : ConvertConvOvfInst
     {
-        public i_conv_ovf_u1(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            _dst = new TYPE(typeof(byte));
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_u1(i); }
+        private i_conv_ovf_u1(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(byte)); }
     }
 
     public class i_conv_ovf_u1_un : ConvertConvOvfUnsInst
     {
-        public i_conv_ovf_u1_un(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            _dst = new TYPE(typeof(byte));
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_u1_un(i); }
+        private i_conv_ovf_u1_un(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(byte)); }
     }
 
     public class i_conv_ovf_u2 : ConvertConvOvfInst
     {
-        public i_conv_ovf_u2(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            _dst = new TYPE(typeof(ushort));
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_u2(i); }
+        private i_conv_ovf_u2(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(ushort)); }
     }
 
     public class i_conv_ovf_u2_un : ConvertConvOvfUnsInst
     {
-        public i_conv_ovf_u2_un(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            _dst = new TYPE(typeof(ushort));
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_u2_un(i); }
+        private i_conv_ovf_u2_un(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(ushort)); }
     }
 
     public class i_conv_ovf_u4 : ConvertConvOvfInst
     {
-        public i_conv_ovf_u4(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            _dst = new TYPE(typeof(uint));
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_u4(i); }
+        private i_conv_ovf_u4(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(uint)); }
     }
 
     public class i_conv_ovf_u4_un : ConvertConvOvfUnsInst
     {
-        public i_conv_ovf_u4_un(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            _dst = new TYPE(typeof(uint));
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_u4_un(i); }
+        private i_conv_ovf_u4_un(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(uint)); }
     }
 
     public class i_conv_ovf_u8 : ConvertConvOvfInst
     {
-        public i_conv_ovf_u8(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            _dst = new TYPE(typeof(ulong));
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_u8(i); }
+        private i_conv_ovf_u8(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(ulong)); }
     }
 
     public class i_conv_ovf_u8_un : ConvertConvOvfUnsInst
     {
-        public i_conv_ovf_u8_un(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            _dst = new TYPE(typeof(ulong));
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_u8_un(i); }
+        private i_conv_ovf_u8_un(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(ulong)); }
     }
 
     public class i_conv_ovf_u : ConvertConvOvfInst
     {
-        public i_conv_ovf_u(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            _dst = new TYPE(typeof(uint));
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_u(i); }
+        private i_conv_ovf_u(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(uint)); }
     }
 
     public class i_conv_ovf_u_un : ConvertConvOvfUnsInst
     {
-        public i_conv_ovf_u_un(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            _dst = new TYPE(typeof(uint));
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_u_un(i); }
+        private i_conv_ovf_u_un(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(uint)); }
     }
 
     public class i_conv_r4 : ConvertConvInst
     {
-        public i_conv_r4(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            _dst = new TYPE(typeof(float));
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_conv_r4(i); }
+        private i_conv_r4(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(float)); }
     }
 
     public class i_conv_r8 : ConvertConvInst
     {
-        public i_conv_r8(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            _dst = new TYPE(typeof(double));
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_conv_r8(i); }
+        private i_conv_r8(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(double)); }
     }
 
     public class i_conv_r_un : ConvertUnsInst
     {
-        public i_conv_r_un(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            _dst = new TYPE(typeof(float));
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_conv_r_un(i); }
+        private i_conv_r_un(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(float)); }
     }
 
     public class i_conv_u1 : ConvertConvInst
     {
-        public i_conv_u1(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            _dst = new TYPE(typeof(byte));
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_conv_u1(i); }
+        private i_conv_u1(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(byte)); }
     }
 
     public class i_conv_u2 : ConvertConvInst
     {
-        public i_conv_u2(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            _dst = new TYPE(typeof(ushort));
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_conv_u2(i); }
+        private i_conv_u2(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(ushort)); }
     }
 
     public class i_conv_u4 : ConvertConvInst
     {
-        public i_conv_u4(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            _dst = new TYPE(typeof(uint));
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_conv_u4(i); }
+        private i_conv_u4(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(uint)); }
     }
 
     public class i_conv_u8 : ConvertConvInst
     {
-        public i_conv_u8(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            _dst = new TYPE(typeof(ulong));
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_conv_u8(i); }
+        private i_conv_u8(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(ulong)); }
     }
 
     public class i_conv_u : ConvertConvInst
     {
-        public i_conv_u(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            _dst = new TYPE(typeof(uint));
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_conv_u(i); }
+        private i_conv_u(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(uint)); }
     }
 
     public class i_cpblk : INST
     {
-        public i_cpblk(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_cpblk(i); }
+        private i_cpblk(Mono.Cecil.Cil.Instruction i) : base(i) { }
     }
 
     public class i_cpobj : INST
     {
-        public i_cpobj(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_cpobj(i); }
+        private i_cpobj(Mono.Cecil.Cil.Instruction i) : base(i) { }
     }
 
     public class i_div : BinaryOpInst
     {
-        public i_div(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_div(i); }
+        private i_div(Mono.Cecil.Cil.Instruction i) : base(i) { }
     }
 
     public class i_div_un : BinaryOpInst
     {
-        public i_div_un(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_div_un(i); }
+        private i_div_un(Mono.Cecil.Cil.Instruction i) : base(i) { }
     }
 
     public class i_dup : INST
     {
-        public i_dup(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_dup(i); }
+        private i_dup(Mono.Cecil.Cil.Instruction i) : base(i) { }
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
@@ -4321,18 +3665,14 @@
 
     public class i_endfilter : INST
     {
-        public i_endfilter(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_endfilter(i); }
+        private i_endfilter(Mono.Cecil.Cil.Instruction i) : base(i) { }
     }
 
     public class i_endfinally : INST
     {
-        public i_endfinally(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_endfinally(i); }
+        private i_endfinally(Mono.Cecil.Cil.Instruction i) : base(i) { }
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {   // leave.* page 372 of ecma 335
@@ -4352,18 +3692,14 @@
 
     public class i_initblk : INST
     {
-        public i_initblk(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_initblk(i); }
+        private i_initblk(Mono.Cecil.Cil.Instruction i) : base(i) { }
     }
 
     public class i_initobj : INST
     {
-        public i_initobj(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_initobj(i); }
+        private i_initobj(Mono.Cecil.Cil.Instruction i) : base(i) { }
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {   // initobj – initialize the value at an address page 400
@@ -4400,12 +3736,10 @@
 
     public class i_isinst : INST
     {
-        TypeReference call_closure_typetok = null;
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_isinst(i); }
+        private i_isinst(Mono.Cecil.Cil.Instruction i) : base(i) { }
 
-        public i_isinst(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        TypeReference call_closure_typetok = null;
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {   // isinst – test if an object is an instance of a class or interface, page 401
@@ -4430,15 +3764,15 @@
 
     public class i_jmp : INST
     {
-        public i_jmp(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_jmp(i); }
+        private i_jmp(Mono.Cecil.Cil.Instruction i) : base(i) { }
     }
 
     public class i_ldarg : ConvertLdArgInst
     {
-        public i_ldarg(Mono.Cecil.Cil.Instruction i)
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldarg(i); }
+
+        private i_ldarg(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
             Mono.Cecil.ParameterReference pr = i.Operand as Mono.Cecil.ParameterReference;
@@ -4449,44 +3783,32 @@
 
     public class i_ldarg_0 : ConvertLdArgInst
     {
-        public i_ldarg_0(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            _arg = 0;
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldarg_0(i); }
+        private i_ldarg_0(Mono.Cecil.Cil.Instruction i) : base(i) { _arg = 0; }
     }
 
     public class i_ldarg_1 : ConvertLdArgInst
     {
-        public i_ldarg_1(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            _arg = 1;
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldarg_1(i); }
+        private i_ldarg_1(Mono.Cecil.Cil.Instruction i) : base(i) { _arg = 1; }
     }
 
     public class i_ldarg_2 : ConvertLdArgInst
     {
-        public i_ldarg_2(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            _arg = 2;
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldarg_2(i); }
+        private i_ldarg_2(Mono.Cecil.Cil.Instruction i) : base(i) { _arg = 2; }
     }
 
     public class i_ldarg_3 : ConvertLdArgInst
     {
-
-        public i_ldarg_3(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            _arg = 3;
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldarg_3(i); }
+        private i_ldarg_3(Mono.Cecil.Cil.Instruction i) : base(i) { _arg = 3; }
     }
 
     public class i_ldarg_s : ConvertLdArgInst
     {
-        public i_ldarg_s(Mono.Cecil.Cil.Instruction i)
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldarg_s(i); }
+        private i_ldarg_s(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
             Mono.Cecil.ParameterReference pr = i.Operand as Mono.Cecil.ParameterReference;
@@ -4497,7 +3819,8 @@
 
     public class i_ldarga : ConvertLdArgInst
     {
-        public i_ldarga(Mono.Cecil.Cil.Instruction i)
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldarga(i); }
+        private i_ldarga(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
             Mono.Cecil.ParameterReference pr = i.Operand as Mono.Cecil.ParameterReference;
@@ -4508,7 +3831,8 @@
 
     public class i_ldarga_s : ConvertLdArgInst
     {
-        public i_ldarga_s(Mono.Cecil.Cil.Instruction i)
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldarga_s(i); }
+        private i_ldarga_s(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
             Mono.Cecil.ParameterReference pr = i.Operand as Mono.Cecil.ParameterReference;
@@ -4519,7 +3843,8 @@
 
     public class i_ldc_i4 : ConvertLDCInstI4
     {
-        public i_ldc_i4(Mono.Cecil.Cil.Instruction i)
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldc_i4(i); }
+        private i_ldc_i4(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
             int arg = default(int);
@@ -4580,107 +3905,68 @@
 
     public class i_ldc_i4_0 : ConvertLDCInstI4
     {
-        public i_ldc_i4_0(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            int arg = 0;
-            _arg = arg;
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldc_i4_0(i); }
+        private i_ldc_i4_0(Mono.Cecil.Cil.Instruction i) : base(i) { int arg = 0; _arg = arg; }
     }
 
     public class i_ldc_i4_1 : ConvertLDCInstI4
     {
-        public i_ldc_i4_1(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            int arg = 1;
-            _arg = arg;
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldc_i4_1(i); }
+        private i_ldc_i4_1(Mono.Cecil.Cil.Instruction i) : base(i) { int arg = 1; _arg = arg; }
     }
 
     public class i_ldc_i4_2 : ConvertLDCInstI4
     {
-        public i_ldc_i4_2(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            int arg = 2;
-            _arg = arg;
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldc_i4_2(i); }
+        private i_ldc_i4_2(Mono.Cecil.Cil.Instruction i) : base(i) { int arg = 2; _arg = arg; }
     }
 
     public class i_ldc_i4_3 : ConvertLDCInstI4
     {
-        public i_ldc_i4_3(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            int arg = 3;
-            _arg = arg;
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldc_i4_3(i); }
+        private i_ldc_i4_3(Mono.Cecil.Cil.Instruction i) : base(i) { int arg = 3; _arg = arg; }
     }
 
     public class i_ldc_i4_4 : ConvertLDCInstI4
     {
-        public i_ldc_i4_4(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            int arg = 4;
-            _arg = arg;
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldc_i4_4(i); }
+        private i_ldc_i4_4(Mono.Cecil.Cil.Instruction i) : base(i) { int arg = 4; _arg = arg; }
     }
 
     public class i_ldc_i4_5 : ConvertLDCInstI4
     {
-        public i_ldc_i4_5(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            int arg = 5;
-            _arg = arg;
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldc_i4_5(i); }
+        private i_ldc_i4_5(Mono.Cecil.Cil.Instruction i) : base(i) { int arg = 5; _arg = arg; }
     }
 
     public class i_ldc_i4_6 : ConvertLDCInstI4
     {
-        public i_ldc_i4_6(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            int arg = 6;
-            _arg = arg;
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldc_i4_6(i); }
+        private i_ldc_i4_6(Mono.Cecil.Cil.Instruction i) : base(i) { int arg = 6; _arg = arg; }
     }
 
     public class i_ldc_i4_7 : ConvertLDCInstI4
     {
-        public i_ldc_i4_7(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            int arg = 7;
-            _arg = arg;
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldc_i4_7(i); }
+        private i_ldc_i4_7(Mono.Cecil.Cil.Instruction i) : base(i) { int arg = 7; _arg = arg; }
     }
 
     public class i_ldc_i4_8 : ConvertLDCInstI4
     {
-        public i_ldc_i4_8(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            int arg = 8;
-            _arg = arg;
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldc_i4_8(i); }
+        private i_ldc_i4_8(Mono.Cecil.Cil.Instruction i) : base(i) { int arg = 8; _arg = arg; }
     }
 
     public class i_ldc_i4_m1 : ConvertLDCInstI4
     {
-        public i_ldc_i4_m1(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            int arg = -1;
-            _arg = arg;
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldc_i4_m1(i); }
+        private i_ldc_i4_m1(Mono.Cecil.Cil.Instruction i) : base(i) { int arg = -1; _arg = arg; }
     }
 
     public class i_ldc_i4_s : ConvertLDCInstI4
     {
-        public i_ldc_i4_s(Mono.Cecil.Cil.Instruction i)
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldc_i4_s(i); }
+        private i_ldc_i4_s(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
             int arg = default(int);
@@ -4741,7 +4027,8 @@
 
     public class i_ldc_i8 : ConvertLDCInstI8
     {
-        public i_ldc_i8(Mono.Cecil.Cil.Instruction i)
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldc_i8(i); }
+        private i_ldc_i8(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
             Int64 arg = default(Int64);
@@ -4802,7 +4089,8 @@
 
     public class i_ldc_r4 : ConvertLDCInstR4
     {
-        public i_ldc_r4(Mono.Cecil.Cil.Instruction i)
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldc_r4(i); }
+        private i_ldc_r4(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
             Single arg = default(Single);
@@ -4871,7 +4159,8 @@
 
     public class i_ldc_r8 : ConvertLDCInstR8
     {
-        public i_ldc_r8(Mono.Cecil.Cil.Instruction i)
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldc_r8(i); }
+        private i_ldc_r8(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
             Double arg = default(Double);
@@ -4948,123 +4237,87 @@
 
     public class i_ldelem_any : ConvertLoadElement
     {
-        public i_ldelem_any(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldelem_any(i); }
+        private i_ldelem_any(Mono.Cecil.Cil.Instruction i) : base(i) { }
     }
 
     public class i_ldelem_i1 : ConvertLoadElement
     {
-        public i_ldelem_i1(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            _dst = new TYPE(typeof(sbyte));
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldelem_i1(i); }
+        private i_ldelem_i1(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(sbyte)); }
     }
 
     public class i_ldelem_i2 : ConvertLoadElement
     {
-        public i_ldelem_i2(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            _dst = new TYPE(typeof(short));
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldelem_i2(i); }
+        private i_ldelem_i2(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(short)); }
     }
 
     public class i_ldelem_i4 : ConvertLoadElement
     {
-        public i_ldelem_i4(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            _dst = new TYPE(typeof(int));
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldelem_i4(i); }
+        private i_ldelem_i4(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(int)); }
     }
 
     public class i_ldelem_i8 : ConvertLoadElement
     {
-        public i_ldelem_i8(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            _dst = new TYPE(typeof(long));
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldelem_i8(i); }
+        private i_ldelem_i8(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(long)); }
     }
 
     public class i_ldelem_i : ConvertLoadElement
     {
-        public i_ldelem_i(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldelem_i(i); }
+        private i_ldelem_i(Mono.Cecil.Cil.Instruction i) : base(i) { }
     }
 
     public class i_ldelem_r4 : ConvertLoadElement
     {
-        public i_ldelem_r4(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            _dst = new TYPE(typeof(float));
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldelem_r4(i); }
+        private i_ldelem_r4(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(float)); }
     }
 
     public class i_ldelem_r8 : ConvertLoadElement
     {
-        public i_ldelem_r8(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            _dst = new TYPE(typeof(double));
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldelem_r8(i); }
+        private i_ldelem_r8(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(double)); }
     }
 
     public class i_ldelem_ref : ConvertLoadElement
     {
-        public i_ldelem_ref(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldelem_ref(i); }
+        private i_ldelem_ref(Mono.Cecil.Cil.Instruction i) : base(i) { }
     }
 
     public class i_ldelem_u1 : ConvertLoadElement
     {
-        public i_ldelem_u1(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            _dst = new TYPE(typeof(byte));
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldelem_u1(i); }
+        private i_ldelem_u1(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(byte)); }
     }
 
     public class i_ldelem_u2 : ConvertLoadElement
     {
-        public i_ldelem_u2(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            _dst = new TYPE(typeof(ushort));
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldelem_u2(i); }
+        private i_ldelem_u2(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(ushort)); }
     }
 
     public class i_ldelem_u4 : ConvertLoadElement
     {
-        public i_ldelem_u4(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            _dst = new TYPE(typeof(uint));
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldelem_u4(i); }
+        private i_ldelem_u4(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(uint)); }
     }
 
     public class i_ldelema : ConvertLoadElementA
     {
-        public i_ldelema(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldelema(i); }
+        private i_ldelema(Mono.Cecil.Cil.Instruction i) : base(i) { }
     }
 
     public class i_ldfld : INST
     {
-        public i_ldfld(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldfld(i); }
+
+        private i_ldfld(Mono.Cecil.Cil.Instruction i) : base(i) { }
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {   // ldfld, page 406 of ecma 335
@@ -5279,10 +4532,9 @@
 
     public class i_ldflda : INST
     {
-        public i_ldflda(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldflda(i); }
+
+        private i_ldflda(Mono.Cecil.Cil.Instruction i) : base(i) { }
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {   // ldflda, page 407 of ecma 335
@@ -5502,10 +4754,9 @@
 
     public class i_ldftn : INST
     {
-        public i_ldftn(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldftn(i); }
+
+        private i_ldftn(Mono.Cecil.Cil.Instruction i) : base(i) { }
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
@@ -5515,109 +4766,74 @@
 
     public class i_ldind_i1 : ConvertLoadIndirect
     {
-        public i_ldind_i1(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            _dst = new TYPE(typeof(sbyte));
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldind_i1(i); }
+        private i_ldind_i1(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(sbyte)); }
     }
 
     public class i_ldind_i2 : ConvertLoadIndirect
     {
-        public i_ldind_i2(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            _dst = new TYPE(typeof(short));
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldind_i2(i); }
+        private i_ldind_i2(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(short)); }
     }
 
     public class i_ldind_i4 : ConvertLoadIndirect
     {
-        public i_ldind_i4(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            _dst = new TYPE(typeof(int));
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldind_i4(i); }
+        private i_ldind_i4(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(int)); }
     }
 
     public class i_ldind_i8 : ConvertLoadIndirect
     {
-        public i_ldind_i8(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            _dst = new TYPE(typeof(long));
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldind_i8(i); }
+        private i_ldind_i8(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(long)); }
     }
 
     public class i_ldind_i : ConvertLoadIndirect
     {
-        public i_ldind_i(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-			_dst = new TYPE(typeof(int));
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldind_i(i); }
+        private i_ldind_i(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(int)); }
     }
 
     public class i_ldind_r4 : ConvertLoadIndirect
     {
-        public i_ldind_r4(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            _dst = new TYPE(typeof(float));
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldind_r4(i); }
+        private i_ldind_r4(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(float)); }
     }
 
     public class i_ldind_r8 : ConvertLoadIndirect
     {
-        public i_ldind_r8(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            _dst = new TYPE(typeof(double));
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldind_r8(i); }
+        private i_ldind_r8(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(double)); }
     }
 
     public class i_ldind_ref : ConvertLoadIndirect
     {
-        public i_ldind_ref(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-			_dst = new TYPE(typeof(object));
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldind_ref(i); }
+        private i_ldind_ref(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(object)); }
     }
 
     public class i_ldind_u1 : ConvertLoadIndirect
     {
-        public i_ldind_u1(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            _dst = new TYPE(typeof(byte));
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldind_u1(i); }
+        private i_ldind_u1(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(byte)); }
     }
 
     public class i_ldind_u2 : ConvertLoadIndirect
     {
-        public i_ldind_u2(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-			_dst = new TYPE(typeof(ushort));
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldind_u2(i); }
+        private i_ldind_u2(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(ushort)); }
     }
 
     public class i_ldind_u4 : ConvertLoadIndirect
     {
-        public i_ldind_u4(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            _dst = new TYPE(typeof(uint));
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldind_u4(i); }
+        private i_ldind_u4(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(uint)); }
     }
 
     public class i_ldlen : INST
     {
-        public i_ldlen(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldlen(i); }
+        private i_ldlen(Mono.Cecil.Cil.Instruction i) : base(i) { }
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
@@ -5756,7 +4972,8 @@
 
     public class i_ldloc : ConvertLdLoc
     {
-        public i_ldloc(Mono.Cecil.Cil.Instruction i)
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldloc(i); }
+        private i_ldloc(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
             Mono.Cecil.ParameterReference pr = i.Operand as Mono.Cecil.ParameterReference;
@@ -5767,47 +4984,32 @@
 
     public class i_ldloc_0 : ConvertLdLoc
     {
-        public i_ldloc_0(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            int arg = 0;
-            _arg = arg;
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldloc_0(i); }
+        private i_ldloc_0(Mono.Cecil.Cil.Instruction i) : base(i) { int arg = 0; _arg = arg; }
     }
 
     public class i_ldloc_1 : ConvertLdLoc
     {
-        public i_ldloc_1(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            int arg = 1;
-            _arg = arg;
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldloc_1(i); }
+        private i_ldloc_1(Mono.Cecil.Cil.Instruction i) : base(i) { int arg = 1; _arg = arg; }
     }
 
     public class i_ldloc_2 : ConvertLdLoc
     {
-        public i_ldloc_2(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            int arg = 2;
-            _arg = arg;
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldloc_2(i); }
+        private i_ldloc_2(Mono.Cecil.Cil.Instruction i) : base(i) { int arg = 2; _arg = arg; }
     }
 
     public class i_ldloc_3 : ConvertLdLoc
     {
-        public i_ldloc_3(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            int arg = 3;
-            _arg = arg;
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldloc_3(i); }
+        private i_ldloc_3(Mono.Cecil.Cil.Instruction i) : base(i) { int arg = 3; _arg = arg; }
     }
 
     public class i_ldloc_s : ConvertLdLoc
     {
-        public i_ldloc_s(Mono.Cecil.Cil.Instruction i)
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldloc_s(i); }
+        private i_ldloc_s(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
             Mono.Cecil.Cil.VariableReference pr = i.Operand as Mono.Cecil.Cil.VariableReference;
@@ -5818,7 +5020,8 @@
 
     public class i_ldloca : ConvertLdLoc
     {
-        public i_ldloca(Mono.Cecil.Cil.Instruction i)
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldloca(i); }
+        private i_ldloca(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
             Mono.Cecil.Cil.VariableDefinition pr = i.Operand as Mono.Cecil.Cil.VariableDefinition;
@@ -5829,7 +5032,8 @@
 
     public class i_ldloca_s : ConvertLdLoc
     {
-        public i_ldloca_s(Mono.Cecil.Cil.Instruction i)
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldloca_s(i); }
+        private i_ldloca_s(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
             Mono.Cecil.Cil.VariableDefinition pr = i.Operand as Mono.Cecil.Cil.VariableDefinition;
@@ -5840,10 +5044,8 @@
 
     public class i_ldnull : INST
     {
-        public i_ldnull(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldnull(i); }
+        private i_ldnull(Mono.Cecil.Cil.Instruction i) : base(i) { }
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
@@ -5862,10 +5064,8 @@
 
     public class i_ldobj : INST
     {
-        public i_ldobj(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldobj(i); }
+        private i_ldobj(Mono.Cecil.Cil.Instruction i) : base(i) { }
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {   // ldobj, copy a value from an address to the stack, ecma 335, page 409
@@ -5880,10 +5080,8 @@
 
     public class i_ldsfld : INST
     {
-        public i_ldsfld(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldsfld(i); }
+        private i_ldsfld(Mono.Cecil.Cil.Instruction i) : base(i) { }
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {   // ldsfld (load static field), ecma 335 page 410
@@ -5944,18 +5142,14 @@
 
     public class i_ldsflda : INST
     {
-        public i_ldsflda(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldsflda(i); }
+        private i_ldsflda(Mono.Cecil.Cil.Instruction i) : base(i) { }
     }
 
     public class i_ldstr : INST
     {
-        public i_ldstr(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldstr(i); }
+        private i_ldstr(Mono.Cecil.Cil.Instruction i) : base(i) { }
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
@@ -6005,16 +5199,14 @@
 
     public class i_ldtoken : INST
     {
-        public i_ldtoken(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldtoken(i); }
+        private i_ldtoken(Mono.Cecil.Cil.Instruction i) : base(i) { }
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {   // ldtoken (load token handle), ecma 335 page 413
             var rth = typeof(System.RuntimeTypeHandle).ToMonoTypeReference().RewriteMonoTypeReference();
             var v = rth.Deresolve(this.Block._original_method_reference.DeclaringType, null);
-			state._stack.Push(v);
+            state._stack.Push(v);
             // Parse System.RuntimeTypeHandle.ctor(IntPtr). We'll make
             // a call to that in code generation.
             var list = rth.Resolve().Methods.Where(m => m.FullName.Contains("ctor")).ToList();
@@ -6115,18 +5307,14 @@
 
     public class i_ldvirtftn : INST
     {
-        public i_ldvirtftn(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldvirtftn(i); }
+        private i_ldvirtftn(Mono.Cecil.Cil.Instruction i) : base(i) { }
     }
 
     public class i_leave : INST
     {
-        public i_leave(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_leave(i); }
+        private i_leave(Mono.Cecil.Cil.Instruction i) : base(i) { }
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {   // leave.* page 372 of ecma 335
@@ -6145,10 +5333,8 @@
 
     public class i_leave_s : INST
     {
-        public i_leave_s(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_leave_s(i); }
+        private i_leave_s(Mono.Cecil.Cil.Instruction i) : base(i) { }
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {   // leave.* page 372 of ecma 335
@@ -6167,50 +5353,38 @@
 
     public class i_localloc : INST
     {
-        public i_localloc(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_localloc(i); }
+        private i_localloc(Mono.Cecil.Cil.Instruction i) : base(i) { }
     }
 
     public class i_mkrefany : INST
     {
-        public i_mkrefany(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_mkrefany(i); }
+        private i_mkrefany(Mono.Cecil.Cil.Instruction i) : base(i) { }
     }
 
     public class i_mul : BinaryOpInst
     {
-        public i_mul(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_mul(i); }
+        private i_mul(Mono.Cecil.Cil.Instruction i) : base(i) { }
     }
 
     public class i_mul_ovf : BinaryOpInst
     {
-        public i_mul_ovf(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_mul_ovf(i); }
+        private i_mul_ovf(Mono.Cecil.Cil.Instruction i) : base(i) { }
     }
 
     public class i_mul_ovf_un : BinaryOpInst
     {
-        public i_mul_ovf_un(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_mul_ovf_un(i); }
+        private i_mul_ovf_un(Mono.Cecil.Cil.Instruction i) : base(i) { }
     }
 
     public class i_neg : INST
     {
-        public i_neg(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_neg(i); }
+        private i_neg(Mono.Cecil.Cil.Instruction i) : base(i) { }
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
@@ -6245,10 +5419,8 @@
 
     public class i_newarr : INST
     {
-        public i_newarr(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_newarr(i); }
+        private i_newarr(Mono.Cecil.Cil.Instruction i) : base(i) { }
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {   // newarr, page 416 of ecma 335
@@ -6311,12 +5483,10 @@
 
     public class i_newobj : INST
     {
-        MethodReference call_closure_method = null;
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_newobj(i); }
+        private i_newobj(Mono.Cecil.Cil.Instruction i) : base(i) { }
 
-        public i_newobj(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        MethodReference call_closure_method = null;
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
@@ -6657,50 +5827,34 @@
 
     public class i_no : INST
     {
-        public i_no(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_no(i); }
+        private i_no(Mono.Cecil.Cil.Instruction i) : base(i) { }
     }
 
     public class i_nop : INST
     {
-        public i_nop(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
-
-        public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
-        {
-        }
-
-        public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_nop(i); }
+        private i_nop(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state) { }
+        public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state) { }
     }
 
     public class i_not : INST
     {
-        public i_not(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_not(i); }
+        private i_not(Mono.Cecil.Cil.Instruction i) : base(i) { }
     }
 
     public class i_or : BinaryOpInst
     {
-        public i_or(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_or(i); }
+        private i_or(Mono.Cecil.Cil.Instruction i) : base(i) { }
     }
 
     public class i_pop : INST
     {
-        public i_pop(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_pop(i); }
+        private i_pop(Mono.Cecil.Cil.Instruction i) : base(i) { }
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
@@ -6715,50 +5869,38 @@
 
     public class i_readonly : INST
     {
-        public i_readonly(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_readonly(i); }
+        private i_readonly(Mono.Cecil.Cil.Instruction i) : base(i) { }
     }
 
     public class i_refanytype : INST
     {
-        public i_refanytype(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_refanytype(i); }
+        private i_refanytype(Mono.Cecil.Cil.Instruction i) : base(i) { }
     }
 
     public class i_refanyval : INST
     {
-        public i_refanyval(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_refanyval(i); }
+        private i_refanyval(Mono.Cecil.Cil.Instruction i) : base(i) { }
     }
 
     public class i_rem : BinaryOpInst
     {
-        public i_rem(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_rem(i); }
+        private i_rem(Mono.Cecil.Cil.Instruction i) : base(i) { }
     }
 
     public class i_rem_un : BinaryOpInst
     {
-        public i_rem_un(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_rem_un(i); }
+        private i_rem_un(Mono.Cecil.Cil.Instruction i) : base(i) { }
     }
 
     public class i_ret : INST
     {
-        public i_ret(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ret(i); }
+        private i_ret(Mono.Cecil.Cil.Instruction i) : base(i) { }
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
@@ -6819,18 +5961,14 @@
 
     public class i_rethrow : INST
     {
-        public i_rethrow(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_rethrow(i); }
+        private i_rethrow(Mono.Cecil.Cil.Instruction i) : base(i) { }
     }
 
     public class i_shl : INST
     {
-        public i_shl(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_shl(i); }
+        private i_shl(Mono.Cecil.Cil.Instruction i) : base(i) { }
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
@@ -6869,10 +6007,8 @@
 
     public class i_shr : INST
     {
-        public i_shr(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_shr(i); }
+        private i_shr(Mono.Cecil.Cil.Instruction i) : base(i) { }
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
@@ -6911,18 +6047,14 @@
 
     public class i_shr_un : INST
     {
-        public i_shr_un(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_shr_un(i); }
+        private i_shr_un(Mono.Cecil.Cil.Instruction i) : base(i) { }
     }
 
     public class i_sizeof : INST
     {
-        public i_sizeof(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_sizeof(i); }
+        private i_sizeof(Mono.Cecil.Cil.Instruction i) : base(i) { }
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
@@ -6948,7 +6080,8 @@
 
     public class i_starg : ConvertStArgInst
     {
-        public i_starg(Mono.Cecil.Cil.Instruction i)
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_starg(i); }
+        private i_starg(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
             Mono.Cecil.ParameterReference pr = i.Operand as Mono.Cecil.ParameterReference;
@@ -6959,7 +6092,9 @@
 
     public class i_starg_s : ConvertStArgInst
     {
-        public i_starg_s(Mono.Cecil.Cil.Instruction i)
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_starg_s(i); }
+
+        private i_starg_s(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
             Mono.Cecil.ParameterReference pr = i.Operand as Mono.Cecil.ParameterReference;
@@ -6970,164 +6105,117 @@
 
     public class i_stelem_any : ConvertStoreElement
     {
-        public i_stelem_any(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_stelem_any(i); }
+        private i_stelem_any(Mono.Cecil.Cil.Instruction i) : base(i) { }
     }
 
     public class i_stelem_i1 : ConvertStoreElement
     {
-        public i_stelem_i1(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            _dst = new TYPE(typeof(sbyte));
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_stelem_i1(i); }
+        private i_stelem_i1(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(sbyte)); }
     }
 
     public class i_stelem_i2 : ConvertStoreElement
     {
-        public i_stelem_i2(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            _dst = new TYPE(typeof(short));
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_stelem_i2(i); }
+        private i_stelem_i2(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(short)); }
     }
 
     public class i_stelem_i4 : ConvertStoreElement
     {
-        public i_stelem_i4(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            _dst = new TYPE(typeof(int));
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_stelem_i4(i); }
+        private i_stelem_i4(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(int)); }
     }
 
     public class i_stelem_i8 : ConvertStoreElement
     {
-        public i_stelem_i8(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            _dst = new TYPE(typeof(long));
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_stelem_i8(i); }
+        private i_stelem_i8(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(long)); }
     }
 
     public class i_stelem_i : ConvertStoreElement
     {
-        public i_stelem_i(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_stelem_i(i); }
+        private i_stelem_i(Mono.Cecil.Cil.Instruction i) : base(i) { }
     }
 
     public class i_stelem_r4 : ConvertStoreElement
     {
-        public i_stelem_r4(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            _dst = new TYPE(typeof(float));
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_stelem_r4(i); }
+        private i_stelem_r4(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(float)); }
     }
 
     public class i_stelem_r8 : ConvertStoreElement
     {
-        public i_stelem_r8(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            _dst = new TYPE(typeof(double));
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_stelem_r8(i); }
+        private i_stelem_r8(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(double)); }
     }
 
     public class i_stelem_ref : ConvertStoreElement
     {
-        public i_stelem_ref(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_stelem_ref(i); }
+        private i_stelem_ref(Mono.Cecil.Cil.Instruction i) : base(i) { }
     }
 
     public class i_stfld : ConvertStoreField
     {
-        public i_stfld(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_stfld(i); }
+        private i_stfld(Mono.Cecil.Cil.Instruction i) : base(i) { }
     }
 
     public class i_stind_i1 : ConvertStoreIndirect
     {
-        public i_stind_i1(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            _dst = new TYPE(typeof(sbyte));
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_stind_i1(i); }
+        private i_stind_i1(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(sbyte)); }
     }
 
     public class i_stind_i2 : ConvertStoreIndirect
     {
-        public i_stind_i2(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            _dst = new TYPE(typeof(short));
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_stind_i2(i); }
+        private i_stind_i2(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(short)); }
     }
 
     public class i_stind_i4 : ConvertStoreIndirect
     {
-        public i_stind_i4(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            _dst = new TYPE(typeof(int));
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_stind_i4(i); }
+        private i_stind_i4(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(int)); }
     }
 
     public class i_stind_i8 : ConvertStoreIndirect
     {
-        public i_stind_i8(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            _dst = new TYPE(typeof(long));
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_stind_i8(i); }
+        private i_stind_i8(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(long)); }
     }
 
     public class i_stind_i : ConvertStoreIndirect
     {
-        public i_stind_i(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-			_dst = new TYPE(typeof(int)); // native and c# int the same.
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_stind_i(i); }
+        private i_stind_i(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(int)); }
+        // native and c# int the same.
     }
 
     public class i_stind_r4 : ConvertStoreIndirect
     {
-        public i_stind_r4(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            _dst = new TYPE(typeof(float));
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_stind_r4(i); }
+        private i_stind_r4(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(float)); }
     }
 
     public class i_stind_r8 : ConvertStoreIndirect
     {
-        public i_stind_r8(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            _dst = new TYPE(typeof(double));
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_stind_r8(i); }
+        private i_stind_r8(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(double)); }
     }
 
     public class i_stind_ref : ConvertStoreIndirect
     {
-        public i_stind_ref(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-			_dst = null; // dynamic target type.
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_stind_ref(i); }
+        private i_stind_ref(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = null; /* dynamic target type */ }
     }
 
     public class i_stloc : ConvertStLoc
     {
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_stloc(i); }
+
         public i_stloc(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
@@ -7139,47 +6227,33 @@
 
     public class i_stloc_0 : ConvertStLoc
     {
-        public i_stloc_0(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            int arg = 0;
-            _arg = arg;
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_stloc_0(i); }
+        private i_stloc_0(Mono.Cecil.Cil.Instruction i) : base(i) { int arg = 0; _arg = arg; }
     }
 
     public class i_stloc_1 : ConvertStLoc
     {
-        public i_stloc_1(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            int arg = 1;
-            _arg = arg;
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_stloc_1(i); }
+        private i_stloc_1(Mono.Cecil.Cil.Instruction i) : base(i) { int arg = 1; _arg = arg; }
     }
 
     public class i_stloc_2 : ConvertStLoc
     {
-        public i_stloc_2(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            int arg = 2;
-            _arg = arg;
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_stloc_2(i); }
+        private i_stloc_2(Mono.Cecil.Cil.Instruction i) : base(i) { int arg = 2; _arg = arg; }
     }
 
     public class i_stloc_3 : ConvertStLoc
     {
-        public i_stloc_3(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            int arg = 3;
-            _arg = arg;
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_stloc_3(i); }
+        private i_stloc_3(Mono.Cecil.Cil.Instruction i) : base(i) { int arg = 3; _arg = arg; }
     }
 
     public class i_stloc_s : ConvertStLoc
     {
-        public i_stloc_s(Mono.Cecil.Cil.Instruction i)
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_stloc_s(i); }
+
+        private i_stloc_s(Mono.Cecil.Cil.Instruction i)
             : base(i)
         {
             Mono.Cecil.Cil.VariableReference pr = i.Operand as Mono.Cecil.Cil.VariableReference;
@@ -7190,10 +6264,8 @@
 
     public class i_stobj : INST
     {
-        public i_stobj(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_stobj(i); }
+        private i_stobj(Mono.Cecil.Cil.Instruction i) : base(i) { }
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {   //  stobj – store a value at an address , page 428
@@ -7242,13 +6314,11 @@
 
     public class i_stsfld : INST
     {
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_stsfld(i); }
+        private i_stsfld(Mono.Cecil.Cil.Instruction i) : base(i) { }
+
         TypeReference call_closure_type = null;
         TypeReference call_closure_field_type = null;
-
-        public i_stsfld(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {   // stsfld (store static field), ecma 335 page 429
@@ -7304,50 +6374,38 @@
 
     public class i_sub : BinaryOpInst
     {
-        public i_sub(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_sub(i); }
+        private i_sub(Mono.Cecil.Cil.Instruction i) : base(i) { }
     }
 
     public class i_sub_ovf : BinaryOpInst
     {
-        public i_sub_ovf(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_sub_ovf(i); }
+        private i_sub_ovf(Mono.Cecil.Cil.Instruction i) : base(i) { }
     }
 
     public class i_sub_ovf_un : BinaryOpInst
     {
-        public i_sub_ovf_un(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_sub_ovf_un(i); }
+        private i_sub_ovf_un(Mono.Cecil.Cil.Instruction i) : base(i) { }
     }
 
     public class i_switch : INST
     {
-        public i_switch(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_switch(i); }
+        private i_switch(Mono.Cecil.Cil.Instruction i) : base(i) { }
     }
 
     public class i_tail : INST
     {
-        public i_tail(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_tail(i); }
+        private i_tail(Mono.Cecil.Cil.Instruction i) : base(i) { }
     }
 
     public class i_throw : INST
     {
-        public i_throw(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_throw(i); }
+        private i_throw(Mono.Cecil.Cil.Instruction i) : base(i) { }
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
@@ -7366,42 +6424,32 @@
 
     public class i_unaligned : INST
     {
-        public i_unaligned(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_unaligned(i); }
+        private i_unaligned(Mono.Cecil.Cil.Instruction i) : base(i) { }
     }
 
     public class i_unbox : INST
     {
-        public i_unbox(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_unbox(i); }
+        private i_unbox(Mono.Cecil.Cil.Instruction i) : base(i) { }
     }
 
     public class i_unbox_any : INST
     {
-        public i_unbox_any(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_unbox_any(i); }
+        private i_unbox_any(Mono.Cecil.Cil.Instruction i) : base(i) { }
     }
 
     public class i_volatile : INST
     {
-        public i_volatile(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_volatile(i); }
+        private i_volatile(Mono.Cecil.Cil.Instruction i) : base(i) { }
     }
 
     public class i_xor : BinaryOpInst
     {
-        public i_xor(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_xor(i); }
+        private i_xor(Mono.Cecil.Cil.Instruction i) : base(i) { }
     }
 }
 
