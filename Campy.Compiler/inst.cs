@@ -5607,9 +5607,9 @@
                 // First, create a struct.
                 var entry = this.Block.Entry.LlvmInfo.BasicBlock;
                 var beginning = LLVM.GetFirstInstruction(entry);
-                //LLVM.PositionBuilderBefore(Builder, beginning);
+                LLVM.PositionBuilderBefore(Builder, beginning);
                 var new_obj = LLVM.BuildAlloca(Builder, llvm_type, "i" + instruction_id++); // Allocates struct on stack, but returns a pointer to struct.
-                //LLVM.PositionBuilderAtEnd(Builder, this.Block.BasicBlock);
+                LLVM.PositionBuilderAtEnd(Builder, this.Block.LlvmInfo.BasicBlock);
                 if (Campy.Utils.Options.IsOn("jit_trace"))
                     System.Console.WriteLine(new VALUE(new_obj));
 
@@ -5646,11 +5646,10 @@
                 if (Campy.Utils.Options.IsOn("jit_trace"))
                     System.Console.WriteLine(new VALUE(call));
 
-                var load = LLVM.BuildLoad(Builder, new_obj, "i" + instruction_id++);
-                if (Campy.Utils.Options.IsOn("jit_trace"))
-                    System.Console.WriteLine(new VALUE(load));
+                // All structs in state._stack are actually pointers to structures,
+                // as with reference types.
 
-                state._stack.Push(new VALUE(load));
+                state._stack.Push(new VALUE(new_obj));
             }
             else if (!is_type_value_type && the_entry == null)
             {
