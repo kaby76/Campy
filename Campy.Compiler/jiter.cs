@@ -268,22 +268,6 @@ namespace Campy.Compiler
                 System.Console.WriteLine();
         }
 
-        public static List<CFG.Vertex> ThreadInstructions(this List<CFG.Vertex> basic_blocks_to_compile)
-        {
-            foreach (CFG.Vertex bb in basic_blocks_to_compile)
-            {
-                INST prev = null;
-                foreach (var j in bb.Instructions)
-                {
-                    j.Block = bb;
-                    if (prev != null) prev.Next = j;
-                    prev = j;
-                }
-            }
-
-            return basic_blocks_to_compile;
-        }
-
         // Method to denormalize information about the method this block is associated with,
         // placing that information into the block for easier access.
         public static List<CFG.Vertex> ComputeBasicMethodProperties(this List<CFG.Vertex> basic_blocks_to_compile)
@@ -533,27 +517,37 @@ namespace Campy.Compiler
                     var tr = variables[i].VariableType.InstantiateGeneric(bb._original_method_reference);
                     TYPE type = new TYPE(tr);
                     VALUE value;
-                    if (LLVM.GetTypeKind(type.IntermediateType) == TypeKind.PointerTypeKind)
-                        value = new VALUE(LLVM.ConstPointerNull(type.IntermediateType));
-                    else if (LLVM.GetTypeKind(type.IntermediateType) == TypeKind.DoubleTypeKind)
-                        value = new VALUE(LLVM.ConstReal(LLVM.DoubleType(), 0));
-                    else if (LLVM.GetTypeKind(type.IntermediateType) == TypeKind.FloatTypeKind)
-                        value = new VALUE(LLVM.ConstReal(LLVM.FloatType(), 0));
-                    else if (LLVM.GetTypeKind(type.IntermediateType) == TypeKind.IntegerTypeKind)
-                        value = new VALUE(LLVM.ConstInt(type.IntermediateType, (ulong) 0, true));
-                    else if (LLVM.GetTypeKind(type.IntermediateType) == TypeKind.StructTypeKind)
+                    bb.Entry.local_alloc.TryGetValue(i, out bool use_alloca);
+                    if (use_alloca)
                     {
-                        var entry = bb.Entry.LlvmInfo.BasicBlock;
-                        //var beginning = LLVM.GetFirstInstruction(entry);
-                        //LLVM.PositionBuilderBefore(basic_block.Builder, beginning);
-                        var new_obj = LLVM.BuildAlloca(bb.LlvmInfo.Builder, type.IntermediateType,
-                            "i" + INST.instruction_id++); // Allocates struct on stack, but returns a pointer to struct.
-                        //LLVM.PositionBuilderAtEnd(bb.LlvmInfo.Builder, bb.BasicBlock);
+                        var new_obj = LLVM.BuildAlloca(bb.LlvmInfo.Builder,
+                            type.IntermediateType,
+                            "i" + INST.instruction_id++);
                         value = new VALUE(new_obj);
                     }
                     else
-                        throw new Exception("Unhandled type");
-
+                    {
+                        if (LLVM.GetTypeKind(type.IntermediateType) == TypeKind.PointerTypeKind)
+                            value = new VALUE(LLVM.ConstPointerNull(type.IntermediateType));
+                        else if (LLVM.GetTypeKind(type.IntermediateType) == TypeKind.DoubleTypeKind)
+                            value = new VALUE(LLVM.ConstReal(LLVM.DoubleType(), 0));
+                        else if (LLVM.GetTypeKind(type.IntermediateType) == TypeKind.FloatTypeKind)
+                            value = new VALUE(LLVM.ConstReal(LLVM.FloatType(), 0));
+                        else if (LLVM.GetTypeKind(type.IntermediateType) == TypeKind.IntegerTypeKind)
+                            value = new VALUE(LLVM.ConstInt(type.IntermediateType, (ulong)0, true));
+                        else if (LLVM.GetTypeKind(type.IntermediateType) == TypeKind.StructTypeKind)
+                        {
+                            var entry = bb.Entry.LlvmInfo.BasicBlock;
+                            //var beginning = LLVM.GetFirstInstruction(entry);
+                            //LLVM.PositionBuilderBefore(basic_block.Builder, beginning);
+                            var new_obj = LLVM.BuildAlloca(bb.LlvmInfo.Builder, type.IntermediateType,
+                                "i" + INST.instruction_id++); // Allocates struct on stack, but returns a pointer to struct.
+                                                              //LLVM.PositionBuilderAtEnd(bb.LlvmInfo.Builder, bb.BasicBlock);
+                            value = new VALUE(new_obj);
+                        }
+                        else
+                            throw new Exception("Unhandled type");
+                    }
                     state._stack.Push(value);
                 }
 

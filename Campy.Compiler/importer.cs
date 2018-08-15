@@ -138,7 +138,6 @@ namespace Campy.Compiler
                 ExtractBasicBlocksOfMethod(reference);
                 var blocks = this.Cfg.PopChangeSet(change_set_id);
                 blocks.ComputeBasicMethodProperties();
-                blocks.ThreadInstructions();
                 blocks.PropagateTypesAndPerformCallClosure();
             }
         }
@@ -416,8 +415,6 @@ namespace Campy.Compiler
 
             // Add in all edges.
             var list_new_nodes = Cfg.PopChangeSet(change_set);
-
-            list_new_nodes.ThreadInstructions();
 
             foreach (var node in list_new_nodes)
             {
@@ -703,7 +700,6 @@ namespace Campy.Compiler
 
         private CFG.Vertex Split(CFG.Vertex node, int i)
         {
-
             Debug.Assert(node.Instructions.Count != 0);
             // Split this node into two nodes, with all instructions after "i" in new node.
             var cfg = node._graph;
@@ -739,6 +735,8 @@ namespace Campy.Compiler
                 // Do not re-wrap the instruction, simply move wrapped instructions.
                 INST old_inst = node.Instructions[j];
                 result.Instructions.Add(old_inst);
+                // Correct Block to point to new block.
+                old_inst.Block = result;
             }
 
             // Remove instructions from this block.

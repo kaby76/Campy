@@ -33,8 +33,10 @@
         private static bool init = false;
         public BuilderRef Builder { get { return Block.LlvmInfo.Builder; } }
         public List<VALUE> LLVMInstructions { get; private set; }
-        public CFG.Vertex Block { get; set; }
-        public virtual INST Next { get; set; }
+        public CFG.Vertex Block {
+            get;
+            set;
+        }
         public SequencePoint SeqPoint { get; set; }
         private static Dictionary<string, MetadataRef> debug_files = new Dictionary<string, MetadataRef>();
         private static Dictionary<string, MetadataRef> debug_compile_units = new Dictionary<string, MetadataRef>();
@@ -43,7 +45,7 @@
         public static DIBuilderRef dib;
         private static bool done_this;
         public UInt32 TargetPointerSizeInBits = 64;
-        delegate INST wrap_func(Mono.Cecil.Cil.Instruction i);
+        delegate INST wrap_func(CFG.Vertex b, Mono.Cecil.Cil.Instruction i);
         static Dictionary<Mono.Cecil.Cil.Code, wrap_func> wrappers =
             new Dictionary<Mono.Cecil.Cil.Code, wrap_func>() {
                 { Mono.Cecil.Cil.Code.Add,              i_add.factory },
@@ -384,13 +386,14 @@
                                 + this.ToString());
         }
 
-        protected INST(Mono.Cecil.Cil.Instruction i)
+        protected INST(CFG.Vertex b, Mono.Cecil.Cil.Instruction i)
         {
             Instruction = i;
             if (i.OpCode.FlowControl == Mono.Cecil.Cil.FlowControl.Call)
             {
                 INST.CallInstructions.Add(this);
             }
+            Block = b;
         }
 
         static public INST Wrap(Mono.Cecil.Cil.Instruction i, CFG.Vertex block, SequencePoint sp)
@@ -426,7 +429,7 @@
                 init = true;
             }
             var w = wrappers_array[(int)op.Code];
-            wrapped_inst = w(i);
+            wrapped_inst = w(block, i);
             wrapped_inst.SeqPoint = sp;
             return wrapped_inst;
         }
@@ -439,8 +442,8 @@
 
     public class BinaryOpInst : INST
     {
-        public BinaryOpInst(Mono.Cecil.Cil.Instruction i)
-            : base(i)
+        public BinaryOpInst(CFG.Vertex b, Mono.Cecil.Cil.Instruction i)
+            : base(b, i)
         {
         }
 
@@ -903,7 +906,7 @@
     {
         MethodReference call_closure_method = null;
 
-        public ConvertCallInst(Instruction i) : base(i)
+        public ConvertCallInst(CFG.Vertex b, Instruction i) : base(b, i)
         {
         }
 
@@ -1348,7 +1351,7 @@
         public int _arg;
         TypeReference call_closure_arg_type = null;
 
-        public ConvertLdArgInst(Mono.Cecil.Cil.Instruction i) : base(i)
+        public ConvertLdArgInst(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i)
         {
         }
 
@@ -1455,7 +1458,7 @@
     {
         public int _arg;
 
-        public ConvertStArgInst(Mono.Cecil.Cil.Instruction i) : base(i)
+        public ConvertStArgInst(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i)
         {
         }
 
@@ -1482,7 +1485,7 @@
     {
         public Int32 _arg;
 
-        public ConvertLDCInstI4(Instruction i) : base(i)
+        public ConvertLDCInstI4(CFG.Vertex b, Instruction i) : base(b, i)
         {
         }
 
@@ -1506,7 +1509,7 @@
     {
         public Int64 _arg;
 
-        public ConvertLDCInstI8(Instruction i) : base(i)
+        public ConvertLDCInstI8(CFG.Vertex b, Instruction i) : base(b, i)
         {
         }
 
@@ -1530,7 +1533,7 @@
     {
         public double _arg;
 
-        public ConvertLDCInstR4(Instruction i) : base(i)
+        public ConvertLDCInstR4(CFG.Vertex b, Instruction i) : base(b, i)
         {
         }
 
@@ -1554,7 +1557,7 @@
     {
         public double _arg;
 
-        public ConvertLDCInstR8(Instruction i) : base(i)
+        public ConvertLDCInstR8(CFG.Vertex b, Instruction i) : base(b, i)
         {
         }
 
@@ -1576,32 +1579,72 @@
 
     public class ConvertLdLoc : INST
     {
-        public int _arg;
-        TypeReference call_closure_local_type = null;
+        protected int _arg;
+        protected TypeReference call_closure_local_type = null;
 
-        public ConvertLdLoc(Instruction i) : base(i)
+        public ConvertLdLoc(CFG.Vertex b, Instruction i, int arg = -1) : base(b, i)
         {
+            var by_ref = this.Instruction.OpCode.Code == Code.Ldloca || this.Instruction.OpCode.Code == Code.Ldloca_S;
+            _arg = arg;
+            var operand = this.Operand;
+            var reference = operand as VariableReference;
+            if (reference != null) _arg = reference.Index;
+            var definition = operand as VariableDefinition;
+            if (definition != null) _arg = definition.Index;
+            var pr = operand as Mono.Cecil.ParameterReference;
+            if (pr != null) _arg = pr.Index;
+            CFG.Vertex entry = this.Block.Entry;
+            if (entry.local_alloc.TryGetValue(_arg, out bool previous_value))
+            {
+                // Can't go back if already by reference.
+                if (!previous_value) entry.local_alloc[_arg] = by_ref;
+            }
+            else
+                entry.local_alloc[_arg] = by_ref;
         }
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var v = state._locals[_arg];
+            var by_ref = this.Instruction.OpCode.Code == Code.Ldloca || this.Instruction.OpCode.Code == Code.Ldloca_S;
+            if (by_ref) v = new ByReferenceType(v);
             call_closure_local_type = v;
             state._stack.Push(v);
         }
 
         public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
         {
+            var by_ref = this.Instruction.OpCode.Code == Code.Ldloca || this.Instruction.OpCode.Code == Code.Ldloca_S;
             var v = state._locals[_arg];
-            state._stack.Push(v);
+            CFG.Vertex entry = this.Block.Entry;
+            entry.local_alloc.TryGetValue(_arg, out bool use_alloca);
+            if (by_ref)
+            {
+                if (!use_alloca) throw new Exception("There is a load address of a local, but not compiled as such.");
+                if (Campy.Utils.Options.IsOn("jit_trace"))
+                    System.Console.WriteLine(v);
+                state._stack.Push(v);
+            }
+            else
+            {
+                if (use_alloca)
+                {
+                    v = new VALUE(LLVM.BuildLoad(Builder, v.V, "i" + instruction_id++));
+                }
+                if (Campy.Utils.Options.IsOn("jit_trace"))
+                    System.Console.WriteLine(v);
+                state._stack.Push(v);
+            }
         }
     }
 
     public class ConvertStLoc : INST
     {
         public int _arg;
+        protected TypeReference call_closure_local_type = null;
+        protected bool by_ref;
 
-        public ConvertStLoc(Instruction i) : base(i)
+        public ConvertStLoc(CFG.Vertex b, Instruction i) : base(b, i)
         {
         }
 
@@ -1614,7 +1657,16 @@
         public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
         {
             var v = state._stack.Pop();
-            state._locals[_arg] = v;
+            CFG.Vertex entry = this.Block.Entry;
+            entry.local_alloc.TryGetValue(_arg, out bool use_alloca);
+            if (use_alloca)
+            {
+                LLVM.BuildStore(Builder, v.V, state._locals[_arg].V);
+            }
+            else
+            {
+                state._locals[_arg] = v;
+            }
         }
     }
 
@@ -1623,7 +1675,7 @@
         TypeReference call_closure_lhs = null;
         TypeReference call_closure_rhs = null;
 
-        public ConvertCompareInst(Mono.Cecil.Cil.Instruction i) : base(i)
+        public ConvertCompareInst(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i)
         {
         }
 
@@ -1744,7 +1796,7 @@
 
     public class ConvertCompareAndBranchInst : INST
     {
-        public ConvertCompareAndBranchInst(Mono.Cecil.Cil.Instruction i) : base(i)
+        public ConvertCompareAndBranchInst(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i)
         {
         }
 
@@ -1976,8 +2028,8 @@
             }
         }
 
-        public ConvertConvInst(Mono.Cecil.Cil.Instruction i)
-            : base(i)
+        public ConvertConvInst(CFG.Vertex b, Mono.Cecil.Cil.Instruction i)
+            : base(b, i)
         {
         }
 
@@ -2003,8 +2055,8 @@
 
     public class ConvertConvOvfInst : ConvertConvInst
     {
-        public ConvertConvOvfInst(Mono.Cecil.Cil.Instruction i)
-            : base(i)
+        public ConvertConvOvfInst(CFG.Vertex b, Mono.Cecil.Cil.Instruction i)
+            : base(b, i)
         {
             _check_overflow = true;
         }
@@ -2012,8 +2064,8 @@
 
     public class ConvertConvOvfUnsInst : ConvertConvInst
     {
-        public ConvertConvOvfUnsInst(Mono.Cecil.Cil.Instruction i)
-            : base(i)
+        public ConvertConvOvfUnsInst(CFG.Vertex b, Mono.Cecil.Cil.Instruction i)
+            : base(b, i)
         {
             _check_overflow = true;
             _from_unsigned = true;
@@ -2022,8 +2074,8 @@
 
     public class ConvertUnsInst : ConvertConvInst
     {
-        public ConvertUnsInst(Mono.Cecil.Cil.Instruction i)
-            : base(i)
+        public ConvertUnsInst(CFG.Vertex b, Mono.Cecil.Cil.Instruction i)
+            : base(b, i)
         {
             _from_unsigned = true;
         }
@@ -2035,8 +2087,8 @@
         protected bool _check_overflow;
         protected bool _from_unsigned;
 
-        public ConvertLoadElement(Mono.Cecil.Cil.Instruction i)
-            : base(i)
+        public ConvertLoadElement(CFG.Vertex b, Mono.Cecil.Cil.Instruction i)
+            : base(b, i)
         {
         }
 
@@ -2115,8 +2167,8 @@
         protected bool _check_overflow;
         protected bool _from_unsigned;
 
-        public ConvertStoreElement(Mono.Cecil.Cil.Instruction i)
-            : base(i)
+        public ConvertStoreElement(CFG.Vertex b, Mono.Cecil.Cil.Instruction i)
+            : base(b, i)
         {
         }
 
@@ -2192,8 +2244,8 @@
 
     public class ConvertLoadElementA : INST
     {
-        public ConvertLoadElementA(Mono.Cecil.Cil.Instruction i)
-            : base(i)
+        public ConvertLoadElementA(CFG.Vertex b, Mono.Cecil.Cil.Instruction i)
+            : base(b, i)
         {
         }
 
@@ -2252,8 +2304,8 @@
         TypeReference call_closure_value = null;
         TypeReference call_closure_object = null;
 
-        public ConvertStoreField(Mono.Cecil.Cil.Instruction i)
-            : base(i)
+        public ConvertStoreField(CFG.Vertex b, Mono.Cecil.Cil.Instruction i)
+            : base(b, i)
         {
         }
 
@@ -2468,8 +2520,8 @@
         protected bool _check_overflow;
         protected bool _from_unsigned;
 
-        public ConvertLoadIndirect(Mono.Cecil.Cil.Instruction i)
-            : base(i)
+        public ConvertLoadIndirect(CFG.Vertex b, Mono.Cecil.Cil.Instruction i)
+            : base(b, i)
         {
         }
 
@@ -2530,8 +2582,8 @@
         protected bool _check_overflow;
         protected bool _from_unsigned;
 
-        public ConvertStoreIndirect(Mono.Cecil.Cil.Instruction i)
-            : base(i)
+        public ConvertStoreIndirect(CFG.Vertex b, Mono.Cecil.Cil.Instruction i)
+            : base(b, i)
         {
         }
 
@@ -2604,162 +2656,162 @@
 
     public class i_add : BinaryOpInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_add(i); }
-        private i_add(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_add(b, i); }
+        private i_add(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
     }
 
     public class i_add_ovf : BinaryOpInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_add_ovf(i); }
-        private i_add_ovf(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_add_ovf(b, i); }
+        private i_add_ovf(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
     }
 
     public class i_add_ovf_un : BinaryOpInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_add_ovf_un(i); }
-        private i_add_ovf_un(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_add_ovf_un(b, i); }
+        private i_add_ovf_un(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
     }
 
     public class i_and : BinaryOpInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_and(i); }
-        private i_and(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_and(b, i); }
+        private i_and(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
     }
 
     public class i_arglist : INST
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_arglist(i); }
-        private i_arglist(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_arglist(b, i); }
+        private i_arglist(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
     }
 
     public class i_beq : ConvertCompareAndBranchInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_beq(i); }
-        private i_beq(Mono.Cecil.Cil.Instruction i) : base(i) { Predicate = PredicateType.eq; IsSigned = true; }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_beq(b, i); }
+        private i_beq(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { Predicate = PredicateType.eq; IsSigned = true; }
     }
 
     public class i_beq_s : ConvertCompareAndBranchInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_beq_s(i); }
-        private i_beq_s(Mono.Cecil.Cil.Instruction i) : base(i) { Predicate = PredicateType.eq; IsSigned = true; }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_beq_s(b, i); }
+        private i_beq_s(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { Predicate = PredicateType.eq; IsSigned = true; }
     }
 
     public class i_bge : ConvertCompareAndBranchInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_bge(i); }
-        private i_bge(Mono.Cecil.Cil.Instruction i) : base(i) { Predicate = PredicateType.ge; IsSigned = true; }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_bge(b, i); }
+        private i_bge(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { Predicate = PredicateType.ge; IsSigned = true; }
     }
 
     public class i_bge_un : ConvertCompareAndBranchInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_bge_un(i); }
-        private i_bge_un(Mono.Cecil.Cil.Instruction i) : base(i) { Predicate = PredicateType.ge; IsSigned = false; }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_bge_un(b, i); }
+        private i_bge_un(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { Predicate = PredicateType.ge; IsSigned = false; }
     }
 
     public class i_bge_un_s : ConvertCompareAndBranchInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_bge_un_s(i); }
-        private i_bge_un_s(Mono.Cecil.Cil.Instruction i) : base(i) { Predicate = PredicateType.ge; IsSigned = false; }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_bge_un_s(b, i); }
+        private i_bge_un_s(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { Predicate = PredicateType.ge; IsSigned = false; }
     }
 
     public class i_bge_s : ConvertCompareAndBranchInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_bge_s(i); }
-        private i_bge_s(Mono.Cecil.Cil.Instruction i) : base(i) { Predicate = PredicateType.ge; IsSigned = true; }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_bge_s(b, i); }
+        private i_bge_s(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { Predicate = PredicateType.ge; IsSigned = true; }
     }
 
     public class i_bgt : ConvertCompareAndBranchInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_bgt(i); }
-        private i_bgt(Mono.Cecil.Cil.Instruction i) : base(i) { Predicate = PredicateType.gt; IsSigned = true; }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_bgt(b, i); }
+        private i_bgt(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { Predicate = PredicateType.gt; IsSigned = true; }
     }
 
     public class i_bgt_s : ConvertCompareAndBranchInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_bgt_s(i); }
-        private i_bgt_s(Mono.Cecil.Cil.Instruction i) : base(i) { Predicate = PredicateType.gt; IsSigned = true; }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_bgt_s(b, i); }
+        private i_bgt_s(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { Predicate = PredicateType.gt; IsSigned = true; }
     }
 
     public class i_bgt_un : ConvertCompareAndBranchInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_bgt_un(i); }
-        private i_bgt_un(Mono.Cecil.Cil.Instruction i) : base(i) { Predicate = PredicateType.gt; IsSigned = false; }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_bgt_un(b, i); }
+        private i_bgt_un(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { Predicate = PredicateType.gt; IsSigned = false; }
     }
 
     public class i_bgt_un_s : ConvertCompareAndBranchInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_bgt_un_s(i); }
-        private i_bgt_un_s(Mono.Cecil.Cil.Instruction i) : base(i) { Predicate = PredicateType.gt; IsSigned = false; }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_bgt_un_s(b, i); }
+        private i_bgt_un_s(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { Predicate = PredicateType.gt; IsSigned = false; }
     }
 
     public class i_ble : ConvertCompareAndBranchInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ble(i); }
-        private i_ble(Mono.Cecil.Cil.Instruction i) : base(i) { Predicate = PredicateType.le; IsSigned = true; }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ble(b, i); }
+        private i_ble(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { Predicate = PredicateType.le; IsSigned = true; }
     }
 
     public class i_ble_s : ConvertCompareAndBranchInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ble_s(i); }
-        private i_ble_s(Mono.Cecil.Cil.Instruction i) : base(i) { Predicate = PredicateType.le; }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ble_s(b, i); }
+        private i_ble_s(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { Predicate = PredicateType.le; }
     }
 
     public class i_ble_un : ConvertCompareAndBranchInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ble_un(i); }
-        private i_ble_un(Mono.Cecil.Cil.Instruction i) : base(i) { Predicate = PredicateType.le; IsSigned = false; }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ble_un(b, i); }
+        private i_ble_un(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { Predicate = PredicateType.le; IsSigned = false; }
     }
 
     public class i_ble_un_s : ConvertCompareAndBranchInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ble_un_s(i); }
-        private i_ble_un_s(Mono.Cecil.Cil.Instruction i) : base(i) { Predicate = PredicateType.le; IsSigned = false; }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ble_un_s(b, i); }
+        private i_ble_un_s(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { Predicate = PredicateType.le; IsSigned = false; }
     }
 
     public class i_blt : ConvertCompareAndBranchInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_blt(i); }
-        private i_blt(Mono.Cecil.Cil.Instruction i) : base(i) { Predicate = PredicateType.lt; IsSigned = true; }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_blt(b, i); }
+        private i_blt(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { Predicate = PredicateType.lt; IsSigned = true; }
     }
 
     public class i_blt_s : ConvertCompareAndBranchInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_blt_s(i); }
-        private i_blt_s(Mono.Cecil.Cil.Instruction i) : base(i) { Predicate = PredicateType.lt; IsSigned = true; }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_blt_s(b, i); }
+        private i_blt_s(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { Predicate = PredicateType.lt; IsSigned = true; }
     }
 
     public class i_blt_un : ConvertCompareAndBranchInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_blt_un(i); }
-        private i_blt_un(Mono.Cecil.Cil.Instruction i) : base(i) { Predicate = PredicateType.lt; IsSigned = false; }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_blt_un(b, i); }
+        private i_blt_un(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { Predicate = PredicateType.lt; IsSigned = false; }
     }
 
     public class i_blt_un_s : ConvertCompareAndBranchInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_blt_un_s(i); }
-        private i_blt_un_s(Mono.Cecil.Cil.Instruction i) : base(i) { Predicate = PredicateType.lt; IsSigned = false; }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_blt_un_s(b, i); }
+        private i_blt_un_s(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { Predicate = PredicateType.lt; IsSigned = false; }
     }
 
     public class i_bne_un : ConvertCompareAndBranchInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_bne_un(i); }
-        private i_bne_un(Mono.Cecil.Cil.Instruction i) : base(i) { Predicate = PredicateType.ne; IsSigned = false; }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_bne_un(b, i); }
+        private i_bne_un(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { Predicate = PredicateType.ne; IsSigned = false; }
     }
 
     public class i_bne_un_s : ConvertCompareAndBranchInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_bne_un_s(i); }
-        private i_bne_un_s(Mono.Cecil.Cil.Instruction i) : base(i) { Predicate = PredicateType.ne; IsSigned = false; }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_bne_un_s(b, i); }
+        private i_bne_un_s(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { Predicate = PredicateType.ne; IsSigned = false; }
     }
 
     public class i_box : INST
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_box(i); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_box(b, i); }
 
         TypeReference call_closure_typetok = null;
 
-        private i_box(Mono.Cecil.Cil.Instruction i)
-            : base(i)
+        private i_box(CFG.Vertex b, Mono.Cecil.Cil.Instruction i)
+            : base(b, i)
         {
         }
 
@@ -2824,12 +2876,9 @@
 
     public class i_br : INST
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_br(i); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_br(b, i); }
 
-        private i_br(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-        }
+        private i_br(CFG.Vertex b, Mono.Cecil.Cil.Instruction i): base(b, i) { }
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
@@ -2845,10 +2894,10 @@
 
     public class i_br_s : INST
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_br_s(i); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_br_s(b, i); }
 
-        private i_br_s(Mono.Cecil.Cil.Instruction i)
-            : base(i)
+        private i_br_s(CFG.Vertex b, Mono.Cecil.Cil.Instruction i)
+            : base(b, i)
         {
         }
 
@@ -2866,15 +2915,15 @@
 
     public class i_break : INST
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_break(i); }
-        private i_break(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_break(b, i); }
+        private i_break(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
     }
 
     public class i_brfalse : INST
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_brfalse(i); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_brfalse(b, i); }
 
-        private i_brfalse(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        private i_brfalse(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {   // brfalse, page 340 of ecma 335
@@ -2944,10 +2993,10 @@
 
     public class i_brfalse_s : INST
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_brfalse_s(i); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_brfalse_s(b, i); }
 
-        private i_brfalse_s(Mono.Cecil.Cil.Instruction i)
-            : base(i)
+        private i_brfalse_s(CFG.Vertex b, Mono.Cecil.Cil.Instruction i)
+            : base(b, i)
         {
         }
 
@@ -3019,9 +3068,9 @@
 
     public class i_brtrue : INST
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_brtrue(i); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_brtrue(b, i); }
 
-        private i_brtrue(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        private i_brtrue(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
@@ -3092,9 +3141,9 @@
 
     public class i_brtrue_s : INST
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_brtrue_s(i); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_brtrue_s(b, i); }
 
-        private i_brtrue_s(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        private i_brtrue_s(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
@@ -3164,23 +3213,23 @@
 
     public class i_call : ConvertCallInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_call(i); }
-        private i_call(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_call(b, i); }
+        private i_call(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
     }
 
     public class i_calli : ConvertCallInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_calli(i); }
-        private i_calli(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_calli(b, i); }
+        private i_calli(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
     }
 
     public class i_callvirt : INST
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_callvirt(i); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_callvirt(b, i); }
 
         MethodReference call_closure_method = null;
 
-        private i_callvirt(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        private i_callvirt(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
@@ -3356,11 +3405,11 @@
 
     public class i_castclass : INST
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_castclass(i); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_castclass(b, i); }
 
         TypeReference call_closure_typetok = null;
 
-        private i_castclass(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        private i_castclass(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
@@ -3378,274 +3427,274 @@
 
     public class i_ceq : ConvertCompareInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ceq(i); }
-        private i_ceq(Mono.Cecil.Cil.Instruction i) : base(i) { Predicate = PredicateType.eq; IsSigned = true; }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ceq(b, i); }
+        private i_ceq(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { Predicate = PredicateType.eq; IsSigned = true; }
     }
 
     public class i_cgt : ConvertCompareInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_cgt(i); }
-        private i_cgt(Mono.Cecil.Cil.Instruction i) : base(i) { Predicate = PredicateType.gt; IsSigned = true; }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_cgt(b, i); }
+        private i_cgt(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { Predicate = PredicateType.gt; IsSigned = true; }
     }
 
     public class i_cgt_un : ConvertCompareInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_cgt_un(i); }
-        private i_cgt_un(Mono.Cecil.Cil.Instruction i) : base(i) { Predicate = PredicateType.gt; IsSigned = false; }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_cgt_un(b, i); }
+        private i_cgt_un(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { Predicate = PredicateType.gt; IsSigned = false; }
     }
 
     public class i_ckfinite : INST
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ckfinite(i); }
-        private i_ckfinite(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ckfinite(b, i); }
+        private i_ckfinite(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
     }
 
     public class i_clt : ConvertCompareInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_clt(i); }
-        private i_clt(Mono.Cecil.Cil.Instruction i) : base(i) { Predicate = PredicateType.lt; IsSigned = true; }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_clt(b, i); }
+        private i_clt(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { Predicate = PredicateType.lt; IsSigned = true; }
     }
 
     public class i_clt_un : ConvertCompareInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_clt_un(i); }
-        private i_clt_un(Mono.Cecil.Cil.Instruction i) : base(i) { Predicate = PredicateType.lt; IsSigned = false; }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_clt_un(b, i); }
+        private i_clt_un(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { Predicate = PredicateType.lt; IsSigned = false; }
     }
 
     public class i_constrained : INST
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_constrained(i); }
-        private i_constrained(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_constrained(b, i); }
+        private i_constrained(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state) { }
         public override void Convert(STATE<VALUE, StackQueue<VALUE>> state) { }
     }
 
     public class i_conv_i1 : ConvertConvInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_conv_i1(i); }
-        private i_conv_i1(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(sbyte)); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_i1(b, i); }
+        private i_conv_i1(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(sbyte)); }
     }
 
     public class i_conv_i2 : ConvertConvInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_conv_i2(i); }
-        private i_conv_i2(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(short)); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_i2(b, i); }
+        private i_conv_i2(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(short)); }
     }
 
     public class i_conv_i4 : ConvertConvInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_conv_i4(i); }
-        private i_conv_i4(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(int)); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_i4(b, i); }
+        private i_conv_i4(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(int)); }
     }
 
     public class i_conv_i8 : ConvertConvInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_conv_i8(i); }
-        private i_conv_i8(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(long)); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_i8(b, i); }
+        private i_conv_i8(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(long)); }
     }
 
     public class i_conv_i : ConvertConvInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_conv_i(i); }
-        private i_conv_i(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(int)); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_i(b, i); }
+        private i_conv_i(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(int)); }
     }
 
     public class i_conv_ovf_i1 : ConvertConvOvfInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_i1(i); }
-        private i_conv_ovf_i1(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(sbyte)); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_i1(b, i); }
+        private i_conv_ovf_i1(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(sbyte)); }
     }
 
     public class i_conv_ovf_i1_un : ConvertConvOvfUnsInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_i1_un(i); }
-        private i_conv_ovf_i1_un(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(sbyte)); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_i1_un(b, i); }
+        private i_conv_ovf_i1_un(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(sbyte)); }
     }
 
     public class i_conv_ovf_i2 : ConvertConvOvfInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_i2(i); }
-        private i_conv_ovf_i2(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(short)); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_i2(b, i); }
+        private i_conv_ovf_i2(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(short)); }
     }
 
     public class i_conv_ovf_i2_un : ConvertConvOvfUnsInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_i2_un(i); }
-        private i_conv_ovf_i2_un(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(short)); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_i2_un(b, i); }
+        private i_conv_ovf_i2_un(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(short)); }
     }
 
     public class i_conv_ovf_i4 : ConvertConvOvfInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_i4(i); }
-        private i_conv_ovf_i4(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(int)); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_i4(b, i); }
+        private i_conv_ovf_i4(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(int)); }
     }
 
     public class i_conv_ovf_i4_un : ConvertConvOvfUnsInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_i4_un(i); }
-        private i_conv_ovf_i4_un(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(int)); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_i4_un(b, i); }
+        private i_conv_ovf_i4_un(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(int)); }
     }
 
     public class i_conv_ovf_i8 : ConvertConvOvfInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_i8(i); }
-        private i_conv_ovf_i8(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(long)); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_i8(b, i); }
+        private i_conv_ovf_i8(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(long)); }
     }
 
     public class i_conv_ovf_i8_un : ConvertConvOvfUnsInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_i8_un(i); }
-        private i_conv_ovf_i8_un(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(long)); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_i8_un(b, i); }
+        private i_conv_ovf_i8_un(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(long)); }
     }
 
     public class i_conv_ovf_i : ConvertConvOvfInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_i(i); }
-        private i_conv_ovf_i(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(int)); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_i(b, i); }
+        private i_conv_ovf_i(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(int)); }
     }
 
     public class i_conv_ovf_i_un : ConvertConvOvfUnsInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_i_un(i); }
-        private i_conv_ovf_i_un(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(int)); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_i_un(b, i); }
+        private i_conv_ovf_i_un(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(int)); }
     }
 
     public class i_conv_ovf_u1 : ConvertConvOvfInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_u1(i); }
-        private i_conv_ovf_u1(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(byte)); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_u1(b, i); }
+        private i_conv_ovf_u1(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(byte)); }
     }
 
     public class i_conv_ovf_u1_un : ConvertConvOvfUnsInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_u1_un(i); }
-        private i_conv_ovf_u1_un(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(byte)); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_u1_un(b, i); }
+        private i_conv_ovf_u1_un(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(byte)); }
     }
 
     public class i_conv_ovf_u2 : ConvertConvOvfInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_u2(i); }
-        private i_conv_ovf_u2(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(ushort)); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_u2(b, i); }
+        private i_conv_ovf_u2(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(ushort)); }
     }
 
     public class i_conv_ovf_u2_un : ConvertConvOvfUnsInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_u2_un(i); }
-        private i_conv_ovf_u2_un(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(ushort)); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_u2_un(b, i); }
+        private i_conv_ovf_u2_un(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(ushort)); }
     }
 
     public class i_conv_ovf_u4 : ConvertConvOvfInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_u4(i); }
-        private i_conv_ovf_u4(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(uint)); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_u4(b, i); }
+        private i_conv_ovf_u4(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(uint)); }
     }
 
     public class i_conv_ovf_u4_un : ConvertConvOvfUnsInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_u4_un(i); }
-        private i_conv_ovf_u4_un(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(uint)); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_u4_un(b, i); }
+        private i_conv_ovf_u4_un(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(uint)); }
     }
 
     public class i_conv_ovf_u8 : ConvertConvOvfInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_u8(i); }
-        private i_conv_ovf_u8(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(ulong)); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_u8(b, i); }
+        private i_conv_ovf_u8(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(ulong)); }
     }
 
     public class i_conv_ovf_u8_un : ConvertConvOvfUnsInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_u8_un(i); }
-        private i_conv_ovf_u8_un(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(ulong)); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_u8_un(b, i); }
+        private i_conv_ovf_u8_un(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(ulong)); }
     }
 
     public class i_conv_ovf_u : ConvertConvOvfInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_u(i); }
-        private i_conv_ovf_u(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(uint)); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_u(b, i); }
+        private i_conv_ovf_u(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(uint)); }
     }
 
     public class i_conv_ovf_u_un : ConvertConvOvfUnsInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_u_un(i); }
-        private i_conv_ovf_u_un(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(uint)); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_u_un(b, i); }
+        private i_conv_ovf_u_un(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(uint)); }
     }
 
     public class i_conv_r4 : ConvertConvInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_conv_r4(i); }
-        private i_conv_r4(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(float)); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_r4(b, i); }
+        private i_conv_r4(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(float)); }
     }
 
     public class i_conv_r8 : ConvertConvInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_conv_r8(i); }
-        private i_conv_r8(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(double)); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_r8(b, i); }
+        private i_conv_r8(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(double)); }
     }
 
     public class i_conv_r_un : ConvertUnsInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_conv_r_un(i); }
-        private i_conv_r_un(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(float)); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_r_un(b, i); }
+        private i_conv_r_un(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(float)); }
     }
 
     public class i_conv_u1 : ConvertConvInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_conv_u1(i); }
-        private i_conv_u1(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(byte)); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_u1(b, i); }
+        private i_conv_u1(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(byte)); }
     }
 
     public class i_conv_u2 : ConvertConvInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_conv_u2(i); }
-        private i_conv_u2(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(ushort)); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_u2(b, i); }
+        private i_conv_u2(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(ushort)); }
     }
 
     public class i_conv_u4 : ConvertConvInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_conv_u4(i); }
-        private i_conv_u4(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(uint)); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_u4(b, i); }
+        private i_conv_u4(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(uint)); }
     }
 
     public class i_conv_u8 : ConvertConvInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_conv_u8(i); }
-        private i_conv_u8(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(ulong)); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_u8(b, i); }
+        private i_conv_u8(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(ulong)); }
     }
 
     public class i_conv_u : ConvertConvInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_conv_u(i); }
-        private i_conv_u(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(uint)); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_u(b, i); }
+        private i_conv_u(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(uint)); }
     }
 
     public class i_cpblk : INST
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_cpblk(i); }
-        private i_cpblk(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_cpblk(b, i); }
+        private i_cpblk(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
     }
 
     public class i_cpobj : INST
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_cpobj(i); }
-        private i_cpobj(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_cpobj(b, i); }
+        private i_cpobj(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
     }
 
     public class i_div : BinaryOpInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_div(i); }
-        private i_div(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_div(b, i); }
+        private i_div(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
     }
 
     public class i_div_un : BinaryOpInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_div_un(i); }
-        private i_div_un(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_div_un(b, i); }
+        private i_div_un(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
     }
 
     public class i_dup : INST
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_dup(i); }
-        private i_dup(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_dup(b, i); }
+        private i_dup(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
@@ -3665,14 +3714,14 @@
 
     public class i_endfilter : INST
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_endfilter(i); }
-        private i_endfilter(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_endfilter(b, i); }
+        private i_endfilter(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
     }
 
     public class i_endfinally : INST
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_endfinally(i); }
-        private i_endfinally(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_endfinally(b, i); }
+        private i_endfinally(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {   // leave.* page 372 of ecma 335
@@ -3692,14 +3741,14 @@
 
     public class i_initblk : INST
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_initblk(i); }
-        private i_initblk(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_initblk(b, i); }
+        private i_initblk(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
     }
 
     public class i_initobj : INST
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_initobj(i); }
-        private i_initobj(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_initobj(b, i); }
+        private i_initobj(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {   // initobj – initialize the value at an address page 400
@@ -3736,8 +3785,8 @@
 
     public class i_isinst : INST
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_isinst(i); }
-        private i_isinst(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_isinst(b, i); }
+        private i_isinst(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
 
         TypeReference call_closure_typetok = null;
 
@@ -3764,16 +3813,16 @@
 
     public class i_jmp : INST
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_jmp(i); }
-        private i_jmp(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_jmp(b, i); }
+        private i_jmp(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
     }
 
     public class i_ldarg : ConvertLdArgInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldarg(i); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldarg(b, i); }
 
-        private i_ldarg(Mono.Cecil.Cil.Instruction i)
-            : base(i)
+        private i_ldarg(CFG.Vertex b, Mono.Cecil.Cil.Instruction i)
+            : base(b, i)
         {
             Mono.Cecil.ParameterReference pr = i.Operand as Mono.Cecil.ParameterReference;
             int ar = pr.Index;
@@ -3783,33 +3832,33 @@
 
     public class i_ldarg_0 : ConvertLdArgInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldarg_0(i); }
-        private i_ldarg_0(Mono.Cecil.Cil.Instruction i) : base(i) { _arg = 0; }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldarg_0(b, i); }
+        private i_ldarg_0(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _arg = 0; }
     }
 
     public class i_ldarg_1 : ConvertLdArgInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldarg_1(i); }
-        private i_ldarg_1(Mono.Cecil.Cil.Instruction i) : base(i) { _arg = 1; }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldarg_1(b, i); }
+        private i_ldarg_1(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _arg = 1; }
     }
 
     public class i_ldarg_2 : ConvertLdArgInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldarg_2(i); }
-        private i_ldarg_2(Mono.Cecil.Cil.Instruction i) : base(i) { _arg = 2; }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldarg_2(b, i); }
+        private i_ldarg_2(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _arg = 2; }
     }
 
     public class i_ldarg_3 : ConvertLdArgInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldarg_3(i); }
-        private i_ldarg_3(Mono.Cecil.Cil.Instruction i) : base(i) { _arg = 3; }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldarg_3(b, i); }
+        private i_ldarg_3(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _arg = 3; }
     }
 
     public class i_ldarg_s : ConvertLdArgInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldarg_s(i); }
-        private i_ldarg_s(Mono.Cecil.Cil.Instruction i)
-            : base(i)
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldarg_s(b, i); }
+        private i_ldarg_s(CFG.Vertex b, Mono.Cecil.Cil.Instruction i)
+            : base(b, i)
         {
             Mono.Cecil.ParameterReference pr = i.Operand as Mono.Cecil.ParameterReference;
             int ar = pr.Index;
@@ -3819,9 +3868,9 @@
 
     public class i_ldarga : ConvertLdArgInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldarga(i); }
-        private i_ldarga(Mono.Cecil.Cil.Instruction i)
-            : base(i)
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldarga(b, i); }
+        private i_ldarga(CFG.Vertex b, Mono.Cecil.Cil.Instruction i)
+            : base(b, i)
         {
             Mono.Cecil.ParameterReference pr = i.Operand as Mono.Cecil.ParameterReference;
             int arg = pr.Index;
@@ -3831,9 +3880,9 @@
 
     public class i_ldarga_s : ConvertLdArgInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldarga_s(i); }
-        private i_ldarga_s(Mono.Cecil.Cil.Instruction i)
-            : base(i)
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldarga_s(b, i); }
+        private i_ldarga_s(CFG.Vertex b, Mono.Cecil.Cil.Instruction i)
+            : base(b, i)
         {
             Mono.Cecil.ParameterReference pr = i.Operand as Mono.Cecil.ParameterReference;
             int arg = pr.Index;
@@ -3843,9 +3892,9 @@
 
     public class i_ldc_i4 : ConvertLDCInstI4
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldc_i4(i); }
-        private i_ldc_i4(Mono.Cecil.Cil.Instruction i)
-            : base(i)
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldc_i4(b, i); }
+        private i_ldc_i4(CFG.Vertex b, Mono.Cecil.Cil.Instruction i)
+            : base(b, i)
         {
             int arg = default(int);
             object o = i.Operand;
@@ -3905,69 +3954,69 @@
 
     public class i_ldc_i4_0 : ConvertLDCInstI4
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldc_i4_0(i); }
-        private i_ldc_i4_0(Mono.Cecil.Cil.Instruction i) : base(i) { int arg = 0; _arg = arg; }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldc_i4_0(b, i); }
+        private i_ldc_i4_0(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { int arg = 0; _arg = arg; }
     }
 
     public class i_ldc_i4_1 : ConvertLDCInstI4
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldc_i4_1(i); }
-        private i_ldc_i4_1(Mono.Cecil.Cil.Instruction i) : base(i) { int arg = 1; _arg = arg; }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldc_i4_1(b, i); }
+        private i_ldc_i4_1(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { int arg = 1; _arg = arg; }
     }
 
     public class i_ldc_i4_2 : ConvertLDCInstI4
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldc_i4_2(i); }
-        private i_ldc_i4_2(Mono.Cecil.Cil.Instruction i) : base(i) { int arg = 2; _arg = arg; }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldc_i4_2(b, i); }
+        private i_ldc_i4_2(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { int arg = 2; _arg = arg; }
     }
 
     public class i_ldc_i4_3 : ConvertLDCInstI4
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldc_i4_3(i); }
-        private i_ldc_i4_3(Mono.Cecil.Cil.Instruction i) : base(i) { int arg = 3; _arg = arg; }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldc_i4_3(b, i); }
+        private i_ldc_i4_3(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { int arg = 3; _arg = arg; }
     }
 
     public class i_ldc_i4_4 : ConvertLDCInstI4
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldc_i4_4(i); }
-        private i_ldc_i4_4(Mono.Cecil.Cil.Instruction i) : base(i) { int arg = 4; _arg = arg; }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldc_i4_4(b, i); }
+        private i_ldc_i4_4(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { int arg = 4; _arg = arg; }
     }
 
     public class i_ldc_i4_5 : ConvertLDCInstI4
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldc_i4_5(i); }
-        private i_ldc_i4_5(Mono.Cecil.Cil.Instruction i) : base(i) { int arg = 5; _arg = arg; }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldc_i4_5(b, i); }
+        private i_ldc_i4_5(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { int arg = 5; _arg = arg; }
     }
 
     public class i_ldc_i4_6 : ConvertLDCInstI4
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldc_i4_6(i); }
-        private i_ldc_i4_6(Mono.Cecil.Cil.Instruction i) : base(i) { int arg = 6; _arg = arg; }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldc_i4_6(b, i); }
+        private i_ldc_i4_6(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { int arg = 6; _arg = arg; }
     }
 
     public class i_ldc_i4_7 : ConvertLDCInstI4
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldc_i4_7(i); }
-        private i_ldc_i4_7(Mono.Cecil.Cil.Instruction i) : base(i) { int arg = 7; _arg = arg; }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldc_i4_7(b, i); }
+        private i_ldc_i4_7(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { int arg = 7; _arg = arg; }
     }
 
     public class i_ldc_i4_8 : ConvertLDCInstI4
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldc_i4_8(i); }
-        private i_ldc_i4_8(Mono.Cecil.Cil.Instruction i) : base(i) { int arg = 8; _arg = arg; }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldc_i4_8(b, i); }
+        private i_ldc_i4_8(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { int arg = 8; _arg = arg; }
     }
 
     public class i_ldc_i4_m1 : ConvertLDCInstI4
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldc_i4_m1(i); }
-        private i_ldc_i4_m1(Mono.Cecil.Cil.Instruction i) : base(i) { int arg = -1; _arg = arg; }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldc_i4_m1(b, i); }
+        private i_ldc_i4_m1(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { int arg = -1; _arg = arg; }
     }
 
     public class i_ldc_i4_s : ConvertLDCInstI4
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldc_i4_s(i); }
-        private i_ldc_i4_s(Mono.Cecil.Cil.Instruction i)
-            : base(i)
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldc_i4_s(b, i); }
+        private i_ldc_i4_s(CFG.Vertex b, Mono.Cecil.Cil.Instruction i)
+            : base(b, i)
         {
             int arg = default(int);
             object o = i.Operand;
@@ -4027,9 +4076,9 @@
 
     public class i_ldc_i8 : ConvertLDCInstI8
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldc_i8(i); }
-        private i_ldc_i8(Mono.Cecil.Cil.Instruction i)
-            : base(i)
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldc_i8(b, i); }
+        private i_ldc_i8(CFG.Vertex b, Mono.Cecil.Cil.Instruction i)
+            : base(b, i)
         {
             Int64 arg = default(Int64);
             object o = i.Operand;
@@ -4089,9 +4138,9 @@
 
     public class i_ldc_r4 : ConvertLDCInstR4
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldc_r4(i); }
-        private i_ldc_r4(Mono.Cecil.Cil.Instruction i)
-            : base(i)
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldc_r4(b, i); }
+        private i_ldc_r4(CFG.Vertex b, Mono.Cecil.Cil.Instruction i)
+            : base(b, i)
         {
             Single arg = default(Single);
             object o = i.Operand;
@@ -4159,9 +4208,9 @@
 
     public class i_ldc_r8 : ConvertLDCInstR8
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldc_r8(i); }
-        private i_ldc_r8(Mono.Cecil.Cil.Instruction i)
-            : base(i)
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldc_r8(b, i); }
+        private i_ldc_r8(CFG.Vertex b, Mono.Cecil.Cil.Instruction i)
+            : base(b, i)
         {
             Double arg = default(Double);
             object o = i.Operand;
@@ -4237,87 +4286,87 @@
 
     public class i_ldelem_any : ConvertLoadElement
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldelem_any(i); }
-        private i_ldelem_any(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldelem_any(b, i); }
+        private i_ldelem_any(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
     }
 
     public class i_ldelem_i1 : ConvertLoadElement
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldelem_i1(i); }
-        private i_ldelem_i1(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(sbyte)); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldelem_i1(b, i); }
+        private i_ldelem_i1(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(sbyte)); }
     }
 
     public class i_ldelem_i2 : ConvertLoadElement
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldelem_i2(i); }
-        private i_ldelem_i2(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(short)); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldelem_i2(b, i); }
+        private i_ldelem_i2(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(short)); }
     }
 
     public class i_ldelem_i4 : ConvertLoadElement
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldelem_i4(i); }
-        private i_ldelem_i4(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(int)); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldelem_i4(b, i); }
+        private i_ldelem_i4(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(int)); }
     }
 
     public class i_ldelem_i8 : ConvertLoadElement
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldelem_i8(i); }
-        private i_ldelem_i8(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(long)); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldelem_i8(b, i); }
+        private i_ldelem_i8(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(long)); }
     }
 
     public class i_ldelem_i : ConvertLoadElement
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldelem_i(i); }
-        private i_ldelem_i(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldelem_i(b, i); }
+        private i_ldelem_i(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
     }
 
     public class i_ldelem_r4 : ConvertLoadElement
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldelem_r4(i); }
-        private i_ldelem_r4(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(float)); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldelem_r4(b, i); }
+        private i_ldelem_r4(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(float)); }
     }
 
     public class i_ldelem_r8 : ConvertLoadElement
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldelem_r8(i); }
-        private i_ldelem_r8(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(double)); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldelem_r8(b, i); }
+        private i_ldelem_r8(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(double)); }
     }
 
     public class i_ldelem_ref : ConvertLoadElement
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldelem_ref(i); }
-        private i_ldelem_ref(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldelem_ref(b, i); }
+        private i_ldelem_ref(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
     }
 
     public class i_ldelem_u1 : ConvertLoadElement
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldelem_u1(i); }
-        private i_ldelem_u1(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(byte)); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldelem_u1(b, i); }
+        private i_ldelem_u1(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(byte)); }
     }
 
     public class i_ldelem_u2 : ConvertLoadElement
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldelem_u2(i); }
-        private i_ldelem_u2(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(ushort)); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldelem_u2(b, i); }
+        private i_ldelem_u2(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(ushort)); }
     }
 
     public class i_ldelem_u4 : ConvertLoadElement
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldelem_u4(i); }
-        private i_ldelem_u4(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(uint)); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldelem_u4(b, i); }
+        private i_ldelem_u4(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(uint)); }
     }
 
     public class i_ldelema : ConvertLoadElementA
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldelema(i); }
-        private i_ldelema(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldelema(b, i); }
+        private i_ldelema(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
     }
 
     public class i_ldfld : INST
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldfld(i); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldfld(b, i); }
 
-        private i_ldfld(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        private i_ldfld(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {   // ldfld, page 406 of ecma 335
@@ -4532,9 +4581,9 @@
 
     public class i_ldflda : INST
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldflda(i); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldflda(b, i); }
 
-        private i_ldflda(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        private i_ldflda(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {   // ldflda, page 407 of ecma 335
@@ -4754,9 +4803,9 @@
 
     public class i_ldftn : INST
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldftn(i); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldftn(b, i); }
 
-        private i_ldftn(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        private i_ldftn(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
@@ -4766,74 +4815,74 @@
 
     public class i_ldind_i1 : ConvertLoadIndirect
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldind_i1(i); }
-        private i_ldind_i1(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(sbyte)); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldind_i1(b, i); }
+        private i_ldind_i1(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(sbyte)); }
     }
 
     public class i_ldind_i2 : ConvertLoadIndirect
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldind_i2(i); }
-        private i_ldind_i2(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(short)); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldind_i2(b, i); }
+        private i_ldind_i2(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(short)); }
     }
 
     public class i_ldind_i4 : ConvertLoadIndirect
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldind_i4(i); }
-        private i_ldind_i4(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(int)); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldind_i4(b, i); }
+        private i_ldind_i4(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(int)); }
     }
 
     public class i_ldind_i8 : ConvertLoadIndirect
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldind_i8(i); }
-        private i_ldind_i8(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(long)); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldind_i8(b, i); }
+        private i_ldind_i8(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(long)); }
     }
 
     public class i_ldind_i : ConvertLoadIndirect
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldind_i(i); }
-        private i_ldind_i(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(int)); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldind_i(b, i); }
+        private i_ldind_i(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(int)); }
     }
 
     public class i_ldind_r4 : ConvertLoadIndirect
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldind_r4(i); }
-        private i_ldind_r4(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(float)); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldind_r4(b, i); }
+        private i_ldind_r4(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(float)); }
     }
 
     public class i_ldind_r8 : ConvertLoadIndirect
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldind_r8(i); }
-        private i_ldind_r8(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(double)); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldind_r8(b, i); }
+        private i_ldind_r8(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(double)); }
     }
 
     public class i_ldind_ref : ConvertLoadIndirect
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldind_ref(i); }
-        private i_ldind_ref(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(object)); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldind_ref(b, i); }
+        private i_ldind_ref(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(object)); }
     }
 
     public class i_ldind_u1 : ConvertLoadIndirect
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldind_u1(i); }
-        private i_ldind_u1(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(byte)); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldind_u1(b, i); }
+        private i_ldind_u1(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(byte)); }
     }
 
     public class i_ldind_u2 : ConvertLoadIndirect
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldind_u2(i); }
-        private i_ldind_u2(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(ushort)); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldind_u2(b, i); }
+        private i_ldind_u2(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(ushort)); }
     }
 
     public class i_ldind_u4 : ConvertLoadIndirect
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldind_u4(i); }
-        private i_ldind_u4(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(uint)); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldind_u4(b, i); }
+        private i_ldind_u4(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(uint)); }
     }
 
     public class i_ldlen : INST
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldlen(i); }
-        private i_ldlen(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldlen(b, i); }
+        private i_ldlen(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
@@ -4972,80 +5021,56 @@
 
     public class i_ldloc : ConvertLdLoc
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldloc(i); }
-        private i_ldloc(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            Mono.Cecil.ParameterReference pr = i.Operand as Mono.Cecil.ParameterReference;
-            int arg = pr.Index;
-            _arg = arg;
-        }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldloc(b, i); }
+        private i_ldloc(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
     }
 
     public class i_ldloc_0 : ConvertLdLoc
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldloc_0(i); }
-        private i_ldloc_0(Mono.Cecil.Cil.Instruction i) : base(i) { int arg = 0; _arg = arg; }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldloc_0(b, i); }
+        private i_ldloc_0(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i, 0) { }
     }
 
     public class i_ldloc_1 : ConvertLdLoc
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldloc_1(i); }
-        private i_ldloc_1(Mono.Cecil.Cil.Instruction i) : base(i) { int arg = 1; _arg = arg; }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldloc_1(b, i); }
+        private i_ldloc_1(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i, 1) { }
     }
 
     public class i_ldloc_2 : ConvertLdLoc
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldloc_2(i); }
-        private i_ldloc_2(Mono.Cecil.Cil.Instruction i) : base(i) { int arg = 2; _arg = arg; }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldloc_2(b, i); }
+        private i_ldloc_2(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i, 2) { }
     }
 
     public class i_ldloc_3 : ConvertLdLoc
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldloc_3(i); }
-        private i_ldloc_3(Mono.Cecil.Cil.Instruction i) : base(i) { int arg = 3; _arg = arg; }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldloc_3(b, i); }
+        private i_ldloc_3(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i, 3) { }
     }
 
     public class i_ldloc_s : ConvertLdLoc
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldloc_s(i); }
-        private i_ldloc_s(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            Mono.Cecil.Cil.VariableReference pr = i.Operand as Mono.Cecil.Cil.VariableReference;
-            int arg = pr.Index;
-            _arg = arg;
-        }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldloc_s(b, i); }
+        private i_ldloc_s(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
     }
 
     public class i_ldloca : ConvertLdLoc
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldloca(i); }
-        private i_ldloca(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            Mono.Cecil.Cil.VariableDefinition pr = i.Operand as Mono.Cecil.Cil.VariableDefinition;
-            int arg = pr.Index;
-            _arg = arg;
-        }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldloca(b, i); }
+        private i_ldloca(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
     }
 
     public class i_ldloca_s : ConvertLdLoc
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldloca_s(i); }
-        private i_ldloca_s(Mono.Cecil.Cil.Instruction i)
-            : base(i)
-        {
-            Mono.Cecil.Cil.VariableDefinition pr = i.Operand as Mono.Cecil.Cil.VariableDefinition;
-            int arg = pr.Index;
-            _arg = arg;
-        }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldloca_s(b, i); }
+        private i_ldloca_s(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
     }
 
     public class i_ldnull : INST
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldnull(i); }
-        private i_ldnull(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldnull(b, i); }
+        private i_ldnull(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
@@ -5064,8 +5089,8 @@
 
     public class i_ldobj : INST
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldobj(i); }
-        private i_ldobj(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldobj(b, i); }
+        private i_ldobj(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {   // ldobj, copy a value from an address to the stack, ecma 335, page 409
@@ -5080,8 +5105,8 @@
 
     public class i_ldsfld : INST
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldsfld(i); }
-        private i_ldsfld(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldsfld(b, i); }
+        private i_ldsfld(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {   // ldsfld (load static field), ecma 335 page 410
@@ -5142,14 +5167,14 @@
 
     public class i_ldsflda : INST
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldsflda(i); }
-        private i_ldsflda(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldsflda(b, i); }
+        private i_ldsflda(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
     }
 
     public class i_ldstr : INST
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldstr(i); }
-        private i_ldstr(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldstr(b, i); }
+        private i_ldstr(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
@@ -5199,8 +5224,8 @@
 
     public class i_ldtoken : INST
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldtoken(i); }
-        private i_ldtoken(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldtoken(b, i); }
+        private i_ldtoken(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {   // ldtoken (load token handle), ecma 335 page 413
@@ -5307,14 +5332,14 @@
 
     public class i_ldvirtftn : INST
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ldvirtftn(i); }
-        private i_ldvirtftn(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldvirtftn(b, i); }
+        private i_ldvirtftn(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
     }
 
     public class i_leave : INST
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_leave(i); }
-        private i_leave(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_leave(b, i); }
+        private i_leave(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {   // leave.* page 372 of ecma 335
@@ -5333,8 +5358,8 @@
 
     public class i_leave_s : INST
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_leave_s(i); }
-        private i_leave_s(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_leave_s(b, i); }
+        private i_leave_s(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {   // leave.* page 372 of ecma 335
@@ -5353,38 +5378,38 @@
 
     public class i_localloc : INST
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_localloc(i); }
-        private i_localloc(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_localloc(b, i); }
+        private i_localloc(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
     }
 
     public class i_mkrefany : INST
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_mkrefany(i); }
-        private i_mkrefany(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_mkrefany(b, i); }
+        private i_mkrefany(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
     }
 
     public class i_mul : BinaryOpInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_mul(i); }
-        private i_mul(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_mul(b, i); }
+        private i_mul(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
     }
 
     public class i_mul_ovf : BinaryOpInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_mul_ovf(i); }
-        private i_mul_ovf(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_mul_ovf(b, i); }
+        private i_mul_ovf(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
     }
 
     public class i_mul_ovf_un : BinaryOpInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_mul_ovf_un(i); }
-        private i_mul_ovf_un(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_mul_ovf_un(b, i); }
+        private i_mul_ovf_un(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
     }
 
     public class i_neg : INST
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_neg(i); }
-        private i_neg(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_neg(b, i); }
+        private i_neg(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
@@ -5419,8 +5444,8 @@
 
     public class i_newarr : INST
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_newarr(i); }
-        private i_newarr(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_newarr(b, i); }
+        private i_newarr(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {   // newarr, page 416 of ecma 335
@@ -5483,8 +5508,8 @@
 
     public class i_newobj : INST
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_newobj(i); }
-        private i_newobj(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_newobj(b, i); }
+        private i_newobj(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
 
         MethodReference call_closure_method = null;
 
@@ -5827,34 +5852,34 @@
 
     public class i_no : INST
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_no(i); }
-        private i_no(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_no(b, i); }
+        private i_no(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
     }
 
     public class i_nop : INST
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_nop(i); }
-        private i_nop(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_nop(b, i); }
+        private i_nop(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state) { }
         public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state) { }
     }
 
     public class i_not : INST
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_not(i); }
-        private i_not(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_not(b, i); }
+        private i_not(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
     }
 
     public class i_or : BinaryOpInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_or(i); }
-        private i_or(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_or(b, i); }
+        private i_or(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
     }
 
     public class i_pop : INST
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_pop(i); }
-        private i_pop(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_pop(b, i); }
+        private i_pop(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
@@ -5869,38 +5894,38 @@
 
     public class i_readonly : INST
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_readonly(i); }
-        private i_readonly(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_readonly(b, i); }
+        private i_readonly(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
     }
 
     public class i_refanytype : INST
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_refanytype(i); }
-        private i_refanytype(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_refanytype(b, i); }
+        private i_refanytype(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
     }
 
     public class i_refanyval : INST
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_refanyval(i); }
-        private i_refanyval(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_refanyval(b, i); }
+        private i_refanyval(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
     }
 
     public class i_rem : BinaryOpInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_rem(i); }
-        private i_rem(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_rem(b, i); }
+        private i_rem(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
     }
 
     public class i_rem_un : BinaryOpInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_rem_un(i); }
-        private i_rem_un(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_rem_un(b, i); }
+        private i_rem_un(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
     }
 
     public class i_ret : INST
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_ret(i); }
-        private i_ret(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ret(b, i); }
+        private i_ret(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
@@ -5961,14 +5986,14 @@
 
     public class i_rethrow : INST
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_rethrow(i); }
-        private i_rethrow(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_rethrow(b, i); }
+        private i_rethrow(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
     }
 
     public class i_shl : INST
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_shl(i); }
-        private i_shl(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_shl(b, i); }
+        private i_shl(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
@@ -6007,8 +6032,8 @@
 
     public class i_shr : INST
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_shr(i); }
-        private i_shr(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_shr(b, i); }
+        private i_shr(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
@@ -6047,14 +6072,14 @@
 
     public class i_shr_un : INST
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_shr_un(i); }
-        private i_shr_un(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_shr_un(b, i); }
+        private i_shr_un(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
     }
 
     public class i_sizeof : INST
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_sizeof(i); }
-        private i_sizeof(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_sizeof(b, i); }
+        private i_sizeof(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
@@ -6080,9 +6105,9 @@
 
     public class i_starg : ConvertStArgInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_starg(i); }
-        private i_starg(Mono.Cecil.Cil.Instruction i)
-            : base(i)
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_starg(b, i); }
+        private i_starg(CFG.Vertex b, Mono.Cecil.Cil.Instruction i)
+            : base(b, i)
         {
             Mono.Cecil.ParameterReference pr = i.Operand as Mono.Cecil.ParameterReference;
             int arg = pr.Index;
@@ -6092,10 +6117,10 @@
 
     public class i_starg_s : ConvertStArgInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_starg_s(i); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_starg_s(b, i); }
 
-        private i_starg_s(Mono.Cecil.Cil.Instruction i)
-            : base(i)
+        private i_starg_s(CFG.Vertex b, Mono.Cecil.Cil.Instruction i)
+            : base(b, i)
         {
             Mono.Cecil.ParameterReference pr = i.Operand as Mono.Cecil.ParameterReference;
             int arg = pr.Index;
@@ -6105,119 +6130,119 @@
 
     public class i_stelem_any : ConvertStoreElement
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_stelem_any(i); }
-        private i_stelem_any(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_stelem_any(b, i); }
+        private i_stelem_any(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
     }
 
     public class i_stelem_i1 : ConvertStoreElement
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_stelem_i1(i); }
-        private i_stelem_i1(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(sbyte)); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_stelem_i1(b, i); }
+        private i_stelem_i1(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(sbyte)); }
     }
 
     public class i_stelem_i2 : ConvertStoreElement
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_stelem_i2(i); }
-        private i_stelem_i2(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(short)); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_stelem_i2(b, i); }
+        private i_stelem_i2(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(short)); }
     }
 
     public class i_stelem_i4 : ConvertStoreElement
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_stelem_i4(i); }
-        private i_stelem_i4(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(int)); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_stelem_i4(b, i); }
+        private i_stelem_i4(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(int)); }
     }
 
     public class i_stelem_i8 : ConvertStoreElement
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_stelem_i8(i); }
-        private i_stelem_i8(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(long)); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_stelem_i8(b, i); }
+        private i_stelem_i8(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(long)); }
     }
 
     public class i_stelem_i : ConvertStoreElement
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_stelem_i(i); }
-        private i_stelem_i(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_stelem_i(b, i); }
+        private i_stelem_i(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
     }
 
     public class i_stelem_r4 : ConvertStoreElement
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_stelem_r4(i); }
-        private i_stelem_r4(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(float)); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_stelem_r4(b, i); }
+        private i_stelem_r4(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(float)); }
     }
 
     public class i_stelem_r8 : ConvertStoreElement
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_stelem_r8(i); }
-        private i_stelem_r8(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(double)); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_stelem_r8(b, i); }
+        private i_stelem_r8(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(double)); }
     }
 
     public class i_stelem_ref : ConvertStoreElement
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_stelem_ref(i); }
-        private i_stelem_ref(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_stelem_ref(b, i); }
+        private i_stelem_ref(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
     }
 
     public class i_stfld : ConvertStoreField
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_stfld(i); }
-        private i_stfld(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_stfld(b, i); }
+        private i_stfld(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
     }
 
     public class i_stind_i1 : ConvertStoreIndirect
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_stind_i1(i); }
-        private i_stind_i1(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(sbyte)); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_stind_i1(b, i); }
+        private i_stind_i1(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(sbyte)); }
     }
 
     public class i_stind_i2 : ConvertStoreIndirect
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_stind_i2(i); }
-        private i_stind_i2(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(short)); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_stind_i2(b, i); }
+        private i_stind_i2(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(short)); }
     }
 
     public class i_stind_i4 : ConvertStoreIndirect
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_stind_i4(i); }
-        private i_stind_i4(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(int)); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_stind_i4(b, i); }
+        private i_stind_i4(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(int)); }
     }
 
     public class i_stind_i8 : ConvertStoreIndirect
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_stind_i8(i); }
-        private i_stind_i8(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(long)); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_stind_i8(b, i); }
+        private i_stind_i8(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(long)); }
     }
 
     public class i_stind_i : ConvertStoreIndirect
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_stind_i(i); }
-        private i_stind_i(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(int)); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_stind_i(b, i); }
+        private i_stind_i(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(int)); }
         // native and c# int the same.
     }
 
     public class i_stind_r4 : ConvertStoreIndirect
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_stind_r4(i); }
-        private i_stind_r4(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(float)); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_stind_r4(b, i); }
+        private i_stind_r4(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(float)); }
     }
 
     public class i_stind_r8 : ConvertStoreIndirect
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_stind_r8(i); }
-        private i_stind_r8(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = new TYPE(typeof(double)); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_stind_r8(b, i); }
+        private i_stind_r8(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(double)); }
     }
 
     public class i_stind_ref : ConvertStoreIndirect
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_stind_ref(i); }
-        private i_stind_ref(Mono.Cecil.Cil.Instruction i) : base(i) { _dst = null; /* dynamic target type */ }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_stind_ref(b, i); }
+        private i_stind_ref(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = null; /* dynamic target type */ }
     }
 
     public class i_stloc : ConvertStLoc
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_stloc(i); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_stloc(b, i); }
 
-        public i_stloc(Mono.Cecil.Cil.Instruction i)
-            : base(i)
+        public i_stloc(CFG.Vertex b, Mono.Cecil.Cil.Instruction i)
+            : base(b, i)
         {
             Mono.Cecil.ParameterReference pr = i.Operand as Mono.Cecil.ParameterReference;
             int arg = pr.Index;
@@ -6227,34 +6252,34 @@
 
     public class i_stloc_0 : ConvertStLoc
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_stloc_0(i); }
-        private i_stloc_0(Mono.Cecil.Cil.Instruction i) : base(i) { int arg = 0; _arg = arg; }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_stloc_0(b, i); }
+        private i_stloc_0(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { int arg = 0; _arg = arg; }
     }
 
     public class i_stloc_1 : ConvertStLoc
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_stloc_1(i); }
-        private i_stloc_1(Mono.Cecil.Cil.Instruction i) : base(i) { int arg = 1; _arg = arg; }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_stloc_1(b, i); }
+        private i_stloc_1(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { int arg = 1; _arg = arg; }
     }
 
     public class i_stloc_2 : ConvertStLoc
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_stloc_2(i); }
-        private i_stloc_2(Mono.Cecil.Cil.Instruction i) : base(i) { int arg = 2; _arg = arg; }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_stloc_2(b, i); }
+        private i_stloc_2(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { int arg = 2; _arg = arg; }
     }
 
     public class i_stloc_3 : ConvertStLoc
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_stloc_3(i); }
-        private i_stloc_3(Mono.Cecil.Cil.Instruction i) : base(i) { int arg = 3; _arg = arg; }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_stloc_3(b, i); }
+        private i_stloc_3(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { int arg = 3; _arg = arg; }
     }
 
     public class i_stloc_s : ConvertStLoc
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_stloc_s(i); }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_stloc_s(b, i); }
 
-        private i_stloc_s(Mono.Cecil.Cil.Instruction i)
-            : base(i)
+        private i_stloc_s(CFG.Vertex b, Mono.Cecil.Cil.Instruction i)
+            : base(b, i)
         {
             Mono.Cecil.Cil.VariableReference pr = i.Operand as Mono.Cecil.Cil.VariableReference;
             int arg = pr.Index;
@@ -6264,8 +6289,8 @@
 
     public class i_stobj : INST
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_stobj(i); }
-        private i_stobj(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_stobj(b, i); }
+        private i_stobj(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {   //  stobj – store a value at an address , page 428
@@ -6314,8 +6339,8 @@
 
     public class i_stsfld : INST
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_stsfld(i); }
-        private i_stsfld(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_stsfld(b, i); }
+        private i_stsfld(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
 
         TypeReference call_closure_type = null;
         TypeReference call_closure_field_type = null;
@@ -6374,38 +6399,38 @@
 
     public class i_sub : BinaryOpInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_sub(i); }
-        private i_sub(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_sub(b, i); }
+        private i_sub(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
     }
 
     public class i_sub_ovf : BinaryOpInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_sub_ovf(i); }
-        private i_sub_ovf(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_sub_ovf(b, i); }
+        private i_sub_ovf(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
     }
 
     public class i_sub_ovf_un : BinaryOpInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_sub_ovf_un(i); }
-        private i_sub_ovf_un(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_sub_ovf_un(b, i); }
+        private i_sub_ovf_un(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
     }
 
     public class i_switch : INST
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_switch(i); }
-        private i_switch(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_switch(b, i); }
+        private i_switch(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
     }
 
     public class i_tail : INST
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_tail(i); }
-        private i_tail(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_tail(b, i); }
+        private i_tail(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
     }
 
     public class i_throw : INST
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_throw(i); }
-        private i_throw(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_throw(b, i); }
+        private i_throw(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
@@ -6424,32 +6449,32 @@
 
     public class i_unaligned : INST
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_unaligned(i); }
-        private i_unaligned(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_unaligned(b, i); }
+        private i_unaligned(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
     }
 
     public class i_unbox : INST
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_unbox(i); }
-        private i_unbox(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_unbox(b, i); }
+        private i_unbox(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
     }
 
     public class i_unbox_any : INST
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_unbox_any(i); }
-        private i_unbox_any(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_unbox_any(b, i); }
+        private i_unbox_any(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
     }
 
     public class i_volatile : INST
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_volatile(i); }
-        private i_volatile(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_volatile(b, i); }
+        private i_volatile(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
     }
 
     public class i_xor : BinaryOpInst
     {
-        public static INST factory(Mono.Cecil.Cil.Instruction i) { return new i_xor(i); }
-        private i_xor(Mono.Cecil.Cil.Instruction i) : base(i) { }
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_xor(b, i); }
+        private i_xor(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
     }
 }
 

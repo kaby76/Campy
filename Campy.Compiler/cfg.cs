@@ -104,6 +104,7 @@ namespace Campy.Compiler
             {
                 return Name;
             }
+            public Dictionary<int, bool> local_alloc = new Dictionary<int, bool>();
             public Dictionary<Tuple<TypeReference, GenericParameter>, System.Type> OpsFromOriginal { get; set; } = new Dictionary<Tuple<TypeReference, GenericParameter>, System.Type>();
             public Tuple<Tuple<TypeReference, GenericParameter>, System.Type> OpFromPreviousNode { get; set; }
             public List<INST> Instructions { get; set; } = new List<INST>();
