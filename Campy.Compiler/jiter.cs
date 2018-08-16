@@ -34,6 +34,10 @@ namespace Campy.Compiler
                     weeded.Add(bb);
                     bb.AlreadyCompiled = true;
                 }
+                else
+                {
+
+                }
             }
 
             return weeded;
@@ -61,7 +65,7 @@ namespace Campy.Compiler
                 foreach (CFG.Vertex pred in bb._graph.PredecessorNodes(bb))
                 {
                     // Do not consider interprocedural edges when computing stack size.
-                    if (pred._original_method_reference != bb._original_method_reference)
+                    if (pred._method_reference != bb._method_reference)
                         throw new Exception("Interprocedural edge should not exist.");
                     // If predecessor has not been visited, warn and do not consider.
                     // Warn if predecessor does not concur with another predecessor.
@@ -86,11 +90,11 @@ namespace Campy.Compiler
             {
                 if (!bb.IsEntry) throw new Exception("Cannot handle dead code blocks.");
                 if (has_this)
-                    state._stack.Push(bb._original_method_reference.DeclaringType);
+                    state._stack.Push(bb._method_reference.DeclaringType);
 
                 for (int i = 0; i < bb._method_definition.Parameters.Count; ++i)
                 {
-                    var par = bb._original_method_reference.Parameters[i];
+                    var par = bb._method_reference.Parameters[i];
                     var type = par.ParameterType;
                     if (Campy.Utils.Options.IsOn("detailed_import_computation_trace"))
                         System.Console.WriteLine(par);
@@ -108,11 +112,11 @@ namespace Campy.Compiler
                 // Set up locals. I'm making an assumption that there is a 
                 // one to one and in order mapping of the locals with that
                 // defined for the method body by Mono.
-                Collection<VariableDefinition> variables = bb._original_method_reference.Resolve().Body.Variables;
+                Collection<VariableDefinition> variables = bb._method_reference.Resolve().Body.Variables;
                 state._locals = state._stack.Section((int) state._stack.Count, locals);
                 for (int i = 0; i < locals; ++i)
                 {
-                    var tr = variables[i].VariableType.InstantiateGeneric(bb._original_method_reference);
+                    var tr = variables[i].VariableType.InstantiateGeneric(bb._method_reference);
                     state._stack.Push(tr);
                 }
 
@@ -283,7 +287,7 @@ namespace Campy.Compiler
                 bb.StackNumberOfArguments = bb._method_definition.Parameters.Count
                                             + (bb.HasThis ? 1 : 0)
                                             + (bb.HasStructReturnValue ? 1 : 0);
-                Mono.Cecil.MethodReference mr = bb._original_method_reference;
+                Mono.Cecil.MethodReference mr = bb._method_reference;
                 int locals = mr.Resolve().Body.Variables.Count;
                 bb.StackNumberOfLocals = locals;
             }
@@ -306,7 +310,7 @@ namespace Campy.Compiler
                     continue;
                 }
 
-                MethodReference method = bb._original_method_reference;
+                MethodReference method = bb._method_reference;
                 List<ParameterDefinition> parameters = method.Parameters.ToList();
                 List<ParameterReference> instantiated_parameters = new List<ParameterReference>();
 
@@ -321,7 +325,7 @@ namespace Campy.Compiler
                     if (bb.HasStructReturnValue)
                     {
                         TYPE t = new TYPE(method.ReturnType);
-                        param_types[current++] = LLVM.PointerType(t.IntermediateType, 0);
+                        param_types[current++] = LLVM.PointerType(t.IntermediateTypeLLVM, 0);
                     }
 
                     if (bb.HasThis)
@@ -331,11 +335,11 @@ namespace Campy.Compiler
                         {
                             // Parameter "this" is a struct, but code in body of method assumes
                             // a pointer is passed. Make the parameter a pointer.
-                            param_types[current++] = LLVM.PointerType(t.IntermediateType, 0);
+                            param_types[current++] = LLVM.PointerType(t.IntermediateTypeLLVM, 0);
                         }
                         else
                         {
-                            param_types[current++] = t.IntermediateType;
+                            param_types[current++] = t.IntermediateTypeLLVM;
                         }
                     }
 
@@ -349,11 +353,13 @@ namespace Campy.Compiler
                                 type_reference_of_parameter, git);
                         }
                         TYPE t = new TYPE(type_reference_of_parameter);
-                        param_types[current] = t.IntermediateType;
-                        // For structs passed as a parameter, it's always a pointer.
+                        param_types[current] = t.StorageTypeLLVM;
+                        bb.args_alloc.TryGetValue(p.Sequence, out bool lvalue);
                         if (type_reference_of_parameter.IsValueType
                             && type_reference_of_parameter.Resolve().IsStruct()
                             && !type_reference_of_parameter.Resolve().IsEnum)
+                            param_types[current] = LLVM.PointerType(param_types[current], 0);
+                        else if (lvalue)
                             param_types[current] = LLVM.PointerType(param_types[current], 0);
                         current++;
                     }
@@ -361,7 +367,7 @@ namespace Campy.Compiler
                     if (Campy.Utils.Options.IsOn("jit_trace"))
                     {
                         System.Console.WriteLine("Params for block " + bb.Name + " " +
-                                                 bb._original_method_reference.FullName);
+                                                 bb._method_reference.FullName);
                         System.Console.WriteLine("(" + bb._method_definition.FullName + ")");
                         foreach (var pp in param_types)
                         {
@@ -379,7 +385,7 @@ namespace Campy.Compiler
                     t_ret = new TYPE(typeof(void).ToMonoTypeReference());
                 }
 
-                TypeRef ret_type = t_ret.IntermediateType;
+                TypeRef ret_type = t_ret.IntermediateTypeLLVM;
                 TypeRef method_type = LLVM.FunctionType(ret_type, param_types, false);
                 string method_name = METAHELPER.RenameToLegalLLVMName(JITER.MethodName(method));
                 ValueRef fun = LLVM.AddFunction(mod, method_name, method_type);
@@ -456,7 +462,7 @@ namespace Campy.Compiler
                 foreach (CFG.Vertex pred in bb._graph.PredecessorNodes(bb))
                 {
                     // Do not consider interprocedural edges when computing stack size.
-                    if (pred._original_method_reference != bb._original_method_reference)
+                    if (pred._method_reference != bb._method_reference)
                         throw new Exception("Interprocedural edge should not exist.");
                     // If predecessor has not been visited, warn and do not consider.
                     // Warn if predecessor does not concur with another predecessor.
@@ -489,7 +495,8 @@ namespace Campy.Compiler
 
                 for (uint i = 0; i < args; ++i)
                 {
-                    var par = new VALUE(LLVM.GetParam(fun, i));
+                    var par = new VALUE(LLVM.GetParam(fun, i)); // Note, functions defined in SetUpLLVMEntries(), jiter.cs.
+                    // Look for LLVM.FunctionType(
                     if (Campy.Utils.Options.IsOn("jit_trace"))
                         System.Console.WriteLine(par);
                     state._stack.Push(par);
@@ -505,42 +512,42 @@ namespace Campy.Compiler
 
                 // Set up locals. I'm making an assumption that the locals here
                 // correspond exactly with those reported by Mono.
-                Collection<VariableDefinition> variables = bb._original_method_reference.Resolve().Body.Variables;
+                Collection<VariableDefinition> variables = bb._method_reference.Resolve().Body.Variables;
                 // Convert any generic parameters to generic instance reference.
                 for (int i = 0; i < variables.Count; ++i)
                 {
-                    variables[i] = variables[i].InstantiateGeneric(bb._original_method_reference);
+                    variables[i] = variables[i].InstantiateGeneric(bb._method_reference);
                 }
                 state._locals = state._stack.Section((int) state._stack.Count, locals);
                 for (int i = 0; i < locals; ++i)
                 {
-                    var tr = variables[i].VariableType.InstantiateGeneric(bb._original_method_reference);
+                    var tr = variables[i].VariableType.InstantiateGeneric(bb._method_reference);
                     TYPE type = new TYPE(tr);
                     VALUE value;
-                    bb.Entry.local_alloc.TryGetValue(i, out bool use_alloca);
+                    bb.Entry.locals_alloc.TryGetValue(i, out bool use_alloca);
                     if (use_alloca)
                     {
                         var new_obj = LLVM.BuildAlloca(bb.LlvmInfo.Builder,
-                            type.IntermediateType,
+                            type.IntermediateTypeLLVM,
                             "i" + INST.instruction_id++);
                         value = new VALUE(new_obj);
                     }
                     else
                     {
-                        if (LLVM.GetTypeKind(type.IntermediateType) == TypeKind.PointerTypeKind)
-                            value = new VALUE(LLVM.ConstPointerNull(type.IntermediateType));
-                        else if (LLVM.GetTypeKind(type.IntermediateType) == TypeKind.DoubleTypeKind)
+                        if (LLVM.GetTypeKind(type.IntermediateTypeLLVM) == TypeKind.PointerTypeKind)
+                            value = new VALUE(LLVM.ConstPointerNull(type.IntermediateTypeLLVM));
+                        else if (LLVM.GetTypeKind(type.IntermediateTypeLLVM) == TypeKind.DoubleTypeKind)
                             value = new VALUE(LLVM.ConstReal(LLVM.DoubleType(), 0));
-                        else if (LLVM.GetTypeKind(type.IntermediateType) == TypeKind.FloatTypeKind)
+                        else if (LLVM.GetTypeKind(type.IntermediateTypeLLVM) == TypeKind.FloatTypeKind)
                             value = new VALUE(LLVM.ConstReal(LLVM.FloatType(), 0));
-                        else if (LLVM.GetTypeKind(type.IntermediateType) == TypeKind.IntegerTypeKind)
-                            value = new VALUE(LLVM.ConstInt(type.IntermediateType, (ulong)0, true));
-                        else if (LLVM.GetTypeKind(type.IntermediateType) == TypeKind.StructTypeKind)
+                        else if (LLVM.GetTypeKind(type.IntermediateTypeLLVM) == TypeKind.IntegerTypeKind)
+                            value = new VALUE(LLVM.ConstInt(type.IntermediateTypeLLVM, (ulong)0, true));
+                        else if (LLVM.GetTypeKind(type.IntermediateTypeLLVM) == TypeKind.StructTypeKind)
                         {
                             var entry = bb.Entry.LlvmInfo.BasicBlock;
                             //var beginning = LLVM.GetFirstInstruction(entry);
                             //LLVM.PositionBuilderBefore(basic_block.Builder, beginning);
-                            var new_obj = LLVM.BuildAlloca(bb.LlvmInfo.Builder, type.IntermediateType,
+                            var new_obj = LLVM.BuildAlloca(bb.LlvmInfo.Builder, type.IntermediateTypeLLVM,
                                 "i" + INST.instruction_id++); // Allocates struct on stack, but returns a pointer to struct.
                                                               //LLVM.PositionBuilderAtEnd(bb.LlvmInfo.Builder, bb.BasicBlock);
                             value = new VALUE(new_obj);
@@ -1086,7 +1093,7 @@ namespace Campy.Compiler
                 if (!cs.Any())
                 {
                     bb = _mcfg.Entries.Where(v =>
-                        v.IsEntry && v._original_method_reference.FullName == kernel_method.FullName).FirstOrDefault();
+                        v.IsEntry && v._method_reference.FullName == kernel_method.FullName).FirstOrDefault();
                 }
                 else
                 {
@@ -1229,7 +1236,7 @@ namespace Campy.Compiler
         public CFG.Vertex GetBasicBlock(MethodReference kernel_method)
         {
             CFG.Vertex bb = _mcfg.Entries.Where(v =>
-                v.IsEntry && v._original_method_reference.FullName == kernel_method.FullName).FirstOrDefault();
+                v.IsEntry && v._method_reference.FullName == kernel_method.FullName).FirstOrDefault();
             return bb;
         }
 
@@ -1237,7 +1244,7 @@ namespace Campy.Compiler
         {
             // Compiled previously. Look for basic block of entry.
             CFG.Vertex bb = _mcfg.Entries.Where(v =>
-                v.IsEntry && v._original_method_reference.FullName == kernel_method.FullName).FirstOrDefault();
+                v.IsEntry && v._method_reference.FullName == kernel_method.FullName).FirstOrDefault();
             string basic_block_id = bb.Name;
             CUmodule module = RUNTIME.InitializeModule(image);
             RUNTIME.RuntimeModule = module;
@@ -1249,15 +1256,15 @@ namespace Campy.Compiler
         {
             foreach (var v in _mcfg.Entries)
             {
-                var normalized_method_name = METAHELPER.RenameToLegalLLVMName(JITER.MethodName(v._original_method_reference));
+                var normalized_method_name = METAHELPER.RenameToLegalLLVMName(JITER.MethodName(v._method_reference));
                 var res = Cuda.cuModuleGetFunction(out CUfunction helloWorld, module, normalized_method_name);
                 // Not every entry is going to be in module, so this isn't a problem if not found.
                 if (res != CUresult.CUDA_SUCCESS) continue;
                 res = Cuda.cuModuleGetGlobal_v2(out IntPtr hw, out ulong z, module, "p_" + normalized_method_name);
-                var bcl_type = RUNTIME.GetBclType(v._original_method_reference.DeclaringType);
+                var bcl_type = RUNTIME.GetBclType(v._method_reference.DeclaringType);
                 RUNTIME.BclMetaDataSetMethodJit(hw,
                     bcl_type,
-                    (int)v._original_method_reference.MetadataToken.RID | 0x06000000);
+                    (int)v._method_reference.MetadataToken.RID | 0x06000000);
             }
             // Some of the BCL have virtual functions, particularly internal methods. Make sure these
             // are added.
@@ -1270,7 +1277,7 @@ namespace Campy.Compiler
                 Mono.Cecil.MethodReference orig_mr = method as Mono.Cecil.MethodReference;
                 var new_mr = orig_mr.SubstituteMethod(null, null);
                 if (new_mr == null) new_mr = orig_mr;
-                var mr = new_mr.FixGenericMethods(n._original_method_reference);
+                var mr = new_mr.FixGenericMethods(n._method_reference);
                 var md = mr.Resolve();
                 if (md == null) continue;
                 if (!md.IsVirtual)
@@ -1297,8 +1304,8 @@ namespace Campy.Compiler
         public CUfunction GetCudaFunction(MethodReference kernel_method, CUmodule module)
         {
             CFG.Vertex bb = _mcfg.Entries.Where(v =>
-            v.IsEntry && v._original_method_reference.FullName == kernel_method.FullName).FirstOrDefault();
-            var normalized_method_name = METAHELPER.RenameToLegalLLVMName(JITER.MethodName(bb._original_method_reference));
+            v.IsEntry && v._method_reference.FullName == kernel_method.FullName).FirstOrDefault();
+            var normalized_method_name = METAHELPER.RenameToLegalLLVMName(JITER.MethodName(bb._method_reference));
             var res = Cuda.cuModuleGetFunction(out CUfunction helloWorld, module, normalized_method_name);
             Utils.CudaHelpers.CheckCudaError(res);
             return helloWorld;

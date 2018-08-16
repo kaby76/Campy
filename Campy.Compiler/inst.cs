@@ -288,7 +288,7 @@
                 dib = LLVM.CreateDIBuilder(RUNTIME.global_llvm_module);
             }
             var doc = SeqPoint.Document;
-            string assembly_name = this.Block._original_method_reference.Module.FileName;
+            string assembly_name = this.Block._method_reference.Module.FileName;
             string loc = Path.GetDirectoryName(Path.GetFullPath(doc.Url));
             string file_name = Path.GetFileName(doc.Url);
             MetadataRef file;
@@ -322,7 +322,7 @@
 
             ContextRef context_ref = LLVM.GetModuleContext(RUNTIME.global_llvm_module);
             var normalized_method_name = METAHELPER.RenameToLegalLLVMName(
-                JITER.MethodName(this.Block._original_method_reference));
+                JITER.MethodName(this.Block._method_reference));
             MetadataRef sub;
             if (!debug_methods.ContainsKey(normalized_method_name))
             {
@@ -682,7 +682,7 @@
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(CharPtrTy);
 
-            VALUE BasePtrCast = new VALUE(LLVM.BuildBitCast(Builder, BasePtr.V, CharPtrTy.IntermediateType, "i"+instruction_id++));
+            VALUE BasePtrCast = new VALUE(LLVM.BuildBitCast(Builder, BasePtr.V, CharPtrTy.IntermediateTypeLLVM, "i"+instruction_id++));
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(BasePtrCast);
 
@@ -723,7 +723,7 @@
             // For now we "flatten" to byte offsets.
             TYPE CharPtrTy = new TYPE(TYPE.getInt8PtrTy(
                 LLVM.GetModuleContext(RUNTIME.global_llvm_module), BasePtr.T.getPointerAddressSpace()));
-            VALUE BasePtrCast = new VALUE(LLVM.BuildBitCast(Builder, BasePtr.V, CharPtrTy.IntermediateType, "i" + instruction_id++));
+            VALUE BasePtrCast = new VALUE(LLVM.BuildBitCast(Builder, BasePtr.V, CharPtrTy.IntermediateTypeLLVM, "i" + instruction_id++));
             VALUE NegOffset = new VALUE(LLVM.BuildNeg(Builder, Offset.V, "i" + instruction_id++));
             VALUE ResultPtr = new VALUE(LLVM.BuildGEP(Builder, BasePtrCast.V, new ValueRef[] { NegOffset.V }, "i" + instruction_id++));
             return ResultPtr;
@@ -742,15 +742,15 @@
             }
             else if (SourceTy.isIntegerTy() && Ty.isIntegerTy())
             {
-                Result = new VALUE(LLVM.BuildIntCast(Builder, Node.V, Ty.IntermediateType, "i" + instruction_id++));//SourceIsSigned);
+                Result = new VALUE(LLVM.BuildIntCast(Builder, Node.V, Ty.IntermediateTypeLLVM, "i" + instruction_id++));//SourceIsSigned);
             }
             else if (SourceTy.isFloatingPointTy() && Ty.isFloatingPointTy())
             {
-                Result = new VALUE(LLVM.BuildFPCast(Builder, Node.V, Ty.IntermediateType, "i" + instruction_id++));
+                Result = new VALUE(LLVM.BuildFPCast(Builder, Node.V, Ty.IntermediateTypeLLVM, "i" + instruction_id++));
             }
             else if (SourceTy.isPointerTy() && Ty.isIntegerTy())
             {
-                Result = new VALUE(LLVM.BuildPtrToInt(Builder, Node.V, Ty.IntermediateType, "i" + instruction_id++));
+                Result = new VALUE(LLVM.BuildPtrToInt(Builder, Node.V, Ty.IntermediateTypeLLVM, "i" + instruction_id++));
             }
             else
             {
@@ -891,7 +891,7 @@
                 Debug.Assert(ResultType.isPointerTy());
                 Debug.Assert(ArithType.isIntegerTy());
 
-                Result = new VALUE(LLVM.BuildIntToPtr(Builder, Result.V, ResultType.IntermediateType, "i" + instruction_id++));
+                Result = new VALUE(LLVM.BuildIntToPtr(Builder, Result.V, ResultType.IntermediateTypeLLVM, "i" + instruction_id++));
             }
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(Result);
@@ -929,7 +929,7 @@
                 args.Insert(0, v);
             }
             var args_array = args.ToArray();
-            mr = orig_mr.SubstituteMethod(this.Block._original_method_reference.DeclaringType, args_array);
+            mr = orig_mr.SubstituteMethod(this.Block._method_reference.DeclaringType, args_array);
             if (mr == null)
             {
                 call_closure_method = orig_mr;
@@ -957,7 +957,7 @@
                 var g = this.Block._graph;
                 CFG.Vertex v = node;
                 JITER c = JITER.Singleton;
-                if (v.IsEntry && JITER.MethodName(v._original_method_reference) == mr.FullName)
+                if (v.IsEntry && JITER.MethodName(v._method_reference) == mr.FullName)
                     return true;
                 else return false;
             }).ToList().FirstOrDefault();
@@ -1351,17 +1351,33 @@
         public int _arg;
         TypeReference call_closure_arg_type = null;
 
-        public ConvertLdArgInst(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i)
+        public ConvertLdArgInst(CFG.Vertex b, Mono.Cecil.Cil.Instruction i, int arg = -1) : base(b, i)
         {
+            _arg = arg;
+            var operand = this.Operand;
+            var reference = operand as ParameterDefinition;
+            if (reference != null)
+                _arg = reference.Sequence;
+            var by_ref = this.Instruction.OpCode.Code == Code.Ldarga || this.Instruction.OpCode.Code == Code.Ldarga_S;
+            CFG.Vertex entry = this.Block.Entry;
+            if (entry.args_alloc.TryGetValue(_arg, out bool previous_value))
+            {
+                // Can't go back if already by reference.
+                if (!previous_value) entry.args_alloc[_arg] = by_ref;
+            }
+            else
+                entry.args_alloc[_arg] = by_ref;
         }
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
-            var value = state._arguments[_arg];
+            var v = state._arguments[_arg];
             if (Campy.Utils.Options.IsOn("detailed_import_computation_trace"))
-                System.Console.WriteLine(value.ToString());
-            call_closure_arg_type = value;
-            state._stack.Push(value);
+                System.Console.WriteLine(v.ToString());
+            var by_ref = this.Instruction.OpCode.Code == Code.Ldarga || this.Instruction.OpCode.Code == Code.Ldarga_S;
+            if (by_ref) v = new ByReferenceType(v);
+            call_closure_arg_type = v;
+            state._stack.Push(v);
         }
 
         public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
@@ -1369,7 +1385,7 @@
             // For ldarg.1 of a compiler generated closure method, generate code
             // to create an int index for the thread.
             var bb = this.Block;
-            var mn = bb._original_method_reference.FullName;
+            var mn = bb._method_reference.FullName;
             if (mn.EndsWith("(System.Int32)")
                 && mn.Contains("<>c__DisplayClass")
                 && _arg == 1)
@@ -1440,16 +1456,27 @@
             }
             else
             {
-                VALUE value = state._arguments[_arg];
-                //if (this.Instruction.OpCode.Code == Code.Ldarga || this.Instruction.OpCode.Code == Code.Ldarga_S)
-                //{
-                //    var v = value.V;
-                //    v = LLVM.BuildStructGEP(Builder, v, 0, "i" + instruction_id++);
-                //    value = new VALUE(v);
-                //}
-                if (Campy.Utils.Options.IsOn("jit_trace"))
-                    System.Console.WriteLine(value.ToString());
-                state._stack.Push(value);
+                VALUE v = state._arguments[_arg];
+                CFG.Vertex entry = this.Block.Entry;
+                entry.args_alloc.TryGetValue(_arg, out bool use_alloca);
+                var by_ref = this.Instruction.OpCode.Code == Code.Ldarga || this.Instruction.OpCode.Code == Code.Ldarga_S;
+                if (by_ref)
+                {
+                    if (!use_alloca) throw new Exception("There is a load address of a local, but not compiled as such.");
+                    if (Campy.Utils.Options.IsOn("jit_trace"))
+                        System.Console.WriteLine(v);
+                    state._stack.Push(v);
+                }
+                else
+                {
+                    if (use_alloca)
+                    {
+                        v = new VALUE(LLVM.BuildLoad(Builder, v.V, "i" + instruction_id++));
+                    }
+                    if (Campy.Utils.Options.IsOn("jit_trace"))
+                        System.Console.WriteLine(v);
+                    state._stack.Push(v);
+                }
             }
         }
     }
@@ -1460,24 +1487,35 @@
 
         public ConvertStArgInst(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i)
         {
+            var operand = this.Operand;
+            var reference = operand as ParameterDefinition;
+            if (reference != null)
+                _arg = reference.Sequence;
         }
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
-            var value = state._stack.Pop();
+            var v = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("detailed_import_computation_trace"))
-                System.Console.WriteLine(value);
-
-            state._arguments[_arg] = value;
+                System.Console.WriteLine(v);
+            state._arguments[_arg] = v;
         }
 
         public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
         {
-            VALUE value = state._stack.Pop();
+            VALUE v = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
-                System.Console.WriteLine(value);
-
-            state._arguments[_arg] = value;
+                System.Console.WriteLine(v);
+            CFG.Vertex entry = this.Block.Entry;
+            entry.args_alloc.TryGetValue(_arg, out bool use_alloca);
+            if (use_alloca)
+            {
+                LLVM.BuildStore(Builder, v.V, state._arguments[_arg].V);
+            }
+            else
+            {
+                state._arguments[_arg] = v;
+            }
         }
     }
 
@@ -1584,24 +1622,20 @@
 
         public ConvertLdLoc(CFG.Vertex b, Instruction i, int arg = -1) : base(b, i)
         {
-            var by_ref = this.Instruction.OpCode.Code == Code.Ldloca || this.Instruction.OpCode.Code == Code.Ldloca_S;
             _arg = arg;
             var operand = this.Operand;
             var reference = operand as VariableReference;
-            if (reference != null) _arg = reference.Index;
-            var definition = operand as VariableDefinition;
-            if (definition != null) _arg = definition.Index;
-            var pr = operand as Mono.Cecil.ParameterReference;
-            if (pr != null)
-                _arg = pr.Index;
+            if (reference != null)
+                _arg = reference.Index;
+            var by_ref = this.Instruction.OpCode.Code == Code.Ldloca || this.Instruction.OpCode.Code == Code.Ldloca_S;
             CFG.Vertex entry = this.Block.Entry;
-            if (entry.local_alloc.TryGetValue(_arg, out bool previous_value))
+            if (entry.locals_alloc.TryGetValue(_arg, out bool previous_value))
             {
                 // Can't go back if already by reference.
-                if (!previous_value) entry.local_alloc[_arg] = by_ref;
+                if (!previous_value) entry.locals_alloc[_arg] = by_ref;
             }
             else
-                entry.local_alloc[_arg] = by_ref;
+                entry.locals_alloc[_arg] = by_ref;
         }
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
@@ -1618,7 +1652,7 @@
             var by_ref = this.Instruction.OpCode.Code == Code.Ldloca || this.Instruction.OpCode.Code == Code.Ldloca_S;
             var v = state._locals[_arg];
             CFG.Vertex entry = this.Block.Entry;
-            entry.local_alloc.TryGetValue(_arg, out bool use_alloca);
+            entry.locals_alloc.TryGetValue(_arg, out bool use_alloca);
             if (by_ref)
             {
                 if (!use_alloca) throw new Exception("There is a load address of a local, but not compiled as such.");
@@ -1647,6 +1681,10 @@
 
         public ConvertStLoc(CFG.Vertex b, Instruction i) : base(b, i)
         {
+            var operand = this.Operand;
+            var reference = operand as VariableReference;
+            if (reference != null)
+                _arg = reference.Index;
         }
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
@@ -1659,7 +1697,7 @@
         {
             var v = state._stack.Pop();
             CFG.Vertex entry = this.Block.Entry;
-            entry.local_alloc.TryGetValue(_arg, out bool use_alloca);
+            entry.locals_alloc.TryGetValue(_arg, out bool use_alloca);
             if (use_alloca)
             {
                 LLVM.BuildStore(Builder, v.V, state._locals[_arg].V);
@@ -1739,8 +1777,8 @@
             // Deal with various combinations of types.
             if (t1.isIntegerTy() && t2.isIntegerTy())
             {
-                var t1_t = t1.IntermediateType;
-                var t2_t = t2.IntermediateType;
+                var t1_t = t1.IntermediateTypeLLVM;
+                var t2_t = t2.IntermediateTypeLLVM;
                 var w1 = LLVM.GetIntTypeWidth(t1_t);
                 var w2 = LLVM.GetIntTypeWidth(t2_t);
                 var s1 = !call_closure_lhs.Name.Contains("UInt");
@@ -1766,7 +1804,7 @@
                 cmp = LLVM.BuildICmp(Builder, op, v1_v, v2_v, "i" + instruction_id++);
                 // Set up for push of 0/1.
                 var return_type = new TYPE(typeof(bool));
-                var ret_llvm = LLVM.BuildZExt(Builder, cmp, return_type.IntermediateType, "");
+                var ret_llvm = LLVM.BuildZExt(Builder, cmp, return_type.IntermediateTypeLLVM, "");
                 var ret = new VALUE(ret_llvm, return_type);
                 if (Campy.Utils.Options.IsOn("jit_trace"))
                     System.Console.WriteLine(ret);
@@ -1783,7 +1821,7 @@
                 cmp = LLVM.BuildICmp(Builder, op, i1, i2, "i" + instruction_id++);
                 // Set up for push of 0/1.
                 var return_type = new TYPE(typeof(bool));
-                var ret_llvm = LLVM.BuildZExt(Builder, cmp, return_type.IntermediateType, "");
+                var ret_llvm = LLVM.BuildZExt(Builder, cmp, return_type.IntermediateTypeLLVM, "");
                 var ret = new VALUE(ret_llvm, return_type);
                 if (Campy.Utils.Options.IsOn("jit_trace"))
                     System.Console.WriteLine(ret);
@@ -1883,7 +1921,7 @@
                 var owner = Block._graph.Vertices.Where(
                     n => n.Instructions.Where(ins =>
                     {
-                        if (n.Entry._original_method_reference != Block.Entry._original_method_reference)
+                        if (n.Entry._method_reference != Block.Entry._method_reference)
                             return false;
                         if (ins.Instruction.Offset != this.Instruction.Offset)
                             return false;
@@ -1918,7 +1956,7 @@
                 var owner = Block._graph.Vertices.Where(
                     n => n.Instructions.Where(ins =>
                     {
-                        if (n.Entry._original_method_reference != Block.Entry._original_method_reference)
+                        if (n.Entry._method_reference != Block.Entry._method_reference)
                             return false;
                         if (ins.Instruction.Offset != this.Instruction.Offset)
                             return false;
@@ -1948,7 +1986,7 @@
         VALUE convert_full(VALUE src)
         {
             TypeRef stype = LLVM.TypeOf(src.V);
-            TypeRef dtype = _dst.IntermediateType;
+            TypeRef dtype = _dst.IntermediateTypeLLVM;
 
             if (stype != dtype)
             {
@@ -2134,9 +2172,9 @@
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(new VALUE(load));
 
-            if (_dst != null &&_dst.IntermediateType != LLVM.TypeOf(load))
+            if (_dst != null &&_dst.IntermediateTypeLLVM != LLVM.TypeOf(load))
             {
-                load = LLVM.BuildIntCast(Builder, load, _dst.IntermediateType, "i" + instruction_id++);
+                load = LLVM.BuildIntCast(Builder, load, _dst.IntermediateTypeLLVM, "i" + instruction_id++);
                 if (Campy.Utils.Options.IsOn("jit_trace"))
                     System.Console.WriteLine(new VALUE(load));
             }
@@ -2217,7 +2255,7 @@
                 System.Console.WriteLine(new VALUE(gep));
 
             var value = v.V;
-            if (_dst != null && _dst.VerificationType.ToTypeRef() != v.T.IntermediateType)
+            if (_dst != null && _dst.VerificationType.ToTypeRef() != v.T.IntermediateTypeLLVM)
             {
                 value = LLVM.BuildIntCast(Builder, value, _dst.VerificationType.ToTypeRef(), "i" + instruction_id++);
                 if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -2547,9 +2585,9 @@
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(new VALUE(load));
 
-            if (_dst != null && _dst.IntermediateType != LLVM.TypeOf(load))
+            if (_dst != null && _dst.IntermediateTypeLLVM != LLVM.TypeOf(load))
             {
-                load = LLVM.BuildIntCast(Builder, load, _dst.IntermediateType, "i" + instruction_id++);
+                load = LLVM.BuildIntCast(Builder, load, _dst.IntermediateTypeLLVM, "i" + instruction_id++);
                 if (Campy.Utils.Options.IsOn("jit_trace"))
                     System.Console.WriteLine(new VALUE(load));
             }
@@ -2622,7 +2660,7 @@
             }
             else
             {
-                dtype = _dst.IntermediateType;
+                dtype = _dst.StorageTypeLLVM;
             }
 
             /* Trunc */
@@ -2821,7 +2859,7 @@
             var typetok = this.Operand;
             var tr = typetok as TypeReference;
             var tr2 = tr.RewriteMonoTypeReference();
-            var v = tr2.Deresolve(this.Block._original_method_reference.DeclaringType, null);
+            var v = tr2.Deresolve(this.Block._method_reference.DeclaringType, null);
             call_closure_typetok = v;
             TypeReference v2 = state._stack.Pop();
             state._stack.Push(v);
@@ -2835,7 +2873,7 @@
             var operand = this.Operand;
             var tr = operand as TypeReference;
             tr = tr.RewriteMonoTypeReference();
-            tr = tr.Deresolve(this.Block._original_method_reference.DeclaringType, null);
+            tr = tr.Deresolve(this.Block._method_reference.DeclaringType, null);
             var meta = RUNTIME.GetBclType(tr);
 
             // Generate code to allocate object and stuff.
@@ -2974,7 +3012,7 @@
             var owner = Block._graph.Vertices.Where(
                 n => n.Instructions.Where(ins =>
                 {
-                    if (n.Entry._original_method_reference != Block.Entry._original_method_reference)
+                    if (n.Entry._method_reference != Block.Entry._method_reference)
                         return false;
                     if (ins.Instruction.Offset != instruction.Offset)
                         return false;
@@ -3049,7 +3087,7 @@
             var owner = Block._graph.Vertices.Where(
                 n => n.Instructions.Where(ins =>
                 {
-                    if (n.Entry._original_method_reference != Block.Entry._original_method_reference)
+                    if (n.Entry._method_reference != Block.Entry._method_reference)
                         return false;
                     if (ins.Instruction.Offset != instruction.Offset)
                         return false;
@@ -3122,7 +3160,7 @@
             var owner = Block._graph.Vertices.Where(
                 n => n.Instructions.Where(ins =>
                 {
-                    if (n.Entry._original_method_reference != Block.Entry._original_method_reference)
+                    if (n.Entry._method_reference != Block.Entry._method_reference)
                         return false;
                     if (ins.Instruction.Offset != instruction.Offset)
                         return false;
@@ -3194,7 +3232,7 @@
             var owner = Block._graph.Vertices.Where(
                 n => n.Instructions.Where(ins =>
                 {
-                    if (n.Entry._original_method_reference != Block.Entry._original_method_reference)
+                    if (n.Entry._method_reference != Block.Entry._method_reference)
                         return false;
                     if (ins.Instruction.Offset != instruction.Offset)
                         return false;
@@ -3251,7 +3289,7 @@
                 args.Insert(0, v);
             }
             var args_array = args.ToArray();
-            mr = orig_mr.SubstituteMethod(this.Block._original_method_reference.DeclaringType, args_array);
+            mr = orig_mr.SubstituteMethod(this.Block._method_reference.DeclaringType, args_array);
             if (mr == null)
             {
                 call_closure_method = orig_mr;
@@ -3344,7 +3382,7 @@
                 // functions.
 
                 CFG.Vertex the_entry = this.Block._graph.Vertices.Where(v =>
-                    (v.IsEntry && JITER.MethodName(v._original_method_reference) == mr.FullName)).ToList().FirstOrDefault();
+                    (v.IsEntry && JITER.MethodName(v._method_reference) == mr.FullName)).ToList().FirstOrDefault();
 
                 if (the_entry != null)
                 {
@@ -3417,7 +3455,7 @@
             var typetok = Operand;
             var tr = typetok as TypeReference;
             var tr2 = tr.RewriteMonoTypeReference();
-            var v = tr2.Deresolve(this.Block._original_method_reference.DeclaringType, null);
+            var v = tr2.Deresolve(this.Block._method_reference.DeclaringType, null);
             call_closure_typetok = v;
         }
 
@@ -3796,7 +3834,7 @@
             var typetok = Operand;
             var tr = typetok as TypeReference;
             var tr2 = tr.RewriteMonoTypeReference();
-            var v = tr2.Deresolve(this.Block._original_method_reference.DeclaringType, null);
+            var v = tr2.Deresolve(this.Block._method_reference.DeclaringType, null);
             call_closure_typetok = v;
             state._stack.Pop();
             state._stack.Push(v);
@@ -3807,7 +3845,7 @@
             var typetok = Operand;
             var tr = typetok as TypeReference;
             var tr2 = tr.RewriteMonoTypeReference();
-            var v = tr2.Deresolve(this.Block._original_method_reference.DeclaringType, null);
+            var v = tr2.Deresolve(this.Block._method_reference.DeclaringType, null);
             // No change for now.
         }
     }
@@ -3821,74 +3859,49 @@
     public class i_ldarg : ConvertLdArgInst
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldarg(b, i); }
-
-        private i_ldarg(CFG.Vertex b, Mono.Cecil.Cil.Instruction i)
-            : base(b, i)
-        {
-            Mono.Cecil.ParameterDefinition pr = i.Operand as Mono.Cecil.ParameterDefinition;
-            int ar = pr.Sequence;
-            _arg = ar;
-        }
+        private i_ldarg(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
     }
 
     public class i_ldarg_0 : ConvertLdArgInst
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldarg_0(b, i); }
-        private i_ldarg_0(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _arg = 0; }
+        private i_ldarg_0(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i, 0) { }
     }
 
     public class i_ldarg_1 : ConvertLdArgInst
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldarg_1(b, i); }
-        private i_ldarg_1(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _arg = 1; }
+        private i_ldarg_1(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i, 1) { }
     }
 
     public class i_ldarg_2 : ConvertLdArgInst
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldarg_2(b, i); }
-        private i_ldarg_2(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _arg = 2; }
+        private i_ldarg_2(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i, 2) { }
     }
 
     public class i_ldarg_3 : ConvertLdArgInst
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldarg_3(b, i); }
-        private i_ldarg_3(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _arg = 3; }
+        private i_ldarg_3(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i, 3) { }
     }
 
     public class i_ldarg_s : ConvertLdArgInst
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldarg_s(b, i); }
-        private i_ldarg_s(CFG.Vertex b, Mono.Cecil.Cil.Instruction i)
-            : base(b, i)
-        {
-            Mono.Cecil.ParameterDefinition pr = i.Operand as Mono.Cecil.ParameterDefinition;
-            int ar = pr.Sequence;
-            _arg = ar;
-        }
+        private i_ldarg_s(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
     }
 
     public class i_ldarga : ConvertLdArgInst
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldarga(b, i); }
-        private i_ldarga(CFG.Vertex b, Mono.Cecil.Cil.Instruction i)
-            : base(b, i)
-        {
-            Mono.Cecil.ParameterDefinition pr = i.Operand as Mono.Cecil.ParameterDefinition;
-            int ar = pr.Sequence;
-            _arg = ar;
-        }
+        private i_ldarga(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
     }
 
     public class i_ldarga_s : ConvertLdArgInst
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldarga_s(b, i); }
-        private i_ldarga_s(CFG.Vertex b, Mono.Cecil.Cil.Instruction i)
-            : base(b, i)
-        {
-            Mono.Cecil.ParameterDefinition pr = i.Operand as Mono.Cecil.ParameterDefinition;
-            int ar = pr.Sequence;
-            _arg = ar;
-        }
+        private i_ldarga_s(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
     }
 
     public class i_ldc_i4 : ConvertLDCInstI4
@@ -4377,7 +4390,7 @@
             var operand = this.Instruction.Operand;
             var field = operand as Mono.Cecil.FieldReference;
             if (field == null) throw new Exception("Cannot convert ldfld.");
-            var value = field.FieldType.InstantiateGeneric(this.Block._original_method_reference);
+            var value = field.FieldType.InstantiateGeneric(this.Block._method_reference);
             state._stack.Push(value);
         }
 
@@ -4407,7 +4420,7 @@
                 if (!declaring_type.IsGenericInstance && declaring_type.HasGenericParameters)
                 {
                     // This is a red flag. We need to come up with a generic instance for type.
-                    declaring_type_tr = this.Block._original_method_reference.DeclaringType;
+                    declaring_type_tr = this.Block._method_reference.DeclaringType;
                 }
 
                 // need to take into account padding fields. Unfortunately,
@@ -4594,7 +4607,7 @@
             var operand = this.Instruction.Operand;
             var field = operand as Mono.Cecil.FieldReference;
             if (field == null) throw new Exception("Cannot convert ldfld.");
-            var type = field.FieldType.Deresolve(this.Block._original_method_reference.DeclaringType, null);
+            var type = field.FieldType.Deresolve(this.Block._method_reference.DeclaringType, null);
             var value = new ByReferenceType(type);
             state._stack.Push(value);
         }
@@ -4625,7 +4638,7 @@
                 if (!declaring_type.IsGenericInstance && declaring_type.HasGenericParameters)
                 {
                     // This is a red flag. We need to come up with a generic instance for type.
-                    declaring_type_tr = this.Block._original_method_reference.DeclaringType;
+                    declaring_type_tr = this.Block._method_reference.DeclaringType;
                 }
 
                 // need to take into account padding fields. Unfortunately,
@@ -5099,7 +5112,7 @@
             object operand = this.Operand;
             var o = operand as TypeReference;
             o = o.RewriteMonoTypeReference();
-            var p = o.Deresolve(this.Block._original_method_reference.DeclaringType, null);
+            var p = o.Deresolve(this.Block._method_reference.DeclaringType, null);
             state._stack.Push(p);
         }
     }
@@ -5127,7 +5140,7 @@
                 throw new Exception("Unknown field type");
             var type = mono_field_reference.DeclaringType;
             type = type.RewriteMonoTypeReference();
-            type = type.Deresolve(this.Block._original_method_reference.DeclaringType, null);
+            type = type.Deresolve(this.Block._method_reference.DeclaringType, null);
             var mono_field_type = mono_field_reference.FieldType;
             mono_field_type = mono_field_type.RewriteMonoTypeReference();
             var llvm_field_type = mono_field_type.ToTypeRef();
@@ -5231,7 +5244,7 @@
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {   // ldtoken (load token handle), ecma 335 page 413
             var rth = typeof(System.RuntimeTypeHandle).ToMonoTypeReference().RewriteMonoTypeReference();
-            var v = rth.Deresolve(this.Block._original_method_reference.DeclaringType, null);
+            var v = rth.Deresolve(this.Block._method_reference.DeclaringType, null);
             state._stack.Push(v);
             // Parse System.RuntimeTypeHandle.ctor(IntPtr). We'll make
             // a call to that in code generation.
@@ -5247,10 +5260,10 @@
             var arg = this.Operand as TypeReference;
             if (arg == null) throw new Exception("Cannot parse ldtoken type for whatever reason.");
             var arg2 = arg.RewriteMonoTypeReference();
-            var v = arg2.Deresolve(this.Block._original_method_reference.DeclaringType, null);
+            var v = arg2.Deresolve(this.Block._method_reference.DeclaringType, null);
             var meta = RUNTIME.GetBclType(v);
             var rth = typeof(System.RuntimeTypeHandle).ToMonoTypeReference().RewriteMonoTypeReference();
-            var type = rth.Deresolve(this.Block._original_method_reference.DeclaringType, null);
+            var type = rth.Deresolve(this.Block._method_reference.DeclaringType, null);
             var llvm_type = type.ToTypeRef();
             ValueRef new_obj;
             {
@@ -5283,7 +5296,7 @@
                 CFG.Vertex entry_corresponding_to_method_called = this.Block._graph.Vertices.Where(node
                     =>
                 {
-                    if (node.IsEntry && JITER.MethodName(node._original_method_reference) == mr.FullName)
+                    if (node.IsEntry && JITER.MethodName(node._method_reference) == mr.FullName)
                         return true;
                     return false;
                 }).ToList().FirstOrDefault();
@@ -5456,7 +5469,7 @@
             object operand = this.Operand;
             TypeReference type = operand as TypeReference;
             type = type.RewriteMonoTypeReference();
-            var actual_element_type = type.Deresolve(this.Block._original_method_reference.DeclaringType, null);
+            var actual_element_type = type.Deresolve(this.Block._method_reference.DeclaringType, null);
             TypeReference new_array_type = new ArrayType(actual_element_type, 1 /* 1D array */);
             state._stack.Push(new_array_type);
         }
@@ -5466,7 +5479,7 @@
             object operand = this.Operand;
             TypeReference element_type = operand as TypeReference;
             element_type = element_type.RewriteMonoTypeReference();
-            element_type = element_type.Deresolve(this.Block._original_method_reference.DeclaringType, null);
+            element_type = element_type.Deresolve(this.Block._method_reference.DeclaringType, null);
 
             TypeReference new_array_type = new ArrayType(element_type, 1 /* 1D array */);
             var meta = RUNTIME.GetBclType(new_array_type);
@@ -5532,7 +5545,7 @@
                 args.Insert(0, v);
             }
             var args_array = args.ToArray();
-            mr = orig_mr.SubstituteMethod(this.Block._original_method_reference.DeclaringType, args_array);
+            mr = orig_mr.SubstituteMethod(this.Block._method_reference.DeclaringType, args_array);
             call_closure_method = mr;
             if (mr == null)
             {
@@ -5580,7 +5593,7 @@
                 var g = inst.Block._graph;
                 CFG.Vertex v = node;
                 JITER c = JITER.Singleton;
-                if (v.IsEntry && JITER.MethodName(v._original_method_reference) == name)
+                if (v.IsEntry && JITER.MethodName(v._method_reference) == name)
                     return true;
                 else return false;
             }).ToList().FirstOrDefault();
@@ -5956,7 +5969,7 @@
                 // The following fails for structs, so do not do this for struct returns.
                 var v = state._stack.Pop();
                 var value = v.V;
-                var r = this.Block._original_method_reference.ReturnType.ToTypeRef();
+                var r = this.Block._method_reference.ReturnType.ToTypeRef();
                 if (LLVM.TypeOf(value) != r)
                 {
                     if (LLVM.GetTypeKind(r) == TypeKind.StructTypeKind
@@ -6299,7 +6312,7 @@
             object operand = this.Operand;
             var o = operand as TypeReference;
             o = o.RewriteMonoTypeReference();
-            var p = o.Deresolve(this.Block._original_method_reference.DeclaringType, null);
+            var p = o.Deresolve(this.Block._method_reference.DeclaringType, null);
         }
 
         public override void Convert(STATE<VALUE, StackQueue<VALUE>> state)
@@ -6313,7 +6326,7 @@
             object operand = this.Operand;
             var o = operand as TypeReference;
             o = o.RewriteMonoTypeReference();
-            var p = o.Deresolve(this.Block._original_method_reference.DeclaringType, null);
+            var p = o.Deresolve(this.Block._method_reference.DeclaringType, null);
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(p);
 

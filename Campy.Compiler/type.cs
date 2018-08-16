@@ -2,12 +2,14 @@
 using Campy.Utils;
 using Campy.Meta;
 using Swigged.LLVM;
+using Mono.Cecil;
 
 namespace Campy.Compiler
 {
     public class TYPE
     {
-        // ECMA 335: There really are many types associated with a "type".
+        // ECMA 335: see page 34-35.
+        // There really are many types associated with a "type".
         // Storage type, Underlying type, Reduced type, Verification type,
         // Intermediate type, ..., and these are just a few. See page 34+ for
         // an informative description. Further information on verification types
@@ -15,15 +17,17 @@ namespace Campy.Compiler
         // must know which type is used for code generation.
 
         private readonly bool _signed;
-        private readonly Mono.Cecil.TypeReference _cil_type;
-        private readonly Mono.Cecil.TypeReference _verification_type;
-        private readonly Mono.Cecil.TypeReference _stack_verification_type;
-//      private readonly Mono.Cecil.TypeReference _intermediate_type;
-        private readonly TypeRef _intermediate_type_ref;
+        private readonly TypeReference _cil_type;
+        private readonly TypeReference _storage_type;
+        private readonly TypeRef _storage_type_llvm;
+        private readonly TypeReference _verification_type;
+        private readonly TypeReference _stack_verification_type;
+        private readonly TypeReference _intermediate_type;
+        private readonly TypeRef _intermediate_type_llvm;
 
         public TYPE(TypeRef intermediate_type, bool signed = true)
         {
-            _intermediate_type_ref = intermediate_type;
+            _intermediate_type_llvm = intermediate_type;
             _signed = signed;
         }
 
@@ -31,17 +35,23 @@ namespace Campy.Compiler
         {
             var mono_type = system_type.ToMonoTypeReference();
             _cil_type = mono_type;
+            _storage_type = _cil_type;
+            _storage_type_llvm = _storage_type.ToTypeRef();
             _verification_type = METAHELPER.InitVerificationType(_cil_type);
             _stack_verification_type = METAHELPER.InitStackVerificationType(_verification_type, _cil_type);
-            _intermediate_type_ref = _stack_verification_type.ToTypeRef();
+            _intermediate_type = _stack_verification_type;
+            _intermediate_type_llvm = _stack_verification_type.ToTypeRef();
         }
 
         public TYPE(Mono.Cecil.TypeReference mono_type)
         {
             _cil_type = mono_type.RewriteMonoTypeReference();
+            _storage_type = _cil_type;
+            _storage_type_llvm = _storage_type.ToTypeRef();
             _verification_type = METAHELPER.InitVerificationType(_cil_type);
             _stack_verification_type = METAHELPER.InitStackVerificationType(_verification_type, _cil_type);
-            _intermediate_type_ref = _stack_verification_type.ToTypeRef();
+            _intermediate_type = _stack_verification_type;
+            _intermediate_type_llvm = _stack_verification_type.ToTypeRef();
         }
 
         public bool is_signed
@@ -54,36 +64,51 @@ namespace Campy.Compiler
             get { return !_signed; }
         }
 
-        public Mono.Cecil.TypeReference VerificationType
+        public TypeReference StorageType
+        {
+            get { return _storage_type; }
+        }
+
+        public TypeRef StorageTypeLLVM
+        {
+            get { return _storage_type_llvm; }
+        }
+
+        public TypeReference VerificationType
         {
             get { return _verification_type; }
         }
 
-        public Mono.Cecil.TypeReference StackVerificationType
+        public TypeReference StackVerificationType
         {
             get { return _stack_verification_type; }
         }
 
-        public TypeRef IntermediateType
+        public TypeReference IntermediateType
         {
-            get { return _intermediate_type_ref; }
+            get { return _intermediate_type; }
         }
 
-        public Mono.Cecil.TypeReference CilType
+        public TypeRef IntermediateTypeLLVM
+        {
+            get { return _intermediate_type_llvm; }
+        }
+
+        public TypeReference CilType
         {
             get { return _cil_type; }
         }
 
         public TypeKind GetKind()
         {
-            TypeKind kind = LLVM.GetTypeKind(_intermediate_type_ref);
+            TypeKind kind = LLVM.GetTypeKind(_intermediate_type_llvm);
             return kind;
         }
 
         /// Return true if this is one of the six floating-point types
         public bool isFloatingPointTy()
         {
-            TypeKind kind = LLVM.GetTypeKind(_intermediate_type_ref);
+            TypeKind kind = LLVM.GetTypeKind(_intermediate_type_llvm);
             return kind == TypeKind.HalfTypeKind || kind == TypeKind.FloatTypeKind ||
                    kind == TypeKind.DoubleTypeKind ||
                    kind == TypeKind.X86_FP80TypeKind || kind == TypeKind.FP128TypeKind ||
@@ -93,28 +118,28 @@ namespace Campy.Compiler
         /// Return true if this is 'label'.
         public bool isLabelTy()
         {
-            TypeKind kind = LLVM.GetTypeKind(_intermediate_type_ref);
+            TypeKind kind = LLVM.GetTypeKind(_intermediate_type_llvm);
             return kind == TypeKind.LabelTypeKind;
         }
 
         /// Return true if this is 'metadata'.
         public bool isMetadataTy()
         {
-            TypeKind kind = LLVM.GetTypeKind(_intermediate_type_ref);
+            TypeKind kind = LLVM.GetTypeKind(_intermediate_type_llvm);
             return kind == TypeKind.MetadataTypeKind;
         }
 
         /// Return true if this is 'token'.
         public bool isTokenTy()
         {
-            TypeKind kind = LLVM.GetTypeKind(_intermediate_type_ref);
+            TypeKind kind = LLVM.GetTypeKind(_intermediate_type_llvm);
             return kind == TypeKind.TokenTypeKind;
         }
 
         /// True if this is an instance of IntegerType.
         public bool isIntegerTy()
         {
-            TypeKind kind = LLVM.GetTypeKind(_intermediate_type_ref);
+            TypeKind kind = LLVM.GetTypeKind(_intermediate_type_llvm);
             return kind == TypeKind.IntegerTypeKind;
         }
 
@@ -133,28 +158,28 @@ namespace Campy.Compiler
         /// True if this is an instance of FunctionType.
         public bool isFunctionTy()
         {
-            TypeKind kind = LLVM.GetTypeKind(_intermediate_type_ref);
+            TypeKind kind = LLVM.GetTypeKind(_intermediate_type_llvm);
             return kind == TypeKind.FunctionTypeKind;
         }
 
         /// True if this is an instance of StructType.
         public bool isStructTy()
         {
-            TypeKind kind = LLVM.GetTypeKind(_intermediate_type_ref);
+            TypeKind kind = LLVM.GetTypeKind(_intermediate_type_llvm);
             return kind == TypeKind.StructTypeKind;
         }
 
         /// True if this is an instance of ArrayType.
         public bool isArrayTy()
         {
-            TypeKind kind = LLVM.GetTypeKind(_intermediate_type_ref);
+            TypeKind kind = LLVM.GetTypeKind(_intermediate_type_llvm);
             return kind == TypeKind.ArrayTypeKind;
         }
 
         /// True if this is an instance of PointerType.
         public bool isPointerTy()
         {
-            TypeKind kind = LLVM.GetTypeKind(_intermediate_type_ref);
+            TypeKind kind = LLVM.GetTypeKind(_intermediate_type_llvm);
             return kind == TypeKind.PointerTypeKind;
         }
 
@@ -167,7 +192,7 @@ namespace Campy.Compiler
         /// True if this is an instance of VectorType.
         public bool isVectorTy()
         {
-            TypeKind kind = LLVM.GetTypeKind(_intermediate_type_ref);
+            TypeKind kind = LLVM.GetTypeKind(_intermediate_type_llvm);
             return kind == TypeKind.VectorTypeKind;
         }
 
@@ -178,7 +203,7 @@ namespace Campy.Compiler
 
         public UInt32 getPrimitiveSizeInBits()
         {
-            TypeKind kind = LLVM.GetTypeKind(_intermediate_type_ref);
+            TypeKind kind = LLVM.GetTypeKind(_intermediate_type_llvm);
             switch (kind)
             {
                 case TypeKind.HalfTypeKind: return 16;
@@ -190,7 +215,7 @@ namespace Campy.Compiler
                 case TypeKind.X86_MMXTypeKind: return 64;
                 case TypeKind.IntegerTypeKind:
                 case TypeKind.VectorTypeKind:
-                    return LLVM.GetIntTypeWidth(_intermediate_type_ref);
+                    return LLVM.GetIntTypeWidth(_intermediate_type_llvm);
                 default: return 0;
             }
         }
@@ -202,7 +227,7 @@ namespace Campy.Compiler
 
         public uint getPointerAddressSpace()
         {
-            return LLVM.GetPointerAddressSpace(_intermediate_type_ref);
+            return LLVM.GetPointerAddressSpace(_intermediate_type_llvm);
         }
 
         public static TypeRef getInt8PtrTy(Swigged.LLVM.ContextRef C, uint AS = 0)
@@ -223,25 +248,25 @@ namespace Campy.Compiler
 
         public override int GetHashCode()
         {
-            return this.IntermediateType.GetHashCode();
+            return this.IntermediateTypeLLVM.GetHashCode();
         }
 
         public override bool Equals(object obj)
         {
             if (obj as TYPE == null) return false;
-            return this.IntermediateType.Equals((obj as TYPE).IntermediateType);
+            return this.IntermediateTypeLLVM.Equals((obj as TYPE).IntermediateTypeLLVM);
         }
 
         public override string ToString()
         {
-            return _intermediate_type_ref.ToString();
+            return _intermediate_type_llvm.ToString();
         }
 
         public static bool operator ==(TYPE a, TYPE b)
         {
             if (System.Object.ReferenceEquals(a, b)) return true;
             if (((object) a == null) || ((object) b == null)) return false;
-            return a._intermediate_type_ref == b._intermediate_type_ref;
+            return a._intermediate_type_llvm == b._intermediate_type_llvm;
         }
 
         public static bool operator !=(TYPE a, TYPE b)

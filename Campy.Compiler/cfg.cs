@@ -104,19 +104,16 @@ namespace Campy.Compiler
             {
                 return Name;
             }
-            public Dictionary<int, bool> local_alloc = new Dictionary<int, bool>();
-            public Dictionary<Tuple<TypeReference, GenericParameter>, System.Type> OpsFromOriginal { get; set; } = new Dictionary<Tuple<TypeReference, GenericParameter>, System.Type>();
-            public Tuple<Tuple<TypeReference, GenericParameter>, System.Type> OpFromPreviousNode { get; set; }
+            public Dictionary<int, bool> locals_alloc = new Dictionary<int, bool>();
+            public Dictionary<int, bool> args_alloc = new Dictionary<int, bool>();
             public List<INST> Instructions { get; set; } = new List<INST>();
             public CFG _graph { get; set; }
             public LLVMINFO LlvmInfo;
             public bool AlreadyCompiled { get; set; }
-            // Method reference, which might be a generic instance.
-            public MethodReference _method_reference { get; set; }
             // Cached method definition so I don't need to do _method_referenc.Resolve() all the time.
             public MethodDefinition _method_definition { get; set; }
             // This may be the original reference in the code before substitution with BCL code.
-            public MethodReference _original_method_reference { get; set; }
+            public MethodReference _method_reference { get; set; }
             public bool HasThis { get; set; }
             public bool HasScalarReturnValue { get; set; }
             public bool HasStructReturnValue { get; set; }
@@ -136,7 +133,7 @@ namespace Campy.Compiler
                 var v = this;
                 Console.WriteLine();
                 Console.WriteLine("Node: " + v.ToString() + " ");
-                Console.WriteLine(new String(' ', 4) + "Method " + v._original_method_reference.FullName + " " + v._original_method_reference.Module.Name + " " + v._original_method_reference.Module.FileName);
+                Console.WriteLine(new String(' ', 4) + "Method " + v._method_reference.FullName + " " + v._method_reference.Module.Name + " " + v._method_reference.Module.FileName);
                 Console.WriteLine(new String(' ', 4) + "Method " + v._method_definition.FullName + " " + v._method_definition.Module.Name + " " + v._method_definition.Module.FileName);
                 Console.WriteLine(new String(' ', 4) + "HasThis   " + v.HasThis);
                 Console.WriteLine(new String(' ', 4) + "Args   " + v.StackNumberOfArguments);
@@ -188,7 +185,7 @@ namespace Campy.Compiler
             {
                 System.Console.Write("{0,8}", n);
                 System.Console.Write(new string(' ', 4));
-                System.Console.WriteLine(n._original_method_reference.FullName);
+                System.Console.WriteLine(n._method_reference.FullName);
             }
             System.Console.WriteLine();
             System.Console.WriteLine("List of callers:");

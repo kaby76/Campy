@@ -171,7 +171,7 @@ namespace Campy.Compiler
             List<INST> split_point = new List<INST>();
             CFG.Vertex basic_block = (CFG.Vertex)Cfg.AddVertex(new CFG.Vertex(){Name = Cfg.NewNodeNumber().ToString()});
             basic_block._method_definition = method_definition;
-            basic_block._original_method_reference = original_method_reference;
+            basic_block._method_reference = original_method_reference;
             basic_block.Entry = basic_block;
             Cfg.Entries.Add(basic_block);
 
@@ -707,7 +707,6 @@ namespace Campy.Compiler
             result.Entry = node.Entry;
             result._method_definition = node._method_definition;
             result._method_reference = node._method_reference;
-            result._original_method_reference = node._original_method_reference;
 
             int count = node.Instructions.Count;
 
@@ -719,12 +718,12 @@ namespace Campy.Compiler
                 System.Console.WriteLine("New node is " + result.Name);
             }
 
-            if (!result._original_method_reference.Module.HasSymbols)
+            if (!result._method_reference.Module.HasSymbols)
             {
                 // Try to get symbols, but if none available, don't worry about it.
-                try { result._original_method_reference.Module.ReadSymbols(); } catch { }
+                try { result._method_reference.Module.ReadSymbols(); } catch { }
             }
-            var symbol_reader = result._original_method_reference.Module.SymbolReader;
+            var symbol_reader = result._method_reference.Module.SymbolReader;
             var method_debug_information = symbol_reader?.Read(result._method_definition);
             Collection<SequencePoint> sequence_points = method_debug_information != null ? method_debug_information.SequencePoints : new Collection<SequencePoint>();
 
