@@ -1592,7 +1592,8 @@
             var definition = operand as VariableDefinition;
             if (definition != null) _arg = definition.Index;
             var pr = operand as Mono.Cecil.ParameterReference;
-            if (pr != null) _arg = pr.Index;
+            if (pr != null)
+                _arg = pr.Index;
             CFG.Vertex entry = this.Block.Entry;
             if (entry.local_alloc.TryGetValue(_arg, out bool previous_value))
             {
@@ -3824,8 +3825,8 @@
         private i_ldarg(CFG.Vertex b, Mono.Cecil.Cil.Instruction i)
             : base(b, i)
         {
-            Mono.Cecil.ParameterReference pr = i.Operand as Mono.Cecil.ParameterReference;
-            int ar = pr.Index;
+            Mono.Cecil.ParameterDefinition pr = i.Operand as Mono.Cecil.ParameterDefinition;
+            int ar = pr.Sequence;
             _arg = ar;
         }
     }
@@ -3860,8 +3861,8 @@
         private i_ldarg_s(CFG.Vertex b, Mono.Cecil.Cil.Instruction i)
             : base(b, i)
         {
-            Mono.Cecil.ParameterReference pr = i.Operand as Mono.Cecil.ParameterReference;
-            int ar = pr.Index;
+            Mono.Cecil.ParameterDefinition pr = i.Operand as Mono.Cecil.ParameterDefinition;
+            int ar = pr.Sequence;
             _arg = ar;
         }
     }
@@ -3872,9 +3873,9 @@
         private i_ldarga(CFG.Vertex b, Mono.Cecil.Cil.Instruction i)
             : base(b, i)
         {
-            Mono.Cecil.ParameterReference pr = i.Operand as Mono.Cecil.ParameterReference;
-            int arg = pr.Index;
-            _arg = arg;
+            Mono.Cecil.ParameterDefinition pr = i.Operand as Mono.Cecil.ParameterDefinition;
+            int ar = pr.Sequence;
+            _arg = ar;
         }
     }
 
@@ -3884,9 +3885,9 @@
         private i_ldarga_s(CFG.Vertex b, Mono.Cecil.Cil.Instruction i)
             : base(b, i)
         {
-            Mono.Cecil.ParameterReference pr = i.Operand as Mono.Cecil.ParameterReference;
-            int arg = pr.Index;
-            _arg = arg;
+            Mono.Cecil.ParameterDefinition pr = i.Operand as Mono.Cecil.ParameterDefinition;
+            int ar = pr.Sequence;
+            _arg = ar;
         }
     }
 
@@ -6108,8 +6109,8 @@
         private i_starg(CFG.Vertex b, Mono.Cecil.Cil.Instruction i)
             : base(b, i)
         {
-            Mono.Cecil.ParameterReference pr = i.Operand as Mono.Cecil.ParameterReference;
-            int arg = pr.Index;
+            Mono.Cecil.ParameterDefinition pr = i.Operand as Mono.Cecil.ParameterDefinition;
+            int arg = pr.Sequence;
             _arg = arg;
         }
     }
@@ -6121,8 +6122,8 @@
         private i_starg_s(CFG.Vertex b, Mono.Cecil.Cil.Instruction i)
             : base(b, i)
         {
-            Mono.Cecil.ParameterReference pr = i.Operand as Mono.Cecil.ParameterReference;
-            int arg = pr.Index;
+            Mono.Cecil.ParameterDefinition pr = i.Operand as Mono.Cecil.ParameterDefinition;
+            int arg = pr.Sequence;
             _arg = arg;
         }
     }
@@ -6243,9 +6244,9 @@
         public i_stloc(CFG.Vertex b, Mono.Cecil.Cil.Instruction i)
             : base(b, i)
         {
-            Mono.Cecil.ParameterReference pr = i.Operand as Mono.Cecil.ParameterReference;
-            int arg = pr.Index;
-            _arg = arg;
+            Mono.Cecil.ParameterDefinition pr = i.Operand as Mono.Cecil.ParameterDefinition;
+            int ar = pr.Sequence;
+            _arg = ar;
         }
     }
 
