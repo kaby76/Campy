@@ -325,7 +325,7 @@ namespace Campy.Compiler
                     if (bb.HasStructReturnValue)
                     {
                         TYPE t = new TYPE(method.ReturnType);
-                        param_types[current++] = LLVM.PointerType(t.IntermediateTypeLLVM, 0);
+                        param_types[current++] = LLVM.PointerType(t.StorageTypeLLVM, 0);
                     }
 
                     if (bb.HasThis)
@@ -334,8 +334,9 @@ namespace Campy.Compiler
                         if (method.DeclaringType.IsValueType)
                         {
                             // Parameter "this" is a struct, but code in body of method assumes
-                            // a pointer is passed. Make the parameter a pointer.
-                            param_types[current++] = LLVM.PointerType(t.IntermediateTypeLLVM, 0);
+                            // a pointer is passed. Make the parameter a pointer. For example,
+                            // Int32.ToString().
+                            param_types[current++] = LLVM.PointerType(t.StorageTypeLLVM, 0);
                         }
                         else
                         {
@@ -354,12 +355,9 @@ namespace Campy.Compiler
                         }
                         TYPE t = new TYPE(type_reference_of_parameter);
                         param_types[current] = t.StorageTypeLLVM;
-                        bb.args_alloc.TryGetValue(p.Sequence, out bool lvalue);
                         if (type_reference_of_parameter.IsValueType
                             && type_reference_of_parameter.Resolve().IsStruct()
                             && !type_reference_of_parameter.Resolve().IsEnum)
-                            param_types[current] = LLVM.PointerType(param_types[current], 0);
-                        else if (lvalue)
                             param_types[current] = LLVM.PointerType(param_types[current], 0);
                         current++;
                     }
@@ -385,7 +383,7 @@ namespace Campy.Compiler
                     t_ret = new TYPE(typeof(void).ToMonoTypeReference());
                 }
 
-                TypeRef ret_type = t_ret.IntermediateTypeLLVM;
+                TypeRef ret_type = t_ret.StorageTypeLLVM;
                 TypeRef method_type = LLVM.FunctionType(ret_type, param_types, false);
                 string method_name = METAHELPER.RenameToLegalLLVMName(JITER.MethodName(method));
                 ValueRef fun = LLVM.AddFunction(mod, method_name, method_type);
@@ -493,13 +491,50 @@ namespace Campy.Compiler
                 var context = LLVM.GetModuleContext(RUNTIME.global_llvm_module);
                 if (t_fun_con != context) throw new Exception("not equal");
 
+                // Args are store exactly as the type defined, _cil_type in LLVM.
+                // When place on the "value stack" via CIL ldarg/starg, it changes to IntermediateType.
                 for (uint i = 0; i < args; ++i)
                 {
-                    var par = new VALUE(LLVM.GetParam(fun, i)); // Note, functions defined in SetUpLLVMEntries(), jiter.cs.
+                    var v = LLVM.GetParam(fun, i);
+                    VALUE value = new VALUE(v);
+                    TYPE type = value.T;
+                    TypeRef tr = LLVM.TypeOf(v);
+                    if (bb.CheckArgsAlloc((int)i))
+                    {
+                        var new_obj = LLVM.BuildAlloca(bb.LlvmInfo.Builder,
+                            tr,
+                            "i" + INST.instruction_id++);
+                        LLVM.SetAlignment(new_obj, 8);
+                        value = new VALUE(new_obj);
+                    }
+                    else
+                    {
+                        if (LLVM.GetTypeKind(type.CilTypeLLVM) == TypeKind.PointerTypeKind)
+                            value = new VALUE(LLVM.ConstPointerNull(type.CilTypeLLVM));
+                        else if (LLVM.GetTypeKind(type.CilTypeLLVM) == TypeKind.DoubleTypeKind)
+                            value = new VALUE(LLVM.ConstReal(LLVM.DoubleType(), 0));
+                        else if (LLVM.GetTypeKind(type.CilTypeLLVM) == TypeKind.FloatTypeKind)
+                            value = new VALUE(LLVM.ConstReal(LLVM.FloatType(), 0));
+                        else if (LLVM.GetTypeKind(type.CilTypeLLVM) == TypeKind.IntegerTypeKind)
+                            value = new VALUE(LLVM.ConstInt(type.CilTypeLLVM, (ulong)0, true));
+                        else if (LLVM.GetTypeKind(type.CilTypeLLVM) == TypeKind.StructTypeKind)
+                        {
+                            var entry = bb.Entry.LlvmInfo.BasicBlock;
+                            //var beginning = LLVM.GetFirstInstruction(entry);
+                            //LLVM.PositionBuilderBefore(basic_block.Builder, beginning);
+                            var new_obj = LLVM.BuildAlloca(bb.LlvmInfo.Builder, type.CilTypeLLVM,
+                                "i" + INST.instruction_id++); // Allocates struct on stack, but returns a pointer to struct.
+                                                              //LLVM.PositionBuilderAtEnd(bb.LlvmInfo.Builder, bb.BasicBlock);
+                            value = new VALUE(new_obj);
+                        }
+                        else
+                            throw new Exception("Unhandled type");
+                    }
+                    // Note, functions defined in SetUpLLVMEntries(), jiter.cs.
                     // Look for LLVM.FunctionType(
                     if (Campy.Utils.Options.IsOn("jit_trace"))
-                        System.Console.WriteLine(par);
-                    state._stack.Push(par);
+                        System.Console.WriteLine(value);
+                    state._stack.Push(value);
                 }
 
                 int offset = 0;
@@ -524,30 +559,31 @@ namespace Campy.Compiler
                     var tr = variables[i].VariableType.InstantiateGeneric(bb._method_reference);
                     TYPE type = new TYPE(tr);
                     VALUE value;
-                    bb.Entry.locals_alloc.TryGetValue(i, out bool use_alloca);
+                    bool use_alloca = bb.CheckLocalsAlloc(i);
                     if (use_alloca)
                     {
                         var new_obj = LLVM.BuildAlloca(bb.LlvmInfo.Builder,
-                            type.IntermediateTypeLLVM,
+                            type.CilTypeLLVM,
                             "i" + INST.instruction_id++);
+                        LLVM.SetAlignment(new_obj, 8);
                         value = new VALUE(new_obj);
                     }
                     else
                     {
-                        if (LLVM.GetTypeKind(type.IntermediateTypeLLVM) == TypeKind.PointerTypeKind)
-                            value = new VALUE(LLVM.ConstPointerNull(type.IntermediateTypeLLVM));
-                        else if (LLVM.GetTypeKind(type.IntermediateTypeLLVM) == TypeKind.DoubleTypeKind)
+                        if (LLVM.GetTypeKind(type.CilTypeLLVM) == TypeKind.PointerTypeKind)
+                            value = new VALUE(LLVM.ConstPointerNull(type.CilTypeLLVM));
+                        else if (LLVM.GetTypeKind(type.CilTypeLLVM) == TypeKind.DoubleTypeKind)
                             value = new VALUE(LLVM.ConstReal(LLVM.DoubleType(), 0));
-                        else if (LLVM.GetTypeKind(type.IntermediateTypeLLVM) == TypeKind.FloatTypeKind)
+                        else if (LLVM.GetTypeKind(type.CilTypeLLVM) == TypeKind.FloatTypeKind)
                             value = new VALUE(LLVM.ConstReal(LLVM.FloatType(), 0));
-                        else if (LLVM.GetTypeKind(type.IntermediateTypeLLVM) == TypeKind.IntegerTypeKind)
-                            value = new VALUE(LLVM.ConstInt(type.IntermediateTypeLLVM, (ulong)0, true));
-                        else if (LLVM.GetTypeKind(type.IntermediateTypeLLVM) == TypeKind.StructTypeKind)
+                        else if (LLVM.GetTypeKind(type.CilTypeLLVM) == TypeKind.IntegerTypeKind)
+                            value = new VALUE(LLVM.ConstInt(type.CilTypeLLVM, (ulong)0, true));
+                        else if (LLVM.GetTypeKind(type.CilTypeLLVM) == TypeKind.StructTypeKind)
                         {
                             var entry = bb.Entry.LlvmInfo.BasicBlock;
                             //var beginning = LLVM.GetFirstInstruction(entry);
                             //LLVM.PositionBuilderBefore(basic_block.Builder, beginning);
-                            var new_obj = LLVM.BuildAlloca(bb.LlvmInfo.Builder, type.IntermediateTypeLLVM,
+                            var new_obj = LLVM.BuildAlloca(bb.LlvmInfo.Builder, type.CilTypeLLVM,
                                 "i" + INST.instruction_id++); // Allocates struct on stack, but returns a pointer to struct.
                                                               //LLVM.PositionBuilderAtEnd(bb.LlvmInfo.Builder, bb.BasicBlock);
                             value = new VALUE(new_obj);

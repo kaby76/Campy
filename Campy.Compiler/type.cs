@@ -18,6 +18,7 @@ namespace Campy.Compiler
 
         private readonly bool _signed;
         private readonly TypeReference _cil_type;
+        private readonly TypeRef _cil_type_llvm;
         private readonly TypeReference _storage_type;
         private readonly TypeRef _storage_type_llvm;
         private readonly TypeReference _verification_type;
@@ -46,9 +47,10 @@ namespace Campy.Compiler
         public TYPE(Mono.Cecil.TypeReference mono_type)
         {
             _cil_type = mono_type.RewriteMonoTypeReference();
-            _storage_type = _cil_type;
-            _storage_type_llvm = _storage_type.ToTypeRef();
+            _cil_type_llvm = _cil_type.ToTypeRef();
             _verification_type = METAHELPER.InitVerificationType(_cil_type);
+            _storage_type = _verification_type;
+            _storage_type_llvm = _storage_type.ToTypeRef();
             _stack_verification_type = METAHELPER.InitStackVerificationType(_verification_type, _cil_type);
             _intermediate_type = _stack_verification_type;
             _intermediate_type_llvm = _stack_verification_type.ToTypeRef();
@@ -62,6 +64,16 @@ namespace Campy.Compiler
         public bool is_unsigned
         {
             get { return !_signed; }
+        }
+
+        public TypeReference CilType
+        {
+            get { return _cil_type; }
+        }
+
+        public TypeRef CilTypeLLVM
+        {
+            get { return _cil_type_llvm; }
         }
 
         public TypeReference StorageType
@@ -92,11 +104,6 @@ namespace Campy.Compiler
         public TypeRef IntermediateTypeLLVM
         {
             get { return _intermediate_type_llvm; }
-        }
-
-        public TypeReference CilType
-        {
-            get { return _cil_type; }
         }
 
         public TypeKind GetKind()
@@ -259,7 +266,7 @@ namespace Campy.Compiler
 
         public override string ToString()
         {
-            return _intermediate_type_llvm.ToString();
+            return _cil_type.ToString() + " " + _storage_type_llvm.ToString() + " " + _intermediate_type_llvm.ToString();
         }
 
         public static bool operator ==(TYPE a, TYPE b)

@@ -104,8 +104,28 @@ namespace Campy.Compiler
             {
                 return Name;
             }
-            public Dictionary<int, bool> locals_alloc = new Dictionary<int, bool>();
-            public Dictionary<int, bool> args_alloc = new Dictionary<int, bool>();
+            private Dictionary<int, bool> locals_alloc = new Dictionary<int, bool>();
+            public bool CheckLocalsAlloc(int va)
+            {
+                return true;
+                this.Entry.locals_alloc.TryGetValue(va, out bool use_alloca);
+                return use_alloca;
+            }
+            public void SetLocalsAlloc(int va, bool val)
+            {
+                return;
+            }
+            private Dictionary<int, bool> args_alloc = new Dictionary<int, bool>();
+            public bool CheckArgsAlloc(int va)
+            {
+                return true;
+                this.Entry.args_alloc.TryGetValue(va, out bool use_alloca);
+                return use_alloca;
+            }
+            public void SetArgsAlloc(int va, bool val)
+            {
+                return;
+            }
             public List<INST> Instructions { get; set; } = new List<INST>();
             public CFG _graph { get; set; }
             public LLVMINFO LlvmInfo;

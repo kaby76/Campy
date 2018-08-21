@@ -548,6 +548,16 @@ namespace Campy.Meta
             return t.IsValueType && !t.IsPrimitive;
         }
 
+        public static bool IsUnsigned(this Mono.Cecil.TypeReference t)
+        {
+            bool result =
+                t.FullName == "System.Int16"
+                || t.FullName == "System.Int32"
+                || t.FullName == "System.Int64"
+                || t.FullName == "System.SByte";
+            return !result;
+        }
+
         public static bool IsSubclassOf(this TypeReference t, TypeReference b)
         {
             var r = t.Resolve();
@@ -623,7 +633,7 @@ namespace Campy.Meta
         {
             // Roughly encoding table on page 311.
             if (_cil_type.FullName == typeof(sbyte).ToMonoTypeReference().FullName)
-                return typeof(sbyte).ToMonoTypeReference();
+                return typeof(sbyte).ToMonoTypeReference(); // There is no "int8" in C#.
             else if (_cil_type.FullName == typeof(byte).ToMonoTypeReference().FullName)
                 return typeof(sbyte).ToMonoTypeReference();
             else if (_cil_type.FullName == typeof(bool).ToMonoTypeReference().FullName)
@@ -733,7 +743,7 @@ namespace Campy.Meta
 
                 basic_llvm_types_created.Add(
                     typeof(bool).ToMonoTypeReference(),
-                    LLVM.Int32Type()); // Asking for trouble if one tries to map directly to 1 bit.
+                    LLVM.Int8Type()); // Asking for trouble if one tries to map directly to 1 bit.
 
                 basic_llvm_types_created.Add(
                     typeof(char).ToMonoTypeReference(),
