@@ -502,10 +502,13 @@ namespace Campy.Compiler
                     TypeRef tr = LLVM.TypeOf(v);
                     if (bb.CheckArgsAlloc((int)i))
                     {
+                        // Parameters are call by value. To handle ldarga, create a stack
+                        // temporary, and set it with value.
                         var new_obj = LLVM.BuildAlloca(bb.LlvmInfo.Builder,
                             tr,
                             "i" + INST.instruction_id++);
                         LLVM.SetAlignment(new_obj, 8);
+                        LLVM.BuildStore(bb.LlvmInfo.Builder, v, new_obj);
                         value = new VALUE(new_obj);
                     }
                     else

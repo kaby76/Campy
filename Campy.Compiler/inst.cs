@@ -1285,7 +1285,7 @@
                 var t_fun_con = LLVM.GetTypeContext(t_fun);
                 var context = LLVM.GetModuleContext(RUNTIME.global_llvm_module);
                 if (t_fun_con != context) throw new Exception("not equal");
-                // Set up args, type casting if required.
+				// Set up args, type casting if required.
                 ValueRef[] args = new ValueRef[xargs];
                 if (mr.ReturnType.FullName == "System.Void")
                 {
@@ -1306,7 +1306,15 @@
                                 value = LLVM.BuildIntCast(Builder, value, LLVM.TypeOf(par), "i" + instruction_id++);
                             else
                                 value = LLVM.BuildBitCast(Builder, value, LLVM.TypeOf(par), "i" + instruction_id++);
-                        }
+						}
+
+						//if (this.Block.Entry.CheckArgsAlloc(k))
+						//{
+						//	var a = LLVM.BuildAlloca(Builder, LLVM.TypeOf(par), "i" + instruction_id++);
+						//	var store = LLVM.BuildStore(Builder, a, value);
+						//	value = a;
+						//}
+						
                         args[k] = value;
                     }
                     var call = LLVM.BuildCall(Builder, fv, args, "");
@@ -1352,7 +1360,15 @@
                             {
                                 value = LLVM.BuildBitCast(Builder, value, LLVM.TypeOf(par), "");
                             }
-                        }
+						}
+
+						//if (this.Block.Entry.CheckArgsAlloc(k))
+						//{
+						//	var a = LLVM.BuildAlloca(Builder, LLVM.TypeOf(par), "i" + instruction_id++);
+						//	var store = LLVM.BuildStore(Builder, a, value);
+						//	value = a;
+						//}
+
                         args[k] = value;
                     }
                     var call = LLVM.BuildCall(Builder, fv, args, "");
@@ -1385,6 +1401,14 @@
                             else
                                 value = LLVM.BuildBitCast(Builder, value, LLVM.TypeOf(par), "i" + instruction_id++);
                         }
+
+						//if (this.Block.Entry.CheckArgsAlloc(k))
+						//{
+						//	var a = LLVM.BuildAlloca(Builder, LLVM.TypeOf(par), "i" + instruction_id++);
+						//	var store = LLVM.BuildStore(Builder, a, value);
+						//	value = a;
+						//}
+
                         args[k] = value;
                     }
                     ValueRef src = LLVM.BuildCall(Builder, fv, args, "");
