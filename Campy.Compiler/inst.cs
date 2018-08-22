@@ -1796,6 +1796,7 @@
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
             var v = state._stack.Pop();
+            call_closure_local_type = v;
             state._locals[_arg] = v;
         }
 

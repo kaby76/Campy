@@ -112,7 +112,8 @@ namespace Campy.Compiler
                 // Set up locals. I'm making an assumption that there is a 
                 // one to one and in order mapping of the locals with that
                 // defined for the method body by Mono.
-                Collection<VariableDefinition> variables = bb._method_reference.Resolve().Body.Variables;
+                Collection<VariableDefinition> vars = bb._method_reference.Resolve().Body.Variables;
+                var variables = vars.ToArray();
                 state._locals = state._stack.Section((int) state._stack.Count, locals);
                 for (int i = 0; i < locals; ++i)
                 {
@@ -547,12 +548,14 @@ namespace Campy.Compiler
 
                 // Set up locals. I'm making an assumption that the locals here
                 // correspond exactly with those reported by Mono.
-                Collection<VariableDefinition> variables = bb._method_reference.Resolve().Body.Variables;
+                Collection<VariableDefinition> vars = bb._method_reference.Resolve().Body.Variables;
+                var variables = vars.ToArray();
                 // Convert any generic parameters to generic instance reference.
-                for (int i = 0; i < variables.Count; ++i)
+                for (int i = 0; i < variables.Length; ++i)
                 {
                     variables[i] = variables[i].InstantiateGeneric(bb._method_reference);
                 }
+                bb.Entry._locals = variables.ToArray();
                 state._locals = state._stack.Section((int) state._stack.Count, locals);
                 for (int i = 0; i < locals; ++i)
                 {

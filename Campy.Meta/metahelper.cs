@@ -250,12 +250,12 @@ namespace Campy.Meta
 
             reference.ReturnType = reference.ReturnType.Deresolve(declaring_type, null);
 
-            var new_met = self.Module.ImportReference(reference);
-            if (new_met.ContainsGenericParameter)
-            {
-                throw new Exception("Deresolve did not work.");
-            }
-
+            //var new_met = self.Module.ImportReference(reference);
+            //if (new_met.ContainsGenericParameter)
+            //{
+            //    throw new Exception("Deresolve did not work.");
+            //}
+            var new_met = reference;
             return new_met;
         }
 
