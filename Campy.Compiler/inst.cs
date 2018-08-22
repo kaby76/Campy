@@ -1790,7 +1790,7 @@
                 if (use_alloca)
                 {
                     v = new VALUE(LLVM.BuildLoad(Builder, v.V, "i" + instruction_id++));
-                    TYPE st = new TYPE(vv.VariableType);
+                    TYPE st = new TYPE(vv);
                     TypeRef stype = st.CilTypeLLVM;
                     TypeRef dtype = st.IntermediateTypeLLVM;
                     if (stype != dtype)

@@ -115,7 +115,7 @@ namespace Campy.Compiler
             {
                 return;
             }
-            public VariableDefinition[] _locals;
+            public TypeReference[] _locals;
             private Dictionary<int, bool> args_alloc = new Dictionary<int, bool>();
             public bool CheckArgsAlloc(int va)
             {

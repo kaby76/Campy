@@ -552,19 +552,19 @@ namespace Campy.Compiler
                 // Set up locals. I'm making an assumption that the locals here
                 // correspond exactly with those reported by Mono.
                 Collection<VariableDefinition> vars = bb._method_reference.Resolve().Body.Variables;
-                var variables = vars.ToArray();
+                var variables = vars.Select(vd => vd.VariableType).ToArray();
                 // Convert any generic parameters to generic instance reference.
                 for (int i = 0; i < variables.Length; ++i)
                 {
-                    variables[i].VariableType = variables[i].VariableType.InstantiateGeneric(bb._method_reference);
-                    if (variables[i].VariableType.ContainsGenericParameter)
+                    variables[i] = variables[i].InstantiateGeneric(bb._method_reference);
+                    if (variables[i].ContainsGenericParameter)
                         throw new Exception("Uninstantiated generic parameter.");
                 }
-                bb.Entry._locals = variables.ToArray();
+                bb.Entry._locals = variables;
                 state._locals = state._stack.Section((int) state._stack.Count, locals);
                 for (int i = 0; i < locals; ++i)
                 {
-                    var tr = variables[i].VariableType.InstantiateGeneric(bb._method_reference);
+                    var tr = variables[i];
                     TYPE type = new TYPE(tr);
                     VALUE value;
                     bool use_alloca = bb.CheckLocalsAlloc(i);
