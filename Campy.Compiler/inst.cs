@@ -1749,6 +1749,7 @@
         {
             var by_ref = this.Instruction.OpCode.Code == Code.Ldloca || this.Instruction.OpCode.Code == Code.Ldloca_S;
             var v = state._locals[_arg];
+            var vv = this.Block.Entry._locals[_arg];
             CFG.Vertex entry = this.Block.Entry;
             bool use_alloca = entry.CheckLocalsAlloc(_arg);
             if (by_ref)
@@ -1764,9 +1765,59 @@
             {
                 if (use_alloca)
                 {
-                    TypeRef dtype = v.T.IntermediateTypeLLVM;
-                    TypeRef stype = v.T.CilTypeLLVM;
                     v = new VALUE(LLVM.BuildLoad(Builder, v.V, "i" + instruction_id++));
+                    TYPE st = new TYPE(vv.VariableType);
+                    TypeRef stype = st.CilTypeLLVM;
+                    TypeRef dtype = st.IntermediateTypeLLVM;
+                    if (stype != dtype)
+                    {
+                        bool ext = false;
+
+                        /* Extend */
+                        if (dtype == LLVM.Int64Type()
+                            && (stype == LLVM.Int32Type() || stype == LLVM.Int16Type() || stype == LLVM.Int8Type()))
+                            ext = true;
+                        else if (dtype == LLVM.Int32Type()
+                            && (stype == LLVM.Int16Type() || stype == LLVM.Int8Type()))
+                            ext = true;
+                        else if (dtype == LLVM.Int16Type()
+                            && (stype == LLVM.Int8Type()))
+                            ext = true;
+
+                        if (ext)
+                            v = new VALUE(
+                                LLVM.BuildZExt(Builder, v.V, dtype, "i" + instruction_id++));
+                        else if (dtype == LLVM.DoubleType() && stype == LLVM.FloatType())
+                            v = new VALUE(LLVM.BuildFPExt(Builder, v.V, dtype, "i" + instruction_id++));
+                        else /* Trunc */ if (stype == LLVM.Int64Type()
+                            && (dtype == LLVM.Int32Type() || dtype == LLVM.Int16Type() || dtype == LLVM.Int8Type()))
+                            v = new VALUE(LLVM.BuildTrunc(Builder, v.V, dtype, "i" + instruction_id++));
+                        else if (stype == LLVM.Int32Type()
+                            && (dtype == LLVM.Int16Type() || dtype == LLVM.Int8Type()))
+                            v = new VALUE(LLVM.BuildTrunc(Builder, v.V, dtype, "i" + instruction_id++));
+                        else if (stype == LLVM.Int16Type()
+                            && dtype == LLVM.Int8Type())
+                            v = new VALUE(LLVM.BuildTrunc(Builder, v.V, dtype, "i" + instruction_id++));
+                        else if (stype == LLVM.DoubleType()
+                            && dtype == LLVM.FloatType())
+                            v = new VALUE(LLVM.BuildFPTrunc(Builder, v.V, dtype, "i" + instruction_id++));
+
+                        else if (stype == LLVM.Int64Type()
+                            && (dtype == LLVM.FloatType()))
+                            v = new VALUE(LLVM.BuildSIToFP(Builder, v.V, dtype, "i" + instruction_id++));
+                        else if (stype == LLVM.Int32Type()
+                            && (dtype == LLVM.FloatType()))
+                            v = new VALUE(LLVM.BuildSIToFP(Builder, v.V, dtype, "i" + instruction_id++));
+                        else if (stype == LLVM.Int64Type()
+                            && (dtype == LLVM.DoubleType()))
+                            v = new VALUE(LLVM.BuildSIToFP(Builder, v.V, dtype, "i" + instruction_id++));
+                        else if (stype == LLVM.Int32Type()
+                            && (dtype == LLVM.DoubleType()))
+                            v = new VALUE(LLVM.BuildSIToFP(Builder, v.V, dtype, "i" + instruction_id++));
+
+                        else if (LLVM.GetTypeKind(stype) == TypeKind.PointerTypeKind)
+                            v = new VALUE(LLVM.BuildPointerCast(Builder, v.V, dtype, "i" + instruction_id++));
+                    }
                 }
                 if (Campy.Utils.Options.IsOn("jit_trace"))
                     System.Console.WriteLine(v);
@@ -1860,6 +1911,9 @@
                     else if (stype == LLVM.Int32Type()
                         && (dtype == LLVM.DoubleType()))
                         src = new VALUE(LLVM.BuildSIToFP(Builder, src.V, dtype, "i" + instruction_id++));
+
+                    else if (LLVM.GetTypeKind(stype) == TypeKind.PointerTypeKind)
+                        src = new VALUE(LLVM.BuildPointerCast(Builder, src.V, dtype, "i" + instruction_id++));
                 }
                 
                 LLVM.BuildStore(Builder, src.V, dst.V);
@@ -5454,6 +5508,7 @@
             var rth = typeof(System.RuntimeTypeHandle).ToMonoTypeReference().RewriteMonoTypeReference();
             var type = rth.Deresolve(this.Block._method_reference.DeclaringType, null);
             var llvm_type = type.ToTypeRef();
+            llvm_type = LLVM.PointerType(llvm_type, 0);
             ValueRef new_obj;
             {
                 // Generate code to allocate object and stuff.
