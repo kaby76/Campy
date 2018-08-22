@@ -553,7 +553,9 @@ namespace Campy.Compiler
                 // Convert any generic parameters to generic instance reference.
                 for (int i = 0; i < variables.Length; ++i)
                 {
-                    variables[i] = variables[i].InstantiateGeneric(bb._method_reference);
+                    variables[i].VariableType = variables[i].VariableType.InstantiateGeneric(bb._method_reference);
+                    if (variables[i].VariableType.ContainsGenericParameter)
+                        throw new Exception("Uninstantiated generic parameter.");
                 }
                 bb.Entry._locals = variables.ToArray();
                 state._locals = state._stack.Section((int) state._stack.Count, locals);

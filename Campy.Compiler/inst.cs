@@ -2051,6 +2051,9 @@
 
     public class ConvertCompareAndBranchInst : INST
     {
+        TypeReference call_closure_lhs = null;
+        TypeReference call_closure_rhs = null;
+
         public ConvertCompareAndBranchInst(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i)
         {
         }
@@ -2102,6 +2105,8 @@
         {
             var v2 = state._stack.Pop();
             var v1 = state._stack.Pop();
+            call_closure_lhs = v1;
+            call_closure_rhs = v2;
         }
 
         public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
@@ -2109,23 +2114,43 @@
             VALUE v2 = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(v2);
-
             VALUE v1 = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(v1);
-
             // TODO Undoubtably, this will be much more complicated than my initial stab.
             TYPE t1 = v1.T;
             TYPE t2 = v2.T;
+            ValueRef v1_v = v1.V;
+            ValueRef v2_v = v2.V;
             ValueRef cmp = default(ValueRef);
             // Deal with various combinations of types.
             if (t1.isIntegerTy() && t2.isIntegerTy())
             {
+                var t1_t = t1.IntermediateTypeLLVM;
+                var t2_t = t2.IntermediateTypeLLVM;
+                var w1 = LLVM.GetIntTypeWidth(t1_t);
+                var w2 = LLVM.GetIntTypeWidth(t2_t);
+                var ss1 = !call_closure_lhs.Name.Contains("UInt");
+                var ss2 = !call_closure_rhs.Name.Contains("UInt");
+                if (w1 != w2 && ss1 != ss2) throw new Exception("Sign extention not the same?");
+                if (w1 > w2)
+                {
+                    if (ss1)
+                        v2_v = LLVM.BuildSExt(Builder, v2_v, t1_t, "i" + instruction_id++);
+                    else
+                        v2_v = LLVM.BuildZExt(Builder, v2_v, t1_t, "i" + instruction_id++);
+                }
+                else if (w1 < w2)
+                {
+                    if (ss1)
+                        v1_v = LLVM.BuildSExt(Builder, v1_v, t2_t, "i" + instruction_id++);
+                    else
+                        v1_v = LLVM.BuildZExt(Builder, v1_v, t2_t, "i" + instruction_id++);
+                }
                 IntPredicate op;
                 if (IsSigned) op = _int_pred[(int)Predicate];
                 else op = _uint_pred[(int)Predicate];
-
-                cmp = LLVM.BuildICmp(Builder, op, v1.V, v2.V, "i" + instruction_id++);
+                cmp = LLVM.BuildICmp(Builder, op, v1_v, v2_v, "i" + instruction_id++);
 
                 var edge1 = Block._graph.SuccessorEdges(Block).ToList()[0];
                 var edge2 = Block._graph.SuccessorEdges(Block).ToList()[1];
