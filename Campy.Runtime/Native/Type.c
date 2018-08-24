@@ -389,7 +389,7 @@ function_space_specifier void Type_Init() {
 		{ "corlib.dll", "System", "Object", EVALSTACK_O,		sizeof(void*), sizeof(void*), 0 },
 		{ "corlib.dll", "System", "Array", EVALSTACK_O,		sizeof(void*), sizeof(void*), 0 },
 		{ "corlib.dll", "System", "Void", EVALSTACK_O,			sizeof(void*), sizeof(void*), 0 },
-		{ "corlib.dll", "System", "Boolean", EVALSTACK_INT32,	4, 4, 4 },
+		{ "corlib.dll", "System", "Boolean", EVALSTACK_INT32,	4, 1, 4 },
 		{ "corlib.dll", "System", "Byte", EVALSTACK_INT32,		4, 1, 4 },
 		{ "corlib.dll", "System", "SByte", EVALSTACK_INT32,	4, 1, 4 },
 		{ "corlib.dll", "System", "Char", EVALSTACK_INT32,		4, 2, 4 },

@@ -164,6 +164,10 @@ struct tMD_TypeDef_ {
 	U32 numFields;
 	// Links to all the fields (in memory order), including statics (not inherited)
 	tMD_FieldDef **ppFields;
+	// The number of fields in this type and inherited. This includes static fields, and all inherited fields.
+	U32 numFieldsAll;
+	// Links to all the fields (in memory order), including statics, and inherited.
+	tMD_FieldDef **ppFieldsAll;
 	// The memory needed for static fields, in bytes
 	U32 staticFieldSize;
 	// The number of methods in this type. This includes static methods, but not inherited methods

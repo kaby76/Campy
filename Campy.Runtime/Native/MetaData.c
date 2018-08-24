@@ -2110,10 +2110,22 @@ function_space_specifier void MetaData_PrintMetaData(tMetaData * meta)
 
 function_space_specifier void * MetaData_GetField(HEAP_PTR object, tMD_FieldDef * pField)
 {
-    int field_offset = pField->memOffset;
-    unsigned char * field = (unsigned char *)object + field_offset;
-    int field_size = pField->memSize;
-    return (void*)field;
+	int field_offset = pField->memOffset;
+	unsigned char * field = (unsigned char *)object + field_offset;
+	int field_size = pField->memSize;
+	return (void*)field;
+}
+
+function_space_specifier int MetaData_GetFieldSize(tMD_FieldDef * pField)
+{
+	int field_size = pField->memSize;
+	return field_size;
+}
+
+function_space_specifier int MetaData_GetFieldOffset(tMD_FieldDef * pField)
+{
+	int field_offset = pField->memOffset;
+	return field_offset;
 }
 
 function_space_specifier void * MetaData_GetStaticField(tMD_FieldDef * pField)
@@ -2127,8 +2139,14 @@ function_space_specifier void * MetaData_GetStaticField(tMD_FieldDef * pField)
 
 function_space_specifier void MetaData_GetFields(tMD_TypeDef * pTypeDef, tMD_FieldDef*** out_buf, int * out_len)
 {
-    *out_len = pTypeDef->numFields;
-    *out_buf = pTypeDef->ppFields;
+	*out_len = pTypeDef->numFields;
+	*out_buf = pTypeDef->ppFields;
+}
+
+function_space_specifier void MetaData_GetFieldsAll(tMD_TypeDef * pTypeDef, tMD_FieldDef*** out_buf, int * out_len)
+{
+	*out_len = pTypeDef->numFieldsAll;
+	*out_buf = pTypeDef->ppFieldsAll;
 }
 
 function_space_specifier char * MetaData_GetFieldName(tMD_FieldDef * pFieldDef)

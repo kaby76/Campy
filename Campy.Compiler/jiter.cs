@@ -573,7 +573,7 @@ namespace Campy.Compiler
                         var new_obj = LLVM.BuildAlloca(bb.LlvmInfo.Builder,
                             type.CilTypeLLVM,
                             "i" + INST.instruction_id++);
-                        LLVM.SetAlignment(new_obj, 8);
+                        LLVM.SetAlignment(new_obj, 64);
                         value = new VALUE(new_obj);
                     }
                     else

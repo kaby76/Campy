@@ -69,8 +69,17 @@
         [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclFindFieldInType")]
         public static extern System.IntPtr BclFindFieldInType(IntPtr ptr, [MarshalAs(UnmanagedType.LPStr)] string name);
 
+        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclFindFieldInTypeAll")]
+        public static extern System.IntPtr BclFindFieldInTypeAll(IntPtr ptr, [MarshalAs(UnmanagedType.LPStr)] string name);
+
         [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclGetField")]
         public static extern System.IntPtr BclGetField(IntPtr ptr, IntPtr bcl_field);
+
+        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclGetFieldOffset")]
+        public static extern int BclGetFieldOffset(IntPtr bcl_field);
+
+        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclGetFieldSize")]
+        public static extern int BclGetFieldSize(IntPtr bcl_field);
 
         [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclGetStaticField")]
         public static extern System.IntPtr BclGetStaticField(IntPtr bcl_field);

@@ -2640,6 +2640,7 @@
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(o);
             TypeRef tr = LLVM.TypeOf(o.V);
+            var tr_bcltype = RUNTIME.GetBclType(call_closure_object);
             bool isPtr = o.T.isPointerTy();
             bool isArr = o.T.isArrayTy();
             bool isSt = o.T.isStructTy();
@@ -2648,40 +2649,29 @@
             {
                 uint offset = 0;
                 var yy = this.Instruction.Operand;
-                var field = yy as Mono.Cecil.FieldReference;
                 if (yy == null) throw new Exception("Cannot convert.");
 
                 var declaring_type = call_closure_object;
-                var declaring_type_tr = field.DeclaringType;
+                var declaring_type_tr = field_reference.DeclaringType;
                 var declaring_type_field = declaring_type_tr.Resolve();
 
                 // need to take into account padding fields. Unfortunately,
                 // LLVM does not name elements in a struct/class. So, we must
                 // compute padding and adjust.
                 int size = 0;
-                var all_fields = declaring_type.MyGetFields();
-                foreach (var f in all_fields)
+                var myfields = declaring_type.MyGetFields();
+                int current_offset = 0;
+                foreach (var field in myfields)
                 {
-                    var attr = f.Resolve().Attributes;
+                    var attr = field.Resolve().Attributes;
                     if ((attr & FieldAttributes.Static) != 0)
                         continue;
 
-                    int field_size;
-                    int alignment;
-                    var array_or_class = (f.FieldType.IsArray || !f.FieldType.IsValueType);
-                    if (array_or_class)
-                    {
-                        field_size = BUFFERS.SizeOf(typeof(IntPtr));
-                        alignment = BUFFERS.Alignment(typeof(IntPtr));
-                    }
-                    else
-                    {
-                        var ft = f.FieldType.ToSystemType();
-                        field_size = BUFFERS.SizeOf(ft);
-                        alignment = BUFFERS.Alignment(ft);
-                    }
+                    var bcl_field = RUNTIME.BclFindFieldInTypeAll(tr_bcltype, field.Name);
+                    int field_size = RUNTIME.BclGetFieldSize(bcl_field);
+                    int field_offset = RUNTIME.BclGetFieldOffset(bcl_field);
+                    int padding = field_offset - current_offset;
 
-                    int padding = BUFFERS.Padding(size, alignment);
                     size = size + padding + field_size;
                     if (padding != 0)
                     {
@@ -2690,13 +2680,14 @@
                             offset++;
                     }
 
-                    if (f.Name == field.Name)
+                    if (field.Name == field_reference.Name)
                     {
-                        is_ptr = f.FieldType.IsArray || f.FieldType.IsPointer;
+                        is_ptr = field.FieldType.IsArray || field.FieldType.IsPointer;
                         break;
                     }
 
                     offset++;
+                    current_offset = field_offset + field_size;
                 }
 
                 var dst = LLVM.BuildStructGEP(Builder, o.V, offset, "i" + instruction_id++);

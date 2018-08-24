@@ -154,9 +154,24 @@ EXPORT void * BclFindFieldInType(void * bcl_type, char * name)
 	return (void *)MetaData_FindFieldInType((tMD_TypeDef *)bcl_type, name);
 }
 
+EXPORT void * BclFindFieldInTypeAll(void * bcl_type, char * name)
+{
+	return (void *)MetaData_FindFieldInTypeAll((tMD_TypeDef *)bcl_type, name);
+}
+
 EXPORT void * BclGetField(void * bcl_object, void * bcl_field)
 {
 	return (void *)MetaData_GetField((HEAP_PTR)bcl_object, (tMD_FieldDef *)bcl_field);
+}
+
+EXPORT int BclGetFieldSize(void * bcl_field)
+{
+	return MetaData_GetFieldSize((tMD_FieldDef *)bcl_field);
+}
+
+EXPORT int BclGetFieldOffset(void * bcl_field)
+{
+	return MetaData_GetFieldOffset((tMD_FieldDef *)bcl_field);
 }
 
 EXPORT void * BclGetStaticField(void * bcl_field)

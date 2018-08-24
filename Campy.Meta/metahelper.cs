@@ -876,126 +876,7 @@ namespace Campy.Meta
                     var va = ToTypeRef(field_type);
                     return va;
                 }
-                else if (td != null && td.IsValueType)
-                {
-                    // Struct!!!!!
-                    var gp = tr.GenericParameters;
-                    Mono.Collections.Generic.Collection<TypeReference> ga = null;
-                    // Create a struct type.
-                    ContextRef c = LLVM.GetGlobalContext();
-                    string llvm_name = RenameToLegalLLVMName(tr.ToString());
-
-                    TypeRef s = LLVM.StructCreateNamed(c, llvm_name);
-
-                    // Structs are implemented as value types, but if this type is a pointer,
-                    // then return one.
-                    TypeRef p;
-                    if (is_pointer) p = LLVM.PointerType(s, 0);
-                    else p = s;
-
-                    previous_llvm_types_created_global.Add(tr, p);
-
-                    // Create array of typerefs as argument to StructSetBody below.
-                    // Note, tr is correct type, but tr.Resolve of a generic type turns the type
-                    // into an uninstantiated generic type. E.g., List<int> contains a generic T[] containing the
-                    // data. T could be a struct/value type, or T could be a class.
-
-                    // This code should use this:  BUFFERS.Padding((long)ip, BUFFERS.Alignment(typeof(IntPtr))
-
-                    List<TypeRef> list = new List<TypeRef>();
-                    int offset = 0;
-                    var myfields = tr.MyGetFields();
-                    var fields = td.Fields;
-                    foreach (var field in myfields)
-                    {
-                        Mono.Cecil.FieldAttributes attr = field.Resolve().Attributes;
-                        if ((attr & Mono.Cecil.FieldAttributes.Static) != 0)
-                        {
-                            continue;
-                        }
-
-                        TypeReference field_type = field.FieldType;
-                        TypeReference instantiated_field_type = field.FieldType;
-
-                        if (git != null)
-                        {
-                            var generic_args = git.GenericArguments;
-                            if (field.FieldType.IsArray)
-                            {
-                                var field_type_as_array_type = field.FieldType as ArrayType;
-                                //var et = field.FieldType.GetElementType();
-                                var et = field_type_as_array_type.ElementType;
-                                var bbc = et.HasGenericParameters;
-                                var bbbbc = et.IsGenericParameter;
-                                var array = field.FieldType as ArrayType;
-                                int rank = array.Rank;
-                                if (bbc)
-                                {
-                                    instantiated_field_type = et.MakeGenericInstanceType(generic_args.ToArray());
-                                    instantiated_field_type = instantiated_field_type.MakeArrayType(rank);
-                                }
-                                else if (bbbbc)
-                                {
-                                    instantiated_field_type = generic_args.First();
-                                    instantiated_field_type = instantiated_field_type.MakeArrayType(rank);
-                                }
-                            }
-                            else
-                            {
-                                var et = field.FieldType;
-                                var bbc = et.HasGenericParameters;
-                                var bbbbc = et.IsGenericParameter;
-                                if (bbc)
-                                {
-                                    instantiated_field_type = et.MakeGenericInstanceType(generic_args.ToArray());
-                                }
-                                else if (bbbbc)
-                                {
-                                    instantiated_field_type = generic_args.First();
-                                }
-                            }
-                        }
-
-                        int field_size;
-                        int alignment;
-                        var ft =
-                            instantiated_field_type.ToSystemType();
-                        var array_or_class = (instantiated_field_type.IsArray || !instantiated_field_type.IsValueType);
-                        if (array_or_class)
-                        {
-                            field_size = SizeOf(typeof(IntPtr));
-                            alignment = Alignment(typeof(IntPtr));
-                            int padding = Padding(offset, alignment);
-                            offset = offset + padding + field_size;
-                            if (padding != 0)
-                            {
-                                // Add in bytes to effect padding.
-                                for (int j = 0; j < padding; ++j)
-                                    list.Add(LLVM.Int8Type());
-                            }
-                            var field_converted_type = ToTypeRef(instantiated_field_type);
-                            list.Add(field_converted_type);
-                        }
-                        else
-                        {
-                            field_size = SizeOf(ft);
-                            alignment = Alignment(ft);
-                            int padding = Padding(offset, alignment);
-                            offset = offset + padding + field_size;
-                            if (padding != 0)
-                            {
-                                // Add in bytes to effect padding.
-                                for (int j = 0; j < padding; ++j)
-                                    list.Add(LLVM.Int8Type());
-                            }
-                            var field_converted_type = ToTypeRef(instantiated_field_type);
-                            list.Add(field_converted_type);
-                        }
-                    }
-                    LLVM.StructSetBody(s, list.ToArray(), true);
-                    return p;
-                }
-                else if (td != null && (td.IsClass || td.IsInterface))
+                else if (td != null && (td.IsClass || td.IsInterface || td.IsValueType))
                 {
                     var gp = tr.GenericParameters;
                     Mono.Collections.Generic.Collection<TypeReference> ga = null;
@@ -1013,15 +894,24 @@ namespace Campy.Meta
                     }
 
                     // Create a struct/class type.
-                    //ContextRef c = LLVM.ContextCreate();
                     ContextRef c = LLVM.GetGlobalContext();
                     string llvm_name = RenameToLegalLLVMName(tr.ToString());
                     TypeRef s = LLVM.StructCreateNamed(c, llvm_name);
+                    var tr_bcltype = RUNTIME.GetBclType(tr);
 
-                    // Classes are always implemented as pointers.
                     TypeRef p;
-                    p = LLVM.PointerType(s, 0);
-
+		            if (td.IsValueType)
+		            {
+			            // Structs are implemented as value types, but if this type is a pointer,
+			            // then return one.
+			            if (is_pointer) p = LLVM.PointerType(s, 0);
+			            else p = s;
+		            }
+		            else
+		            {
+			            // Classes are always implemented as pointers.
+			            p = LLVM.PointerType(s, 0);
+		            }
                     previous_llvm_types_created_global.Add(tr, p);
 
                     // Create array of typerefs as argument to StructSetBody below.
@@ -1030,10 +920,10 @@ namespace Campy.Meta
                     // data. T could be a struct/value type, or T could be a class.
 
                     List<TypeRef> list = new List<TypeRef>();
-                    int offset = 0;
                     var fieldso = td.Fields;
                     var myfields = tr.MyGetFields();
-                    var fields = tr.ResolveFields();
+//                    var fields = tr.ResolveFields();
+                    int current_offset = 0;
                     foreach (var field in myfields)
                     {
                         Mono.Cecil.FieldAttributes attr = field.Resolve().Attributes;
@@ -1082,44 +972,23 @@ namespace Campy.Meta
                             }
                         }
 
-
-                        int field_size;
-                        int alignment;
-                        var array_or_class = (instantiated_field_type.IsArray || !instantiated_field_type.IsValueType);
-                        if (array_or_class)
+                        var bcl_field = RUNTIME.BclFindFieldInTypeAll(tr_bcltype, field.Name);
+                        int field_size = RUNTIME.BclGetFieldSize(bcl_field);
+                        int field_offset = RUNTIME.BclGetFieldOffset(bcl_field);
+                        int padding = field_offset - current_offset;
+                        if (padding < 0) throw new Exception("Fields out of order.");
+                        if (padding != 0)
                         {
-                            field_size = SizeOf(typeof(IntPtr));
-                            alignment = Alignment(typeof(IntPtr));
-                            int padding = Padding(offset, alignment);
-                            offset = offset + padding + field_size;
-                            if (padding != 0)
-                            {
-                                // Add in bytes to effect padding.
-                                for (int j = 0; j < padding; ++j)
-                                    list.Add(LLVM.Int8Type());
-                            }
-                            var field_converted_type = ToTypeRef(instantiated_field_type);
-                            list.Add(field_converted_type);
+                            // Add in bytes to effect padding.
+                            for (int j = 0; j < padding; ++j)
+                                list.Add(LLVM.Int8Type());
                         }
-                        else
-                        {
-                            var ft =
-                                instantiated_field_type.ToSystemType();
-                            field_size = SizeOf(ft);
-                            alignment = Alignment(ft);
-                            int padding = Padding(offset, alignment);
-                            offset = offset + padding + field_size;
-                            if (padding != 0)
-                            {
-                                // Add in bytes to effect padding.
-                                for (int j = 0; j < padding; ++j)
-                                    list.Add(LLVM.Int8Type());
-                            }
-                            var field_converted_type = ToTypeRef(instantiated_field_type);
-                            list.Add(field_converted_type);
-                        }
+                        var field_converted_type = ToTypeRef(instantiated_field_type);
+                        list.Add(field_converted_type);
+                        current_offset = field_offset + field_size;
                     }
                     LLVM.StructSetBody(s, list.ToArray(), true);
+                    var xyz = LLVM.GetDataLayoutStr(RUNTIME.global_llvm_module);
 
                     if (Utils.Options.IsOn("name_trace"))
                     {

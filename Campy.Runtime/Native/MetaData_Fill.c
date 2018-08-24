@@ -49,7 +49,14 @@ function_space_specifier void MetaData_Fill_FieldDef(tMD_TypeDef *pParentType, t
 	}
 	MetaData_Fill_TypeDef(pFieldDef->pType, NULL, NULL);
 	// A check for 0 is done so if a type has a field of it's own type it is handled correctly.
-	pFieldDef->memSize = (pFieldDef->pType->stackSize>0)?pFieldDef->pType->stackSize:sizeof(void*);
+	int s1 = pFieldDef->pType->stackSize;
+	int s2 = pFieldDef->pType->arrayElementSize;
+	int s3 = pFieldDef->pType->instanceMemSize;
+	bool s4 = pFieldDef->pType->isValueType;
+	if (s4)
+		pFieldDef->memSize = (pFieldDef->pType->arrayElementSize > 0) ? pFieldDef->pType->arrayElementSize : sizeof(void*);
+	else
+		pFieldDef->memSize = (pFieldDef->pType->stackSize>0)?pFieldDef->pType->stackSize:sizeof(void*);
 	// Extremely important!! Make sure offset is rounded up to the nearest 8-byte boundary if this is
 	// an 8 byte thing. NVIDIA GPUs cannot fetch 8 bytes on non-8-byte boundaries!!
 	int alignment = pFieldDef->memSize;

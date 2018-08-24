@@ -140,7 +140,7 @@ function_space_specifier static tMD_FieldDef* FindFieldInType(tMD_TypeDef *pType
 
 	MetaData_Fill_TypeDef(pTypeDef, NULL, NULL);
 
-	for (i=0; i<pTypeDef->numFields; i++) {
+	for (i = 0; i < pTypeDef->numFields; i++) {
 		if (Gstrcmp(pTypeDef->ppFields[i]->name, name) == 0) {
 			return pTypeDef->ppFields[i];
 		}
@@ -153,6 +153,30 @@ function_space_specifier static tMD_FieldDef* FindFieldInType(tMD_TypeDef *pType
 
 function_space_specifier tMD_FieldDef* MetaData_FindFieldInType(tMD_TypeDef *pTypeDef, STRING name) {
 	return FindFieldInType(pTypeDef, name);
+}
+
+function_space_specifier static tMD_FieldDef* FindFieldInTypeAll(tMD_TypeDef *pTypeDef, STRING name)
+{
+	if (_bcl_ && _bcl_->options & BCL_DEBUG_FUNCTION_ENTRY)
+		Gprintf("FindFieldInTypeAll\n");
+	U32 i;
+
+	MetaData_Fill_TypeDef(pTypeDef, NULL, NULL);
+
+	for (i = 0; i < pTypeDef->numFields; i++) {
+		if (Gstrcmp(pTypeDef->ppFields[i]->name, name) == 0) {
+			return pTypeDef->ppFields[i];
+		}
+	}
+	pTypeDef = MetaData_GetTypeDefFromDefRefOrSpec(pTypeDef->pMetaData, pTypeDef->extends, NULL, NULL);
+	if (pTypeDef)
+		return FindFieldInTypeAll(pTypeDef, name);
+	return NULL;
+}
+
+function_space_specifier tMD_FieldDef* MetaData_FindFieldInTypeAll(tMD_TypeDef *pTypeDef, STRING name)
+{
+	return FindFieldInTypeAll(pTypeDef, name);
 }
 
 function_space_specifier tMetaData* MetaData_GetResolutionScopeMetaData(tMetaData *pMetaData, IDX_TABLE resolutionScopeToken, tMD_TypeDef **ppInNestedType)
