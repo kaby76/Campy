@@ -233,6 +233,8 @@ struct tMD_FieldDef_
 	U32 memOffset;
 	// The size in bytes that this field takes up in the memory representation
 	U32 memSize;
+	// The size in bytes of padding just prior to this field. Used in computing the instance size.
+	U32 paddingSizeBeforeField;
 	// The original table index of this FieldDef
 	IDX_TABLE tableIndex;
 	// If this is a static field, then the absolute address of this field is stored here.

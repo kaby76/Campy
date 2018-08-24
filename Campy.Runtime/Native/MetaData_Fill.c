@@ -62,6 +62,7 @@ function_space_specifier void MetaData_Fill_FieldDef(tMD_TypeDef *pParentType, t
 	int alignment = pFieldDef->memSize;
 	int padding = (alignment - (int)(memOffset % alignment)) % alignment;
 	pFieldDef->memOffset = memOffset + padding;
+	pFieldDef->paddingSizeBeforeField = padding;
 	pFieldDef->pFieldDef = pFieldDef;
 
 	pMetaData = pFieldDef->pMetaData;
@@ -314,7 +315,7 @@ function_space_specifier void MetaData_Fill_TypeDef(tMD_TypeDef *pTypeDef, tMD_T
 					MetaData_Fill_FieldDef(pTypeDef, pFieldDef, 0, ppClassTypeArgs);
 				} else {
 					MetaData_Fill_FieldDef(pTypeDef, pFieldDef, instanceMemSize, ppClassTypeArgs);
-					instanceMemSize += pFieldDef->memSize;
+					instanceMemSize += pFieldDef->memSize + pFieldDef->paddingSizeBeforeField;
 				}
 				pTypeDef->ppFields[i] = pFieldDef;
 			}
