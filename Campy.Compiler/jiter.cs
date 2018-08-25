@@ -1314,14 +1314,12 @@ namespace Campy.Compiler
             // are added.
             foreach (var caller in INST.CallInstructions)
             {
+                MethodReference callee = caller.CallTarget();
+                if (callee == null)
+                    continue;
                 CFG.Vertex n = caller.Block;
                 var operand = caller.Operand;
-                var method = operand as MethodReference;
-                if (method as Mono.Cecil.MethodReference == null) throw new Exception();
-                Mono.Cecil.MethodReference orig_mr = method as Mono.Cecil.MethodReference;
-                var new_mr = orig_mr.SubstituteMethod(null, null);
-                if (new_mr == null) new_mr = orig_mr;
-                var mr = new_mr.FixGenericMethods(n._method_reference);
+                var mr = callee;
                 var md = mr.Resolve();
                 if (md == null) continue;
                 if (!md.IsVirtual)

@@ -33,10 +33,7 @@
         private static bool init = false;
         public BuilderRef Builder { get { return Block.LlvmInfo.Builder; } }
         public List<VALUE> LLVMInstructions { get; private set; }
-        public CFG.Vertex Block {
-            get;
-            set;
-        }
+        public CFG.Vertex Block { get; set; }
         public SequencePoint SeqPoint { get; set; }
         private static Dictionary<string, MetadataRef> debug_files = new Dictionary<string, MetadataRef>();
         private static Dictionary<string, MetadataRef> debug_compile_units = new Dictionary<string, MetadataRef>();
@@ -270,6 +267,8 @@
           };
 
         static wrap_func[] wrappers_array;
+
+        public virtual MethodReference CallTarget() { return null; }
 
         public virtual void DebuggerInfo()
         {
@@ -905,6 +904,7 @@
     public class ConvertCallInst : INST
     {
         MethodReference call_closure_method = null;
+        public override MethodReference CallTarget() { return call_closure_method; }
 
         public ConvertCallInst(CFG.Vertex b, Instruction i) : base(b, i)
         {
@@ -3496,15 +3496,17 @@
 
     public class i_calli : ConvertCallInst
     {
+        public override MethodReference CallTarget() { throw new Exception("Calli not handled."); }
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_calli(b, i); }
         private i_calli(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
     }
 
     public class i_callvirt : INST
     {
-        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_callvirt(b, i); }
-
         MethodReference call_closure_method = null;
+        public override MethodReference CallTarget() { return call_closure_method; }
+
+        public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_callvirt(b, i); }
 
         private i_callvirt(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
 
@@ -5761,10 +5763,11 @@
 
     public class i_newobj : INST
     {
+        MethodReference call_closure_method = null;
+        public override MethodReference CallTarget() { return call_closure_method; }
+
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_newobj(b, i); }
         private i_newobj(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
-
-        MethodReference call_closure_method = null;
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {

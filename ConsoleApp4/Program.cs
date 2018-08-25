@@ -56,7 +56,7 @@ namespace ConsoleApp4
     {
         static void StartDebugging()
         {
-            Campy.Utils.Options.Set("debug_info_off");
+            //Campy.Utils.Options.Set("debug_info_off");
             Campy.Utils.Options.Set("graph_trace");
             Campy.Utils.Options.Set("module_trace");
             Campy.Utils.Options.Set("name_trace");
