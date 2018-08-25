@@ -84,7 +84,9 @@ namespace ConsoleApp4
             //});
             Campy.Parallel.For(3, i =>
             {
-                System.Console.WriteLine(i.ToString());
+                //var j = i.ToString();
+                System.Console.WriteLine();
+                //System.Console.WriteLine(i.ToString());
             });
             //Campy.Parallel.For(3, i =>
             //{
@@ -96,6 +98,7 @@ namespace ConsoleApp4
             //    o4.c = 2;
             //    o4.e = 3;
             //});
+            //UnitTest1.TestMethod1();
         }
     }
 }
