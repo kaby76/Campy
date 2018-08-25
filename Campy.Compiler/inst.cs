@@ -276,9 +276,10 @@
                 return;
 
             JITER converter = JITER.Singleton;
+
+            // Skip if no sequence point debugging information.
+            //if (this.SeqPoint == null || this.SeqPoint.IsHidden)
             if (this.SeqPoint == null)
-                return;
-            if (this.SeqPoint.IsHidden)
                 return;
 
             if (!done_this)
@@ -1205,6 +1206,7 @@
                         args[1] = pp;
                         args[2] = pr;
 
+                        this.DebuggerInfo();
                         var call = LLVM.BuildCall(Builder, fv, args, "");
 
                         if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -1317,6 +1319,7 @@
 						
                         args[k] = value;
                     }
+                    this.DebuggerInfo();
                     var call = LLVM.BuildCall(Builder, fv, args, "");
                     if (Campy.Utils.Options.IsOn("jit_trace"))
                         System.Console.WriteLine(call.ToString());
@@ -1371,6 +1374,7 @@
 
                         args[k] = value;
                     }
+                    this.DebuggerInfo();
                     var call = LLVM.BuildCall(Builder, fv, args, "");
                     if (Campy.Utils.Options.IsOn("jit_trace"))
                         System.Console.WriteLine(call.ToString());
@@ -1411,6 +1415,7 @@
 
                         args[k] = value;
                     }
+                    this.DebuggerInfo();
                     ValueRef src = LLVM.BuildCall(Builder, fv, args, "");
                     VALUE dst = new VALUE(src);
                     var stype = LLVM.TypeOf(src);
@@ -3629,6 +3634,7 @@
                     var function_type = LLVM.FunctionType(return_type, lparams, false);
                     var ptr_function_type = LLVM.PointerType(function_type, 0);
                     var ptr_method = LLVM.BuildIntToPtr(Builder, addr_method, ptr_function_type, "i" + instruction_id++);
+                    this.DebuggerInfo();
                     var call = LLVM.BuildCall(Builder, ptr_method, args, "");
                     if (Campy.Utils.Options.IsOn("jit_trace"))
                         System.Console.WriteLine(call.ToString());
@@ -3669,6 +3675,7 @@
                     internal_args[0] = pt;
                     internal_args[1] = pp;
                     internal_args[2] = pr;
+                    this.DebuggerInfo();
                     var call = LLVM.BuildCall(Builder, ptr_method, internal_args, "");
                     if (has_return)
                     {
@@ -5898,6 +5905,7 @@
                 }
                 args[0] = new_obj;
 
+                this.DebuggerInfo();
                 var call = LLVM.BuildCall(Builder, fv, args, "");
                 if (Campy.Utils.Options.IsOn("jit_trace"))
                     System.Console.WriteLine(new VALUE(call));
@@ -6011,6 +6019,7 @@
                     args[1] = pp;
                     args[2] = pr;
 
+                    this.DebuggerInfo();
                     var call = LLVM.BuildCall(Builder, fv, args, name);
                     if (Campy.Utils.Options.IsOn("jit_trace"))
                         System.Console.WriteLine(new VALUE(call));
@@ -6050,6 +6059,7 @@
                     ValueRef[] args = new ValueRef[1];
 
                     args[0] = LLVM.ConstInt(LLVM.Int64Type(), (ulong) meta.ToInt64(), false);
+                    this.DebuggerInfo();
                     var call = LLVM.BuildCall(Builder, fv2, args, "i" + instruction_id++);
                     var cast = LLVM.BuildIntToPtr(Builder, call, llvm_type, "i" + instruction_id++);
                     new_obj = cast;

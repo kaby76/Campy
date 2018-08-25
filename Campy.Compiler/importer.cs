@@ -192,12 +192,15 @@ namespace Campy.Compiler
                 throw new Exception("Body has instructions collection.");
             if (body.Instructions.Count == 0)
                 throw new Exception("Body instruction count is zero.");
+            SequencePoint previous_sp = null;
             for (int j = 0; j < instruction_count; ++j)
             {
                 Mono.Cecil.Cil.Instruction instruction = body.Instructions[j];
-                INST wrapped_instruction = INST.Wrap(instruction,
-                    basic_block, sequence_points.Where(sp => { return sp.Offset == instruction.Offset; }).FirstOrDefault());
+                SequencePoint sp = sequence_points.Where(s => { return s.Offset == instruction.Offset; }).FirstOrDefault();
+                if (sp == null) sp = previous_sp;
+                INST wrapped_instruction = INST.Wrap(instruction, basic_block, sp);
                 basic_block.Instructions.Add(wrapped_instruction);
+                if (sp != null) previous_sp = sp;
             }
 
             var instructions_before_splits = basic_block.Instructions.ToList();

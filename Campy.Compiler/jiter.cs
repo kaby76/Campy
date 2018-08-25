@@ -751,11 +751,11 @@ namespace Campy.Compiler
                     var inst = bb.Instructions[i];
                     if (Campy.Utils.Options.IsOn("jit_trace"))
                         System.Console.WriteLine(inst);
-                    last_inst = inst;
                     inst.DebuggerInfo();
                     inst.Convert(state_out);
                     if (Campy.Utils.Options.IsOn("state_computation_trace"))
                         state_out.OutputTrace(new String(' ', 4));
+                    last_inst = inst;
                 }
 
                 if (last_inst != null
