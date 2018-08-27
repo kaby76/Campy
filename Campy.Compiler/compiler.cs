@@ -273,6 +273,40 @@ namespace Campy.Compiler
                 System.Console.WriteLine();
         }
 
+        public static void AddCctors(this List<CFG.Vertex> basic_blocks_to_compile)
+        {
+            if (basic_blocks_to_compile.Count == 0)
+                return;
+
+            var _mcfg = basic_blocks_to_compile.First()._graph;
+
+            // It is also important to go through all data types and gather
+            // cctor constructors for static fields. These have to be executed before
+            // execution of the main kernel program.
+            Stack<TypeReference> stack = new Stack<TypeReference>();
+            foreach (var bb in basic_blocks_to_compile)
+            {
+                var dt = bb._method_reference.DeclaringType;
+                stack.Push(dt);
+            }
+            do
+            {
+                var dt = stack.Pop();
+                var parent = dt.DeclaringType;
+                if (parent != null) stack.Push(parent);
+                var dtr = dt.Resolve();
+                var methods = dtr.Methods;
+                foreach (var method in methods)
+                {
+                    if (method.Name == ".cctor")
+                    {
+                        var method_fixed = method.Deresolve(dt, null);
+                        IMPORTER.Singleton().Add(method_fixed);
+                    }
+                }
+            } while (stack.Any());
+        }
+
         // Method to denormalize information about the method this block is associated with,
         // placing that information into the block for easier access.
         public static List<CFG.Vertex> ComputeBasicMethodProperties(this List<CFG.Vertex> basic_blocks_to_compile)
@@ -386,7 +420,7 @@ namespace Campy.Compiler
 
                 TypeRef ret_type = t_ret.StorageTypeLLVM;
                 TypeRef method_type = LLVM.FunctionType(ret_type, param_types, false);
-                string method_name = METAHELPER.RenameToLegalLLVMName(JITER.MethodName(method));
+                string method_name = METAHELPER.RenameToLegalLLVMName(COMPILER.MethodName(method));
                 ValueRef fun = LLVM.AddFunction(mod, method_name, method_type);
 
                 var glob = LLVM.AddGlobal(mod, LLVM.PointerType(method_type, 0), "p_" + method_name);
@@ -925,7 +959,7 @@ namespace Campy.Compiler
         }
     }
 
-    public class JITER
+    public class COMPILER
     {
         private IMPORTER _importer;
         private CFG _mcfg;
@@ -934,19 +968,19 @@ namespace Campy.Compiler
         public static bool using_cuda = true;
         private Dictionary<MethodDefinition, IntPtr> method_to_image;
         private bool done_major_init;
-        private static JITER _singleton;
+        private static COMPILER _singleton;
         private UInt64 _options;
 
-        public static JITER Singleton
+        public static COMPILER Singleton
         {
             get
             {
-                if (_singleton == null) _singleton = new JITER();
+                if (_singleton == null) _singleton = new COMPILER();
                 return _singleton;
             }
         }
 
-        private JITER()
+        private COMPILER()
         {
             InitCuda();
             RUNTIME.global_llvm_module = default(ModuleRef);
@@ -1300,12 +1334,12 @@ namespace Campy.Compiler
         {
             foreach (var v in _mcfg.Entries)
             {
-                var normalized_method_name = METAHELPER.RenameToLegalLLVMName(JITER.MethodName(v._method_reference));
+                var normalized_method_name = METAHELPER.RenameToLegalLLVMName(COMPILER.MethodName(v._method_reference));
                 var res = Cuda.cuModuleGetFunction(out CUfunction helloWorld, module, normalized_method_name);
                 // Not every entry is going to be in module, so this isn't a problem if not found.
                 if (res != CUresult.CUDA_SUCCESS) continue;
                 res = Cuda.cuModuleGetGlobal_v2(out IntPtr hw, out ulong z, module, "p_" + normalized_method_name);
-                var bcl_type = RUNTIME.GetBclType(v._method_reference.DeclaringType);
+                var bcl_type = RUNTIME.MonoBclMap_GetBcl(v._method_reference.DeclaringType);
                 RUNTIME.BclMetaDataSetMethodJit(hw,
                     bcl_type,
                     (int)v._method_reference.MetadataToken.RID | 0x06000000);
@@ -1333,7 +1367,7 @@ namespace Campy.Compiler
                         // Not every entry is going to be in module, so this isn't a problem if not found.
                         if (res != CUresult.CUDA_SUCCESS) continue;
                         res = Cuda.cuModuleGetGlobal_v2(out IntPtr hw, out ulong z, module, "p_" + ci._short_name);
-                        var bcl_type = RUNTIME.GetBclType(mr.DeclaringType);
+                        var bcl_type = RUNTIME.MonoBclMap_GetBcl(mr.DeclaringType);
                         RUNTIME.BclMetaDataSetMethodJit(hw,
                             bcl_type,
                             (int)mr.MetadataToken.RID | 0x06000000);
@@ -1347,7 +1381,7 @@ namespace Campy.Compiler
         {
             CFG.Vertex bb = _mcfg.Entries.Where(v =>
             v.IsEntry && v._method_reference.FullName == kernel_method.FullName).FirstOrDefault();
-            var normalized_method_name = METAHELPER.RenameToLegalLLVMName(JITER.MethodName(bb._method_reference));
+            var normalized_method_name = METAHELPER.RenameToLegalLLVMName(COMPILER.MethodName(bb._method_reference));
             var res = Cuda.cuModuleGetFunction(out CUfunction helloWorld, module, normalized_method_name);
             Utils.CudaHelpers.CheckCudaError(res);
             return helloWorld;

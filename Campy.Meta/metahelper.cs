@@ -897,7 +897,7 @@ namespace Campy.Meta
                     ContextRef c = LLVM.GetGlobalContext();
                     string llvm_name = RenameToLegalLLVMName(tr.ToString());
                     TypeRef s = LLVM.StructCreateNamed(c, llvm_name);
-                    var tr_bcltype = RUNTIME.GetBclType(tr);
+                    var tr_bcltype = RUNTIME.MonoBclMap_GetBcl(tr);
 
                     TypeRef p;
 		            if (td.IsValueType)

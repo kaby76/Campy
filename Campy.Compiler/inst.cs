@@ -275,7 +275,7 @@
             if (Campy.Utils.Options.IsOn("debug_info_off"))
                 return;
 
-            JITER converter = JITER.Singleton;
+            COMPILER converter = COMPILER.Singleton;
 
             // Skip if no sequence point debugging information.
             //if (this.SeqPoint == null || this.SeqPoint.IsHidden)
@@ -322,7 +322,7 @@
 
             ContextRef context_ref = LLVM.GetModuleContext(RUNTIME.global_llvm_module);
             var normalized_method_name = METAHELPER.RenameToLegalLLVMName(
-                JITER.MethodName(this.Block._method_reference));
+                COMPILER.MethodName(this.Block._method_reference));
             MetadataRef sub;
             if (!debug_methods.ContainsKey(normalized_method_name))
             {
@@ -957,8 +957,8 @@
             {
                 var g = this.Block._graph;
                 CFG.Vertex v = node;
-                JITER c = JITER.Singleton;
-                if (v.IsEntry && JITER.MethodName(v._method_reference) == mr.FullName)
+                COMPILER c = COMPILER.Singleton;
+                if (v.IsEntry && COMPILER.MethodName(v._method_reference) == mr.FullName)
                     return true;
                 else return false;
             }).ToList().FirstOrDefault();
@@ -1280,7 +1280,7 @@
                 // There is an entry block discovered for this call.
                 int xret = (entry_corresponding_to_method_called.HasScalarReturnValue || entry_corresponding_to_method_called.HasStructReturnValue) ? 1 : 0;
                 int xargs = entry_corresponding_to_method_called.StackNumberOfArguments;
-                var name = JITER.MethodName(mr);
+                var name = COMPILER.MethodName(mr);
                 BuilderRef bu = this.Builder;
                 ValueRef fv = entry_corresponding_to_method_called.LlvmInfo.MethodValueRef;
                 var t_fun = LLVM.TypeOf(fv);
@@ -2645,7 +2645,7 @@
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(o);
             TypeRef tr = LLVM.TypeOf(o.V);
-            var tr_bcltype = RUNTIME.GetBclType(call_closure_object);
+            var tr_bcltype = RUNTIME.MonoBclMap_GetBcl(call_closure_object);
             bool isPtr = o.T.isPointerTy();
             bool isArr = o.T.isArrayTy();
             bool isSt = o.T.isStructTy();
@@ -3117,7 +3117,7 @@
             var tr = operand as TypeReference;
             tr = tr.RewriteMonoTypeReference();
             tr = tr.Deresolve(this.Block._method_reference.DeclaringType, null);
-            var meta = RUNTIME.GetBclType(tr);
+            var meta = RUNTIME.MonoBclMap_GetBcl(tr);
 
             // Generate code to allocate object and stuff.
             // This boxes the value.
@@ -3627,7 +3627,7 @@
                 // functions.
 
                 CFG.Vertex the_entry = this.Block._graph.Vertices.Where(v =>
-                    (v.IsEntry && JITER.MethodName(v._method_reference) == mr.FullName)).ToList().FirstOrDefault();
+                    (v.IsEntry && COMPILER.MethodName(v._method_reference) == mr.FullName)).ToList().FirstOrDefault();
 
                 if (the_entry != null)
                 {
@@ -4652,7 +4652,7 @@
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(v);
             TypeRef tr = LLVM.TypeOf(v.V);
-            var tr_bcltype = RUNTIME.GetBclType(call_closure_object);
+            var tr_bcltype = RUNTIME.MonoBclMap_GetBcl(call_closure_object);
             bool isPtr = v.T.isPointerTy();
             bool is_ptr = false;
 
@@ -4901,7 +4901,7 @@
                     // This is a red flag. We need to come up with a generic instance for type.
                     declaring_type_tr = this.Block._method_reference.DeclaringType;
                 }
-                var tr_bcltype = RUNTIME.GetBclType(declaring_type_tr);
+                var tr_bcltype = RUNTIME.MonoBclMap_GetBcl(declaring_type_tr);
 
                 // need to take into account padding fields. Unfortunately,
                 // LLVM does not name elements in a struct/class. So, we must
@@ -4991,7 +4991,7 @@
                 if (yy == null) throw new Exception("Cannot convert.");
                 var declaring_type_tr = field_reference.DeclaringType;
                 var declaring_type = declaring_type_tr.Resolve();
-                var tr_bcltype = RUNTIME.GetBclType(declaring_type_tr);
+                var tr_bcltype = RUNTIME.MonoBclMap_GetBcl(declaring_type_tr);
 
                 // need to take into account padding fields. Unfortunately,
                 // LLVM does not name elements in a struct/class. So, we must
@@ -5393,7 +5393,7 @@
             var llvm_field_type = mono_field_type.ToTypeRef();
             // Call meta to get static field. This can be done now because
             // the address of the static field does not change.
-            var bcl_type = RUNTIME.GetBclType(type);
+            var bcl_type = RUNTIME.MonoBclMap_GetBcl(type);
             if (bcl_type == IntPtr.Zero) throw new Exception();
             IntPtr[] fields = null;
             IntPtr* buf;
@@ -5504,90 +5504,104 @@
         public override void Convert(STATE<VALUE, StackQueue<VALUE>> state)
         {   // ldtoken (load token handle), ecma 335 page 413
             // Load System.RuntimeTypeHandle for arg.
-            var arg = this.Operand as TypeReference;
-            if (arg == null) throw new Exception("Cannot parse ldtoken type for whatever reason.");
-            var arg2 = arg.RewriteMonoTypeReference();
-            var v = arg2.Deresolve(this.Block._method_reference.DeclaringType, null);
-            var meta = RUNTIME.GetBclType(v);
-            var rth = typeof(System.RuntimeTypeHandle).ToMonoTypeReference().RewriteMonoTypeReference();
-            var type = rth.Deresolve(this.Block._method_reference.DeclaringType, null);
-            var llvm_type = type.ToTypeRef();
-            llvm_type = LLVM.PointerType(llvm_type, 0);
-            ValueRef new_obj;
+            var tr = this.Operand as TypeReference;
+            var fd = this.Operand as FieldDefinition;
+            if (fd != null)
             {
-                // Generate code to allocate object and stuff.
-                var xx1 = RUNTIME.BclNativeMethods.ToList();
-                var xx2 = RUNTIME.PtxFunctions.ToList();
-                var xx = xx2
-                    .Where(t => { return t._mangled_name == "_Z23Heap_AllocTypeVoidStarsPv"; });
-                var xxx = xx.ToList();
-                RUNTIME.PtxFunction first_kv_pair = xx.FirstOrDefault();
-                if (first_kv_pair == null)
-                    throw new Exception("Yikes.");
-                ValueRef fv2 = first_kv_pair._valueref;
-                ValueRef[] args = new ValueRef[1];
-                args[0] = LLVM.ConstInt(LLVM.Int64Type(), (ulong)meta.ToInt64(), false);
-                var call = LLVM.BuildCall(Builder, fv2, args, "i" + instruction_id++);
-                var cast = LLVM.BuildIntToPtr(Builder, call, llvm_type, "i" + instruction_id++);
-                new_obj = cast;
-                if (Campy.Utils.Options.IsOn("jit_trace"))
-                    System.Console.WriteLine(new VALUE(new_obj));
-                state._stack.Push(new VALUE(new_obj));
+                tr = fd.FieldType;
             }
-            state._stack.Push(new VALUE(LLVM.ConstInt(LLVM.Int64Type(), (ulong)meta.ToInt64(), false)));
+            if (tr != null)
             {
-                var t = typeof(System.RuntimeTypeHandle).ToMonoTypeReference().RewriteMonoTypeReference();
-                var list = rth.Resolve().Methods.Where(m => m.FullName.Contains("ctor")).ToList();
-                if (list.Count() != 1) throw new Exception("There should be only one constructor for System.RuntimeTypeHandle.");
-                var mr = list.First();
-                // Find bb entry.
-                CFG.Vertex entry_corresponding_to_method_called = this.Block._graph.Vertices.Where(node
-                    =>
+                var arg2 = tr.RewriteMonoTypeReference();
+                var v = arg2.Deresolve(this.Block._method_reference.DeclaringType, null);
+                var meta = RUNTIME.MonoBclMap_GetBcl(v);
+                var rth = typeof(System.RuntimeTypeHandle).ToMonoTypeReference().RewriteMonoTypeReference();
+                var type = rth.Deresolve(this.Block._method_reference.DeclaringType, null);
+                var llvm_type = type.ToTypeRef();
+                llvm_type = LLVM.PointerType(llvm_type, 0);
+                ValueRef new_obj;
                 {
-                    if (node.IsEntry && JITER.MethodName(node._method_reference) == mr.FullName)
-                        return true;
-                    return false;
-                }).ToList().FirstOrDefault();
-                if (entry_corresponding_to_method_called == null) throw new Exception("Cannot find constructor for System.RuntimeTypeHandle.");
-
-                int xret = (entry_corresponding_to_method_called.HasScalarReturnValue || entry_corresponding_to_method_called.HasStructReturnValue) ? 1 : 0;
-                int xargs = entry_corresponding_to_method_called.StackNumberOfArguments;
-                var name = JITER.MethodName(mr);
-                BuilderRef bu = this.Builder;
-                ValueRef fv = entry_corresponding_to_method_called.LlvmInfo.MethodValueRef;
-                var t_fun = LLVM.TypeOf(fv);
-                var t_fun_con = LLVM.GetTypeContext(t_fun);
-                var context = LLVM.GetModuleContext(RUNTIME.global_llvm_module);
-                if (t_fun_con != context) throw new Exception("not equal");
-                ValueRef[] args = new ValueRef[xargs];
-                // No return.
-                for (int k = xargs - 1; k >= 0; --k)
-                {
-                    VALUE a = state._stack.Pop();
-                    ValueRef par = LLVM.GetParam(fv, (uint)k);
-                    ValueRef value = a.V;
-                    if (LLVM.TypeOf(value) != LLVM.TypeOf(par))
-                    {
-                        if (LLVM.GetTypeKind(LLVM.TypeOf(par)) == TypeKind.StructTypeKind
-                            && LLVM.GetTypeKind(LLVM.TypeOf(value)) == TypeKind.PointerTypeKind)
-                        {
-                            value = LLVM.BuildLoad(Builder, value, "i" + instruction_id++);
-                        }
-                        else if (LLVM.GetTypeKind(LLVM.TypeOf(par)) == TypeKind.PointerTypeKind)
-                        {
-                            value = LLVM.BuildPointerCast(Builder, value, LLVM.TypeOf(par), "i" + instruction_id++);
-                        }
-                        else
-                        {
-                            value = LLVM.BuildBitCast(Builder, value, LLVM.TypeOf(par), "i" + instruction_id++);
-                        }
-                    }
-                    args[k] = value;
+                    // Generate code to allocate object and stuff.
+                    var xx1 = RUNTIME.BclNativeMethods.ToList();
+                    var xx2 = RUNTIME.PtxFunctions.ToList();
+                    var xx = xx2
+                        .Where(t => { return t._mangled_name == "_Z23Heap_AllocTypeVoidStarsPv"; });
+                    var xxx = xx.ToList();
+                    RUNTIME.PtxFunction first_kv_pair = xx.FirstOrDefault();
+                    if (first_kv_pair == null)
+                        throw new Exception("Yikes.");
+                    ValueRef fv2 = first_kv_pair._valueref;
+                    ValueRef[] args = new ValueRef[1];
+                    args[0] = LLVM.ConstInt(LLVM.Int64Type(), (ulong) meta.ToInt64(), false);
+                    var call = LLVM.BuildCall(Builder, fv2, args, "i" + instruction_id++);
+                    var cast = LLVM.BuildIntToPtr(Builder, call, llvm_type, "i" + instruction_id++);
+                    new_obj = cast;
+                    if (Campy.Utils.Options.IsOn("jit_trace"))
+                        System.Console.WriteLine(new VALUE(new_obj));
+                    state._stack.Push(new VALUE(new_obj));
                 }
-                var call = LLVM.BuildCall(Builder, fv, args, "");
-                if (Campy.Utils.Options.IsOn("jit_trace"))
-                    System.Console.WriteLine(call.ToString());
-                state._stack.Push(new VALUE(new_obj));
+                state._stack.Push(new VALUE(LLVM.ConstInt(LLVM.Int64Type(), (ulong) meta.ToInt64(), false)));
+                {
+                    var t = typeof(System.RuntimeTypeHandle).ToMonoTypeReference().RewriteMonoTypeReference();
+                    var list = rth.Resolve().Methods.Where(m => m.FullName.Contains("ctor")).ToList();
+                    if (list.Count() != 1)
+                        throw new Exception("There should be only one constructor for System.RuntimeTypeHandle.");
+                    var mr = list.First();
+                    // Find bb entry.
+                    CFG.Vertex entry_corresponding_to_method_called = this.Block._graph.Vertices.Where(node
+                        =>
+                    {
+                        if (node.IsEntry && COMPILER.MethodName(node._method_reference) == mr.FullName)
+                            return true;
+                        return false;
+                    }).ToList().FirstOrDefault();
+                    if (entry_corresponding_to_method_called == null)
+                        throw new Exception("Cannot find constructor for System.RuntimeTypeHandle.");
+
+                    int xret = (entry_corresponding_to_method_called.HasScalarReturnValue ||
+                                entry_corresponding_to_method_called.HasStructReturnValue)
+                        ? 1
+                        : 0;
+                    int xargs = entry_corresponding_to_method_called.StackNumberOfArguments;
+                    var name = COMPILER.MethodName(mr);
+                    BuilderRef bu = this.Builder;
+                    ValueRef fv = entry_corresponding_to_method_called.LlvmInfo.MethodValueRef;
+                    var t_fun = LLVM.TypeOf(fv);
+                    var t_fun_con = LLVM.GetTypeContext(t_fun);
+                    var context = LLVM.GetModuleContext(RUNTIME.global_llvm_module);
+                    if (t_fun_con != context) throw new Exception("not equal");
+                    ValueRef[] args = new ValueRef[xargs];
+                    // No return.
+                    for (int k = xargs - 1; k >= 0; --k)
+                    {
+                        VALUE a = state._stack.Pop();
+                        ValueRef par = LLVM.GetParam(fv, (uint) k);
+                        ValueRef value = a.V;
+                        if (LLVM.TypeOf(value) != LLVM.TypeOf(par))
+                        {
+                            if (LLVM.GetTypeKind(LLVM.TypeOf(par)) == TypeKind.StructTypeKind
+                                && LLVM.GetTypeKind(LLVM.TypeOf(value)) == TypeKind.PointerTypeKind)
+                            {
+                                value = LLVM.BuildLoad(Builder, value, "i" + instruction_id++);
+                            }
+                            else if (LLVM.GetTypeKind(LLVM.TypeOf(par)) == TypeKind.PointerTypeKind)
+                            {
+                                value = LLVM.BuildPointerCast(Builder, value, LLVM.TypeOf(par), "i" + instruction_id++);
+                            }
+                            else
+                            {
+                                value = LLVM.BuildBitCast(Builder, value, LLVM.TypeOf(par), "i" + instruction_id++);
+                            }
+                        }
+
+                        args[k] = value;
+                    }
+
+                    var call = LLVM.BuildCall(Builder, fv, args, "");
+                    if (Campy.Utils.Options.IsOn("jit_trace"))
+                        System.Console.WriteLine(call.ToString());
+                    state._stack.Push(new VALUE(new_obj));
+                }
             }
         }
     }
@@ -5730,7 +5744,7 @@
             element_type = element_type.Deresolve(this.Block._method_reference.DeclaringType, null);
 
             TypeReference new_array_type = new ArrayType(element_type, 1 /* 1D array */);
-            var meta = RUNTIME.GetBclType(new_array_type);
+            var meta = RUNTIME.MonoBclMap_GetBcl(new_array_type);
             var array_type_to_create = new_array_type.ToTypeRef();
             var xx2 = RUNTIME.PtxFunctions.ToList();
             var xx = xx2.Where(t => { return t._mangled_name == "_Z21SystemArray_NewVectorP12tMD_TypeDef_jPj"; });
@@ -5835,14 +5849,14 @@
             if (type == null)
                 throw new Exception("Cannot get type of object/value for newobj instruction.");
             bool is_type_value_type = type.IsValueType;
-            var name = JITER.MethodName(method);
+            var name = COMPILER.MethodName(method);
             CFG.Vertex the_entry = this.Block._graph.Vertices.Where(node
                 =>
             {
                 var g = inst.Block._graph;
                 CFG.Vertex v = node;
-                JITER c = JITER.Singleton;
-                if (v.IsEntry && JITER.MethodName(v._method_reference) == name)
+                COMPILER c = COMPILER.Singleton;
+                if (v.IsEntry && COMPILER.MethodName(v._method_reference) == name)
                     return true;
                 else return false;
             }).ToList().FirstOrDefault();
@@ -6042,7 +6056,7 @@
             {
                 ValueRef new_obj;
                 {
-                    var meta = RUNTIME.GetBclType(type);
+                    var meta = RUNTIME.MonoBclMap_GetBcl(type);
 
                     // Generate code to allocate object and stuff.
                     // This boxes the value.
@@ -6617,7 +6631,7 @@
             var type_f1 = call_closure_field_type.ToTypeRef();
             // Call meta to get static field. This can be done now because
             // the address of the static field does not change.
-            var bcl_type = RUNTIME.GetBclType(call_closure_type);
+            var bcl_type = RUNTIME.MonoBclMap_GetBcl(call_closure_type);
             if (bcl_type == IntPtr.Zero) throw new Exception();
             IntPtr[] fields = null;
             IntPtr* buf;

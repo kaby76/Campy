@@ -139,6 +139,7 @@ namespace Campy.Compiler
                 var blocks = this.Cfg.PopChangeSet(change_set_id);
                 blocks.ComputeBasicMethodProperties();
                 blocks.PropagateTypesAndPerformCallClosure();
+                blocks.AddCctors();
             }
         }
 

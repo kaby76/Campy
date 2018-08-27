@@ -15,12 +15,12 @@ namespace Campy
     public class Parallel
     {
         private static Parallel _singleton;
-        private JITER _converter;
+        private COMPILER _compiler;
         private BUFFERS Buffer { get; }
 
         private Parallel()
         {
-            _converter = JITER.Singleton;
+            _compiler = COMPILER.Singleton;
             Buffer = new BUFFERS();
         }
 
@@ -87,58 +87,43 @@ namespace Campy
 
                     CUfunction ptr_to_kernel = default(CUfunction);
 
-                    //////// COMPILE KERNEL INTO GPU CODE ///////
-                    /////////////////////////////////////////////
                     Campy.Utils.TimePhase.Time("compile     ", () =>
                     {
-                        IntPtr image = Singleton._converter.Compile(method_reference, simpleKernel.Target);
-                        CUmodule module = Singleton._converter.SetModule(method_reference, image);
-                        Singleton._converter.StoreJits(module);
-                        ptr_to_kernel = Singleton._converter.GetCudaFunction(method_reference, module);
+                        IntPtr image = Singleton._compiler.Compile(method_reference, simpleKernel.Target);
+                        CUmodule module = Singleton._compiler.SetModule(method_reference, image);
+                        Singleton._compiler.StoreJits(module);
+                        ptr_to_kernel = Singleton._compiler.GetCudaFunction(method_reference, module);
                     });
 
                     RUNTIME.BclCheckHeap();
 
-                    IntPtr[] parm1 = new IntPtr[1];
-                    IntPtr[] parm2 = new IntPtr[1];
-                    BUFFERS buffer = Singleton.Buffer;
+            //        Campy.Utils.TimePhase.Time("kernel cctor set up", () => { RUNTIME.RunCCTORs(); });
 
-                    //////// COPY DATA INTO GPU /////////////////
-                    /////////////////////////////////////////////
-                    Campy.Utils.TimePhase.Time("deep copy     ", () =>
+                    BUFFERS buffer = Singleton.Buffer;
+                    IntPtr kernel_target_object = IntPtr.Zero;
+
+                    Campy.Utils.TimePhase.Time("deep copy ", () =>
                     {
-                        // Set up parameters.
                         int count = simpleKernel.Method.GetParameters().Length;
-                        var bb = Singleton._converter.GetBasicBlock(method_reference);
+                        var bb = Singleton._compiler.GetBasicBlock(method_reference);
                         if (bb.HasThis) count++;
                         if (!(count == 1 || count == 2))
                             throw new Exception("Expecting at least one parameter for kernel.");
 
-                        IntPtr ptr = IntPtr.Zero;
-
-                        // The method really should have a "this" because it's a closure
-                        // object.
                         if (bb.HasThis)
                         {
-                            RUNTIME.BclCheckHeap();
-                            ptr = buffer.AddDataStructure(simpleKernel.Target);
-                            parm1[0] = ptr;
-                            RUNTIME.BclCheckHeap();
-                        }
-
-                        {
-                            RUNTIME.BclCheckHeap();
-                            Type btype = typeof(int);
-                            var s = BUFFERS.SizeOf(btype);
-                            var ptr2 = buffer.New(s);
-                            // buffer.DeepCopyToImplementation(index, ptr2);
-                            parm2[0] = ptr2;
-                            RUNTIME.BclCheckHeap();
+                            kernel_target_object = buffer.AddDataStructure(simpleKernel.Target);
                         }
                     });
 
-                    Campy.Utils.TimePhase.Time("kernel call", () =>
+                    Campy.Utils.TimePhase.Time("kernel call ", () =>
                     {
+                        IntPtr[] parm1 = new IntPtr[1];
+                        IntPtr[] parm2 = new IntPtr[1];
+
+                        parm1[0] = kernel_target_object;
+                        parm2[0] = buffer.New(BUFFERS.SizeOf(typeof(int)));
+
                         IntPtr[] x1 = parm1;
                         handle1 = GCHandle.Alloc(x1, GCHandleType.Pinned);
                         IntPtr pointer1 = handle1.AddrOfPinnedObject();
@@ -146,8 +131,6 @@ namespace Campy
                         IntPtr[] x2 = parm2;
                         handle2 = GCHandle.Alloc(x2, GCHandleType.Pinned);
                         IntPtr pointer2 = handle2.AddrOfPinnedObject();
-
-                        RUNTIME.BclCheckHeap();
 
                         IntPtr[] kp = new IntPtr[] {pointer1, pointer2};
                         var res = CUresult.CUDA_SUCCESS;
@@ -174,19 +157,9 @@ namespace Campy
                         CudaHelpers.CheckCudaError(res);
                     });
 
-                    //if (Campy.Utils.Options.IsOn("jit_trace"))
-                    //{
-                    //    System.Console.WriteLine("cuda compile  " + elapse_cuda_compile);
-                    //    System.Console.WriteLine("deep copy in  " + elapse_deep_copy_to);
-                    //    System.Console.WriteLine("cuda kernel   " + elapse_call_kernel);
-                    //    System.Console.WriteLine("deep copy out " + elapse_deep_copy_back);
-                    //}
-
-                    Campy.Utils.TimePhase.Time("kernel call", () =>
+                    Campy.Utils.TimePhase.Time("deep copy return ", () =>
                     {
-                        RUNTIME.BclCheckHeap();
                         buffer.SynchDataStructures();
-                        RUNTIME.BclCheckHeap();
                     });
                 }
             }
@@ -204,12 +177,12 @@ namespace Campy
 
         public static void Options(UInt64 options)
         {
-            JITER.Options(options);
+            COMPILER.Options(options);
         }
 
         public static void Compile(Type type)
         {
-            Singleton._converter.Add(type);
+            Singleton._compiler.Add(type);
         }
     }
 }

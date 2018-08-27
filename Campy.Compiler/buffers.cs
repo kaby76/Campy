@@ -579,7 +579,7 @@
             {
                 var array = from_cpu as Array;
                 var etype = array.GetType().GetElementType().ToMonoTypeReference().RewriteMonoTypeReference();
-                var bcl_etype = RUNTIME.GetBclType(etype);
+                var bcl_etype = RUNTIME.MonoBclMap_GetBcl(etype);
                 uint[] lengths = new uint[array.Rank];
                 for (int i = 0; i < array.Rank; ++i) lengths[i] = (uint)array.GetLength(i);
                 // An array is represented as a struct, Runtime::A.
@@ -724,7 +724,7 @@
             if (address == (void*)0) return null;
             var bcl_type_of_object = RUNTIME.BclHeapGetType((IntPtr)address);
             if (bcl_type_of_object == IntPtr.Zero) return null;
-            var mono_type_of_bcl_type = RUNTIME.GetMonoTypeFromBclType(bcl_type_of_object);
+            var mono_type_of_bcl_type = RUNTIME.MonoBclMap_GetMono(bcl_type_of_object);
             var list = _allocated_objects.Where(t =>
             {
                 if (t.Value == (IntPtr) address) return true;
@@ -733,7 +733,7 @@
             object cpu = null;
             if (!list.Any())
             {
-                var from_type = RUNTIME.GetMonoTypeFromBclType(bcl_type_of_object);
+                var from_type = RUNTIME.MonoBclMap_GetMono(bcl_type_of_object);
                 var type = from_type.ToSystemType();
                 cpu = Activator.CreateInstance(type);
                 _allocated_objects[cpu] = (IntPtr)address;
@@ -1272,7 +1272,7 @@
         /// </summary>
         public IntPtr New(int bytes)
         {
-            if (JITER.using_cuda)
+            if (COMPILER.using_cuda)
             {
                 // Let's try allocating a block of memory on the host. cuMemHostAlloc allocates bytesize
                 // bytes of host memory that is page-locked and accessible to the device.
@@ -1308,7 +1308,7 @@
             //                return pointer;
             //            }
 
-            if (!JITER.using_cuda)
+            if (!COMPILER.using_cuda)
             {
                 return Marshal.AllocHGlobal(bytes);
             }
@@ -1345,7 +1345,7 @@
                 var array = obj as Array;
                 Type etype = array.GetType().GetElementType();
                 RUNTIME.BclCheckHeap();
-                var bcl_type = RUNTIME.GetBclType(etype.ToMonoTypeReference());
+                var bcl_type = RUNTIME.MonoBclMap_GetBcl(etype.ToMonoTypeReference());
                 RUNTIME.BclCheckHeap();
 
                 uint[] lengths = new uint[array.Rank];
@@ -1358,7 +1358,7 @@
             }
 
             {
-                var bcl_type = RUNTIME.GetBclType(type.ToMonoTypeReference());
+                var bcl_type = RUNTIME.MonoBclMap_GetBcl(type.ToMonoTypeReference());
                 RUNTIME.BclCheckHeap();
                 IntPtr result = RUNTIME.BclHeapAlloc(bcl_type);
                 RUNTIME.BclCheckHeap();

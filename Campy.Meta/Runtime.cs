@@ -1,7 +1,6 @@
 ﻿namespace Campy.Meta
 {
     using MethodImplAttributes = Mono.Cecil.MethodImplAttributes;
-    using Mono.Cecil.Cil;
     using Mono.Cecil;
     using Swigged.Cuda;
     using Swigged.LLVM;
@@ -13,7 +12,6 @@
     using System.Text.RegularExpressions;
     using System;
     using Utils;
-    using Campy.Compiler.Graph;
 
     public class RUNTIME
     {
@@ -657,9 +655,11 @@
         public static ulong BclPtrSize { get; set; }
 
         private static Dictionary<TypeReference, IntPtr> _type_to_bcltype = new Dictionary<TypeReference, IntPtr>();
-
-        public static IntPtr GetBclType(TypeReference type)
+        public static IntPtr MonoBclMap_GetBcl(TypeReference type)
         {
+            if (_type_to_bcltype.ContainsKey(type))
+                return _type_to_bcltype[type];
+
             // Using the BCL, find the type. Note, Mono has a tendency to list something
             // in a namespace in which the type's metadata says it has no namespace.
             // As far as I can tell, this is for generated methods corresponding to the kernels.
@@ -689,7 +689,7 @@
                     var count = generic_arguments.Count;
                     System.IntPtr[] args = new System.IntPtr[count];
                     for (int i = 0; i < count; ++i)
-                        args[i] = (System.IntPtr)GetBclType(generic_arguments[i]);
+                        args[i] = (System.IntPtr)MonoBclMap_GetBcl(generic_arguments[i]);
                     RUNTIME.BclCheckHeap();
                     result = BclGenericsGetGenericTypeFromCoreType(result, count, args);
                 }
@@ -697,7 +697,7 @@
                 {
                     var et = mt.GetElementType();
                     var mta = mt as Mono.Cecil.ArrayType;
-                    var bcl_et = GetBclType(et);
+                    var bcl_et = MonoBclMap_GetBcl(et);
                     result = BclGetArrayTypeDef(bcl_et, mta.Rank);
                 }
                 else
@@ -711,12 +711,10 @@
             }
             return result;
         }
-
-        public static TypeReference GetMonoTypeFromBclType(IntPtr bcl_type)
+        public static TypeReference MonoBclMap_GetMono(IntPtr bcl_type)
         {
             var possible = _type_to_bcltype.Where(t => t.Value == bcl_type);
             if (!possible.Any()) return null;
-            if (possible.Count() > 1) return null;
             return possible.First().Key;
         }
     }
