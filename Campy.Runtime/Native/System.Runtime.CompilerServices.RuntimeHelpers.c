@@ -29,7 +29,7 @@
 #include "Type.h"
 #include "System.Array.h"
 
-function_space_specifier tAsyncCall* System_Runtime_CompilerServices_InitializeArray(PTR pThis_, PTR pParams, PTR pReturnValue) {
+function_space_specifier tAsyncCall* System_Runtime_CompilerServices_RuntimeHelpers_InitializeArray(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	HEAP_PTR pArray;
 	PTR pRawData;
 	tMD_TypeDef *pArrayTypeDef;

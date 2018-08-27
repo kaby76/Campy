@@ -168,7 +168,7 @@ function_space_specifier fnInternalCall InternalCall_Map(tMD_MethodDef *pMethod)
 			{ NULL,        NULL,           "GetFileAttributes", System_IO_FileInternal_GetFileAttributes, TYPE_SYSTEM_IO_FILESYSTEMATTRIBUTES, 2,{ TYPE_SYSTEM_STRING, TYPE_SYSTEM_INTPTR } },
 			{ NULL,        NULL,           "GetFileSystemEntries", System_IO_FileInternal_GetFileSystemEntries, TYPE_SYSTEM_ARRAY_STRING, 5,{ TYPE_SYSTEM_STRING, TYPE_SYSTEM_STRING, TYPE_SYSTEM_IO_FILESYSTEMATTRIBUTES, TYPE_SYSTEM_IO_FILESYSTEMATTRIBUTES, TYPE_SYSTEM_INTPTR } },
 
-			{ "System.Runtime.CompilerServices", "RuntimeHelpers", "InitializeArray", System_Runtime_CompilerServices_InitializeArray, TYPE_SYSTEM_VOID, 2,{ TYPE_SYSTEM_ARRAY_NO_TYPE, TYPE_SYSTEM_RUNTIMEFIELDHANDLE } },
+			{ "System.Runtime.CompilerServices", "RuntimeHelpers", "InitializeArray", System_Runtime_CompilerServices_RuntimeHelpers_InitializeArray, TYPE_SYSTEM_VOID, 2,{ TYPE_SYSTEM_ARRAY_NO_TYPE, TYPE_SYSTEM_RUNTIMEFIELDHANDLE } },
 
 			{ "System.Diagnostics", "Debugger", "Break", System_Diagnostics_Debugger_Break, TYPE_SYSTEM_VOID, 0 },
 

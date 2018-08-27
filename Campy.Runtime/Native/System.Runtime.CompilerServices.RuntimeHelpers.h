@@ -23,4 +23,4 @@
 #include "MetaData.h"
 #include "Types.h"
 
-function_space_specifier tAsyncCall* System_Runtime_CompilerServices_InitializeArray(PTR pThis_, PTR pParams, PTR pReturnValue);
+function_space_specifier tAsyncCall* System_Runtime_CompilerServices_RuntimeHelpers_InitializeArray(PTR pThis_, PTR pParams, PTR pReturnValue);
