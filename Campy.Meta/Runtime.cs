@@ -780,7 +780,7 @@ declare i32 @_Z24Type_IsDerivedFromOrSameP12tMD_TypeDef_S0_(i64, i64)
 declare i32 @_Z18Type_IsImplementedP12tMD_TypeDef_S0_(i64, i64)
 declare i32 @_Z21Type_IsAssignableFromP12tMD_TypeDef_S0_(i64, i64)
 declare i64 @_Z18Type_GetTypeObjectP12tMD_TypeDef_(i64)
-declare i64 @_Z47System_Runtime_CompilerServices_RuntimeHelpers_InitializeArrayPhS_S_(i64, i64, i64)
+declare i64 @_Z62System_Runtime_CompilerServices_RuntimeHelpers_InitializeArrayPhS_S_(i64, i64, i64)
 ";
         public static void Initialize()
         {

@@ -879,9 +879,11 @@ namespace Campy.Compiler
             if (!basic_blocks_to_compile.Any())
                 return "";
 
+            // The first block on the list is assumed to be the entry for the kernel.
+            // Probably should pass that into this method. Oh well.
             CFG.Vertex basic_block = basic_blocks_to_compile.First();
 
-            if (Campy.Utils.Options.IsOn("module_trace"))
+            if (Campy.Utils.Options.IsOn("llvm-output"))
                 LLVM.DumpModule(module);
 
             if (!Campy.Utils.Options.IsOn("debug_info_off"))
@@ -907,6 +909,8 @@ namespace Campy.Compiler
                 RelocMode.RelocDefault, CodeModel.CodeModelKernel);
 //ContextRef context_ref = LLVM.ContextCreate();
             ContextRef context_ref = LLVM.GetModuleContext(RUNTIME.global_llvm_module);
+
+            // Add kernel to "global" space so it can be called by CUDA Driver API.
             ValueRef kernelMd = LLVM.MDNodeInContext(
                 context_ref, new ValueRef[3]
                 {
@@ -915,47 +919,63 @@ namespace Campy.Compiler
                     LLVM.ConstInt(LLVM.Int32TypeInContext(context_ref), 1, false)
                 });
             LLVM.AddNamedMetadataOperand(module, "nvvm.annotations", kernelMd);
+
+            // In addition, go through all cctors here and make sure to tag them
+            // as well. Otherwise, they're device only. If you try to call,
+            // you get a "CUDA_ERROR_LAUNCH_OUT_OF_RESOURCES" error. Not very informative!
+            foreach (var cctor in COMPILER.Singleton.AllCctorBasicBlocks())
+            {
+                ValueRef mark = LLVM.MDNodeInContext(
+                    context_ref, new ValueRef[3]
+                    {
+                        cctor.LlvmInfo.MethodValueRef,
+                        LLVM.MDStringInContext(context_ref, "kernel", 6),
+                        LLVM.ConstInt(LLVM.Int32TypeInContext(context_ref), 1, false)
+                    });
+                LLVM.AddNamedMetadataOperand(module, "nvvm.annotations", mark);
+            }
+
             try
             {
-                LLVM.TargetMachineEmitToMemoryBuffer(tmr, module, Swigged.LLVM.CodeGenFileType.AssemblyFile,
-                    error, out MemoryBufferRef buffer);
-                string ptx = null;
-                try
-                {
-                    ptx = LLVM.GetBufferStart(buffer);
-                    uint length = LLVM.GetBufferSize(buffer);
+            LLVM.TargetMachineEmitToMemoryBuffer(tmr, module, Swigged.LLVM.CodeGenFileType.AssemblyFile,
+                error, out MemoryBufferRef buffer);
+            string ptx = null;
+            try
+            {
+                ptx = LLVM.GetBufferStart(buffer);
+                uint length = LLVM.GetBufferSize(buffer);
 
 // Modify the version number of the ISA PTX source generated to be the
 // most up to date.
-                    ptx = ptx.Replace(".version 3.2", ".version 6.0");
+                ptx = ptx.Replace(".version 3.2", ".version 6.0");
 
-                    // Make sure the target machine is set to sm_30 because we assume that as
-                    // a minimum, and it's compatible with GPU BCL runtime. Besides, older versions
-                    // are deprecated.
-                    // sm_35 needed for declaring pointer to function, e.g.,
-                    // .visible .global .align 8 .u64 p_nn_3 = nn_3;
-                    ptx = ptx.Replace(".target sm_20", ".target sm_35");
+                // Make sure the target machine is set to sm_30 because we assume that as
+                // a minimum, and it's compatible with GPU BCL runtime. Besides, older versions
+                // are deprecated.
+                // sm_35 needed for declaring pointer to function, e.g.,
+                // .visible .global .align 8 .u64 p_nn_3 = nn_3;
+                ptx = ptx.Replace(".target sm_20", ".target sm_35");
 
-                    // Make sure to fix the stupid end-of-line delimiters to be for Windows.
-                    ptx = ptx.Replace("\n", "\r\n");
+                // Make sure to fix the stupid end-of-line delimiters to be for Windows.
+                ptx = ptx.Replace("\n", "\r\n");
 
-                    //ptx = ptx + System_String_get_Chars;
+                //ptx = ptx + System_String_get_Chars;
 
-                    if (Campy.Utils.Options.IsOn("ptx_trace"))
-                        System.Console.WriteLine(ptx);
-                }
-                finally
-                {
-                    LLVM.DisposeMemoryBuffer(buffer);
-                }
-
-                return ptx;
+                if (Campy.Utils.Options.IsOn("ptx_trace"))
+                    System.Console.WriteLine(ptx);
             }
-            catch (Exception)
+            finally
             {
-                Console.WriteLine();
-                throw;
+                LLVM.DisposeMemoryBuffer(buffer);
             }
+
+            return ptx;
+        }
+        catch (Exception)
+        {
+            Console.WriteLine();
+            throw;
+        }
         }
     }
 
@@ -1148,6 +1168,20 @@ namespace Campy.Compiler
 
         static bool done_stack = false;
 
+        public List<MethodReference> AllCctors()
+        {
+            var bb_list = _mcfg.Entries.Where(v =>
+                v.IsEntry && v._method_reference.Name == ".cctor").Select(bb => bb._method_reference);
+            return bb_list.ToList();
+        }
+
+        public List<CFG.Vertex> AllCctorBasicBlocks()
+        {
+            var bb_list = _mcfg.Entries.Where(v =>
+                v.IsEntry && v._method_reference.Name == ".cctor");
+            return bb_list.ToList();
+        }
+
         public IntPtr Compile(MethodReference kernel_method, object kernel_target)
         {
             if (method_to_image.TryGetValue(kernel_method.Resolve(), out IntPtr value))
@@ -1201,6 +1235,9 @@ namespace Campy.Compiler
 
             if (ptx == "") throw new Exception(
                     "Change set for compilation empty, which means we compiled this before. But, it wasn't recorded.");
+
+            if (Campy.Utils.Options.IsOn("ptx-output"))
+                System.Console.WriteLine(ptx);
 
             IntPtr image = IntPtr.Zero;
             

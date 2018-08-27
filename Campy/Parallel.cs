@@ -86,18 +86,17 @@ namespace Campy
                     MethodReference method_reference = md.ImportReference(method_info);
 
                     CUfunction ptr_to_kernel = default(CUfunction);
+                    CUmodule module = default(CUmodule);
 
                     Campy.Utils.TimePhase.Time("compile     ", () =>
                     {
                         IntPtr image = Singleton._compiler.Compile(method_reference, simpleKernel.Target);
-                        CUmodule module = Singleton._compiler.SetModule(method_reference, image);
+                        module = Singleton._compiler.SetModule(method_reference, image);
                         Singleton._compiler.StoreJits(module);
                         ptr_to_kernel = Singleton._compiler.GetCudaFunction(method_reference, module);
                     });
 
                     RUNTIME.BclCheckHeap();
-
-            //        Campy.Utils.TimePhase.Time("kernel cctor set up", () => { RUNTIME.RunCCTORs(); });
 
                     BUFFERS buffer = Singleton.Buffer;
                     IntPtr kernel_target_object = IntPtr.Zero;
@@ -113,6 +112,33 @@ namespace Campy
                         if (bb.HasThis)
                         {
                             kernel_target_object = buffer.AddDataStructure(simpleKernel.Target);
+                        }
+                    });
+
+                    Campy.Utils.TimePhase.Time("kernel cctor set up", () =>
+                    {
+                        // For each cctor, run on GPU.
+                        foreach (var bb in Singleton._compiler.AllCctors())
+                        {
+                            var cctor = Singleton._compiler.GetCudaFunction(bb, module);
+
+                            var res = CUresult.CUDA_SUCCESS;
+                            Campy.Utils.CudaHelpers.MakeLinearTiling(1,
+                                out Campy.Utils.CudaHelpers.dim3 tile_size, out Campy.Utils.CudaHelpers.dim3 tiles);
+
+                            res = Cuda.cuLaunchKernel(
+                                cctor,
+                                tiles.x, tiles.y, tiles.z, // grid has one block.
+                                tile_size.x, tile_size.y, tile_size.z, // n threads.
+                                0, // no shared memory
+                                default(CUstream),
+                                (IntPtr) IntPtr.Zero,
+                                (IntPtr) IntPtr.Zero
+                            );
+
+                            CudaHelpers.CheckCudaError(res);
+                            res = Cuda.cuCtxSynchronize(); // Make sure it's copied back to host.
+                            CudaHelpers.CheckCudaError(res);
                         }
                     });
 

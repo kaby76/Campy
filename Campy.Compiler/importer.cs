@@ -88,17 +88,20 @@ namespace Campy.Compiler
             {
                 if (tuple.FullName == method_reference.FullName) return;
             }
-
+            // Do not analyze if it contains a generic parameter.
             if (method_reference.ContainsGenericParameter)
             {
                 throw new Exception("method " + method_reference.FullName + " contains generic parameter.");
             }
-
             foreach (var p in method_reference.Parameters)
             {
                 if (p.ParameterType.ContainsGenericParameter)
                     throw new Exception("method " + method_reference.FullName + " contains generic parameter.");
             }
+            // This is probably dubious, but don't include cctor functions with "<>".
+            // System.Void ConsoleApp4.Program/<>c::.cctor()
+            if (method_reference.FullName.Contains("<>") && method_reference.Name == ".cctor")
+                return;
 
             if (Campy.Utils.Options.IsOn("overview_import_computation_trace"))
             {

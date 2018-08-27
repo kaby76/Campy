@@ -32,7 +32,6 @@ namespace ConsoleApp1
         static void StartDebugging()
         {
             Campy.Utils.Options.Set("graph_trace");
-            Campy.Utils.Options.Set("module_trace");
             Campy.Utils.Options.Set("name_trace");
             Campy.Utils.Options.Set("cfg_construction_trace");
             Campy.Utils.Options.Set("dot_graph");
