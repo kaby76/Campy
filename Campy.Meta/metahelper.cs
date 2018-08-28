@@ -430,14 +430,24 @@ namespace Campy.Meta
             return result;
         }
 
+        static Dictionary<System.Type, TypeReference> memoized_types = new Dictionary<Type, TypeReference>();
+
         public static Mono.Cecil.TypeReference ToMonoTypeReference(this System.Type type)
         {
+            // Memoize previous values, returning if calculated before.
+            if (memoized_types.TryGetValue(type, out TypeReference result))
+                return result;
             String kernel_assembly_file_name = type.Assembly.Location;
             Mono.Cecil.ModuleDefinition md = Campy.Meta.StickyReadMod.StickyReadModule(kernel_assembly_file_name);
             string ecma_name = type.FullName.Replace("+", "/");
             var reference = md.GetType(ecma_name);
-            if (reference != null) return reference;
+            if (reference != null)
+            {
+                memoized_types[type] = reference;
+                return reference;
+            }
             var fallback = md.ImportReference(type);
+            memoized_types[type] = fallback;
             return fallback;
         }
 

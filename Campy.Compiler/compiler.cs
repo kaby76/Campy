@@ -741,7 +741,7 @@ namespace Campy.Compiler
             // Get a Tarjan DFS/SCC order of the nodes. Reverse it because we want to
             // proceed from entry basic block.
             //var ordered_list = new TarjanNoBackEdges<int>(_mcfg).GetEnumerable().Reverse();
-            var ordered_list = new TarjanNoBackEdges<CFG.Vertex, CFG.Edge>(_mcfg).ToList();
+            var ordered_list = new TarjanNoBackEdges<CFG.Vertex, CFG.Edge>(_mcfg, work).ToList();
             ordered_list.Reverse();
 
             // Eliminate all node names not in the work list.
