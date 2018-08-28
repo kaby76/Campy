@@ -168,7 +168,7 @@ namespace ConsoleApp4
             //Campy.Utils.Options.Set("state_computation_trace");
             Campy.Utils.Options.Set("overview_import_computation_trace");
             //     Campy.Utils.Options.Set("detailed_import_computation_trace");
- //               Campy.Utils.Options.Set("detailed_import_computation_trace");
+                Campy.Utils.Options.Set("detailed_import_computation_trace");
             Campy.Utils.Options.Set("continue_with_no_resolve");
             //Campy.Utils.Options.Set("copy_trace");
         //    Campy.Utils.Options.Set("runtime_trace");

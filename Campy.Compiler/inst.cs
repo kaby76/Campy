@@ -2933,8 +2933,46 @@
         }
     }
 
+    public class ConvertUnbox : INST
+    {
+        TypeReference call_closure_typetok = null;
 
-    public class i_add : BinaryOpInst
+        protected ConvertUnbox(CFG.Vertex b, Instruction i) : base(b, i)
+        {
+        }
+
+        public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
+        {   // unbox – convert boxed value type to its raw form, page 431
+            var type = this.Operand;
+            var tr = type as TypeReference;
+            var tr2 = tr.RewriteMonoTypeReference();
+            var v = tr2.Deresolve(this.Block._method_reference.DeclaringType, null);
+            call_closure_typetok = v;
+            TypeReference v2 = state._stack.Pop();
+            state._stack.Push(v);
+        }
+
+        public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
+        {
+            ValueRef new_obj;
+
+            // Get meta of object.
+            var operand = this.Operand;
+            var tr = operand as TypeReference;
+            tr = tr.RewriteMonoTypeReference();
+            tr = tr.Deresolve(this.Block._method_reference.DeclaringType, null);
+            var meta = RUNTIME.MonoBclMap_GetBcl(tr);
+
+            var o = state._stack.Pop();
+
+            // Generate code to deref object.
+            ValueRef load = LLVM.BuildLoad(Builder, o.V, "i" + instruction_id++);
+            state._stack.Push(new VALUE(load));
+        }
+    }
+
+
+        public class i_add : BinaryOpInst
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_add(b, i); }
         private i_add(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
@@ -3544,6 +3582,31 @@
             }
             call_closure_method = mr;
             IMPORTER.Singleton().Add(mr);
+
+            // Here's where great fun happens. For every virtual method, go up base class tree
+            // to get other implementations. Further, go through every type scanned and check
+            // for virtual functons of the same name. This analysis isn't perfect however.
+            var first = args[0];
+            Stack<TypeReference> chain = new Stack<TypeReference>();
+            var p = first;
+            while (p != null)
+            {
+                chain.Push(p);
+                var bt = p.Resolve().BaseType;
+                p = bt?.Deresolve(p, null);
+            }
+            while (chain.Any())
+            {
+                var q = chain.Pop();
+                foreach (var f in q.Resolve().Methods)
+                {
+                    if (f.Name == mr.Name)
+                    {
+                        var nf = f.Deresolve(q, null);
+                        IMPORTER.Singleton().Add(nf);
+                    }
+                }
+            }
         }
 
         public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
@@ -5374,7 +5437,8 @@
             if (operand_field_reference == null)
                 throw new Exception("Unknown field type");
             var ft = operand_field_reference.FieldType;
-            state._stack.Push(ft);
+            var ft2 = ft.Deresolve(this.Block._method_reference.DeclaringType, null);
+            state._stack.Push(ft2);
         }
 
         public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
@@ -6738,13 +6802,13 @@
         private i_unaligned(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
     }
 
-    public class i_unbox : INST
+    public class i_unbox : ConvertUnbox
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_unbox(b, i); }
         private i_unbox(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
     }
 
-    public class i_unbox_any : INST
+    public class i_unbox_any : ConvertUnbox
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_unbox_any(b, i); }
         private i_unbox_any(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }

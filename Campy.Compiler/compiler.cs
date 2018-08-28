@@ -255,7 +255,6 @@ namespace Campy.Compiler
                         var inst = bb.Instructions[i];
                         if (Campy.Utils.Options.IsOn("detailed_import_computation_trace"))
                             System.Console.WriteLine(inst);
-                        last_inst = inst;
                         inst.CallClosure(state_out);
                         if (Campy.Utils.Options.IsOn("detailed_import_computation_trace"))
                             state_out.OutputTrace(new String(' ', 4));
