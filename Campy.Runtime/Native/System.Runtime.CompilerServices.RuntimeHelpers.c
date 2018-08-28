@@ -33,11 +33,24 @@ function_space_specifier tAsyncCall* System_Runtime_CompilerServices_RuntimeHelp
 	HEAP_PTR pArray;
 	PTR pRawData;
 	tMD_TypeDef *pArrayTypeDef;
+	tMD_TypeDef *pDataTypeDef;
 	PTR pElements;
 	U32 arrayLength;
 
+	U64 * p = (U64*)pParams;
+	U64 p0 = *p;
+	p++;
+	U64 p1 = *p;
 	pArray = ((HEAP_PTR*)pParams)[0];
 	pRawData = ((PTR*)pParams)[1];
+	U64 p2 = *(U64*)p1;
+
+	// The data is encapsulated in the object's class.
+	pDataTypeDef = Heap_GetType(pRawData);
+	// The data is hanging off a field of the type.
+	tTM_FieldDef * fd = (tTM_FieldDef*)p2;
+
+
 	pArrayTypeDef = Heap_GetType(pArray);
 	arrayLength = SystemArray_GetLength(pArray);
 	pElements = SystemArray_GetElements(pArray);

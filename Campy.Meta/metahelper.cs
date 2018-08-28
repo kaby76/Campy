@@ -356,7 +356,7 @@ namespace Campy.Meta
 
         public static Collection<FieldReference> MyGetFields(this TypeReference type)
         {
-            // Get all fields, including parent chain, but not statics.
+            // Get all fields, including parent chain, including statics.
             Collection<FieldReference> result = new Collection<FieldReference>();
             Stack<TypeReference> chain = new Stack<TypeReference>();
             var p = type;
@@ -371,8 +371,6 @@ namespace Campy.Meta
                 var q = chain.Pop();
                 foreach (var f in q.ResolveFields())
                 {
-                    if (f.Resolve().IsStatic)
-                        continue;
                     result.Add(f);
                 }
             }
@@ -503,6 +501,13 @@ namespace Campy.Meta
             }
             else if (type as GenericParameter != null)
             {
+                return type;
+            }
+            else if (type as PointerType != null)
+            {
+                var gp = type as PointerType;
+                var x = gp.GetElementType();
+                type = new PointerType(x.SubstituteMonoTypeReference());
                 return type;
             }
             else
@@ -761,6 +766,10 @@ namespace Campy.Meta
                     typeof(System.Type).ToMonoTypeReference(),
                     LLVM.PointerType(LLVM.VoidType(), 0));
 
+                basic_llvm_types_created.Add(
+                    typeof(System.IntPtr).ToMonoTypeReference(),
+                    LLVM.PointerType(LLVM.Int64Type(), 0));
+
                 init = true;
             }
 
@@ -786,6 +795,7 @@ namespace Campy.Meta
                     return kv.Value;
             }
 
+            var save_tr = tr;
             tr = tr.RewriteMonoTypeReference();
 
             try

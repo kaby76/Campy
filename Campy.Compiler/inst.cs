@@ -1082,7 +1082,7 @@
                                         System.Console.WriteLine(index);
                                     ValueRef[] id = new ValueRef[1]
                                         {LLVM.ConstInt(LLVM.Int64Type(), (ulong) i, true)};
-                                    var add = LLVM.BuildInBoundsGEP(Builder, base_of_indices, id, "i" + instruction_id++);
+									var add = LLVM.BuildInBoundsGEP(Builder, base_of_indices, id, "i" + instruction_id++);
                                     var cast = LLVM.BuildIntCast(Builder, index.V, LLVM.Int64Type(), "i" + instruction_id++);
                                     ValueRef store = LLVM.BuildStore(Builder, cast, add);
                                     if (Campy.Utils.Options.IsOn("jit_trace"))
@@ -1167,10 +1167,8 @@
                         {
                             VALUE p = state._stack.Pop();
                             ValueRef[] index = new ValueRef[1] { LLVM.ConstInt(LLVM.Int32Type(), (ulong)i, true) };
-                            var gep = LLVM.BuildGEP(Builder, param_buffer, index, "i" + instruction_id++);
                             var add = LLVM.BuildInBoundsGEP(Builder, base_of_parameters, index, "i" + instruction_id++);
-                            ValueRef v = LLVM.BuildPointerCast(Builder, add, LLVM.PointerType(LLVM.TypeOf(p.V), 0),
-                                "i" + instruction_id++);
+                            ValueRef v = LLVM.BuildPointerCast(Builder, add, LLVM.PointerType(LLVM.TypeOf(p.V), 0), "i" + instruction_id++);
                             ValueRef store = LLVM.BuildStore(Builder, p.V, v);
                             if (Campy.Utils.Options.IsOn("jit_trace"))
                                 System.Console.WriteLine(new VALUE(store));
@@ -5506,103 +5504,123 @@
             // Load System.RuntimeTypeHandle for arg.
             var tr = this.Operand as TypeReference;
             var fd = this.Operand as FieldDefinition;
+            IntPtr handle_value = IntPtr.Zero;
             if (fd != null)
             {
+                // For field types, this refers to an array initializer.
+                // Get the field reference and set 
                 tr = fd.FieldType;
+                // Get enclosing parent, find field, get blob.
+                var field_name = fd.Name;
+                var declaring_type = fd.DeclaringType;
+                var all_fields = declaring_type.MyGetFields();
+                var possible = all_fields.Where(f => f.Name == field_name);
+                if (!possible.Any()) throw new Exception("Cannot find field for cctor init");
+                var fi = possible.First();
+                var bcl_pa = RUNTIME.MonoBclMap_GetBcl(declaring_type);
+                handle_value = RUNTIME.BclFindFieldInType(bcl_pa, fi.Name);
             }
-            if (tr != null)
+            else if (tr != null)
             {
                 var arg2 = tr.RewriteMonoTypeReference();
                 var v = arg2.Deresolve(this.Block._method_reference.DeclaringType, null);
-                var meta = RUNTIME.MonoBclMap_GetBcl(v);
-                var rth = typeof(System.RuntimeTypeHandle).ToMonoTypeReference().RewriteMonoTypeReference();
-                var type = rth.Deresolve(this.Block._method_reference.DeclaringType, null);
-                var llvm_type = type.ToTypeRef();
-                llvm_type = LLVM.PointerType(llvm_type, 0);
-                ValueRef new_obj;
-                {
-                    // Generate code to allocate object and stuff.
-                    var xx1 = RUNTIME.BclNativeMethods.ToList();
-                    var xx2 = RUNTIME.PtxFunctions.ToList();
-                    var xx = xx2
-                        .Where(t => { return t._mangled_name == "_Z23Heap_AllocTypeVoidStarsPv"; });
-                    var xxx = xx.ToList();
-                    RUNTIME.PtxFunction first_kv_pair = xx.FirstOrDefault();
-                    if (first_kv_pair == null)
-                        throw new Exception("Yikes.");
-                    ValueRef fv2 = first_kv_pair._valueref;
-                    ValueRef[] args = new ValueRef[1];
-                    args[0] = LLVM.ConstInt(LLVM.Int64Type(), (ulong) meta.ToInt64(), false);
-                    var call = LLVM.BuildCall(Builder, fv2, args, "i" + instruction_id++);
-                    var cast = LLVM.BuildIntToPtr(Builder, call, llvm_type, "i" + instruction_id++);
-                    new_obj = cast;
-                    if (Campy.Utils.Options.IsOn("jit_trace"))
-                        System.Console.WriteLine(new VALUE(new_obj));
-                    state._stack.Push(new VALUE(new_obj));
-                }
-                state._stack.Push(new VALUE(LLVM.ConstInt(LLVM.Int64Type(), (ulong) meta.ToInt64(), false)));
-                {
-                    var t = typeof(System.RuntimeTypeHandle).ToMonoTypeReference().RewriteMonoTypeReference();
-                    var list = rth.Resolve().Methods.Where(m => m.FullName.Contains("ctor")).ToList();
-                    if (list.Count() != 1)
-                        throw new Exception("There should be only one constructor for System.RuntimeTypeHandle.");
-                    var mr = list.First();
-                    // Find bb entry.
-                    CFG.Vertex entry_corresponding_to_method_called = this.Block._graph.Vertices.Where(node
-                        =>
-                    {
-                        if (node.IsEntry && COMPILER.MethodName(node._method_reference) == mr.FullName)
-                            return true;
-                        return false;
-                    }).ToList().FirstOrDefault();
-                    if (entry_corresponding_to_method_called == null)
-                        throw new Exception("Cannot find constructor for System.RuntimeTypeHandle.");
+                handle_value = RUNTIME.MonoBclMap_GetBcl(v);
+			}
+			
+			var runtimetypehandle = typeof(System.RuntimeTypeHandle).ToMonoTypeReference().RewriteMonoTypeReference();
+			var type = runtimetypehandle.Deresolve(this.Block._method_reference.DeclaringType, null);
+            var meta = RUNTIME.MonoBclMap_GetBcl(type);
+			var llvm_type = type.ToTypeRef();
+			llvm_type = LLVM.PointerType(llvm_type, 0);
+			ValueRef token;
 
-                    int xret = (entry_corresponding_to_method_called.HasScalarReturnValue ||
-                                entry_corresponding_to_method_called.HasStructReturnValue)
-                        ? 1
-                        : 0;
-                    int xargs = entry_corresponding_to_method_called.StackNumberOfArguments;
-                    var name = COMPILER.MethodName(mr);
-                    BuilderRef bu = this.Builder;
-                    ValueRef fv = entry_corresponding_to_method_called.LlvmInfo.MethodValueRef;
-                    var t_fun = LLVM.TypeOf(fv);
-                    var t_fun_con = LLVM.GetTypeContext(t_fun);
-                    var context = LLVM.GetModuleContext(RUNTIME.global_llvm_module);
-                    if (t_fun_con != context) throw new Exception("not equal");
-                    ValueRef[] args = new ValueRef[xargs];
-                    // No return.
-                    for (int k = xargs - 1; k >= 0; --k)
-                    {
-                        VALUE a = state._stack.Pop();
-                        ValueRef par = LLVM.GetParam(fv, (uint) k);
-                        ValueRef value = a.V;
-                        if (LLVM.TypeOf(value) != LLVM.TypeOf(par))
-                        {
-                            if (LLVM.GetTypeKind(LLVM.TypeOf(par)) == TypeKind.StructTypeKind
-                                && LLVM.GetTypeKind(LLVM.TypeOf(value)) == TypeKind.PointerTypeKind)
-                            {
-                                value = LLVM.BuildLoad(Builder, value, "i" + instruction_id++);
-                            }
-                            else if (LLVM.GetTypeKind(LLVM.TypeOf(par)) == TypeKind.PointerTypeKind)
-                            {
-                                value = LLVM.BuildPointerCast(Builder, value, LLVM.TypeOf(par), "i" + instruction_id++);
-                            }
-                            else
-                            {
-                                value = LLVM.BuildBitCast(Builder, value, LLVM.TypeOf(par), "i" + instruction_id++);
-                            }
-                        }
+			// Note, pushing on stack an object of type RuntimeTypeHandle.
+			{
+                // Generate code to allocate System.RuntimeTypeHandle object.
+                var xx1 = RUNTIME.BclNativeMethods.ToList();
+				var xx2 = RUNTIME.PtxFunctions.ToList();
+				var xx = xx2
+					.Where(t => { return t._mangled_name == "_Z23Heap_AllocTypeVoidStarsPv"; });
+				var xxx = xx.ToList();
+				RUNTIME.PtxFunction first_kv_pair = xx.FirstOrDefault();
+				if (first_kv_pair == null)
+					throw new Exception("Yikes.");
+				ValueRef fv2 = first_kv_pair._valueref;
+				ValueRef[] args = new ValueRef[1];
+				args[0] = LLVM.ConstInt(LLVM.Int64Type(), (ulong)meta.ToInt64(), false);
+				var call = LLVM.BuildCall(Builder, fv2, args, "i" + instruction_id++);
+				var cast = LLVM.BuildIntToPtr(Builder, call, llvm_type, "i" + instruction_id++);
+				token = cast;
+				if (Campy.Utils.Options.IsOn("jit_trace"))
+					System.Console.WriteLine(new VALUE(token));
+				state._stack.Push(new VALUE(token));
+			}
 
-                        args[k] = value;
-                    }
+			// Push on stack the handle to the type or field.
+			state._stack.Push(new VALUE(LLVM.ConstInt(LLVM.Int64Type(), (ulong)handle_value.ToInt64(), false)));
 
-                    var call = LLVM.BuildCall(Builder, fv, args, "");
-                    if (Campy.Utils.Options.IsOn("jit_trace"))
-                        System.Console.WriteLine(call.ToString());
-                    state._stack.Push(new VALUE(new_obj));
-                }
-            }
+			// Call the constructor to initialize the RuntimeTypeHandle object.
+			{
+				var t = typeof(System.RuntimeTypeHandle).ToMonoTypeReference().RewriteMonoTypeReference();
+				var list = runtimetypehandle.Resolve().Methods.Where(m => m.FullName.Contains(".ctor")).ToList();
+				if (list.Count() != 1)
+					throw new Exception("There should be only one constructor for System.RuntimeTypeHandle.");
+				var mr = list.First();
+				// Find bb entry.
+				CFG.Vertex entry_corresponding_to_method_called = this.Block._graph.Vertices.Where(node
+					=>
+				{
+					if (node.IsEntry && COMPILER.MethodName(node._method_reference) == mr.FullName)
+						return true;
+					return false;
+				}).ToList().FirstOrDefault();
+				if (entry_corresponding_to_method_called == null)
+					throw new Exception("Cannot find constructor for System.RuntimeTypeHandle.");
+
+				int xret = (entry_corresponding_to_method_called.HasScalarReturnValue ||
+							entry_corresponding_to_method_called.HasStructReturnValue)
+					? 1
+					: 0;
+				int xargs = entry_corresponding_to_method_called.StackNumberOfArguments;
+				var name = COMPILER.MethodName(mr);
+				BuilderRef bu = this.Builder;
+				ValueRef fv = entry_corresponding_to_method_called.LlvmInfo.MethodValueRef;
+				var t_fun = LLVM.TypeOf(fv);
+				var t_fun_con = LLVM.GetTypeContext(t_fun);
+				var context = LLVM.GetModuleContext(RUNTIME.global_llvm_module);
+				if (t_fun_con != context) throw new Exception("not equal");
+				ValueRef[] args = new ValueRef[xargs];
+				// No return.
+				for (int k = xargs - 1; k >= 0; --k)
+				{
+					VALUE a = state._stack.Pop();
+				    if (Campy.Utils.Options.IsOn("jit_trace"))
+				        System.Console.WriteLine(a);
+					ValueRef par = LLVM.GetParam(fv, (uint) k);
+					ValueRef value = a.V;
+					if (LLVM.TypeOf(value) != LLVM.TypeOf(par))
+					{
+						if (LLVM.GetTypeKind(LLVM.TypeOf(par)) == TypeKind.StructTypeKind
+							&& LLVM.GetTypeKind(LLVM.TypeOf(value)) == TypeKind.PointerTypeKind)
+							value = LLVM.BuildLoad(Builder, value, "i" + instruction_id++);
+						else if (LLVM.GetTypeKind(LLVM.TypeOf(par)) == TypeKind.PointerTypeKind
+						         && LLVM.GetTypeKind(LLVM.TypeOf(value)) == TypeKind.PointerTypeKind)
+						    value = LLVM.BuildPointerCast(Builder, value, LLVM.TypeOf(par), "i" + instruction_id++);
+						else if (LLVM.GetTypeKind(LLVM.TypeOf(par)) == TypeKind.PointerTypeKind
+						         && LLVM.GetTypeKind(LLVM.TypeOf(value)) == TypeKind.IntegerTypeKind)
+						    value = LLVM.BuildIntToPtr(Builder, value, LLVM.TypeOf(par), "i" + instruction_id++);
+						else
+                            value = LLVM.BuildBitCast(Builder, value, LLVM.TypeOf(par), "i" + instruction_id++);
+					}
+
+					args[k] = value;
+				}
+
+				var call = LLVM.BuildCall(Builder, fv, args, "");
+				if (Campy.Utils.Options.IsOn("jit_trace"))
+					System.Console.WriteLine(call.ToString());
+				state._stack.Push(new VALUE(token));
+			}
         }
     }
 
