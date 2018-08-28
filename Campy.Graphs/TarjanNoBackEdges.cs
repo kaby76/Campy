@@ -17,18 +17,37 @@ namespace Campy.Graphs
         Dictionary<T, int> Index = new Dictionary<T, int>();
         Dictionary<T, int> LowLink = new Dictionary<T, int>();
         Dictionary<E, EdgeClassifier.Classification> classify = new Dictionary<E, EdgeClassifier.Classification>();
+        private IEnumerable<T> _work;
+
+        public TarjanNoBackEdges(IGraph<T, E> graph, IEnumerable<T> subset_vertices)
+        {
+            _graph = graph;
+            _work = subset_vertices;
+            foreach (T v in _work)
+            {
+                if (graph.Predecessors(v).Any())
+                    continue;
+                EdgeClassifier.Classify(graph, v, ref classify);
+            }
+            foreach (var v in _work)
+            {
+                Index[v] = -1;
+                LowLink[v] = -1;
+            }
+        }
 
         public TarjanNoBackEdges(IGraph<T, E> graph)
         {
             _graph = graph;
-            foreach (var v in _graph.Vertices)
+            _work = _graph.Vertices; 
+            foreach (var v in _work)
             {
                 if (graph.Predecessors(v).Any())
                     continue;
 
                 EdgeClassifier.Classify(graph, v, ref classify);
             }
-            foreach (var v in _graph.Vertices)
+            foreach (var v in _work)
             {
                 Index[v] = -1;
                 LowLink[v] = -1;
@@ -80,7 +99,7 @@ namespace Campy.Graphs
 
         public IEnumerable<T> GetEnumerable()
         {
-            foreach (var v in _graph.Vertices)
+            foreach (var v in _work)
             {
                 if (_graph.Predecessors(v).Any())
                     continue;
@@ -93,7 +112,7 @@ namespace Campy.Graphs
 
         public IEnumerator<T> GetEnumerator()
         {
-            foreach (var v in _graph.Vertices)
+            foreach (var v in _work)
             {
                 if (_graph.Predecessors(v).Any())
                     continue;
@@ -106,7 +125,7 @@ namespace Campy.Graphs
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            foreach (var v in _graph.Vertices)
+            foreach (var v in _work)
             {
                 if (_graph.Predecessors(v).Any())
                     continue;
