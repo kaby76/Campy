@@ -70,6 +70,19 @@ namespace Campy
             Singleton.Buffer.FullSynch();
         }
 
+        public static void JustImport(SimpleKernel simpleKernel)
+        {
+            System.Reflection.MethodInfo method_info = simpleKernel.Method;
+            String kernel_assembly_file_name = method_info.DeclaringType.Assembly.Location;
+            Mono.Cecil.ModuleDefinition md = Campy.Meta.StickyReadMod.StickyReadModule(
+                kernel_assembly_file_name, new ReaderParameters { ReadSymbols = true });
+            MethodReference method_reference = md.ImportReference(method_info);
+            Campy.Utils.TimePhase.Time("compile     ", () =>
+            {
+                Singleton._compiler.ImportOnlyCompile(method_reference, simpleKernel.Target);
+            });
+        }
+
         public static void For(int number_of_threads, SimpleKernel simpleKernel)
         {
             GCHandle handle1 = default(GCHandle);

@@ -376,7 +376,7 @@
 
         public virtual void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {
-            throw new Exception("Must have an implementation for GenerateGenerics! The instruction is: "
+            throw new Exception("Must have an implementation for CallClosure! The instruction is: "
                                 + this.ToString());
         }
 
@@ -2798,6 +2798,7 @@
         protected TYPE _dst;
         protected bool _check_overflow;
         protected bool _from_unsigned;
+        private TypeReference call_closure_type;
 
         public ConvertLoadIndirect(CFG.Vertex b, Mono.Cecil.Cil.Instruction i)
             : base(b, i)
@@ -2805,14 +2806,22 @@
         }
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
-        {
+        {  // ldind -- load value indirect onto the stack, p 367
             var i = state._stack.Pop();
-            var v = i.GetElementType();
+            TypeReference v = null;
+            if (i as ByReferenceType != null)
+            {
+                var j = i as ByReferenceType;
+                v = j.ElementType;
+            }
+            else
+                v = i.GetElementType();
+            call_closure_type = v;
             state._stack.Push(v);
         }
 
         public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
-        {
+		{  // ldind -- load value indirect onto the stack, p 367
             VALUE v = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine("ConvertLoadIndirect into function " + v.ToString());
@@ -3567,9 +3576,37 @@
             for (int k = 0; k < xargs; ++k)
             {
                 var v = state._stack.Pop();
+                v = v.SubstituteMonoTypeReference();
                 args.Insert(0, v);
             }
             var args_array = args.ToArray();
+            var first = args[0];
+
+            // JOY! "contrained. type" can appear before this instruction,
+            // so several things to do here. First, Sometimes we get "type&" in
+            // args for "this". Strip the value and get "type".
+            /*
+    Method System.Int32 System.Collections.Generic.Dictionary`2<System.String,System.Globalization.CultureInfo>::GetSlot(System.String) corlib.dll C:\Users\kenne\Documents\Campy2\ConsoleApp4\bin\Debug\\corlib.dll
+    Method System.Int32 System.Collections.Generic.Dictionary`2::GetSlot(TKey) corlib.dll C:\Users\kenne\Documents\Campy2\ConsoleApp4\bin\Debug\\corlib.dll
+    HasThis   True
+    Args   2
+    Locals 2
+    Return (reuse) True
+    Edges to: 451
+    Instructions:
+        IL_0000: nop    
+        IL_0001: ldarga.s key    
+        IL_0003: constrained. TKey    
+        IL_0009: callvirt System.Int32 System.Object::GetHashCode()    
+             */
+            if (first.IsByReference)
+            {
+                first = first.GetElementType();
+                // With Constrained instruction, the function we call is for the type
+                // in the constraint. NOT SURE WHAT THE FUCK TO DO!
+                args[0] = first;
+            }
+
             mr = orig_mr.SubstituteMethod(this.Block._method_reference.DeclaringType, args_array);
             if (mr == null)
             {
@@ -3586,7 +3623,6 @@
             // Here's where great fun happens. For every virtual method, go up base class tree
             // to get other implementations. Further, go through every type scanned and check
             // for virtual functons of the same name. This analysis isn't perfect however.
-            var first = args[0];
             Stack<TypeReference> chain = new Stack<TypeReference>();
             var p = first;
             while (p != null)
@@ -3811,8 +3847,15 @@
     public class i_constrained : INST
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_constrained(b, i); }
-        private i_constrained(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
-        public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state) { }
+
+        private i_constrained(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i)
+        {
+        }
+
+        public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
+        {
+        }
+
         public override void Convert(STATE<VALUE, StackQueue<VALUE>> state) { }
     }
 
@@ -4446,6 +4489,14 @@
                     try
                     {
                         int? o3 = (int?)o;
+                        arg = (Int64)o3;
+                        success = true;
+                    }
+                    catch { }
+                    if (success) break;
+                    try
+                    {
+                        Int64? o3 = (Int64?)o;
                         arg = (Int64)o3;
                         success = true;
                     }
@@ -6766,8 +6817,44 @@
 
     public class i_switch : INST
     {
+        private TypeReference call_closure_value;
+
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_switch(b, i); }
         private i_switch(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
+
+        public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
+        { // switch – table switch based on value page 382
+            call_closure_value = state._stack.Pop();
+            object operand = this.Operand;
+            var t = operand.GetType();
+            Instruction[] instructions = operand as Instruction[];
+        }
+
+        public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
+        { // switch – table switch based on value page 382
+            var value = state._stack.Pop();
+            // Generate code for switch.
+            object operand = this.Operand;
+            var t = operand.GetType();
+            var s = LLVM.BuildIntCast(Builder, value.V, LLVM.Int32Type(), "i" + instruction_id++);
+            Instruction[] instructions = operand as Instruction[];
+            var sw = LLVM.BuildSwitch(Builder, s, default(BasicBlockRef), (uint)instructions.Length);
+            for (int j = 0; j < instructions.Length; ++j)
+            {
+                var inst = instructions[j];
+                var goto_block = this.Block._graph.Entries.Find(
+                    e =>
+                    {
+                        var i = e.Instructions[0];
+                        if (e._method_reference != Block.Entry._method_reference)
+                            return false;
+                        if (i.Instruction.Offset != inst.Offset)
+                            return false;
+                        return true;
+                    });
+                LLVM.AddCase(sw, LLVM.ConstInt(LLVM.Int32Type(), (ulong)j, false), goto_block.LlvmInfo.BasicBlock);
+            }
+        }
     }
 
     public class i_tail : INST

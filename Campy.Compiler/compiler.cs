@@ -1181,6 +1181,45 @@ namespace Campy.Compiler
             return bb_list.ToList();
         }
 
+        public void ImportOnlyCompile(MethodReference kernel_method, object kernel_target)
+        {
+            List<CFG.Vertex> cs = null;
+            CFG.Vertex bb;
+
+            Campy.Utils.TimePhase.Time("discovery     ", () =>
+            {
+                // Parse kernel instructions to determine basic block representation of all the code to compile.
+                int change_set_id = _mcfg.StartChangeSet();
+                _importer.AnalyzeMethod(kernel_method);
+                if (_importer.Failed)
+                {
+                    throw new Exception("Failure to find all methods in GPU code. Cannot continue.");
+                }
+                cs = _mcfg.PopChangeSet(change_set_id);
+                if (!cs.Any())
+                {
+                    bb = _mcfg.Entries.Where(v =>
+                        v.IsEntry && v._method_reference.FullName == kernel_method.FullName).FirstOrDefault();
+                }
+                else
+                {
+                    bb = cs.First();
+                }
+            });
+
+            int num_instructions = 0;
+            int num_blocks = cs.Count();
+            int num_entries = 0;
+            foreach (var b in cs)
+            {
+                if (b.IsEntry) ++num_entries;
+                num_instructions += b.Instructions.Count();
+            }
+            System.Console.WriteLine("Number of blocks       " + num_blocks);
+            System.Console.WriteLine("Number of methods      " + num_entries);
+            System.Console.WriteLine("Number of instructions " + num_instructions);
+        }
+
         public IntPtr Compile(MethodReference kernel_method, object kernel_target)
         {
             if (method_to_image.TryGetValue(kernel_method.Resolve(), out IntPtr value))
