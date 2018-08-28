@@ -31,7 +31,8 @@ function_space_specifier tAsyncCall* System_Array_Resize(PTR pThis_, PTR pParams
 function_space_specifier tAsyncCall* System_Array_Reverse(PTR pThis_, PTR pParams, PTR pReturnValue);
 
 function_space_specifier HEAP_PTR SystemArray_NewVector(tMD_TypeDef *pArrayTypeDef, U32 rank, U32* lengths);
-#define SystemArray_GetLength(pArray) (*(U32*)(pArray))
+#define SystemArray_GetLength(pArray) (SystemArray_Length((void*)pArray))
+function_space_specifier U32 SystemArray_Length(void * p);
 function_space_specifier void SystemArray_StoreElement(HEAP_PTR pThis_, U32 index, PTR value);
 function_space_specifier void SystemArray_LoadElement(HEAP_PTR pThis_, U32 index, PTR value);
 #define SystemArray_GetElements(pArray) ((PTR)(((PTR)pArray)+4))

@@ -28,6 +28,7 @@
 #include "Heap.h"
 #include "Type.h"
 #include "System.Array.h"
+#include "MetaDataTables.h"
 
 function_space_specifier tAsyncCall* System_Runtime_CompilerServices_RuntimeHelpers_InitializeArray(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	HEAP_PTR pArray;
@@ -47,14 +48,16 @@ function_space_specifier tAsyncCall* System_Runtime_CompilerServices_RuntimeHelp
 
 	// The data is encapsulated in the object's class.
 	pDataTypeDef = Heap_GetType(pRawData);
-	// The data is hanging off a field of the type.
-	tTM_FieldDef * fd = (tTM_FieldDef*)p2;
 
+	// The data is hanging off a field of the type.
+	tMD_FieldDef * fd = (tMD_FieldDef*)p2;
+	
+	PTR mem = fd->pMemory;
 
 	pArrayTypeDef = Heap_GetType(pArray);
 	arrayLength = SystemArray_GetLength(pArray);
 	pElements = SystemArray_GetElements(pArray);
-	memcpy(pElements, pRawData, pArrayTypeDef->pArrayElementType->arrayElementSize * arrayLength);
+	memcpy(pElements, mem, pArrayTypeDef->pArrayElementType->arrayElementSize * arrayLength);
 
 	return NULL;
 }

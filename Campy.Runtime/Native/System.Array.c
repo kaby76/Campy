@@ -40,6 +40,21 @@ struct tSystemArray_ {
     //U8 elements[0];
 };
 
+function_space_specifier U32 SystemArray_Length(void * p)
+{
+	tSystemArray *pArray = (tSystemArray*)p;
+	tMD_TypeDef *pArrayType;
+	U32 index, elementSize;
+	tMD_TypeDef *pElementType;
+	PTR pElement;
+	pArrayType = Heap_GetType((HEAP_PTR)p);
+	U64* p_len = &pArray->rank;
+	p_len++;
+	U64 len = 1;
+	for (int i = 0; i < pArray->rank; ++i)
+		len = len * (*p_len);
+	return (U32)len;
+}
 
 function_space_specifier tAsyncCall* System_Array_Internal_GetLength(PTR pThis_, PTR pParams, PTR pReturnValue) {
     tSystemArray *pArray = (tSystemArray*)pThis_;
