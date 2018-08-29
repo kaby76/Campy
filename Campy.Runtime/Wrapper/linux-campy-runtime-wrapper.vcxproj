@@ -63,14 +63,14 @@
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>./;/usr/local/cuda-9.1/include/;$(IncludePath)</IncludePath>
-    <LibraryPath>/usr/local/cuda-9.1/lib64</LibraryPath>
+    <IncludePath>./;/usr/local/cuda-9.2/include/;$(IncludePath)</IncludePath>
+    <LibraryPath>/usr/local/cuda-9.2/lib64</LibraryPath>
     <TargetName>campy-runtime-wrapper</TargetName>
     <TargetExt>.so</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>./;/usr/local/cuda-9.1/include/;$(IncludePath)</IncludePath>
-    <LibraryPath>/usr/local/cuda-9.1/lib64</LibraryPath>
+    <IncludePath>./;/usr/local/cuda-9.2/include/;$(IncludePath)</IncludePath>
+    <LibraryPath>/usr/local/cuda-9.2/lib64</LibraryPath>
     <TargetName>campy-runtime-wrapper</TargetName>
     <TargetExt>.so</TargetExt>
   </PropertyGroup>

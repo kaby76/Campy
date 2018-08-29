@@ -63,22 +63,22 @@
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>./;/usr/local/cuda-9.1/include/;$(IncludePath)</IncludePath>
-    <LibraryPath>/usr/local/cuda-9.1/lib64</LibraryPath>
+    <IncludePath>./;/usr/local/cuda-9.2/include/;$(IncludePath)</IncludePath>
+    <LibraryPath>/usr/local/cuda-9.2/lib64</LibraryPath>
     <TargetName>campy-runtime-native</TargetName>
-    <RemoteCppCompileToolExe>/home/ken/kens-campy-nvcc-9-1.sh</RemoteCppCompileToolExe>
+    <RemoteCppCompileToolExe>/home/ken/kens-campy-nvcc-9-2.sh</RemoteCppCompileToolExe>
     <TargetExt>.a</TargetExt>
-    <RemoteCCompileToolExe>/home/ken/kens-campy-nvcc-9-1.sh</RemoteCCompileToolExe>
-    <RemoteLdToolExe>/home/ken/kens-campy-link-9-1.sh</RemoteLdToolExe>
+    <RemoteCCompileToolExe>/home/ken/kens-campy-nvcc-9-2.sh</RemoteCCompileToolExe>
+    <RemoteLdToolExe>/home/ken/kens-campy-link-9-2.sh</RemoteLdToolExe>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>./;/usr/local/cuda-9.1/include/;$(IncludePath)</IncludePath>
-    <LibraryPath>/usr/local/cuda-9.1/lib64</LibraryPath>
-    <RemoteCppCompileToolExe>/home/ken/kens-campy-nvcc-9-1.sh</RemoteCppCompileToolExe>
+    <IncludePath>./;/usr/local/cuda-9.2/include/;$(IncludePath)</IncludePath>
+    <LibraryPath>/usr/local/cuda-9.2/lib64</LibraryPath>
+    <RemoteCppCompileToolExe>/home/ken/kens-campy-nvcc-9-2.sh</RemoteCppCompileToolExe>
     <TargetName>campy-runtime-native</TargetName>
     <TargetExt>.a</TargetExt>
-    <RemoteCCompileToolExe>/home/ken/kens-campy-nvcc-9-1.sh</RemoteCCompileToolExe>
-    <RemoteLdToolExe>/home/ken/kens-campy-link-9-1.sh</RemoteLdToolExe>
+    <RemoteCCompileToolExe>/home/ken/kens-campy-nvcc-9-2.sh</RemoteCCompileToolExe>
+    <RemoteLdToolExe>/home/ken/kens-campy-link-9-2.sh</RemoteLdToolExe>
   </PropertyGroup>
   <ItemGroup>
     <ClInclude Include="basics.h" />
@@ -184,7 +184,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Link>
       <LibraryDependencies>cuda;cudart;cudart;%(LibraryDependencies)</LibraryDependencies>
-      <AdditionalLibraryDirectories>/usr/local/cuda-9.1/lib64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>/usr/local/cuda-9.2/lib64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <ClCompile>
       <PositionIndependentCode>true</PositionIndependentCode>
@@ -198,7 +198,7 @@
       <AdditionalOptions>
       </AdditionalOptions>
       <VerboseOutput>true</VerboseOutput>
-      <AdditionalLibraryDirectories>/usr/local/cuda-9.1/lib64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>/usr/local/cuda-9.2/lib64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <ClCompile>
       <AdditionalOptions>

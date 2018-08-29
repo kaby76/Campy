@@ -730,6 +730,8 @@ declare i64 @_Z52System_RuntimeType_Internal_GetGenericTypeDefinitionPhS_S_(i64,
 declare i64 @_Z38System_RuntimeType_GetGenericArgumentsPhS_S_(i64, i64, i64)
 declare i64 @_Z17RuntimeType_DeRefPh(i64)
 declare i64 @_Z28System_String_ctor_CharInt32PhS_S_(i64, i64, i64)
+declare i64 @_Z24System_String_ctor_CharAPhS_S_(i64, i64, i64)
+declare i64 @_Z30System_String_ctor_CharAIntIntPhS_S_(i64, i64, i64)
 declare i64 @_Z30System_String_ctor_CharAIntIntPhS_S_(i64, i64, i64)
 declare i64 @_Z31System_String_ctor_StringIntIntPhS_S_(i64, i64, i64)
 declare i64 @_Z23System_String_get_CharsPhS_S_(i64, i64, i64)

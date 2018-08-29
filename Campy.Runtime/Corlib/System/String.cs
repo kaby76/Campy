@@ -40,13 +40,15 @@ namespace System {
         private int length;
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-	[System.GPUBCLAttribute("System_String_ctor_CharInt32","_Z28System_String_ctor_CharInt32PhS_S_")]
+        [System.GPUBCLAttribute("System_String_ctor_CharInt32","_Z28System_String_ctor_CharInt32PhS_S_")]
         extern public String(char c, int count);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
+        [System.GPUBCLAttribute("System_String_ctor_CharA", "_Z24System_String_ctor_CharAPhS_S_")]
         extern public String(char[] chars);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
+        [System.GPUBCLAttribute("System_String_ctor_CharAIntInt", "_Z30System_String_ctor_CharAIntIntPhS_S_")]
         extern public String(char[] chars, int startIndex, int length);
 
         #region Private Internal Calls

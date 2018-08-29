@@ -40,7 +40,6 @@ struct tSystemString_
 	U16 chars[0];
 };
 
-//extern function_space_specifier int CorLibDone;
 
 // length in characters, not bytes
 static function_space_specifier tSystemString* CreateStringHeapObj(U32 len)
@@ -66,6 +65,22 @@ function_space_specifier tAsyncCall* System_String_ctor_CharInt32(PTR pThis_, PT
 	for (i=0; i<len; i++) {
 		pSystemString->chars[i] = c;
 	}
+	*(HEAP_PTR*)pReturnValue = (HEAP_PTR)pSystemString;
+
+	return NULL;
+}
+
+function_space_specifier tAsyncCall* System_String_ctor_CharA(PTR pThis_, PTR pParams, PTR pReturnValue) {
+	tSystemString *pSystemString;
+	PTR charElements;
+
+	void** p = (void**)pParams;
+	HEAP_PTR charArray = *(HEAP_PTR*)p++;
+
+	charElements = SystemArray_GetElements(charArray);
+	int length = SystemArray_Length((void*)charArray);
+	pSystemString = CreateStringHeapObj(length);
+	memcpy(pSystemString->chars, charElements + (0 << 1), length << 1);
 	*(HEAP_PTR*)pReturnValue = (HEAP_PTR)pSystemString;
 
 	return NULL;
@@ -124,7 +139,6 @@ function_space_specifier tAsyncCall* System_String_get_Chars(PTR pThis_, PTR pPa
 	return NULL;
 }
 __device__ void* p_System_String_get_Chars = (void*)System_String_get_Chars;
-
 
 function_space_specifier tAsyncCall* System_String_InternalConcat(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tSystemString *s0, *s1, *ret;

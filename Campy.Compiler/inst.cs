@@ -2351,8 +2351,8 @@
                 //    return LLVM.BuildBitCast(Builder, src, dtype, "");
                 //if (LLVM.GetTypeKind(dtype) == LLVM.PointerTypeKind)
                 //    return LLVM.BuildIntToPtr(Builder, src, dtype, "");
-                //if (LLVM.GetTypeKind(stype) == LLVM.PointerTypeKind)
-                //    return LLVM.BuildPtrToInt(Builder, src, dtype, "");
+                if (LLVM.GetTypeKind(stype) == TypeKind.PointerTypeKind && dtype == LLVM.Int64Type())
+                    return new VALUE(LLVM.BuildPtrToInt(Builder, src.V, dtype, "i" + instruction_id++));
 
                 //if (mono_arch_is_soft_float())
                 //{
@@ -3887,15 +3887,8 @@
     public class i_constrained : INST
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_constrained(b, i); }
-
-        private i_constrained(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i)
-        {
-        }
-
-        public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
-        {
-        }
-
+        private i_constrained(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
+        public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state) { }
         public override void Convert(STATE<VALUE, StackQueue<VALUE>> state) { }
     }
 
@@ -3926,7 +3919,7 @@
     public class i_conv_i : ConvertConvInst
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_i(b, i); }
-        private i_conv_i(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(int)); }
+        private i_conv_i(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(long)); }
     }
 
     public class i_conv_ovf_i1 : ConvertConvOvfInst
@@ -3980,13 +3973,13 @@
     public class i_conv_ovf_i : ConvertConvOvfInst
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_i(b, i); }
-        private i_conv_ovf_i(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(int)); }
+        private i_conv_ovf_i(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(long)); }
     }
 
     public class i_conv_ovf_i_un : ConvertConvOvfUnsInst
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_i_un(b, i); }
-        private i_conv_ovf_i_un(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(int)); }
+        private i_conv_ovf_i_un(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(long)); }
     }
 
     public class i_conv_ovf_u1 : ConvertConvOvfInst
@@ -4040,13 +4033,13 @@
     public class i_conv_ovf_u : ConvertConvOvfInst
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_u(b, i); }
-        private i_conv_ovf_u(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(uint)); }
+        private i_conv_ovf_u(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(ulong)); }
     }
 
     public class i_conv_ovf_u_un : ConvertConvOvfUnsInst
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_u_un(b, i); }
-        private i_conv_ovf_u_un(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(uint)); }
+        private i_conv_ovf_u_un(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(ulong)); }
     }
 
     public class i_conv_r4 : ConvertConvInst
@@ -4094,7 +4087,7 @@
     public class i_conv_u : ConvertConvInst
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_u(b, i); }
-        private i_conv_u(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(uint)); }
+        private i_conv_u(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(ulong)); }
     }
 
     public class i_cpblk : INST
@@ -4730,7 +4723,7 @@
     public class i_ldelem_i : ConvertLoadElement
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldelem_i(b, i); }
-        private i_ldelem_i(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
+        private i_ldelem_i(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(long)); }
     }
 
     public class i_ldelem_r4 : ConvertLoadElement
@@ -5253,7 +5246,7 @@
     public class i_ldind_i : ConvertLoadIndirect
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldind_i(b, i); }
-        private i_ldind_i(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(int)); }
+        private i_ldind_i(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(long)); }
     }
 
     public class i_ldind_r4 : ConvertLoadIndirect
@@ -6615,7 +6608,7 @@
     public class i_stelem_i : ConvertStoreElement
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_stelem_i(b, i); }
-        private i_stelem_i(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
+        private i_stelem_i(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(long)); }
     }
 
     public class i_stelem_r4 : ConvertStoreElement
@@ -6669,8 +6662,8 @@
     public class i_stind_i : ConvertStoreIndirect
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_stind_i(b, i); }
-        private i_stind_i(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i, typeof(int).ToMonoTypeReference()) { }
-        // native and c# int the same.
+        private i_stind_i(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i, typeof(long).ToMonoTypeReference()) { }
+        // native and c# long the same.
     }
 
     public class i_stind_r4 : ConvertStoreIndirect

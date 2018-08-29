@@ -84,3 +84,9 @@ Once an app is "published" as a self-contained deployment, it is completely suff
 
 Additional examples in Campy test area (https://github.com/kaby76/Campy/tree/master/Tests), including Reduction, various sorting algorithms, FFT, etc.
  
+
+# Notes on Building Campy from Scratch
+
+* Make sure to install VS 2017 15.8.2.
+* Make sure to install NVIDIA GPU Toolkit 9.2.148.
+* Through VS, build Runtime.sln first, then Campy.sln
