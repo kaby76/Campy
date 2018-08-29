@@ -88,5 +88,7 @@ Additional examples in Campy test area (https://github.com/kaby76/Campy/tree/mas
 # Notes on Building Campy from Scratch
 
 * Make sure to install VS 2017 15.8.2.
+* Make sure to install VS 2015--it's required to compile CUDA code of the Runtime. Currently, VS 2017 does not work with CUDA GPU Toolkit 9.2.148.
 * Make sure to install NVIDIA GPU Toolkit 9.2.148.
-* Through VS, build Runtime.sln first, then Campy.sln
+* Through VS 2017, build Runtime.sln DEBUG first. It will prompt to upgrade--do not! Click on cancel and continue.
+* Through VS 2017, build Campy.sln DEBUG.
