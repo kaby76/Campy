@@ -148,9 +148,6 @@ namespace Campy.Compiler
 
             public void OutputEntireNode()
             {
-                if (!Campy.Utils.Options.IsOn("graph_trace"))
-                    return;
-
                 var v = this;
                 Console.WriteLine();
                 Console.WriteLine("Node: " + v.ToString() + " ");
@@ -234,6 +231,8 @@ namespace Campy.Compiler
 
         public void OutputDotGraph()
         {
+            System.Console.WriteLine("Dot Graph:");
+            System.Console.WriteLine();
             Dictionary<CFG.Vertex,bool> visited = new Dictionary<CFG.Vertex, bool>();
             Console.WriteLine("digraph {");
             foreach (var n in Edges)

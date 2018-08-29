@@ -168,12 +168,14 @@ namespace ConsoleApp4
             //Campy.Utils.Options.Set("state_computation_trace");
             Campy.Utils.Options.Set("overview_import_computation_trace");
             //     Campy.Utils.Options.Set("detailed_import_computation_trace");
-             //   Campy.Utils.Options.Set("detailed_import_computation_trace");
-           // Campy.Utils.Options.Set("continue_with_no_resolve");
+            //   Campy.Utils.Options.Set("detailed_import_computation_trace");
+            // Campy.Utils.Options.Set("continue_with_no_resolve");
             //Campy.Utils.Options.Set("copy_trace");
-        //    Campy.Utils.Options.Set("runtime_trace");
-            //Campy.Utils.Options.Set("ptx-output");
-            //Campy.Utils.Options.Set("llvm-output");
+            //    Campy.Utils.Options.Set("runtime_trace");
+            Campy.Utils.Options.Set("graph-output");
+            Campy.Utils.Options.Set("ptx-output");
+            Campy.Utils.Options.Set("llvm-output");
+            Campy.Utils.Options.Set("dot-output");
         }
 
         static void Main(string[] args)
@@ -183,16 +185,12 @@ namespace ConsoleApp4
             //{
             //    var x = new System.ArgumentNullException("hi");
             //});
-            Campy.Parallel.JustImport(i =>
+            Campy.Parallel.For(3, i =>
             {
+                //var j = i.ToString();
                 System.Console.WriteLine();
+                //System.Console.WriteLine(i.ToString());
             });
-            //Campy.Parallel.For(3, i =>
-            //{
-            //    //var j = i.ToString();
-            //    System.Console.WriteLine();
-            //    //System.Console.WriteLine(i.ToString());
-            //});
             //Campy.Parallel.For(3, i =>
             //{
             //    Base o1 = new Base();

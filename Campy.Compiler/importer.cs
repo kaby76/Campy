@@ -73,8 +73,10 @@ namespace Campy.Compiler
             Failed = false; // Might be dubious to reset here.
             this.Add(method_reference);
             this.ExtractBasicBlocks();
-            Cfg.OutputEntireGraph();
-            Cfg.OutputDotGraph();
+            if (Campy.Utils.Options.IsOn("dot-output"))
+                Cfg.OutputEntireGraph();
+            if (Campy.Utils.Options.IsOn("graph-output"))
+                Cfg.OutputDotGraph();
         }
 
         internal void Add(MethodReference method_reference)

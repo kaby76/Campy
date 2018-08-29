@@ -1991,6 +1991,26 @@
             Swigged.LLVM.IntPredicate.IntULE,
         };
 
+        public Swigged.LLVM.RealPredicate[] _real_pred = new Swigged.LLVM.RealPredicate[]
+        {
+            Swigged.LLVM.RealPredicate.RealOEQ,
+            Swigged.LLVM.RealPredicate.RealONE,
+            Swigged.LLVM.RealPredicate.RealOGT,
+            Swigged.LLVM.RealPredicate.RealOLT,
+            Swigged.LLVM.RealPredicate.RealOGE,
+            Swigged.LLVM.RealPredicate.RealOLE,
+        };
+
+        public Swigged.LLVM.RealPredicate[] _ureal_pred = new Swigged.LLVM.RealPredicate[]
+        {
+            Swigged.LLVM.RealPredicate.RealUEQ,
+            Swigged.LLVM.RealPredicate.RealUNE,
+            Swigged.LLVM.RealPredicate.RealUGT,
+            Swigged.LLVM.RealPredicate.RealULT,
+            Swigged.LLVM.RealPredicate.RealUGE,
+            Swigged.LLVM.RealPredicate.RealULE,
+        };
+
         public virtual PredicateType Predicate { get; set; }
         public virtual bool IsSigned { get; set; }
 
@@ -2062,6 +2082,26 @@
                 if (IsSigned) op = _int_pred[(int)Predicate];
                 else op = _uint_pred[(int)Predicate];
                 cmp = LLVM.BuildICmp(Builder, op, i1, i2, "i" + instruction_id++);
+                // Set up for push of 0/1.
+                var return_type = new TYPE(typeof(bool));
+                var ret_llvm = LLVM.BuildZExt(Builder, cmp, return_type.IntermediateTypeLLVM, "");
+                var ret = new VALUE(ret_llvm, return_type);
+                if (Campy.Utils.Options.IsOn("jit_trace"))
+                    System.Console.WriteLine(ret);
+                state._stack.Push(ret);
+            }
+            else if (t1.isFloatingPointTy() && t2.isFloatingPointTy())
+            {
+                var t1_t = t1.IntermediateTypeLLVM;
+                var t2_t = t2.IntermediateTypeLLVM;
+                var w1 = t1_t == LLVM.DoubleType() ? 2 : 1;
+                var w2 = t2_t == LLVM.DoubleType() ? 2 : 1;
+                if (w1 != w2)
+                    throw new Exception("Can't compare float and double--I don't know how to in LLVM!");
+                RealPredicate op;
+                if (IsSigned) op = _real_pred[(int)Predicate];
+                else op = _ureal_pred[(int)Predicate];
+                cmp = LLVM.BuildFCmp(Builder, op, v1_v, v2_v, "i" + instruction_id++);
                 // Set up for push of 0/1.
                 var return_type = new TYPE(typeof(bool));
                 var ret_llvm = LLVM.BuildZExt(Builder, cmp, return_type.IntermediateTypeLLVM, "");
@@ -6842,7 +6882,7 @@
             for (int j = 0; j < instructions.Length; ++j)
             {
                 var inst = instructions[j];
-                var goto_block = this.Block._graph.Entries.Find(
+                var goto_block = this.Block._graph.Vertices.Where(
                     e =>
                     {
                         var i = e.Instructions[0];
@@ -6851,7 +6891,7 @@
                         if (i.Instruction.Offset != inst.Offset)
                             return false;
                         return true;
-                    });
+                    }).First();
                 LLVM.AddCase(sw, LLVM.ConstInt(LLVM.Int32Type(), (ulong)j, false), goto_block.LlvmInfo.BasicBlock);
             }
         }
