@@ -1,4 +1,6 @@
-﻿namespace Campy.Compiler
+﻿using Campy.Graphs;
+
+namespace Campy.Compiler
 {
     using Mono.Cecil.Cil;
     using Mono.Cecil;
@@ -2937,8 +2939,6 @@
                 }
                 else
                     t_to = t_v;
-                //var op = this.Operand;
-                //var tt = op.GetType();
             }
 
             state._stack.Push(new VALUE(load));
@@ -6914,12 +6914,244 @@
     public class i_switch : INST
     {
         private TypeReference call_closure_value;
+        private PostDominators<CFG.Vertex, CFG.Edge> domr;
+        private Dominators<CFG.Vertex, CFG.Edge> domf;
+        private CFG.Vertex exit_block;
+        private CFG.Vertex default_block;
 
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_switch(b, i); }
         private i_switch(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         { // switch – table switch based on value page 382
+          /* The switch statement. Cases shown below.
+
+            i =>
+            {
+                switch (i)
+                {
+                    case 0: a[0] = 3;
+                        break;
+                    case 1: a[1] = 4;
+                        break;
+                    case 2: a[2] = 5;
+                        break;
+                    default:
+                        a[0] = 0;
+                        break;
+                }
+                if (q < 10)
+                    q = 0;
+                else
+                    q = 1;
+                //var j = i.ToString();
+                //System.Console.WriteLine();
+                //System.Console.WriteLine(i.ToString());
+            }
+
+
+              .method assembly hidebysig instance void 
+                '<Main>b__0'(
+                  int32 i
+                ) cil managed 
+              {
+                .maxstack 3
+                .locals init (
+                  [0] int32 V_0,
+                  [1] bool V_1
+                )
+
+                // [192 13 - 192 14]
+                IL_0000: nop          
+
+                // [193 17 - 193 27]
+                IL_0001: ldarg.1      // i
+                IL_0002: stloc.0      // V_0
+
+                IL_0003: ldloc.0      // V_0
+                IL_0004: switch       (IL_0017, IL_0022, IL_002d)
+                IL_0015: br.s         IL_0038
+
+                // [195 29 - 195 38]
+                IL_0017: ldarg.0      // this
+                IL_0018: ldfld        int32[] ConsoleApp4.Program/'<>c__DisplayClass1_0'::a
+                IL_001d: ldc.i4.0     
+                IL_001e: ldc.i4.3     
+                IL_001f: stelem.i4    
+
+                // [196 25 - 196 31]
+                IL_0020: br.s         IL_0043
+
+                // [197 29 - 197 38]
+                IL_0022: ldarg.0      // this
+                IL_0023: ldfld        int32[] ConsoleApp4.Program/'<>c__DisplayClass1_0'::a
+                IL_0028: ldc.i4.1     
+                IL_0029: ldc.i4.4     
+                IL_002a: stelem.i4    
+
+                // [198 25 - 198 31]
+                IL_002b: br.s         IL_0043
+
+                // [199 29 - 199 38]
+                IL_002d: ldarg.0      // this
+                IL_002e: ldfld        int32[] ConsoleApp4.Program/'<>c__DisplayClass1_0'::a
+                IL_0033: ldc.i4.2     
+                IL_0034: ldc.i4.5     
+                IL_0035: stelem.i4    
+
+                // [200 25 - 200 31]
+                IL_0036: br.s         IL_0043
+
+                // [202 25 - 202 34]
+                IL_0038: ldarg.0      // this
+                IL_0039: ldfld        int32[] ConsoleApp4.Program/'<>c__DisplayClass1_0'::a
+                IL_003e: ldc.i4.0     
+                IL_003f: ldc.i4.0     
+                IL_0040: stelem.i4    
+
+                // [203 25 - 203 31]
+                IL_0041: br.s         IL_0043
+
+                // [205 17 - 205 28]
+                IL_0043: ldarg.0      // this
+                IL_0044: ldfld        int32 ConsoleApp4.Program/'<>c__DisplayClass1_0'::q
+                IL_0049: ldc.i4.s     10 // 0x0a
+                IL_004b: clt          
+                IL_004d: stloc.1      // V_1
+
+                IL_004e: ldloc.1      // V_1
+                IL_004f: brfalse.s    IL_005a
+
+                // [206 21 - 206 27]
+                IL_0051: ldarg.0      // this
+                IL_0052: ldc.i4.0     
+                IL_0053: stfld        int32 ConsoleApp4.Program/'<>c__DisplayClass1_0'::q
+                IL_0058: br.s         IL_0061
+
+                // [208 21 - 208 27]
+                IL_005a: ldarg.0      // this
+                IL_005b: ldc.i4.1     
+                IL_005c: stfld        int32 ConsoleApp4.Program/'<>c__DisplayClass1_0'::q
+
+                // [212 13 - 212 14]
+                IL_0061: ret          
+
+              } // end of method '<>c__DisplayClass1_0'::'<Main>b__0'
+
+=======================================================================
+i =>
+            {
+                switch (i)
+                {
+                    case 0: a[0] = 3;
+                        break;
+                    case 1: a[1] = 4;
+                        break;
+                    case 2: a[2] = 5;
+                        break;
+                    //default:
+                    //    a[0] = 0;
+                    //    break;
+                }
+                if (q < 10)
+                    q = 0;
+                else
+                    q = 1;
+            }
+
+                .method assembly hidebysig instance void 
+                  '<Main>b__0'(
+                    int32 i
+                  ) cil managed 
+                {
+                  .maxstack 3
+                  .locals init (
+                    [0] int32 V_0,
+                    [1] bool V_1
+                  )
+
+                  // [192 13 - 192 14]
+                  IL_0000: nop          
+
+                  // [193 17 - 193 27]
+                  IL_0001: ldarg.1      // i
+                  IL_0002: stloc.0      // V_0
+
+                  IL_0003: ldloc.0      // V_0
+                  IL_0004: switch       (IL_0017, IL_0022, IL_002d)
+                  IL_0015: br.s         IL_0038
+
+                  // [195 29 - 195 38]
+                  IL_0017: ldarg.0      // this
+                  IL_0018: ldfld        int32[] ConsoleApp4.Program/'<>c__DisplayClass1_0'::a
+                  IL_001d: ldc.i4.0     
+                  IL_001e: ldc.i4.3     
+                  IL_001f: stelem.i4    
+
+                  // [196 25 - 196 31]
+                  IL_0020: br.s         IL_0038
+
+                  // [197 29 - 197 38]
+                  IL_0022: ldarg.0      // this
+                  IL_0023: ldfld        int32[] ConsoleApp4.Program/'<>c__DisplayClass1_0'::a
+                  IL_0028: ldc.i4.1     
+                  IL_0029: ldc.i4.4     
+                  IL_002a: stelem.i4    
+
+                  // [198 25 - 198 31]
+                  IL_002b: br.s         IL_0038
+
+                  // [199 29 - 199 38]
+                  IL_002d: ldarg.0      // this
+                  IL_002e: ldfld        int32[] ConsoleApp4.Program/'<>c__DisplayClass1_0'::a
+                  IL_0033: ldc.i4.2     
+                  IL_0034: ldc.i4.5     
+                  IL_0035: stelem.i4    
+
+                  // [200 25 - 200 31]
+                  IL_0036: br.s         IL_0038
+
+                  // [205 17 - 205 28]
+                  IL_0038: ldarg.0      // this
+                  IL_0039: ldfld        int32 ConsoleApp4.Program/'<>c__DisplayClass1_0'::q
+                  IL_003e: ldc.i4.s     10 // 0x0a
+                  IL_0040: clt          
+                  IL_0042: stloc.1      // V_1
+
+                  IL_0043: ldloc.1      // V_1
+                  IL_0044: brfalse.s    IL_004f
+
+                  // [206 21 - 206 27]
+                  IL_0046: ldarg.0      // this
+                  IL_0047: ldc.i4.0     
+                  IL_0048: stfld        int32 ConsoleApp4.Program/'<>c__DisplayClass1_0'::q
+                  IL_004d: br.s         IL_0056
+
+                  // [208 21 - 208 27]
+                  IL_004f: ldarg.0      // this
+                  IL_0050: ldc.i4.1     
+                  IL_0051: stfld        int32 ConsoleApp4.Program/'<>c__DisplayClass1_0'::q
+
+                  // [209 13 - 209 14]
+                  IL_0056: ret          
+
+                } // end of method '<>c__DisplayClass1_0'::'<Main>b__0'
+           */
+            domr = new PostDominators<CFG.Vertex, CFG.Edge>(
+                this.Block._graph, this.Block.Entry.BlocksOfMethod, this.Block.Exit);
+            domr.run();
+
+            domf = new Dominators<CFG.Vertex, CFG.Edge>(
+                this.Block._graph, this.Block.Entry.BlocksOfMethod, this.Block.Entry);
+            domf.run();
+            var start_hs = domf._doms[this.Block];
+            var end_hs = domr._doms[this.Block];
+            end_hs.Remove(this.Block.Entry);
+            end_hs.Remove(this.Block);
+            end_hs.Remove(this.Block.Entry.Exit);
+            if (end_hs.Count() != 1) throw new Exception("Cannot find exit point of switch");
+            exit_block = end_hs.First();
+            default_block = this.Block._graph.Successors(this.Block).Last();
             call_closure_value = state._stack.Pop();
             object operand = this.Operand;
             var t = operand.GetType();
@@ -6934,7 +7166,7 @@
             var t = operand.GetType();
             var s = LLVM.BuildIntCast(Builder, value.V, LLVM.Int32Type(), "i" + instruction_id++);
             Instruction[] instructions = operand as Instruction[];
-            var sw = LLVM.BuildSwitch(Builder, s, default(BasicBlockRef), (uint)instructions.Length);
+            var sw = LLVM.BuildSwitch(Builder, s, default_block.LlvmInfo.BasicBlock, (uint)instructions.Length);
             for (int j = 0; j < instructions.Length; ++j)
             {
                 var inst = instructions[j];

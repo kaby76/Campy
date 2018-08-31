@@ -179,6 +179,9 @@ namespace Campy.Compiler
             basic_block._method_definition = method_definition;
             basic_block._method_reference = original_method_reference;
             basic_block.Entry = basic_block;
+            basic_block.Exit = basic_block;
+            basic_block.Entry.BlocksOfMethod = new List<CFG.Vertex>();
+            basic_block.Entry.BlocksOfMethod.Add(basic_block);
             Cfg.Entries.Add(basic_block);
 
             // Add instructions to the basic block, including debugging information.
@@ -714,6 +717,9 @@ namespace Campy.Compiler
             var cfg = node._graph;
             CFG.Vertex result = (CFG.Vertex)cfg.AddVertex(new CFG.Vertex() { Name = cfg.NewNodeNumber().ToString() });
             result.Entry = node.Entry;
+            if (node == node.Entry.Exit)
+                node.Entry.Exit = result;
+            node.Entry.BlocksOfMethod.Add(result);
             result._method_definition = node._method_definition;
             result._method_reference = node._method_reference;
 

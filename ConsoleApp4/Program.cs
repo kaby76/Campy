@@ -176,7 +176,7 @@ namespace ConsoleApp4
             Campy.Utils.Options.Set("ptx-output");
             Campy.Utils.Options.Set("llvm-output");
             Campy.Utils.Options.Set("dot-output");
-            Campy.Utils.Options.Set("import-only");
+            //Campy.Utils.Options.Set("import-only");
         }
 
         static void Main(string[] args)
@@ -198,14 +198,14 @@ namespace ConsoleApp4
                         break;
                     case 2: a[2] = 5;
                         break;
-                    default:
-                        a[0] = 0;
-                        break;
+                    //default:
+                    //    a[0] = 0;
+                    //    break;
                 }
-                q = 2;
-                //var j = i.ToString();
-                //System.Console.WriteLine();
-                //System.Console.WriteLine(i.ToString());
+                if (q < 10)
+                    q = 0;
+                else
+                    q = 1;
             });
             //Campy.Parallel.For(3, i =>
             //{

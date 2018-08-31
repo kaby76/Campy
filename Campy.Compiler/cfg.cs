@@ -138,10 +138,24 @@ namespace Campy.Compiler
             public bool HasThis { get; set; }
             public bool HasScalarReturnValue { get; set; }
             public bool HasStructReturnValue { get; set; }
-            public Vertex Exit { get; set; }
+            private Vertex _exit_block; // Valid for entry only.
+            public Vertex Exit
+            {
+                // Exit block is always changing, but entry never changes.
+                // So, get and set exit block from Entry block!!!!!!!!!!
+                get
+                {
+                    return _exit_block;
+                }
+                set
+                {
+                    _exit_block = value;
+                }
+            }
             public bool IsExit { get { return Exit == this; } }
             public Vertex Entry { get; set; }
             public bool IsEntry { get { return Entry == this; } }
+            public List<Vertex> BlocksOfMethod { get; set; } // Valid for entry only.
             public bool IsCatch { get; set; }
             public Mono.Cecil.Cil.ExceptionHandler ExceptionHandler { get; set; }
             public TypeReference CatchType { get; set; }
