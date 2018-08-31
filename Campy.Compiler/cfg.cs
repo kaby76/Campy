@@ -138,6 +138,8 @@ namespace Campy.Compiler
             public bool HasThis { get; set; }
             public bool HasScalarReturnValue { get; set; }
             public bool HasStructReturnValue { get; set; }
+            public Vertex Exit { get; set; }
+            public bool IsExit { get { return Exit == this; } }
             public Vertex Entry { get; set; }
             public bool IsEntry { get { return Entry == this; } }
             public bool IsCatch { get; set; }

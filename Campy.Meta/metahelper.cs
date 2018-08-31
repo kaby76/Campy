@@ -487,7 +487,7 @@ namespace Campy.Meta
             else if (type as ByReferenceType != null)
             {
                 var gp = type as ByReferenceType;
-                var x = gp.GetElementType();
+                var x = gp.ElementType;
                 type = new ByReferenceType(x.SubstituteMonoTypeReference());
                 return type;
             }
@@ -516,7 +516,7 @@ namespace Campy.Meta
             else if (type as PointerType != null)
             {
                 var gp = type as PointerType;
-                var x = gp.GetElementType();
+                var x = gp.ElementType;
                 type = new PointerType(x.SubstituteMonoTypeReference());
                 return type;
             }
@@ -707,8 +707,7 @@ namespace Campy.Meta
         private static int _nn_id = 0;
         private static bool init = false;
 
-        public static TypeRef ToTypeRef(
-            this TypeReference tr)
+        public static TypeRef ToTypeRef(this TypeReference tr)
         {
             if (!init)
             {
@@ -810,54 +809,33 @@ namespace Campy.Meta
 
             try
             {
-                // Check basic types using TypeDefinition.
-                // I don't know why, but Resolve() of System.Int32[] (an arrary) returns a simple System.Int32, not
-                // an array. If always true, then use TypeReference as much as possible.
-                // Resolve() also warps pointer types into just the element type. Really bad design in Mono!
-                // All I want is just the frigging information about the type. For example, to know if the
-                // type is a class, you have to convert it to a TypeDefinition because a TypeReference does
-                // not have IsClass property! Really really really poor design for a type system. Sure, keep
-                // a basic understanding of applied and defining occurences, but please, keep type information
-                // about! I cannot rail enough with this half-baked type system in Mono. It has caused so many
-                // problems!!!!!!!
-
+                var is_pointer = tr.IsPointer;
+                GenericInstanceType git = tr as GenericInstanceType;
                 TypeDefinition td = tr.Resolve();
 
-                var is_pointer = tr.IsPointer;
-                var is_reference = tr.IsByReference;
-                var is_array = tr.IsArray;
-                var is_value_type = tr.IsValueType;
-                GenericInstanceType git = tr as GenericInstanceType;
-                TypeDefinition gtd = tr as TypeDefinition;
-
-                if (is_reference)
+                if (tr as ByReferenceType != null)
                 {
-                    // Convert the base type first.
-                    var base_type = ToTypeRef(td);
-                    // Add in pointer to type.
-                    TypeRef p = LLVM.PointerType(base_type, 0);
+                    var ref_type = tr as ByReferenceType;
+                    var b = ref_type.ElementType;
+                    var mb = ToTypeRef(b);
+                    TypeRef p = LLVM.PointerType(mb, 0);
+                    previous_llvm_types_created_global.Add(tr, p);
                     return p;
                 }
 
-                // System.Array is not considered an "array", rather a "class". So, we need to handle
-                // this type.
+                // Special case.
                 if (tr.FullName == "System.Array")
                 {
-                    // Create a basic int[] and call it the day.
-                    var original_tr = tr;
-
-                    tr = typeof(int[]).ToMonoTypeReference();
-                    var p = tr.ToTypeRef();
-                    previous_llvm_types_created_global.Add(original_tr, p);
+                    var new_tr = typeof(int[]).ToMonoTypeReference();
+                    var p = new_tr.ToTypeRef();
+                    previous_llvm_types_created_global.Add(tr, p);
                     return p;
                 }
-                else if (tr.IsArray)
+
+                if (tr as ArrayType != null)
                 {
-                    // Note: mono_type_reference.GetElementType() is COMPLETELY WRONG! It does not function the same
-                    // as system_type.GetElementType(). Use ArrayType.ElementType!
                     var array_type = tr as ArrayType;
                     var element_type = array_type.ElementType;
-                    // ContextRef c = LLVM.ContextCreate();
                     ContextRef c = LLVM.GetGlobalContext();
                     string type_name = RenameToLegalLLVMName(tr.ToString());
                     TypeRef s = LLVM.StructCreateNamed(c, type_name);
@@ -872,11 +850,13 @@ namespace Campy.Meta
                     }, true);
                     return p;
                 }
-                else if (tr.IsGenericParameter)
+
+                if (tr.IsGenericParameter)
                 {
                     throw new Exception("Cannot convert " + tr.Name);
                 }
-                else if (td != null && td.IsEnum)
+
+                if (td != null && td.IsEnum)
                 {
                     // Enums are any underlying type, e.g., one of { bool, char, int8,
                     // unsigned int8, int16, unsigned int16, int32, unsigned int32, int64, unsigned int64, native int,

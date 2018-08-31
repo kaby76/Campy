@@ -43,7 +43,7 @@ namespace Campy.Compiler
             return weeded;
         }
 
-        private static void InitStateGenerics(STATE<TypeReference, SafeStackQueue<TypeReference>> state,
+        private static void InitStateCallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state,
             Dictionary<CFG.Vertex, STATE<TypeReference, SafeStackQueue<TypeReference>>> states_in,
             Dictionary<CFG.Vertex, STATE<TypeReference, SafeStackQueue<TypeReference>>> states_out,
             CFG.Vertex bb)
@@ -90,7 +90,12 @@ namespace Campy.Compiler
             {
                 if (!bb.IsEntry) throw new Exception("Cannot handle dead code blocks.");
                 if (has_this)
-                    state._stack.Push(bb._method_reference.DeclaringType);
+                {
+                    var dt = bb._method_reference.DeclaringType;
+                    if (dt.IsValueType)
+                        dt = new PointerType(dt); // For values, it's boxed.
+                    state._stack.Push(dt);
+                }
 
                 for (int i = 0; i < bb._method_definition.Parameters.Count; ++i)
                 {
@@ -192,7 +197,7 @@ namespace Campy.Compiler
             }
         }
 
-        public static void PropagateTypesAndPerformCallClosure(this List<CFG.Vertex> basic_blocks_to_compile)
+        public static void PropagateCallClosure(this List<CFG.Vertex> basic_blocks_to_compile)
         {
             if (basic_blocks_to_compile.Count == 0)
                 return;
@@ -232,7 +237,7 @@ namespace Campy.Compiler
 
                     // Create new stack state with predecessor information, basic block/function
                     // information.
-                    var state_in = new STATE<TypeReference, SafeStackQueue<TypeReference>>(visited, states_in, states_out, bb, InitStateGenerics);
+                    var state_in = new STATE<TypeReference, SafeStackQueue<TypeReference>>(visited, states_in, states_out, bb, InitStateCallClosure);
 
                     if (Campy.Utils.Options.IsOn("detailed_import_computation_trace"))
                     {

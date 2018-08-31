@@ -57,11 +57,11 @@ namespace Campy.Meta
             [MarshalAs(UnmanagedType.LPStr)] string name,
             System.IntPtr nested);
 
-        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclGetArrayTypeDef")]
-        public static extern System.IntPtr BclGetArrayTypeDef(IntPtr element_type, int rank);
+        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclConstructArrayType")]
+        public static extern System.IntPtr BclConstructArrayType(IntPtr element_type, int rank);
 
-        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclGenericsGetGenericTypeFromCoreType")]
-        public static extern System.IntPtr BclGenericsGetGenericTypeFromCoreType(IntPtr base_type, int count, IntPtr[] args);
+        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclConstructGenericInstanceType")]
+        public static extern System.IntPtr BclConstructGenericInstanceType(IntPtr base_type, int count, IntPtr[] args);
 
         [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclHeapGetType")]
         public static extern System.IntPtr BclHeapGetType(IntPtr ptr);
@@ -1036,14 +1036,14 @@ declare i64 @_Z62System_Runtime_CompilerServices_RuntimeHelpers_InitializeArrayP
                     for (int i = 0; i < count; ++i)
                         args[i] = (System.IntPtr)MonoBclMap_GetBcl(generic_arguments[i]);
                     RUNTIME.BclCheckHeap();
-                    result = BclGenericsGetGenericTypeFromCoreType(result, count, args);
+                    result = BclConstructGenericInstanceType(result, count, args);
                 }
                 else if (mt.IsArray)
                 {
                     var et = mt.GetElementType();
                     var mta = mt as Mono.Cecil.ArrayType;
                     var bcl_et = MonoBclMap_GetBcl(et);
-                    result = BclGetArrayTypeDef(bcl_et, mta.Rank);
+                    result = BclConstructArrayType(bcl_et, mta.Rank);
                 }
                 else
                 {

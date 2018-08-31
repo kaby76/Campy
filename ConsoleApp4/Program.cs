@@ -167,7 +167,7 @@ namespace ConsoleApp4
             //Campy.Utils.Options.Set("ptx_trace");
             Campy.Utils.Options.Set("state_computation_trace");
             Campy.Utils.Options.Set("overview_import_computation_trace");
-            //     Campy.Utils.Options.Set("detailed_import_computation_trace");
+            Campy.Utils.Options.Set("detailed_import_computation_trace");
             //   Campy.Utils.Options.Set("detailed_import_computation_trace");
             // Campy.Utils.Options.Set("continue_with_no_resolve");
             //Campy.Utils.Options.Set("copy_trace");
@@ -176,6 +176,7 @@ namespace ConsoleApp4
             Campy.Utils.Options.Set("ptx-output");
             Campy.Utils.Options.Set("llvm-output");
             Campy.Utils.Options.Set("dot-output");
+            Campy.Utils.Options.Set("import-only");
         }
 
         static void Main(string[] args)
@@ -185,10 +186,25 @@ namespace ConsoleApp4
             //{
             //    var x = new System.ArgumentNullException("hi");
             //});
+            int q = 1;
+            int[] a = new int[3];
             Campy.Parallel.For(3, i =>
             {
+                switch (i)
+                {
+                    case 0: a[0] = 3;
+                        break;
+                    case 1: a[1] = 4;
+                        break;
+                    case 2: a[2] = 5;
+                        break;
+                    default:
+                        a[0] = 0;
+                        break;
+                }
+                q = 2;
                 //var j = i.ToString();
-                System.Console.WriteLine();
+                //System.Console.WriteLine();
                 //System.Console.WriteLine(i.ToString());
             });
             //Campy.Parallel.For(3, i =>

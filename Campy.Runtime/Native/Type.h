@@ -117,20 +117,11 @@
 
 //U32 Type_IsMethod(tMD_MethodDef *pMethod, STRING name, tMD_TypeDef *pReturnType, U32 numParams, ...);
 function_space_specifier U32 Type_IsMethod(tMD_MethodDef *pMethod, STRING name, tMD_TypeDef *pReturnType, U32 numParams, U8 *pParamTypeIndexs);
-
 function_space_specifier void Type_Init();
-
 function_space_specifier U32 Type_IsValueType(tMD_TypeDef *pTypeDef);
-
 function_space_specifier tMD_TypeDef* Type_GetTypeFromSig(tMetaData *pMetaData, SIG *pSig, tMD_TypeDef **ppClassTypeArgs, tMD_TypeDef **ppMethodTypeArgs);
-
-// Is TestType derived from BaseType or the same as BaseType?
 function_space_specifier U32 Type_IsDerivedFromOrSame(tMD_TypeDef *pBaseType, tMD_TypeDef *pTestType);
-// Does TestType implement pInterface?
 function_space_specifier U32 Type_IsImplemented(tMD_TypeDef *pInterface, tMD_TypeDef *pTestType);
-// Can a variable of FromType be assigend to ToType?
 function_space_specifier U32 Type_IsAssignableFrom(tMD_TypeDef *pToType, tMD_TypeDef *pFromType);
-
 function_space_specifier tMD_TypeDef* Type_GetArrayTypeDef(tMD_TypeDef *pElementType, int rank, tMD_TypeDef **ppClassTypeArgs, tMD_TypeDef **ppMethodTypeArgs);
-
 function_space_specifier HEAP_PTR Type_GetTypeObject(tMD_TypeDef *pTypeDef);

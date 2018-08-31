@@ -76,7 +76,7 @@ EXPORT int BclSizeOf(void * bcl_type)
 	return pType->instanceMemSize;
 }
 
-EXPORT void* BclGetArrayTypeDef(void* element_type_def, int rank)
+EXPORT void* BclConstructArrayType(void* element_type_def, int rank)
 {
 	if (_bcl_ && _bcl_->options & BCL_DEBUG_FUNCTION_ENTRY)
 		Gprintf("BclArrayAlloc\n");
@@ -101,7 +101,7 @@ EXPORT void* BclGetMetaOfType(char* assemblyName, char* nameSpace, char* name, v
 	return (void*)result;
 }
 
-EXPORT void* BclGenericsGetGenericTypeFromCoreType(void * c, U32 numTypeArgs, void * a)
+EXPORT void* BclConstructGenericInstanceType(void * c, U32 numTypeArgs, void * a)
 {
 	tMD_TypeDef * pCoreType = (tMD_TypeDef *)c;
 	tMD_TypeDef ** ppTypeArgs = (tMD_TypeDef **)a;

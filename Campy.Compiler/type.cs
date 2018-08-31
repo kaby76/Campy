@@ -36,6 +36,7 @@ namespace Campy.Compiler
         {
             var mono_type = system_type.ToMonoTypeReference();
             _cil_type = mono_type;
+            _cil_type_llvm = _cil_type.ToTypeRef();
             _storage_type = _cil_type;
             _storage_type_llvm = _storage_type.ToTypeRef();
             _verification_type = METAHELPER.InitVerificationType(_cil_type);

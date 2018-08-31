@@ -70,7 +70,7 @@ namespace Campy
             Singleton.Buffer.FullSynch();
         }
 
-        public static void JustImport(SimpleKernel simpleKernel)
+        private static void JustImport(SimpleKernel simpleKernel)
         {
             System.Reflection.MethodInfo method_info = simpleKernel.Method;
             String kernel_assembly_file_name = method_info.DeclaringType.Assembly.Location;
@@ -85,6 +85,12 @@ namespace Campy
 
         public static void For(int number_of_threads, SimpleKernel simpleKernel)
         {
+            if (Campy.Utils.Options.IsOn("import-only"))
+            {
+                JustImport(simpleKernel);
+                return;
+            }
+
             GCHandle handle1 = default(GCHandle);
             GCHandle handle2 = default(GCHandle);
 

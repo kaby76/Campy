@@ -2683,11 +2683,27 @@
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(o);
             TypeRef tr = LLVM.TypeOf(o.V);
-            var tr_bcltype = RUNTIME.MonoBclMap_GetBcl(call_closure_object);
             bool isPtr = o.T.isPointerTy();
             bool isArr = o.T.isArrayTy();
             bool isSt = o.T.isStructTy();
             bool is_ptr = false;
+
+            IntPtr tr_bcltype = IntPtr.Zero;
+            if (call_closure_object as PointerType != null)
+            {
+                var pointer = call_closure_object as PointerType;
+                var element = pointer.ElementType;
+                tr_bcltype = RUNTIME.MonoBclMap_GetBcl(element);
+            }
+            else if (call_closure_object as ByReferenceType != null)
+            {
+                var pointer = call_closure_object as ByReferenceType;
+                var element = pointer.ElementType;
+                tr_bcltype = RUNTIME.MonoBclMap_GetBcl(element);
+            }
+            else
+                tr_bcltype = RUNTIME.MonoBclMap_GetBcl(call_closure_object);
+
             if (isPtr)
             {
                 uint offset = 0;
@@ -2838,7 +2854,8 @@
         protected TYPE _dst;
         protected bool _check_overflow;
         protected bool _from_unsigned;
-        private TypeReference call_closure_type;
+        private TypeReference _after_indirect_type;
+        private TypeReference _before_indirect_type;
 
         public ConvertLoadIndirect(CFG.Vertex b, Mono.Cecil.Cil.Instruction i)
             : base(b, i)
@@ -2848,15 +2865,31 @@
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {  // ldind -- load value indirect onto the stack, p 367
             var i = state._stack.Pop();
+            _before_indirect_type = i;
             TypeReference v = null;
             if (i as ByReferenceType != null)
             {
                 var j = i as ByReferenceType;
                 v = j.ElementType;
             }
+            else if (i as PointerType != null)
+            {
+                var j = i as PointerType;
+                v = j.ElementType;
+            }
+            else if (_dst != null)
+            {
+                // The value is a boxed type and should be marked as such.
+                // The original type should be by ref type or pointer.
+                v = _dst.CilType;
+            }
             else
-                v = i.GetElementType();
-            call_closure_type = v;
+            {
+                // The value is a ref type. It is the value v.
+                // I haven't seen this, but I guess it could happen.
+                // The original type should be by ref type or pointer.
+            }
+            _after_indirect_type = v;
             state._stack.Push(v);
         }
 
@@ -2866,10 +2899,20 @@
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine("ConvertLoadIndirect into function " + v.ToString());
 
-            TypeRef tr = LLVM.TypeOf(v.V);
+		    var load = v.V;
+            TypeRef tr = LLVM.TypeOf(load);
             TypeKind kind = LLVM.GetTypeKind(tr);
 
-            var load = v.V;
+		    if (kind == TypeKind.IntegerTypeKind)
+		    {
+                // This is ok as it's probably just a native int. Make sure
+                // it's 64-bits, then type cast.
+		        if (tr == LLVM.Int64Type() && _dst != null)
+		        {
+		            load = LLVM.BuildIntToPtr(Builder,
+		                v.V, LLVM.PointerType(_dst.CilTypeLLVM, 0), "i" + instruction_id++);
+		        }
+		    }
             load = LLVM.BuildLoad(Builder, load, "i" + instruction_id++);
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(new VALUE(load));
@@ -4797,9 +4840,24 @@
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(v);
             TypeRef tr = LLVM.TypeOf(v.V);
-            var tr_bcltype = RUNTIME.MonoBclMap_GetBcl(call_closure_object);
             bool isPtr = v.T.isPointerTy();
             bool is_ptr = false;
+            IntPtr tr_bcltype = IntPtr.Zero;
+            if (call_closure_object as PointerType != null)
+            {
+                var pointer = call_closure_object as PointerType;
+                var element = pointer.ElementType;
+                tr_bcltype = RUNTIME.MonoBclMap_GetBcl(element);
+            }
+            else if (call_closure_object as ByReferenceType != null)
+            {
+                var pointer = call_closure_object as ByReferenceType;
+                var element = pointer.ElementType;
+                tr_bcltype = RUNTIME.MonoBclMap_GetBcl(element);
+            }
+            else
+                tr_bcltype = RUNTIME.MonoBclMap_GetBcl(call_closure_object);
+
 
             ValueRef load;
             if (isPtr)
@@ -5264,7 +5322,7 @@
     public class i_ldind_ref : ConvertLoadIndirect
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldind_ref(b, i); }
-        private i_ldind_ref(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(object)); }
+        private i_ldind_ref(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = null; }
     }
 
     public class i_ldind_u1 : ConvertLoadIndirect
@@ -6780,18 +6838,23 @@
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {   // stsfld (store static field), ecma 335 page 429
-            state._stack.Pop();
+            var v = state._stack.Pop();
             var operand = this.Operand;
             var mono_field_reference = operand as FieldReference;
             if (mono_field_reference == null) throw new Exception("Unknown field type");
-            call_closure_type = mono_field_reference.ResolveDeclaringType();
-            var mono_field_type = mono_field_reference.FieldType;
-            call_closure_field_type = mono_field_type.RewriteMonoTypeReference();
+            var d = mono_field_reference.DeclaringType;
+            d = d.RewriteMonoTypeReference();
+            var o = d.Deresolve(this.Block._method_reference.DeclaringType, null);
+            call_closure_type = o;
+            var f = mono_field_reference.FieldType;
+            f = f.RewriteMonoTypeReference();
+            f = f.Deresolve(this.Block._method_reference.DeclaringType, null);
+            call_closure_field_type = f;
         }
 
         public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
         {   // stsfld (store static field), ecma 335 page 429
-            var value = state._stack.Pop();
+            var v = state._stack.Pop();
             var operand = this.Operand;
             var mono_field_reference = operand as FieldReference;
             var type_f1 = call_closure_field_type.ToTypeRef();
@@ -6821,8 +6884,8 @@
             var f1 = LLVM.BuildIntToPtr(Builder, address, type_f1, "i" + instruction_id++);
             var type_f2 = LLVM.PointerType(type_f1, 0);
             var f2 = LLVM.BuildPointerCast(Builder, f1, type_f2, "i" + instruction_id++);
-            var src = value.V;
-            if (LLVM.TypeOf(value.V) != type_f1)
+            var src = v.V;
+            if (LLVM.TypeOf(v.V) != type_f1)
             {
                 src = LLVM.BuildPointerCast(Builder, src, type_f1, "i" + instruction_id++);
             }
