@@ -162,12 +162,12 @@ namespace ConsoleApp4
             //     Campy.Utils.Options.Set("cfg_construction_trace");
  //                 Campy.Utils.Options.Set("cfg_construction_trace");
             //Campy.Utils.Options.Set("dot_graph");
-            Campy.Utils.Options.Set("jit_trace");
+            //Campy.Utils.Options.Set("jit_trace");
             //Campy.Utils.Options.Set("memory_trace");
             //Campy.Utils.Options.Set("ptx_trace");
-            Campy.Utils.Options.Set("state_computation_trace");
+            //Campy.Utils.Options.Set("state_computation_trace");
             Campy.Utils.Options.Set("overview_import_computation_trace");
-            Campy.Utils.Options.Set("detailed_import_computation_trace");
+            //Campy.Utils.Options.Set("detailed_import_computation_trace");
             //   Campy.Utils.Options.Set("detailed_import_computation_trace");
             // Campy.Utils.Options.Set("continue_with_no_resolve");
             //Campy.Utils.Options.Set("copy_trace");
@@ -190,22 +190,7 @@ namespace ConsoleApp4
             int[] a = new int[3];
             Campy.Parallel.For(3, i =>
             {
-                switch (i)
-                {
-                    case 0: a[0] = 3;
-                        break;
-                    case 1: a[1] = 4;
-                        break;
-                    case 2: a[2] = 5;
-                        break;
-                    //default:
-                    //    a[0] = 0;
-                    //    break;
-                }
-                if (q < 10)
-                    q = 0;
-                else
-                    q = 1;
+                System.Console.WriteLine();
             });
             //Campy.Parallel.For(3, i =>
             //{

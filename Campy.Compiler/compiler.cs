@@ -255,6 +255,8 @@ namespace Campy.Compiler
                         state_in.OutputTrace(new String(' ', 4));
                     }
 
+                    bb.FirstPassStateIn = state_in;
+
                     INST last_inst = null;
                     for (int i = 0; i < bb.Instructions.Count; ++i)
                     {
@@ -265,6 +267,8 @@ namespace Campy.Compiler
                         if (Campy.Utils.Options.IsOn("detailed_import_computation_trace"))
                             state_out.OutputTrace(new String(' ', 4));
                     }
+
+                    bb.FirstPassStateOut = state_out;
 
                     visited[bb] = true;
                 }
@@ -813,52 +817,52 @@ namespace Campy.Compiler
             }
 
             // Finally, update phi functions with "incoming" information from predecessors.
-            foreach (var ob in order)
+            foreach (var bb in order)
             {
                 if (Campy.Utils.Options.IsOn("state_computation_trace"))
-                    System.Console.WriteLine("Working on phis for node " + ob.Name);
-                CFG.Vertex node = ob;
-                CFG.Vertex llvm_node = node;
-                int size = states_in[llvm_node]._stack.Count;
+                    System.Console.WriteLine("Working on phis for node " + bb.Name);
+                int size = states_in[bb]._stack.Count;
+                // Annoyingly, the stack values can be of different types.
+                // Construct casts for phi's to lower any types to a common type.
                 for (int i = 0; i < size; ++i)
                 {
-                    var count = llvm_node._graph.Predecessors(llvm_node).Count();
+                    var count = bb._graph.Predecessors(bb).Count();
                     if (count < 2) continue;
                     if (Campy.Utils.Options.IsOn("state_computation_trace"))
                         System.Console.WriteLine("phi nodes need for "
-                                                 + ob.Name + " for stack depth " + i);
+                                                 + bb.Name + " for stack depth " + i);
                     ValueRef res;
-                    res = states_in[llvm_node]._stack[i].V;
-                    if (!llvm_node.LlvmInfo.Phi.Contains(res))
+                    res = states_in[bb]._stack[i].V;
+                    if (!bb.LlvmInfo.Phi.Contains(res))
                         continue;
                     ValueRef[] phi_vals = new ValueRef[count];
+                    // 1st pass, get all types and lower. We only handle classes.
+                    TYPE lowest = null;
                     for (int c = 0; c < count; ++c)
                     {
-                        var p = llvm_node._graph.PredecessorEdges(llvm_node).ToList()[c].From;
+                        var p = bb._graph.PredecessorEdges(bb).ToList()[c].From;
                         if (Campy.Utils.Options.IsOn("state_computation_trace"))
                             System.Console.WriteLine("Adding in phi for pred state "
                                                      + p.Name);
-                        var plm = p;
-                        var vr = states_out[plm]._stack[i];
-                        phi_vals[c] = vr.V;
+                        var vr = states_out[p]._stack[i];
+                        var stuff = vr.V;
+                        if (LLVM.TypeOf(vr.V) != LLVM.TypeOf(res))
+                        {
+                            var last = LLVM.GetLastInstruction(p.LlvmInfo.BasicBlock);
+                            LLVM.PositionBuilderBefore(p.LlvmInfo.Builder, last);
+                            stuff = Casting.CastArg(p.LlvmInfo.Builder,
+                                stuff, LLVM.TypeOf(stuff), LLVM.TypeOf(res), true);
+                        }
+                        phi_vals[c] = stuff;
                     }
 
                     BasicBlockRef[] phi_blocks = new BasicBlockRef[count];
                     for (int c = 0; c < count; ++c)
                     {
-                        var p = llvm_node._graph.PredecessorEdges(llvm_node).ToList()[c].From;
+                        var p = bb._graph.PredecessorEdges(bb).ToList()[c].From;
                         var plm = p;
                         phi_blocks[c] = plm.LlvmInfo.BasicBlock;
                     }
-
-                    //System.Console.WriteLine();
-                    //System.Console.WriteLine("Node " + llvm_node.Name + " stack slot " + i + " types:");
-                    for (int c = 0; c < count; ++c)
-                    {
-                        var vr = phi_vals[c];
-                        //System.Console.WriteLine(GetStringTypeOf(vr));
-                    }
-
                     LLVM.AddIncoming(res, phi_vals, phi_blocks);
                 }
             }

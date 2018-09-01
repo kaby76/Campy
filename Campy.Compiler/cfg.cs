@@ -161,7 +161,8 @@ namespace Campy.Compiler
             public TypeReference CatchType { get; set; }
             public int StackNumberOfLocals { get; set; }
             public int StackNumberOfArguments { get; set; }
-
+            public STATE<TypeReference, SafeStackQueue<TypeReference>> FirstPassStateOut { get; set; }
+            public STATE<TypeReference, SafeStackQueue<TypeReference>> FirstPassStateIn { get; set; }
             public void OutputEntireNode()
             {
                 var v = this;
