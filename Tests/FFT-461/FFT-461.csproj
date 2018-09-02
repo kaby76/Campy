@@ -102,8 +102,6 @@
     <Copy SourceFiles="$(MSBuildProjectDirectory)\..\..\x64\Debug\campy-runtime-wrapper.lib" DestinationFolder="$(OutDir)" />
     <Copy SourceFiles="$(MSBuildProjectDirectory)\..\..\x64\Debug\campy-runtime-wrapper.dll" DestinationFolder="$(OutDir)" />
     <Copy SourceFiles="$(MSBuildProjectDirectory)\..\..\x64\Debug\campy-runtime-wrapper.pdb" DestinationFolder="$(OutDir)" />
-    <Copy SourceFiles="$(MSBuildProjectDirectory)\..\..\x64\Debug\cudart32_91.dll" DestinationFolder="$(OutDir)" />
-    <Copy SourceFiles="$(MSBuildProjectDirectory)\..\..\x64\Debug\cudart64_91.dll" DestinationFolder="$(OutDir)" />
   </Target>
   <Target Name="CopyCustomContentOnPublish" AfterTargets="Publish">
     <Copy SourceFiles="$(MSBuildProjectDirectory)\..\..\Campy.Runtime\Corlib\bin\Debug\netstandard2.0\corlib.dll" DestinationFolder="$(PublishDir)" />
@@ -113,8 +111,6 @@
     <Copy SourceFiles="$(MSBuildProjectDirectory)\..\..\x64\Debug\campy-runtime-wrapper.lib" DestinationFolder="$(PublishDir)" />
     <Copy SourceFiles="$(MSBuildProjectDirectory)\..\..\x64\Debug\campy-runtime-wrapper.dll" DestinationFolder="$(PublishDir)" />
     <Copy SourceFiles="$(MSBuildProjectDirectory)\..\..\x64\Debug\campy-runtime-wrapper.pdb" DestinationFolder="$(PublishDir)" />
-    <Copy SourceFiles="$(MSBuildProjectDirectory)\..\..\x64\Debug\cudart32_91.dll" DestinationFolder="$(PublishDir)" />
-    <Copy SourceFiles="$(MSBuildProjectDirectory)\..\..\x64\Debug\cudart64_91.dll" DestinationFolder="$(PublishDir)" />
   </Target>
   <Import Project="..\..\packages\MSTest.TestAdapter.1.3.1\build\net45\MSTest.TestAdapter.targets" Condition="Exists('..\..\packages\MSTest.TestAdapter.1.3.1\build\net45\MSTest.TestAdapter.targets')" />
   <Import Project="..\..\packages\swigged.cuda.9.185.8\build\swigged.cuda.targets" Condition="Exists('..\..\packages\swigged.cuda.9.185.8\build\swigged.cuda.targets')" />
