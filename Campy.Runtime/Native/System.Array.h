@@ -35,7 +35,7 @@ function_space_specifier HEAP_PTR SystemArray_NewVector(tMD_TypeDef *pArrayTypeD
 function_space_specifier U32 SystemArray_Length(void * p);
 function_space_specifier void SystemArray_StoreElement(HEAP_PTR pThis_, U32 index, PTR value);
 function_space_specifier void SystemArray_LoadElement(HEAP_PTR pThis_, U32 index, PTR value);
-#define SystemArray_GetElements(pArray) ((PTR)(((PTR)pArray)+4))
+function_space_specifier PTR SystemArray_GetElements(HEAP_PTR pArray);
 function_space_specifier void SystemArray_LoadElementIndices(HEAP_PTR pThis_, U64* indices, U64* value);
 function_space_specifier void SystemArray_LoadElementIndicesAddress(HEAP_PTR pThis_, U64* indices, HEAP_PTR * value_address);
 function_space_specifier void SystemArray_StoreElementIndices(HEAP_PTR pThis_, U64* indices, U64* value);

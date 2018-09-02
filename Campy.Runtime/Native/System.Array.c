@@ -653,6 +653,11 @@ function_space_specifier PTR SystemArray_LoadElementAddress(HEAP_PTR pThis_, U32
     return beginning_of_elements + pArrayTypeDef->pArrayElementType->arrayElementSize * index;
 }
 
+function_space_specifier PTR SystemArray_GetElements(HEAP_PTR pThis_)
+{
+    return SystemArray_LoadElementAddress(pThis_, 0);
+}
+
 function_space_specifier U32 SystemArray_GetNumBytes(HEAP_PTR pThis_, tMD_TypeDef *pElementType) {
     U32 len = *((&(((tSystemArray*)pThis_)->rank)) + 1);
     return (len * pElementType->arrayElementSize) + sizeof(tSystemArray);
