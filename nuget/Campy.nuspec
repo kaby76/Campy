@@ -22,7 +22,7 @@
 
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>A compiler and API for GP-GPU computing using C# or any other NET language, for Windows and Ubuntu x64.</description>
-    <releaseNotes>Version 0.0.14--Large set of changes for compiling and running much expanded standard runtime. NOTE: This release is targeted for Windows only. Linux target temporarily unavailable. See http://campynet.com/?p=597</releaseNotes>
+    <releaseNotes>Version 0.0.14--Large set of changes for compiling and running much expanded standard runtime. NOTE: This release is targeted for Windows only. Linux target temporarily unavailable. See http://campynet.com/?p=1020</releaseNotes>
 
     <!-- Copyright information -->
     <copyright>Copyright © 2017-2018</copyright>
