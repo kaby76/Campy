@@ -823,7 +823,6 @@ declare i64 @_Z62System_Runtime_CompilerServices_RuntimeHelpers_InitializeArrayP
             var assembly = Assembly.GetAssembly(typeof(Campy.Meta.RUNTIME));
             List<MethodReference> bcl_runtime_csharp_methods = new List<MethodReference>();
 
-            System.Console.WriteLine();
             Mono.Cecil.ModuleDefinition campy_bcl_runtime = Campy.Meta.StickyReadMod.StickyReadModule(RUNTIME.FindCoreLib());
             foreach (var tt in campy_bcl_runtime.Types)
             {

@@ -181,7 +181,7 @@ namespace ConsoleApp4
 
         static void Main(string[] args)
         {
-            StartDebugging();
+            //StartDebugging();
             //Campy.Parallel.For(3, i =>
             //{
             //    var x = new System.ArgumentNullException("hi");
@@ -190,7 +190,7 @@ namespace ConsoleApp4
             int[] a = new int[3];
             Campy.Parallel.For(3, i =>
             {
-                System.Console.WriteLine();
+                System.Console.WriteLine("Hello world!");
             });
             //Campy.Parallel.For(3, i =>
             //{

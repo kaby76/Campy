@@ -1225,9 +1225,13 @@ namespace Campy.Compiler
                 if (b.IsEntry) ++num_entries;
                 num_instructions += b.Instructions.Count();
             }
-            System.Console.WriteLine("Number of blocks       " + num_blocks);
-            System.Console.WriteLine("Number of methods      " + num_entries);
-            System.Console.WriteLine("Number of instructions " + num_instructions);
+
+            if (Campy.Utils.Options.IsOn("overview_import_computation_trace"))
+            {
+                System.Console.WriteLine("Number of blocks       " + num_blocks);
+                System.Console.WriteLine("Number of methods      " + num_entries);
+                System.Console.WriteLine("Number of instructions " + num_instructions);
+            }
         }
 
         public IntPtr Compile(MethodReference kernel_method, object kernel_target)
@@ -1269,9 +1273,12 @@ namespace Campy.Compiler
                 if (b.IsEntry) ++num_entries;
                 num_instructions += b.Instructions.Count();
             }
-            System.Console.WriteLine("Number of blocks       " + num_blocks);
-            System.Console.WriteLine("Number of methods      " + num_entries);
-            System.Console.WriteLine("Number of instructions " + num_instructions);
+            if (Campy.Utils.Options.IsOn("overview_import_computation_trace"))
+            {
+                System.Console.WriteLine("Number of blocks       " + num_blocks);
+                System.Console.WriteLine("Number of methods      " + num_entries);
+                System.Console.WriteLine("Number of instructions " + num_instructions);
+            }
 
             string ptx = null;
 

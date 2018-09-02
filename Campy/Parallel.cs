@@ -139,8 +139,9 @@ namespace Campy
                         // For each cctor, run on GPU.
                         foreach (var bb in Singleton._compiler.AllCctors())
                         {
-                            System.Console.WriteLine("Executing cctor "
-                                + bb.FullName);
+                            if (Campy.Utils.Options.IsOn("trace-cctors"))
+                                System.Console.WriteLine("Executing cctor "
+                                    + bb.FullName);
                             var cctor = Singleton._compiler.GetCudaFunction(bb, module);
 
                             var res = CUresult.CUDA_SUCCESS;
@@ -163,7 +164,8 @@ namespace Campy
                         }
                     });
 
-                    System.Console.WriteLine("Done with cctors");
+                    if (Campy.Utils.Options.IsOn("trace-cctors"))
+                        System.Console.WriteLine("Done with cctors");
 
                     Campy.Utils.TimePhase.Time("kernel call ", () =>
                     {
