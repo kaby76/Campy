@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
@@ -137,7 +138,11 @@ namespace Campy
                     Campy.Utils.TimePhase.Time("kernel cctor set up", () =>
                     {
                         // For each cctor, run on GPU.
-                        foreach (var bb in Singleton._compiler.AllCctors())
+                        // Construct dependency graph of methods.
+                        List<MethodReference> order_list = COMPILER.Singleton.ConstructCctorOrder();
+
+                        // Finally, call cctors.
+                        foreach (var bb in order_list)
                         {
                             if (Campy.Utils.Options.IsOn("trace-cctors"))
                                 System.Console.WriteLine("Executing cctor "

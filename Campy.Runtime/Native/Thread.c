@@ -30,7 +30,8 @@
 //static function_space_specifier tThread *pAllThreads = NULL;
 //static function_space_specifier tThread *pCurrentThread;
 
-function_space_specifier tThread* Thread() {
+function_space_specifier tThread* Thread()
+{
 	static U32 threadID = 0;
 	tThread *pThis;
 
@@ -238,7 +239,11 @@ function_space_specifier I32 Thread_Execute() {
 
 }
 
-function_space_specifier tThread* Thread_GetCurrent() {
+function_space_specifier tThread* Thread_GetCurrent()
+{
+	if (!_bcl_->pCurrentThread)
+		_bcl_->pCurrentThread = Thread();
+
 	return _bcl_->pCurrentThread;
 }
 

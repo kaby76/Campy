@@ -172,37 +172,23 @@ namespace ConsoleApp4
             // Campy.Utils.Options.Set("continue_with_no_resolve");
             //Campy.Utils.Options.Set("copy_trace");
             //    Campy.Utils.Options.Set("runtime_trace");
-            Campy.Utils.Options.Set("graph-output");
-            Campy.Utils.Options.Set("ptx-output");
-            Campy.Utils.Options.Set("llvm-output");
-            Campy.Utils.Options.Set("dot-output");
+            //Campy.Utils.Options.Set("graph-output");
+            //Campy.Utils.Options.Set("ptx-output");
+            //Campy.Utils.Options.Set("llvm-output");
+            //Campy.Utils.Options.Set("dot-output");
             //Campy.Utils.Options.Set("import-only");
+            Campy.Utils.Options.Set("trace-cctors");
         }
 
         static void Main(string[] args)
         {
-            //StartDebugging();
-            //Campy.Parallel.For(3, i =>
-            //{
-            //    var x = new System.ArgumentNullException("hi");
-            //});
+            StartDebugging();
             int q = 1;
             int[] a = new int[3];
             Campy.Parallel.For(3, i =>
             {
-                System.Console.WriteLine("Hello world!");
+                System.Console.WriteLine(i.ToString());
             });
-            //Campy.Parallel.For(3, i =>
-            //{
-            //    Base o1 = new Base();
-            //    Sub1 o2 = new Sub1();
-            //    Sub2 o3 = new Sub2();
-            //    Sub3 o4 = new Sub3();
-            //    o4.a = 1;
-            //    o4.c = 2;
-            //    o4.e = 3;
-            //});
-            //UnitTest1.TestMethod1();
         }
     }
 }

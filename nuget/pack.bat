@@ -1,1 +1,1 @@
-nuget pack Campy.nuspec -Version 0.0.14
+nuget pack Campy.nuspec -Version 0.0.15

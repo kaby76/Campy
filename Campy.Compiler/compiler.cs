@@ -1179,16 +1179,114 @@ namespace Campy.Compiler
 
         public List<MethodReference> AllCctors()
         {
-            var bb_list = _mcfg.Entries.Where(v =>
+            IEnumerable<MethodReference> method_list = _mcfg.Entries.Where(v =>
                 v.IsEntry && v._method_reference.Name == ".cctor").Select(bb => bb._method_reference);
-            return bb_list.ToList();
+            return method_list.ToList();
         }
 
         public List<CFG.Vertex> AllCctorBasicBlocks()
         {
-            var bb_list = _mcfg.Entries.Where(v =>
+            IEnumerable<CFG.Vertex> bb_list = _mcfg.Entries.Where(v =>
                 v.IsEntry && v._method_reference.Name == ".cctor");
             return bb_list.ToList();
+        }
+
+        public List<MethodReference> ConstructCctorOrder()
+        {
+            Digraph order = new Digraph(_mcfg.Vertices.Count());
+
+            // Add ordinary calls.
+            foreach (var caller in INST.CallInstructions)
+            {
+                MethodReference callee = caller.CallTarget();
+                if (callee == null)
+                    continue;
+                CFG.Vertex f = caller.Block.Entry;
+                CFG.Vertex t = _mcfg.Entries.Where(e => e._method_reference.FullName == callee.FullName).FirstOrDefault();
+                if (t == null) continue;
+                var fv = Int32.TryParse(f.Name, out int fn);
+                var tv = Int32.TryParse(t.Name, out int tn);
+                fn--;
+                tn--;
+                order.addEdge(new DirectedEdge<int>(fn, tn));
+            }
+            // Add cctor calls to "implicit" initialization before this routine.
+            foreach (CFG.Vertex bb in _mcfg.Entries)
+            {
+                // Add edge from method of same type as cctor. Assumption here is that
+                // the node makes use of a static field.
+                var dt = bb._method_reference.DeclaringType;
+
+                IEnumerable<CFG.Vertex> bb_list = _mcfg.Entries.Where(v =>
+                   v.IsEntry && v._method_reference.Name == ".cctor"
+                   && v._method_reference.DeclaringType.FullName == dt.FullName);
+                var first = bb_list.FirstOrDefault();
+                if (first == null) continue;
+
+                CFG.Vertex f = bb;
+                CFG.Vertex t = first;
+                if (f.Name == t.Name)
+                    continue;
+                var fv = Int32.TryParse(f.Name, out int fn);
+                var tv = Int32.TryParse(t.Name, out int tn);
+                fn--;
+                tn--;
+                order.addEdge(new DirectedEdge<int>(fn, tn));
+            }
+
+            foreach (CFG.Vertex bb in _mcfg.Entries)
+            {
+                // Add edge from cctor to any types used in fields.
+                var dt = bb._method_reference.DeclaringType;
+                if (dt == null) continue;
+                var fields = dt.MyGetFields();
+                foreach (var field in fields)
+                {
+                    var ft = field.FieldType;
+                    var fdt = ft?.Deresolve(dt, null);
+                    if (fdt == null) continue;
+                    IEnumerable<CFG.Vertex> bb_list = _mcfg.Entries.Where(v =>
+                       v.IsEntry && v._method_reference.Name == ".cctor"
+                       && v._method_reference.DeclaringType.FullName == fdt.FullName);
+                    var first = bb_list.FirstOrDefault();
+                    if (first == null) continue;
+
+                    CFG.Vertex f = bb;
+                    CFG.Vertex t = first;
+                    if (f.Name == t.Name)
+                        continue;
+                    var fv = Int32.TryParse(f.Name, out int fn);
+                    var tv = Int32.TryParse(t.Name, out int tn);
+                    fn--;
+                    tn--;
+                    order.addEdge(new DirectedEdge<int>(fn, tn));
+                }
+            }
+            List<MethodReference> result1 = new List<MethodReference>();
+            var ordered_list1 = new TarjanNoBackEdges<int, DirectedEdge<int>>(order, order.Vertices).ToList();
+            ordered_list1.Reverse();
+            foreach (var x in ordered_list1)
+            {
+                IEnumerable<CFG.Vertex> bb_list = _mcfg.Entries.Where(v =>
+                    v.IsEntry && v._method_reference.Name == ".cctor"
+                              && v.Name == (x + 1).ToString());
+                var first = bb_list.FirstOrDefault();
+                if (first == null) continue;
+                result1.Add(first._method_reference);
+            }
+            List<MethodReference> result2 = new List<MethodReference>();
+            var ordered_list2 = new TarjanNoBackEdges<int, DirectedEdge<int>>(order, order.Vertices).ToList();
+            foreach (var x in ordered_list2)
+            {
+                IEnumerable<CFG.Vertex> bb_list = _mcfg.Entries.Where(v =>
+                    v.IsEntry && v._method_reference.Name == ".cctor"
+                              && v.Name == (x + 1).ToString());
+                var first = bb_list.FirstOrDefault();
+                if (first == null) continue;
+                result2.Add(first._method_reference);
+            }
+
+            return result2;
         }
 
         public void ImportOnlyCompile(MethodReference kernel_method, object kernel_target)
