@@ -355,7 +355,7 @@ namespace Campy.Compiler
                 }
 
                 MethodReference method = bb._method_reference;
-                List<ParameterDefinition> parameters = method.Parameters.ToList();
+                List<ParameterDefinition> parameters = bb._method_reference.Parameters.ToList();
                 List<ParameterReference> instantiated_parameters = new List<ParameterReference>();
 
                 ModuleRef mod = RUNTIME.global_llvm_module; // LLVM.ModuleCreateWithName(mn);
@@ -368,14 +368,14 @@ namespace Campy.Compiler
                 {
                     if (bb.HasStructReturnValue)
                     {
-                        TYPE t = new TYPE(method.ReturnType);
+                        TYPE t = new TYPE(bb._method_reference.ReturnType);
                         param_types[current++] = LLVM.PointerType(t.StorageTypeLLVM, 0);
                     }
 
                     if (bb.HasThis)
                     {
-                        TYPE t = new TYPE(method.DeclaringType);
-                        if (method.DeclaringType.IsValueType)
+                        TYPE t = new TYPE(bb._method_reference.DeclaringType);
+                        if (bb._method_reference.DeclaringType.IsValueType)
                         {
                             // Parameter "this" is a struct, but code in body of method assumes
                             // a pointer is passed. Make the parameter a pointer. For example,
@@ -391,9 +391,9 @@ namespace Campy.Compiler
                     foreach (var p in parameters)
                     {
                         TypeReference type_reference_of_parameter = p.ParameterType;
-                        if (method.DeclaringType.IsGenericInstance && method.ContainsGenericParameter)
+                        if (bb._method_reference.DeclaringType.IsGenericInstance && bb._method_reference.ContainsGenericParameter)
                         {
-                            var git = method.DeclaringType as GenericInstanceType;
+                            var git = bb._method_reference.DeclaringType as GenericInstanceType;
                             type_reference_of_parameter = METAHELPER.FromGenericParameterToTypeReference(
                                 type_reference_of_parameter, git);
                         }
@@ -420,8 +420,8 @@ namespace Campy.Compiler
                 }
 
                 //mi2 = FromGenericParameterToTypeReference(typeof(void).ToMonoTypeReference(), null);
-                TYPE t_ret = new TYPE(METAHELPER.FromGenericParameterToTypeReference(method.ReturnType,
-                    method.DeclaringType as GenericInstanceType));
+                TYPE t_ret = new TYPE(METAHELPER.FromGenericParameterToTypeReference(bb._method_reference.ReturnType,
+                    bb._method_reference.DeclaringType as GenericInstanceType));
                 if (bb.HasStructReturnValue)
                 {
                     t_ret = new TYPE(typeof(void).ToMonoTypeReference());
@@ -429,7 +429,7 @@ namespace Campy.Compiler
 
                 TypeRef ret_type = t_ret.StorageTypeLLVM;
                 TypeRef method_type = LLVM.FunctionType(ret_type, param_types, false);
-                string method_name = METAHELPER.RenameToLegalLLVMName(COMPILER.MethodName(method));
+                string method_name = METAHELPER.FixedMethodName(bb._method_reference.FullName);
                 ValueRef fun = LLVM.AddFunction(mod, method_name, method_type);
 
                 var glob = LLVM.AddGlobal(mod, LLVM.PointerType(method_type, 0), "p_" + method_name);
@@ -1147,11 +1147,6 @@ namespace Campy.Compiler
             return new_module;
         }
 
-        public static string MethodName(MethodReference mr)
-        {
-            return mr.FullName;
-        }
-
         private string CilToPtx(List<CFG.Vertex> basic_blocks_to_compile)
         {
             basic_blocks_to_compile = basic_blocks_to_compile
@@ -1524,7 +1519,7 @@ namespace Campy.Compiler
         {
             foreach (var v in _mcfg.Entries)
             {
-                var normalized_method_name = METAHELPER.RenameToLegalLLVMName(COMPILER.MethodName(v._method_reference));
+                var normalized_method_name = METAHELPER.FixedMethodName(v._method_reference.FullName);
                 var res = Cuda.cuModuleGetFunction(out CUfunction helloWorld, module, normalized_method_name);
                 // Not every entry is going to be in module, so this isn't a problem if not found.
                 if (res != CUresult.CUDA_SUCCESS) continue;
@@ -1571,7 +1566,7 @@ namespace Campy.Compiler
         {
             CFG.Vertex bb = _mcfg.Entries.Where(v =>
             v.IsEntry && v._method_reference.FullName == kernel_method.FullName).FirstOrDefault();
-            var normalized_method_name = METAHELPER.RenameToLegalLLVMName(COMPILER.MethodName(bb._method_reference));
+            var normalized_method_name = METAHELPER.FixedMethodName(bb._method_reference.FullName);
             var res = Cuda.cuModuleGetFunction(out CUfunction helloWorld, module, normalized_method_name);
             Utils.CudaHelpers.CheckCudaError(res);
             return helloWorld;

@@ -323,8 +323,7 @@ namespace Campy.Compiler
             }
 
             ContextRef context_ref = LLVM.GetModuleContext(RUNTIME.global_llvm_module);
-            var normalized_method_name = METAHELPER.RenameToLegalLLVMName(
-                COMPILER.MethodName(this.Block._method_reference));
+            var normalized_method_name = METAHELPER.FixedMethodName(this.Block._method_reference.FullName);
             MetadataRef sub;
             if (!debug_methods.ContainsKey(normalized_method_name))
             {
@@ -960,7 +959,7 @@ namespace Campy.Compiler
                 var g = this.Block._graph;
                 CFG.Vertex v = node;
                 COMPILER c = COMPILER.Singleton;
-                if (v.IsEntry && COMPILER.MethodName(v._method_reference) == mr.FullName)
+                if (v.IsEntry && v._method_reference.FullName == mr.FullName)
                     return true;
                 else return false;
             }).ToList().FirstOrDefault();
@@ -1280,7 +1279,7 @@ namespace Campy.Compiler
                 // There is an entry block discovered for this call.
                 int xret = (entry_corresponding_to_method_called.HasScalarReturnValue || entry_corresponding_to_method_called.HasStructReturnValue) ? 1 : 0;
                 int xargs = entry_corresponding_to_method_called.StackNumberOfArguments;
-                var name = COMPILER.MethodName(mr);
+                var name = mr.FullName;
                 BuilderRef bu = this.Builder;
                 ValueRef fv = entry_corresponding_to_method_called.LlvmInfo.MethodValueRef;
                 var t_fun = LLVM.TypeOf(fv);
@@ -3844,7 +3843,7 @@ namespace Campy.Compiler
                 // functions.
 
                 CFG.Vertex the_entry = this.Block._graph.Vertices.Where(v =>
-                    (v.IsEntry && COMPILER.MethodName(v._method_reference) == mr.FullName)).ToList().FirstOrDefault();
+                    (v.IsEntry && v._method_reference.FullName == mr.FullName)).ToList().FirstOrDefault();
 
                 if (the_entry != null)
                 {
@@ -5813,7 +5812,7 @@ namespace Campy.Compiler
 				CFG.Vertex entry_corresponding_to_method_called = this.Block._graph.Vertices.Where(node
 					=>
 				{
-					if (node.IsEntry && COMPILER.MethodName(node._method_reference) == mr.FullName)
+					if (node.IsEntry && node._method_reference.FullName == mr.FullName)
 						return true;
 					return false;
 				}).ToList().FirstOrDefault();
@@ -5825,7 +5824,7 @@ namespace Campy.Compiler
 					? 1
 					: 0;
 				int xargs = entry_corresponding_to_method_called.StackNumberOfArguments;
-				var name = COMPILER.MethodName(mr);
+				var name = mr.FullName;
 				BuilderRef bu = this.Builder;
 				ValueRef fv = entry_corresponding_to_method_called.LlvmInfo.MethodValueRef;
 				var t_fun = LLVM.TypeOf(fv);
@@ -6110,14 +6109,14 @@ namespace Campy.Compiler
             if (type == null)
                 throw new Exception("Cannot get type of object/value for newobj instruction.");
             bool is_type_value_type = type.IsValueType;
-            var name = COMPILER.MethodName(method);
+            var name = method.FullName;
             CFG.Vertex the_entry = this.Block._graph.Vertices.Where(node
                 =>
             {
                 var g = inst.Block._graph;
                 CFG.Vertex v = node;
                 COMPILER c = COMPILER.Singleton;
-                if (v.IsEntry && COMPILER.MethodName(v._method_reference) == name)
+                if (v.IsEntry && v._method_reference.FullName == name)
                     return true;
                 else return false;
             }).ToList().FirstOrDefault();

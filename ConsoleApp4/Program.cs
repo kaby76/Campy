@@ -172,10 +172,10 @@ namespace ConsoleApp4
             // Campy.Utils.Options.Set("continue_with_no_resolve");
             //Campy.Utils.Options.Set("copy_trace");
             //    Campy.Utils.Options.Set("runtime_trace");
-            //Campy.Utils.Options.Set("graph-output");
-            //Campy.Utils.Options.Set("ptx-output");
-            //Campy.Utils.Options.Set("llvm-output");
-            //Campy.Utils.Options.Set("dot-output");
+            Campy.Utils.Options.Set("graph-output");
+            Campy.Utils.Options.Set("ptx-output");
+            Campy.Utils.Options.Set("llvm-output");
+            Campy.Utils.Options.Set("dot-output");
             //Campy.Utils.Options.Set("import-only");
             Campy.Utils.Options.Set("trace-cctors");
         }

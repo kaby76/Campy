@@ -1089,6 +1089,37 @@ namespace Campy.Meta
             return _rename_to_legal_llvm_name_cache[before];
         }
 
+        public static string FixedMethodName(string before)
+        {
+            if (_rename_to_legal_llvm_name_cache.ContainsKey(before))
+                return _rename_to_legal_llvm_name_cache[before];
+            var fixed_string = before;
+            fixed_string = fixed_string.ToLower();
+            fixed_string = fixed_string.Replace("::", "XX");
+            fixed_string = fixed_string.Replace("<", "M");
+            fixed_string = fixed_string.Replace(">", "M");
+            fixed_string = fixed_string.Replace(".", "_");
+            fixed_string = fixed_string.Replace(",", "_");
+            fixed_string = fixed_string.Replace("/", "S");
+            fixed_string = fixed_string.Replace("+", "S");
+            fixed_string = fixed_string.Replace("-", "_");
+            fixed_string = fixed_string.Replace(" ", "_");
+            fixed_string = fixed_string.Replace("(", "C");
+            fixed_string = fixed_string.Replace(")", "D");
+            fixed_string = fixed_string.Replace("&", "R");
+            fixed_string = fixed_string.Replace("*", "P");
+            fixed_string = fixed_string.Replace("[", "A");
+            fixed_string = fixed_string.Replace("]", "A");
+            fixed_string = fixed_string.Replace("`", "Q");
+            if (fixed_string.Contains(","))
+            {
+
+            }
+
+            _rename_to_legal_llvm_name_cache[before] = fixed_string;
+            return _rename_to_legal_llvm_name_cache[before];
+        }
+
 
         static int Alignment(System.Type type)
         {
