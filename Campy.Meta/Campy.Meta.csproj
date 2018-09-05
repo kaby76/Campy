@@ -15,7 +15,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Campy.Compiler.Graph\Campy.Compiler.Graph.csproj" />
     <ProjectReference Include="..\Campy.Utils\Campy.Utils.csproj" />
   </ItemGroup>
 

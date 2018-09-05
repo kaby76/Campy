@@ -24,19 +24,4 @@
     <ProjectReference Include="..\Campy.Utils\Campy.Utils.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Reference Include="Mono.Cecil">
-      <HintPath>..\..\cecil\bin\net_4_0_Debug\Mono.Cecil.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Cecil.Mdb">
-      <HintPath>..\..\cecil\bin\net_4_0_Debug\Mono.Cecil.Mdb.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Cecil.Pdb">
-      <HintPath>..\..\cecil\bin\net_4_0_Debug\Mono.Cecil.Pdb.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Cecil.Rocks">
-      <HintPath>..\..\cecil\bin\net_4_0_Debug\Mono.Cecil.Rocks.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-
 </Project>

@@ -15,14 +15,13 @@ namespace Campy.Compiler
     using Utils;
     using Campy.Meta;
     using System.Runtime.InteropServices;
-    using Campy.Compiler.Graph;
 
     /// <summary>
     /// Wrapper for CIL instructions that are implemented using Mono.Cecil.Cil.
     /// This class adds basic block graph structure on top of these instructions. There
     /// is no semantics encoded in the wrapper.
     /// </summary>
-    public class INST : Campy.Compiler.Graph.IInst
+    public class INST
     {
         public Mono.Cecil.Cil.Instruction Instruction { get; set; }
         public Mono.Cecil.Cil.MethodBody Body { get; private set; }
@@ -433,11 +432,6 @@ namespace Campy.Compiler
             wrapped_inst = w(block, i);
             wrapped_inst.SeqPoint = sp;
             return wrapped_inst;
-        }
-
-        public void Replace(Instruction inst)
-        {
-            this.Instruction = inst;
         }
     }
 
