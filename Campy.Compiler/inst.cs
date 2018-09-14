@@ -1,20 +1,20 @@
 ﻿
 namespace Campy.Compiler
 {
-    using Mono.Cecil.Cil;
+    using Campy.Graphs;
+    using Campy.Meta;
     using Mono.Cecil;
+    using Mono.Cecil.Cil;
     using Mono.Collections.Generic;
     using Swigged.LLVM;
+    using System;
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.IO;
     using System.Linq;
-    using System.Text.RegularExpressions;
-    using System;
-    using Utils;
-    using Campy.Graphs;
-    using Campy.Meta;
     using System.Runtime.InteropServices;
+    using System.Text.RegularExpressions;
+    using Utils;
 
     #region INST definition
     /// <summary>
@@ -437,10 +437,10 @@ namespace Campy.Compiler
     }
     #endregion INST definition
 
-    #region BinaryOpInst definition
-    public class BinaryOpInst : INST
+    #region BinOp definition
+    public class BinOp : INST
     {
-        public BinaryOpInst(CFG.Vertex b, Mono.Cecil.Cil.Instruction i)
+        public BinOp(CFG.Vertex b, Mono.Cecil.Cil.Instruction i)
             : base(b, i)
         {
         }
@@ -899,15 +899,15 @@ namespace Campy.Compiler
 
         public bool UseExplicitZeroDivideChecks { get; set; }
     }
-    #endregion BinaryOpInst definition
+    #endregion BinOp definition
 
-    #region ConvertCallInst definition
-    public class ConvertCallInst : INST
+    #region Call definition
+    public class Call : INST
     {
         MethodReference call_closure_method = null;
         public override MethodReference CallTarget() { return call_closure_method; }
 
-        public ConvertCallInst(CFG.Vertex b, Instruction i) : base(b, i)
+        public Call(CFG.Vertex b, Instruction i) : base(b, i)
         {
         }
 
@@ -1478,15 +1478,15 @@ namespace Campy.Compiler
             }
         }
     }
-    #endregion ConvertCallInst definition
+    #endregion Call definition
 
-    #region ConvertLdArgInst definition
-    public class ConvertLdArgInst : INST
+    #region LdArg definition
+    public class LdArg : INST
     {
         public int _arg;
         TypeReference call_closure_arg_type = null;
 
-        public ConvertLdArgInst(CFG.Vertex b, Mono.Cecil.Cil.Instruction i, int arg = -1) : base(b, i)
+        public LdArg(CFG.Vertex b, Mono.Cecil.Cil.Instruction i, int arg = -1) : base(b, i)
         {
             _arg = arg;
             var operand = this.Operand;
@@ -1609,17 +1609,17 @@ namespace Campy.Compiler
             }
         }
     }
-    #endregion ConvertLdArgInst definition
+    #endregion LdArg definition
 
-    #region ConvertStArgInst definition
-    public class ConvertStArgInst : INST
+    #region StArg definition
+    public class StArg : INST
     {
         public int _arg;
         private TypeReference call_closure_value;
 		private TypeReference call_closure_type;
 		private TypeReference call_closure_parameter_type;
 
-        public ConvertStArgInst(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i)
+        public StArg(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i)
         {
             var operand = this.Operand;
             var reference = operand as ParameterDefinition;
@@ -1670,14 +1670,14 @@ namespace Campy.Compiler
             }
         }
     }
-    #endregion ConvertStArgInst definition
+    #endregion StArg definition
 
-    #region ConvertLDCInstI4 definition
-    public class ConvertLDCInstI4 : INST
+    #region LDCInstI4 definition
+    public class LDCInstI4 : INST
     {
         public Int32 _arg;
 
-        public ConvertLDCInstI4(CFG.Vertex b, Instruction i) : base(b, i)
+        public LDCInstI4(CFG.Vertex b, Instruction i) : base(b, i)
         {
         }
 
@@ -1696,14 +1696,14 @@ namespace Campy.Compiler
             state._stack.Push(value);
         }
     }
-    #endregion ConvertLDCInstI4 definition
+    #endregion LDCInstI4 definition
 
-    #region ConvertLDCInstI8 definition
-    public class ConvertLDCInstI8 : INST
+    #region LDCInstI8 definition
+    public class LDCInstI8 : INST
     {
         public Int64 _arg;
 
-        public ConvertLDCInstI8(CFG.Vertex b, Instruction i) : base(b, i)
+        public LDCInstI8(CFG.Vertex b, Instruction i) : base(b, i)
         {
         }
 
@@ -1722,14 +1722,14 @@ namespace Campy.Compiler
             state._stack.Push(value);
         }
     }
-    #endregion ConvertLDCInstI8 definition
+    #endregion LDCInstI8 definition
 
-    #region ConvertLDCInstR4 definition
-    public class ConvertLDCInstR4 : INST
+    #region LDCInstR4 definition
+    public class LDCInstR4 : INST
     {
         public double _arg;
 
-        public ConvertLDCInstR4(CFG.Vertex b, Instruction i) : base(b, i)
+        public LDCInstR4(CFG.Vertex b, Instruction i) : base(b, i)
         {
         }
 
@@ -1748,14 +1748,14 @@ namespace Campy.Compiler
             state._stack.Push(value);
         }
     }
-    #endregion ConvertLDCInstR4 definition
+    #endregion LDCInstR4 definition
 
-    #region ConvertLDCInstR8 definition
-    public class ConvertLDCInstR8 : INST
+    #region LDCInstR8 definition
+    public class LDCInstR8 : INST
     {
         public double _arg;
 
-        public ConvertLDCInstR8(CFG.Vertex b, Instruction i) : base(b, i)
+        public LDCInstR8(CFG.Vertex b, Instruction i) : base(b, i)
         {
         }
 
@@ -1774,16 +1774,16 @@ namespace Campy.Compiler
             state._stack.Push(value);
         }
     }
-    #endregion ConvertLDCInstR8 definition
+    #endregion LDCInstR8 definition
 
-    #region ConvertLdLoc definition
-    public class ConvertLdLoc : INST
+    #region LdLoc definition
+    public class LdLoc : INST
     {
         protected int _arg;
         protected TypeReference call_closure_local_type = null;
 		protected bool by_ref;
 
-        public ConvertLdLoc(CFG.Vertex b, Instruction i, int arg = -1) : base(b, i)
+        public LdLoc(CFG.Vertex b, Instruction i, int arg = -1) : base(b, i)
         {
             _arg = arg;
             var operand = this.Operand;
@@ -1884,16 +1884,16 @@ namespace Campy.Compiler
             }
         }
     }
-    #endregion ConvertLdLoc definition
+    #endregion LdLoc definition
 
-    #region ConvertStLoc definition
-    public class ConvertStLoc : INST
+    #region StLoc definition
+    public class StLoc : INST
     {
         public int _arg;
         protected TypeReference call_closure_local_type = null;
         protected bool by_ref;
 
-        public ConvertStLoc(CFG.Vertex b, Instruction i, int arg = -1) : base(b, i)
+        public StLoc(CFG.Vertex b, Instruction i, int arg = -1) : base(b, i)
         {
             _arg = arg;
             var operand = this.Operand;
@@ -1926,57 +1926,7 @@ namespace Campy.Compiler
                 VALUE dst = state._locals[_arg];
                 TypeRef dtype = LLVM.TypeOf(dst.V);
                 dtype = LLVM.GetElementType(dtype);
-                // Widen or trunc value.
-                if (stype != dtype)
-                {
-                    bool ext = false;
-
-                    /* Extend */
-                    if (dtype == LLVM.Int64Type()
-                        && (stype == LLVM.Int32Type() || stype == LLVM.Int16Type() || stype == LLVM.Int8Type()))
-                        ext = true;
-                    else if (dtype == LLVM.Int32Type()
-                        && (stype == LLVM.Int16Type() || stype == LLVM.Int8Type()))
-                        ext = true;
-                    else if (dtype == LLVM.Int16Type()
-                        && (stype == LLVM.Int8Type()))
-                        ext = true;
-
-                    if (ext)
-                        src = new VALUE(
-                            LLVM.BuildZExt(Builder, src.V, dtype, "i" + instruction_id++));
-                    else if (dtype == LLVM.DoubleType() && stype == LLVM.FloatType())
-                        src = new VALUE(LLVM.BuildFPExt(Builder, src.V, dtype, "i" + instruction_id++));
-                    else /* Trunc */ if (stype == LLVM.Int64Type()
-                        && (dtype == LLVM.Int32Type() || dtype == LLVM.Int16Type() || dtype == LLVM.Int8Type()))
-                        src = new VALUE(LLVM.BuildTrunc(Builder, src.V, dtype, "i" + instruction_id++));
-                    else if (stype == LLVM.Int32Type()
-                        && (dtype == LLVM.Int16Type() || dtype == LLVM.Int8Type()))
-                        src = new VALUE(LLVM.BuildTrunc(Builder, src.V, dtype, "i" + instruction_id++));
-                    else if (stype == LLVM.Int16Type()
-                        && dtype == LLVM.Int8Type())
-                        src = new VALUE(LLVM.BuildTrunc(Builder, src.V, dtype, "i" + instruction_id++));
-                    else if (stype == LLVM.DoubleType()
-                        && dtype == LLVM.FloatType())
-                        src = new VALUE(LLVM.BuildFPTrunc(Builder, src.V, dtype, "i" + instruction_id++));
-
-                    else if (stype == LLVM.Int64Type()
-                        && (dtype == LLVM.FloatType()))
-                        src = new VALUE(LLVM.BuildSIToFP(Builder, src.V, dtype, "i" + instruction_id++));
-                    else if (stype == LLVM.Int32Type()
-                        && (dtype == LLVM.FloatType()))
-                        src = new VALUE(LLVM.BuildSIToFP(Builder, src.V, dtype, "i" + instruction_id++));
-                    else if (stype == LLVM.Int64Type()
-                        && (dtype == LLVM.DoubleType()))
-                        src = new VALUE(LLVM.BuildSIToFP(Builder, src.V, dtype, "i" + instruction_id++));
-                    else if (stype == LLVM.Int32Type()
-                        && (dtype == LLVM.DoubleType()))
-                        src = new VALUE(LLVM.BuildSIToFP(Builder, src.V, dtype, "i" + instruction_id++));
-
-                    else if (LLVM.GetTypeKind(stype) == TypeKind.PointerTypeKind)
-                        src = new VALUE(LLVM.BuildPointerCast(Builder, src.V, dtype, "i" + instruction_id++));
-                }
-                
+                src = new VALUE(Casting.CastArg(Builder, src.V, stype, dtype, true));                
                 LLVM.BuildStore(Builder, src.V, dst.V);
             }
             else
@@ -1985,15 +1935,15 @@ namespace Campy.Compiler
             }
         }
     }
-    #endregion ConvertStLoc definition
+    #endregion StLoc definition
 
-    #region ConvertCompareInst definition
-    public class ConvertCompareInst : INST
+    #region Cmp definition
+    public class Cmp : INST
     {
         TypeReference call_closure_lhs = null;
         TypeReference call_closure_rhs = null;
 
-        public ConvertCompareInst(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i)
+        public Cmp(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i)
         {
         }
 
@@ -2151,15 +2101,15 @@ namespace Campy.Compiler
                                     + t1 + " " + t2);
         }
     }
-    #endregion ConvertCompareInst definition
+    #endregion Cmp definition
 
-    #region ConvertCompareAndBranchInst definition
-    public class ConvertCompareAndBranchInst : INST
+    #region CmpBr definition
+    public class CmpBr : INST
     {
         TypeReference call_closure_lhs = null;
         TypeReference call_closure_rhs = null;
 
-        public ConvertCompareAndBranchInst(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i)
+        public CmpBr(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i)
         {
         }
 
@@ -2322,10 +2272,10 @@ namespace Campy.Compiler
             throw new Exception("Unhandled compare and branch.");
         }
     }
-    #endregion ConvertCompareAndBranchInst definition
+    #endregion CmpBr definition
 
-    #region ConvertConvInst definition
-    public class ConvertConvInst : INST
+    #region Conv definition
+    public class Conv : INST
     {
         protected TYPE _dst;
         protected bool _check_overflow;
@@ -2335,87 +2285,11 @@ namespace Campy.Compiler
         {
             TypeRef stype = LLVM.TypeOf(src.V);
             TypeRef dtype = _dst.IntermediateTypeLLVM;
-
-            if (stype != dtype)
-            {
-                bool ext = false;
-
-                /* Extend */
-                if (dtype == LLVM.Int64Type()
-                    && (stype == LLVM.Int32Type() || stype == LLVM.Int16Type() || stype == LLVM.Int8Type()))
-                    ext = true;
-                else if (dtype == LLVM.Int32Type()
-                    && (stype == LLVM.Int16Type() || stype == LLVM.Int8Type()))
-                    ext = true;
-                else if (dtype == LLVM.Int16Type()
-                    && (stype == LLVM.Int8Type()))
-                    ext = true;
-
-                if (ext)
-                    return new VALUE(
-                        _dst.is_unsigned
-                        ? LLVM.BuildZExt(Builder, src.V, dtype, "i" + instruction_id++)
-                        : LLVM.BuildSExt(Builder, src.V, dtype, "i" + instruction_id++));
-
-                if (dtype == LLVM.DoubleType() && stype == LLVM.FloatType())
-                    return new VALUE(LLVM.BuildFPExt(Builder, src.V, dtype, "i" + instruction_id++));
-
-                /* Trunc */
-                if (stype == LLVM.Int64Type()
-                    && (dtype == LLVM.Int32Type() || dtype == LLVM.Int16Type() || dtype == LLVM.Int8Type()))
-                    return new VALUE(LLVM.BuildTrunc(Builder, src.V, dtype, "i" + instruction_id++));
-                if (stype == LLVM.Int32Type()
-                    && (dtype == LLVM.Int16Type() || dtype == LLVM.Int8Type()))
-                    return new VALUE(LLVM.BuildTrunc(Builder, src.V, dtype, "i" + instruction_id++));
-                if (stype == LLVM.Int16Type()
-                    && dtype == LLVM.Int8Type())
-                    return new VALUE(LLVM.BuildTrunc(Builder, src.V, dtype, "i" + instruction_id++));
-                if (stype == LLVM.DoubleType()
-                    && dtype == LLVM.FloatType())
-                    return new VALUE(LLVM.BuildFPTrunc(Builder, src.V, dtype, "i" + instruction_id++));
-
-                if (stype == LLVM.Int64Type()
-                    && (dtype == LLVM.FloatType()))
-                    return new VALUE(LLVM.BuildSIToFP(Builder, src.V, dtype, "i" + instruction_id++));
-                if (stype == LLVM.Int32Type()
-                    && (dtype == LLVM.FloatType()))
-                    return new VALUE(LLVM.BuildSIToFP(Builder, src.V, dtype, "i" + instruction_id++));
-                if (stype == LLVM.Int64Type()
-                    && (dtype == LLVM.DoubleType()))
-                    return new VALUE(LLVM.BuildSIToFP(Builder, src.V, dtype, "i" + instruction_id++));
-                if (stype == LLVM.Int32Type()
-                    && (dtype == LLVM.DoubleType()))
-                    return new VALUE(LLVM.BuildSIToFP(Builder, src.V, dtype, "i" + instruction_id++));
-
-                //if (LLVM.GetTypeKind(stype) == LLVM.PointerTypeKind && LLVM.GetTypeKind(dtype) == LLVMPointerTypeKind)
-                //    return LLVM.BuildBitCast(Builder, src, dtype, "");
-                //if (LLVM.GetTypeKind(dtype) == LLVM.PointerTypeKind)
-                //    return LLVM.BuildIntToPtr(Builder, src, dtype, "");
-                if (LLVM.GetTypeKind(stype) == TypeKind.PointerTypeKind && dtype == LLVM.Int64Type())
-                    return new VALUE(LLVM.BuildPtrToInt(Builder, src.V, dtype, "i" + instruction_id++));
-
-                //if (mono_arch_is_soft_float())
-                //{
-                //    if (stype == LLVM.Int32Type() && dtype == LLVM.FloatType())
-                //        return LLVM.BuildBitCast(Builder, src, dtype, "");
-                //    if (stype == LLVM.Int32Type() && dtype == LLVM.DoubleType())
-                //        return LLVM.BuildBitCast(Builder, LLVM.BuildZExt(Builder, src, LLVM.Int64Type(), ""), dtype, "");
-                //}
-
-                //if (LLVM.GetTypeKind(stype) == LLVM.VectorTypeKind && LLVM.GetTypeKind(dtype) == LLVMVectorTypeKind)
-                //    return LLVM.BuildBitCast(Builder, src, dtype, "");
-
-                //                LLVM.DumpValue(src);
-                //                LLVM.DumpValue(LLVM.ConstNull(dtype.T));
-                return new VALUE(default(ValueRef));
-            }
-            else
-            {
-                return src;
-            }
+            var result = new VALUE(Casting.CastArg(Builder, src.V, stype, dtype, true));
+            return result;
         }
 
-        public ConvertConvInst(CFG.Vertex b, Mono.Cecil.Cil.Instruction i)
+        public Conv(CFG.Vertex b, Mono.Cecil.Cil.Instruction i)
             : base(b, i)
         {
         }
@@ -2439,50 +2313,50 @@ namespace Campy.Compiler
             state._stack.Push(d);
         }
     }
-    #endregion ConvertConvInst definition
+    #endregion Conv definition
 
-    #region ConvertConvOvfInst definition
-    public class ConvertConvOvfInst : ConvertConvInst
+    #region ConvOvf definition
+    public class ConvOvf : Conv
     {
-        public ConvertConvOvfInst(CFG.Vertex b, Mono.Cecil.Cil.Instruction i)
+        public ConvOvf(CFG.Vertex b, Mono.Cecil.Cil.Instruction i)
             : base(b, i)
         {
             _check_overflow = true;
         }
     }
-    #endregion ConvertConvOvfInst definition
+    #endregion ConvOvf definition
 
-    #region ConvertConvOvfUnsInst definition
-    public class ConvertConvOvfUnsInst : ConvertConvInst
+    #region ConvOvfUns definition
+    public class ConvOvfUns : Conv
     {
-        public ConvertConvOvfUnsInst(CFG.Vertex b, Mono.Cecil.Cil.Instruction i)
+        public ConvOvfUns(CFG.Vertex b, Mono.Cecil.Cil.Instruction i)
             : base(b, i)
         {
             _check_overflow = true;
             _from_unsigned = true;
         }
     }
-    #endregion ConvertConvOvfUnsInst definition
+    #endregion ConvOvfUns definition
 
-    #region ConvertUnsInst definition
-    public class ConvertUnsInst : ConvertConvInst
+    #region ConvUns definition
+    public class ConvUns : Conv
     {
-        public ConvertUnsInst(CFG.Vertex b, Mono.Cecil.Cil.Instruction i)
+        public ConvUns(CFG.Vertex b, Mono.Cecil.Cil.Instruction i)
             : base(b, i)
         {
             _from_unsigned = true;
         }
     }
-    #endregion ConvertUnsInst definition
+    #endregion ConvUns definition
 
-    #region ConvertLoadElement definition
-    public class ConvertLoadElement : INST
+    #region LdElem definition
+    public class LdElem : INST
     {
         protected TYPE _dst;
         protected bool _check_overflow;
         protected bool _from_unsigned;
 
-        public ConvertLoadElement(CFG.Vertex b, Mono.Cecil.Cil.Instruction i)
+        public LdElem(CFG.Vertex b, Mono.Cecil.Cil.Instruction i)
             : base(b, i)
         {
         }
@@ -2555,16 +2429,16 @@ namespace Campy.Compiler
             state._stack.Push(new VALUE(load));
         }
     }
-    #endregion ConvertLoadElement definition
+    #endregion LdElem definition
 
-    #region ConvertStoreElement definition
-    public class ConvertStoreElement : INST
+    #region StElem definition
+    public class StElem : INST
     {
         protected TYPE _dst;
         protected bool _check_overflow;
         protected bool _from_unsigned;
 
-        public ConvertStoreElement(CFG.Vertex b, Mono.Cecil.Cil.Instruction i)
+        public StElem(CFG.Vertex b, Mono.Cecil.Cil.Instruction i)
             : base(b, i)
         {
         }
@@ -2638,12 +2512,12 @@ namespace Campy.Compiler
                 System.Console.WriteLine(new VALUE(store));
         }
     }
-    #endregion ConvertStoreElement definition
+    #endregion StElem definition
 
-    #region ConvertLoadElementA definition
-    public class ConvertLoadElementA : INST
+    #region LdElemA definition
+    public class LdElemA : INST
     {
-        public ConvertLoadElementA(CFG.Vertex b, Mono.Cecil.Cil.Instruction i)
+        public LdElemA(CFG.Vertex b, Mono.Cecil.Cil.Instruction i)
             : base(b, i)
         {
         }
@@ -2697,15 +2571,15 @@ namespace Campy.Compiler
             state._stack.Push(result);
         }
     }
-    #endregion ConvertLoadElementA definition
+    #endregion LdElemA definition
 
-    #region ConvertStoreField definition
-    public class ConvertStoreField : INST
+    #region StFld definition
+    public class StFld : INST
     {
         TypeReference call_closure_value = null;
         TypeReference call_closure_object = null;
 
-        public ConvertStoreField(CFG.Vertex b, Mono.Cecil.Cil.Instruction i)
+        public StFld(CFG.Vertex b, Mono.Cecil.Cil.Instruction i)
             : base(b, i)
         {
         }
@@ -2902,10 +2776,10 @@ namespace Campy.Compiler
             }
         }
     }
-    #endregion ConvertStoreField definition
+    #endregion StFld definition
 
-    #region ConvertLoadIndirect definition
-    public class ConvertLoadIndirect : INST
+    #region LdInd definition
+    public class LdInd : INST
     {
         protected TYPE _dst;
         protected bool _check_overflow;
@@ -2913,7 +2787,7 @@ namespace Campy.Compiler
         private TypeReference _after_indirect_type;
         private TypeReference _before_indirect_type;
 
-        public ConvertLoadIndirect(CFG.Vertex b, Mono.Cecil.Cil.Instruction i)
+        public LdInd(CFG.Vertex b, Mono.Cecil.Cil.Instruction i)
             : base(b, i)
         {
         }
@@ -2953,7 +2827,7 @@ namespace Campy.Compiler
 		{  // ldind -- load value indirect onto the stack, p 367
             VALUE v = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
-                System.Console.WriteLine("ConvertLoadIndirect into function " + v.ToString());
+                System.Console.WriteLine("LdInd into function " + v.ToString());
 
 		    var load = v.V;
             TypeRef tr = LLVM.TypeOf(load);
@@ -2998,10 +2872,10 @@ namespace Campy.Compiler
             state._stack.Push(new VALUE(load));
         }
     }
-    #endregion ConvertLoadIndirect definition
+    #endregion LdInd definition
 
-    #region ConvertStoreIndirect definition
-    public class ConvertStoreIndirect : INST
+    #region StInd definition
+    public class StInd : INST
     {
         protected TYPE _dst;
         protected TypeReference _call_closure_value_type = null;
@@ -3009,7 +2883,7 @@ namespace Campy.Compiler
         protected bool _check_overflow;
         protected bool _from_unsigned;
 
-        public ConvertStoreIndirect(CFG.Vertex b, Mono.Cecil.Cil.Instruction i, TypeReference dst)
+        public StInd(CFG.Vertex b, Mono.Cecil.Cil.Instruction i, TypeReference dst)
             : base(b, i)
 		{
 			_dst = dst != null ? new TYPE(dst) : null;
@@ -3080,16 +2954,14 @@ namespace Campy.Compiler
                 System.Console.WriteLine("Store = " + new VALUE(zz).ToString());
         }
     }
-    #endregion ConvertStoreIndirect definition
+    #endregion StInd definition
 
-    #region ConvertUnbox definition
-    public class ConvertUnbox : INST
+    #region Unbox definition
+    public class Unbox : INST
     {
         TypeReference call_closure_typetok = null;
 
-        protected ConvertUnbox(CFG.Vertex b, Instruction i) : base(b, i)
-        {
-        }
+        protected Unbox(CFG.Vertex b, Instruction i) : base(b, i) { }
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {   // unbox – convert boxed value type to its raw form, page 431
@@ -3124,10 +2996,10 @@ namespace Campy.Compiler
             state._stack.Push(new VALUE(value));
         }
     }
-    #endregion ConvertUnbox definition
+    #endregion Unbox definition
 
     #region i_add definition
-    public class i_add : BinaryOpInst
+    public class i_add : BinOp
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_add(b, i); }
         private i_add(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
@@ -3135,7 +3007,7 @@ namespace Campy.Compiler
     #endregion i_add definition
 
     #region i_add_ovf definition
-    public class i_add_ovf : BinaryOpInst
+    public class i_add_ovf : BinOp
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_add_ovf(b, i); }
         private i_add_ovf(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
@@ -3143,7 +3015,7 @@ namespace Campy.Compiler
     #endregion i_add_ovf definition
 
     #region i_add_ovf_un definition
-    public class i_add_ovf_un : BinaryOpInst
+    public class i_add_ovf_un : BinOp
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_add_ovf_un(b, i); }
         private i_add_ovf_un(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
@@ -3151,7 +3023,7 @@ namespace Campy.Compiler
     #endregion i_add_ovf_un definition
 
     #region i_and definition
-    public class i_and : BinaryOpInst
+    public class i_and : BinOp
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_and(b, i); }
         private i_and(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
@@ -3167,7 +3039,7 @@ namespace Campy.Compiler
     #endregion i_arglist definition
 
     #region i_beq definition
-    public class i_beq : ConvertCompareAndBranchInst
+    public class i_beq : CmpBr
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_beq(b, i); }
         private i_beq(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { Predicate = PredicateType.eq; IsSigned = true; }
@@ -3175,7 +3047,7 @@ namespace Campy.Compiler
     #endregion i_beq definition
 
     #region i_beq_s definition
-    public class i_beq_s : ConvertCompareAndBranchInst
+    public class i_beq_s : CmpBr
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_beq_s(b, i); }
         private i_beq_s(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { Predicate = PredicateType.eq; IsSigned = true; }
@@ -3183,7 +3055,7 @@ namespace Campy.Compiler
     #endregion i_beq_s definition
 
     #region i_bge definition
-    public class i_bge : ConvertCompareAndBranchInst
+    public class i_bge : CmpBr
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_bge(b, i); }
         private i_bge(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { Predicate = PredicateType.ge; IsSigned = true; }
@@ -3191,7 +3063,7 @@ namespace Campy.Compiler
     #endregion i_bge definition
 
     #region i_bge_un definition
-    public class i_bge_un : ConvertCompareAndBranchInst
+    public class i_bge_un : CmpBr
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_bge_un(b, i); }
         private i_bge_un(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { Predicate = PredicateType.ge; IsSigned = false; }
@@ -3199,7 +3071,7 @@ namespace Campy.Compiler
     #endregion i_bge_un definition
 
     #region i_bge_un_s definition
-    public class i_bge_un_s : ConvertCompareAndBranchInst
+    public class i_bge_un_s : CmpBr
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_bge_un_s(b, i); }
         private i_bge_un_s(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { Predicate = PredicateType.ge; IsSigned = false; }
@@ -3207,7 +3079,7 @@ namespace Campy.Compiler
     #endregion i_bge_un_s definition
 
     #region i_bge_s definition
-    public class i_bge_s : ConvertCompareAndBranchInst
+    public class i_bge_s : CmpBr
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_bge_s(b, i); }
         private i_bge_s(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { Predicate = PredicateType.ge; IsSigned = true; }
@@ -3215,7 +3087,7 @@ namespace Campy.Compiler
     #endregion i_bge_s definition
 
     #region i_bgt definition
-    public class i_bgt : ConvertCompareAndBranchInst
+    public class i_bgt : CmpBr
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_bgt(b, i); }
         private i_bgt(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { Predicate = PredicateType.gt; IsSigned = true; }
@@ -3223,7 +3095,7 @@ namespace Campy.Compiler
     #endregion i_bgt definition
 
     #region i_bgt_s definition
-    public class i_bgt_s : ConvertCompareAndBranchInst
+    public class i_bgt_s : CmpBr
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_bgt_s(b, i); }
         private i_bgt_s(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { Predicate = PredicateType.gt; IsSigned = true; }
@@ -3231,7 +3103,7 @@ namespace Campy.Compiler
     #endregion i_bgt_s definition
 
     #region i_bgt_un definition
-    public class i_bgt_un : ConvertCompareAndBranchInst
+    public class i_bgt_un : CmpBr
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_bgt_un(b, i); }
         private i_bgt_un(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { Predicate = PredicateType.gt; IsSigned = false; }
@@ -3239,7 +3111,7 @@ namespace Campy.Compiler
     #endregion i_bgt_un definition
 
     #region i_bgt_un_s definition
-    public class i_bgt_un_s : ConvertCompareAndBranchInst
+    public class i_bgt_un_s : CmpBr
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_bgt_un_s(b, i); }
         private i_bgt_un_s(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { Predicate = PredicateType.gt; IsSigned = false; }
@@ -3247,7 +3119,7 @@ namespace Campy.Compiler
     #endregion i_bgt_un_s definition
 
     #region i_ble definition
-    public class i_ble : ConvertCompareAndBranchInst
+    public class i_ble : CmpBr
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ble(b, i); }
         private i_ble(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { Predicate = PredicateType.le; IsSigned = true; }
@@ -3255,7 +3127,7 @@ namespace Campy.Compiler
     #endregion i_ble definition
 
     #region i_ble_s definition
-    public class i_ble_s : ConvertCompareAndBranchInst
+    public class i_ble_s : CmpBr
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ble_s(b, i); }
         private i_ble_s(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { Predicate = PredicateType.le; }
@@ -3263,7 +3135,7 @@ namespace Campy.Compiler
     #endregion i_ble_s definition
 
     #region i_ble_un definition
-    public class i_ble_un : ConvertCompareAndBranchInst
+    public class i_ble_un : CmpBr
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ble_un(b, i); }
         private i_ble_un(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { Predicate = PredicateType.le; IsSigned = false; }
@@ -3271,7 +3143,7 @@ namespace Campy.Compiler
     #endregion i_ble_un definition
 
     #region i_ble_un_s definition
-    public class i_ble_un_s : ConvertCompareAndBranchInst
+    public class i_ble_un_s : CmpBr
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ble_un_s(b, i); }
         private i_ble_un_s(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { Predicate = PredicateType.le; IsSigned = false; }
@@ -3279,7 +3151,7 @@ namespace Campy.Compiler
     #endregion i_ble_un_s definition
 
     #region i_blt definition
-    public class i_blt : ConvertCompareAndBranchInst
+    public class i_blt : CmpBr
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_blt(b, i); }
         private i_blt(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { Predicate = PredicateType.lt; IsSigned = true; }
@@ -3287,7 +3159,7 @@ namespace Campy.Compiler
     #endregion i_blt definition
 
     #region i_blt_s definition
-    public class i_blt_s : ConvertCompareAndBranchInst
+    public class i_blt_s : CmpBr
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_blt_s(b, i); }
         private i_blt_s(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { Predicate = PredicateType.lt; IsSigned = true; }
@@ -3295,7 +3167,7 @@ namespace Campy.Compiler
     #endregion i_blt_s definition
 
     #region i_blt_un definition
-    public class i_blt_un : ConvertCompareAndBranchInst
+    public class i_blt_un : CmpBr
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_blt_un(b, i); }
         private i_blt_un(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { Predicate = PredicateType.lt; IsSigned = false; }
@@ -3303,7 +3175,7 @@ namespace Campy.Compiler
     #endregion i_blt_un definition
 
     #region i_blt_un_s definition
-    public class i_blt_un_s : ConvertCompareAndBranchInst
+    public class i_blt_un_s : CmpBr
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_blt_un_s(b, i); }
         private i_blt_un_s(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { Predicate = PredicateType.lt; IsSigned = false; }
@@ -3311,7 +3183,7 @@ namespace Campy.Compiler
     #endregion i_blt_un_s definition
 
     #region i_bne_un definition
-    public class i_bne_un : ConvertCompareAndBranchInst
+    public class i_bne_un : CmpBr
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_bne_un(b, i); }
         private i_bne_un(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { Predicate = PredicateType.ne; IsSigned = false; }
@@ -3319,7 +3191,7 @@ namespace Campy.Compiler
     #endregion i_bne_un definition
 
     #region i_bne_un_s definition
-    public class i_bne_un_s : ConvertCompareAndBranchInst
+    public class i_bne_un_s : CmpBr
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_bne_un_s(b, i); }
         private i_bne_un_s(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { Predicate = PredicateType.ne; IsSigned = false; }
@@ -3750,7 +3622,7 @@ namespace Campy.Compiler
     #endregion i_brtrue_s definition
 
     #region i_call definition
-    public class i_call : ConvertCallInst
+    public class i_call : Call
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_call(b, i); }
         private i_call(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
@@ -3758,7 +3630,7 @@ namespace Campy.Compiler
     #endregion i_call definition
 
     #region i_calli definition
-    public class i_calli : ConvertCallInst
+    public class i_calli : Call
     {
         public override MethodReference CallTarget() { throw new Exception("Calli not handled."); }
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_calli(b, i); }
@@ -4043,7 +3915,7 @@ namespace Campy.Compiler
     #endregion i_castclass definition
 
     #region i_ceq definition
-    public class i_ceq : ConvertCompareInst
+    public class i_ceq : Cmp
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ceq(b, i); }
         private i_ceq(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { Predicate = PredicateType.eq; IsSigned = true; }
@@ -4051,7 +3923,7 @@ namespace Campy.Compiler
     #endregion i_ceq definition
 
     #region i_cgt definition
-    public class i_cgt : ConvertCompareInst
+    public class i_cgt : Cmp
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_cgt(b, i); }
         private i_cgt(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { Predicate = PredicateType.gt; IsSigned = true; }
@@ -4059,7 +3931,7 @@ namespace Campy.Compiler
     #endregion i_cgt definition
 
     #region i_cgt_un definition
-    public class i_cgt_un : ConvertCompareInst
+    public class i_cgt_un : Cmp
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_cgt_un(b, i); }
         private i_cgt_un(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { Predicate = PredicateType.gt; IsSigned = false; }
@@ -4075,7 +3947,7 @@ namespace Campy.Compiler
     #endregion i_ckfinite definition
 
     #region i_clt definition
-    public class i_clt : ConvertCompareInst
+    public class i_clt : Cmp
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_clt(b, i); }
         private i_clt(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { Predicate = PredicateType.lt; IsSigned = true; }
@@ -4083,7 +3955,7 @@ namespace Campy.Compiler
     #endregion i_clt definition
 
     #region i_clt_un definition
-    public class i_clt_un : ConvertCompareInst
+    public class i_clt_un : Cmp
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_clt_un(b, i); }
         private i_clt_un(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { Predicate = PredicateType.lt; IsSigned = false; }
@@ -4101,7 +3973,7 @@ namespace Campy.Compiler
     #endregion i_constrained definition
 
     #region i_conv_i1 definition
-    public class i_conv_i1 : ConvertConvInst
+    public class i_conv_i1 : Conv
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_i1(b, i); }
         private i_conv_i1(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(sbyte)); }
@@ -4109,7 +3981,7 @@ namespace Campy.Compiler
     #endregion i_conv_i1 definition
 
     #region i_conv_i2 definition
-    public class i_conv_i2 : ConvertConvInst
+    public class i_conv_i2 : Conv
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_i2(b, i); }
         private i_conv_i2(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(short)); }
@@ -4117,7 +3989,7 @@ namespace Campy.Compiler
     #endregion i_conv_i2 definition
 
     #region i_conv_i4 definition
-    public class i_conv_i4 : ConvertConvInst
+    public class i_conv_i4 : Conv
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_i4(b, i); }
         private i_conv_i4(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(int)); }
@@ -4125,7 +3997,7 @@ namespace Campy.Compiler
     #endregion i_conv_i4 definition
 
     #region i_conv_i8 definition
-    public class i_conv_i8 : ConvertConvInst
+    public class i_conv_i8 : Conv
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_i8(b, i); }
         private i_conv_i8(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(long)); }
@@ -4133,7 +4005,7 @@ namespace Campy.Compiler
     #endregion i_conv_i8 definition
 
     #region i_conv_i definition
-    public class i_conv_i : ConvertConvInst
+    public class i_conv_i : Conv
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_i(b, i); }
         private i_conv_i(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(long)); }
@@ -4141,7 +4013,7 @@ namespace Campy.Compiler
     #endregion i_conv_i definition
 
     #region i_conv_ovf_i1 definition
-    public class i_conv_ovf_i1 : ConvertConvOvfInst
+    public class i_conv_ovf_i1 : ConvOvf
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_i1(b, i); }
         private i_conv_ovf_i1(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(sbyte)); }
@@ -4149,7 +4021,7 @@ namespace Campy.Compiler
     #endregion i_conv_ovf_i1 definition
 
     #region i_conv_ovf_i1_un definition
-    public class i_conv_ovf_i1_un : ConvertConvOvfUnsInst
+    public class i_conv_ovf_i1_un : ConvOvfUns
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_i1_un(b, i); }
         private i_conv_ovf_i1_un(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(sbyte)); }
@@ -4157,7 +4029,7 @@ namespace Campy.Compiler
     #endregion i_conv_ovf_i1_un definition
 
     #region i_conv_ovf_i2 definition
-    public class i_conv_ovf_i2 : ConvertConvOvfInst
+    public class i_conv_ovf_i2 : ConvOvf
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_i2(b, i); }
         private i_conv_ovf_i2(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(short)); }
@@ -4165,7 +4037,7 @@ namespace Campy.Compiler
     #endregion i_conv_ovf_i2 definition
 
     #region i_conv_ovf_i2_un definition
-    public class i_conv_ovf_i2_un : ConvertConvOvfUnsInst
+    public class i_conv_ovf_i2_un : ConvOvfUns
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_i2_un(b, i); }
         private i_conv_ovf_i2_un(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(short)); }
@@ -4173,7 +4045,7 @@ namespace Campy.Compiler
     #endregion i_conv_ovf_i2_un definition
 
     #region i_conv_ovf_i4 definition
-    public class i_conv_ovf_i4 : ConvertConvOvfInst
+    public class i_conv_ovf_i4 : ConvOvf
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_i4(b, i); }
         private i_conv_ovf_i4(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(int)); }
@@ -4181,7 +4053,7 @@ namespace Campy.Compiler
     #endregion i_conv_ovf_i4 definition
 
     #region i_conv_ovf_i4_un definition
-    public class i_conv_ovf_i4_un : ConvertConvOvfUnsInst
+    public class i_conv_ovf_i4_un : ConvOvfUns
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_i4_un(b, i); }
         private i_conv_ovf_i4_un(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(int)); }
@@ -4189,7 +4061,7 @@ namespace Campy.Compiler
     #endregion i_conv_ovf_i4_un definition
 
     #region i_conv_ovf_i8 definition
-    public class i_conv_ovf_i8 : ConvertConvOvfInst
+    public class i_conv_ovf_i8 : ConvOvf
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_i8(b, i); }
         private i_conv_ovf_i8(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(long)); }
@@ -4197,7 +4069,7 @@ namespace Campy.Compiler
     #endregion i_conv_ovf_i8 definition
 
     #region i_conv_ovf_i8_un definition
-    public class i_conv_ovf_i8_un : ConvertConvOvfUnsInst
+    public class i_conv_ovf_i8_un : ConvOvfUns
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_i8_un(b, i); }
         private i_conv_ovf_i8_un(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(long)); }
@@ -4205,7 +4077,7 @@ namespace Campy.Compiler
     #endregion i_conv_ovf_i8_un definition
 
     #region i_conv_ovf_i definition
-    public class i_conv_ovf_i : ConvertConvOvfInst
+    public class i_conv_ovf_i : ConvOvf
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_i(b, i); }
         private i_conv_ovf_i(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(long)); }
@@ -4213,7 +4085,7 @@ namespace Campy.Compiler
     #endregion i_conv_ovf_i definition
 
     #region i_conv_ovf_i_un definition
-    public class i_conv_ovf_i_un : ConvertConvOvfUnsInst
+    public class i_conv_ovf_i_un : ConvOvfUns
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_i_un(b, i); }
         private i_conv_ovf_i_un(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(long)); }
@@ -4221,7 +4093,7 @@ namespace Campy.Compiler
     #endregion i_conv_ovf_i_un definition
 
     #region i_conv_ovf_u1 definition
-    public class i_conv_ovf_u1 : ConvertConvOvfInst
+    public class i_conv_ovf_u1 : ConvOvf
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_u1(b, i); }
         private i_conv_ovf_u1(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(byte)); }
@@ -4229,7 +4101,7 @@ namespace Campy.Compiler
     #endregion i_conv_ovf_u1 definition
 
     #region i_conv_ovf_u1_un definition
-    public class i_conv_ovf_u1_un : ConvertConvOvfUnsInst
+    public class i_conv_ovf_u1_un : ConvOvfUns
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_u1_un(b, i); }
         private i_conv_ovf_u1_un(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(byte)); }
@@ -4237,7 +4109,7 @@ namespace Campy.Compiler
     #endregion i_conv_ovf_u1_un definition
 
     #region i_conv_ovf_u2 definition
-    public class i_conv_ovf_u2 : ConvertConvOvfInst
+    public class i_conv_ovf_u2 : ConvOvf
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_u2(b, i); }
         private i_conv_ovf_u2(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(ushort)); }
@@ -4245,7 +4117,7 @@ namespace Campy.Compiler
     #endregion i_conv_ovf_u2 definition
 
     #region i_conv_ovf_u2_un definition
-    public class i_conv_ovf_u2_un : ConvertConvOvfUnsInst
+    public class i_conv_ovf_u2_un : ConvOvfUns
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_u2_un(b, i); }
         private i_conv_ovf_u2_un(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(ushort)); }
@@ -4253,7 +4125,7 @@ namespace Campy.Compiler
     #endregion i_conv_ovf_u2_un definition
 
     #region i_conv_ovf_u4 definition
-    public class i_conv_ovf_u4 : ConvertConvOvfInst
+    public class i_conv_ovf_u4 : ConvOvf
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_u4(b, i); }
         private i_conv_ovf_u4(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(uint)); }
@@ -4261,7 +4133,7 @@ namespace Campy.Compiler
     #endregion i_conv_ovf_u4 definition
 
     #region i_conv_ovf_u4_un definition
-    public class i_conv_ovf_u4_un : ConvertConvOvfUnsInst
+    public class i_conv_ovf_u4_un : ConvOvfUns
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_u4_un(b, i); }
         private i_conv_ovf_u4_un(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(uint)); }
@@ -4269,7 +4141,7 @@ namespace Campy.Compiler
     #endregion i_conv_ovf_u4_un definition
 
     #region i_conv_ovf_u8 definition
-    public class i_conv_ovf_u8 : ConvertConvOvfInst
+    public class i_conv_ovf_u8 : ConvOvf
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_u8(b, i); }
         private i_conv_ovf_u8(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(ulong)); }
@@ -4277,7 +4149,7 @@ namespace Campy.Compiler
     #endregion i_conv_ovf_u8 definition
 
     #region i_conv_ovf_u8_un definition
-    public class i_conv_ovf_u8_un : ConvertConvOvfUnsInst
+    public class i_conv_ovf_u8_un : ConvOvfUns
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_u8_un(b, i); }
         private i_conv_ovf_u8_un(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(ulong)); }
@@ -4285,7 +4157,7 @@ namespace Campy.Compiler
     #endregion i_conv_ovf_u8_un definition
 
     #region i_conv_ovf_u definition
-    public class i_conv_ovf_u : ConvertConvOvfInst
+    public class i_conv_ovf_u : ConvOvf
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_u(b, i); }
         private i_conv_ovf_u(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(ulong)); }
@@ -4293,7 +4165,7 @@ namespace Campy.Compiler
     #endregion i_conv_ovf_u definition
 
     #region i_conv_ovf_u_un definition
-    public class i_conv_ovf_u_un : ConvertConvOvfUnsInst
+    public class i_conv_ovf_u_un : ConvOvfUns
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_ovf_u_un(b, i); }
         private i_conv_ovf_u_un(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(ulong)); }
@@ -4301,7 +4173,7 @@ namespace Campy.Compiler
     #endregion i_conv_ovf_u_un definition
 
     #region i_conv_r4 definition
-    public class i_conv_r4 : ConvertConvInst
+    public class i_conv_r4 : Conv
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_r4(b, i); }
         private i_conv_r4(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(float)); }
@@ -4309,7 +4181,7 @@ namespace Campy.Compiler
     #endregion i_conv_r4 definition
 
     #region i_conv_r8 definition
-    public class i_conv_r8 : ConvertConvInst
+    public class i_conv_r8 : Conv
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_r8(b, i); }
         private i_conv_r8(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(double)); }
@@ -4317,7 +4189,7 @@ namespace Campy.Compiler
     #endregion i_conv_r8 definition
 
     #region i_conv_r_un definition
-    public class i_conv_r_un : ConvertUnsInst
+    public class i_conv_r_un : ConvUns
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_r_un(b, i); }
         private i_conv_r_un(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(float)); }
@@ -4325,7 +4197,7 @@ namespace Campy.Compiler
     #endregion i_conv_r_un definition
 
     #region i_conv_u1 definition
-    public class i_conv_u1 : ConvertConvInst
+    public class i_conv_u1 : Conv
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_u1(b, i); }
         private i_conv_u1(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(byte)); }
@@ -4333,7 +4205,7 @@ namespace Campy.Compiler
     #endregion i_conv_u1 definition
 
     #region i_conv_u2 definition
-    public class i_conv_u2 : ConvertConvInst
+    public class i_conv_u2 : Conv
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_u2(b, i); }
         private i_conv_u2(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(ushort)); }
@@ -4341,7 +4213,7 @@ namespace Campy.Compiler
     #endregion i_conv_u2 definition
 
     #region i_conv_u4 definition
-    public class i_conv_u4 : ConvertConvInst
+    public class i_conv_u4 : Conv
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_u4(b, i); }
         private i_conv_u4(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(uint)); }
@@ -4349,7 +4221,7 @@ namespace Campy.Compiler
     #endregion i_conv_u4 definition
 
     #region i_conv_u8 definition
-    public class i_conv_u8 : ConvertConvInst
+    public class i_conv_u8 : Conv
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_u8(b, i); }
         private i_conv_u8(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(ulong)); }
@@ -4357,7 +4229,7 @@ namespace Campy.Compiler
     #endregion i_conv_u8 definition
 
     #region i_conv_u definition
-    public class i_conv_u : ConvertConvInst
+    public class i_conv_u : Conv
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_conv_u(b, i); }
         private i_conv_u(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(ulong)); }
@@ -4381,7 +4253,7 @@ namespace Campy.Compiler
     #endregion i_cpobj definition
 
     #region i_div definition
-    public class i_div : BinaryOpInst
+    public class i_div : BinOp
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_div(b, i); }
         private i_div(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
@@ -4389,7 +4261,7 @@ namespace Campy.Compiler
     #endregion i_div definition
 
     #region i_div_un definition
-    public class i_div_un : BinaryOpInst
+    public class i_div_un : BinOp
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_div_un(b, i); }
         private i_div_un(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
@@ -4537,7 +4409,7 @@ namespace Campy.Compiler
     #endregion i_jmp definition
 
     #region i_ldarg definition
-    public class i_ldarg : ConvertLdArgInst
+    public class i_ldarg : LdArg
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldarg(b, i); }
         private i_ldarg(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
@@ -4545,7 +4417,7 @@ namespace Campy.Compiler
     #endregion i_ldarg definition
 
     #region i_ldarg_0 definition
-    public class i_ldarg_0 : ConvertLdArgInst
+    public class i_ldarg_0 : LdArg
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldarg_0(b, i); }
         private i_ldarg_0(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i, 0) { }
@@ -4553,7 +4425,7 @@ namespace Campy.Compiler
     #endregion i_ldarg_0 definition
 
     #region i_ldarg_1 definition
-    public class i_ldarg_1 : ConvertLdArgInst
+    public class i_ldarg_1 : LdArg
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldarg_1(b, i); }
         private i_ldarg_1(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i, 1) { }
@@ -4561,7 +4433,7 @@ namespace Campy.Compiler
     #endregion i_ldarg_1 definition
 
     #region i_ldarg_2 definition
-    public class i_ldarg_2 : ConvertLdArgInst
+    public class i_ldarg_2 : LdArg
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldarg_2(b, i); }
         private i_ldarg_2(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i, 2) { }
@@ -4569,7 +4441,7 @@ namespace Campy.Compiler
     #endregion i_ldarg_2 definition
 
     #region i_ldarg_3 definition
-    public class i_ldarg_3 : ConvertLdArgInst
+    public class i_ldarg_3 : LdArg
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldarg_3(b, i); }
         private i_ldarg_3(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i, 3) { }
@@ -4577,7 +4449,7 @@ namespace Campy.Compiler
     #endregion i_ldarg_3 definition
 
     #region i_ldarg_3 definition
-    public class i_ldarg_s : ConvertLdArgInst
+    public class i_ldarg_s : LdArg
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldarg_s(b, i); }
         private i_ldarg_s(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
@@ -4585,7 +4457,7 @@ namespace Campy.Compiler
     #endregion i_ldarg_3 definition
 
     #region i_ldarga definition
-    public class i_ldarga : ConvertLdArgInst
+    public class i_ldarga : LdArg
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldarga(b, i); }
         private i_ldarga(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
@@ -4593,7 +4465,7 @@ namespace Campy.Compiler
     #endregion i_ldarga definition
 
     #region i_ldarga_s definition
-    public class i_ldarga_s : ConvertLdArgInst
+    public class i_ldarga_s : LdArg
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldarga_s(b, i); }
         private i_ldarga_s(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
@@ -4601,7 +4473,7 @@ namespace Campy.Compiler
     #endregion i_ldarga_s definition
 
     #region i_ldc_i4 definition
-    public class i_ldc_i4 : ConvertLDCInstI4
+    public class i_ldc_i4 : LDCInstI4
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldc_i4(b, i); }
         private i_ldc_i4(CFG.Vertex b, Mono.Cecil.Cil.Instruction i)
@@ -4665,7 +4537,7 @@ namespace Campy.Compiler
     #endregion i_ldc_i4 definition
 
     #region i_ldc_i4_0 definition
-    public class i_ldc_i4_0 : ConvertLDCInstI4
+    public class i_ldc_i4_0 : LDCInstI4
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldc_i4_0(b, i); }
         private i_ldc_i4_0(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { int arg = 0; _arg = arg; }
@@ -4673,7 +4545,7 @@ namespace Campy.Compiler
     #endregion i_ldc_i4_0 definition
 
     #region i_ldc_i4_1 definition
-    public class i_ldc_i4_1 : ConvertLDCInstI4
+    public class i_ldc_i4_1 : LDCInstI4
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldc_i4_1(b, i); }
         private i_ldc_i4_1(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { int arg = 1; _arg = arg; }
@@ -4681,7 +4553,7 @@ namespace Campy.Compiler
     #endregion i_ldc_i4_1 definition
 
     #region i_ldc_i4_2 definition
-    public class i_ldc_i4_2 : ConvertLDCInstI4
+    public class i_ldc_i4_2 : LDCInstI4
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldc_i4_2(b, i); }
         private i_ldc_i4_2(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { int arg = 2; _arg = arg; }
@@ -4689,7 +4561,7 @@ namespace Campy.Compiler
     #endregion i_ldc_i4_2 definition
 
     #region i_ldc_i4_3 definition
-    public class i_ldc_i4_3 : ConvertLDCInstI4
+    public class i_ldc_i4_3 : LDCInstI4
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldc_i4_3(b, i); }
         private i_ldc_i4_3(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { int arg = 3; _arg = arg; }
@@ -4697,7 +4569,7 @@ namespace Campy.Compiler
     #endregion i_ldc_i4_3 definition
 
     #region i_ldc_i4_4 definition
-    public class i_ldc_i4_4 : ConvertLDCInstI4
+    public class i_ldc_i4_4 : LDCInstI4
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldc_i4_4(b, i); }
         private i_ldc_i4_4(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { int arg = 4; _arg = arg; }
@@ -4705,7 +4577,7 @@ namespace Campy.Compiler
     #endregion i_ldc_i4_4 definition
 
     #region i_ldc_i4_5 definition
-    public class i_ldc_i4_5 : ConvertLDCInstI4
+    public class i_ldc_i4_5 : LDCInstI4
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldc_i4_5(b, i); }
         private i_ldc_i4_5(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { int arg = 5; _arg = arg; }
@@ -4713,7 +4585,7 @@ namespace Campy.Compiler
     #endregion i_ldc_i4_5 definition
 
     #region i_ldc_i4_6 definition
-    public class i_ldc_i4_6 : ConvertLDCInstI4
+    public class i_ldc_i4_6 : LDCInstI4
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldc_i4_6(b, i); }
         private i_ldc_i4_6(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { int arg = 6; _arg = arg; }
@@ -4721,7 +4593,7 @@ namespace Campy.Compiler
     #endregion i_ldc_i4_6 definition
 
     #region i_ldc_i4_7 definition
-    public class i_ldc_i4_7 : ConvertLDCInstI4
+    public class i_ldc_i4_7 : LDCInstI4
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldc_i4_7(b, i); }
         private i_ldc_i4_7(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { int arg = 7; _arg = arg; }
@@ -4729,7 +4601,7 @@ namespace Campy.Compiler
     #endregion i_ldc_i4_7 definition
 
     #region i_ldc_i4_8 definition
-    public class i_ldc_i4_8 : ConvertLDCInstI4
+    public class i_ldc_i4_8 : LDCInstI4
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldc_i4_8(b, i); }
         private i_ldc_i4_8(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { int arg = 8; _arg = arg; }
@@ -4737,7 +4609,7 @@ namespace Campy.Compiler
     #endregion i_ldc_i4_8 definition
 
     #region i_ldc_i4_m1 definition
-    public class i_ldc_i4_m1 : ConvertLDCInstI4
+    public class i_ldc_i4_m1 : LDCInstI4
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldc_i4_m1(b, i); }
         private i_ldc_i4_m1(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { int arg = -1; _arg = arg; }
@@ -4745,7 +4617,7 @@ namespace Campy.Compiler
     #endregion i_ldc_i4_m1 definition
 
     #region i_ldc_i4_s definition
-    public class i_ldc_i4_s : ConvertLDCInstI4
+    public class i_ldc_i4_s : LDCInstI4
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldc_i4_s(b, i); }
         private i_ldc_i4_s(CFG.Vertex b, Mono.Cecil.Cil.Instruction i)
@@ -4809,7 +4681,7 @@ namespace Campy.Compiler
     #endregion i_ldc_i4_s definition
 
     #region i_ldc_i8 definition
-    public class i_ldc_i8 : ConvertLDCInstI8
+    public class i_ldc_i8 : LDCInstI8
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldc_i8(b, i); }
         private i_ldc_i8(CFG.Vertex b, Mono.Cecil.Cil.Instruction i)
@@ -4881,7 +4753,7 @@ namespace Campy.Compiler
     #endregion i_ldc_i8 definition
 
     #region i_ldc_r4 definition
-    public class i_ldc_r4 : ConvertLDCInstR4
+    public class i_ldc_r4 : LDCInstR4
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldc_r4(b, i); }
         private i_ldc_r4(CFG.Vertex b, Mono.Cecil.Cil.Instruction i)
@@ -4953,7 +4825,7 @@ namespace Campy.Compiler
     #endregion i_ldc_r4 definition
 
     #region i_ldc_r8 definition
-    public class i_ldc_r8 : ConvertLDCInstR8
+    public class i_ldc_r8 : LDCInstR8
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldc_r8(b, i); }
         private i_ldc_r8(CFG.Vertex b, Mono.Cecil.Cil.Instruction i)
@@ -5033,7 +4905,7 @@ namespace Campy.Compiler
     #endregion i_ldc_r8 definition
 
     #region i_ldelem_any definition
-    public class i_ldelem_any : ConvertLoadElement
+    public class i_ldelem_any : LdElem
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldelem_any(b, i); }
         private i_ldelem_any(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
@@ -5041,7 +4913,7 @@ namespace Campy.Compiler
     #endregion i_ldelem_any definition
 
     #region i_ldelem_i1 definition
-    public class i_ldelem_i1 : ConvertLoadElement
+    public class i_ldelem_i1 : LdElem
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldelem_i1(b, i); }
         private i_ldelem_i1(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(sbyte)); }
@@ -5049,7 +4921,7 @@ namespace Campy.Compiler
     #endregion i_ldelem_i1 definition
 
     #region i_ldelem_i2 definition
-    public class i_ldelem_i2 : ConvertLoadElement
+    public class i_ldelem_i2 : LdElem
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldelem_i2(b, i); }
         private i_ldelem_i2(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(short)); }
@@ -5057,7 +4929,7 @@ namespace Campy.Compiler
     #endregion i_ldelem_i2 definition
 
     #region i_ldelem_i4 definition
-    public class i_ldelem_i4 : ConvertLoadElement
+    public class i_ldelem_i4 : LdElem
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldelem_i4(b, i); }
         private i_ldelem_i4(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(int)); }
@@ -5065,7 +4937,7 @@ namespace Campy.Compiler
     #endregion i_ldelem_i4 definition
 
     #region i_ldelem_i8 definition
-    public class i_ldelem_i8 : ConvertLoadElement
+    public class i_ldelem_i8 : LdElem
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldelem_i8(b, i); }
         private i_ldelem_i8(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(long)); }
@@ -5073,7 +4945,7 @@ namespace Campy.Compiler
     #endregion i_ldelem_i8 definition
 
     #region i_ldelem_i definition
-    public class i_ldelem_i : ConvertLoadElement
+    public class i_ldelem_i : LdElem
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldelem_i(b, i); }
         private i_ldelem_i(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(long)); }
@@ -5081,7 +4953,7 @@ namespace Campy.Compiler
     #endregion i_ldelem_i definition
 
     #region i_ldelem_r4 definition
-    public class i_ldelem_r4 : ConvertLoadElement
+    public class i_ldelem_r4 : LdElem
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldelem_r4(b, i); }
         private i_ldelem_r4(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(float)); }
@@ -5089,7 +4961,7 @@ namespace Campy.Compiler
     #endregion i_ldelem_r4 definition
 
     #region i_ldelem_r8 definition
-    public class i_ldelem_r8 : ConvertLoadElement
+    public class i_ldelem_r8 : LdElem
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldelem_r8(b, i); }
         private i_ldelem_r8(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(double)); }
@@ -5097,7 +4969,7 @@ namespace Campy.Compiler
     #endregion i_ldelem_r8 definition
 
     #region i_ldelem_ref definition
-    public class i_ldelem_ref : ConvertLoadElement
+    public class i_ldelem_ref : LdElem
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldelem_ref(b, i); }
         private i_ldelem_ref(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
@@ -5105,7 +4977,7 @@ namespace Campy.Compiler
     #endregion i_ldelem_ref definition
 
     #region i_ldelem_u1 definition
-    public class i_ldelem_u1 : ConvertLoadElement
+    public class i_ldelem_u1 : LdElem
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldelem_u1(b, i); }
         private i_ldelem_u1(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(byte)); }
@@ -5113,7 +4985,7 @@ namespace Campy.Compiler
     #endregion i_ldelem_u1 definition
 
     #region i_ldelem_u2 definition
-    public class i_ldelem_u2 : ConvertLoadElement
+    public class i_ldelem_u2 : LdElem
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldelem_u2(b, i); }
         private i_ldelem_u2(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(ushort)); }
@@ -5121,7 +4993,7 @@ namespace Campy.Compiler
     #endregion i_ldelem_u2 definition
 
     #region i_ldelem_u4 definition
-    public class i_ldelem_u4 : ConvertLoadElement
+    public class i_ldelem_u4 : LdElem
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldelem_u4(b, i); }
         private i_ldelem_u4(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(uint)); }
@@ -5129,7 +5001,7 @@ namespace Campy.Compiler
     #endregion i_ldelem_u4 definition
 
     #region i_ldelema definition
-    public class i_ldelema : ConvertLoadElementA
+    public class i_ldelema : LdElemA
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldelema(b, i); }
         private i_ldelema(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
@@ -5608,7 +5480,7 @@ namespace Campy.Compiler
     #endregion i_ldftn definition
 
     #region i_ldind_i1 definition
-    public class i_ldind_i1 : ConvertLoadIndirect
+    public class i_ldind_i1 : LdInd
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldind_i1(b, i); }
         private i_ldind_i1(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(sbyte)); }
@@ -5616,7 +5488,7 @@ namespace Campy.Compiler
     #endregion i_ldind_i1 definition
 
     #region i_ldind_i2 definition
-    public class i_ldind_i2 : ConvertLoadIndirect
+    public class i_ldind_i2 : LdInd
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldind_i2(b, i); }
         private i_ldind_i2(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(short)); }
@@ -5624,7 +5496,7 @@ namespace Campy.Compiler
     #endregion i_ldind_i2 definition
 
     #region i_ldind_i4 definition
-    public class i_ldind_i4 : ConvertLoadIndirect
+    public class i_ldind_i4 : LdInd
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldind_i4(b, i); }
         private i_ldind_i4(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(int)); }
@@ -5632,7 +5504,7 @@ namespace Campy.Compiler
     #endregion i_ldind_i4 definition
 
     #region i_ldind_i8 definition
-    public class i_ldind_i8 : ConvertLoadIndirect
+    public class i_ldind_i8 : LdInd
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldind_i8(b, i); }
         private i_ldind_i8(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(long)); }
@@ -5640,7 +5512,7 @@ namespace Campy.Compiler
     #endregion i_ldind_i8 definition
 
     #region i_ldind_i definition
-    public class i_ldind_i : ConvertLoadIndirect
+    public class i_ldind_i : LdInd
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldind_i(b, i); }
         private i_ldind_i(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(long)); }
@@ -5648,7 +5520,7 @@ namespace Campy.Compiler
     #endregion i_ldind_i definition
 
     #region i_ldind_r4 definition
-    public class i_ldind_r4 : ConvertLoadIndirect
+    public class i_ldind_r4 : LdInd
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldind_r4(b, i); }
         private i_ldind_r4(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(float)); }
@@ -5656,7 +5528,7 @@ namespace Campy.Compiler
     #endregion i_ldind_r4 definition
 
     #region i_ldind_r8 definition
-    public class i_ldind_r8 : ConvertLoadIndirect
+    public class i_ldind_r8 : LdInd
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldind_r8(b, i); }
         private i_ldind_r8(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(double)); }
@@ -5664,7 +5536,7 @@ namespace Campy.Compiler
     #endregion i_ldind_r8 definition
 
     #region i_ldind_ref definition
-    public class i_ldind_ref : ConvertLoadIndirect
+    public class i_ldind_ref : LdInd
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldind_ref(b, i); }
         private i_ldind_ref(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = null; }
@@ -5672,7 +5544,7 @@ namespace Campy.Compiler
     #endregion i_ldind_ref definition
 
     #region i_ldind_u1 definition
-    public class i_ldind_u1 : ConvertLoadIndirect
+    public class i_ldind_u1 : LdInd
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldind_u1(b, i); }
         private i_ldind_u1(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(byte)); }
@@ -5680,7 +5552,7 @@ namespace Campy.Compiler
     #endregion i_ldind_u1 definition
 
     #region i_ldind_u2 definition
-    public class i_ldind_u2 : ConvertLoadIndirect
+    public class i_ldind_u2 : LdInd
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldind_u2(b, i); }
         private i_ldind_u2(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(ushort)); }
@@ -5688,7 +5560,7 @@ namespace Campy.Compiler
     #endregion i_ldind_u2 definition
 
     #region i_ldind_u4 definition
-    public class i_ldind_u4 : ConvertLoadIndirect
+    public class i_ldind_u4 : LdInd
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldind_u4(b, i); }
         private i_ldind_u4(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(uint)); }
@@ -5838,7 +5710,7 @@ namespace Campy.Compiler
     #endregion i_ldlen definition
 
     #region i_ldloc definition
-    public class i_ldloc : ConvertLdLoc
+    public class i_ldloc : LdLoc
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldloc(b, i); }
         private i_ldloc(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
@@ -5846,7 +5718,7 @@ namespace Campy.Compiler
     #endregion i_ldloc definition
 
     #region i_ldloc_0 definition
-    public class i_ldloc_0 : ConvertLdLoc
+    public class i_ldloc_0 : LdLoc
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldloc_0(b, i); }
         private i_ldloc_0(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i, 0) { }
@@ -5854,7 +5726,7 @@ namespace Campy.Compiler
     #endregion i_ldloc_0 definition
 
     #region i_ldloc_1 definition
-    public class i_ldloc_1 : ConvertLdLoc
+    public class i_ldloc_1 : LdLoc
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldloc_1(b, i); }
         private i_ldloc_1(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i, 1) { }
@@ -5862,7 +5734,7 @@ namespace Campy.Compiler
     #endregion i_ldloc_1 definition
 
     #region i_ldloc_2 definition
-    public class i_ldloc_2 : ConvertLdLoc
+    public class i_ldloc_2 : LdLoc
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldloc_2(b, i); }
         private i_ldloc_2(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i, 2) { }
@@ -5870,7 +5742,7 @@ namespace Campy.Compiler
     #endregion i_ldloc_2 definition
 
     #region i_ldloc_3 definition
-    public class i_ldloc_3 : ConvertLdLoc
+    public class i_ldloc_3 : LdLoc
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldloc_3(b, i); }
         private i_ldloc_3(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i, 3) { }
@@ -5878,7 +5750,7 @@ namespace Campy.Compiler
     #endregion i_ldloc_3 definition
 
     #region i_ldloc_s definition
-    public class i_ldloc_s : ConvertLdLoc
+    public class i_ldloc_s : LdLoc
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldloc_s(b, i); }
         private i_ldloc_s(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
@@ -5886,7 +5758,7 @@ namespace Campy.Compiler
     #endregion i_ldloc_s definition
 
     #region i_ldloca definition
-    public class i_ldloca : ConvertLdLoc
+    public class i_ldloca : LdLoc
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldloca(b, i); }
         private i_ldloca(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
@@ -5894,7 +5766,7 @@ namespace Campy.Compiler
     #endregion i_ldloca definition
 
     #region i_ldloca_s definition
-    public class i_ldloca_s : ConvertLdLoc
+    public class i_ldloca_s : LdLoc
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_ldloca_s(b, i); }
         private i_ldloca_s(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
@@ -6281,7 +6153,7 @@ namespace Campy.Compiler
     #endregion i_mkrefany definition
 
     #region i_mul definition
-    public class i_mul : BinaryOpInst
+    public class i_mul : BinOp
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_mul(b, i); }
         private i_mul(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
@@ -6289,7 +6161,7 @@ namespace Campy.Compiler
     #endregion i_mul definition
 
     #region i_mul_ovf definition
-    public class i_mul_ovf : BinaryOpInst
+    public class i_mul_ovf : BinOp
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_mul_ovf(b, i); }
         private i_mul_ovf(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
@@ -6297,7 +6169,7 @@ namespace Campy.Compiler
     #endregion i_mul_ovf definition
 
     #region i_mul_ovf_un definition
-    public class i_mul_ovf_un : BinaryOpInst
+    public class i_mul_ovf_un : BinOp
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_mul_ovf_un(b, i); }
         private i_mul_ovf_un(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
@@ -6760,7 +6632,7 @@ namespace Campy.Compiler
     #endregion i_not definition
 
     #region i_or definition
-    public class i_or : BinaryOpInst
+    public class i_or : BinOp
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_or(b, i); }
         private i_or(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
@@ -6810,7 +6682,7 @@ namespace Campy.Compiler
     #endregion i_refanyval definition
 
     #region i_rem definition
-    public class i_rem : BinaryOpInst
+    public class i_rem : BinOp
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_rem(b, i); }
         private i_rem(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
@@ -6818,7 +6690,7 @@ namespace Campy.Compiler
     #endregion i_rem definition
 
     #region i_rem_un definition
-    public class i_rem_un : BinaryOpInst
+    public class i_rem_un : BinOp
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_rem_un(b, i); }
         private i_rem_un(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
@@ -7026,7 +6898,7 @@ namespace Campy.Compiler
     #endregion i_sizeof definition
 
     #region i_starg definition
-    public class i_starg : ConvertStArgInst
+    public class i_starg : StArg
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_starg(b, i); }
         private i_starg(CFG.Vertex b, Mono.Cecil.Cil.Instruction i)
@@ -7040,7 +6912,7 @@ namespace Campy.Compiler
     #endregion i_starg definition
 
     #region i_starg_s definition
-    public class i_starg_s : ConvertStArgInst
+    public class i_starg_s : StArg
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_starg_s(b, i); }
 
@@ -7055,7 +6927,7 @@ namespace Campy.Compiler
     #endregion i_starg_s definition
 
     #region i_stelem_any definition
-    public class i_stelem_any : ConvertStoreElement
+    public class i_stelem_any : StElem
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_stelem_any(b, i); }
         private i_stelem_any(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
@@ -7063,7 +6935,7 @@ namespace Campy.Compiler
     #endregion i_stelem_any definition
 
     #region i_stelem_i1 definition
-    public class i_stelem_i1 : ConvertStoreElement
+    public class i_stelem_i1 : StElem
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_stelem_i1(b, i); }
         private i_stelem_i1(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(sbyte)); }
@@ -7071,7 +6943,7 @@ namespace Campy.Compiler
     #endregion i_stelem_i1 definition
 
     #region i_stelem_i2 definition
-    public class i_stelem_i2 : ConvertStoreElement
+    public class i_stelem_i2 : StElem
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_stelem_i2(b, i); }
         private i_stelem_i2(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(short)); }
@@ -7079,7 +6951,7 @@ namespace Campy.Compiler
     #endregion i_stelem_i2 definition
 
     #region i_stelem_i4 definition
-    public class i_stelem_i4 : ConvertStoreElement
+    public class i_stelem_i4 : StElem
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_stelem_i4(b, i); }
         private i_stelem_i4(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(int)); }
@@ -7087,7 +6959,7 @@ namespace Campy.Compiler
     #endregion i_stelem_i4 definition
 
     #region i_stelem_i8 definition
-    public class i_stelem_i8 : ConvertStoreElement
+    public class i_stelem_i8 : StElem
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_stelem_i8(b, i); }
         private i_stelem_i8(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(long)); }
@@ -7095,7 +6967,7 @@ namespace Campy.Compiler
     #endregion i_stelem_i8 definition
 
     #region i_stelem_i definition
-    public class i_stelem_i : ConvertStoreElement
+    public class i_stelem_i : StElem
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_stelem_i(b, i); }
         private i_stelem_i(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(long)); }
@@ -7103,7 +6975,7 @@ namespace Campy.Compiler
     #endregion i_stelem_i definition
 
     #region i_stelem_r4 definition
-    public class i_stelem_r4 : ConvertStoreElement
+    public class i_stelem_r4 : StElem
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_stelem_r4(b, i); }
         private i_stelem_r4(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(float)); }
@@ -7111,7 +6983,7 @@ namespace Campy.Compiler
     #endregion i_stelem_r4 definition
 
     #region i_stelem_r8 definition
-    public class i_stelem_r8 : ConvertStoreElement
+    public class i_stelem_r8 : StElem
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_stelem_r8(b, i); }
         private i_stelem_r8(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { _dst = new TYPE(typeof(double)); }
@@ -7119,7 +6991,7 @@ namespace Campy.Compiler
     #endregion i_stelem_r8 definition
 
     #region i_stelem_ref definition
-    public class i_stelem_ref : ConvertStoreElement
+    public class i_stelem_ref : StElem
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_stelem_ref(b, i); }
         private i_stelem_ref(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
@@ -7127,7 +6999,7 @@ namespace Campy.Compiler
     #endregion i_stelem_ref definition
 
     #region i_stfld definition
-    public class i_stfld : ConvertStoreField
+    public class i_stfld : StFld
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_stfld(b, i); }
         private i_stfld(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
@@ -7135,7 +7007,7 @@ namespace Campy.Compiler
     #endregion i_stfld definition
 
     #region i_stind_i1 definition
-    public class i_stind_i1 : ConvertStoreIndirect
+    public class i_stind_i1 : StInd
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_stind_i1(b, i); }
         private i_stind_i1(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i, typeof(sbyte).ToMonoTypeReference()) { }
@@ -7143,7 +7015,7 @@ namespace Campy.Compiler
     #endregion i_stind_i1 definition
 
     #region i_stind_i2 definition
-    public class i_stind_i2 : ConvertStoreIndirect
+    public class i_stind_i2 : StInd
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_stind_i2(b, i); }
         private i_stind_i2(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i, typeof(short).ToMonoTypeReference()) { }
@@ -7151,7 +7023,7 @@ namespace Campy.Compiler
     #endregion i_stind_i2 definition
 
     #region i_stind_i4 definition
-    public class i_stind_i4 : ConvertStoreIndirect
+    public class i_stind_i4 : StInd
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_stind_i4(b, i); }
         private i_stind_i4(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i, typeof(int).ToMonoTypeReference()) { }
@@ -7159,7 +7031,7 @@ namespace Campy.Compiler
     #endregion i_stind_i4 definition
 
     #region i_stind_i8 definition
-    public class i_stind_i8 : ConvertStoreIndirect
+    public class i_stind_i8 : StInd
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_stind_i8(b, i); }
         private i_stind_i8(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i, typeof(long).ToMonoTypeReference()) { }
@@ -7167,7 +7039,7 @@ namespace Campy.Compiler
     #endregion i_stind_i8 definition
 
     #region i_stind_i definition
-    public class i_stind_i : ConvertStoreIndirect
+    public class i_stind_i : StInd
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_stind_i(b, i); }
         private i_stind_i(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i, typeof(long).ToMonoTypeReference()) { }
@@ -7176,7 +7048,7 @@ namespace Campy.Compiler
     #endregion i_stind_i definition
 
     #region i_stind_r4 definition
-    public class i_stind_r4 : ConvertStoreIndirect
+    public class i_stind_r4 : StInd
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_stind_r4(b, i); }
         private i_stind_r4(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i, typeof(float).ToMonoTypeReference()) { }
@@ -7184,7 +7056,7 @@ namespace Campy.Compiler
     #endregion i_stind_r4 definition
 
     #region i_stind_r8 definition
-    public class i_stind_r8 : ConvertStoreIndirect
+    public class i_stind_r8 : StInd
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_stind_r8(b, i); }
         private i_stind_r8(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i, typeof(double).ToMonoTypeReference()) { }
@@ -7192,7 +7064,7 @@ namespace Campy.Compiler
     #endregion i_stind_r8 definition
 
     #region i_stind_ref definition
-    public class i_stind_ref : ConvertStoreIndirect
+    public class i_stind_ref : StInd
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_stind_ref(b, i); }
         private i_stind_ref(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i, null) { } /* dynamic target type */
@@ -7200,7 +7072,7 @@ namespace Campy.Compiler
     #endregion i_stind_ref definition
 
     #region i_stloc definition
-    public class i_stloc : ConvertStLoc
+    public class i_stloc : StLoc
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_stloc(b, i); }
         public i_stloc(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
@@ -7208,7 +7080,7 @@ namespace Campy.Compiler
     #endregion i_stloc definition
 
     #region i_stloc_0 definition
-    public class i_stloc_0 : ConvertStLoc
+    public class i_stloc_0 : StLoc
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_stloc_0(b, i); }
         private i_stloc_0(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i, 0) { }
@@ -7216,7 +7088,7 @@ namespace Campy.Compiler
     #endregion i_stloc_0 definition
 
     #region i_stloc_1 definition
-    public class i_stloc_1 : ConvertStLoc
+    public class i_stloc_1 : StLoc
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_stloc_1(b, i); }
         private i_stloc_1(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i, 1) { }
@@ -7224,7 +7096,7 @@ namespace Campy.Compiler
     #endregion i_stloc_1 definition
 
     #region i_stloc_2 definition
-    public class i_stloc_2 : ConvertStLoc
+    public class i_stloc_2 : StLoc
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_stloc_2(b, i); }
         private i_stloc_2(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i, 2) { }
@@ -7232,7 +7104,7 @@ namespace Campy.Compiler
     #endregion i_stloc_2 definition
 
     #region i_stloc_3 definition
-    public class i_stloc_3 : ConvertStLoc
+    public class i_stloc_3 : StLoc
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_stloc_3(b, i); }
         private i_stloc_3(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i, 3) { }
@@ -7240,7 +7112,7 @@ namespace Campy.Compiler
     #endregion i_stloc_3 definition
 
     #region i_stloc_s definition
-    public class i_stloc_s : ConvertStLoc
+    public class i_stloc_s : StLoc
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_stloc_s(b, i); }
         private i_stloc_s(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
@@ -7250,6 +7122,8 @@ namespace Campy.Compiler
     #region i_stobj definition
     public class i_stobj : INST
     {
+        private TypeReference fully_typed_operand;
+
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_stobj(b, i); }
         private i_stobj(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
 
@@ -7260,7 +7134,7 @@ namespace Campy.Compiler
             object operand = this.Operand;
             var o = operand as TypeReference;
             o = o.RewriteMonoTypeReference();
-            var p = o.Deresolve(this.Block._method_reference.DeclaringType, null);
+            fully_typed_operand = o.Deresolve(this.Block._method_reference.DeclaringType, null);
         }
 
         public override void Convert(STATE<VALUE, StackQueue<VALUE>> state)
@@ -7271,30 +7145,12 @@ namespace Campy.Compiler
             var dst = state._stack.Pop();
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(dst);
-            object operand = this.Operand;
-            var o = operand as TypeReference;
-            o = o.RewriteMonoTypeReference();
-            var p = o.Deresolve(this.Block._method_reference.DeclaringType, null);
-            if (Campy.Utils.Options.IsOn("jit_trace"))
-                System.Console.WriteLine(p);
-
             TypeRef stype = LLVM.TypeOf(src.V);
             TypeRef dtype = LLVM.TypeOf(dst.V);
-
-            if (stype == LLVM.Int64Type()
-                  && (dtype == LLVM.Int32Type() || dtype == LLVM.Int16Type() || dtype == LLVM.Int8Type() || dtype == LLVM.Int1Type()))
-                src = new VALUE(LLVM.BuildTrunc(Builder, src.V, dtype, "i" + instruction_id++));
-            else if (stype == LLVM.Int32Type()
-                  && (dtype == LLVM.Int16Type() || dtype == LLVM.Int8Type() || dtype == LLVM.Int1Type()))
-                src = new VALUE(LLVM.BuildTrunc(Builder, src.V, dtype, "i" + instruction_id++));
-            else if (stype == LLVM.Int16Type()
-                  && (dtype == LLVM.Int8Type() || dtype == LLVM.Int1Type()))
-                src = new VALUE(LLVM.BuildTrunc(Builder, src.V, dtype, "i" + instruction_id++));
-            else if (LLVM.GetTypeKind(stype) == TypeKind.PointerTypeKind)
-                ;
-            var zz = LLVM.BuildStore(Builder, src.V, dst.V);
+            src = new VALUE(Casting.CastArg(Builder, src.V, stype, dtype, true));
+            var result = LLVM.BuildStore(Builder, src.V, dst.V);
             if (Campy.Utils.Options.IsOn("jit_trace"))
-                System.Console.WriteLine("Store = " + new VALUE(zz).ToString());
+                System.Console.WriteLine("Store = " + new VALUE(result).ToString());
         }
     }
     #endregion i_stobj definition
@@ -7364,7 +7220,7 @@ namespace Campy.Compiler
     #endregion i_stsfld definition
 
     #region i_sub definition
-    public class i_sub : BinaryOpInst
+    public class i_sub : BinOp
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_sub(b, i); }
         private i_sub(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
@@ -7372,7 +7228,7 @@ namespace Campy.Compiler
     #endregion i_sub definition
 
     #region i_sub_ovf definition
-    public class i_sub_ovf : BinaryOpInst
+    public class i_sub_ovf : BinOp
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_sub_ovf(b, i); }
         private i_sub_ovf(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
@@ -7380,7 +7236,7 @@ namespace Campy.Compiler
     #endregion i_sub_ovf definition
 
     #region i_sub_ovf_un definition
-    public class i_sub_ovf_un : BinaryOpInst
+    public class i_sub_ovf_un : BinOp
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_sub_ovf_un(b, i); }
         private i_sub_ovf_un(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
@@ -7391,8 +7247,6 @@ namespace Campy.Compiler
     public class i_switch : INST
     {
         private TypeReference call_closure_value;
-        private PostDominators<CFG.Vertex, CFG.Edge> domr;
-        private Dominators<CFG.Vertex, CFG.Edge> domf;
         private CFG.Vertex exit_block;
         private CFG.Vertex default_block;
 
@@ -7613,21 +7467,7 @@ i =>
                   IL_0056: ret          
 
                 } // end of method '<>c__DisplayClass1_0'::'<Main>b__0'
-           */
-            //domr = new PostDominators<CFG.Vertex, CFG.Edge>(
-            //    this.Block._graph, this.Block.Entry.BlocksOfMethod, this.Block.Exit);
-            //domr.run();
-
-            //domf = new Dominators<CFG.Vertex, CFG.Edge>(
-            //    this.Block._graph, this.Block.Entry.BlocksOfMethod, this.Block.Entry);
-            //domf.run();
-            //var start_hs = domf._doms[this.Block];
-            //var end_hs = domr._doms[this.Block];
-            //end_hs.Remove(this.Block.Entry);
-            //end_hs.Remove(this.Block);
-            //end_hs.Remove(this.Block.Entry.Exit);
-            //if (end_hs.Count() != 1) throw new Exception("Cannot find exit point of switch");
-            //exit_block = end_hs.First();
+            */
             default_block = this.Block._graph.Successors(this.Block).Last();
             call_closure_value = state._stack.Pop();
             object operand = this.Operand;
@@ -7702,7 +7542,7 @@ i =>
     #endregion i_unaligned definition
 
     #region i_unbox definition
-    public class i_unbox : ConvertUnbox
+    public class i_unbox : Unbox
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_unbox(b, i); }
         private i_unbox(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
@@ -7710,7 +7550,7 @@ i =>
     #endregion i_unbox definition
 
     #region i_unbox_any definition
-    public class i_unbox_any : ConvertUnbox
+    public class i_unbox_any : Unbox
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_unbox_any(b, i); }
         private i_unbox_any(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
@@ -7726,7 +7566,7 @@ i =>
     #endregion i_volatile definition
 
     #region i_xor definition
-    public class i_xor : BinaryOpInst
+    public class i_xor : BinOp
     {
         public static INST factory(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) { return new i_xor(b, i); }
         private i_xor(CFG.Vertex b, Mono.Cecil.Cil.Instruction i) : base(b, i) { }
@@ -7743,15 +7583,12 @@ i =>
 			{
 				bool ext = false;
 
-						/* Extend */
-				if (dtype == LLVM.Int64Type()
-					  && (stype == LLVM.Int32Type() || stype == LLVM.Int16Type() || stype == LLVM.Int8Type()))
+				/* Extend */
+				if (dtype == LLVM.Int64Type() && (stype == LLVM.Int32Type() || stype == LLVM.Int16Type() || stype == LLVM.Int8Type()))
 					ext = true;
-				else if (dtype == LLVM.Int32Type()
-						 && (stype == LLVM.Int16Type() || stype == LLVM.Int8Type()))
+				else if (dtype == LLVM.Int32Type() && (stype == LLVM.Int16Type() || stype == LLVM.Int8Type()))
 					ext = true;
-				else if (dtype == LLVM.Int16Type()
-						 && (stype == LLVM.Int8Type()))
+				else if (dtype == LLVM.Int16Type() && (stype == LLVM.Int8Type()))
 					ext = true;
 
 				if (ext)
@@ -7762,30 +7599,21 @@ i =>
 					dst = LLVM.BuildPointerCast(Builder, src, dtype, "i" + INST.instruction_id++);
 				else if (dtype == LLVM.DoubleType() && stype == LLVM.FloatType())
 					dst = LLVM.BuildFPExt(Builder, src, dtype, "i" + INST.instruction_id++);
-				else /* Trunc */ if (stype == LLVM.Int64Type()
-									 && (dtype == LLVM.Int32Type() || dtype == LLVM.Int16Type() || dtype == LLVM.Int8Type()))
+				else if (stype == LLVM.Int64Type() && (dtype == LLVM.Int32Type() || dtype == LLVM.Int16Type() || dtype == LLVM.Int8Type()))
 					dst = LLVM.BuildTrunc(Builder, src, dtype, "i" + INST.instruction_id++);
-				else if (stype == LLVM.Int32Type()
-						 && (dtype == LLVM.Int16Type() || dtype == LLVM.Int8Type()))
+				else if (stype == LLVM.Int32Type() && (dtype == LLVM.Int16Type() || dtype == LLVM.Int8Type()))
 					dst = LLVM.BuildTrunc(Builder, src, dtype, "i" + INST.instruction_id++);
-				else if (stype == LLVM.Int16Type()
-						 && dtype == LLVM.Int8Type())
+				else if (stype == LLVM.Int16Type() && dtype == LLVM.Int8Type())
 					dst = LLVM.BuildTrunc(Builder, src, dtype, "i" + INST.instruction_id++);
-				else if (stype == LLVM.DoubleType()
-						 && dtype == LLVM.FloatType())
+				else if (stype == LLVM.DoubleType() && dtype == LLVM.FloatType())
 					dst = LLVM.BuildFPTrunc(Builder, src, dtype, "i" + INST.instruction_id++);
-
-				else if (stype == LLVM.Int64Type()
-						 && (dtype == LLVM.FloatType()))
+				else if (stype == LLVM.Int64Type() && (dtype == LLVM.FloatType()))
 					dst = LLVM.BuildSIToFP(Builder, src, dtype, "i" + INST.instruction_id++);
-				else if (stype == LLVM.Int32Type()
-						 && (dtype == LLVM.FloatType()))
+				else if (stype == LLVM.Int32Type() && (dtype == LLVM.FloatType()))
 					dst = LLVM.BuildSIToFP(Builder, src, dtype, "i" + INST.instruction_id++);
-				else if (stype == LLVM.Int64Type()
-						 && (dtype == LLVM.DoubleType()))
+				else if (stype == LLVM.Int64Type() && (dtype == LLVM.DoubleType()))
 					dst = LLVM.BuildSIToFP(Builder, src, dtype, "i" + INST.instruction_id++);
-				else if (stype == LLVM.Int32Type()
-						 && (dtype == LLVM.DoubleType()))
+				else if (stype == LLVM.Int32Type() && (dtype == LLVM.DoubleType()))
 					dst = LLVM.BuildSIToFP(Builder, src, dtype, "i" + INST.instruction_id++);
 				else
 					dst = LLVM.BuildBitCast(Builder, src, dtype, "i" + INST.instruction_id++);
