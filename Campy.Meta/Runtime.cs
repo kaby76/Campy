@@ -1039,10 +1039,10 @@ declare i64 @_Z62System_Runtime_CompilerServices_RuntimeHelpers_InitializeArrayP
                 }
                 else if (mt.IsArray)
                 {
-                    var et = mt.GetElementType();
-                    var mta = mt as Mono.Cecil.ArrayType;
+                    var a = mt as ArrayType;
+                    var et = a.ElementType;
                     var bcl_et = MonoBclMap_GetBcl(et);
-                    result = BclConstructArrayType(bcl_et, mta.Rank);
+                    result = BclConstructArrayType(bcl_et, a.Rank);
                 }
                 else
                 {

@@ -7146,7 +7146,7 @@ namespace Campy.Compiler
             if (Campy.Utils.Options.IsOn("jit_trace"))
                 System.Console.WriteLine(dst);
             TypeRef stype = LLVM.TypeOf(src.V);
-            TypeRef dtype = LLVM.TypeOf(dst.V);
+            TypeRef dtype = LLVM.GetElementType(LLVM.TypeOf(dst.V));
             src = new VALUE(Casting.CastArg(Builder, src.V, stype, dtype, true));
             var result = LLVM.BuildStore(Builder, src.V, dst.V);
             if (Campy.Utils.Options.IsOn("jit_trace"))
