@@ -351,8 +351,13 @@ function_space_specifier tAsyncCall* System_Array_Resize(PTR pThis_, PTR pParams
     newSize = *(U32*)p++;
 
     pOldArray = (tSystemArray*)*ppArray_;
-    U32 rank = *((&(pOldArray->rank)) + 1);
-    int len = *((&(pOldArray->rank)) + 2);;
+    U32 rank = *(&(pOldArray->rank));
+	if (rank > 1)
+	{
+		Gprintf("Trying to resize a multi-dimensional array. Cannot do, guy.");
+		__debugbreak();
+	}
+    int len = *((&(pOldArray->rank)) + 1);
     oldSize = len;
 
     if (oldSize == newSize) {
