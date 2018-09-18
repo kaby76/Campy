@@ -26,27 +26,27 @@
 */
 function_space_specifier int Gstrncasecmp(const char *s1, const char *s2, size_t len)
 {
-	/* Yes, Virginia, it had better be unsigned */
-	unsigned char c1, c2;
+    /* Yes, Virginia, it had better be unsigned */
+    unsigned char c1, c2;
 
-	c1 = 0;	c2 = 0;
-	if (len) {
-		do {
-			c1 = *s1; c2 = *s2;
-			s1++; s2++;
-			if (!c1)
-				break;
-			if (!c2)
-				break;
-			if (c1 == c2)
-				continue;
-			c1 = Gtolower(c1);
-			c2 = Gtolower(c2);
-			if (c1 != c2)
-				break;
-		} while (--len);
-	}
-	return (int)c1 - (int)c2;
+    c1 = 0; c2 = 0;
+    if (len) {
+        do {
+            c1 = *s1; c2 = *s2;
+            s1++; s2++;
+            if (!c1)
+                break;
+            if (!c2)
+                break;
+            if (c1 == c2)
+                continue;
+            c1 = Gtolower(c1);
+            c2 = Gtolower(c2);
+            if (c1 != c2)
+                break;
+        } while (--len);
+    }
+    return (int)c1 - (int)c2;
 }
 
 /**
@@ -56,7 +56,7 @@ function_space_specifier int Gstrncasecmp(const char *s1, const char *s2, size_t
 */
 function_space_specifier int Gstrcasecmp(const char *s1, const char *s2)
 {
-	return Gstrncasecmp(s1, s2, (size_t)-1);
+    return Gstrncasecmp(s1, s2, (size_t)-1);
 }
 
 // function_space_specifier char * ___strtok;
@@ -69,11 +69,11 @@ function_space_specifier int Gstrcasecmp(const char *s1, const char *s2)
 */
 function_space_specifier char * Gstrcpy(char * dest, const char *src)
 {
-	char *tmp = dest;
+    char *tmp = dest;
 
-	while ((*dest++ = *src++) != '\0')
-		/* nothing */;
-	return tmp;
+    while ((*dest++ = *src++) != '\0')
+        /* nothing */;
+    return tmp;
 }
 #endif
 
@@ -90,12 +90,12 @@ function_space_specifier char * Gstrcpy(char * dest, const char *src)
 */
 function_space_specifier char * Gstrncpy(char * dest, const char *src, size_t count)
 {
-	char *tmp = dest;
+    char *tmp = dest;
 
-	while (count-- && (*dest++ = *src++) != '\0')
-		/* nothing */;
+    while (count-- && (*dest++ = *src++) != '\0')
+        /* nothing */;
 
-	return tmp;
+    return tmp;
 }
 #endif
 
@@ -113,14 +113,14 @@ function_space_specifier char * Gstrncpy(char * dest, const char *src, size_t co
 */
 function_space_specifier size_t Gstrlcpy(char *dest, const char *src, size_t size)
 {
-	size_t ret = Gstrlen(src);
+    size_t ret = Gstrlen(src);
 
-	if (size) {
-		size_t len = (ret >= size) ? size - 1 : ret;
-		Gmemcpy(dest, src, len);
-		dest[len] = '\0';
-	}
-	return ret;
+    if (size) {
+        size_t len = (ret >= size) ? size - 1 : ret;
+        Gmemcpy(dest, src, len);
+        dest[len] = '\0';
+    }
+    return ret;
 }
 #endif
 
@@ -132,14 +132,14 @@ function_space_specifier size_t Gstrlcpy(char *dest, const char *src, size_t siz
 */
 function_space_specifier char * Gstrcat(char * dest, const char * src)
 {
-	char *tmp = dest;
+    char *tmp = dest;
 
-	while (*dest)
-		dest++;
-	while ((*dest++ = *src++) != '\0')
-		;
+    while (*dest)
+        dest++;
+    while ((*dest++ = *src++) != '\0')
+        ;
 
-	return tmp;
+    return tmp;
 }
 #endif
 
@@ -155,20 +155,20 @@ function_space_specifier char * Gstrcat(char * dest, const char * src)
 */
 function_space_specifier char * Gstrncat(char *dest, const char *src, size_t count)
 {
-	char *tmp = dest;
+    char *tmp = dest;
 
-	if (count) {
-		while (*dest)
-			dest++;
-		while ((*dest++ = *src++)) {
-			if (--count == 0) {
-				*dest = '\0';
-				break;
-			}
-		}
-	}
+    if (count) {
+        while (*dest)
+            dest++;
+        while ((*dest++ = *src++)) {
+            if (--count == 0) {
+                *dest = '\0';
+                break;
+            }
+        }
+    }
 
-	return tmp;
+    return tmp;
 }
 #endif
 
@@ -180,14 +180,14 @@ function_space_specifier char * Gstrncat(char *dest, const char *src, size_t cou
 */
 function_space_specifier int Gstrcmp(const char * cs, const char * ct)
 {
-	register signed char __res;
+    register signed char __res;
 
-	while (1) {
-		if ((__res = *cs - *ct++) != 0 || !*cs++)
-			break;
-	}
+    while (1) {
+        if ((__res = *cs - *ct++) != 0 || !*cs++)
+            break;
+    }
 
-	return __res;
+    return __res;
 }
 #endif
 
@@ -200,15 +200,15 @@ function_space_specifier int Gstrcmp(const char * cs, const char * ct)
 */
 function_space_specifier int Gstrncmp(const char * cs, const char * ct, size_t count)
 {
-	register signed char __res = 0;
+    register signed char __res = 0;
 
-	while (count) {
-		if ((__res = *cs - *ct++) != 0 || !*cs++)
-			break;
-		count--;
-	}
+    while (count) {
+        if ((__res = *cs - *ct++) != 0 || !*cs++)
+            break;
+        count--;
+    }
 
-	return __res;
+    return __res;
 }
 #endif
 
@@ -220,10 +220,10 @@ function_space_specifier int Gstrncmp(const char * cs, const char * ct, size_t c
 */
 function_space_specifier char * Gstrchr(const char * s, int c)
 {
-	for (; *s != (char)c; ++s)
-		if (*s == '\0')
-			return NULL;
-	return (char *)s;
+    for (; *s != (char)c; ++s)
+        if (*s == '\0')
+            return NULL;
+    return (char *)s;
 }
 #endif
 
@@ -235,12 +235,12 @@ function_space_specifier char * Gstrchr(const char * s, int c)
 */
 function_space_specifier char * Gstrrchr(const char * s, int c)
 {
-	const char *p = s + Gstrlen(s);
-	do {
-		if (*p == (char)c)
-			return (char *)p;
-	} while (--p >= s);
-	return NULL;
+    const char *p = s + Gstrlen(s);
+    do {
+        if (*p == (char)c)
+            return (char *)p;
+    } while (--p >= s);
+    return NULL;
 }
 #endif
 
@@ -251,11 +251,11 @@ function_space_specifier char * Gstrrchr(const char * s, int c)
 */
 function_space_specifier size_t Gstrlen(const char * s)
 {
-	const char *sc;
+    const char *sc;
 
-	for (sc = s; *sc != '\0'; ++sc)
-		/* nothing */;
-	return sc - s;
+    for (sc = s; *sc != '\0'; ++sc)
+        /* nothing */;
+    return sc - s;
 }
 #endif
 
@@ -267,53 +267,53 @@ function_space_specifier size_t Gstrlen(const char * s)
 */
 function_space_specifier size_t Gstrnlen(const char * s, size_t count)
 {
-	const char *sc;
+    const char *sc;
 
-	for (sc = s; count-- && *sc != '\0'; ++sc)
-		/* nothing */;
-	return sc - s;
+    for (sc = s; count-- && *sc != '\0'; ++sc)
+        /* nothing */;
+    return sc - s;
 }
 #endif
 
 #ifndef __HAVE_ARCH_STRDUP
 function_space_specifier char * Gstrdup(const char *s)
 {
-	char *nw;
+    char *nw;
 
-	if ((s == NULL) ||
-		((nw = (char*)Gmalloc(strlen(s) + 1)) == NULL)) {
-		return NULL;
-	}
+    if ((s == NULL) ||
+        ((nw = (char*)Gmalloc(strlen(s) + 1)) == NULL)) {
+        return NULL;
+    }
 
-	Gstrcpy(nw, s);
-	return nw;
+    Gstrcpy(nw, s);
+    return nw;
 }
 #endif
 
 #ifndef __HAVE_ARCH_STRSPN
 /**
 * strspn - Calculate the length of the initial substring of @s which only
-*	contain letters in @accept
+*   contain letters in @accept
 * @s: The string to be searched
 * @accept: The string to search for
 */
 function_space_specifier size_t Gstrspn(const char *s, const char *accept)
 {
-	const char *p;
-	const char *a;
-	size_t count = 0;
+    const char *p;
+    const char *a;
+    size_t count = 0;
 
-	for (p = s; *p != '\0'; ++p) {
-		for (a = accept; *a != '\0'; ++a) {
-			if (*p == *a)
-				break;
-		}
-		if (*a == '\0')
-			return count;
-		++count;
-	}
+    for (p = s; *p != '\0'; ++p) {
+        for (a = accept; *a != '\0'; ++a) {
+            if (*p == *a)
+                break;
+        }
+        if (*a == '\0')
+            return count;
+        ++count;
+    }
 
-	return count;
+    return count;
 }
 #endif
 
@@ -325,15 +325,15 @@ function_space_specifier size_t Gstrspn(const char *s, const char *accept)
 */
 function_space_specifier char * Gstrpbrk(const char * cs, const char * ct)
 {
-	const char *sc1, *sc2;
+    const char *sc1, *sc2;
 
-	for (sc1 = cs; *sc1 != '\0'; ++sc1) {
-		for (sc2 = ct; *sc2 != '\0'; ++sc2) {
-			if (*sc1 == *sc2)
-				return (char *)sc1;
-		}
-	}
-	return NULL;
+    for (sc1 = cs; *sc1 != '\0'; ++sc1) {
+        for (sc2 = ct; *sc2 != '\0'; ++sc2) {
+            if (*sc1 == *sc2)
+                return (char *)sc1;
+        }
+    }
+    return NULL;
 }
 #endif
 
@@ -347,22 +347,22 @@ function_space_specifier char * Gstrpbrk(const char * cs, const char * ct)
 */
 function_space_specifier char * Gstrtok(char * s, const char * ct)
 {
-	char *sbegin, *send;
+    char *sbegin, *send;
 
-	sbegin = s ? s : _bcl_->___strtok;
-	if (!sbegin) {
-		return NULL;
-	}
-	sbegin += Gstrspn(sbegin, ct);
-	if (*sbegin == '\0') {
-		_bcl_->___strtok = NULL;
-		return(NULL);
-	}
-	send = Gstrpbrk(sbegin, ct);
-	if (send && *send != '\0')
-		*send++ = '\0';
-	_bcl_->___strtok = send;
-	return (sbegin);
+    sbegin = s ? s : _bcl_->___strtok;
+    if (!sbegin) {
+        return NULL;
+    }
+    sbegin += Gstrspn(sbegin, ct);
+    if (*sbegin == '\0') {
+        _bcl_->___strtok = NULL;
+        return(NULL);
+    }
+    send = Gstrpbrk(sbegin, ct);
+    if (send && *send != '\0')
+        *send++ = '\0';
+    _bcl_->___strtok = send;
+    return (sbegin);
 }
 #endif
 
@@ -380,17 +380,17 @@ function_space_specifier char * Gstrtok(char * s, const char * ct)
 */
 function_space_specifier char * Gstrsep(char **s, const char *ct)
 {
-	char *sbegin = *s, *end;
+    char *sbegin = *s, *end;
 
-	if (sbegin == NULL)
-		return NULL;
+    if (sbegin == NULL)
+        return NULL;
 
-	end = Gstrpbrk(sbegin, ct);
-	if (end)
-		*end++ = '\0';
-	*s = end;
+    end = Gstrpbrk(sbegin, ct);
+    if (end)
+        *end++ = '\0';
+    *s = end;
 
-	return sbegin;
+    return sbegin;
 }
 #endif
 
@@ -404,21 +404,21 @@ function_space_specifier char * Gstrsep(char **s, const char *ct)
 */
 function_space_specifier char *strswab(const char *s)
 {
-	char *p, *q;
+    char *p, *q;
 
-	if ((NULL == s) || ('\0' == *s)) {
-		return (NULL);
-	}
+    if ((NULL == s) || ('\0' == *s)) {
+        return (NULL);
+    }
 
-	for (p = (char *)s, q = p + 1; (*p != '\0') && (*q != '\0'); p += 2, q += 2) {
-		char  tmp;
+    for (p = (char *)s, q = p + 1; (*p != '\0') && (*q != '\0'); p += 2, q += 2) {
+        char  tmp;
 
-		tmp = *p;
-		*p = *q;
-		*q = tmp;
-	}
+        tmp = *p;
+        *p = *q;
+        *q = tmp;
+    }
 
-	return (char *)s;
+    return (char *)s;
 }
 #endif
 
@@ -433,14 +433,14 @@ function_space_specifier char *strswab(const char *s)
 */
 function_space_specifier void * Gmemset(void * s, int c, size_t count)
 {
-	unsigned long *sl = (unsigned long *)s;
-	char *s8;
+    unsigned long *sl = (unsigned long *)s;
+    char *s8;
 
-	s8 = (char *)sl;
-	while (count--)
-		*s8++ = c;
+    s8 = (char *)sl;
+    while (count--)
+        *s8++ = c;
 
-	return s;
+    return s;
 }
 #endif
 
@@ -456,26 +456,26 @@ function_space_specifier void * Gmemset(void * s, int c, size_t count)
 */
 function_space_specifier void * Gmemcpy(void *dest, const void *src, size_t count)
 {
-	unsigned long *dl = (unsigned long *)dest, *sl = (unsigned long *)src;
-	char *d8, *s8;
+    unsigned long *dl = (unsigned long *)dest, *sl = (unsigned long *)src;
+    char *d8, *s8;
 
-	if (src == dest)
-		return dest;
+    if (src == dest)
+        return dest;
 
-	/* while all data is aligned (common case), copy a word at a time */
-	if ((((unsigned long)dest | (unsigned long)src) & (sizeof(*dl) - 1)) == 0) {
-		while (count >= sizeof(*dl)) {
-			*dl++ = *sl++;
-			count -= sizeof(*dl);
-		}
-	}
-	/* copy the reset one byte at a time */
-	d8 = (char *)dl;
-	s8 = (char *)sl;
-	while (count--)
-		*d8++ = *s8++;
+    /* while all data is aligned (common case), copy a word at a time */
+    if ((((unsigned long)dest | (unsigned long)src) & (sizeof(*dl) - 1)) == 0) {
+        while (count >= sizeof(*dl)) {
+            *dl++ = *sl++;
+            count -= sizeof(*dl);
+        }
+    }
+    /* copy the reset one byte at a time */
+    d8 = (char *)dl;
+    s8 = (char *)sl;
+    while (count--)
+        *d8++ = *s8++;
 
-	return dest;
+    return dest;
 }
 #endif
 
@@ -490,19 +490,19 @@ function_space_specifier void * Gmemcpy(void *dest, const void *src, size_t coun
 */
 function_space_specifier void * Gmemmove(void * dest, const void *src, size_t count)
 {
-	char *tmp, *s;
+    char *tmp, *s;
 
-	if (dest <= src) {
-		Gmemcpy(dest, src, count);
-	}
-	else {
-		tmp = (char *)dest + count;
-		s = (char *)src + count;
-		while (count--)
-			*--tmp = *--s;
-	}
+    if (dest <= src) {
+        Gmemcpy(dest, src, count);
+    }
+    else {
+        tmp = (char *)dest + count;
+        s = (char *)src + count;
+        while (count--)
+            *--tmp = *--s;
+    }
 
-	return dest;
+    return dest;
 }
 #endif
 
@@ -515,13 +515,13 @@ function_space_specifier void * Gmemmove(void * dest, const void *src, size_t co
 */
 function_space_specifier int Gmemcmp(const void * cs, const void * ct, size_t count)
 {
-	unsigned char *su1, *su2;
-	int res = 0;
+    unsigned char *su1, *su2;
+    int res = 0;
 
-	for (su1 = (unsigned char *)cs, su2 = (unsigned char *)ct; 0 < count; ++su1, ++su2, count--)
-		if ((res = *su1 - *su2) != 0)
-			break;
-	return res;
+    for (su1 = (unsigned char *)cs, su2 = (unsigned char *)ct; 0 < count; ++su1, ++su2, count--)
+        if ((res = *su1 - *su2) != 0)
+            break;
+    return res;
 }
 #endif
 
@@ -537,15 +537,15 @@ function_space_specifier int Gmemcmp(const void * cs, const void * ct, size_t co
 */
 function_space_specifier void * Gmemscan(void * addr, int c, size_t size)
 {
-	unsigned char * p = (unsigned char *)addr;
+    unsigned char * p = (unsigned char *)addr;
 
-	while (size) {
-		if (*p == c)
-			return (void *)p;
-		p++;
-		size--;
-	}
-	return (void *)p;
+    while (size) {
+        if (*p == c)
+            return (void *)p;
+        p++;
+        size--;
+    }
+    return (void *)p;
 }
 #endif
 
@@ -557,19 +557,19 @@ function_space_specifier void * Gmemscan(void * addr, int c, size_t size)
 */
 function_space_specifier char * Gstrstr(const char * s1, const char * s2)
 {
-	size_t l1, l2;
+    size_t l1, l2;
 
-	l2 = Gstrlen(s2);
-	if (!l2)
-		return (char *)s1;
-	l1 = Gstrlen(s1);
-	while (l1 >= l2) {
-		l1--;
-		if (!Gmemcmp(s1, s2, l2))
-			return (char *)s1;
-		s1++;
-	}
-	return NULL;
+    l2 = Gstrlen(s2);
+    if (!l2)
+        return (char *)s1;
+    l1 = Gstrlen(s1);
+    while (l1 >= l2) {
+        l1--;
+        if (!Gmemcmp(s1, s2, l2))
+            return (char *)s1;
+        s1++;
+    }
+    return NULL;
 }
 #endif
 
@@ -585,41 +585,41 @@ function_space_specifier char * Gstrstr(const char * s1, const char * s2)
 */
 function_space_specifier void * Gmemchr(const void *s, int c, size_t n)
 {
-	unsigned char *p = (unsigned char *)s;
-	while (n-- != 0) {
-		if ((unsigned char)c == *p++) {
-			return (void *)(p - 1);
-		}
-	}
-	return NULL;
+    unsigned char *p = (unsigned char *)s;
+    while (n-- != 0) {
+        if ((unsigned char)c == *p++) {
+            return (void *)(p - 1);
+        }
+    }
+    return NULL;
 }
 
 #endif
 
 function_space_specifier void Gstoupper(char *s)
 {
-	for (; *s; s++)
-		if (('a' <= *s) && (*s <= 'z'))
-			*s = 'A' + (*s - 'a');
+    for (; *s; s++)
+        if (('a' <= *s) && (*s <= 'z'))
+            *s = 'A' + (*s - 'a');
 }
 
 function_space_specifier void Gstolower(char *s)
 {
-	for (; *s; s++)
-		if (('A' <= *s) && (*s <= 'Z'))
-			*s = 'a' + (*s - 'A');
+    for (; *s; s++)
+        if (('A' <= *s) && (*s <= 'Z'))
+            *s = 'a' + (*s - 'A');
 }
 
 function_space_specifier char Gtoupper(char c)
 {
-	if (('a' <= c) && (c <= 'z'))
-		c = 'A' + (c - 'a');
-	return c;
+    if (('a' <= c) && (c <= 'z'))
+        c = 'A' + (c - 'a');
+    return c;
 }
 
 function_space_specifier char Gtolower(char c)
 {
-	if (('A' <= c) && (c <= 'Z'))
-		c = 'a' + (c - 'A');
-	return c;
+    if (('A' <= c) && (c <= 'Z'))
+        c = 'a' + (c - 'A');
+    return c;
 }

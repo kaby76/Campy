@@ -31,51 +31,51 @@ typedef struct tThreadStack_ tThreadStack;
 #define THREADSTACK_CHUNK_SIZE 10000
 
 struct tThreadStack_ {
-	// This chunk of stack memory
-	unsigned char memory[THREADSTACK_CHUNK_SIZE];
-	// Current offset into this memory chunk
-	U32 ofs;
-	// Pointer to the next chunk.
-	tThreadStack *pNext;
+    // This chunk of stack memory
+    unsigned char memory[THREADSTACK_CHUNK_SIZE];
+    // Current offset into this memory chunk
+    U32 ofs;
+    // Pointer to the next chunk.
+    tThreadStack *pNext;
 };
 
 struct tThread_ {
-	// Stuff that's synced with Thread.cs
-	// The threadID of this thread
-	U32 threadID;
-	// The delegate that this thread starts by executing
-	PTR startDelegate;
-	// The parameter to pass to the starting method (this is ignored if no parameter is needed).
-	HEAP_PTR param;
-	// The current state of the thread (running/paused/etc...)
-	U32 state;
-	// The current culture of the thread. Never accessed in C
-	void *pCurrentCulture;
+    // Stuff that's synced with Thread.cs
+    // The threadID of this thread
+    U32 threadID;
+    // The delegate that this thread starts by executing
+    PTR startDelegate;
+    // The parameter to pass to the starting method (this is ignored if no parameter is needed).
+    HEAP_PTR param;
+    // The current state of the thread (running/paused/etc...)
+    U32 state;
+    // The current culture of the thread. Never accessed in C
+    void *pCurrentCulture;
 
-	// Stuff that is independant of Thread.cs
-	// Note that the size of this can be anything we like, as the size of the Thread .NET type is ignored.
+    // Stuff that is independant of Thread.cs
+    // Note that the size of this can be anything we like, as the size of the Thread .NET type is ignored.
 
-	// This thread's currently executing method
-	tMethodState *pCurrentMethodState;
-	// Thread exit value
-	I32 threadExitValue;
-	// The current exception object of this thread (for use by RETHROW)
-	HEAP_PTR pCurrentExceptionObject;
-	// When unwinding the stack after a throw, this keeps track of which finally clauses have already been executed
-	U32 nextFinallyUnwindStack;
-	// And the method state that we're aiming for..
-	tMethodState *pCatchMethodState;
-	// And the exception catch handler we're aiming for...
-	tExceptionHeader *pCatchExceptionHandler;
-	// If this thread is waiting on async data, then the details are stored here
-	tAsyncCall *pAsync;
-	// Does this thread start with a parameter?
-	U32 hasParam;
-	// Pointer to the first chunk of thread-stack memory
-	tThreadStack *pThreadStack;
+    // This thread's currently executing method
+    tMethodState *pCurrentMethodState;
+    // Thread exit value
+    I32 threadExitValue;
+    // The current exception object of this thread (for use by RETHROW)
+    HEAP_PTR pCurrentExceptionObject;
+    // When unwinding the stack after a throw, this keeps track of which finally clauses have already been executed
+    U32 nextFinallyUnwindStack;
+    // And the method state that we're aiming for..
+    tMethodState *pCatchMethodState;
+    // And the exception catch handler we're aiming for...
+    tExceptionHeader *pCatchExceptionHandler;
+    // If this thread is waiting on async data, then the details are stored here
+    tAsyncCall *pAsync;
+    // Does this thread start with a parameter?
+    U32 hasParam;
+    // Pointer to the first chunk of thread-stack memory
+    tThreadStack *pThreadStack;
 
-	// The next thread in the system (needed for garbage collection and theading)
-	tThread *pNextThread;
+    // The next thread in the system (needed for garbage collection and theading)
+    tThread *pNextThread;
 };
 
 // The thread has finished
@@ -91,11 +91,11 @@ struct tThread_ {
 
 // These are the same as the C# definitions in corelib,
 // and can be ORed together.
-#define THREADSTATE_RUNNING			0x0000
-#define THREADSTATE_BACKGROUND		0x0004
-#define THREADSTATE_UNSTARTED		0x0008
-#define THREADSTATE_STOPPED			0x0010
-#define THREADSTATE_SUSPENDED		0x0040
+#define THREADSTATE_RUNNING         0x0000
+#define THREADSTATE_BACKGROUND      0x0004
+#define THREADSTATE_UNSTARTED       0x0008
+#define THREADSTATE_STOPPED         0x0010
+#define THREADSTATE_SUSPENDED       0x0040
 
 function_space_specifier tThread* Thread();
 function_space_specifier void Thread_SetEntryPoint(tThread *pThis, tMetaData *pMetaData, IDX_TABLE entryPointToken, PTR params, U32 paramBytes);

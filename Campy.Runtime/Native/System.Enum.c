@@ -31,39 +31,39 @@
 #include "System.String.h"
 
 function_space_specifier tAsyncCall* System_Enum_Internal_GetValue(PTR pThis_, PTR pParams, PTR pReturnValue) {
-	*(U32*)pReturnValue = *(U32*)pThis_;
+    *(U32*)pReturnValue = *(U32*)pThis_;
 
-	return NULL;
+    return NULL;
 }
 
 function_space_specifier tAsyncCall* System_Enum_Internal_GetInfo(PTR pThis_, PTR pParams, PTR pReturnValue) {
-	tMD_TypeDef *pEnumType = RuntimeType_DeRef((PTR)(*(tMD_TypeDef**)pParams));
-	U32 i, retIndex;
-	HEAP_PTR names, values;
+    tMD_TypeDef *pEnumType = RuntimeType_DeRef((PTR)(*(tMD_TypeDef**)pParams));
+    U32 i, retIndex;
+    HEAP_PTR names, values;
 
-	// An enum type always has just one non-literal field, with all other fields being the values.
-	U32 v = pEnumType->numFields - 1;
-	names = SystemArray_NewVector(_bcl_->types[TYPE_SYSTEM_ARRAY_STRING], 1, &v);
-	values = SystemArray_NewVector(_bcl_->types[TYPE_SYSTEM_ARRAY_INT32], 1, &v);
-	
-	for (i=0, retIndex=0; i<pEnumType->numFields; i++) {
-		tMD_FieldDef *pField = pEnumType->ppFields[i];
-		HEAP_PTR name;
-		I32 value;
+    // An enum type always has just one non-literal field, with all other fields being the values.
+    U32 v = pEnumType->numFields - 1;
+    names = SystemArray_NewVector(_bcl_->types[TYPE_SYSTEM_ARRAY_STRING], 1, &v);
+    values = SystemArray_NewVector(_bcl_->types[TYPE_SYSTEM_ARRAY_INT32], 1, &v);
+    
+    for (i=0, retIndex=0; i<pEnumType->numFields; i++) {
+        tMD_FieldDef *pField = pEnumType->ppFields[i];
+        HEAP_PTR name;
+        I32 value;
 
-		if (!FIELD_ISLITERAL(pField)) {
-			continue;
-		}
+        if (!FIELD_ISLITERAL(pField)) {
+            continue;
+        }
 
-		name = SystemString_FromCharPtrASCII(pField->name);
-		SystemArray_StoreElement(names, retIndex, (PTR)&name);
-		MetaData_GetConstant(pField->pMetaData, pField->tableIndex, (PTR)&value);
-		SystemArray_StoreElement(values, retIndex, (PTR)&value);
-		retIndex++;
-	}
+        name = SystemString_FromCharPtrASCII(pField->name);
+        SystemArray_StoreElement(names, retIndex, (PTR)&name);
+        MetaData_GetConstant(pField->pMetaData, pField->tableIndex, (PTR)&value);
+        SystemArray_StoreElement(values, retIndex, (PTR)&value);
+        retIndex++;
+    }
 
-	*(((HEAP_PTR**)pParams)[1]) = names;
-	*(((HEAP_PTR**)pParams)[2]) = values;
+    *(((HEAP_PTR**)pParams)[1]) = names;
+    *(((HEAP_PTR**)pParams)[2]) = values;
 
-	return NULL;
+    return NULL;
 }

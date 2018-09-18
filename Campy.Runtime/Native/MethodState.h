@@ -25,41 +25,41 @@ typedef struct tMethodState_ tMethodState;
 #include "MetaData.h"
 
 struct tMethodState_ {
-	// This method's meta-data
-	tMetaData *pMetaData;
-	// The method to execute
-	tMD_MethodDef *pMethod;
-	// The JITted code that this method-state is using.
-	// When using the combined opcode JITter, this can vary between unoptimized and optimized.
-	tJITted *pJIT;
-	// The current offset into the method's JITted code (instruction offset, not byte offset)
-	U32 ipOffset;
-	// This method's evaluation stack
-	PTR pEvalStack;
-	// The evaluation stack current offset
-	U32 stackOfs;
-	// This method's parameters & local variable storage. Params are first, followed by locals
-	PTR pParamsLocals;
-	// Is this methodstate from a NEWOBJ op-code?
-	U32 isInternalNewObjCall;
-	// If this is a Finalizer, then the 'this' object goes here,
-	// so it can be marked in the 'return' statement that it no longer has a Finalizer to run
-	HEAP_PTR finalizerThis;
-	// When in a delegate invoke, store the next delegate to invoke here.
-	// This is to allow multi-cast delegates to call all their methods.
-	void *pNextDelegate;
-	// And store the parameters to go to this delegate call
-	void *pDelegateParams;
-	// When a leave instruction has to run a 'finally' bit of code, store the leave jump address here
-	U32 *pOpEndFinally;
+    // This method's meta-data
+    tMetaData *pMetaData;
+    // The method to execute
+    tMD_MethodDef *pMethod;
+    // The JITted code that this method-state is using.
+    // When using the combined opcode JITter, this can vary between unoptimized and optimized.
+    tJITted *pJIT;
+    // The current offset into the method's JITted code (instruction offset, not byte offset)
+    U32 ipOffset;
+    // This method's evaluation stack
+    PTR pEvalStack;
+    // The evaluation stack current offset
+    U32 stackOfs;
+    // This method's parameters & local variable storage. Params are first, followed by locals
+    PTR pParamsLocals;
+    // Is this methodstate from a NEWOBJ op-code?
+    U32 isInternalNewObjCall;
+    // If this is a Finalizer, then the 'this' object goes here,
+    // so it can be marked in the 'return' statement that it no longer has a Finalizer to run
+    HEAP_PTR finalizerThis;
+    // When in a delegate invoke, store the next delegate to invoke here.
+    // This is to allow multi-cast delegates to call all their methods.
+    void *pNextDelegate;
+    // And store the parameters to go to this delegate call
+    void *pDelegateParams;
+    // When a leave instruction has to run a 'finally' bit of code, store the leave jump address here
+    U32 *pOpEndFinally;
 
 #ifdef DIAG_METHOD_CALLS
-	// For tracking execution time.
-	U64 startTime;
+    // For tracking execution time.
+    U64 startTime;
 #endif
 
-	// Link to caller methodstate
-	tMethodState *pCaller;
+    // Link to caller methodstate
+    tMethodState *pCaller;
 };
 
 //void MethodState_Init();

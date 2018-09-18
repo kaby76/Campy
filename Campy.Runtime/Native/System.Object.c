@@ -27,36 +27,36 @@
 #include "Type.h"
 
 function_space_specifier tAsyncCall* System_Object_Equals(PTR pThis_, PTR pParams, PTR pReturnValue) {
-	*(U32*)pReturnValue = (pThis_ == *(PTR*)pParams);
+    *(U32*)pReturnValue = (pThis_ == *(PTR*)pParams);
 
-	return NULL;
+    return NULL;
 }
 __device__ void* p_System_Object_Equals = (void*)System_Object_Equals;
 
 function_space_specifier tAsyncCall* System_Object_Clone(PTR pThis_, PTR pParams, PTR pReturnValue) {
-	HEAP_PTR obj, clone;
+    HEAP_PTR obj, clone;
 
-	obj = ((HEAP_PTR*)pParams)[0];
-	clone = Heap_Clone(obj);
-	*(HEAP_PTR*)pReturnValue = clone;
+    obj = ((HEAP_PTR*)pParams)[0];
+    clone = Heap_Clone(obj);
+    *(HEAP_PTR*)pReturnValue = clone;
 
-	return NULL;
+    return NULL;
 }
 
 function_space_specifier tAsyncCall* System_Object_GetHashCode(PTR pThis_, PTR pParams, PTR pReturnValue) {
-	//*(U32*)pReturnValue = ((((U32)pThis_) >> 2) * 2654435761UL);
-	*(U32*)pReturnValue = static_cast<unsigned>(reinterpret_cast<uintptr_t>(pThis_));
-	return NULL;
+    //*(U32*)pReturnValue = ((((U32)pThis_) >> 2) * 2654435761UL);
+    *(U32*)pReturnValue = static_cast<unsigned>(reinterpret_cast<uintptr_t>(pThis_));
+    return NULL;
 }
 __device__ void* p_System_Object_GetHashCode = (void*)System_Object_GetHashCode;
 
 function_space_specifier tAsyncCall* System_Object_GetType(PTR pThis_, PTR pParams, PTR pReturnValue) {
-	HEAP_PTR typeObject;
-	tMD_TypeDef *pTypeDef;
+    HEAP_PTR typeObject;
+    tMD_TypeDef *pTypeDef;
 
-	pTypeDef = Heap_GetType((HEAP_PTR)pThis_);
-	typeObject = Type_GetTypeObject(pTypeDef);
-	*(HEAP_PTR*)pReturnValue = typeObject;
+    pTypeDef = Heap_GetType((HEAP_PTR)pThis_);
+    typeObject = Type_GetTypeObject(pTypeDef);
+    *(HEAP_PTR*)pReturnValue = typeObject;
 
-	return NULL;
+    return NULL;
 }

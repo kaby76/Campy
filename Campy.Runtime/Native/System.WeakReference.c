@@ -30,59 +30,59 @@
 
 typedef struct tWeakRef_ tWeakRef;
 struct tWeakRef_ {
-	// The target of this weak-ref
-	HEAP_PTR target;
-	// Does this weak-ref track resurrection?
-	U32 trackRes;
-	// Link to the next weak-ref that points to the same target
-	tWeakRef *pNextWeakRef;
+    // The target of this weak-ref
+    HEAP_PTR target;
+    // Does this weak-ref track resurrection?
+    U32 trackRes;
+    // Link to the next weak-ref that points to the same target
+    tWeakRef *pNextWeakRef;
 };
 
 function_space_specifier tAsyncCall* System_WeakReference_get_Target(PTR pThis_, PTR pParams, PTR pReturnValue) {
-	tWeakRef *pThis = (tWeakRef*)pThis_;
-	*(HEAP_PTR*)pReturnValue = pThis->target;
-	return NULL;
+    tWeakRef *pThis = (tWeakRef*)pThis_;
+    *(HEAP_PTR*)pReturnValue = pThis->target;
+    return NULL;
 }
 
 function_space_specifier tAsyncCall* System_WeakReference_set_Target(PTR pThis_, PTR pParams, PTR pReturnValue) {
-	tWeakRef *pThis = (tWeakRef*)pThis_;
-	HEAP_PTR target = ((HEAP_PTR*)pParams)[0];
+    tWeakRef *pThis = (tWeakRef*)pThis_;
+    HEAP_PTR target = ((HEAP_PTR*)pParams)[0];
 
-	if (pThis->target != NULL) {
-		tWeakRef **ppWeakRef = (tWeakRef**)Heap_GetWeakRefAddress(pThis->target);
-		while (*ppWeakRef != NULL) {
-			tWeakRef *pWeakRef = *ppWeakRef;
-			if (pWeakRef == pThis) {
-				*ppWeakRef = pWeakRef->pNextWeakRef;
-				Heap_RemovedWeakRefTarget(pWeakRef->target);
-				goto foundOK;
-			}
-			ppWeakRef = &(pWeakRef->pNextWeakRef);
-		}
-		Crash("WeakRef.set_Target() Error: cannot find weak-ref target for removal");
+    if (pThis->target != NULL) {
+        tWeakRef **ppWeakRef = (tWeakRef**)Heap_GetWeakRefAddress(pThis->target);
+        while (*ppWeakRef != NULL) {
+            tWeakRef *pWeakRef = *ppWeakRef;
+            if (pWeakRef == pThis) {
+                *ppWeakRef = pWeakRef->pNextWeakRef;
+                Heap_RemovedWeakRefTarget(pWeakRef->target);
+                goto foundOK;
+            }
+            ppWeakRef = &(pWeakRef->pNextWeakRef);
+        }
+        Crash("WeakRef.set_Target() Error: cannot find weak-ref target for removal");
 foundOK:;
-	}
-	pThis->target = target;
-	if (target != NULL) {
-		pThis->pNextWeakRef = (tWeakRef*)Heap_SetWeakRefTarget(target, (HEAP_PTR)pThis);
-	}
+    }
+    pThis->target = target;
+    if (target != NULL) {
+        pThis->pNextWeakRef = (tWeakRef*)Heap_SetWeakRefTarget(target, (HEAP_PTR)pThis);
+    }
 
-	return NULL;
+    return NULL;
 }
 
 function_space_specifier void SystemWeakReference_TargetGone(HEAP_PTR *ppWeakRef_, U32 removeLongRefs) {
-	tWeakRef **ppWeakRef = (tWeakRef**)ppWeakRef_;
-	tWeakRef *pWeakRef = *ppWeakRef;
-	while (pWeakRef != NULL) {
-		if (removeLongRefs || !pWeakRef->trackRes) {
-			// Really remove it
-			pWeakRef->target = NULL;
-		} else {
-			// Long ref, so keep it
-			*ppWeakRef = pWeakRef;
-			ppWeakRef = &(pWeakRef->pNextWeakRef);
-		}
-		pWeakRef = pWeakRef->pNextWeakRef;
-	}
-	*ppWeakRef = NULL;
+    tWeakRef **ppWeakRef = (tWeakRef**)ppWeakRef_;
+    tWeakRef *pWeakRef = *ppWeakRef;
+    while (pWeakRef != NULL) {
+        if (removeLongRefs || !pWeakRef->trackRes) {
+            // Really remove it
+            pWeakRef->target = NULL;
+        } else {
+            // Long ref, so keep it
+            *ppWeakRef = pWeakRef;
+            ppWeakRef = &(pWeakRef->pNextWeakRef);
+        }
+        pWeakRef = pWeakRef->pNextWeakRef;
+    }
+    *ppWeakRef = NULL;
 }

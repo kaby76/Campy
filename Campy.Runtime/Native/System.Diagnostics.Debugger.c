@@ -28,9 +28,9 @@
 #include "Type.h"
 
 function_space_specifier tAsyncCall* System_Diagnostics_Debugger_Break(PTR pThis_, PTR pParams, PTR pReturnValue) {
-//	printf("BREAK\n");
+//  printf("BREAK\n");
 #if defined(_MSC_VER) && defined(_DEBUG)
-	__debugbreak();
+    __debugbreak();
 #endif
-	return NULL;
+    return NULL;
 }

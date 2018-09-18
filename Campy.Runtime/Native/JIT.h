@@ -29,32 +29,32 @@ typedef struct tExceptionHeader_ tExceptionHeader;
 #ifdef GEN_COMBINED_OPCODES
 typedef struct tCombinedOpcodesMem_ tCombinedOpcodesMem;
 struct tCombinedOpcodesMem_ {
-	void *pMem;
-	tCombinedOpcodesMem *pNext;
+    void *pMem;
+    tCombinedOpcodesMem *pNext;
 };
 #endif
 
 struct tJITted_ {
 
-	// Actual LLVM code address of method.
-	void * code;
+    // Actual LLVM code address of method.
+    void * code;
 
-	// The JITted opcodes
-	U32 *pOps;
-	// The maximum size of the evaluation stack
-	U32 maxStack;
-	// The required size of the locals stack
-	U32 localsStackSize;
-	// Number of exception handler headers
-	U32 numExceptionHandlers;
-	// Pointer to the exception handler headers (NULL if none)
-	tExceptionHeader *pExceptionHeaders;
+    // The JITted opcodes
+    U32 *pOps;
+    // The maximum size of the evaluation stack
+    U32 maxStack;
+    // The required size of the locals stack
+    U32 localsStackSize;
+    // Number of exception handler headers
+    U32 numExceptionHandlers;
+    // Pointer to the exception handler headers (NULL if none)
+    tExceptionHeader *pExceptionHeaders;
 #ifdef GEN_COMBINED_OPCODES
-	// The number of bytes used by this JITted method - to include ALL bytes:
-	// The size of the opcodes, plus the size of the combined opcodes.
-	U32 opsMemSize;
-	// Store all memory used to store combined opcodes, so they can be free()d later
-	tCombinedOpcodesMem *pCombinedOpcodesMem;
+    // The number of bytes used by this JITted method - to include ALL bytes:
+    // The size of the opcodes, plus the size of the combined opcodes.
+    U32 opsMemSize;
+    // Store all memory used to store combined opcodes, so they can be free()d later
+    tCombinedOpcodesMem *pCombinedOpcodesMem;
 #endif
 };
 
@@ -65,48 +65,48 @@ struct tJITted_ {
 #define COR_ILEXCEPTION_CLAUSE_FINALLY 2
 
 struct tExceptionHeader_ {
-	U32 flags;
-	U32 tryStart;
-	U32 tryEnd;
-	U32 handlerStart;
-	U32 handlerEnd;
-	union {
-		// Class token for type-based exception handler
-		IDX_TABLE classToken;
-		// Filter code offset for filter-based exception handler (not supported)
-		U32 filterOffset;
-		// The TypeDef of the catch type
-		tMD_TypeDef *pCatchTypeDef;
-	} u;
+    U32 flags;
+    U32 tryStart;
+    U32 tryEnd;
+    U32 handlerStart;
+    U32 handlerEnd;
+    union {
+        // Class token for type-based exception handler
+        IDX_TABLE classToken;
+        // Filter code offset for filter-based exception handler (not supported)
+        U32 filterOffset;
+        // The TypeDef of the catch type
+        tMD_TypeDef *pCatchTypeDef;
+    } u;
 };
 
 typedef struct tJITCallNative_ tJITCallNative;
 struct tJITCallNative_ {
-	U32 opCode;
-	// The method meta-data
-	tMD_MethodDef *pMethodDef;
-	// the native pointer to the function
-	fnInternalCall fn;
-	// The RET instruction. This is needed when the native function has blocking IO or sleep
-	U32 retOpCode;
+    U32 opCode;
+    // The method meta-data
+    tMD_MethodDef *pMethodDef;
+    // the native pointer to the function
+    fnInternalCall fn;
+    // The RET instruction. This is needed when the native function has blocking IO or sleep
+    U32 retOpCode;
 };
 
 typedef struct tJITCallPInvoke_ tJITCallPInvoke;
 struct tJITCallPInvoke_ {
-	U32 opCode;
-	// The native function to call - type should be fnPInvoke, but there's a problem with #including PInvoke.h
-	void* fn;
-	// The method that is being called
-	tMD_MethodDef *pMethod;
-	// The ImplMap of the function that's being called
-	tMD_ImplMap *pImplMap;
+    U32 opCode;
+    // The native function to call - type should be fnPInvoke, but there's a problem with #including PInvoke.h
+    void* fn;
+    // The method that is being called
+    tMD_MethodDef *pMethod;
+    // The ImplMap of the function that's being called
+    tMD_ImplMap *pImplMap;
 };
 
 struct tJITCodeInfo_ {
-	// The beginning and end of the actual native code to run the JIT opcode.
-	void *pStart;
-	void *pEnd;
-	U32 isDynamic;
+    // The beginning and end of the actual native code to run the JIT opcode.
+    void *pStart;
+    void *pEnd;
+    U32 isDynamic;
 };
 
 typedef struct tJITCodeInfo_ tJITCodeInfo;

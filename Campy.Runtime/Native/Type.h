@@ -25,36 +25,36 @@
 
 #define GENERICARRAYMETHODS_NUM 13
 
-#define ELEMENT_TYPE_VOID		0x01
-#define ELEMENT_TYPE_BOOLEAN	0x02
-#define ELEMENT_TYPE_CHAR		0x03
-#define ELEMENT_TYPE_I1			0x04
-#define ELEMENT_TYPE_U1			0x05
-#define ELEMENT_TYPE_I2			0x06
-#define ELEMENT_TYPE_U2			0x07
-#define ELEMENT_TYPE_I4			0x08
-#define ELEMENT_TYPE_U4			0x09
-#define ELEMENT_TYPE_I8			0x0a
-#define ELEMENT_TYPE_U8			0x0b
-#define ELEMENT_TYPE_R4			0x0c
-#define ELEMENT_TYPE_R8			0x0d
-#define ELEMENT_TYPE_STRING		0x0e
-#define ELEMENT_TYPE_PTR		0x0f
-#define ELEMENT_TYPE_BYREF		0x10
-#define ELEMENT_TYPE_VALUETYPE	0x11
-#define ELEMENT_TYPE_CLASS		0x12
-#define ELEMENT_TYPE_VAR		0x13 // Generic argument type
+#define ELEMENT_TYPE_VOID       0x01
+#define ELEMENT_TYPE_BOOLEAN    0x02
+#define ELEMENT_TYPE_CHAR       0x03
+#define ELEMENT_TYPE_I1         0x04
+#define ELEMENT_TYPE_U1         0x05
+#define ELEMENT_TYPE_I2         0x06
+#define ELEMENT_TYPE_U2         0x07
+#define ELEMENT_TYPE_I4         0x08
+#define ELEMENT_TYPE_U4         0x09
+#define ELEMENT_TYPE_I8         0x0a
+#define ELEMENT_TYPE_U8         0x0b
+#define ELEMENT_TYPE_R4         0x0c
+#define ELEMENT_TYPE_R8         0x0d
+#define ELEMENT_TYPE_STRING     0x0e
+#define ELEMENT_TYPE_PTR        0x0f
+#define ELEMENT_TYPE_BYREF      0x10
+#define ELEMENT_TYPE_VALUETYPE  0x11
+#define ELEMENT_TYPE_CLASS      0x12
+#define ELEMENT_TYPE_VAR        0x13 // Generic argument type
 #define ELEMENT_TYPE_ARRAY      0x14
 #define ELEMENT_TYPE_GENERICINST 0x15
 #define ELEMENT_TYPE_TYPEDBYREF 0x16
 // ECMA 335 gap.
-#define ELEMENT_TYPE_INTPTR		0x18
-#define ELEMENT_TYPE_UINTPTR	0x19
+#define ELEMENT_TYPE_INTPTR     0x18
+#define ELEMENT_TYPE_UINTPTR    0x19
 // ECMA 335 gap.
 #define ELEMENT_TYPE_FNPTR      0x1b
-#define ELEMENT_TYPE_OBJECT		0x1c
-#define ELEMENT_TYPE_SZARRAY	0x1d
-#define ELEMENT_TYPE_MVAR		0x1e
+#define ELEMENT_TYPE_OBJECT     0x1c
+#define ELEMENT_TYPE_SZARRAY    0x1d
+#define ELEMENT_TYPE_MVAR       0x1e
 #define ELEMENT_TYPE_CMOD_REQD  0x1f
 #define ELEMENT_TYPE_CMOD_OPT   0x20
 #define ELEMENT_TYPE_INTERNAL   0x21

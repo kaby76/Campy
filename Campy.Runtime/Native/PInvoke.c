@@ -31,103 +31,103 @@
 
 typedef struct tLoadedLib_ tLoadedLib;
 struct tLoadedLib_ {
-	// The name of the library - this is the name as specified in the .NET assembly
-	STRING name;
-	// The library
-	void *pLib;
+    // The name of the library - this is the name as specified in the .NET assembly
+    STRING name;
+    // The library
+    void *pLib;
 
-	tLoadedLib *pNext;
+    tLoadedLib *pNext;
 };
 
 //function_space_specifier static tLoadedLib *pLoadedLibs = NULL;
 
 function_space_specifier static tLoadedLib* GetLib(STRING name) {
-//	// See if it's already loaded
-//	tLoadedLib *pLib = pLoadedLibs;
-//	char libName[256];
-//	void *pNativeLib;
+//  // See if it's already loaded
+//  tLoadedLib *pLib = pLoadedLibs;
+//  char libName[256];
+//  void *pNativeLib;
 //
-//	while (pLib != NULL) {
-//		if (strcmp(name, pLib->name) == 0) {
-//			return pLib;
-//		}
-//	}
-//	sprintf(libName, "%s%s", LIB_PREFIX, name);
-//	if (Gstrlen(libName) >= 4) {
-//		if (strcmp(".dll", libName + strlen(libName) - 4) == 0) {
-//			// Cut off the ".dll" suffix if it's there
-//			libName[strlen(libName) - 4] = 0;
-//		}
-//	}
-//	// Not loaded, so load it
-//	sprintf(strchr(libName, 0), ".%s", LIB_SUFFIX);
+//  while (pLib != NULL) {
+//      if (strcmp(name, pLib->name) == 0) {
+//          return pLib;
+//      }
+//  }
+//  sprintf(libName, "%s%s", LIB_PREFIX, name);
+//  if (Gstrlen(libName) >= 4) {
+//      if (strcmp(".dll", libName + strlen(libName) - 4) == 0) {
+//          // Cut off the ".dll" suffix if it's there
+//          libName[strlen(libName) - 4] = 0;
+//      }
+//  }
+//  // Not loaded, so load it
+//  sprintf(strchr(libName, 0), ".%s", LIB_SUFFIX);
 //#if WIN32
-//	pNativeLib = LoadLibraryA(libName);
+//  pNativeLib = LoadLibraryA(libName);
 //#else
-//	pNativeLib = dlopen(libName, DL_LAZY);
+//  pNativeLib = dlopen(libName, DL_LAZY);
 //#endif
-//	if (pNativeLib == NULL) {
-//		// Failed to load library
-//		printf("Failed to load library: %s\n", libName);
+//  if (pNativeLib == NULL) {
+//      // Failed to load library
+//      printf("Failed to load library: %s\n", libName);
 //#ifndef WIN32
-//		{
-//			char *pError;
-//			pError = dlerror();
-//			if (pError) {
-//				printf("dlopen() Error: '%s'",pError);
-//			}
-//		}
+//      {
+//          char *pError;
+//          pError = dlerror();
+//          if (pError) {
+//              printf("dlopen() Error: '%s'",pError);
+//          }
+//      }
 //#endif
-//		return NULL;
-//	}
-//	pLib = TMALLOCFOREVER(tLoadedLib);
-//	pLib->pNext = pLoadedLibs;
-//	pLoadedLibs = pLib;
-//	pLib->name = name;
-//	pLib->pLib = pNativeLib;
-//	return pLib;
-	return NULL;
+//      return NULL;
+//  }
+//  pLib = TMALLOCFOREVER(tLoadedLib);
+//  pLib->pNext = pLoadedLibs;
+//  pLoadedLibs = pLib;
+//  pLib->name = name;
+//  pLib->pLib = pNativeLib;
+//  return pLib;
+    return NULL;
 }
 
 function_space_specifier fnPInvoke PInvoke_GetFunction(tMetaData *pMetaData, tMD_ImplMap *pImplMap) {
-	tLoadedLib *pLib;
-	STRING libName;
-	void *pProc = NULL;
+    tLoadedLib *pLib;
+    STRING libName;
+    void *pProc = NULL;
 
-	libName = MetaData_GetModuleRefName(pMetaData, pImplMap->importScope);
-	pLib = GetLib(libName);
-	if (pLib == NULL) {
-		// Library not found, so we can't find the function
-		return NULL;
-	}
+    libName = MetaData_GetModuleRefName(pMetaData, pImplMap->importScope);
+    pLib = GetLib(libName);
+    if (pLib == NULL) {
+        // Library not found, so we can't find the function
+        return NULL;
+    }
 
 //#if WIN32
-//	pProc = GetProcAddress((HMODULE)pLib->pLib, pImplMap->importName);
+//  pProc = GetProcAddress((HMODULE)pLib->pLib, pImplMap->importName);
 //#else
-//	pProc = dlsym(pLib->pLib, pImplMap->importName);
+//  pProc = dlsym(pLib->pLib, pImplMap->importName);
 //#endif
-	return pProc;
+    return pProc;
 }
 
 function_space_specifier static void* ConvertStringToANSI(HEAP_PTR pHeapEntry) {
-	U32 strLen, i;
-	STRING2 str = SystemString_GetString(pHeapEntry, &strLen);
-	unsigned char *pAnsi = (unsigned char*)Gmalloc(strLen+1);
-	for (i=0; i<strLen; i++) {
-		pAnsi[i] = (unsigned char)str[i];
-	}
-	pAnsi[i] = 0;
-	return pAnsi;
+    U32 strLen, i;
+    STRING2 str = SystemString_GetString(pHeapEntry, &strLen);
+    unsigned char *pAnsi = (unsigned char*)Gmalloc(strLen+1);
+    for (i=0; i<strLen; i++) {
+        pAnsi[i] = (unsigned char)str[i];
+    }
+    pAnsi[i] = 0;
+    return pAnsi;
 }
 
 // This function is needed to maintain string immutability, and to add a null-terminator
 function_space_specifier static void* ConvertStringToUnicode(HEAP_PTR pHeapEntry) {
-	U32 strLen;
-	STRING2 str = SystemString_GetString(pHeapEntry, &strLen);
-	unsigned short *pUnicode = (unsigned short*)Gmalloc((strLen+1) << 1);
-	memcpy(pUnicode, str, strLen << 1);
-	pUnicode[strLen] = 0;
-	return pUnicode;
+    U32 strLen;
+    STRING2 str = SystemString_GetString(pHeapEntry, &strLen);
+    unsigned short *pUnicode = (unsigned short*)Gmalloc((strLen+1) << 1);
+    memcpy(pUnicode, str, strLen << 1);
+    pUnicode[strLen] = 0;
+    return pUnicode;
 }
 
 #include "PInvoke_TypeDef.h"
@@ -160,144 +160,144 @@ typedef U64    (STDCALL *_uCuuuuuuuuuu)(U32 _0, U32 _1, U32 _2, U32 _3, U32 _4, 
 
 #define MAX_ARGS 16
 //function_space_specifier U32 PInvoke_Call(tJITCallPInvoke *pCall, PTR pParams, PTR pReturnValue) {
-//	U32 _args[MAX_ARGS];
-//	double _argsd[MAX_ARGS];
-//	void* _pTempMem[MAX_ARGS];
-//	U32 numParams, param, paramTypeNum;
+//  U32 _args[MAX_ARGS];
+//  double _argsd[MAX_ARGS];
+//  void* _pTempMem[MAX_ARGS];
+//  U32 numParams, param, paramTypeNum;
 //
-//	tMD_MethodDef *pMethod = pCall->pMethod;
-//	tMD_TypeDef *pReturnType = pMethod->pReturnType;
-//	tMD_ImplMap *pImplMap = pCall->pImplMap;
-//	void *pFn = pCall->fn;
-//	U32 _argOfs = 0, _argdOfs = 0, paramOfs = 0;
-//	U32 _tempMemOfs = 0;
-//	U32 i;
-//	U32 funcParams = DEFAULT;
-//	U64 u64Ret;
-//	float fRet;
-//	double dRet;
+//  tMD_MethodDef *pMethod = pCall->pMethod;
+//  tMD_TypeDef *pReturnType = pMethod->pReturnType;
+//  tMD_ImplMap *pImplMap = pCall->pImplMap;
+//  void *pFn = pCall->fn;
+//  U32 _argOfs = 0, _argdOfs = 0, paramOfs = 0;
+//  U32 _tempMemOfs = 0;
+//  U32 i;
+//  U32 funcParams = DEFAULT;
+//  U64 u64Ret;
+//  float fRet;
+//  double dRet;
 //
-//	if (pReturnType != NULL) {
-//		if (pReturnType == _bcl_->types[TYPE_SYSTEM_SINGLE]) {
-//			funcParams = SINGLE;
-//		} else if (pReturnType == _bcl_->types[TYPE_SYSTEM_DOUBLE]) {
-//			funcParams = DOUBLE;
-//		}
-//	}
+//  if (pReturnType != NULL) {
+//      if (pReturnType == _bcl_->types[TYPE_SYSTEM_SINGLE]) {
+//          funcParams = SINGLE;
+//      } else if (pReturnType == _bcl_->types[TYPE_SYSTEM_DOUBLE]) {
+//          funcParams = DOUBLE;
+//      }
+//  }
 //
-//	numParams = pMethod->numberOfParameters;
-//	for (param = 0, paramTypeNum = 0; param<numParams; param++, paramTypeNum++) {
-//		tParameter *pParam = &(pMethod->pParams[param]);
-//		tMD_TypeDef *pParamType = pParam->pTypeDef;
-//		U32 paramType = DEFAULT;
+//  numParams = pMethod->numberOfParameters;
+//  for (param = 0, paramTypeNum = 0; param<numParams; param++, paramTypeNum++) {
+//      tParameter *pParam = &(pMethod->pParams[param]);
+//      tMD_TypeDef *pParamType = pParam->pTypeDef;
+//      U32 paramType = DEFAULT;
 //
-//		if (pParamType->stackType == EVALSTACK_INT32) {
-//			_args[_argOfs] = *(U32*)(pParams + paramOfs);
-//			_argOfs++;
-//			paramOfs += 4;
-//		} else if (pParamType == _bcl_->types[TYPE_SYSTEM_STRING]) {
-//			// Allocate a temp bit of memory for the string that's been converted.
-//			void *pString;
-//			if (IMPLMAP_ISCHARSET_ANSI(pImplMap) || IMPLMAP_ISCHARSET_AUTO(pImplMap) || IMPLMAP_ISCHARSET_NOTSPEC(pImplMap)) {
-//				pString = ConvertStringToANSI(*(HEAP_PTR*)(pParams + paramOfs));
-//			} else if (IMPLMAP_ISCHARSET_UNICODE(pImplMap)) {
-//				pString = ConvertStringToUnicode(*(HEAP_PTR*)(pParams + paramOfs));
-//			} else {
-//				Crash("PInvoke_Call() Cannot handle string marshalling of given type");
-//			}
-//			_pTempMem[_tempMemOfs] = pString;
-//			_tempMemOfs++;
-//			_args[_argOfs] = (U32)pString;
-//			_argOfs++;
-//			paramOfs += 4;
-//		} else if (pParamType == _bcl_->types[TYPE_SYSTEM_INTPTR]) {
-//			// Only works for 32-bit
-//			_args[_argOfs] = *(U32*)(pParams + paramOfs);
-//			_argOfs++;
-//			paramOfs += 4;
-//		} else if (pParamType == _bcl_->types[TYPE_SYSTEM_SINGLE]) {
-//			_argsd[_argdOfs] = *(float*)(pParams + paramOfs);
-//			_argdOfs++;
-//			paramOfs += 4;
-//			paramType = SINGLE;
-//		} else if (pParamType == _bcl_->types[TYPE_SYSTEM_DOUBLE]) {
-//			_argsd[_argdOfs] = *(double*)(pParams + paramOfs);
-//			_argdOfs++;
-//			paramOfs += 8;
-//			paramType = DOUBLE;
-//		} else {
-//			Crash("PInvoke_Call() Cannot handle parameter of type: %s", pParamType->name);
-//		}
-//		SET_ARG_TYPE(paramTypeNum, paramType);
-//	}
-//	
-//	switch (funcParams) {
+//      if (pParamType->stackType == EVALSTACK_INT32) {
+//          _args[_argOfs] = *(U32*)(pParams + paramOfs);
+//          _argOfs++;
+//          paramOfs += 4;
+//      } else if (pParamType == _bcl_->types[TYPE_SYSTEM_STRING]) {
+//          // Allocate a temp bit of memory for the string that's been converted.
+//          void *pString;
+//          if (IMPLMAP_ISCHARSET_ANSI(pImplMap) || IMPLMAP_ISCHARSET_AUTO(pImplMap) || IMPLMAP_ISCHARSET_NOTSPEC(pImplMap)) {
+//              pString = ConvertStringToANSI(*(HEAP_PTR*)(pParams + paramOfs));
+//          } else if (IMPLMAP_ISCHARSET_UNICODE(pImplMap)) {
+//              pString = ConvertStringToUnicode(*(HEAP_PTR*)(pParams + paramOfs));
+//          } else {
+//              Crash("PInvoke_Call() Cannot handle string marshalling of given type");
+//          }
+//          _pTempMem[_tempMemOfs] = pString;
+//          _tempMemOfs++;
+//          _args[_argOfs] = (U32)pString;
+//          _argOfs++;
+//          paramOfs += 4;
+//      } else if (pParamType == _bcl_->types[TYPE_SYSTEM_INTPTR]) {
+//          // Only works for 32-bit
+//          _args[_argOfs] = *(U32*)(pParams + paramOfs);
+//          _argOfs++;
+//          paramOfs += 4;
+//      } else if (pParamType == _bcl_->types[TYPE_SYSTEM_SINGLE]) {
+//          _argsd[_argdOfs] = *(float*)(pParams + paramOfs);
+//          _argdOfs++;
+//          paramOfs += 4;
+//          paramType = SINGLE;
+//      } else if (pParamType == _bcl_->types[TYPE_SYSTEM_DOUBLE]) {
+//          _argsd[_argdOfs] = *(double*)(pParams + paramOfs);
+//          _argdOfs++;
+//          paramOfs += 8;
+//          paramType = DOUBLE;
+//      } else {
+//          Crash("PInvoke_Call() Cannot handle parameter of type: %s", pParamType->name);
+//      }
+//      SET_ARG_TYPE(paramTypeNum, paramType);
+//  }
+//  
+//  switch (funcParams) {
 //
 //#include "PInvoke_CaseCode.h"
 //
-//	case CALL5(DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT):
-//		u64Ret = ((_uCuuuuu)(pFn))(_args[0], _args[1], _args[2], _args[3], _args[4]);
-//		break;
+//  case CALL5(DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT):
+//      u64Ret = ((_uCuuuuu)(pFn))(_args[0], _args[1], _args[2], _args[3], _args[4]);
+//      break;
 //
-//	case CALL6(DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT):
-//		u64Ret = ((_uCuuuuuu)(pFn))(_args[0], _args[1], _args[2], _args[3], _args[4], _args[5]);
-//		break;
+//  case CALL6(DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT):
+//      u64Ret = ((_uCuuuuuu)(pFn))(_args[0], _args[1], _args[2], _args[3], _args[4], _args[5]);
+//      break;
 //
-//	case CALL7(DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT):
-//		u64Ret = ((_uCuuuuuuu)(pFn))(_args[0], _args[1], _args[2], _args[3], _args[4], _args[5], _args[6]);
-//		break;
+//  case CALL7(DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT):
+//      u64Ret = ((_uCuuuuuuu)(pFn))(_args[0], _args[1], _args[2], _args[3], _args[4], _args[5], _args[6]);
+//      break;
 //
-//	case CALL8(DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT):
-//		u64Ret = ((_uCuuuuuuuu)(pFn))(_args[0], _args[1], _args[2], _args[3], _args[4], _args[5], _args[6], _args[7]);
-//		break;
+//  case CALL8(DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT):
+//      u64Ret = ((_uCuuuuuuuu)(pFn))(_args[0], _args[1], _args[2], _args[3], _args[4], _args[5], _args[6], _args[7]);
+//      break;
 //
-//	case CALL9(DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT):
-//		u64Ret = ((_uCuuuuuuuuu)(pFn))(_args[0], _args[1], _args[2], _args[3], _args[4], _args[5], _args[6], _args[7], _args[8]);
-//		break;
+//  case CALL9(DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT):
+//      u64Ret = ((_uCuuuuuuuuu)(pFn))(_args[0], _args[1], _args[2], _args[3], _args[4], _args[5], _args[6], _args[7], _args[8]);
+//      break;
 //
-//	case CALL10(DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT):
-//		u64Ret = ((_uCuuuuuuuuuu)(pFn))(_args[0], _args[1], _args[2], _args[3], _args[4], _args[5], _args[6], _args[7], _args[8], _args[9]);
-//		break;
+//  case CALL10(DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT):
+//      u64Ret = ((_uCuuuuuuuuuu)(pFn))(_args[0], _args[1], _args[2], _args[3], _args[4], _args[5], _args[6], _args[7], _args[8], _args[9]);
+//      break;
 //
-//	default:
-//		Crash("PInvoke_Call() Cannot handle the function parameters: 0x%08x", funcParams);
-//	}
-//	
-//	for (i=0; i<_tempMemOfs; i++) {
-//		Gfree(_pTempMem[i]);
-//	}
+//  default:
+//      Crash("PInvoke_Call() Cannot handle the function parameters: 0x%08x", funcParams);
+//  }
+//  
+//  for (i=0; i<_tempMemOfs; i++) {
+//      Gfree(_pTempMem[i]);
+//  }
 //
-//	if (pReturnType == NULL) {
-//		return 0;
-//	}
-//	if (pReturnType->stackType == EVALSTACK_INT32) {
-//		*(U32*)pReturnValue = (U32)u64Ret;
-//		return 4;
-//	}
-//	if (pReturnType == _bcl_->types[TYPE_SYSTEM_STRING]) {
-//		if (IMPLMAP_ISCHARSET_ANSI(pImplMap) || IMPLMAP_ISCHARSET_AUTO(pImplMap) || IMPLMAP_ISCHARSET_NOTSPEC(pImplMap)) {
-//			*(HEAP_PTR*)pReturnValue = SystemString_FromCharPtrASCII((char*)u64Ret);
-//		} else if (IMPLMAP_ISCHARSET_UNICODE(pImplMap)) {
-//			*(HEAP_PTR*)pReturnValue = SystemString_FromCharPtrUTF16((U16*)(U32)u64Ret);
-//		} else {
-//			Crash("PInvoke_Call() Cannot handle return string in specified format");
-//		}
-//		return sizeof(void*);
-//	}
-//	if (pReturnType == _bcl_->types[TYPE_SYSTEM_INTPTR]) {
-//		*(void**)pReturnValue = (void*)(U32)u64Ret;
-//		return sizeof(void*);
-//	}
-//	if (pReturnType == _bcl_->types[TYPE_SYSTEM_SINGLE]) {
-//		*(double*)pReturnValue = (double)fRet;
-//		return 8;
-//	}
-//	if (pReturnType == _bcl_->types[TYPE_SYSTEM_DOUBLE]) {
-//		*(double*)pReturnValue = dRet;
-//		return 8;
-//	}
+//  if (pReturnType == NULL) {
+//      return 0;
+//  }
+//  if (pReturnType->stackType == EVALSTACK_INT32) {
+//      *(U32*)pReturnValue = (U32)u64Ret;
+//      return 4;
+//  }
+//  if (pReturnType == _bcl_->types[TYPE_SYSTEM_STRING]) {
+//      if (IMPLMAP_ISCHARSET_ANSI(pImplMap) || IMPLMAP_ISCHARSET_AUTO(pImplMap) || IMPLMAP_ISCHARSET_NOTSPEC(pImplMap)) {
+//          *(HEAP_PTR*)pReturnValue = SystemString_FromCharPtrASCII((char*)u64Ret);
+//      } else if (IMPLMAP_ISCHARSET_UNICODE(pImplMap)) {
+//          *(HEAP_PTR*)pReturnValue = SystemString_FromCharPtrUTF16((U16*)(U32)u64Ret);
+//      } else {
+//          Crash("PInvoke_Call() Cannot handle return string in specified format");
+//      }
+//      return sizeof(void*);
+//  }
+//  if (pReturnType == _bcl_->types[TYPE_SYSTEM_INTPTR]) {
+//      *(void**)pReturnValue = (void*)(U32)u64Ret;
+//      return sizeof(void*);
+//  }
+//  if (pReturnType == _bcl_->types[TYPE_SYSTEM_SINGLE]) {
+//      *(double*)pReturnValue = (double)fRet;
+//      return 8;
+//  }
+//  if (pReturnType == _bcl_->types[TYPE_SYSTEM_DOUBLE]) {
+//      *(double*)pReturnValue = dRet;
+//      return 8;
+//  }
 //
-//	Crash("PInvoke_Call() Cannot handle return type: %s", pReturnType->name);
-//	FAKE_RETURN;
-//	return 0;
+//  Crash("PInvoke_Call() Cannot handle return type: %s", pReturnType->name);
+//  FAKE_RETURN;
+//  return 0;
 //}

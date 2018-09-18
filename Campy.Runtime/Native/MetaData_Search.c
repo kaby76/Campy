@@ -29,456 +29,456 @@
 #include <stdio.h>
 
 function_space_specifier U32 MetaData_CompareNameAndSig(STRING name, BLOB_ sigBlob, tMetaData *pSigMetaData, tMD_TypeDef **ppSigClassTypeArgs, tMD_TypeDef **ppSigMethodTypeArgs, tMD_MethodDef *pMethod, tMD_TypeDef **ppMethodClassTypeArgs, tMD_TypeDef **ppMethodMethodTypeArgs) {
-	if (Gstrcmp(name, pMethod->name) == 0) {
-		SIG sig, thisSig;
-		U32 e, thisE, paramCount, i;
+    if (Gstrcmp(name, pMethod->name) == 0) {
+        SIG sig, thisSig;
+        U32 e, thisE, paramCount, i;
 
-		sig = MetaData_GetBlob(sigBlob, NULL);
-		thisSig = MetaData_GetBlob(pMethod->signature, NULL);
+        sig = MetaData_GetBlob(sigBlob, NULL);
+        thisSig = MetaData_GetBlob(pMethod->signature, NULL);
 
-		e = MetaData_DecodeUnsigned32BitInteger(&sig);
-		thisE = MetaData_DecodeUnsigned32BitInteger(&thisSig);
-		// Check method call type (static, etc...)
-		if (e != thisE) {
-			return 0;
-		}
+        e = MetaData_DecodeUnsigned32BitInteger(&sig);
+        thisE = MetaData_DecodeUnsigned32BitInteger(&thisSig);
+        // Check method call type (static, etc...)
+        if (e != thisE) {
+            return 0;
+        }
 
-		// If method has generic arguments, check the generic type argument count
-		if (e & SIG_METHODDEF_GENERIC) {
-			e = MetaData_DecodeUnsigned32BitInteger(&sig);
-			thisE = MetaData_DecodeUnsigned32BitInteger(&thisSig);
-			// Generic argument count
-			if (e != thisE) {
-				return 0;
-			}
-		}
+        // If method has generic arguments, check the generic type argument count
+        if (e & SIG_METHODDEF_GENERIC) {
+            e = MetaData_DecodeUnsigned32BitInteger(&sig);
+            thisE = MetaData_DecodeUnsigned32BitInteger(&thisSig);
+            // Generic argument count
+            if (e != thisE) {
+                return 0;
+            }
+        }
 
-		e = MetaData_DecodeUnsigned32BitInteger(&sig);
-		thisE = MetaData_DecodeUnsigned32BitInteger(&thisSig);
-		// check parameter count
-		if (e != thisE) {
-			return 0;
-		}
-		paramCount = e + 1; // +1 to include the return type
+        e = MetaData_DecodeUnsigned32BitInteger(&sig);
+        thisE = MetaData_DecodeUnsigned32BitInteger(&thisSig);
+        // check parameter count
+        if (e != thisE) {
+            return 0;
+        }
+        paramCount = e + 1; // +1 to include the return type
 
-		// check all parameters
-		for (i=0; i<paramCount; i++) {
-			tMD_TypeDef *pParamType, *pThisParamType;
+        // check all parameters
+        for (i=0; i<paramCount; i++) {
+            tMD_TypeDef *pParamType, *pThisParamType;
 
-			pParamType = Type_GetTypeFromSig(pSigMetaData, &sig, ppSigClassTypeArgs, ppSigMethodTypeArgs);
-			pThisParamType = Type_GetTypeFromSig(pMethod->pMetaData, &thisSig, ppMethodClassTypeArgs, ppMethodMethodTypeArgs);
-			if (pParamType != pThisParamType) {
-				return 0;
-			}
-		}
-		// All parameters the same, so found the right method
-		return 1;
-	}
-	return 0;
+            pParamType = Type_GetTypeFromSig(pSigMetaData, &sig, ppSigClassTypeArgs, ppSigMethodTypeArgs);
+            pThisParamType = Type_GetTypeFromSig(pMethod->pMetaData, &thisSig, ppMethodClassTypeArgs, ppMethodMethodTypeArgs);
+            if (pParamType != pThisParamType) {
+                return 0;
+            }
+        }
+        // All parameters the same, so found the right method
+        return 1;
+    }
+    return 0;
 }
 __device__ void * p_MetaData_CompareNameAndSig = (void*)MetaData_CompareNameAndSig;
 
 function_space_specifier static tMD_MethodDef* FindMethodInType(tMD_TypeDef *pTypeDef, STRING name, tMetaData *pSigMetaData, BLOB_ sigBlob, tMD_TypeDef **ppClassTypeArgs, tMD_TypeDef **ppMethodTypeArgs) {
-	U32 i;
-	tMD_TypeDef *pLookInType = pTypeDef;
+    U32 i;
+    tMD_TypeDef *pLookInType = pTypeDef;
 
-	do {
-		for (i=0; i<pLookInType->numMethods; i++) {
-			if (MetaData_CompareNameAndSig(name, sigBlob, pSigMetaData, ppClassTypeArgs, ppMethodTypeArgs, pLookInType->ppMethods[i], pLookInType->ppClassTypeArgs, NULL)) {
-				return pLookInType->ppMethods[i];
-			}
-		}
-		pLookInType = pLookInType->pParent;
-	} while (pLookInType != NULL);
+    do {
+        for (i=0; i<pLookInType->numMethods; i++) {
+            if (MetaData_CompareNameAndSig(name, sigBlob, pSigMetaData, ppClassTypeArgs, ppMethodTypeArgs, pLookInType->ppMethods[i], pLookInType->ppClassTypeArgs, NULL)) {
+                return pLookInType->ppMethods[i];
+            }
+        }
+        pLookInType = pLookInType->pParent;
+    } while (pLookInType != NULL);
 
-	{
-		// Error reporting!!
-		U32 entry, numParams, i;
-		SIG sig;
-		char *pMsg;
-		tMD_TypeDef *pParamTypeDef;
+    {
+        // Error reporting!!
+        U32 entry, numParams, i;
+        SIG sig;
+        char *pMsg;
+        tMD_TypeDef *pParamTypeDef;
 
-		pMsg = (char*)Gmalloc(2048);
-		*pMsg = 0;
-		sig = MetaData_GetBlob(sigBlob, &i);
-		entry = MetaData_DecodeUnsigned32BitInteger(&sig);
-		if ((entry & SIG_METHODDEF_HASTHIS) == 0) {
-			Gsprintf(Gstrchr(pMsg, 0), "static ");
-		}
-		if (entry & SIG_METHODDEF_GENERIC) {
-			// read number of generic type args - don't care what it is
-			MetaData_DecodeUnsigned32BitInteger(&sig);
-		}
-		numParams = MetaData_DecodeUnsigned32BitInteger(&sig);
-		pParamTypeDef = Type_GetTypeFromSig(pSigMetaData, &sig, ppClassTypeArgs, ppMethodTypeArgs); // return type
-		if (pParamTypeDef != NULL) {
-			Gsprintf(Gstrchr(pMsg, 0), "%s ", pParamTypeDef->name);
-		}
-		Gsprintf(Gstrchr(pMsg, 0), "%s.%s.%s(", pTypeDef->nameSpace, pTypeDef->name, name);
-		for (i=0; i<numParams; i++) {
-			pParamTypeDef = Type_GetTypeFromSig(pSigMetaData, &sig, ppClassTypeArgs, ppMethodTypeArgs);
-			if (i > 0) {
-				Gsprintf(Gstrchr(pMsg, 0), ",");
-			}
-			if (pParamTypeDef != NULL) {
-				Gsprintf(Gstrchr(pMsg, 0), pParamTypeDef->name);
-			} else {
-				Gsprintf(Gstrchr(pMsg, 0), "???");
-			}
-		}
-		Crash("FindMethodInType(): Cannot find method %s)", pMsg);
-	}
-	FAKE_RETURN;
-	return NULL;
+        pMsg = (char*)Gmalloc(2048);
+        *pMsg = 0;
+        sig = MetaData_GetBlob(sigBlob, &i);
+        entry = MetaData_DecodeUnsigned32BitInteger(&sig);
+        if ((entry & SIG_METHODDEF_HASTHIS) == 0) {
+            Gsprintf(Gstrchr(pMsg, 0), "static ");
+        }
+        if (entry & SIG_METHODDEF_GENERIC) {
+            // read number of generic type args - don't care what it is
+            MetaData_DecodeUnsigned32BitInteger(&sig);
+        }
+        numParams = MetaData_DecodeUnsigned32BitInteger(&sig);
+        pParamTypeDef = Type_GetTypeFromSig(pSigMetaData, &sig, ppClassTypeArgs, ppMethodTypeArgs); // return type
+        if (pParamTypeDef != NULL) {
+            Gsprintf(Gstrchr(pMsg, 0), "%s ", pParamTypeDef->name);
+        }
+        Gsprintf(Gstrchr(pMsg, 0), "%s.%s.%s(", pTypeDef->nameSpace, pTypeDef->name, name);
+        for (i=0; i<numParams; i++) {
+            pParamTypeDef = Type_GetTypeFromSig(pSigMetaData, &sig, ppClassTypeArgs, ppMethodTypeArgs);
+            if (i > 0) {
+                Gsprintf(Gstrchr(pMsg, 0), ",");
+            }
+            if (pParamTypeDef != NULL) {
+                Gsprintf(Gstrchr(pMsg, 0), pParamTypeDef->name);
+            } else {
+                Gsprintf(Gstrchr(pMsg, 0), "???");
+            }
+        }
+        Crash("FindMethodInType(): Cannot find method %s)", pMsg);
+    }
+    FAKE_RETURN;
+    return NULL;
 }
 
 function_space_specifier static tMD_FieldDef* FindFieldInType(tMD_TypeDef *pTypeDef, STRING name)
 {
-	if (_bcl_ && _bcl_->options & BCL_DEBUG_FUNCTION_ENTRY)
-		Gprintf("FindFieldInType\n");
-	U32 i;
+    if (_bcl_ && _bcl_->options & BCL_DEBUG_FUNCTION_ENTRY)
+        Gprintf("FindFieldInType\n");
+    U32 i;
 
-	MetaData_Fill_TypeDef(pTypeDef, NULL, NULL);
+    MetaData_Fill_TypeDef(pTypeDef, NULL, NULL);
 
-	for (i = 0; i < pTypeDef->numFields; i++) {
-		if (Gstrcmp(pTypeDef->ppFields[i]->name, name) == 0) {
-			return pTypeDef->ppFields[i];
-		}
-	}
+    for (i = 0; i < pTypeDef->numFields; i++) {
+        if (Gstrcmp(pTypeDef->ppFields[i]->name, name) == 0) {
+            return pTypeDef->ppFields[i];
+        }
+    }
 
-	Crash("FindFieldInType(): Cannot find field '%s' in type %s.%s", name, pTypeDef->nameSpace, pTypeDef->name);
-	FAKE_RETURN;
-	return NULL;
+    Crash("FindFieldInType(): Cannot find field '%s' in type %s.%s", name, pTypeDef->nameSpace, pTypeDef->name);
+    FAKE_RETURN;
+    return NULL;
 }
 
 function_space_specifier tMD_FieldDef* MetaData_FindFieldInType(tMD_TypeDef *pTypeDef, STRING name) {
-	return FindFieldInType(pTypeDef, name);
+    return FindFieldInType(pTypeDef, name);
 }
 
 function_space_specifier static tMD_FieldDef* FindFieldInTypeAll(tMD_TypeDef *pTypeDef, STRING name)
 {
-	if (_bcl_ && _bcl_->options & BCL_DEBUG_FUNCTION_ENTRY)
-		Gprintf("FindFieldInTypeAll\n");
-	U32 i;
+    if (_bcl_ && _bcl_->options & BCL_DEBUG_FUNCTION_ENTRY)
+        Gprintf("FindFieldInTypeAll\n");
+    U32 i;
 
-	MetaData_Fill_TypeDef(pTypeDef, NULL, NULL);
+    MetaData_Fill_TypeDef(pTypeDef, NULL, NULL);
 
-	for (i = 0; i < pTypeDef->numFields; i++) {
-		if (Gstrcmp(pTypeDef->ppFields[i]->name, name) == 0) {
-			return pTypeDef->ppFields[i];
-		}
-	}
-	pTypeDef = MetaData_GetTypeDefFromDefRefOrSpec(pTypeDef->pMetaData, pTypeDef->extends, NULL, NULL);
-	if (pTypeDef)
-		return FindFieldInTypeAll(pTypeDef, name);
-	return NULL;
+    for (i = 0; i < pTypeDef->numFields; i++) {
+        if (Gstrcmp(pTypeDef->ppFields[i]->name, name) == 0) {
+            return pTypeDef->ppFields[i];
+        }
+    }
+    pTypeDef = MetaData_GetTypeDefFromDefRefOrSpec(pTypeDef->pMetaData, pTypeDef->extends, NULL, NULL);
+    if (pTypeDef)
+        return FindFieldInTypeAll(pTypeDef, name);
+    return NULL;
 }
 
 function_space_specifier tMD_FieldDef* MetaData_FindFieldInTypeAll(tMD_TypeDef *pTypeDef, STRING name)
 {
-	return FindFieldInTypeAll(pTypeDef, name);
+    return FindFieldInTypeAll(pTypeDef, name);
 }
 
 function_space_specifier tMetaData* MetaData_GetResolutionScopeMetaData(tMetaData *pMetaData, IDX_TABLE resolutionScopeToken, tMD_TypeDef **ppInNestedType)
 {
-	if (_bcl_ && _bcl_->options & BCL_DEBUG_FUNCTION_ENTRY)
-		Gprintf("MetaData_GetResolutionScopeMetaData\n");
-	switch (TABLE_ID(resolutionScopeToken)) {
-		case MD_TABLE_ASSEMBLYREF:
-			{
-				tMD_AssemblyRef *pAssemblyRef;
+    if (_bcl_ && _bcl_->options & BCL_DEBUG_FUNCTION_ENTRY)
+        Gprintf("MetaData_GetResolutionScopeMetaData\n");
+    switch (TABLE_ID(resolutionScopeToken)) {
+        case MD_TABLE_ASSEMBLYREF:
+            {
+                tMD_AssemblyRef *pAssemblyRef;
 
-				pAssemblyRef = (tMD_AssemblyRef*)MetaData_GetTableRow(pMetaData, resolutionScopeToken);
-				*ppInNestedType = NULL;
-				return CLIFile_GetMetaDataForAssembly(pAssemblyRef);
-			}
-		case MD_TABLE_TYPEREF:
-			{
-				tMD_TypeDef *pTypeDef;
+                pAssemblyRef = (tMD_AssemblyRef*)MetaData_GetTableRow(pMetaData, resolutionScopeToken);
+                *ppInNestedType = NULL;
+                return CLIFile_GetMetaDataForAssembly(pAssemblyRef);
+            }
+        case MD_TABLE_TYPEREF:
+            {
+                tMD_TypeDef *pTypeDef;
 
-				pTypeDef = MetaData_GetTypeDefFromDefRefOrSpec(pMetaData, resolutionScopeToken, NULL, NULL);
-				*ppInNestedType = pTypeDef;
-				return pTypeDef->pMetaData;
-			}
-		default:
-			Crash("MetaData_GetResolutionScopeMetaData(): Cannot resolve token: 0x%08x", resolutionScopeToken);
-			FAKE_RETURN;
-	}
-	return NULL;
+                pTypeDef = MetaData_GetTypeDefFromDefRefOrSpec(pMetaData, resolutionScopeToken, NULL, NULL);
+                *ppInNestedType = pTypeDef;
+                return pTypeDef->pMetaData;
+            }
+        default:
+            Crash("MetaData_GetResolutionScopeMetaData(): Cannot resolve token: 0x%08x", resolutionScopeToken);
+            FAKE_RETURN;
+    }
+    return NULL;
 }
 
 function_space_specifier tMD_TypeDef* MetaData_GetTypeDefFromName(tMetaData *pMetaData, STRING nameSpace, STRING name, tMD_TypeDef *pInNestedClass) 
 {
-	if (_bcl_ && _bcl_->options & BCL_DEBUG_FUNCTION_ENTRY)
-		Gprintf("MetaData_GetTypeDefFromName\n");
-	//	Gprintf("looking for %s in ns %s\n", name, nameSpace);
+    if (_bcl_ && _bcl_->options & BCL_DEBUG_FUNCTION_ENTRY)
+        Gprintf("MetaData_GetTypeDefFromName\n");
+    //  Gprintf("looking for %s in ns %s\n", name, nameSpace);
     U32 i;
-	tMD_TypeDef* result = 0;
+    tMD_TypeDef* result = 0;
 
-	// Open corlib.dll as a substitution if this is mscorlib, and try to find.
-	if (!(strcmp(pMetaData->file_name, "corlib.dll") == 0 ||
-		strcmp(pMetaData->file_name, "corlib") == 0))
-	{
-		result = MetaData_GetTypeDefFromFullName("corlib.dll", nameSpace, name);
-		if (result) return result;
-	}
+    // Open corlib.dll as a substitution if this is mscorlib, and try to find.
+    if (!(strcmp(pMetaData->file_name, "corlib.dll") == 0 ||
+        strcmp(pMetaData->file_name, "corlib") == 0))
+    {
+        result = MetaData_GetTypeDefFromFullName("corlib.dll", nameSpace, name);
+        if (result) return result;
+    }
 
-	// Look through meta for typedef. If none exists, find assembly for typeref and continue
-	// resolving.
-	for (i = 1; i <= pMetaData->tables.numRows[MD_TABLE_TYPEDEF]; i++) {
-		tMD_TypeDef *pTypeDef;
+    // Look through meta for typedef. If none exists, find assembly for typeref and continue
+    // resolving.
+    for (i = 1; i <= pMetaData->tables.numRows[MD_TABLE_TYPEDEF]; i++) {
+        tMD_TypeDef *pTypeDef;
 
-		pTypeDef = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_TYPEDEF, i));
+        pTypeDef = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_TYPEDEF, i));
 
-		//printf("checking whether %s::%s matches %s::%s, all in %s\n", nameSpace, name, pTypeDef->nameSpace, pTypeDef->name, pMetaData->file_name);
+        //printf("checking whether %s::%s matches %s::%s, all in %s\n", nameSpace, name, pTypeDef->nameSpace, pTypeDef->name, pMetaData->file_name);
 
-		if (pInNestedClass == pTypeDef->pNestedIn
-			&& Gstrcmp(name, pTypeDef->name) == 0
-			&& (pInNestedClass != NULL || Gstrcmp(nameSpace, pTypeDef->nameSpace) == 0))
-		{
-			result = pTypeDef;
-			break;
-		}
-	}
+        if (pInNestedClass == pTypeDef->pNestedIn
+            && Gstrcmp(name, pTypeDef->name) == 0
+            && (pInNestedClass != NULL || Gstrcmp(nameSpace, pTypeDef->nameSpace) == 0))
+        {
+            result = pTypeDef;
+            break;
+        }
+    }
 
-	if (result != 0) return result;
+    if (result != 0) return result;
 
-	tMD_TypeRef* typeref_result = 0;
+    tMD_TypeRef* typeref_result = 0;
 
-	// There isn't a TypeDef in this meta, so find a TypeRef instead.
-	// Then, find the TypeDef if in another assembly.
-	for (i = 1; i <= pMetaData->tables.numRows[MD_TABLE_TYPEREF]; i++) {
-		tMD_TypeRef *pTypeRef;
+    // There isn't a TypeDef in this meta, so find a TypeRef instead.
+    // Then, find the TypeDef if in another assembly.
+    for (i = 1; i <= pMetaData->tables.numRows[MD_TABLE_TYPEREF]; i++) {
+        tMD_TypeRef *pTypeRef;
 
-		pTypeRef = (tMD_TypeRef*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_TYPEREF, i));
+        pTypeRef = (tMD_TypeRef*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_TYPEREF, i));
 
-		if (Gstrcmp(name, pTypeRef->name) == 0)
-		{
-			typeref_result = pTypeRef;
-			break;
-		}
-	}
+        if (Gstrcmp(name, pTypeRef->name) == 0)
+        {
+            typeref_result = pTypeRef;
+            break;
+        }
+    }
 
-	if (typeref_result == 0)
-		return NULL;
+    if (typeref_result == 0)
+        return NULL;
 
-	// Get assemblyref of typeref.
-	typeref_result->resolutionScope;
-	tMetaData * pTypeDefMetaData = MetaData_GetResolutionScopeMetaData(pMetaData, typeref_result->resolutionScope, &pInNestedClass);
-	result = MetaData_GetTypeDefFromName(pTypeDefMetaData, nameSpace, name, pInNestedClass);
-	return result;
+    // Get assemblyref of typeref.
+    typeref_result->resolutionScope;
+    tMetaData * pTypeDefMetaData = MetaData_GetResolutionScopeMetaData(pMetaData, typeref_result->resolutionScope, &pInNestedClass);
+    result = MetaData_GetTypeDefFromName(pTypeDefMetaData, nameSpace, name, pInNestedClass);
+    return result;
 }
 
 function_space_specifier tMD_TypeDef* MetaData_GetTypeDefFromFullName(STRING assemblyName, STRING nameSpace, STRING name)
 {
-	if (_bcl_ && _bcl_->options & BCL_DEBUG_FUNCTION_ENTRY)
-		Gprintf("MetaData_GetTypeDefFromFullName\n");
-	tMetaData *pTypeMetaData;
+    if (_bcl_ && _bcl_->options & BCL_DEBUG_FUNCTION_ENTRY)
+        Gprintf("MetaData_GetTypeDefFromFullName\n");
+    tMetaData *pTypeMetaData;
 
-	pTypeMetaData = CLIFile_GetMetaDataForAssemblyAux(assemblyName, NULL, 0, 0);
+    pTypeMetaData = CLIFile_GetMetaDataForAssemblyAux(assemblyName, NULL, 0, 0);
 
-	// Note that this cannot get a nested class, as this final parameter is always NULL
-	return MetaData_GetTypeDefFromName(pTypeMetaData, nameSpace, name, NULL);
+    // Note that this cannot get a nested class, as this final parameter is always NULL
+    return MetaData_GetTypeDefFromName(pTypeMetaData, nameSpace, name, NULL);
 }
 
 function_space_specifier tMD_TypeDef* MetaData_GetTypeDefFromFullNameAndNestedType(STRING assemblyName, STRING nameSpace, STRING name, tMD_TypeDef* nested)
 {
-	if (_bcl_ && _bcl_->options & BCL_DEBUG_FUNCTION_ENTRY)
-		Gprintf("MetaData_GetTypeDefFromFullNameAndNestedType\n");
-	tMetaData *pTypeMetaData;
+    if (_bcl_ && _bcl_->options & BCL_DEBUG_FUNCTION_ENTRY)
+        Gprintf("MetaData_GetTypeDefFromFullNameAndNestedType\n");
+    tMetaData *pTypeMetaData;
 
-	pTypeMetaData = CLIFile_GetMetaDataForAssemblyAux(assemblyName, NULL, 0, 0);
+    pTypeMetaData = CLIFile_GetMetaDataForAssemblyAux(assemblyName, NULL, 0, 0);
 
-	// Note that this cannot get a nested class, as this final parameter is always NULL
-	return MetaData_GetTypeDefFromName(pTypeMetaData, nameSpace, name, nested);
+    // Note that this cannot get a nested class, as this final parameter is always NULL
+    return MetaData_GetTypeDefFromName(pTypeMetaData, nameSpace, name, nested);
 }
 
 function_space_specifier tMD_TypeDef* MetaData_GetTypeDefFromDefRefOrSpec(tMetaData *pMetaData, IDX_TABLE token, tMD_TypeDef **ppClassTypeArgs, tMD_TypeDef **ppMethodTypeArgs) {
-	void *pTableEntry;
+    void *pTableEntry;
 
-	pTableEntry = MetaData_GetTableRow(pMetaData, token);
-	if (pTableEntry == NULL) {
-		return NULL;
-	}
-	if (((tMDC_ToTypeDef*)pTableEntry)->pTypeDef != NULL) {
-		return ((tMDC_ToTypeDef*)pTableEntry)->pTypeDef;
-	}
+    pTableEntry = MetaData_GetTableRow(pMetaData, token);
+    if (pTableEntry == NULL) {
+        return NULL;
+    }
+    if (((tMDC_ToTypeDef*)pTableEntry)->pTypeDef != NULL) {
+        return ((tMDC_ToTypeDef*)pTableEntry)->pTypeDef;
+    }
 
-	switch (TABLE_ID(token)) {
-		case MD_TABLE_TYPEDEF:
-			((tMDC_ToTypeDef*)pTableEntry)->pTypeDef = (tMD_TypeDef*)pTableEntry;
-			return (tMD_TypeDef*)pTableEntry;
-		case MD_TABLE_TYPEREF:
-			{
-				tMetaData *pTypeDefMetaData;
-				tMD_TypeRef *pTypeRef;
-				tMD_TypeDef *pTypeDef;
-				tMD_TypeDef *pInNestedClass;
+    switch (TABLE_ID(token)) {
+        case MD_TABLE_TYPEDEF:
+            ((tMDC_ToTypeDef*)pTableEntry)->pTypeDef = (tMD_TypeDef*)pTableEntry;
+            return (tMD_TypeDef*)pTableEntry;
+        case MD_TABLE_TYPEREF:
+            {
+                tMetaData *pTypeDefMetaData;
+                tMD_TypeRef *pTypeRef;
+                tMD_TypeDef *pTypeDef;
+                tMD_TypeDef *pInNestedClass;
 
-				pTypeRef = (tMD_TypeRef*)pTableEntry;
-				pTypeDefMetaData = MetaData_GetResolutionScopeMetaData(pMetaData, pTypeRef->resolutionScope, &pInNestedClass);
-				pTypeDef = MetaData_GetTypeDefFromName(pTypeDefMetaData, pTypeRef->nameSpace, pTypeRef->name, pInNestedClass);
-				pTypeRef->pTypeDef = pTypeDef;
-				return pTypeDef;
-			}
-		case MD_TABLE_TYPESPEC:
-			{
-				tMD_TypeSpec *pTypeSpec;
-				tMD_TypeDef *pTypeDef;
-				SIG sig;
+                pTypeRef = (tMD_TypeRef*)pTableEntry;
+                pTypeDefMetaData = MetaData_GetResolutionScopeMetaData(pMetaData, pTypeRef->resolutionScope, &pInNestedClass);
+                pTypeDef = MetaData_GetTypeDefFromName(pTypeDefMetaData, pTypeRef->nameSpace, pTypeRef->name, pInNestedClass);
+                pTypeRef->pTypeDef = pTypeDef;
+                return pTypeDef;
+            }
+        case MD_TABLE_TYPESPEC:
+            {
+                tMD_TypeSpec *pTypeSpec;
+                tMD_TypeDef *pTypeDef;
+                SIG sig;
 
-				pTypeSpec = (tMD_TypeSpec*)pTableEntry;
-				sig = MetaData_GetBlob(pTypeSpec->signature, NULL);
-				pTypeDef = Type_GetTypeFromSig(pTypeSpec->pMetaData, &sig, ppClassTypeArgs, ppMethodTypeArgs);
-				// Note: Cannot cache the TypeDef for this TypeSpec because it
-				// can change depending on class arguemnts given.
+                pTypeSpec = (tMD_TypeSpec*)pTableEntry;
+                sig = MetaData_GetBlob(pTypeSpec->signature, NULL);
+                pTypeDef = Type_GetTypeFromSig(pTypeSpec->pMetaData, &sig, ppClassTypeArgs, ppMethodTypeArgs);
+                // Note: Cannot cache the TypeDef for this TypeSpec because it
+                // can change depending on class arguemnts given.
 
-				return pTypeDef;
-			}
-			return NULL;
-		default:
-			Crash("MetaData_GetTypeDefFromDefRefOrSpec(): Cannot handle token: 0x%08x", token);
-			FAKE_RETURN;
-	}
-	return NULL;
+                return pTypeDef;
+            }
+            return NULL;
+        default:
+            Crash("MetaData_GetTypeDefFromDefRefOrSpec(): Cannot handle token: 0x%08x", token);
+            FAKE_RETURN;
+    }
+    return NULL;
 }
 
 function_space_specifier tMD_TypeDef* MetaData_GetTypeDefFromMethodDef(tMD_MethodDef *pMethodDef) {
-	tMetaData *pMetaData;
-	U32 i;
+    tMetaData *pMetaData;
+    U32 i;
 
-	pMetaData = pMethodDef->pMetaData;
-	for (i=pMetaData->tables.numRows[MD_TABLE_TYPEDEF]; i>0; i--) {
-		tMD_TypeDef *pTypeDef;
+    pMetaData = pMethodDef->pMetaData;
+    for (i=pMetaData->tables.numRows[MD_TABLE_TYPEDEF]; i>0; i--) {
+        tMD_TypeDef *pTypeDef;
 
-		pTypeDef = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_TYPEDEF, i));
-		if (pTypeDef->methodList <= pMethodDef->tableIndex) {
-			return pTypeDef;
-		}
-	}
+        pTypeDef = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_TYPEDEF, i));
+        if (pTypeDef->methodList <= pMethodDef->tableIndex) {
+            return pTypeDef;
+        }
+    }
 
-	Crash("MetaData_GetTypeDefFromMethodDef(): Cannot find type for method: %s", pMethodDef->name);
-	FAKE_RETURN;
-	return NULL;
+    Crash("MetaData_GetTypeDefFromMethodDef(): Cannot find type for method: %s", pMethodDef->name);
+    FAKE_RETURN;
+    return NULL;
 }
 
 function_space_specifier tMD_TypeDef* MetaData_GetTypeDefFromFieldDef(tMD_FieldDef *pFieldDef) {
-	tMetaData *pMetaData;
-	U32 i;
+    tMetaData *pMetaData;
+    U32 i;
 
-	pMetaData = pFieldDef->pMetaData;
-	for (i=pMetaData->tables.numRows[MD_TABLE_TYPEDEF]; i>0; i--) {
-		tMD_TypeDef *pTypeDef;
+    pMetaData = pFieldDef->pMetaData;
+    for (i=pMetaData->tables.numRows[MD_TABLE_TYPEDEF]; i>0; i--) {
+        tMD_TypeDef *pTypeDef;
 
-		pTypeDef = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_TYPEDEF, i));
-		if (pTypeDef->fieldList <= pFieldDef->tableIndex) {
-			return pTypeDef;
-		}
-	}
+        pTypeDef = (tMD_TypeDef*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_TYPEDEF, i));
+        if (pTypeDef->fieldList <= pFieldDef->tableIndex) {
+            return pTypeDef;
+        }
+    }
 
-	Crash("MetaData_GetTypeDefFromFieldDef(): Cannot find type for field: %s", pFieldDef->name);
-	FAKE_RETURN;
-	return NULL;
+    Crash("MetaData_GetTypeDefFromFieldDef(): Cannot find type for field: %s", pFieldDef->name);
+    FAKE_RETURN;
+    return NULL;
 }
 
 function_space_specifier tMD_MethodDef* MetaData_GetMethodDefFromDefRefOrSpec(tMetaData *pMetaData, IDX_TABLE token, tMD_TypeDef **ppClassTypeArgs, tMD_TypeDef **ppMethodTypeArgs) {
-	void *pTableEntry;
+    void *pTableEntry;
 
-	pTableEntry = MetaData_GetTableRow(pMetaData, token);
-	if (((tMDC_ToMethodDef*)pTableEntry)->pMethodDef != NULL) {
-		return ((tMDC_ToMethodDef*)pTableEntry)->pMethodDef;
-	}
+    pTableEntry = MetaData_GetTableRow(pMetaData, token);
+    if (((tMDC_ToMethodDef*)pTableEntry)->pMethodDef != NULL) {
+        return ((tMDC_ToMethodDef*)pTableEntry)->pMethodDef;
+    }
 
-	switch (TABLE_ID(token)) {
-		case MD_TABLE_METHODDEF:
-			((tMDC_ToMethodDef*)pTableEntry)->pMethodDef = (tMD_MethodDef*)pTableEntry;
-			return (tMD_MethodDef*)pTableEntry;
-		case MD_TABLE_MEMBERREF:
-			{
-				tMD_MemberRef *pMemberRef;
+    switch (TABLE_ID(token)) {
+        case MD_TABLE_METHODDEF:
+            ((tMDC_ToMethodDef*)pTableEntry)->pMethodDef = (tMD_MethodDef*)pTableEntry;
+            return (tMD_MethodDef*)pTableEntry;
+        case MD_TABLE_MEMBERREF:
+            {
+                tMD_MemberRef *pMemberRef;
 
-				pMemberRef = (tMD_MemberRef*)pTableEntry;
-				switch (TABLE_ID(pMemberRef->class_))
-				{
-				case MD_TABLE_TYPEREF:
-				case MD_TABLE_TYPESPEC:
-					{
-						tMD_TypeDef *pTypeDef;
-						tMD_MethodDef *pMethodDef;
+                pMemberRef = (tMD_MemberRef*)pTableEntry;
+                switch (TABLE_ID(pMemberRef->class_))
+                {
+                case MD_TABLE_TYPEREF:
+                case MD_TABLE_TYPESPEC:
+                    {
+                        tMD_TypeDef *pTypeDef;
+                        tMD_MethodDef *pMethodDef;
 
-						pTypeDef = MetaData_GetTypeDefFromDefRefOrSpec(pMetaData, pMemberRef->class_, ppClassTypeArgs, ppMethodTypeArgs);
-						MetaData_Fill_TypeDef(pTypeDef, NULL, NULL);
-						pMethodDef = FindMethodInType(pTypeDef, pMemberRef->name, pMetaData, pMemberRef->signature, pTypeDef->ppClassTypeArgs, ppMethodTypeArgs);
-						//pMethodDef->pMethodDef = pMethodDef;
-						return pMethodDef;
-					}
-				default:
-					Crash("MetaData_GetMethodDefFromMethodDefOrRef(): Cannot handle pMemberRef->class_=0x%08x", pMemberRef->class_);
-				}
-			}
-		case MD_TABLE_METHODSPEC:
-			{
-				tMD_MethodSpec *pMethodSpec;
-				tMD_MethodDef *pMethodDef;
+                        pTypeDef = MetaData_GetTypeDefFromDefRefOrSpec(pMetaData, pMemberRef->class_, ppClassTypeArgs, ppMethodTypeArgs);
+                        MetaData_Fill_TypeDef(pTypeDef, NULL, NULL);
+                        pMethodDef = FindMethodInType(pTypeDef, pMemberRef->name, pMetaData, pMemberRef->signature, pTypeDef->ppClassTypeArgs, ppMethodTypeArgs);
+                        //pMethodDef->pMethodDef = pMethodDef;
+                        return pMethodDef;
+                    }
+                default:
+                    Crash("MetaData_GetMethodDefFromMethodDefOrRef(): Cannot handle pMemberRef->class_=0x%08x", pMemberRef->class_);
+                }
+            }
+        case MD_TABLE_METHODSPEC:
+            {
+                tMD_MethodSpec *pMethodSpec;
+                tMD_MethodDef *pMethodDef;
 
-				pMethodSpec = (tMD_MethodSpec*)pTableEntry;
-				pMethodDef = Generics_GetMethodDefFromSpec(pMethodSpec, ppClassTypeArgs, ppMethodTypeArgs);
+                pMethodSpec = (tMD_MethodSpec*)pTableEntry;
+                pMethodDef = Generics_GetMethodDefFromSpec(pMethodSpec, ppClassTypeArgs, ppMethodTypeArgs);
 
-				// Note: Cannot cache the MethodDef from the MethodSpec, as class generic arguments
-				// may be different.
-				
-				return pMethodDef;
-			}
-	}
+                // Note: Cannot cache the MethodDef from the MethodSpec, as class generic arguments
+                // may be different.
+                
+                return pMethodDef;
+            }
+    }
 
-	Crash("MetaData_GetMethodDefFromMethodDefOrRef(): Cannot handle token: 0x%08x", token);
-	FAKE_RETURN;
-	return NULL;
+    Crash("MetaData_GetMethodDefFromMethodDefOrRef(): Cannot handle token: 0x%08x", token);
+    FAKE_RETURN;
+    return NULL;
 }
 
 function_space_specifier tMD_FieldDef* MetaData_GetFieldDefFromDefOrRef(tMetaData *pMetaData, IDX_TABLE token, tMD_TypeDef **ppClassTypeArgs, tMD_TypeDef **ppMethodTypeArgs) {
-	void *pTableEntry;
+    void *pTableEntry;
 
-	pTableEntry = MetaData_GetTableRow(pMetaData, token);
-	if (((tMDC_ToFieldDef*)pTableEntry)->pFieldDef != NULL) {
-		return ((tMDC_ToFieldDef*)pTableEntry)->pFieldDef;
-	}
+    pTableEntry = MetaData_GetTableRow(pMetaData, token);
+    if (((tMDC_ToFieldDef*)pTableEntry)->pFieldDef != NULL) {
+        return ((tMDC_ToFieldDef*)pTableEntry)->pFieldDef;
+    }
 
-	switch (TABLE_ID(token)) {
-		case MD_TABLE_FIELDDEF:
-			((tMDC_ToFieldDef*)pTableEntry)->pFieldDef = (tMD_FieldDef*)pTableEntry;
-			return (tMD_FieldDef*)pTableEntry;
-		case MD_TABLE_MEMBERREF:
-			{
-				tMD_MemberRef *pMemberRef;
+    switch (TABLE_ID(token)) {
+        case MD_TABLE_FIELDDEF:
+            ((tMDC_ToFieldDef*)pTableEntry)->pFieldDef = (tMD_FieldDef*)pTableEntry;
+            return (tMD_FieldDef*)pTableEntry;
+        case MD_TABLE_MEMBERREF:
+            {
+                tMD_MemberRef *pMemberRef;
 
-				pMemberRef = (tMD_MemberRef*)pTableEntry;
-				switch (TABLE_ID(pMemberRef->class_))
-				{
-				case MD_TABLE_TYPEREF:
-				case MD_TABLE_TYPESPEC:
-					{
-						tMD_TypeDef *pTypeDef;
-						tMD_FieldDef *pFieldDef;
+                pMemberRef = (tMD_MemberRef*)pTableEntry;
+                switch (TABLE_ID(pMemberRef->class_))
+                {
+                case MD_TABLE_TYPEREF:
+                case MD_TABLE_TYPESPEC:
+                    {
+                        tMD_TypeDef *pTypeDef;
+                        tMD_FieldDef *pFieldDef;
 
-						pTypeDef = MetaData_GetTypeDefFromDefRefOrSpec(pMetaData, pMemberRef->class_, ppClassTypeArgs, ppMethodTypeArgs);
-						pFieldDef = FindFieldInType(pTypeDef, pMemberRef->name);
-						if (TABLE_ID(pMemberRef->class_) == MD_TABLE_TYPEREF) {
-							// Can't do this for TypeSpec because the resulting TypeDef will change
-							// depending on what the class type arguments are.
-							((tMDC_ToFieldDef*)pTableEntry)->pFieldDef = pFieldDef;
-						}
-						return pFieldDef;
-					}
-				default:
-					Crash("MetaData_GetMethodDefFromMethodDefOrRef(): Cannot handle pMemberRef->class_=0x%08x", pMemberRef->class_);
-				}
-			}
-	}
+                        pTypeDef = MetaData_GetTypeDefFromDefRefOrSpec(pMetaData, pMemberRef->class_, ppClassTypeArgs, ppMethodTypeArgs);
+                        pFieldDef = FindFieldInType(pTypeDef, pMemberRef->name);
+                        if (TABLE_ID(pMemberRef->class_) == MD_TABLE_TYPEREF) {
+                            // Can't do this for TypeSpec because the resulting TypeDef will change
+                            // depending on what the class type arguments are.
+                            ((tMDC_ToFieldDef*)pTableEntry)->pFieldDef = pFieldDef;
+                        }
+                        return pFieldDef;
+                    }
+                default:
+                    Crash("MetaData_GetMethodDefFromMethodDefOrRef(): Cannot handle pMemberRef->class_=0x%08x", pMemberRef->class_);
+                }
+            }
+    }
 
-	Crash("MetaData_GetFieldDefFromDefOrRef(): Cannot handle token: 0x%08x", token);
-	FAKE_RETURN;
-	return NULL;
+    Crash("MetaData_GetFieldDefFromDefOrRef(): Cannot handle token: 0x%08x", token);
+    FAKE_RETURN;
+    return NULL;
 }
 
 // Return pointer to the relevant Def structure.
@@ -488,86 +488,86 @@ function_space_specifier tMD_FieldDef* MetaData_GetFieldDefFromDefOrRef(tMetaDat
 // 2 - tMD_FieldDef
 // (These link up with the JIT_LOADTOKEN_* opcodes)
 function_space_specifier PTR MetaData_GetTypeMethodField(tMetaData *pMetaData, IDX_TABLE token, U32 *pObjectType, tMD_TypeDef **ppClassTypeArgs, tMD_TypeDef **ppMethodTypeArgs) {
-	switch (TABLE_ID(token)) {
-		case MD_TABLE_TYPEDEF:
-		case MD_TABLE_TYPEREF:
-		case MD_TABLE_TYPESPEC:
-			{
-				tMD_TypeDef *pTypeDef;
+    switch (TABLE_ID(token)) {
+        case MD_TABLE_TYPEDEF:
+        case MD_TABLE_TYPEREF:
+        case MD_TABLE_TYPESPEC:
+            {
+                tMD_TypeDef *pTypeDef;
 
-				pTypeDef = MetaData_GetTypeDefFromDefRefOrSpec(pMetaData, token, ppClassTypeArgs, ppMethodTypeArgs);
-				MetaData_Fill_TypeDef(pTypeDef, NULL, NULL);
-				*pObjectType = 0;
-				return (PTR)pTypeDef;
-			}
-		case MD_TABLE_METHODDEF:
+                pTypeDef = MetaData_GetTypeDefFromDefRefOrSpec(pMetaData, token, ppClassTypeArgs, ppMethodTypeArgs);
+                MetaData_Fill_TypeDef(pTypeDef, NULL, NULL);
+                *pObjectType = 0;
+                return (PTR)pTypeDef;
+            }
+        case MD_TABLE_METHODDEF:
 method:
-			{
-				tMD_MethodDef *pMethodDef;
+            {
+                tMD_MethodDef *pMethodDef;
 
-				pMethodDef = MetaData_GetMethodDefFromDefRefOrSpec(pMetaData, token, ppClassTypeArgs, ppMethodTypeArgs);
-				if (pMethodDef->isFilled == 0) {
-					tMD_TypeDef *pTypeDef;
+                pMethodDef = MetaData_GetMethodDefFromDefRefOrSpec(pMetaData, token, ppClassTypeArgs, ppMethodTypeArgs);
+                if (pMethodDef->isFilled == 0) {
+                    tMD_TypeDef *pTypeDef;
 
-					pTypeDef = MetaData_GetTypeDefFromMethodDef(pMethodDef);
-					MetaData_Fill_TypeDef(pTypeDef, NULL, NULL);
-				}
-				*pObjectType = 1;
-				return (PTR)pMethodDef;
-			}
-		case MD_TABLE_FIELDDEF:
+                    pTypeDef = MetaData_GetTypeDefFromMethodDef(pMethodDef);
+                    MetaData_Fill_TypeDef(pTypeDef, NULL, NULL);
+                }
+                *pObjectType = 1;
+                return (PTR)pMethodDef;
+            }
+        case MD_TABLE_FIELDDEF:
 field:
-			{
-				tMD_FieldDef *pFieldDef;
+            {
+                tMD_FieldDef *pFieldDef;
 
-				pFieldDef = MetaData_GetFieldDefFromDefOrRef(pMetaData, token, ppClassTypeArgs, ppMethodTypeArgs);
-				if (pFieldDef->pParentType == NULL) {
-					tMD_TypeDef *pTypeDef;
+                pFieldDef = MetaData_GetFieldDefFromDefOrRef(pMetaData, token, ppClassTypeArgs, ppMethodTypeArgs);
+                if (pFieldDef->pParentType == NULL) {
+                    tMD_TypeDef *pTypeDef;
 
-					pTypeDef = MetaData_GetTypeDefFromFieldDef(pFieldDef);
-					MetaData_Fill_TypeDef(pTypeDef, NULL, NULL);
-				}
-				*pObjectType = 2;
-				return (PTR)pFieldDef;
-			}
-		case MD_TABLE_MEMBERREF:
-			{
-				tMD_MemberRef *pMemberRef;
-				SIG sig;
+                    pTypeDef = MetaData_GetTypeDefFromFieldDef(pFieldDef);
+                    MetaData_Fill_TypeDef(pTypeDef, NULL, NULL);
+                }
+                *pObjectType = 2;
+                return (PTR)pFieldDef;
+            }
+        case MD_TABLE_MEMBERREF:
+            {
+                tMD_MemberRef *pMemberRef;
+                SIG sig;
 
-				pMemberRef = (tMD_MemberRef*)MetaData_GetTableRow(pMetaData, token);
-				sig = MetaData_GetBlob(pMemberRef->signature, NULL);
-				if (*(U8*)sig == 0x06) {
-					// Field
-					goto field;
-				} else {
-					// Method
-					goto method;
-				}
-			}
-	}
+                pMemberRef = (tMD_MemberRef*)MetaData_GetTableRow(pMetaData, token);
+                sig = MetaData_GetBlob(pMemberRef->signature, NULL);
+                if (*(U8*)sig == 0x06) {
+                    // Field
+                    goto field;
+                } else {
+                    // Method
+                    goto method;
+                }
+            }
+    }
 
-	Crash("MetaData_GetTypeMethodField(): Cannot handle token: 0x%08x", token);
-	FAKE_RETURN;
-	return NULL;
+    Crash("MetaData_GetTypeMethodField(): Cannot handle token: 0x%08x", token);
+    FAKE_RETURN;
+    return NULL;
 }
 
 function_space_specifier tMD_ImplMap* MetaData_GetImplMap(tMetaData *pMetaData, IDX_TABLE memberForwardedToken) {
-	U32 i;
+    U32 i;
 
-	for (i=pMetaData->tables.numRows[MD_TABLE_IMPLMAP]; i >= 1; i--) {
-		tMD_ImplMap *pImplMap = (tMD_ImplMap*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_IMPLMAP, i));
-		if (pImplMap->memberForwarded == memberForwardedToken) {
-			return pImplMap;
-		}
-	}
+    for (i=pMetaData->tables.numRows[MD_TABLE_IMPLMAP]; i >= 1; i--) {
+        tMD_ImplMap *pImplMap = (tMD_ImplMap*)MetaData_GetTableRow(pMetaData, MAKE_TABLE_INDEX(MD_TABLE_IMPLMAP, i));
+        if (pImplMap->memberForwarded == memberForwardedToken) {
+            return pImplMap;
+        }
+    }
 
-	Crash("MetaData_GetImplMap() Cannot find mapping for token: 0x%08x", memberForwardedToken);
-	FAKE_RETURN;
-	return NULL;
+    Crash("MetaData_GetImplMap() Cannot find mapping for token: 0x%08x", memberForwardedToken);
+    FAKE_RETURN;
+    return NULL;
 }
 
 function_space_specifier STRING MetaData_GetModuleRefName(tMetaData *pMetaData, IDX_TABLE memberRefToken) {
-	tMD_ModuleRef *pModRef = (tMD_ModuleRef*)MetaData_GetTableRow(pMetaData, memberRefToken);
-	return pModRef->name;
+    tMD_ModuleRef *pModRef = (tMD_ModuleRef*)MetaData_GetTableRow(pMetaData, memberRefToken);
+    return pModRef->name;
 }

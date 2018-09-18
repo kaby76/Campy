@@ -29,60 +29,60 @@
 #include "Thread.h"
 
 function_space_specifier tAsyncCall* System_Threading_Thread_ctor(PTR pThis_, PTR pParams, PTR pReturnValue) {
-	tThread *pThread = Thread();
-	pThread->startDelegate = ((PTR*)pParams)[0];
-	*(HEAP_PTR*)pReturnValue = (HEAP_PTR)pThread;
-	return NULL;
+    tThread *pThread = Thread();
+    pThread->startDelegate = ((PTR*)pParams)[0];
+    *(HEAP_PTR*)pReturnValue = (HEAP_PTR)pThread;
+    return NULL;
 }
 
 function_space_specifier tAsyncCall* System_Threading_Thread_ctorParam(PTR pThis_, PTR pParams, PTR pReturnValue) {
-	tThread *pThread = Thread();
-	pThread->startDelegate = ((PTR*)pParams)[0];
-	*(HEAP_PTR*)pReturnValue = (HEAP_PTR)pThread;
-	pThread->hasParam = 1;
-	return NULL;
+    tThread *pThread = Thread();
+    pThread->startDelegate = ((PTR*)pParams)[0];
+    *(HEAP_PTR*)pReturnValue = (HEAP_PTR)pThread;
+    pThread->hasParam = 1;
+    return NULL;
 }
 
 function_space_specifier tAsyncCall* System_Threading_Thread_Start(PTR pThis_, PTR pParams, PTR pReturnValue) {
-	tThread *pThread = (tThread*)pThis_;
-	tMD_MethodDef *pStartMethod;
-	HEAP_PTR pStartObj;
-	PTR params[2];
-	U32 paramBytes = 0;
+    tThread *pThread = (tThread*)pThis_;
+    tMD_MethodDef *pStartMethod;
+    HEAP_PTR pStartObj;
+    PTR params[2];
+    U32 paramBytes = 0;
 
-	// This selects the RUNNING state (=0), without changing the IsBackground bit
-	pThread->state &= THREADSTATE_BACKGROUND;
+    // This selects the RUNNING state (=0), without changing the IsBackground bit
+    pThread->state &= THREADSTATE_BACKGROUND;
 
-	pStartMethod = Delegate_GetMethodAndStore(pThread->startDelegate, &pStartObj, NULL);
+    pStartMethod = Delegate_GetMethodAndStore(pThread->startDelegate, &pStartObj, NULL);
 
-	if (pStartObj != NULL) {
-		// If this method is not static, so it has a start object, then make it the first parameter
-		params[0] = (PTR)pStartObj;
-		paramBytes = sizeof(void*);
-	}
-	if (pThread->hasParam) {
-		// If this method has an object parameter (ParameterizedThreadStart)
-		params[paramBytes] = (PTR)pThread->param;
-		paramBytes += sizeof(void*);
-	}
+    if (pStartObj != NULL) {
+        // If this method is not static, so it has a start object, then make it the first parameter
+        params[0] = (PTR)pStartObj;
+        paramBytes = sizeof(void*);
+    }
+    if (pThread->hasParam) {
+        // If this method has an object parameter (ParameterizedThreadStart)
+        params[paramBytes] = (PTR)pThread->param;
+        paramBytes += sizeof(void*);
+    }
 
-	Thread_SetEntryPoint(pThread, pStartMethod->pMetaData, pStartMethod->tableIndex, (PTR)&params, paramBytes);
+    Thread_SetEntryPoint(pThread, pStartMethod->pMetaData, pStartMethod->tableIndex, (PTR)&params, paramBytes);
 
-	return NULL;
+    return NULL;
 }
 
 function_space_specifier tAsyncCall* System_Threading_Thread_Sleep(PTR pThis_, PTR pParams, PTR pReturnValue) {
-	tAsyncCall *pAsync = TMALLOC(tAsyncCall);
-	memset(pAsync, 0, sizeof(tAsyncCall));
+    tAsyncCall *pAsync = TMALLOC(tAsyncCall);
+    memset(pAsync, 0, sizeof(tAsyncCall));
 
-	pAsync->sleepTime = ((I32*)pParams)[0];
+    pAsync->sleepTime = ((I32*)pParams)[0];
 
-	return pAsync;
+    return pAsync;
 }
 
 function_space_specifier tAsyncCall* System_Threading_Thread_get_CurrentThread(PTR pThis_, PTR pParams, PTR pReturnValue) {
-	tThread *pThread = Thread_GetCurrent();
-	*(HEAP_PTR*)pReturnValue = (HEAP_PTR)pThread;
+    tThread *pThread = Thread_GetCurrent();
+    *(HEAP_PTR*)pReturnValue = (HEAP_PTR)pThread;
 
-	return NULL;
+    return NULL;
 }

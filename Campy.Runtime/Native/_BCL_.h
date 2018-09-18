@@ -16,76 +16,76 @@ struct tMD_MethodDef_;
 struct tThread_;
 
 struct _BCL_t {
-	
-	// Basics.
-	void * global_memory_heap;
-	void ** heap_list;
-	int kernel_base_index;
-	int count;
-	int padding;
-	int head_size;
-	int pointer_count;
+    
+    // Basics.
+    void * global_memory_heap;
+    void ** heap_list;
+    int kernel_base_index;
+    int count;
+    int padding;
+    int head_size;
+    int pointer_count;
 
-	// CLIFile.
-	struct tFilesLoaded_ * pFilesLoaded;
+    // CLIFile.
+    struct tFilesLoaded_ * pFilesLoaded;
 
-	// Filesystem
-	char** names;
-	char** files;
-	size_t* lengths;
-	bool init;
-	int initial_size;
+    // Filesystem
+    char** names;
+    char** files;
+    size_t* lengths;
+    bool init;
+    int initial_size;
 
-	// Finalizer
-	HEAP_PTR *ppToFinalize;
-	int toFinalizeOfs;
-	int toFinalizeCapacity;
+    // Finalizer
+    HEAP_PTR *ppToFinalize;
+    int toFinalizeOfs;
+    int toFinalizeCapacity;
 
-	// Gstring
-	char * ___strtok;
+    // Gstring
+    char * ___strtok;
 
-	// Heap
-	struct tHeapEntry_ *pHeapTreeRoot;
-	struct tHeapEntry_ *nil;
-	U32 trackHeapSize;
-	U32 heapSizeMax;
-	U32 numNodes;
-	U32 numCollections;
+    // Heap
+    struct tHeapEntry_ *pHeapTreeRoot;
+    struct tHeapEntry_ *nil;
+    U32 trackHeapSize;
+    U32 heapSizeMax;
+    U32 numNodes;
+    U32 numCollections;
 
-	// JIT_Execute
-	struct tJITCodeInfo_ * jitCodeInfo;
-	struct tJITCodeInfo_ * jitCodeGoNext;
+    // JIT_Execute
+    struct tJITCodeInfo_ * jitCodeInfo;
+    struct tJITCodeInfo_ * jitCodeGoNext;
 
-	// MetaData
-	unsigned int * tableRowSize;
+    // MetaData
+    unsigned int * tableRowSize;
 
-	// Pinvoke
-	struct tLoadedLib_ *pLoadedLibs;
+    // Pinvoke
+    struct tLoadedLib_ *pLoadedLibs;
 
-	// Sys
-	U32 logLevel;
-	char * methodName;
-	U32 mallocForeverSize;
+    // Sys
+    U32 logLevel;
+    char * methodName;
+    U32 mallocForeverSize;
 
-	// Type
-	struct tArrayTypeDefs_ *pArrays;
-	U8 genericArrayMethodsInited;
-	struct tMD_MethodDef_ ** ppGenericArrayMethods;
-	struct tMD_TypeDef_ **types;
-	U32 numInitTypes;
+    // Type
+    struct tArrayTypeDefs_ *pArrays;
+    U8 genericArrayMethodsInited;
+    struct tMD_MethodDef_ ** ppGenericArrayMethods;
+    struct tMD_TypeDef_ **types;
+    U32 numInitTypes;
 
-	// System.Console
-	U32 nextKeybC;
+    // System.Console
+    U32 nextKeybC;
 
-	// Thread
-	struct tThread_ *pAllThreads;
-	struct tThread_ *pCurrentThread;
+    // Thread
+    struct tThread_ *pAllThreads;
+    struct tThread_ *pCurrentThread;
 
-	// Type
-	int CorLibDone;
+    // Type
+    int CorLibDone;
 
-	// Options -- bitmap of whether to print debugging information.
-	U64 options;
+    // Options -- bitmap of whether to print debugging information.
+    U64 options;
 };
 
 #define BCL_DEBUG_PRINT_EVERYTHING 0x1

@@ -24,16 +24,16 @@
 
 typedef struct tRVA_Item_ tRVA_Item;
 struct tRVA_Item_ {
-	unsigned int baseAddress;
-	unsigned int size;
-	void *pData;
+    unsigned int baseAddress;
+    unsigned int size;
+    void *pData;
 
-	tRVA_Item *pNext;
+    tRVA_Item *pNext;
 };
 
 typedef struct tRVA_ tRVA;
 struct tRVA_ {
-	tRVA_Item *pFirstRVA;
+    tRVA_Item *pFirstRVA;
 };
 
 function_space_specifier tRVA* RVA();

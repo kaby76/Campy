@@ -87,18 +87,18 @@ typedef unsigned char U8;
 
 typedef union uConvDouble_ uConvDouble;
 union uConvDouble_ {
-	double d;
-	U64 u64;
-	struct {
-		U32 a;
-		U32 b;
-	} u32;
+    double d;
+    U64 u64;
+    struct {
+        U32 a;
+        U32 b;
+    } u32;
 };
 
 typedef union uConvFloat_ uConvFloat;
 union uConvFloat_ {
-	float f;
-	U32 u32;
+    float f;
+    U32 u32;
 };
 
 // other types!
@@ -112,13 +112,13 @@ typedef tAsyncCall* (*fnInternalCall)(PTR pThis_, PTR pParams, PTR pReturnValue)
 typedef U32 (*fnInternalCallCheck)(PTR pThis_, PTR pParams, PTR pReturnValue, tAsyncCall *pAsync);
 
 struct tAsyncCall_ {
-	// If this is a sleep call, then put the sleep time in ms here.
-	// -1 means it's not a sleep call. Inifite timeouts are not allowed.
-	I32 sleepTime;
-	// If this is a blocking IO call, then this is the function to poll to see if the result is available.
-	fnInternalCallCheck checkFn;
-	// A state pointer for general use for blocking IO calls.
-	PTR state;
-	// Not for most functions to use. Record the start time of this async call
-	U64 startTime;
+    // If this is a sleep call, then put the sleep time in ms here.
+    // -1 means it's not a sleep call. Inifite timeouts are not allowed.
+    I32 sleepTime;
+    // If this is a blocking IO call, then this is the function to poll to see if the result is available.
+    fnInternalCallCheck checkFn;
+    // A state pointer for general use for blocking IO calls.
+    PTR state;
+    // Not for most functions to use. Record the start time of this async call
+    U64 startTime;
 };

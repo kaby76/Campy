@@ -25,55 +25,55 @@
 #include "CLIFile.h"
 
 tRVA* RVA() {
-	tRVA *pRet;
-	pRet = TMALLOC(tRVA);
-	memset(pRet, 0, sizeof(tRVA));
-	return pRet;
+    tRVA *pRet;
+    pRet = TMALLOC(tRVA);
+    memset(pRet, 0, sizeof(tRVA));
+    return pRet;
 }
 
 tRVA_Item* RVA_Create(tRVA *pThis, void *pFile, void *pSectionHeader) {
-	tRVA_Item* pRet;
-	unsigned int rawOfs;
-	unsigned int rawSize;
+    tRVA_Item* pRet;
+    unsigned int rawOfs;
+    unsigned int rawSize;
 
-	pRet = TMALLOC(tRVA_Item);
-	memset(pRet, 0, sizeof(tRVA_Item));
-	
-	struct pe_section_header * psh = (struct pe_section_header *)pSectionHeader;
+    pRet = TMALLOC(tRVA_Item);
+    memset(pRet, 0, sizeof(tRVA_Item));
+    
+    struct pe_section_header * psh = (struct pe_section_header *)pSectionHeader;
 
-	pRet->baseAddress = *(unsigned int*)&((char*)pSectionHeader)[12];
-	pRet->size = *(unsigned int*)&((char*)pSectionHeader)[8];
-	pRet->pData = Gmalloc(pRet->size);
-	memset(pRet->pData, 0, pRet->size);
-	pRet->pNext = pThis->pFirstRVA;
-	pThis->pFirstRVA = pRet;
+    pRet->baseAddress = *(unsigned int*)&((char*)pSectionHeader)[12];
+    pRet->size = *(unsigned int*)&((char*)pSectionHeader)[8];
+    pRet->pData = Gmalloc(pRet->size);
+    memset(pRet->pData, 0, pRet->size);
+    pRet->pNext = pThis->pFirstRVA;
+    pThis->pFirstRVA = pRet;
 
-	rawOfs = *(unsigned int*)&((char*)pSectionHeader)[20];
-	rawSize = *(unsigned int*)&((char*)pSectionHeader)[16];
-	if (rawOfs > 0) {
-		if (rawSize > pRet->size) {
-			rawSize = pRet->size;
-		}
-		memcpy(pRet->pData, ((char*)pFile)+rawOfs, rawSize);
-	}
+    rawOfs = *(unsigned int*)&((char*)pSectionHeader)[20];
+    rawSize = *(unsigned int*)&((char*)pSectionHeader)[16];
+    if (rawOfs > 0) {
+        if (rawSize > pRet->size) {
+            rawSize = pRet->size;
+        }
+        memcpy(pRet->pData, ((char*)pFile)+rawOfs, rawSize);
+    }
 
-	return pRet;
+    return pRet;
 }
 
 void* RVA_FindData(tRVA *pThis, unsigned int rva) {
-	tRVA_Item *pRVA;
+    tRVA_Item *pRVA;
 
-	if (rva == 0) {
-		return NULL;
-	}
+    if (rva == 0) {
+        return NULL;
+    }
 
-	// This code follows directly outlined in section II.25 of ECMA 335.
-	pRVA = pThis->pFirstRVA;
-	while (pRVA != NULL) {
-		if (rva >= pRVA->baseAddress && rva < pRVA->baseAddress+pRVA->size) {
-			return (char*)(pRVA->pData) + (rva - pRVA->baseAddress);
-		}
-		pRVA = pRVA->pNext;
-	}
-	return NULL;
+    // This code follows directly outlined in section II.25 of ECMA 335.
+    pRVA = pThis->pFirstRVA;
+    while (pRVA != NULL) {
+        if (rva >= pRVA->baseAddress && rva < pRVA->baseAddress+pRVA->size) {
+            return (char*)(pRVA->pData) + (rva - pRVA->baseAddress);
+        }
+        pRVA = pRVA->pNext;
+    }
+    return NULL;
 }

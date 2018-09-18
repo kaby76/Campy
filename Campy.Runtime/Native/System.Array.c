@@ -42,18 +42,18 @@ struct tSystemArray_ {
 
 function_space_specifier U32 SystemArray_Length(void * p)
 {
-	tSystemArray *pArray = (tSystemArray*)p;
-	tMD_TypeDef *pArrayType;
-	U32 index, elementSize;
-	tMD_TypeDef *pElementType;
-	PTR pElement;
-	pArrayType = Heap_GetType((HEAP_PTR)p);
-	U64* p_len = &pArray->rank;
-	p_len++;
-	U64 len = 1;
-	for (int i = 0; i < pArray->rank; ++i)
-		len = len * (*p_len);
-	return (U32)len;
+    tSystemArray *pArray = (tSystemArray*)p;
+    tMD_TypeDef *pArrayType;
+    U32 index, elementSize;
+    tMD_TypeDef *pElementType;
+    PTR pElement;
+    pArrayType = Heap_GetType((HEAP_PTR)p);
+    U64* p_len = &pArray->rank;
+    p_len++;
+    U64 len = 1;
+    for (int i = 0; i < pArray->rank; ++i)
+        len = len * (*p_len);
+    return (U32)len;
 }
 
 function_space_specifier tAsyncCall* System_Array_Internal_GetLength(PTR pThis_, PTR pParams, PTR pReturnValue) {
@@ -352,11 +352,11 @@ function_space_specifier tAsyncCall* System_Array_Resize(PTR pThis_, PTR pParams
 
     pOldArray = (tSystemArray*)*ppArray_;
     U32 rank = *(&(pOldArray->rank));
-	if (rank > 1)
-	{
-		Gprintf("Trying to resize a multi-dimensional array. Cannot do, guy.");
-		__debugbreak();
-	}
+    if (rank > 1)
+    {
+        Gprintf("Trying to resize a multi-dimensional array. Cannot do, guy.");
+        __debugbreak();
+    }
     int len = *((&(pOldArray->rank)) + 1);
     oldSize = len;
 
@@ -503,19 +503,19 @@ function_space_specifier void SystemArray_LoadElementIndices(HEAP_PTR pThis_, U6
 
     pArrayTypeDef = Heap_GetType(pThis_);
     U32 elemSize = pArrayTypeDef->pArrayElementType->arrayElementSize;
-	int rank = pArray->rank;
+    int rank = pArray->rank;
     PTR beginning_of_elements = pArray->ptr_elements;
     PTR b1 = (PTR)&pArray->rank;
     U64 * beginning_of_lengths = ((U64*)b1) + 1;
 
-	U64 index = 0;
-	for (int d = 0; d < rank; ++d)
-	{
-		U64 x = beginning_of_lengths[d];
-		U32 y = (U32)x;
-		index = index * y;
-		index = index + indices[d];
-	}
+    U64 index = 0;
+    for (int d = 0; d < rank; ++d)
+    {
+        U64 x = beginning_of_lengths[d];
+        U32 y = (U32)x;
+        index = index * y;
+        index = index + indices[d];
+    }
 
     switch (elemSize)
     {
@@ -565,18 +565,18 @@ function_space_specifier void SystemArray_StoreElementIndices(HEAP_PTR pThis_, U
     U32 elemSize = pArrayTypeDef->pArrayElementType->arrayElementSize;
 
     PTR beginning_of_elements = pArray->ptr_elements;
-	int rank = pArray->rank;
+    int rank = pArray->rank;
     PTR b1 = (PTR)&pArray->rank;
     U64 * beginning_of_lengths = ((U64*)b1) + 1;
 
-	U64 index = 0;
-	for (int d = 0; d < rank; ++d)
-	{
-		U64 x = beginning_of_lengths[d];
-		U32 y = (U32)x;
-		index = index * y;
-		index = index + indices[d];
-	}
+    U64 index = 0;
+    for (int d = 0; d < rank; ++d)
+    {
+        U64 x = beginning_of_lengths[d];
+        U32 y = (U32)x;
+        index = index * y;
+        index = index + indices[d];
+    }
 
     switch (elemSize)
     {
@@ -625,18 +625,18 @@ function_space_specifier void SystemArray_LoadElementIndicesAddress(HEAP_PTR pTh
 
     pArrayTypeDef = Heap_GetType(pThis_);
     U32 element_size = pArrayTypeDef->pArrayElementType->arrayElementSize;
-	int rank = pArray->rank;
+    int rank = pArray->rank;
     PTR beginning_of_elements = pArray->ptr_elements;
     PTR b1 = (PTR)&pArray->rank;
     U64 * beginning_of_lengths = ((U64*)b1) + 1;
 
     U64 index = 0;
-	for (int d = 0; d < rank; ++d)
-	{
-		U64 x = beginning_of_lengths[d];
-		U32 y = (U32)x;
-		index = index * y;
-		index = index + indices[d];
+    for (int d = 0; d < rank; ++d)
+    {
+        U64 x = beginning_of_lengths[d];
+        U32 y = (U32)x;
+        index = index * y;
+        index = index + indices[d];
     }
     *value_address = (((U8*)(beginning_of_elements)) + index * element_size);
 }
@@ -670,15 +670,15 @@ function_space_specifier U32 SystemArray_GetNumBytes(HEAP_PTR pThis_, tMD_TypeDe
 
 function_space_specifier int SystemArray_GetRank(HEAP_PTR pThis_)
 {
-	tSystemArray *pArray = (tSystemArray*)pThis_;
-	U64 p_len = pArray->rank;
-	return p_len;
+    tSystemArray *pArray = (tSystemArray*)pThis_;
+    U64 p_len = pArray->rank;
+    return p_len;
 }
 
 function_space_specifier void SystemArray_SetRank(HEAP_PTR pThis_, int rank)
 {
-	tSystemArray *pArray = (tSystemArray*)pThis_;
-	pArray->rank = rank;
+    tSystemArray *pArray = (tSystemArray*)pThis_;
+    pArray->rank = rank;
 }
 
 function_space_specifier U64* SystemArray_GetDims(HEAP_PTR pThis_)

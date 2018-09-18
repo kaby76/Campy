@@ -25,8 +25,8 @@
 
 typedef struct tRuntimeType_ tRuntimeType;
 struct tRuntimeType_ {
-	// The pointer to the TypeDef object of this type.
-	tMD_TypeDef *pTypeDef;
+    // The pointer to the TypeDef object of this type.
+    tMD_TypeDef *pTypeDef;
 };
 
 function_space_specifier tAsyncCall* System_RuntimeType_get_Name(PTR pThis_, PTR pParams, PTR pReturnValue);

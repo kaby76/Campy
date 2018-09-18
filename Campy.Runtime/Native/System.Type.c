@@ -28,17 +28,17 @@
 #include "Type.h"
 
 function_space_specifier tAsyncCall* System_Type_GetTypeFromHandle(PTR pThis_, PTR pParams, PTR pReturnValue) {
-	tMD_TypeDef *pTypeDef = *(tMD_TypeDef**)pParams;
+    tMD_TypeDef *pTypeDef = *(tMD_TypeDef**)pParams;
 
-	*(HEAP_PTR*)pReturnValue = Type_GetTypeObject(pTypeDef);
+    *(HEAP_PTR*)pReturnValue = Type_GetTypeObject(pTypeDef);
 
-	return NULL;
+    return NULL;
 }
 
 function_space_specifier tAsyncCall* System_Type_get_IsValueType(PTR pThis_, PTR pParams, PTR pReturnValue) {
-	tRuntimeType *pRuntimeType = (tRuntimeType*)pThis_;
-	
-	*(U32*)pReturnValue = pRuntimeType->pTypeDef->isValueType;
+    tRuntimeType *pRuntimeType = (tRuntimeType*)pThis_;
+    
+    *(U32*)pReturnValue = pRuntimeType->pTypeDef->isValueType;
 
-	return NULL;
+    return NULL;
 }

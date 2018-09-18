@@ -122,30 +122,30 @@
 function_space_specifier  void gpuexit(int _Code);
 
 function_space_specifier size_t Gstrlen(
-	char const* _Str
-	);
+    char const* _Str
+    );
 
 function_space_specifier int Gsprintf(
-	char*       const _Buffer,
-	char const* const _Format,
-	...);
+    char*       const _Buffer,
+    char const* const _Format,
+    ...);
 
 function_space_specifier int Gprintf(
-	char const* const _Format,
-	...);
+    char const* const _Format,
+    ...);
 
 function_space_specifier void* Grealloc(
-	void*  _Block,
-	size_t _Size
-	);
+    void*  _Block,
+    size_t _Size
+    );
 
 function_space_specifier void* Gmalloc(
-	size_t _Size
-	);
+    size_t _Size
+    );
 
 function_space_specifier void Gfree(
-	void*  _Block
-	);
+    void*  _Block
+    );
 
 
 // Macro to help dereference parameters that are passed into an internal system

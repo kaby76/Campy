@@ -28,29 +28,29 @@ typedef struct tGenericMethodInstance_ tGenericMethodInstance;
 
 
 struct tGenericInstance_ {
-	// The tMD_TypeDef for this instance of this generic type
-	tMD_TypeDef *pInstanceTypeDef;
+    // The tMD_TypeDef for this instance of this generic type
+    tMD_TypeDef *pInstanceTypeDef;
 
-	// The next instantiation of this generic type
-	tGenericInstance *pNext;
+    // The next instantiation of this generic type
+    tGenericInstance *pNext;
 
-	// The number of type arguments for this instance
-	U32 numTypeArgs;
-	// The type arguments for this instantiation
-	tMD_TypeDef *pTypeArgs[0];
+    // The number of type arguments for this instance
+    U32 numTypeArgs;
+    // The type arguments for this instantiation
+    tMD_TypeDef *pTypeArgs[0];
 };
 
 struct tGenericMethodInstance_ {
-	// This instance method.
-	tMD_MethodDef *pInstanceMethodDef;
+    // This instance method.
+    tMD_MethodDef *pInstanceMethodDef;
 
-	// The next instantiation of this generic method
-	tGenericMethodInstance *pNext;
+    // The next instantiation of this generic method
+    tGenericMethodInstance *pNext;
 
-	// The number of type arguments for this instance
-	U32 numTypeArgs;
-	// The method type arguments for this instance
-	tMD_TypeDef *pTypeArgs[0];
+    // The number of type arguments for this instance
+    U32 numTypeArgs;
+    // The method type arguments for this instance
+    tMD_TypeDef *pTypeArgs[0];
 };
 
 function_space_specifier void Generic_GetHeapRoots(tHeapRoots *pHeapRoots, tMD_TypeDef *pTypeDef);

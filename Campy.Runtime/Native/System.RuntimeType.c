@@ -31,122 +31,122 @@
 #include "System.Array.h"
 
 function_space_specifier HEAP_PTR RuntimeType_New(tMD_TypeDef *pTypeDef) {
-	tRuntimeType *pRuntimeType;
+    tRuntimeType *pRuntimeType;
 
-	pRuntimeType = (tRuntimeType*)Heap_AllocType(_bcl_->types[TYPE_SYSTEM_RUNTIMETYPE]);
-	Heap_MakeUndeletable((HEAP_PTR)pRuntimeType);
-	pRuntimeType->pTypeDef = pTypeDef;
+    pRuntimeType = (tRuntimeType*)Heap_AllocType(_bcl_->types[TYPE_SYSTEM_RUNTIMETYPE]);
+    Heap_MakeUndeletable((HEAP_PTR)pRuntimeType);
+    pRuntimeType->pTypeDef = pTypeDef;
 
-	return (HEAP_PTR)pRuntimeType;
+    return (HEAP_PTR)pRuntimeType;
 }
 
 function_space_specifier tAsyncCall* System_RuntimeType_get_Name(PTR pThis_, PTR pParams, PTR pReturnValue) {
-	tRuntimeType *pRuntimeType = (tRuntimeType*)pThis_;
-	HEAP_PTR strResult;
+    tRuntimeType *pRuntimeType = (tRuntimeType*)pThis_;
+    HEAP_PTR strResult;
 
-	strResult = SystemString_FromCharPtrASCII(pRuntimeType->pTypeDef->name);
-	*(HEAP_PTR*)pReturnValue = strResult;
+    strResult = SystemString_FromCharPtrASCII(pRuntimeType->pTypeDef->name);
+    *(HEAP_PTR*)pReturnValue = strResult;
 
-	return NULL;
+    return NULL;
 }
 
 function_space_specifier tAsyncCall* System_RuntimeType_get_Namespace(PTR pThis_, PTR pParams, PTR pReturnValue) {
-	tRuntimeType *pRuntimeType = (tRuntimeType*)pThis_;
-	HEAP_PTR strResult;
+    tRuntimeType *pRuntimeType = (tRuntimeType*)pThis_;
+    HEAP_PTR strResult;
 
-	strResult = SystemString_FromCharPtrASCII(pRuntimeType->pTypeDef->nameSpace);
-	*(HEAP_PTR*)pReturnValue = strResult;
+    strResult = SystemString_FromCharPtrASCII(pRuntimeType->pTypeDef->nameSpace);
+    *(HEAP_PTR*)pReturnValue = strResult;
 
-	return NULL;
+    return NULL;
 }
 
 function_space_specifier tAsyncCall* System_RuntimeType_GetNestingParentType(PTR pThis_, PTR pParams, PTR pReturnValue) {
-	tRuntimeType *pRuntimeType = (tRuntimeType*)pThis_;
-	tMD_TypeDef *pNestingParentType;
-	
-	pNestingParentType = pRuntimeType->pTypeDef->pNestedIn;
-	if (pNestingParentType == NULL) {
-		*(HEAP_PTR*)pReturnValue = NULL;
-	} else {
-		*(HEAP_PTR*)pReturnValue = Type_GetTypeObject(pNestingParentType);
-	}
+    tRuntimeType *pRuntimeType = (tRuntimeType*)pThis_;
+    tMD_TypeDef *pNestingParentType;
+    
+    pNestingParentType = pRuntimeType->pTypeDef->pNestedIn;
+    if (pNestingParentType == NULL) {
+        *(HEAP_PTR*)pReturnValue = NULL;
+    } else {
+        *(HEAP_PTR*)pReturnValue = Type_GetTypeObject(pNestingParentType);
+    }
 
-	return NULL;
+    return NULL;
 }
 
 function_space_specifier tAsyncCall* System_RuntimeType_get_BaseType(PTR pThis_, PTR pParams, PTR pReturnValue) {
-	tRuntimeType *pRuntimeType = (tRuntimeType*)pThis_;
-	tMD_TypeDef *pBaseType = pRuntimeType->pTypeDef->pParent;
+    tRuntimeType *pRuntimeType = (tRuntimeType*)pThis_;
+    tMD_TypeDef *pBaseType = pRuntimeType->pTypeDef->pParent;
 
-	if (pBaseType == NULL) {
-		*(HEAP_PTR*)pReturnValue = NULL;
-	} else {
-		*(HEAP_PTR*)pReturnValue = Type_GetTypeObject(pBaseType);
-	}
+    if (pBaseType == NULL) {
+        *(HEAP_PTR*)pReturnValue = NULL;
+    } else {
+        *(HEAP_PTR*)pReturnValue = Type_GetTypeObject(pBaseType);
+    }
 
-	return NULL;
+    return NULL;
 }
 
 function_space_specifier tAsyncCall* System_RuntimeType_get_IsEnum(PTR pThis_, PTR pParams, PTR pReturnValue) {
-	tMD_TypeDef *pType = ((tRuntimeType*)pThis_)->pTypeDef;
+    tMD_TypeDef *pType = ((tRuntimeType*)pThis_)->pTypeDef;
 
-	U32 isEnum = pType->pParent == _bcl_->types[TYPE_SYSTEM_ENUM];
-	*(U32*)pReturnValue = isEnum;
+    U32 isEnum = pType->pParent == _bcl_->types[TYPE_SYSTEM_ENUM];
+    *(U32*)pReturnValue = isEnum;
 
-	return NULL;
+    return NULL;
 }
 
 function_space_specifier tAsyncCall* System_RuntimeType_get_IsGenericType(PTR pThis_, PTR pParams, PTR pReturnValue) {
-	tMD_TypeDef *pType = ((tRuntimeType*)pThis_)->pTypeDef;
+    tMD_TypeDef *pType = ((tRuntimeType*)pThis_)->pTypeDef;
 
-	*(U32*)pReturnValue = TYPE_ISGENERICINSTANCE(pType) || pType->isGenericDefinition;
-	return NULL;
+    *(U32*)pReturnValue = TYPE_ISGENERICINSTANCE(pType) || pType->isGenericDefinition;
+    return NULL;
 }
 
 function_space_specifier tAsyncCall* System_RuntimeType_Internal_GetGenericTypeDefinition(PTR pThis_, PTR pParams, PTR pReturnValue) {
-	tMD_TypeDef *pType = ((tRuntimeType*)pThis_)->pTypeDef;
+    tMD_TypeDef *pType = ((tRuntimeType*)pThis_)->pTypeDef;
 
-	if (TYPE_ISGENERICINSTANCE(pType)) {
-		pType = pType->pGenericDefinition;
-	}
+    if (TYPE_ISGENERICINSTANCE(pType)) {
+        pType = pType->pGenericDefinition;
+    }
 
-	*(HEAP_PTR*)pReturnValue = Type_GetTypeObject(pType);
+    *(HEAP_PTR*)pReturnValue = Type_GetTypeObject(pType);
 
-	return NULL;
+    return NULL;
 }
 
 function_space_specifier tAsyncCall* System_RuntimeType_GetGenericArguments(PTR pThis_, PTR pParams, PTR pReturnValue) {
-	tMD_TypeDef *pType = ((tRuntimeType*)pThis_)->pTypeDef;
-	tMD_TypeDef *pCoreType;
-	U32 i, argCount = 0;
-	HEAP_PTR ret;
+    tMD_TypeDef *pType = ((tRuntimeType*)pThis_)->pTypeDef;
+    tMD_TypeDef *pCoreType;
+    U32 i, argCount = 0;
+    HEAP_PTR ret;
 
-	pCoreType = pType->pGenericDefinition;
-	if (pCoreType != NULL) {
-		// Find the core instantiation of this type
-		tGenericInstance *pInst = pCoreType->pGenericInstances;
-		while (pInst != NULL) {
-			if (pInst->pInstanceTypeDef == pType) {
-				// Found it!
-				argCount = pInst->numTypeArgs;
-			}
-			pInst = pInst->pNext;
-		}
-	}
+    pCoreType = pType->pGenericDefinition;
+    if (pCoreType != NULL) {
+        // Find the core instantiation of this type
+        tGenericInstance *pInst = pCoreType->pGenericInstances;
+        while (pInst != NULL) {
+            if (pInst->pInstanceTypeDef == pType) {
+                // Found it!
+                argCount = pInst->numTypeArgs;
+            }
+            pInst = pInst->pNext;
+        }
+    }
 
-	U32 v = argCount;
-	ret = SystemArray_NewVector(_bcl_->types[TYPE_SYSTEM_ARRAY_TYPE], 1, &v);
-	// Allocate to return value straight away, so it cannot be GCed
-	*(HEAP_PTR*)pReturnValue = ret;
+    U32 v = argCount;
+    ret = SystemArray_NewVector(_bcl_->types[TYPE_SYSTEM_ARRAY_TYPE], 1, &v);
+    // Allocate to return value straight away, so it cannot be GCed
+    *(HEAP_PTR*)pReturnValue = ret;
 
-	for (i=0; i<argCount; i++) {
-		HEAP_PTR argType = Type_GetTypeObject(pType->ppClassTypeArgs[i]);
-		SystemArray_StoreElement(ret, i, (PTR)&argType);
-	}
+    for (i=0; i<argCount; i++) {
+        HEAP_PTR argType = Type_GetTypeObject(pType->ppClassTypeArgs[i]);
+        SystemArray_StoreElement(ret, i, (PTR)&argType);
+    }
 
-	return NULL;
+    return NULL;
 }
 
 function_space_specifier tMD_TypeDef* RuntimeType_DeRef(PTR type) {
-	return ((tRuntimeType*)type)->pTypeDef;
+    return ((tRuntimeType*)type)->pTypeDef;
 }

@@ -32,49 +32,49 @@
 
 typedef struct tDelegate_ tDelegate;
 struct tDelegate_ {
-	// These must match the definition in Delegate.cs
-	// The target object, null if calling a static method
-	HEAP_PTR targetObj;
-	// The target method
-	tMD_MethodDef *pTargetMethod;
-	// The next delegate in a multicast delegate
-	tDelegate *pNext;
+    // These must match the definition in Delegate.cs
+    // The target object, null if calling a static method
+    HEAP_PTR targetObj;
+    // The target method
+    tMD_MethodDef *pTargetMethod;
+    // The next delegate in a multicast delegate
+    tDelegate *pNext;
 };
 
 function_space_specifier tMD_MethodDef* Delegate_GetMethod(void *pThis_) {
-	tDelegate *pThis = (tDelegate*)pThis_;
+    tDelegate *pThis = (tDelegate*)pThis_;
 
-	return pThis->pTargetMethod;
+    return pThis->pTargetMethod;
 }
 
 function_space_specifier tMD_MethodDef* Delegate_GetMethodAndStore(void *pThis_, HEAP_PTR *pTargetObj, void **ppNextDelegate) {
-	tDelegate *pThis = (tDelegate*)pThis_;
+    tDelegate *pThis = (tDelegate*)pThis_;
 
-	*pTargetObj = pThis->targetObj;
-	if (ppNextDelegate != NULL) {
-		*ppNextDelegate = pThis->pNext;
-	}
-	return pThis->pTargetMethod;
+    *pTargetObj = pThis->targetObj;
+    if (ppNextDelegate != NULL) {
+        *ppNextDelegate = pThis->pNext;
+    }
+    return pThis->pTargetMethod;
 }
 
 function_space_specifier static tAsyncCall* ctor(PTR pThis_, PTR pParams, PTR pReturnValue) {
-	// Note that the 'this' object is already allocated because this method is not
-	// marked as 'InternalMethod' - it is marked as 'runtime'
-	tDelegate *pThis = (tDelegate*)pThis_;
+    // Note that the 'this' object is already allocated because this method is not
+    // marked as 'InternalMethod' - it is marked as 'runtime'
+    tDelegate *pThis = (tDelegate*)pThis_;
 
-	void **p = (void**)pParams;
-	pThis->targetObj = *(HEAP_PTR*)p++;
-	pThis->pTargetMethod = *(tMD_MethodDef**)p++;
-	pThis->pNext = NULL;
+    void **p = (void**)pParams;
+    pThis->targetObj = *(HEAP_PTR*)p++;
+    pThis->pTargetMethod = *(tMD_MethodDef**)p++;
+    pThis->pNext = NULL;
 
-	return NULL;
+    return NULL;
 }
 
 function_space_specifier fnInternalCall Map_Delegate(tMD_MethodDef *pMethod) {
-	// Note that it is not neccessary to check argument types here, as delegates are very tightly controlled
-	if (Gstrcmp(pMethod->name, ".ctor") == 0) {
-		return ctor;
-	}
+    // Note that it is not neccessary to check argument types here, as delegates are very tightly controlled
+    if (Gstrcmp(pMethod->name, ".ctor") == 0) {
+        return ctor;
+    }
 
-	return NULL;
+    return NULL;
 }

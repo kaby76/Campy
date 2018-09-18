@@ -33,51 +33,51 @@
 // If the 2nd parameter is NULL, then don't include it!
 // The type of the objects will always be identical.
 function_space_specifier tAsyncCall* System_ValueType_GetFields(PTR pThis_, PTR pParams, PTR pReturnValue) {
-	HEAP_PTR o1,o2, ret;
-	tMD_TypeDef *pType;
-	tMetaData *pMetaData;
-	U32 i, retOfs, numInstanceFields;
+    HEAP_PTR o1,o2, ret;
+    tMD_TypeDef *pType;
+    tMetaData *pMetaData;
+    U32 i, retOfs, numInstanceFields;
 
-	o1 = ((HEAP_PTR*)pParams)[0];
-	o2 = ((HEAP_PTR*)pParams)[1];
-	pType = Heap_GetType(o1);
-	pMetaData = pType->pMetaData;
+    o1 = ((HEAP_PTR*)pParams)[0];
+    o2 = ((HEAP_PTR*)pParams)[1];
+    pType = Heap_GetType(o1);
+    pMetaData = pType->pMetaData;
 
-	numInstanceFields = 0;
-	for (i=0; i<pType->numFields; i++) {
-		if (!FIELD_ISSTATIC(pType->ppFields[i])) {
-			numInstanceFields++;
-		}
-	}
+    numInstanceFields = 0;
+    for (i=0; i<pType->numFields; i++) {
+        if (!FIELD_ISSTATIC(pType->ppFields[i])) {
+            numInstanceFields++;
+        }
+    }
 
-	U32 v = numInstanceFields << ((o2 == NULL) ? 0 : 1);
-	ret = SystemArray_NewVector(_bcl_->types[TYPE_SYSTEM_ARRAY_OBJECT], 1, &v);
+    U32 v = numInstanceFields << ((o2 == NULL) ? 0 : 1);
+    ret = SystemArray_NewVector(_bcl_->types[TYPE_SYSTEM_ARRAY_OBJECT], 1, &v);
 
-	retOfs = 0;
-	for (i=0; i<pType->numFields; i++) {
-		tMD_FieldDef *pField;
+    retOfs = 0;
+    for (i=0; i<pType->numFields; i++) {
+        tMD_FieldDef *pField;
 
-		pField = pType->ppFields[i];
-		if (!FIELD_ISSTATIC(pField)) {
-			if (pField->pType->isValueType) {
-				HEAP_PTR boxed;
+        pField = pType->ppFields[i];
+        if (!FIELD_ISSTATIC(pField)) {
+            if (pField->pType->isValueType) {
+                HEAP_PTR boxed;
 
-				boxed = Heap_Box(pField->pType, o1 + pField->memOffset);
-				SystemArray_StoreElement(ret, retOfs++, (PTR)&boxed);
-				if (o2 != NULL) {
-					boxed = Heap_Box(pField->pType, o2 + pField->memOffset);
-					SystemArray_StoreElement(ret, retOfs++, (PTR)&boxed);
-				}
-			} else {
-				SystemArray_StoreElement(ret, retOfs++, o1 + pField->memOffset);
-				if (o2 != NULL) {
-					SystemArray_StoreElement(ret, retOfs++, o2 + pField->memOffset);
-				}
-			}
-		}
-	}
+                boxed = Heap_Box(pField->pType, o1 + pField->memOffset);
+                SystemArray_StoreElement(ret, retOfs++, (PTR)&boxed);
+                if (o2 != NULL) {
+                    boxed = Heap_Box(pField->pType, o2 + pField->memOffset);
+                    SystemArray_StoreElement(ret, retOfs++, (PTR)&boxed);
+                }
+            } else {
+                SystemArray_StoreElement(ret, retOfs++, o1 + pField->memOffset);
+                if (o2 != NULL) {
+                    SystemArray_StoreElement(ret, retOfs++, o2 + pField->memOffset);
+                }
+            }
+        }
+    }
 
-	*(HEAP_PTR*)pReturnValue = ret;
+    *(HEAP_PTR*)pReturnValue = ret;
 
-	return NULL;
+    return NULL;
 }

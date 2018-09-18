@@ -38,22 +38,22 @@ function_space_specifier tAsyncCall* System_DateTime_InternalUtcNow(PTR pThis_, 
 
 #ifdef _MSC_VER
 
-	//FILETIME ft;
+    //FILETIME ft;
 
-	//GetSystemTimeAsFileTime(&ft);
+    //GetSystemTimeAsFileTime(&ft);
 
-	//*(U64*)pReturnValue = ((U64)ft.dwHighDateTime) * 0x100000000L + ((U64)ft.dwLowDateTime) + TicksAtFileTimeEpoch;
+    //*(U64*)pReturnValue = ((U64)ft.dwHighDateTime) * 0x100000000L + ((U64)ft.dwLowDateTime) + TicksAtFileTimeEpoch;
 
 #else
 
-	struct timeval tp;
+    struct timeval tp;
 
-	gettimeofday(&tp, NULL);
+    gettimeofday(&tp, NULL);
 
-	*(U64*)pReturnValue = ((U64)tp.tv_sec) * TicksPerSecond + ((U64)tp.tv_usec) * TicksPerMicroSecond
-		+ TicksAtUnixEpoch;
+    *(U64*)pReturnValue = ((U64)tp.tv_sec) * TicksPerSecond + ((U64)tp.tv_usec) * TicksPerMicroSecond
+        + TicksAtUnixEpoch;
 
 #endif
 
-	return NULL;
+    return NULL;
 }

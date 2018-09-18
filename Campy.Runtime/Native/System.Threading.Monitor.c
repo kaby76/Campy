@@ -27,57 +27,57 @@
 #include "Types.h"
 
 function_space_specifier static U32 Internal_TryEntry_Check(PTR pThis_, PTR pParams, PTR pReturnValue, tAsyncCall *pAsync) {
-	HEAP_PTR pObj = ((HEAP_PTR*)pParams)[0];
-	I32 timeout = ((I32*)pParams)[1];
-	U32 ret = Heap_SyncTryEnter(pObj);
-	U64 now;
-	if (ret) {
-		// Lock achieved, so return that we've got it, and unblock this thread
-		*(U32*)pReturnValue = 1;
-		return 1;
-	}
-	// Can't get lock - check timeout
-	if (timeout < 0) {
-		// Infinite timeout, continue to block thread
-		return 0;
-	}
-	if (timeout == 0) {
-		// Timeout is 0, so always unblock, and return failure to get lock
-		*(U32*)pReturnValue = 0;
-		return 1;
-	}
-	if (pAsync == NULL) {
-		// This is the first time, so it can always block thread and wait
-		return 0;
-	}
-	now = msTime();
-	if ((I32)(now - pAsync->startTime) > timeout) {
-		// Lock not got, but timeout has expired, unblock thread and return no lock
-		*(U32*)pReturnValue = 0;
-		return 1;
-	}
-	// Continue waiting, timeout not yet expired
-	return 0;
+    HEAP_PTR pObj = ((HEAP_PTR*)pParams)[0];
+    I32 timeout = ((I32*)pParams)[1];
+    U32 ret = Heap_SyncTryEnter(pObj);
+    U64 now;
+    if (ret) {
+        // Lock achieved, so return that we've got it, and unblock this thread
+        *(U32*)pReturnValue = 1;
+        return 1;
+    }
+    // Can't get lock - check timeout
+    if (timeout < 0) {
+        // Infinite timeout, continue to block thread
+        return 0;
+    }
+    if (timeout == 0) {
+        // Timeout is 0, so always unblock, and return failure to get lock
+        *(U32*)pReturnValue = 0;
+        return 1;
+    }
+    if (pAsync == NULL) {
+        // This is the first time, so it can always block thread and wait
+        return 0;
+    }
+    now = msTime();
+    if ((I32)(now - pAsync->startTime) > timeout) {
+        // Lock not got, but timeout has expired, unblock thread and return no lock
+        *(U32*)pReturnValue = 0;
+        return 1;
+    }
+    // Continue waiting, timeout not yet expired
+    return 0;
 }
 
 function_space_specifier tAsyncCall* System_Threading_Monitor_Internal_TryEnter(PTR pThis_, PTR pParams, PTR pReturnValue) {
-	U32 ok = Internal_TryEntry_Check(pThis_, pParams, pReturnValue, NULL);
-	tAsyncCall *pAsync;
-	if (ok) {
-		// Got lock already, so don't block thread
-		return NULL;
-	}
-	pAsync = TMALLOC(tAsyncCall);
-	memset(pAsync, 0, sizeof(tAsyncCall));
+    U32 ok = Internal_TryEntry_Check(pThis_, pParams, pReturnValue, NULL);
+    tAsyncCall *pAsync;
+    if (ok) {
+        // Got lock already, so don't block thread
+        return NULL;
+    }
+    pAsync = TMALLOC(tAsyncCall);
+    memset(pAsync, 0, sizeof(tAsyncCall));
 
-	pAsync->sleepTime = -1;
-	pAsync->checkFn = Internal_TryEntry_Check;
-	pAsync->state = NULL;
-	return pAsync;
+    pAsync->sleepTime = -1;
+    pAsync->checkFn = Internal_TryEntry_Check;
+    pAsync->state = NULL;
+    return pAsync;
 }
 
 function_space_specifier tAsyncCall* System_Threading_Monitor_Internal_Exit(PTR pThis_, PTR pParams, PTR pReturnValue) {
-	HEAP_PTR pObj = ((HEAP_PTR*)pParams)[0];
-	Heap_SyncExit(pObj);
-	return ASYNC_LOCK_EXIT;
+    HEAP_PTR pObj = ((HEAP_PTR*)pParams)[0];
+    Heap_SyncExit(pObj);
+    return ASYNC_LOCK_EXIT;
 }

@@ -31,14 +31,14 @@ extern U64 gcTotalTime;
 #endif
 
 struct tHeapRootEntry_ {
-	U32 numPointers; // The number of pointers within this memory area
-	void **pMem;
+    U32 numPointers; // The number of pointers within this memory area
+    void **pMem;
 };
 
 struct tHeapRoots_ {
-	U32 capacity;
-	U32 num;
-	tHeapRootEntry *pHeapEntries;
+    U32 capacity;
+    U32 num;
+    tHeapRootEntry *pHeapEntries;
 };
 
 function_space_specifier void Heap_Init();

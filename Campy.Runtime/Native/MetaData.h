@@ -29,52 +29,52 @@
 #define MAX_TABLES 48
 
 struct tMetaDataStrings_ {
-	// The start of the string heap
-	unsigned char *pStart;
+    // The start of the string heap
+    unsigned char *pStart;
 };
 typedef struct tMetaDataStrings_ tMetaDataStrings;
 
 struct tMetaDataBlobs_ {
-	// The start of the blob heap
-	unsigned char *pStart;
+    // The start of the blob heap
+    unsigned char *pStart;
 };
 typedef struct tMetaDataBlobs_ tMetaDataBlobs;
 
 struct tMetaDataUserStrings_ {
-	// The start of the user string heap
-	unsigned char *pStart;
+    // The start of the user string heap
+    unsigned char *pStart;
 };
 typedef struct tMetaDataUserStrings_ tMetaDataUserStrings;
 
 struct tMetaDataGUIDs_ {
-	// The total number of GUIDs
-	unsigned int numGUIDs;
-	// Pointer to the first GUID
-	unsigned char *pGUID1;
+    // The total number of GUIDs
+    unsigned int numGUIDs;
+    // Pointer to the first GUID
+    unsigned char *pGUID1;
 };
 typedef struct tMetaDataGUIDs_ tMetaDataGUIDs;
 
 typedef struct tTables_ tTables;
 struct tTables_ {
-	// The number of rows in each table
-	unsigned int numRows[MAX_TABLES];
-	// The table data itself. 64 pointers to table data
-	// See MetaDataTables.h for each table structure
-	void* data[MAX_TABLES];
+    // The number of rows in each table
+    unsigned int numRows[MAX_TABLES];
+    // The table data itself. 64 pointers to table data
+    // See MetaDataTables.h for each table structure
+    void* data[MAX_TABLES];
 
-	// Should each coded index lookup type use 16 or 32 bit indexes?
-	unsigned char codedIndex32Bit[13];
+    // Should each coded index lookup type use 16 or 32 bit indexes?
+    unsigned char codedIndex32Bit[13];
 };
 
 typedef struct tMetaData_ tMetaData;
 struct tMetaData_ {
-	tMetaDataStrings strings;
-	tMetaDataBlobs blobs;
-	tMetaDataUserStrings userStrings;
-	tMetaDataGUIDs GUIDs;
-	tTables tables;
-	unsigned char index32BitString, index32BitBlob, index32BitGUID;
-	char * file_name;
+    tMetaDataStrings strings;
+    tMetaDataBlobs blobs;
+    tMetaDataUserStrings userStrings;
+    tMetaDataGUIDs GUIDs;
+    tTables tables;
+    unsigned char index32BitString, index32BitBlob, index32BitGUID;
+    char * file_name;
 };
 
 #define TYPEATTRIBUTES_INTERFACE 0x20
@@ -128,21 +128,21 @@ typedef struct tInterfaceMap_ tInterfaceMap;
 #include "MetaDataTables.h"
 
 struct tParameter_ {
-	// The type of the parameter
-	tMD_TypeDef *pTypeDef;
-	// The offset for this parameter into the paramater stack (in bytes)
-	U32 offset;
-	// The size of this value on the parameter stack (in bytes)
-	U32 size;
+    // The type of the parameter
+    tMD_TypeDef *pTypeDef;
+    // The offset for this parameter into the paramater stack (in bytes)
+    U32 offset;
+    // The size of this value on the parameter stack (in bytes)
+    U32 size;
 };
 
 struct tInterfaceMap_ {
-	// The interface this is implementing
-	tMD_TypeDef *pInterface;
-	// The vTable for this interface implementation
-	U32 *pVTableLookup;
-	// The direct method table for this interface. This is only used for special auto-generated interfaces
-	tMD_MethodDef **ppMethodVLookup;
+    // The interface this is implementing
+    tMD_TypeDef *pInterface;
+    // The vTable for this interface implementation
+    U32 *pVTableLookup;
+    // The direct method table for this interface. This is only used for special auto-generated interfaces
+    tMD_MethodDef **ppMethodVLookup;
 };
 
 // static functions
