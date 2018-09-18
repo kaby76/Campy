@@ -194,7 +194,7 @@ namespace ConsoleApp4
         static void Main(string[] args)
         {
             StartDebugging();
-            int q = 1;
+            byte[] q = new byte[10];
             string foo = "hi there";
             int[] a = new int[3];
             mystuff ms;
@@ -206,29 +206,11 @@ namespace ConsoleApp4
             ms._defMaxPrecision = 4;
             ms._defByteSize = 5;
             ms._digits = new byte[10];
-            var t = ms.GetType();
-            var assembly_qualified_name = t.AssemblyQualifiedName;
-            var t2 = Type.GetType("ConsoleApp4.Program+mystuff",
-                (name) =>
-                {
-                    // Returns the assembly of the type by enumerating loaded assemblies
-                    // in the app domain            
-                    return AppDomain.CurrentDomain.GetAssemblies().Where(z => z.FullName == name.FullName).FirstOrDefault();
-                },
-                null);
-            var t3 = Type.GetType("ConsoleApp4.Program.mystuff",
-                (name) =>
-                {
-                    // Returns the assembly of the type by enumerating loaded assemblies
-                    // in the app domain            
-                    return AppDomain.CurrentDomain.GetAssemblies().Where(z => z.FullName == name.FullName).FirstOrDefault();
-                },
-                null);
-
             Campy.Parallel.For(3, i =>
             {
                 var bar = foo;
-                q = ms._decPointPos;
+                ms._digits[i] = (byte)i;
+                q = ms._digits;
                // System.Console.WriteLine(i.ToString());
             });
         }
