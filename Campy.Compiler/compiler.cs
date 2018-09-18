@@ -765,14 +765,14 @@ namespace Campy.Compiler
             {
                 CFG.Vertex bb = ob;
 
-                if (Campy.Utils.Options.IsOn("state_computation_trace"))
+                if (Campy.Utils.Options.IsOn("detailed_llvm_computation_trace"))
                     System.Console.WriteLine("State computations for node " + bb.Name);
 
                 // Create new stack state with predecessor information, basic block/function
                 // information.
                 var state_in = new STATE<VALUE, StackQueue<VALUE>>(visited, states_in, states_out, bb, InitState);
 
-                if (Campy.Utils.Options.IsOn("state_computation_trace"))
+                if (Campy.Utils.Options.IsOn("detailed_llvm_computation_trace"))
                 {
                     System.Console.WriteLine("state in");
                     state_in.OutputTrace(new String(' ', 4));
@@ -782,7 +782,7 @@ namespace Campy.Compiler
                 states_in[bb] = state_in;
                 states_out[bb] = state_out;
 
-                if (Campy.Utils.Options.IsOn("state_computation_trace"))
+                if (Campy.Utils.Options.IsOn("detailed_llvm_computation_trace"))
                 {
                     bb.OutputEntireNode();
                     state_in.OutputTrace(new String(' ', 4));
@@ -792,11 +792,11 @@ namespace Campy.Compiler
                 for (int i = 0; i < bb.Instructions.Count; ++i)
                 {
                     var inst = bb.Instructions[i];
-                    if (Campy.Utils.Options.IsOn("jit_trace"))
+                    if (Campy.Utils.Options.IsOn("detailed_llvm_computation_trace"))
                         System.Console.WriteLine(inst);
                     inst.DebuggerInfo();
                     inst.Convert(state_out);
-                    if (Campy.Utils.Options.IsOn("state_computation_trace"))
+                    if (Campy.Utils.Options.IsOn("detailed_llvm_computation_trace"))
                         state_out.OutputTrace(new String(' ', 4));
                     last_inst = inst;
                 }
@@ -819,7 +819,7 @@ namespace Campy.Compiler
             // Finally, update phi functions with "incoming" information from predecessors.
             foreach (var bb in order)
             {
-                if (Campy.Utils.Options.IsOn("state_computation_trace"))
+                if (Campy.Utils.Options.IsOn("detailed_llvm_computation_trace"))
                     System.Console.WriteLine("Working on phis for node " + bb.Name);
                 int size = states_in[bb]._stack.Count;
                 // Annoyingly, the stack values can be of different types.
@@ -828,7 +828,7 @@ namespace Campy.Compiler
                 {
                     var count = bb._graph.Predecessors(bb).Count();
                     if (count < 2) continue;
-                    if (Campy.Utils.Options.IsOn("state_computation_trace"))
+                    if (Campy.Utils.Options.IsOn("detailed_llvm_computation_trace"))
                         System.Console.WriteLine("phi nodes need for "
                                                  + bb.Name + " for stack depth " + i);
                     ValueRef res;
@@ -841,7 +841,7 @@ namespace Campy.Compiler
                     for (int c = 0; c < count; ++c)
                     {
                         var p = bb._graph.PredecessorEdges(bb).ToList()[c].From;
-                        if (Campy.Utils.Options.IsOn("state_computation_trace"))
+                        if (Campy.Utils.Options.IsOn("detailed_llvm_computation_trace"))
                             System.Console.WriteLine("Adding in phi for pred state "
                                                      + p.Name);
                         var vr = states_out[p]._stack[i];
@@ -867,7 +867,7 @@ namespace Campy.Compiler
                 }
             }
 
-            if (Campy.Utils.Options.IsOn("state_computation_trace"))
+            if (Campy.Utils.Options.IsOn("detailed_llvm_computation_trace"))
             {
                 foreach (var ob in order)
                 {

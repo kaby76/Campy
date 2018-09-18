@@ -1464,6 +1464,17 @@
                         {
                         }
                     }
+                    if (to_element_type.FullName.Equals("System.Byte"))
+                    {
+                        object o = Marshal.PtrToStructure<System.Byte>(mem);
+                        try
+                        {
+                            to_cpu.SetValue(o, index);
+                        }
+                        catch
+                        {
+                        }
+                    }
                 }
             }
         }
