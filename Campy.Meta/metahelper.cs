@@ -453,7 +453,23 @@ namespace Campy.Meta
 
         public static System.Type ToSystemType(this TypeReference type)
         {
-            var to_type = Type.GetType(type.FullName);
+            string non_ecma_name = type.FullName.Replace("/", "+");
+            var assembly_qualified_name = non_ecma_name + "," + System.IO.Path.GetFileNameWithoutExtension(type.Scope.Name);
+
+            var to_type = Type.GetType(assembly_qualified_name,
+                (AssemblyName name) =>
+                {
+                    // Returns the assembly of the type by enumerating loaded assemblies
+                    // in the app domain   
+                    foreach (var a in AppDomain.CurrentDomain.GetAssemblies())
+                    {
+                        AssemblyName loaded_assembly_name = a.GetName();
+                        if (loaded_assembly_name == name) return a;
+                        if (name.Name.Contains(loaded_assembly_name.Name)) return a;
+                    }
+                    return null;
+                },
+                null);
             if (to_type == null) return null;
             string y = to_type.AssemblyQualifiedName;
             return Type.GetType(y, true);

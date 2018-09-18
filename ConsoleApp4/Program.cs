@@ -179,15 +179,57 @@ namespace ConsoleApp4
             //Campy.Utils.Options.Set("import-only");
             Campy.Utils.Options.Set("trace-cctors");
         }
+        public struct mystuff
+        {
+            public bool _NaN;
+            public bool _infinity;
+            public bool _positive;
+            public int _decPointPos;
+            public int _defPrecision;
+            public int _defMaxPrecision;
+            public int _defByteSize;
+            public byte[] _digits;
+        }
 
         static void Main(string[] args)
         {
             StartDebugging();
             int q = 1;
+            string foo = "hi there";
             int[] a = new int[3];
+            mystuff ms;
+            ms._NaN = false;
+            ms._infinity = true;
+            ms._positive = false;
+            ms._decPointPos = 2;
+            ms._defPrecision = 3;
+            ms._defMaxPrecision = 4;
+            ms._defByteSize = 5;
+            ms._digits = new byte[10];
+            var t = ms.GetType();
+            var assembly_qualified_name = t.AssemblyQualifiedName;
+            var t2 = Type.GetType("ConsoleApp4.Program+mystuff",
+                (name) =>
+                {
+                    // Returns the assembly of the type by enumerating loaded assemblies
+                    // in the app domain            
+                    return AppDomain.CurrentDomain.GetAssemblies().Where(z => z.FullName == name.FullName).FirstOrDefault();
+                },
+                null);
+            var t3 = Type.GetType("ConsoleApp4.Program.mystuff",
+                (name) =>
+                {
+                    // Returns the assembly of the type by enumerating loaded assemblies
+                    // in the app domain            
+                    return AppDomain.CurrentDomain.GetAssemblies().Where(z => z.FullName == name.FullName).FirstOrDefault();
+                },
+                null);
+
             Campy.Parallel.For(3, i =>
             {
-                System.Console.WriteLine(i.ToString());
+                var bar = foo;
+                q = ms._decPointPos;
+               // System.Console.WriteLine(i.ToString());
             });
         }
     }

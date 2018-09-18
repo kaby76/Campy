@@ -161,7 +161,8 @@ function_space_specifier static tHeapEntry* TreeSplit(tHeapEntry *pRoot) {
 	return pRoot;
 }
 
-function_space_specifier static tHeapEntry* TreeInsert(tHeapEntry *pRoot, tHeapEntry *pEntry) {
+function_space_specifier static tHeapEntry* TreeInsert(tHeapEntry *pRoot, tHeapEntry *pEntry)
+{
 	if (pRoot == _bcl_->nil) {
 		pRoot = pEntry;
 		pRoot->level = 1;
@@ -202,7 +203,8 @@ function_space_specifier static tHeapEntry* TreeInsert(tHeapEntry *pRoot, tHeapE
 	return pRoot;
 }
 
-function_space_specifier static tHeapEntry* TreeRemove(tHeapEntry *pRoot, tHeapEntry *pDelete) {
+function_space_specifier static tHeapEntry* TreeRemove(tHeapEntry *pRoot, tHeapEntry *pDelete)
+{
 	if (pRoot != _bcl_->nil) {
 		if (pRoot == pDelete) {
 			if (pRoot->pLink[0] != _bcl_->nil && pRoot->pLink[1] != _bcl_->nil) {
@@ -230,16 +232,18 @@ function_space_specifier static tHeapEntry* TreeRemove(tHeapEntry *pRoot, tHeapE
 				pRoot = pHeir;
 				// Delete the node that's been sent down
 				pRoot->pLink[0] = TreeRemove(pRoot->pLink[0], pL0);
-			} else {
+			}
+			else {
 				pRoot = pRoot->pLink[pRoot->pLink[0] == _bcl_->nil];
 			}
-		} else {
+		}
+		else {
 			I32 dir = pRoot < pDelete;
 			pRoot->pLink[dir] = TreeRemove(pRoot->pLink[dir], pDelete);
 		}
 	}
 
-	if (pRoot->pLink[0]->level < pRoot->level-1 || pRoot->pLink[1]->level < pRoot->level-1) {
+	if (pRoot->pLink[0]->level < pRoot->level - 1 || pRoot->pLink[1]->level < pRoot->level - 1) {
 		if (pRoot->pLink[1]->level > --pRoot->level) {
 			pRoot->pLink[1]->level = pRoot->level;
 		}
@@ -251,6 +255,22 @@ function_space_specifier static tHeapEntry* TreeRemove(tHeapEntry *pRoot, tHeapE
 	}
 
 	return pRoot;
+}
+
+function_space_specifier static bool TreeFind(tHeapEntry *pRoot, tHeapEntry *pFind)
+{
+	if (pRoot != _bcl_->nil)
+	{
+		if (pRoot == pFind)
+		{
+			return true;
+		}
+		else {
+			I32 dir = pRoot < pFind;
+			return TreeFind(pRoot->pLink[dir], pFind);
+		}
+	}
+	return false;
 }
 
 function_space_specifier static void GarbageCollect() {
@@ -499,6 +519,8 @@ function_space_specifier HEAP_PTR Heap_AllocType(tMD_TypeDef *pTypeDef) {
 function_space_specifier tMD_TypeDef* Heap_GetType(HEAP_PTR heapEntry) {
 	if (heapEntry == NULL) return NULL;
 	tHeapEntry *pHeapEntry = GET_HEAPENTRY(heapEntry);
+	if (!TreeFind(_bcl_->pHeapTreeRoot, pHeapEntry))
+		return NULL;
 	return pHeapEntry->pTypeDef;
 }
 

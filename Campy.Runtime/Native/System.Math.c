@@ -27,14 +27,14 @@
 #include <math.h>
 #include "Gprintf.h"
 
-function_space_specifier tAsyncCall* System_Math_Sin(PTR pThis_, PTR pParams, PTR pReturnValue) {
-	*(double*)pReturnValue = sin(INTERNALCALL_PARAM(0, double));
-	return NULL;
-}
-
 function_space_specifier tAsyncCall* System_Math_Cos(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	*(double*)pReturnValue = cos(INTERNALCALL_PARAM(0, double));
 
+	return NULL;
+}
+
+function_space_specifier tAsyncCall* System_Math_Sin(PTR pThis_, PTR pParams, PTR pReturnValue) {
+	*(double*)pReturnValue = sin(INTERNALCALL_PARAM(0, double));
 	return NULL;
 }
 

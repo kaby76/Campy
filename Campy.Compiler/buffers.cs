@@ -491,6 +491,11 @@
             {
                 throw new Exception("Type is System.Object, but I don't know what to represent it as.");
             }
+            if (mono_type.FullName.Equals("System.Byte"))
+            {
+                Marshal.StructureToPtr(from_cpu, (IntPtr)address, false);
+                return;
+            }
             if (mono_type.FullName.Equals("System.Int16"))
             {
                 Marshal.StructureToPtr(from_cpu, (IntPtr)address, false);
@@ -575,6 +580,10 @@
                 // no further copying of from_cpu.
                 return;
             }
+            if (mono_type.IsPrimitive)
+            {
+                throw new Exception("Primitive type not handled, in DCToBclValueAux.");
+            }
             if (mono_type.IsArray)
             {
                 var array = from_cpu as Array;
@@ -647,7 +656,75 @@
                 RUNTIME.BclCheckHeap();
                 return;
             }
-            if (mono_type.IsStruct() || mono_type.IsReferenceType())
+            if (mono_type.IsStruct() && !mono_type.IsReferenceType())
+            {
+                // For a struct, the address is not a reference. So, BclHeapGetType returns null.
+                // var bcl_type = RUNTIME.BclHeapGetType((IntPtr)address);
+                // Instead, convert the mono type to bcl type.
+                var bcl_type = RUNTIME.MonoBclMap_GetBcl(mono_type);
+                if (bcl_type == IntPtr.Zero) throw new Exception();
+                IntPtr[] fields = null;
+                IntPtr* buf;
+                int len;
+                RUNTIME.BclGetFields(bcl_type, &buf, &len);
+                fields = new IntPtr[len];
+                for (int i = 0; i < len; ++i) fields[i] = buf[i];
+                var mono_fields = mono_type.ResolveFields().ToArray();
+
+                // Copy fields.
+                for (int i = 0; i < fields.Length; ++i)
+                {
+                    var f = fields[i];
+                    var ptrName = RUNTIME.BclGetFieldName(f);
+                    string name = Marshal.PtrToStringAnsi(ptrName);
+                    var fBclType = RUNTIME.BclGetFieldType(f);
+                    var find = mono_fields.Where(t => t.Name == name);
+                    var mono_field_reference = find.FirstOrDefault();
+                    if (mono_field_reference == null) continue;
+                    // Simple name matching does not work because the meta is sufficiently different
+                    // between the framework used and the BCL framework. For example
+                    // in List<>, BCL names a field "_items", but Net Framework the field
+                    // "items". There is no guarentee that the field is in the same order
+                    // either.
+                    var fit = system_type.GetField(mono_field_reference.Name,
+                        System.Reflection.BindingFlags.Instance
+                        | System.Reflection.BindingFlags.NonPublic
+                        | System.Reflection.BindingFlags.Public
+                        | System.Reflection.BindingFlags.Static
+                    );
+                    if (fit == null)
+                    {
+                        fit = system_type.GetField("_" + mono_field_reference.Name,
+                            System.Reflection.BindingFlags.Instance
+                            | System.Reflection.BindingFlags.NonPublic
+                            | System.Reflection.BindingFlags.Public
+                            | System.Reflection.BindingFlags.Static
+                        );
+                    };
+                    if (fit == null)
+                    {
+                        if (Campy.Utils.Options.IsOn("copy_trace"))
+                            System.Console.WriteLine("Unknown field in source " + mono_field_reference.Name + ". Ignoring.");
+                        continue;
+                    }
+                    object field_value = fit.GetValue(from_cpu);
+                    if (field_value != null && Campy.Utils.Options.IsOn("copy_trace"))
+                        System.Console.WriteLine("Copying field " + field_value);
+                    var mono_field_type = mono_field_reference.FieldType;
+                    mono_field_type = mono_field_type.RewriteMonoTypeReference();
+                    var fPtr = RUNTIME.BclGetField((IntPtr)address, f);
+                    // In the case of a pointer, you have to deref the field.
+                    var oPtr = fPtr;
+                    void* ip = (void*)oPtr;
+                    if (mono_field_type.IsReferenceType())
+                        field_value = DCToBcl(field_value);
+                    DCToBclValue(field_value, ip);
+                    var field_size = SizeOfRefOrValType(mono_field_reference.FieldType);
+                }
+
+                return;
+            }
+            if (mono_type.IsReferenceType())
             {
                 var bcl_type = RUNTIME.BclHeapGetType((IntPtr)address);
                 if (bcl_type == IntPtr.Zero) throw new Exception();
@@ -727,7 +804,7 @@
             var mono_type_of_bcl_type = RUNTIME.MonoBclMap_GetMono(bcl_type_of_object);
             var list = _allocated_objects.Where(t =>
             {
-                if (t.Value == (IntPtr) address) return true;
+                if (t.Value == (IntPtr)address) return true;
                 return false;
             });
             object cpu = null;
@@ -791,6 +868,62 @@
             return cpu;
         }
 
+        private unsafe object DCStructToCpu(void* address, TypeReference struct_type)
+        {
+            if (address == (void*)0) return null;
+            var bcl_type_of_object = RUNTIME.MonoBclMap_GetBcl(struct_type);
+            var mono_type_of_bcl_type = RUNTIME.MonoBclMap_GetMono(bcl_type_of_object);
+            object cpu = null;
+            var from_type = RUNTIME.MonoBclMap_GetMono(bcl_type_of_object);
+            var type = struct_type.ToSystemType();
+            cpu = Activator.CreateInstance(type);
+            if (cpu == null) throw new Exception("Copy to CPU object is null.");
+            if (_delayed_from_gpu.Contains(cpu))
+            {
+                if (Campy.Utils.Options.IsOn("copy_trace"))
+                    System.Console.WriteLine("Not copying to CPU "
+                                             + cpu
+                                             + " "
+                                             + RuntimeHelpers.GetHashCode(cpu)
+                                             + " because it is delayed.");
+                return cpu;
+            }
+            if (_never_copy_from_gpu.Contains(cpu))
+            {
+                if (Campy.Utils.Options.IsOn("copy_trace"))
+                    System.Console.WriteLine("Not copying to CPU "
+                                             + cpu
+                                             + " "
+                                             + RuntimeHelpers.GetHashCode(cpu)
+                                             + " because it never copied to GPU.");
+                return cpu;
+            }
+            if (_copied_from_gpu.Contains(cpu))
+            {
+                if (Campy.Utils.Options.IsOn("copy_trace"))
+                    System.Console.WriteLine("Not copying to CPU "
+                                             + cpu
+                                             + " "
+                                             + RuntimeHelpers.GetHashCode(cpu)
+                                             + " because it was copied back before.");
+                return cpu;
+            }
+            var type_of_cpu = cpu.GetType();
+            if (Campy.Utils.Options.IsOn("copy_trace"))
+                System.Console.WriteLine("Copying to CPU "
+                                         + cpu
+                                         + " "
+                                         + "of type "
+                                         + type_of_cpu.FullName
+                                         + " because it was copied to GPU.");
+
+            _copied_from_gpu.Add(cpu);
+
+            DCtoCpuRefValue(address, cpu, null);
+
+            return cpu;
+        }
+
         private unsafe void DCtoCpuRefValue(void* address, object target, FieldInfo target_field)
         {
             if (target_field == null)
@@ -798,7 +931,10 @@
                 System.Type system_type = target.GetType();
                 var mono_type = system_type.ToMonoTypeReference().RewriteMonoTypeReference();
                 var bcl_type = RUNTIME.BclHeapGetType((IntPtr)address);
-                if (bcl_type == IntPtr.Zero) throw new Exception();
+                if (bcl_type == IntPtr.Zero
+                    && target != null
+                    && !target.GetType().IsStruct())
+                    throw new Exception();
                 if (system_type.IsArray)
                 {
                     if ((IntPtr)address == IntPtr.Zero)
@@ -823,21 +959,6 @@
                 }
                 if (system_type.FullName.Equals("System.String"))
                 {
-                    return;
-
-                    // For now, assume data exists on GPU. Perform memcpy using CUDA.
-                    int* block = stackalloc int[1];
-                    IntPtr intptr = new IntPtr(block);
-                    var res = Cuda.cuMemcpyDtoH_v2(intptr, (IntPtr)address, sizeof(int));
-                    int len = *block;
-                    short* block2 = stackalloc short[len + 1];
-                    var intptr2 = new IntPtr(block2);
-                    Cuda.cuMemcpyDtoH_v2(intptr2, (IntPtr)address + sizeof(int), (uint)len * sizeof(short));
-                    block2[len] = 0;
-                    var o = new string((char*)intptr2);
-                    if (Campy.Utils.Options.IsOn("copy_trace"))
-                        System.Console.WriteLine("Copy from GPU " + o);
-                    target_field.SetValue(target, o);
                     return;
                 }
                 if (system_type.IsClass)
@@ -896,6 +1017,63 @@
 
                     return;
                 }
+                if (system_type.IsStruct())
+                {
+                    IntPtr[] fields = null;
+                    IntPtr* buf;
+                    int len;
+                    bcl_type = RUNTIME.MonoBclMap_GetBcl(mono_type);
+                    RUNTIME.BclGetFields(bcl_type, &buf, &len);
+                    fields = new IntPtr[len];
+                    for (int i = 0; i < len; ++i) fields[i] = buf[i];
+                    var mono_fields = mono_type.ResolveFields().ToArray();
+
+                    // Copy fields.
+                    for (int i = 0; i < fields.Length; ++i)
+                    {
+                        var f = fields[i];
+                        var ptrName = RUNTIME.BclGetFieldName(f);
+                        string name = Marshal.PtrToStringAnsi(ptrName);
+                        var fBclType = RUNTIME.BclGetFieldType(f);
+                        var find = mono_fields.Where(t => t.Name == name);
+                        var mono_field_reference = find.FirstOrDefault();
+                        if (mono_field_reference == null) continue;
+
+                        string system_type_field_name = mono_field_reference.Name;
+                        var fit = system_type.GetField(system_type_field_name,
+                            System.Reflection.BindingFlags.Instance
+                            | System.Reflection.BindingFlags.NonPublic
+                            | System.Reflection.BindingFlags.Public
+                            | System.Reflection.BindingFlags.Static
+                        );
+                        if (fit == null)
+                        {
+                            system_type_field_name = "_" + system_type_field_name;
+                            fit = system_type.GetField(system_type_field_name,
+                                System.Reflection.BindingFlags.Instance
+                                | System.Reflection.BindingFlags.NonPublic
+                                | System.Reflection.BindingFlags.Public
+                                | System.Reflection.BindingFlags.Static
+                            );
+                        }
+                        if (fit == null)
+                        {
+                            if (Campy.Utils.Options.IsOn("copy_trace"))
+                                System.Console.WriteLine("Unknown field in source " + mono_field_reference.Name + ". Ignoring.");
+                            continue;
+                        }
+                        // Get from BCL the address of the field.
+                        var mono_field_type = mono_field_reference.FieldType;
+                        mono_field_type = mono_field_type.RewriteMonoTypeReference();
+                        var fPtr = (void*)RUNTIME.BclGetField((IntPtr)address, f);
+                        object field_value = null;
+                        DCtoCpuRefValue(fPtr, target, fit);
+                        if (field_value != null && Campy.Utils.Options.IsOn("copy_trace"))
+                            System.Console.WriteLine("Copying field " + field_value);
+                    }
+
+                    return;
+                }
                 throw new Exception("Unknown type.");
             }
 
@@ -914,9 +1092,21 @@
                     target_field.SetValue(target, v);
                     return;
                 }
+                if (system_type.FullName.Equals("System.Byte"))
+                {
+                    object o = Marshal.PtrToStructure<System.Byte>((IntPtr)address);
+                    try
+                    {
+                        target_field.SetValue(target, o);
+                    }
+                    catch
+                    {
+                    }
+                    return;
+                }
                 if (system_type.FullName.Equals("System.Int16"))
                 {
-                    object o = Marshal.PtrToStructure<System.Int16>((IntPtr) address);
+                    object o = Marshal.PtrToStructure<System.Int16>((IntPtr)address);
                     try
                     {
                         target_field.SetValue(target, o);
@@ -1087,9 +1277,22 @@
                     }
                     return;
                 }
+                if (system_type.IsStruct())
+                {
+                    var ip = address;
+                    var o = DCStructToCpu(ip, mono_type);
+                    try
+                    {
+                        target_field.SetValue(target, o);
+                    }
+                    catch
+                    {
+                    }
+                    return;
+                }
                 if (system_type.IsClass)
                 {
-                    var ip = *(void**) address;
+                    var ip = *(void**)address;
                     var o = DCToCpu(ip);
                     try
                     {

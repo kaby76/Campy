@@ -203,21 +203,98 @@ namespace System {
             return (v > 0) ? 1 : ((v < 0) ? -1 : 0);
         }
 
-        #endregion
+#endregion
+	
+	    [MethodImpl(MethodImplOptions.InternalCall)]
+        [GPUBCLAttribute("System_Array_Internal_GetLength", "_Z31System_Array_Internal_GetLengthPhS_S_")]
+        public static extern double Acos(double d);
 
-        [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        public extern static double Sin(double x);
+	    [MethodImpl(MethodImplOptions.InternalCall)]
+        [GPUBCLAttribute("System_Array_Internal_GetLength", "_Z31System_Array_Internal_GetLengthPhS_S_")]
+        public static extern double Acosh(double d);
 
-        [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        public extern static double Cos(double x);
+	    [MethodImpl(MethodImplOptions.InternalCall)]
+        [GPUBCLAttribute("System_Array_Internal_GetLength", "_Z31System_Array_Internal_GetLengthPhS_S_")]
+        public static extern double Asin(double d);
 
-        [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        public extern static double Tan(double x);
+	    [MethodImpl(MethodImplOptions.InternalCall)]
+        [GPUBCLAttribute("System_Array_Internal_GetLength", "_Z31System_Array_Internal_GetLengthPhS_S_")]
+        public static extern double Asinh(double d);
 
-        [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        public extern static double Pow(double x, double y);
+	    [MethodImpl(MethodImplOptions.InternalCall)]
+        [GPUBCLAttribute("System_Array_Internal_GetLength", "_Z31System_Array_Internal_GetLengthPhS_S_")]
+        public static extern double Atan(double d);
 
-        [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        public extern static double Sqrt(double x);
+	    [MethodImpl(MethodImplOptions.InternalCall)]
+        [GPUBCLAttribute("System_Array_Internal_GetLength", "_Z31System_Array_Internal_GetLengthPhS_S_")]
+        public static extern double Atan2(double y, double x);
+
+	    [MethodImpl(MethodImplOptions.InternalCall)]
+        [GPUBCLAttribute("System_Array_Internal_GetLength", "_Z31System_Array_Internal_GetLengthPhS_S_")]
+        public static extern double Atanh(double d);
+
+	    [MethodImpl(MethodImplOptions.InternalCall)]
+        [GPUBCLAttribute("System_Array_Internal_GetLength", "_Z31System_Array_Internal_GetLengthPhS_S_")]
+        public static extern double Cbrt(double d);
+
+	    [MethodImpl(MethodImplOptions.InternalCall)]
+        [GPUBCLAttribute("System_Array_Internal_GetLength", "_Z31System_Array_Internal_GetLengthPhS_S_")]
+        public static extern double Ceiling(double a);
+
+	    [MethodImpl(MethodImplOptions.InternalCall)]
+        [GPUBCLAttribute("System_Math_Cos", "System_Math_Cos")]
+        public static extern double Cos(double d);
+
+	    [MethodImpl(MethodImplOptions.InternalCall)]
+        [GPUBCLAttribute("System_Math_Cosh", "System_Math_Cosh")]
+        public static extern double Cosh(double value);
+
+	    [MethodImpl(MethodImplOptions.InternalCall)]
+        [GPUBCLAttribute("System_Array_Internal_GetLength", "_Z31System_Array_Internal_GetLengthPhS_S_")]
+        public static extern double Exp(double d);
+
+	    [MethodImpl(MethodImplOptions.InternalCall)]
+        [GPUBCLAttribute("System_Array_Internal_GetLength", "_Z31System_Array_Internal_GetLengthPhS_S_")]
+        public static extern double Floor(double d);
+
+	    [MethodImpl(MethodImplOptions.InternalCall)]
+        [GPUBCLAttribute("System_Array_Internal_GetLength", "_Z31System_Array_Internal_GetLengthPhS_S_")]
+        public static extern double Log(double d);
+
+	    [MethodImpl(MethodImplOptions.InternalCall)]
+        [GPUBCLAttribute("System_Array_Internal_GetLength", "_Z31System_Array_Internal_GetLengthPhS_S_")]
+        public static extern double Log10(double d);
+
+	    [MethodImpl(MethodImplOptions.InternalCall)]
+        [GPUBCLAttribute("System_Array_Internal_GetLength", "_Z31System_Array_Internal_GetLengthPhS_S_")]
+        public static extern double Pow(double x, double y);
+
+	    [MethodImpl(MethodImplOptions.InternalCall)]
+        [GPUBCLAttribute("System_Math_Sin", "System_Math_Sin")]
+        public static extern double Sin(double a);
+
+	    [MethodImpl(MethodImplOptions.InternalCall)]
+        [GPUBCLAttribute("System_Math_Sinh", "System_Math_Sinh")]
+        public static extern double Sinh(double value);
+
+	    [MethodImpl(MethodImplOptions.InternalCall)]
+        [GPUBCLAttribute("System_Array_Internal_GetLength", "_Z31System_Array_Internal_GetLengthPhS_S_")]
+        public static extern double Sqrt(double d);
+
+	    [MethodImpl(MethodImplOptions.InternalCall)]
+        [GPUBCLAttribute("System_Array_Internal_GetLength", "_Z31System_Array_Internal_GetLengthPhS_S_")]
+        public static extern double Tan(double a);
+
+	    [MethodImpl(MethodImplOptions.InternalCall)]
+        [GPUBCLAttribute("System_Array_Internal_GetLength", "_Z31System_Array_Internal_GetLengthPhS_S_")]
+        public static extern double Tanh(double value);
+
+	    [MethodImpl(MethodImplOptions.InternalCall)]
+        [GPUBCLAttribute("System_Array_Internal_GetLength", "_Z31System_Array_Internal_GetLengthPhS_S_")]
+        private static extern double FMod(double x, double y);
+
+	    [MethodImpl(MethodImplOptions.InternalCall)]
+        [GPUBCLAttribute("System_Array_Internal_GetLength", "_Z31System_Array_Internal_GetLengthPhS_S_")]
+        private static extern unsafe double ModF(double x, double* intptr);
     }
 }
