@@ -544,31 +544,6 @@ namespace Campy.Meta
             }
         }
 
-        public static System.Reflection.MethodBase ToSystemMethodInfo(this Mono.Cecil.MethodDefinition md)
-        {
-            System.Reflection.MethodInfo result = null;
-            String md_name = Campy.Utils.Utility.NormalizeMonoCecilName(md.FullName);
-            // Get owning type.
-            Mono.Cecil.TypeDefinition td = md.DeclaringType;
-            Type t = td.ToSystemType();
-            foreach (System.Reflection.MethodInfo mi in t.GetMethods(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.CreateInstance | System.Reflection.BindingFlags.Default))
-            {
-                String full_name = string.Format("{0} {1}.{2}({3})", mi.ReturnType.FullName, Campy.Utils.Utility.RemoveGenericParameters(mi.ReflectedType), mi.Name, string.Join(",", mi.GetParameters().Select(o => string.Format("{0}", o.ParameterType)).ToArray()));
-                full_name = Campy.Utils.Utility.NormalizeSystemReflectionName(full_name);
-                if (md_name.Contains(full_name))
-                    return mi;
-            }
-            foreach (System.Reflection.ConstructorInfo mi in t.GetConstructors(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.CreateInstance | System.Reflection.BindingFlags.Default))
-            {
-                String full_name = string.Format("{0}.{1}({2})", Campy.Utils.Utility.RemoveGenericParameters(mi.ReflectedType), mi.Name, string.Join(",", mi.GetParameters().Select(o => string.Format("{0}", o.ParameterType)).ToArray()));
-                full_name = Campy.Utils.Utility.NormalizeSystemReflectionName(full_name);
-                if (md_name.Contains(full_name))
-                    return mi;
-            }
-            Debug.Assert(result != null);
-            return result;
-        }
-
         public static bool IsStruct(this System.Type t)
         {
             return t.IsValueType && !t.IsPrimitive && !t.IsEnum;

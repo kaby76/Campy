@@ -358,7 +358,7 @@ function_space_specifier tAsyncCall* System_String_InternalIndexOfAny(PTR pThis_
     HEAP_PTR valueArray = *(HEAP_PTR*)p++;
     I32 startIndex = *(I32*)p++;
     I32 count = *(I32*)p++;
-    U32 forwards = *(U32*)p++;
+    U32 forwards = *(U8*)p++;
 
     PTR valueChars = SystemArray_GetElements(valueArray);
     U32 numValueChars = SystemArray_GetLength(valueArray);

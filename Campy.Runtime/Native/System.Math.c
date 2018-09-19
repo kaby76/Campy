@@ -27,10 +27,84 @@
 #include <math.h>
 #include "Gprintf.h"
 
+function_space_specifier tAsyncCall* System_Math_Acos(PTR pThis_, PTR pParams, PTR pReturnValue) {
+	*(double*)pReturnValue = acos(INTERNALCALL_PARAM(0, double));
+	return NULL;
+}
+
+function_space_specifier tAsyncCall* System_Math_Acosh(PTR pThis_, PTR pParams, PTR pReturnValue) {
+	*(double*)pReturnValue = acosh(INTERNALCALL_PARAM(0, double));
+	return NULL;
+}
+
+function_space_specifier tAsyncCall* System_Math_Asin(PTR pThis_, PTR pParams, PTR pReturnValue) {
+	*(double*)pReturnValue = asin(INTERNALCALL_PARAM(0, double));
+	return NULL;
+}
+
+function_space_specifier tAsyncCall* System_Math_Asinh(PTR pThis_, PTR pParams, PTR pReturnValue) {
+	*(double*)pReturnValue = asinh(INTERNALCALL_PARAM(0, double));
+	return NULL;
+}
+
+function_space_specifier tAsyncCall* System_Math_Atan(PTR pThis_, PTR pParams, PTR pReturnValue) {
+	*(double*)pReturnValue = asin(INTERNALCALL_PARAM(0, double));
+	return NULL;
+}
+
+function_space_specifier tAsyncCall* System_Math_Atan2(PTR pThis_, PTR pParams, PTR pReturnValue) {
+	*(double*)pReturnValue = asin(INTERNALCALL_PARAM(0, double));
+	return NULL;
+}
+
+function_space_specifier tAsyncCall* System_Math_Atanh(PTR pThis_, PTR pParams, PTR pReturnValue) {
+	*(double*)pReturnValue = atanh(INTERNALCALL_PARAM(0, double));
+	return NULL;
+}
+
+function_space_specifier tAsyncCall* System_Math_Cbrt(PTR pThis_, PTR pParams, PTR pReturnValue) {
+	*(double*)pReturnValue = cbrt(INTERNALCALL_PARAM(0, double));
+	return NULL;
+}
+
+function_space_specifier tAsyncCall* System_Math_Ceiling(PTR pThis_, PTR pParams, PTR pReturnValue) {
+	*(double*)pReturnValue = ceil(INTERNALCALL_PARAM(0, double));
+	return NULL;
+}
+
 function_space_specifier tAsyncCall* System_Math_Cos(PTR pThis_, PTR pParams, PTR pReturnValue) {
     *(double*)pReturnValue = cos(INTERNALCALL_PARAM(0, double));
-
     return NULL;
+}
+
+function_space_specifier tAsyncCall* System_Math_Cosh(PTR pThis_, PTR pParams, PTR pReturnValue) {
+	*(double*)pReturnValue = cosh(INTERNALCALL_PARAM(0, double));
+	return NULL;
+}
+
+function_space_specifier tAsyncCall* System_Math_Exp(PTR pThis_, PTR pParams, PTR pReturnValue) {
+	*(double*)pReturnValue = exp(INTERNALCALL_PARAM(0, double));
+	return NULL;
+}
+
+function_space_specifier tAsyncCall* System_Math_Floor(PTR pThis_, PTR pParams, PTR pReturnValue) {
+	*(double*)pReturnValue = floor(INTERNALCALL_PARAM(0, double));
+	return NULL;
+}
+
+function_space_specifier tAsyncCall* System_Math_Log(PTR pThis_, PTR pParams, PTR pReturnValue) {
+	*(double*)pReturnValue = log(INTERNALCALL_PARAM(0, double));
+	return NULL;
+}
+
+function_space_specifier tAsyncCall* System_Math_Log10(PTR pThis_, PTR pParams, PTR pReturnValue) {
+	*(double*)pReturnValue = log10(INTERNALCALL_PARAM(0, double));
+	return NULL;
+}
+
+function_space_specifier tAsyncCall* System_Math_Pow(PTR pThis_, PTR pParams, PTR pReturnValue) {
+	*(double*)pReturnValue = pow(INTERNALCALL_PARAM(0, double), INTERNALCALL_PARAM(8, double));
+	return NULL;
 }
 
 function_space_specifier tAsyncCall* System_Math_Sin(PTR pThis_, PTR pParams, PTR pReturnValue) {
@@ -38,20 +112,34 @@ function_space_specifier tAsyncCall* System_Math_Sin(PTR pThis_, PTR pParams, PT
     return NULL;
 }
 
-function_space_specifier tAsyncCall* System_Math_Tan(PTR pThis_, PTR pParams, PTR pReturnValue) {
-    *(double*)pReturnValue = tan(INTERNALCALL_PARAM(0, double));
-
-    return NULL;
-}
-
-function_space_specifier tAsyncCall* System_Math_Pow(PTR pThis_, PTR pParams, PTR pReturnValue) {
-    *(double*)pReturnValue = pow(INTERNALCALL_PARAM(0, double), INTERNALCALL_PARAM(8, double));
-
-    return NULL;
+function_space_specifier tAsyncCall* System_Math_Sinh(PTR pThis_, PTR pParams, PTR pReturnValue) {
+	*(double*)pReturnValue = sinh(INTERNALCALL_PARAM(0, double));
+	return NULL;
 }
 
 function_space_specifier tAsyncCall* System_Math_Sqrt(PTR pThis_, PTR pParams, PTR pReturnValue) {
-    *(double*)pReturnValue = sqrt(INTERNALCALL_PARAM(0, double));
+	*(double*)pReturnValue = sqrt(INTERNALCALL_PARAM(0, double));
 
+	return NULL;
+}
+
+function_space_specifier tAsyncCall* System_Math_Tan(PTR pThis_, PTR pParams, PTR pReturnValue) {
+    *(double*)pReturnValue = tan(INTERNALCALL_PARAM(0, double));
     return NULL;
 }
+
+function_space_specifier tAsyncCall* System_Math_Tanh(PTR pThis_, PTR pParams, PTR pReturnValue) {
+	*(double*)pReturnValue = tanh(INTERNALCALL_PARAM(0, double));
+	return NULL;
+}
+
+function_space_specifier tAsyncCall* System_Math_FMod(PTR pThis_, PTR pParams, PTR pReturnValue) {
+	*(double*)pReturnValue = fmod(INTERNALCALL_PARAM(0, double), INTERNALCALL_PARAM(8, double));
+	return NULL;
+}
+
+function_space_specifier tAsyncCall* System_Math_ModF(PTR pThis_, PTR pParams, PTR pReturnValue) {
+	*(double*)pReturnValue = modf(INTERNALCALL_PARAM(0, double), INTERNALCALL_PARAM(8, double*));
+	return NULL;
+}
+
