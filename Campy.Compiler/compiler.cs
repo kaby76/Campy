@@ -429,7 +429,7 @@ namespace Campy.Compiler
 
                 TypeRef ret_type = t_ret.StorageTypeLLVM;
                 TypeRef method_type = LLVM.FunctionType(ret_type, param_types, false);
-                string method_name = METAHELPER.FixedMethodName(bb._method_reference.FullName);
+                string method_name = METAHELPER.RenameToLlvmMethodName(bb._method_reference.FullName);
                 ValueRef fun = LLVM.AddFunction(mod, method_name, method_type);
 
                 var glob = LLVM.AddGlobal(mod, LLVM.PointerType(method_type, 0), "p_" + method_name);
@@ -1519,7 +1519,7 @@ namespace Campy.Compiler
         {
             foreach (var v in _mcfg.Entries)
             {
-                var normalized_method_name = METAHELPER.FixedMethodName(v._method_reference.FullName);
+                var normalized_method_name = METAHELPER.RenameToLlvmMethodName(v._method_reference.FullName);
                 var res = Cuda.cuModuleGetFunction(out CUfunction helloWorld, module, normalized_method_name);
                 // Not every entry is going to be in module, so this isn't a problem if not found.
                 if (res != CUresult.CUDA_SUCCESS) continue;
@@ -1566,7 +1566,7 @@ namespace Campy.Compiler
         {
             CFG.Vertex bb = _mcfg.Entries.Where(v =>
             v.IsEntry && v._method_reference.FullName == kernel_method.FullName).FirstOrDefault();
-            var normalized_method_name = METAHELPER.FixedMethodName(bb._method_reference.FullName);
+            var normalized_method_name = METAHELPER.RenameToLlvmMethodName(bb._method_reference.FullName);
             var res = Cuda.cuModuleGetFunction(out CUfunction helloWorld, module, normalized_method_name);
             Utils.CudaHelpers.CheckCudaError(res);
             return helloWorld;

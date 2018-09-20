@@ -2,19 +2,16 @@
 using System.Collections.Generic;
 using System.Linq;
 using Mono.Cecil;
-using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
 using Mono.Collections.Generic;
 using System.Reflection;
-using System.Diagnostics;
 using Swigged.LLVM;
 
 
 namespace Campy.Meta
 {
-    public class YOYO
+    class NONSTATICMETAHELPER
     {
-
         public static List<GenericParameter> GetContainedGenericParameters(MemberReference type, List<GenericParameter> list = null)
         {
             if (list == null) list = new List<GenericParameter>();
@@ -88,15 +85,10 @@ namespace Campy.Meta
 
     public static class METAHELPER
     {
-
-        private static List<TypeDefinition> _cache = new List<TypeDefinition>();
-
-        public static TypeReference Deresolve(this TypeReference type,
-            TypeReference context,
-            TypeReference argument_context)
+        public static TypeReference Deresolve(this TypeReference type, TypeReference context, TypeReference argument_context)
         {
             if (!type.ContainsGenericParameter) return type;
-            var gps = YOYO.GetContainedGenericParameters(type);
+            var gps = NONSTATICMETAHELPER.GetContainedGenericParameters(type);
             bool method_defined = gps.Where(t => t.DeclaringMethod != null).Any();
             bool type_defined = gps.Where(t => t.DeclaringType != null).Any();
             if (method_defined && type_defined)
@@ -165,48 +157,7 @@ namespace Campy.Meta
             return type;
         }
 
-        //public static MethodReference MakeMethodReference(this MethodDefinition method)
-        //{
-        //    var reference = new MethodReference(method.Name, method.ReturnType, method.DeclaringType);
-        //    reference.MetadataToken = method.MetadataToken;
-        //    reference.HasThis = method.HasThis;
-        //    reference.ExplicitThis = method.ExplicitThis;
-        //    reference.CallingConvention = method.CallingConvention;
-
-        //    foreach (ParameterDefinition parameter in method.Parameters)
-        //        reference.Parameters.Add(new ParameterDefinition(parameter.ParameterType));
-        //    return reference;
-        //}
-
-        //public static MethodReference MakeMethodReference(this MethodReference method, TypeReference declaringType)
-        //{
-        //    var reference = new MethodReference(method.Name, method.ReturnType, declaringType);
-        //    reference.MetadataToken = method.MetadataToken;
-        //    reference.HasThis = method.HasThis;
-        //    reference.ExplicitThis = method.ExplicitThis;
-        //    reference.CallingConvention = method.CallingConvention;
-        //    foreach (ParameterDefinition parameter in method.Parameters)
-        //        reference.Parameters.Add(new ParameterDefinition(parameter.ParameterType));
-        //    return reference;
-        //}
-
-        //public static TypeReference MakeGenericType(TypeReference type, params
-        //    TypeReference[] arguments)
-        //{
-        //    if (type.GenericParameters.Count != arguments.Length)
-        //        throw new ArgumentException();
-
-        //    var instance = new GenericInstanceType(type);
-        //    foreach (var argument in arguments)
-        //        instance.GenericArguments.Add(argument);
-
-        //    return instance;
-        //}
-
-        public static MethodReference Deresolve(
-            this MethodReference self,
-            TypeReference declaring_type,
-            TypeReference[] arguments)
+        public static MethodReference Deresolve(this MethodReference self, TypeReference declaring_type, TypeReference[] arguments)
         {
             string a = declaring_type.FullName;
             if (a.Contains("List") || a.Contains("Dictionary"))
@@ -259,28 +210,80 @@ namespace Campy.Meta
             return new_met;
         }
 
-        public static MethodReference SubstituteMethod2(this MethodReference method_reference)
+        public static TypeReference SwapInBclType(this Mono.Cecil.TypeReference type)
         {
-            // Can't do anything if method isn't associated with a type.
-            TypeReference declaring_type = method_reference.DeclaringType;
-            if (declaring_type == null)
-                return null;
-            TypeDefinition declaring_type_resolved = declaring_type.Resolve();
-            MethodDefinition method_definition_resolved = method_reference.Resolve();
-            TypeReference substituted_declaring_type = declaring_type.RewriteMonoTypeReference();
-            if (substituted_declaring_type != declaring_type)
-                throw new Exception("Wrong place to rewrite function.");
-            return method_reference;
+            var new_type = type.SubstituteMonoTypeReference();
+            if (new_type == null) return type;
+            return new_type;
         }
 
-        public static MethodReference SubstituteMethod(
-            this MethodReference method_reference,
-            TypeReference parent,
-            TypeReference[] method_arguments)
+        private static TypeReference SubstituteMonoTypeReference(this Mono.Cecil.TypeReference type)
+        {
+            // No need to look if already done.
+            string scope = type.Scope.Name;
+            if (scope.Contains("corlib") && !scope.Contains("mscorlib")) return type;
+
+            if (type as ArrayType != null)
+            {
+                var array_type = type as Mono.Cecil.ArrayType;
+                var element_type = array_type.ElementType;
+                var new_element_type = element_type.SubstituteMonoTypeReference();
+                if (element_type != new_element_type)
+                {
+                    var new_array_type = new ArrayType(new_element_type, array_type.Rank);
+                    type = new_array_type;
+                }
+                return type;
+            }
+            else if (type as ByReferenceType != null)
+            {
+                var gp = type as ByReferenceType;
+                var x = gp.ElementType;
+                type = new ByReferenceType(x.SubstituteMonoTypeReference());
+                return type;
+            }
+            else if (type as GenericInstanceType != null)
+            {
+                // For generic instance types, it could contain a generic parameter.
+                // Substitute parameter if needed.
+                var git = type as GenericInstanceType;
+                var args = git.GenericArguments;
+                var new_args = git.GenericArguments.ToArray();
+                for (int i = 0; i < new_args.Length; ++i)
+                {
+                    var arg = args[i];
+                    var new_arg = arg.SubstituteMonoTypeReference();
+                    new_args[i] = new_arg;
+                }
+                var type_def = type.Resolve();
+                var new_type = type_def.SubstituteMonoTypeReference();
+                GenericInstanceType de = new_type.MakeGenericInstanceType(new_args);
+                return de;
+            }
+            else if (type as GenericParameter != null)
+            {
+                return type;
+            }
+            else if (type as PointerType != null)
+            {
+                var gp = type as PointerType;
+                var x = gp.ElementType;
+                type = new PointerType(x.SubstituteMonoTypeReference());
+                return type;
+            }
+            else
+            {
+                RUNTIME.all_types.TryGetValue(type.Resolve().FullName, out TypeReference value);
+                if (value == null) return type;
+                return value;
+            }
+        }
+
+        public static MethodReference SwapInBclMethod(this MethodReference method_reference, TypeReference parent, TypeReference[] method_arguments)
         {
             TypeReference declaring_type = method_reference.DeclaringType;
             if (declaring_type == null) return null;
-            TypeReference substituted_declaring_type = declaring_type.RewriteMonoTypeReference();
+            TypeReference substituted_declaring_type = declaring_type.SwapInBclType();
             if (substituted_declaring_type.ContainsGenericParameter)
                 substituted_declaring_type = substituted_declaring_type.Deresolve(parent, null);
             TypeDefinition substituted_declaring_type_definition = substituted_declaring_type.Resolve();
@@ -305,24 +308,6 @@ namespace Campy.Meta
                 throw new Exception("Cannot find " + method_definition_resolved.FullName);
             var new_method_reference = substituted_method_definition.Deresolve(substituted_declaring_type, method_arguments);
             return new_method_reference;
-        }
-
-
-        ///////////////////////////////////////////////////////////////////////////////////////////
-        // General routines associated with TypeReference accessors.
-        ///////////////////////////////////////////////////////////////////////////////////////////
-        // Resolving, correcting access functions
-
-        public static TypeReference ResolveDeclaringType(this TypeReference tr)
-        {
-            var dt = tr.DeclaringType;
-            return dt;
-        }
-
-        public static TypeReference ResolveDeclaringType(this FieldReference fr)
-        {
-            var dt = fr.DeclaringType;
-            return dt;
         }
 
         public static TypeReference ResolveGetElementType(this TypeReference tr)
@@ -419,17 +404,6 @@ namespace Campy.Meta
             return result;
         }
 
-        public static MethodReference FixGenericMethods(this MethodReference method_reference, MethodReference context)
-        {
-            if (method_reference == null) throw new Exception("Null method reference in FixGenericMethods");
-            var result = method_reference;
-            var declaring_type = method_reference.DeclaringType;
-            result = method_reference.Deresolve(declaring_type, null);
-            if (result.ContainsGenericParameter)
-                throw new Exception("method reference contains generic " + result.FullName);
-            return result;
-        }
-
         static Dictionary<System.Type, TypeReference> memoized_types = new Dictionary<Type, TypeReference>();
 
         public static Mono.Cecil.TypeReference ToMonoTypeReference(this System.Type type)
@@ -470,78 +444,10 @@ namespace Campy.Meta
                     return null;
                 },
                 null);
-            if (to_type == null) return null;
+            if (to_type == null)
+                return null;
             string y = to_type.AssemblyQualifiedName;
             return Type.GetType(y, true);
-        }
-
-        public static TypeReference RewriteMonoTypeReference(this Mono.Cecil.TypeReference type)
-        {
-            var new_type = type.SubstituteMonoTypeReference();
-            if (new_type == null) return type;
-            return new_type;
-        }
-
-        public static TypeReference SubstituteMonoTypeReference(this Mono.Cecil.TypeReference type)
-        {
-            // No need to look if already done.
-            string scope = type.Scope.Name;
-            if (scope.Contains("corlib") && !scope.Contains("mscorlib")) return type;
-
-            if (type as ArrayType != null)
-            {
-                var array_type = type as Mono.Cecil.ArrayType;
-                var element_type = array_type.ElementType;
-                var new_element_type = element_type.SubstituteMonoTypeReference();
-                if (element_type != new_element_type)
-                {
-                    var new_array_type = new ArrayType(new_element_type, array_type.Rank);
-                    type = new_array_type;
-                }
-                return type;
-            }
-            else if (type as ByReferenceType != null)
-            {
-                var gp = type as ByReferenceType;
-                var x = gp.ElementType;
-                type = new ByReferenceType(x.SubstituteMonoTypeReference());
-                return type;
-            }
-            else if (type as GenericInstanceType != null)
-            {
-                // For generic instance types, it could contain a generic parameter.
-                // Substitute parameter if needed.
-                var git = type as GenericInstanceType;
-                var args = git.GenericArguments;
-                var new_args = git.GenericArguments.ToArray();
-                for (int i = 0; i < new_args.Length; ++i)
-                {
-                    var arg = args[i];
-                    var new_arg = arg.SubstituteMonoTypeReference();
-                    new_args[i] = new_arg;
-                }
-                var type_def = type.Resolve();
-                var new_type = type_def.SubstituteMonoTypeReference();
-                GenericInstanceType de = new_type.MakeGenericInstanceType(new_args);
-                return de;
-            }
-            else if (type as GenericParameter != null)
-            {
-                return type;
-            }
-            else if (type as PointerType != null)
-            {
-                var gp = type as PointerType;
-                var x = gp.ElementType;
-                type = new PointerType(x.SubstituteMonoTypeReference());
-                return type;
-            }
-            else
-            {
-                RUNTIME.all_types.TryGetValue(type.Resolve().FullName, out TypeReference value);
-                if (value == null) return type;
-                return value;
-            }
         }
 
         public static bool IsStruct(this System.Type t)
@@ -614,25 +520,6 @@ namespace Campy.Meta
                 type_reference_of_parameter = art;
             }
             return type_reference_of_parameter;
-        }
-
-        public static TypeRef ToLlvmTypeRef(this Mono.Cecil.ParameterReference p, MethodReference method)
-        {
-            TypeReference type_reference_of_parameter = p.ParameterType;
-
-            if (method.DeclaringType.IsGenericInstance && method.ContainsGenericParameter)
-            {
-                var git = method.DeclaringType as GenericInstanceType;
-                type_reference_of_parameter = FromGenericParameterToTypeReference(
-                    type_reference_of_parameter, git);
-            }
-
-            var _cil_type = type_reference_of_parameter;
-            var _verification_type = InitVerificationType(_cil_type);
-            var _stack_verification_type = InitStackVerificationType(_verification_type, _cil_type);
-            var _intermediate_type_ref = _stack_verification_type.ToTypeRef();
-
-            return _intermediate_type_ref;
         }
 
         public static Mono.Cecil.TypeReference InitVerificationType(Mono.Cecil.TypeReference _cil_type)
@@ -796,7 +683,7 @@ namespace Campy.Meta
             }
 
             var save_tr = tr;
-            tr = tr.RewriteMonoTypeReference();
+            tr = tr.SwapInBclType();
 
             try
             {
@@ -1016,62 +903,6 @@ namespace Campy.Meta
             return type;
         }
 
-        public static VariableReference InstantiateGeneric(this VariableReference variable, MethodReference mr)
-        {
-            var type = variable.VariableType;
-            if (type.IsGenericParameter)
-            {
-                // Go to basic block and get type.
-                var declaring_type = mr.DeclaringType;
-                if (declaring_type.IsGenericInstance)
-                {
-                    var generic_type_of_declaring_type = declaring_type as GenericInstanceType;
-                    var generic_arguments = generic_type_of_declaring_type.GenericArguments;
-                    var new_arg = type.Deresolve(declaring_type, null);
-                    var new_var = new VariableDefinition(new_arg);
-                    return new_var;
-                }
-            }
-            return variable;
-        }
-
-        public static VariableDefinition InstantiateGeneric(this VariableDefinition variable, MethodReference mr)
-        {
-            var type = variable.VariableType;
-            if (type.IsGenericParameter)
-            {
-                // Go to basic block and get type.
-                var declaring_type = mr.DeclaringType;
-                if (declaring_type.IsGenericInstance)
-                {
-                    var generic_type_of_declaring_type = declaring_type as GenericInstanceType;
-                    var generic_arguments = generic_type_of_declaring_type.GenericArguments;
-                    var new_arg = type.Deresolve(declaring_type, null);
-                    var new_var = new VariableDefinition(new_arg);
-                    //new_var.IsPinned = variable.IsPinned;
-                    var a = variable.GetType().SafeFields(System.Reflection.BindingFlags.Instance
-                                                         | System.Reflection.BindingFlags.NonPublic
-                                                         | System.Reflection.BindingFlags.Public);
-                    variable
-                        .GetType()
-                        .GetField("index", System.Reflection.BindingFlags.Instance
-                                           | System.Reflection.BindingFlags.NonPublic
-                                           | System.Reflection.BindingFlags.Public)
-                        .SetValue(new_var, variable.Index);
-                    return new_var;
-                }
-            }
-            return variable;
-        }
-
-        /// <summary>
-        /// LLVM has a restriction in the names of methods and types different that the Name field of 
-        /// the type. For the moment, we rename to a simple identifier following the usual naming
-        /// convesions for variables (simple prefix, followed by underscore, then a whole number).
-        /// In addition, cache the name so we can rename consistently.
-        /// </summary>
-        /// <param name="before"></param>
-        /// <returns></returns>
         public static string RenameToLegalLLVMName(string before)
         {
             if (_rename_to_legal_llvm_name_cache.ContainsKey(before))
@@ -1080,7 +911,7 @@ namespace Campy.Meta
             return _rename_to_legal_llvm_name_cache[before];
         }
 
-        public static string FixedMethodName(string before)
+        public static string RenameToLlvmMethodName(string before)
         {
             if (_rename_to_legal_llvm_name_cache.ContainsKey(before))
                 return _rename_to_legal_llvm_name_cache[before];
@@ -1110,7 +941,6 @@ namespace Campy.Meta
             _rename_to_legal_llvm_name_cache[before] = fixed_string;
             return _rename_to_legal_llvm_name_cache[before];
         }
-
 
         static int Alignment(System.Type type)
         {

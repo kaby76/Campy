@@ -47,7 +47,7 @@ namespace Campy.Compiler
 
         public TYPE(Mono.Cecil.TypeReference mono_type)
         {
-            _cil_type = mono_type.RewriteMonoTypeReference();
+            _cil_type = mono_type.SwapInBclType();
             _cil_type_llvm = _cil_type.ToTypeRef();
             _verification_type = METAHELPER.InitVerificationType(_cil_type);
             _storage_type = _verification_type;

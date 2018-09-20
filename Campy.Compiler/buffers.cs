@@ -111,7 +111,7 @@
             var type = to_gpu.GetType();
             var expected_bcl_type = type.ToMonoTypeReference();
 
-            expected_bcl_type = expected_bcl_type.RewriteMonoTypeReference();
+            expected_bcl_type = expected_bcl_type.SwapInBclType();
 
             var find_object = _allocated_objects.Where(p => p.Key == to_gpu);
 
@@ -296,7 +296,7 @@
         {
             var type = obj.GetType();
             var mono_type = type.ToMonoTypeReference();
-            var bcl_type = mono_type.RewriteMonoTypeReference();
+            var bcl_type = mono_type.SwapInBclType();
             if (bcl_type.IsArray)
             {
                 Array array = (Array)obj;
@@ -330,7 +330,7 @@
         {
             var type = obj.GetType();
             var mono_type = type.ToMonoTypeReference();
-            var bcl_type = mono_type.RewriteMonoTypeReference();
+            var bcl_type = mono_type.SwapInBclType();
             if (type.FullName == "System.String")
             {
                 string str = (string)obj;
@@ -446,7 +446,7 @@
             _copied_to_gpu.Add(from_cpu);
 
             Type system_type = from_cpu.GetType();
-            var mono_type = system_type.ToMonoTypeReference().RewriteMonoTypeReference();
+            var mono_type = system_type.ToMonoTypeReference().SwapInBclType();
 
             var result = New(from_cpu);
             _allocated_objects[from_cpu] = result;
@@ -480,7 +480,7 @@
 
 
             Type system_type = from_cpu.GetType();
-            TypeReference mono_type = system_type.ToMonoTypeReference().RewriteMonoTypeReference();
+            TypeReference mono_type = system_type.ToMonoTypeReference().SwapInBclType();
 
             DCToBclValueAux(from_cpu, system_type, mono_type, address);
         }
@@ -587,7 +587,7 @@
             if (mono_type.IsArray)
             {
                 var array = from_cpu as Array;
-                var etype = array.GetType().GetElementType().ToMonoTypeReference().RewriteMonoTypeReference();
+                var etype = array.GetType().GetElementType().ToMonoTypeReference().SwapInBclType();
                 var bcl_etype = RUNTIME.MonoBclMap_GetBcl(etype);
                 uint[] lengths = new uint[array.Rank];
                 for (int i = 0; i < array.Rank; ++i) lengths[i] = (uint)array.GetLength(i);
@@ -612,12 +612,12 @@
                 for (int i = 0; i < rank; ++i)
                     Cp(df_length + i * BUFFERS.SizeOf(typeof(Int64)), a.GetLength(i));
                 System.Type orig_element_type = from_cpu.GetType().GetElementType();
-                var to_element_mono_type = orig_element_type.ToMonoTypeReference().RewriteMonoTypeReference();
+                var to_element_mono_type = orig_element_type.ToMonoTypeReference().SwapInBclType();
                 bool is_ref = to_element_mono_type.IsReferenceType();
                 if (is_ref)
                 {
                     orig_element_type = typeof(IntPtr);
-                    to_element_mono_type = orig_element_type.ToMonoTypeReference().RewriteMonoTypeReference();
+                    to_element_mono_type = orig_element_type.ToMonoTypeReference().SwapInBclType();
                 }
 
                 byte* ip = df_elements;
@@ -711,7 +711,7 @@
                     if (field_value != null && Campy.Utils.Options.IsOn("copy_trace"))
                         System.Console.WriteLine("Copying field " + field_value);
                     var mono_field_type = mono_field_reference.FieldType;
-                    mono_field_type = mono_field_type.RewriteMonoTypeReference();
+                    mono_field_type = mono_field_type.SwapInBclType();
                     var fPtr = RUNTIME.BclGetField((IntPtr)address, f);
                     // In the case of a pointer, you have to deref the field.
                     var oPtr = fPtr;
@@ -776,7 +776,7 @@
                     if (field_value != null && Campy.Utils.Options.IsOn("copy_trace"))
                         System.Console.WriteLine("Copying field " + field_value);
                     var mono_field_type = mono_field_reference.FieldType;
-                    mono_field_type = mono_field_type.RewriteMonoTypeReference();
+                    mono_field_type = mono_field_type.SwapInBclType();
                     var fPtr = RUNTIME.BclGetField((IntPtr)address, f);
                     // In the case of a pointer, you have to deref the field.
                     var oPtr = fPtr;
@@ -929,7 +929,7 @@
             if (target_field == null)
             {
                 System.Type system_type = target.GetType();
-                var mono_type = system_type.ToMonoTypeReference().RewriteMonoTypeReference();
+                var mono_type = system_type.ToMonoTypeReference().SwapInBclType();
                 var bcl_type = RUNTIME.BclHeapGetType((IntPtr)address);
                 if (bcl_type == IntPtr.Zero
                     && target != null
@@ -1007,7 +1007,7 @@
                         }
                         // Get from BCL the address of the field.
                         var mono_field_type = mono_field_reference.FieldType;
-                        mono_field_type = mono_field_type.RewriteMonoTypeReference();
+                        mono_field_type = mono_field_type.SwapInBclType();
                         var fPtr = (void*) RUNTIME.BclGetField((IntPtr) address, f);
                         object field_value = null;
                         DCtoCpuRefValue(fPtr, target, fit);
@@ -1064,7 +1064,7 @@
                         }
                         // Get from BCL the address of the field.
                         var mono_field_type = mono_field_reference.FieldType;
-                        mono_field_type = mono_field_type.RewriteMonoTypeReference();
+                        mono_field_type = mono_field_type.SwapInBclType();
                         var fPtr = (void*)RUNTIME.BclGetField((IntPtr)address, f);
                         object field_value = null;
                         DCtoCpuRefValue(fPtr, target, fit);
@@ -1079,7 +1079,7 @@
 
             {
                 System.Type system_type = target_field.FieldType;
-                var mono_type = system_type.ToMonoTypeReference().RewriteMonoTypeReference();
+                var mono_type = system_type.ToMonoTypeReference().SwapInBclType();
                 if (system_type.FullName.Equals("System.Object"))
                 {
                     if (address == null)
@@ -1314,7 +1314,7 @@
             if (!to_type.IsArray)
                 throw new Exception("Expecting array.");
             Type to_element_type = to_cpu.GetType().GetElementType();
-            TypeReference to_element_mono_type = to_element_type.ToMonoTypeReference().RewriteMonoTypeReference();
+            TypeReference to_element_mono_type = to_element_type.ToMonoTypeReference().SwapInBclType();
             for (int i = 0; i < to_cpu.Length; ++i)
             {
                 Int64[] index = new Int64[to_cpu.Rank];
@@ -1775,7 +1775,7 @@
                         var field_definition = mono_fields[i].Resolve();
                         if (field_definition != null && field_definition.IsStatic) continue;
                         var mono_field_type = mono_fields[i].FieldType;
-                        mono_field_type = mono_field_type.RewriteMonoTypeReference();
+                        mono_field_type = mono_field_type.SwapInBclType();
                         if (mono_field_type.FullName == "Campy.SimpleKernel")
                             continue;
                         if (mono_field_type.IsSubclassOf(typeof(MulticastDelegate).ToMonoTypeReference()))

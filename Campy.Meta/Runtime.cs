@@ -1019,7 +1019,7 @@ declare i64 @_Z62System_Runtime_CompilerServices_RuntimeHelpers_InitializeArrayP
             while (chain.Any())
             {
                 var tr = chain.Pop();
-                var mt = tr.RewriteMonoTypeReference();
+                var mt = tr.SwapInBclType();
                 var mt_assembly_name = mt.Scope.Name;
                 var mt_name_space = mt.Namespace;
                 var mt_name = mt.Name;

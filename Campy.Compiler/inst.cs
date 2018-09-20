@@ -323,7 +323,7 @@ namespace Campy.Compiler
             }
 
             ContextRef context_ref = LLVM.GetModuleContext(RUNTIME.global_llvm_module);
-            var normalized_method_name = METAHELPER.FixedMethodName(this.Block._method_reference.FullName);
+            var normalized_method_name = METAHELPER.RenameToLlvmMethodName(this.Block._method_reference.FullName);
             MetadataRef sub;
             if (!debug_methods.ContainsKey(normalized_method_name))
             {
@@ -930,7 +930,7 @@ namespace Campy.Compiler
                 args.Insert(0, v);
             }
             var args_array = args.ToArray();
-            mr = orig_mr.SubstituteMethod(this.Block._method_reference.DeclaringType, args_array);
+            mr = orig_mr.SwapInBclMethod(this.Block._method_reference.DeclaringType, args_array);
             if (mr == null)
             {
                 call_closure_method = orig_mr;
@@ -1643,7 +1643,7 @@ namespace Campy.Compiler
             var parameter_type = parameter_definition.ParameterType;
 			if (parameter_type == null) throw new Exception("Unknown field type");
 			var f = parameter_type;
-			f = f.RewriteMonoTypeReference();
+			f = f.SwapInBclType();
 			f = f.Deresolve(this.Block._method_reference.DeclaringType, null);
 			call_closure_parameter_type = f;
         }
@@ -2006,7 +2006,7 @@ namespace Campy.Compiler
             var v1 = state._stack.Pop();
             call_closure_lhs = v1;
             call_closure_rhs = v2;
-            state._stack.Push(typeof(Int32).ToMonoTypeReference().SubstituteMonoTypeReference());
+            state._stack.Push(typeof(Int32).ToMonoTypeReference().SwapInBclType());
         }
 
         public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
@@ -2967,7 +2967,7 @@ namespace Campy.Compiler
         {   // unbox – convert boxed value type to its raw form, page 431
             var type = this.Operand;
             var tr = type as TypeReference;
-            var tr2 = tr.RewriteMonoTypeReference();
+            var tr2 = tr.SwapInBclType();
             var v = tr2.Deresolve(this.Block._method_reference.DeclaringType, null);
             call_closure_typetok = v;
             TypeReference v2 = state._stack.Pop();
@@ -2981,7 +2981,7 @@ namespace Campy.Compiler
             // Get meta of object.
             var operand = this.Operand;
             var tr = operand as TypeReference;
-            tr = tr.RewriteMonoTypeReference();
+            tr = tr.SwapInBclType();
             tr = tr.Deresolve(this.Block._method_reference.DeclaringType, null);
             var meta = RUNTIME.MonoBclMap_GetBcl(tr);
 
@@ -3214,7 +3214,7 @@ namespace Campy.Compiler
         {   // box – convert a boxable value to its boxed form, page 394
             var typetok = this.Operand;
             var tr = typetok as TypeReference;
-            var tr2 = tr.RewriteMonoTypeReference();
+            var tr2 = tr.SwapInBclType();
             var v = tr2.Deresolve(this.Block._method_reference.DeclaringType, null);
             call_closure_typetok = v;
             TypeReference v2 = state._stack.Pop();
@@ -3228,7 +3228,7 @@ namespace Campy.Compiler
             // Get meta of object.
             var operand = this.Operand;
             var tr = operand as TypeReference;
-            tr = tr.RewriteMonoTypeReference();
+            tr = tr.SwapInBclType();
             tr = tr.Deresolve(this.Block._method_reference.DeclaringType, null);
             var meta = RUNTIME.MonoBclMap_GetBcl(tr);
 
@@ -3664,7 +3664,7 @@ namespace Campy.Compiler
             for (int k = 0; k < xargs; ++k)
             {
                 var v = state._stack.Pop();
-                v = v.SubstituteMonoTypeReference();
+                v = v.SwapInBclType();
                 args.Insert(0, v);
             }
             var args_array = args.ToArray();
@@ -3695,7 +3695,7 @@ namespace Campy.Compiler
                 args[0] = first;
             }
 
-            mr = orig_mr.SubstituteMethod(this.Block._method_reference.DeclaringType, args_array);
+            mr = orig_mr.SwapInBclMethod(this.Block._method_reference.DeclaringType, args_array);
             if (mr == null)
             {
                 call_closure_method = orig_mr;
@@ -3903,7 +3903,7 @@ namespace Campy.Compiler
         {
             var typetok = Operand;
             var tr = typetok as TypeReference;
-            var tr2 = tr.RewriteMonoTypeReference();
+            var tr2 = tr.SwapInBclType();
             var v = tr2.Deresolve(this.Block._method_reference.DeclaringType, null);
             call_closure_typetok = v;
         }
@@ -4382,7 +4382,7 @@ namespace Campy.Compiler
         {   // isinst – test if an object is an instance of a class or interface, page 401
             var typetok = Operand;
             var tr = typetok as TypeReference;
-            var tr2 = tr.RewriteMonoTypeReference();
+            var tr2 = tr.SwapInBclType();
             var v = tr2.Deresolve(this.Block._method_reference.DeclaringType, null);
             call_closure_typetok = v;
             state._stack.Pop();
@@ -4393,7 +4393,7 @@ namespace Campy.Compiler
         {   // isinst – test if an object is an instance of a class or interface, page 401
             var typetok = Operand;
             var tr = typetok as TypeReference;
-            var tr2 = tr.RewriteMonoTypeReference();
+            var tr2 = tr.SwapInBclType();
             var v = tr2.Deresolve(this.Block._method_reference.DeclaringType, null);
             // No change for now.
         }
@@ -5806,7 +5806,7 @@ namespace Campy.Compiler
             var v = state._stack.Pop();
             object operand = this.Operand;
             var o = operand as TypeReference;
-            o = o.RewriteMonoTypeReference();
+            o = o.SwapInBclType();
             var p = o.Deresolve(this.Block._method_reference.DeclaringType, null);
             state._stack.Push(p);
         }
@@ -5837,10 +5837,10 @@ namespace Campy.Compiler
             if (mono_field_reference == null)
                 throw new Exception("Unknown field type");
             var type = mono_field_reference.DeclaringType;
-            type = type.RewriteMonoTypeReference();
+            type = type.SwapInBclType();
             type = type.Deresolve(this.Block._method_reference.DeclaringType, null);
             var mono_field_type = mono_field_reference.FieldType;
-            mono_field_type = mono_field_type.RewriteMonoTypeReference();
+            mono_field_type = mono_field_type.SwapInBclType();
             var llvm_field_type = mono_field_type.ToTypeRef();
             // Call meta to get static field. This can be done now because
             // the address of the static field does not change.
@@ -5947,7 +5947,7 @@ namespace Campy.Compiler
 
         public override void CallClosure(STATE<TypeReference, SafeStackQueue<TypeReference>> state)
         {   // ldtoken (load token handle), ecma 335 page 413
-            var rth = typeof(System.RuntimeTypeHandle).ToMonoTypeReference().RewriteMonoTypeReference();
+            var rth = typeof(System.RuntimeTypeHandle).ToMonoTypeReference().SwapInBclType();
             var v = rth.Deresolve(this.Block._method_reference.DeclaringType, null);
             state._stack.Push(v);
             // Parse System.RuntimeTypeHandle.ctor(IntPtr). We'll make
@@ -5981,12 +5981,12 @@ namespace Campy.Compiler
             }
             else if (tr != null)
             {
-                var arg2 = tr.RewriteMonoTypeReference();
+                var arg2 = tr.SwapInBclType();
                 var v = arg2.Deresolve(this.Block._method_reference.DeclaringType, null);
                 handle_value = RUNTIME.MonoBclMap_GetBcl(v);
 			}
 			
-			var runtimetypehandle = typeof(System.RuntimeTypeHandle).ToMonoTypeReference().RewriteMonoTypeReference();
+			var runtimetypehandle = typeof(System.RuntimeTypeHandle).ToMonoTypeReference().SwapInBclType();
 			var type = runtimetypehandle.Deresolve(this.Block._method_reference.DeclaringType, null);
             var meta = RUNTIME.MonoBclMap_GetBcl(type);
 			var llvm_type = type.ToTypeRef();
@@ -6020,7 +6020,7 @@ namespace Campy.Compiler
 
 			// Call the constructor to initialize the RuntimeTypeHandle object.
 			{
-				var t = typeof(System.RuntimeTypeHandle).ToMonoTypeReference().RewriteMonoTypeReference();
+				var t = typeof(System.RuntimeTypeHandle).ToMonoTypeReference().SwapInBclType();
 				var list = runtimetypehandle.Resolve().Methods.Where(m => m.FullName.Contains(".ctor")).ToList();
 				if (list.Count() != 1)
 					throw new Exception("There should be only one constructor for System.RuntimeTypeHandle.");
@@ -6227,7 +6227,7 @@ namespace Campy.Compiler
                 System.Console.WriteLine(v.ToString());
             object operand = this.Operand;
             TypeReference type = operand as TypeReference;
-            type = type.RewriteMonoTypeReference();
+            type = type.SwapInBclType();
             var actual_element_type = type.Deresolve(this.Block._method_reference.DeclaringType, null);
             TypeReference new_array_type = new ArrayType(actual_element_type, 1 /* 1D array */);
             state._stack.Push(new_array_type);
@@ -6237,7 +6237,7 @@ namespace Campy.Compiler
         {   // newarr, page 416 of ecma 335
             object operand = this.Operand;
             TypeReference element_type = operand as TypeReference;
-            element_type = element_type.RewriteMonoTypeReference();
+            element_type = element_type.SwapInBclType();
             element_type = element_type.Deresolve(this.Block._method_reference.DeclaringType, null);
 
             TypeReference new_array_type = new ArrayType(element_type, 1 /* 1D array */);
@@ -6307,7 +6307,7 @@ namespace Campy.Compiler
                 args.Insert(0, v);
             }
             var args_array = args.ToArray();
-            mr = orig_mr.SubstituteMethod(this.Block._method_reference.DeclaringType, args_array);
+            mr = orig_mr.SwapInBclMethod(this.Block._method_reference.DeclaringType, args_array);
             call_closure_method = mr;
             if (mr == null)
             {
@@ -7133,7 +7133,7 @@ namespace Campy.Compiler
             var d = state._stack.Pop();
             object operand = this.Operand;
             var o = operand as TypeReference;
-            o = o.RewriteMonoTypeReference();
+            o = o.SwapInBclType();
             fully_typed_operand = o.Deresolve(this.Block._method_reference.DeclaringType, null);
         }
 
@@ -7171,11 +7171,11 @@ namespace Campy.Compiler
             var mono_field_reference = operand as FieldReference;
             if (mono_field_reference == null) throw new Exception("Unknown field type");
             var d = mono_field_reference.DeclaringType;
-            d = d.RewriteMonoTypeReference();
+            d = d.SwapInBclType();
             var o = d.Deresolve(this.Block._method_reference.DeclaringType, null);
             call_closure_type = o;
             var f = mono_field_reference.FieldType;
-            f = f.RewriteMonoTypeReference();
+            f = f.SwapInBclType();
             f = f.Deresolve(this.Block._method_reference.DeclaringType, null);
             call_closure_field_type = f;
         }
