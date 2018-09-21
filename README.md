@@ -1,7 +1,8 @@
 # Campy
 
-This project is an API for GP-GPU computing in .NET languages. With Campy, one writes GP-GPU code
-without the usual boilerplate code you see in CUDA/OpenCL, but instead use a simplified model of a multiprocessor GPU/CPU computer,
+This project is a compiler, framework, and API for GP-GPU computing in .NET languages.
+With Campy, one writes GP-GPU code without the usual boilerplate code you see in CUDA/OpenCL,
+but instead use a simplified model of a multiprocessor GPU/CPU computer,
 freeing the developer to focus exclusively on the algorithm. 
 The API compiles and runs CIL code into native GPU code using LLVM. Supported are value types,
 reference types, methods, generics, lambdas, delegates, and closures. Other C#/GPU projects exist,
@@ -87,8 +88,8 @@ Additional examples in Campy test area (https://github.com/kaby76/Campy/tree/mas
 
 # Notes on Building Campy from Scratch
 
-* Make sure to install VS 2017 15.8.2.
-* Net SDK 2.1.401
+* Make sure to install VS 2017 15.8.4.
+* Net SDK 2.1.402
 * Make sure to install NVIDIA GPU Toolkit 9.2.148.
 * Through VS 2017, build Runtime.sln DEBUG first. It will prompt to upgrade--do not! Click on cancel and continue.
 * Through VS 2017, build Campy.sln DEBUG.
