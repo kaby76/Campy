@@ -210,14 +210,27 @@ namespace Campy.Meta
             return new_met;
         }
 
-        public static TypeReference SwapInBclType(this Mono.Cecil.TypeReference type)
+        static Dictionary<TypeReference, TypeReference> memoized_swapinbcltype = new Dictionary<TypeReference, TypeReference>();
+
+        public static TypeReference SwapInBclType(this TypeReference type)
         {
-            var new_type = type.SubstituteMonoTypeReference();
-            if (new_type == null) return type;
+            var list = memoized_swapinbcltype.Where(kvp =>
+            {
+                return kvp.Value.FullName == type.FullName && kvp.Value.Scope.Name == type.Scope.Name;
+            }).ToList();
+            if (list.Any())
+                return list.First().Value;
+            var new_type = type.SwapInBclTypeAux();
+            if (new_type == null)
+            {
+                memoized_swapinbcltype[type] = type;
+                return type;
+            }
+            memoized_swapinbcltype[type] = new_type;
             return new_type;
         }
 
-        private static TypeReference SubstituteMonoTypeReference(this Mono.Cecil.TypeReference type)
+        private static TypeReference SwapInBclTypeAux(this TypeReference type)
         {
             // No need to look if already done.
             string scope = type.Scope.Name;
@@ -227,7 +240,7 @@ namespace Campy.Meta
             {
                 var array_type = type as Mono.Cecil.ArrayType;
                 var element_type = array_type.ElementType;
-                var new_element_type = element_type.SubstituteMonoTypeReference();
+                var new_element_type = element_type.SwapInBclTypeAux();
                 if (element_type != new_element_type)
                 {
                     var new_array_type = new ArrayType(new_element_type, array_type.Rank);
@@ -239,7 +252,7 @@ namespace Campy.Meta
             {
                 var gp = type as ByReferenceType;
                 var x = gp.ElementType;
-                type = new ByReferenceType(x.SubstituteMonoTypeReference());
+                type = new ByReferenceType(x.SwapInBclTypeAux());
                 return type;
             }
             else if (type as GenericInstanceType != null)
@@ -252,11 +265,11 @@ namespace Campy.Meta
                 for (int i = 0; i < new_args.Length; ++i)
                 {
                     var arg = args[i];
-                    var new_arg = arg.SubstituteMonoTypeReference();
+                    var new_arg = arg.SwapInBclTypeAux();
                     new_args[i] = new_arg;
                 }
                 var type_def = type.Resolve();
-                var new_type = type_def.SubstituteMonoTypeReference();
+                var new_type = type_def.SwapInBclTypeAux();
                 GenericInstanceType de = new_type.MakeGenericInstanceType(new_args);
                 return de;
             }
@@ -268,7 +281,7 @@ namespace Campy.Meta
             {
                 var gp = type as PointerType;
                 var x = gp.ElementType;
-                type = new PointerType(x.SubstituteMonoTypeReference());
+                type = new PointerType(x.SwapInBclTypeAux());
                 return type;
             }
             else
@@ -427,6 +440,21 @@ namespace Campy.Meta
 
         public static System.Type ToSystemType(this TypeReference type)
         {
+            // First, "de-substitute".
+            var list = memoized_swapinbcltype.Where(kvp =>
+            {
+                return kvp.Value.FullName == type.FullName && kvp.Value.Scope.Name == type.Scope.Name;
+            }).ToList();
+            if (list.Any())
+                type = list.First().Key;
+            // Next, undo to get system type.
+            var list2 = memoized_types.Where(kvp =>
+            {
+                return kvp.Value.FullName == type.FullName && kvp.Value.Scope.Name == type.Scope.Name;
+            }).ToList();
+            if (list2.Any())
+                return list2.First().Key;
+
             string non_ecma_name = type.FullName.Replace("/", "+");
             var assembly_qualified_name = non_ecma_name + "," + System.IO.Path.GetFileNameWithoutExtension(type.Scope.Name);
 
@@ -455,12 +483,12 @@ namespace Campy.Meta
             return t.IsValueType && !t.IsPrimitive && !t.IsEnum;
         }
 
-        public static bool IsStruct(this Mono.Cecil.TypeReference t)
+        public static bool IsStruct(this TypeReference t)
         {
             return t.IsValueType && !t.IsPrimitive;
         }
 
-        public static bool IsUnsigned(this Mono.Cecil.TypeReference t)
+        public static bool IsUnsigned(this TypeReference t)
         {
             bool result =
                 t.FullName == "System.Int16"
@@ -484,7 +512,7 @@ namespace Campy.Meta
             return false;
         }
 
-        public static bool IsReferenceType(this Mono.Cecil.TypeReference t)
+        public static bool IsReferenceType(this TypeReference t)
         {
             return !t.IsValueType;
         }
@@ -522,7 +550,7 @@ namespace Campy.Meta
             return type_reference_of_parameter;
         }
 
-        public static Mono.Cecil.TypeReference InitVerificationType(Mono.Cecil.TypeReference _cil_type)
+        public static TypeReference InitVerificationType(TypeReference _cil_type)
         {
             // Roughly encoding table on page 311.
             if (_cil_type.FullName == typeof(sbyte).ToMonoTypeReference().FullName)
@@ -559,7 +587,7 @@ namespace Campy.Meta
                 return _cil_type;
         }
 
-        public static Mono.Cecil.TypeReference InitStackVerificationType(Mono.Cecil.TypeReference _verification_type, Mono.Cecil.TypeReference _cil_type)
+        public static TypeReference InitStackVerificationType(TypeReference _verification_type, TypeReference _cil_type)
         {
             if (_verification_type.FullName == typeof(sbyte).ToMonoTypeReference().FullName)
                 return typeof(int).ToMonoTypeReference();

@@ -1,15 +1,19 @@
 
-#include "_BCL_.h"
-#include "MetaData.h"
-#include "MetaData_Search.h"
-#include "System.Array.h"
-#include "System.String.h"
-#include "Type.h"
-#include "Types.h"
-#include "basics.h"
-#include "Heap.h"
-#include "CLIFile.h"
-#include "Generics.h"
+#include "../Native/_BCL_.h"
+#include "../Native/MetaData.h"
+#include "../Native/MetaData_Search.h"
+#include "../Native/System.Array.h"
+#include "../Native/System.String.h"
+#include "../Native/Type.h"
+#include "../Native/Types.h"
+#include "../Native/basics.h"
+#include "../Native/Heap.h"
+#include "../Native/CLIFile.h"
+#include "../Native/Generics.h"
+#include "../Native/Types.h"
+#include "../Native/System.RuntimeType.h"
+#include "../Native/Type.h"
+#include "../Native/basics.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -90,6 +94,27 @@ EXPORT void* BclArrayAlloc(void* element_type_def, int rank, unsigned int* lengt
 		Gprintf("BclArrayAlloc\n");
 	tMD_TypeDef* array_type_def = Type_GetArrayTypeDef((tMD_TypeDef*)element_type_def, rank, NULL, NULL);
 	return (void*)SystemArray_NewVector(array_type_def, rank, lengths);
+}
+
+EXPORT int BclArrayLength(void* obj)
+{
+	if (_bcl_ && _bcl_->options & BCL_DEBUG_FUNCTION_ENTRY)
+		Gprintf("BclArrayAlloc\n");
+	return SystemArray_Length(obj);
+}
+
+EXPORT int BclArrayLengthDim(void* obj, int dim)
+{
+	if (_bcl_ && _bcl_->options & BCL_DEBUG_FUNCTION_ENTRY)
+		Gprintf("BclArrayAlloc\n");
+	return SystemArray_LengthDim(obj, dim);
+}
+
+EXPORT int BclArrayRank(void* obj)
+{
+	if (_bcl_ && _bcl_->options & BCL_DEBUG_FUNCTION_ENTRY)
+		Gprintf("BclArrayAlloc\n");
+	return SystemArray_Rank(obj);
 }
 
 EXPORT void* BclGetMetaOfType(char* assemblyName, char* nameSpace, char* name, void* nested)

@@ -812,8 +812,22 @@
             {
                 var from_type = RUNTIME.MonoBclMap_GetMono(bcl_type_of_object);
                 var type = from_type.ToSystemType();
-                cpu = Activator.CreateInstance(type);
-                _allocated_objects[cpu] = (IntPtr)address;
+                if (mono_type_of_bcl_type.IsArray)
+                {
+                    var array_type = from_type as ArrayType;
+                    var element_type = array_type.ElementType;
+                    var sys_element_type = element_type.ToSystemType();
+                    int rank = RUNTIME.BclArrayRank((IntPtr)address);
+                    object[] dims = new object[rank];
+                    for (int i = 0; i < rank; ++i) dims[i] = RUNTIME.BclArrayLengthDim((IntPtr) address, i);
+                    cpu = Activator.CreateInstance(type, dims);
+                    _allocated_objects[cpu] = (IntPtr)address;
+                }
+                else
+                {
+                    cpu = Activator.CreateInstance(type);
+                    _allocated_objects[cpu] = (IntPtr)address;
+                }
             }
             else
             {

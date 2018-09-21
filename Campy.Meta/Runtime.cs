@@ -50,6 +50,15 @@ namespace Campy.Meta
         [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclArrayAlloc")]
         public static extern System.IntPtr BclArrayAlloc(System.IntPtr bcl_type, int rank, uint[] lengths);
 
+        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclArrayLength")]
+        public static extern int BclArrayLength(System.IntPtr bcl_obj);
+
+        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclArrayLengthDim")]
+        public static extern int BclArrayLengthDim(System.IntPtr bcl_obj, int dim);
+
+        [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclArrayRank")]
+        public static extern int BclArrayRank(System.IntPtr bcl_obj);
+
         [global::System.Runtime.InteropServices.DllImport(@"campy-runtime-wrapper", EntryPoint = "BclGetMetaOfType")]
         public static extern System.IntPtr BclGetMetaOfType(
             [MarshalAs(UnmanagedType.LPStr)] string assemblyName,
