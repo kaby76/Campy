@@ -1592,6 +1592,35 @@ namespace Campy.Compiler
                 if (by_ref)
                 {
                     if (!use_alloca) throw new Exception("There is a load address of a local, but not compiled as such.");
+
+                    /*
+                        Within the runtime, there is a method for a struct. The "this" is a pointer to a struct. In Campy,
+                        all structs are passed via pointer. So, this needs to be special cased here because it is already by reference.
+                        Instead of a copy, load the value.
+                            Method System.String System.NumberFormatter::FormatGeneral(System.NumberFormatter/NumberStore,System.Int32,System.Globalization.NumberFormatInfo,System.Boolean,System.Boolean) corlib.dll C:\Users\Kenne\Documents\Campy\ConsoleApp4\bin\Debug\\corlib.dll
+                               HasThis   False
+                               Args   5
+                               Locals 21
+                               Return (reuse) True
+                               Edges to: 97 96
+                               Instructions:
+                                   IL_0000: nop    
+                                   IL_0001: ldarga.s ns    
+                                   IL_0003: call System.Boolean System.NumberFormatter/NumberStore::get_ZeroOnly()    
+                                   IL_0008: stloc.3    
+                                   IL_0009: ldloc.3    
+                                   IL_000a: brfalse.s IL_0018    
+                        */
+                    if (this.call_closure_arg_type.IsByReference)
+                    {
+                        var t = call_closure_arg_type as ByReferenceType;
+                        var element_type = t.ElementType;
+                        if (element_type.IsStruct())
+                        {
+                            v = new VALUE(LLVM.BuildLoad(Builder, v.V, "i" + instruction_id++));
+                        }
+                    }
+
                     if (Campy.Utils.Options.IsOn("jit_trace"))
                         System.Console.WriteLine(v);
                     state._stack.Push(v);

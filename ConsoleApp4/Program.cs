@@ -77,12 +77,12 @@ namespace ConsoleApp4
             StartDebugging();
             Campy.Parallel.For(1, i =>
             {
-                var nb = new mystuff(true);
-                ms._defPrecision = nb.G_decPointPos;
-                ms._defMaxPrecision = nb.hi();
-                nb._digits[0] = 255;
-                ms._digits = nb._digits;
-               // System.Console.WriteLine(2.ToString());
+                //var nb = new mystuff(true);
+                //ms._defPrecision = nb.G_decPointPos;
+                //ms._defMaxPrecision = nb.hi();
+                //nb._digits[0] = 255;
+                //ms._digits = nb._digits;
+                System.Console.WriteLine(2.ToString());
             });
         }
     }
