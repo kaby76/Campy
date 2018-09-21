@@ -103,7 +103,7 @@ function_space_specifier tAsyncCall* System_Math_Log10(PTR pThis_, PTR pParams, 
 }
 
 function_space_specifier tAsyncCall* System_Math_Pow(PTR pThis_, PTR pParams, PTR pReturnValue) {
-    *(double*)pReturnValue = pow(INTERNALCALL_PARAM(0, double), INTERNALCALL_PARAM(8, double));
+    *(double*)pReturnValue = pow(INTERNALCALL_PARAM(0, double), INTERNALCALL_PARAM(1, double));
     return NULL;
 }
 
@@ -133,12 +133,12 @@ function_space_specifier tAsyncCall* System_Math_Tanh(PTR pThis_, PTR pParams, P
 }
 
 function_space_specifier tAsyncCall* System_Math_FMod(PTR pThis_, PTR pParams, PTR pReturnValue) {
-    *(double*)pReturnValue = fmod(INTERNALCALL_PARAM(0, double), INTERNALCALL_PARAM(8, double));
+    *(double*)pReturnValue = fmod(INTERNALCALL_PARAM(0, double), INTERNALCALL_PARAM(1, double));
     return NULL;
 }
 
 function_space_specifier tAsyncCall* System_Math_ModF(PTR pThis_, PTR pParams, PTR pReturnValue) {
-    *(double*)pReturnValue = modf(INTERNALCALL_PARAM(0, double), INTERNALCALL_PARAM(8, double*));
+    *(double*)pReturnValue = modf(INTERNALCALL_PARAM(0, double), INTERNALCALL_PARAM(1, double*));
     return NULL;
 }
 

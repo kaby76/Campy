@@ -400,8 +400,8 @@ function_space_specifier tAsyncCall* System_Array_Reverse(PTR pThis_, PTR pParam
     U8 *pE1, *pE2;
 
     pArray = INTERNALCALL_PARAM(0, tSystemArray*);
-    index = INTERNALCALL_PARAM(4, U32);
-    length = INTERNALCALL_PARAM(8, U32);
+    index = INTERNALCALL_PARAM(1, U32);
+    length = INTERNALCALL_PARAM(2, U32);
 
     pArrayType = Heap_GetType((HEAP_PTR)pArray);
     elementSize = pArrayType->pArrayElementType->arrayElementSize;
