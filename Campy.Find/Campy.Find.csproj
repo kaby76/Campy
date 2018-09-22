@@ -53,7 +53,7 @@
       <Version>9.2148.1</Version>
     </PackageReference>
     <PackageReference Include="swigged.llvm">
-      <Version>70.0.0</Version>
+      <Version>70.0.1</Version>
     </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
