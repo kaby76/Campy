@@ -160,14 +160,12 @@ function_space_specifier tAsyncCall* System_Array_Internal_SetValue(PTR pThis_, 
 
     index = *(U32*)p++;
 
-#if defined(_MSC_VER) && defined(_DEBUG)
     // Do a bounds-check
     U32 len = *((&(pArray->rank)) + 1);
     if (index >= len) {
 //      printf("[Array] Internal_SetValue() Bounds-check failed\n");
-        __debugbreak();
+        Crash("Bounds check failed.");
     }
-#endif
 
     elementSize = pElementType->arrayElementSize;
     PTR beginning_of_elements = pArray->ptr_elements;
@@ -261,14 +259,12 @@ function_space_specifier tAsyncCall* System_Array_SetValue(PTR pThis_, PTR pPara
 
     index = *(U32*)p++;
 
-#if defined(_MSC_VER) && defined(_DEBUG)
     // Do a bounds-check
     U32 len = *((&(pArray->rank)) + 1);
     if (index >= len) {
 //      printf("[Array] Internal_SetValue() Bounds-check failed\n");
-        __debugbreak();
+        Crash("Bounds check failed.");
     }
-#endif
 
     elementSize = pElementType->arrayElementSize;
     PTR beginning_of_elements = pArray->ptr_elements;
@@ -337,7 +333,7 @@ function_space_specifier tAsyncCall* System_Array_Internal_Copy(PTR pThis_, PTR 
         U32 dlen = *((&(pDst->rank)) + 1);
         if (srcIndex + length > slen || dstIndex + length > dlen) {
             //printf("[Array] Internal_Copy() Bounds check failed\n");
-            __debugbreak();
+			Crash("Bounds check failed.");
         }
 #endif
 
@@ -370,9 +366,8 @@ function_space_specifier tAsyncCall* System_Array_Resize(PTR pThis_, PTR pParams
     U32 rank = *(&(pOldArray->rank));
     if (rank > 1)
     {
-        Gprintf("Trying to resize a multi-dimensional array. Cannot do, guy.");
-        __debugbreak();
-    }
+		Crash("Trying to resize a multi-dimensional array. Cannot do, guy.");
+	}
     int len = *((&(pOldArray->rank)) + 1);
     oldSize = len;
 
@@ -451,14 +446,12 @@ function_space_specifier void SystemArray_StoreElement(HEAP_PTR pThis_, U32 inde
     tMD_TypeDef *pArrayTypeDef;
     U32 elemSize;
 
-#if defined(_MSC_VER) && defined(_DEBUG)
     // Do a bounds check
     U32 len = *((&(pArray->rank)) + 1);
     if (index >= len) {
 //      printf("SystemArray_StoreElement() Bounds check failed. Array length: %d  index: %d\n", pArray->length, index);
-        __debugbreak();
-    }
-#endif
+		Crash("Bounds check failed.");
+	}
 
     pArrayTypeDef = Heap_GetType(pThis_);
     elemSize = pArrayTypeDef->pArrayElementType->arrayElementSize;
@@ -661,13 +654,11 @@ function_space_specifier PTR SystemArray_LoadElementAddress(HEAP_PTR pThis_, U32
     tSystemArray *pArray = (tSystemArray*)pThis_;
     tMD_TypeDef *pArrayTypeDef;
 
-#if defined(_MSC_VER) && defined(_DEBUG)
     U32 len = *((&(pArray->rank)) + 1);
     if (index >= len) {
 //      printf("SystemArray_LoadElementAddress() Bounds check failed\n");
-        __debugbreak();
-    }
-#endif
+		Crash("Bounds check failed.");
+	}
 
     pArrayTypeDef = Heap_GetType(pThis_);
     PTR beginning_of_elements = pArray->ptr_elements;

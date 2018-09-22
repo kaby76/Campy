@@ -22,7 +22,7 @@ public delegate void Campy.Types._Kernel_type(Index idx);
 
 # Targets
 
-* Windows 10 (x64), Ubuntu 16.04 (x64), Net Framework >= 4.6.1, Net Core 2.0; CUDA GPU Toolkit 9.1.85; Maxwell or better GPU.
+* Windows 10 (x64), Ubuntu 16.04 (x64), Net Framework >= 4.6.1, Net Core 2.0; CUDA GPU Toolkit 9.2.148; Maxwell or better GPU.
 
 # Campy under a minute #
 (Make sure to install Net Core 2.0, https://www.microsoft.com/net/learn/get-started/windows.)
