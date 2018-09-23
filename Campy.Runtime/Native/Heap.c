@@ -468,6 +468,16 @@ function_space_specifier void Heap_SetRoots(tHeapRoots *pHeapRoots, void *pRoots
     pRootEntry->pMem = (void **)pRoots;
 }
 
+function_space_specifier void Lock()
+{
+
+}
+
+function_space_specifier void Unlock()
+{
+
+}
+
 function_space_specifier HEAP_PTR Heap_Alloc(tMD_TypeDef *pTypeDef, U32 size) {
     tHeapEntry *pHeapEntry;
     U32 totalSize;
@@ -498,10 +508,13 @@ function_space_specifier HEAP_PTR Heap_Alloc(tMD_TypeDef *pTypeDef, U32 size) {
     pHeapEntry->pSync = NULL;
     pHeapEntry->needToFinalize = (pTypeDef->pFinalizer != NULL);
     memset(pHeapEntry->memory, 0, size);
-    _bcl_->trackHeapSize += totalSize;
 
+	// This has to be atomic because it is global in nature.
+	Lock();
+	_bcl_->trackHeapSize += totalSize;
     _bcl_->pHeapTreeRoot = TreeInsert(_bcl_->pHeapTreeRoot, pHeapEntry);
     _bcl_->numNodes++;
+	Unlock();
 
     return pHeapEntry->memory;
 }
