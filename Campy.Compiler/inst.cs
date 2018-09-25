@@ -1516,7 +1516,7 @@ namespace Campy.Compiler
             var bb = this.Block;
             var mn = bb._method_reference.FullName;
             if (mn.EndsWith("(System.Int32)")
-                && mn.Contains("<>c__DisplayClass")
+                && bb == COMPILER.Singleton._kernel_block
                 && _arg == 1)
             {
                 //threadId

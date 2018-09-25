@@ -39,9 +39,12 @@ namespace ConsoleApp4
         static void Main(string[] args)
         {
             StartDebugging();
+            //int[] a = new int[3];
             Campy.Parallel.For(3, i =>
             {
-                System.Console.WriteLine(i.ToString());
+                //a[i] = i;
+                int j = i;
+                System.Console.WriteLine(j.ToString());
             });
         }
     }

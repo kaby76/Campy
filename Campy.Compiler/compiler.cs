@@ -739,6 +739,7 @@ namespace Campy.Compiler
             if (!basic_blocks_to_compile.Any())
                 return;
 
+            COMPILER.Singleton._kernel_block = basic_blocks_to_compile.First();
             var _mcfg = basic_blocks_to_compile.First()._graph;
 
             // Get a list of nodes to compile.
@@ -992,6 +993,7 @@ namespace Campy.Compiler
     {
         private IMPORTER _importer;
         private CFG _mcfg;
+        internal CFG.Vertex _kernel_block;
         public int _start_index;
         private static bool init;
         public static bool using_cuda = true;
