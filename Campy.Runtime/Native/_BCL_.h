@@ -86,6 +86,12 @@ struct _BCL_t {
 
     // Options -- bitmap of whether to print debugging information.
     U64 options;
+
+	// Global lock.
+	int global_lock;
+
+	// Big fat hash table for managed pointers.
+	void * hash_table;
 };
 
 #define BCL_DEBUG_PRINT_EVERYTHING 0x1

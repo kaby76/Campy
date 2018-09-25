@@ -21,7 +21,6 @@
 #include "Compat.h"
 #include "Sys.h"
 #include "Heap.h"
-
 #include "MetaData.h"
 #include "CLIFile.h"
 #include "Type.h"
@@ -31,6 +30,94 @@
 #include "System.String.h"
 #include "System.Array.h"
 #include "System.WeakReference.h"
+#ifdef CUDA
+#include <device_atomic_functions.h>
+#endif
+
+#define SLOTEMPTY (void*)0
+#define LINEAR 1
+#define QUADRATIC 2
+#define method LINEAR
+#define kMaxProbes 0x00ffffff
+
+function_space_specifier int hashfunction(unsigned long long int key)
+{
+	return (int)(key & 0x00ffffff);
+}
+
+function_space_specifier int jumpfunction(unsigned long long int key)
+{
+	return (int)(key % 100);
+}
+
+function_space_specifier bool insertentry(unsigned long long int key)
+{
+	// Manage the key and its value as a single 64-bit entry.
+	unsigned long long int entry = key;
+	unsigned long long int * table = (unsigned long long int*)_bcl_->hash_table;
+	unsigned int tablesize = 0xffffffff;
+
+	// Figure out where the item needs to be hashed into.
+	unsigned index = hashfunction(key);
+	unsigned doublehashjump = jumpfunction(key) + 1;
+
+	// Keep trying to insert the entry into the hash table
+	// until an empty slot is found.
+	unsigned long long int oldentry;
+	for (unsigned attempt = 1; attempt <= kMaxProbes; ++attempt)
+	{
+		// Move the index so that it points somewhere within the table.
+		index %= tablesize;
+		// Atomically check the slot and insert the key if empty.
+#ifdef  __CUDA_ARCH__
+		oldentry = atomicCAS((unsigned long long int*)table + index, (unsigned long long int)SLOTEMPTY, (unsigned long long int)entry);
+#else
+		oldentry = (unsigned long long int)(*(table + index));
+		*(table + index) = entry;
+#endif
+		// If the slot was empty, the item was inserted safely.
+		if (oldentry == (unsigned long long int)SLOTEMPTY) return true;
+		// Move the insertion index.
+		if (method == LINEAR) index += 1;
+		else if (method == QUADRATIC) index += attempt * attempt;
+		else index += attempt * doublehashjump;
+	}
+	return false;
+}
+
+function_space_specifier bool findentry(unsigned long long int key)
+{
+	// Manage the key and its value as a single 64-bit entry.
+	unsigned long long int entry = key;
+	unsigned long long int * table = (unsigned long long int*)_bcl_->hash_table;
+	unsigned int tablesize = 0xffffffff;
+
+	// Figure out where the item needs to be hashed into.
+	unsigned index = hashfunction(key);
+	unsigned doublehashjump = jumpfunction(key) + 1;
+
+	// Keep trying to insert the entry into the hash table
+	// until an empty slot is found.
+	unsigned long long int oldentry;
+	for (unsigned attempt = 1; attempt <= kMaxProbes; ++attempt)
+	{
+		// Move the index so that it points somewhere within the table.
+		index %= tablesize;
+		// Atomically check the slot and insert the key if empty.
+//#ifdef  __CUDA_ARCH__
+//		oldentry = atomicCAS((unsigned long long int*)table + index, (unsigned long long int)SLOTEMPTY, (unsigned long long int)entry);
+//#else
+		oldentry = (unsigned long long int)(*(table + index));
+//		*(table + index) = entry;
+//#endif
+		if (entry == oldentry) return true;
+		// Move the insertion index.
+		if (method == LINEAR) index += 1;
+		else if (method == QUADRATIC) index += attempt * attempt;
+		else index += attempt * doublehashjump;
+	}
+	return false;
+}
 
 // Memory roots are:
 // All threads, all MethodStates - the ParamLocals memory and the evaluation stack
@@ -119,6 +206,8 @@ function_space_specifier void Heap_Init() {
     _bcl_->nil->pLink[0] = _bcl_->nil->pLink[1] = _bcl_->nil;
     // Set the heap tree as empty
     _bcl_->pHeapTreeRoot = _bcl_->nil;
+	_bcl_->hash_table = Gmalloc(0xffffffff);
+	memset(_bcl_->hash_table, 0, sizeof(0xffffffff));
 }
 
 // Get the size of a heap entry, NOT including the header
@@ -468,14 +557,18 @@ function_space_specifier void Heap_SetRoots(tHeapRoots *pHeapRoots, void *pRoots
     pRootEntry->pMem = (void **)pRoots;
 }
 
-function_space_specifier void Lock()
+function_space_specifier void Lock(int * ref)
 {
-
+#ifdef  __CUDA_ARCH__
+	while(atomicCAS(ref, 0, 1) != 0);
+#endif
 }
 
-function_space_specifier void Unlock()
+function_space_specifier void Unlock(int * ref)
 {
-
+#ifdef  __CUDA_ARCH__
+	atomicExch(ref, 0);
+#endif
 }
 
 function_space_specifier HEAP_PTR Heap_Alloc(tMD_TypeDef *pTypeDef, U32 size) {
@@ -510,11 +603,11 @@ function_space_specifier HEAP_PTR Heap_Alloc(tMD_TypeDef *pTypeDef, U32 size) {
     memset(pHeapEntry->memory, 0, size);
 
 	// This has to be atomic because it is global in nature.
-	Lock();
 	_bcl_->trackHeapSize += totalSize;
-    _bcl_->pHeapTreeRoot = TreeInsert(_bcl_->pHeapTreeRoot, pHeapEntry);
+   // _bcl_->pHeapTreeRoot = TreeInsert(_bcl_->pHeapTreeRoot, pHeapEntry);
+	insertentry((unsigned long long int)pHeapEntry);
+
     _bcl_->numNodes++;
-	Unlock();
 
     return pHeapEntry->memory;
 }
@@ -532,7 +625,8 @@ function_space_specifier HEAP_PTR Heap_AllocType(tMD_TypeDef *pTypeDef) {
 function_space_specifier tMD_TypeDef* Heap_GetType(HEAP_PTR heapEntry) {
     if (heapEntry == NULL) return NULL;
     tHeapEntry *pHeapEntry = GET_HEAPENTRY(heapEntry);
-    if (!TreeFind(_bcl_->pHeapTreeRoot, pHeapEntry))
+ //   if (!TreeFind(_bcl_->pHeapTreeRoot, pHeapEntry))
+	if (!findentry((unsigned long long int)pHeapEntry))
         return NULL;
     return pHeapEntry->pTypeDef;
 }

@@ -119,6 +119,8 @@ function_space_specifier void CommonInitTheBcl(void * g, size_t size, size_t fir
     bcl->pAllThreads = NULL;
     bcl->pCurrentThread = NULL;
 
+	bcl->hash_table = NULL;
+
     // Type
     bcl->CorLibDone = 0;
 }

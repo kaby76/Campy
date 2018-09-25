@@ -1083,6 +1083,7 @@ declare i64 @_Z62System_Runtime_CompilerServices_RuntimeHelpers_InitializeArrayP
             }
             return result;
         }
+
         public static TypeReference MonoBclMap_GetMono(IntPtr bcl_type)
         {
             var possible = _type_to_bcltype.Where(t => t.Value == bcl_type);
