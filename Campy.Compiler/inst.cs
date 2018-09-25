@@ -1511,80 +1511,8 @@ namespace Campy.Compiler
 
         public override unsafe void Convert(STATE<VALUE, StackQueue<VALUE>> state)
         {
-            // For ldarg.1 of a compiler generated closure method, generate code
-            // to create an int index for the thread.
             var bb = this.Block;
             var mn = bb._method_reference.FullName;
-            if (mn.EndsWith("(System.Int32)")
-                && bb == COMPILER.Singleton._kernel_block
-                && _arg == 1)
-            {
-                //threadId
-                var tidx = RUNTIME._bcl_runtime_csharp_internal_to_valueref["llvm.nvvm.read.ptx.sreg.tid.x"];
-                var tidy = RUNTIME._bcl_runtime_csharp_internal_to_valueref["llvm.nvvm.read.ptx.sreg.tid.y"];
-                var tidz = RUNTIME._bcl_runtime_csharp_internal_to_valueref["llvm.nvvm.read.ptx.sreg.tid.z"];
-
-                //blockIdx
-                var ctaidx = RUNTIME._bcl_runtime_csharp_internal_to_valueref["llvm.nvvm.read.ptx.sreg.ctaid.x"];
-                var ctaidy = RUNTIME._bcl_runtime_csharp_internal_to_valueref["llvm.nvvm.read.ptx.sreg.ctaid.y"];
-                var ctaidz = RUNTIME._bcl_runtime_csharp_internal_to_valueref["llvm.nvvm.read.ptx.sreg.ctaid.z"];
-
-                //blockDim
-                var ntidx = RUNTIME._bcl_runtime_csharp_internal_to_valueref["llvm.nvvm.read.ptx.sreg.ntid.x"];
-                var ntidy = RUNTIME._bcl_runtime_csharp_internal_to_valueref["llvm.nvvm.read.ptx.sreg.ntid.y"];
-                var ntidz = RUNTIME._bcl_runtime_csharp_internal_to_valueref["llvm.nvvm.read.ptx.sreg.ntid.z"];
-
-                //gridDim
-                var nctaidx = RUNTIME._bcl_runtime_csharp_internal_to_valueref["llvm.nvvm.read.ptx.sreg.nctaid.x"];
-                var nctaidy = RUNTIME._bcl_runtime_csharp_internal_to_valueref["llvm.nvvm.read.ptx.sreg.nctaid.y"];
-                var nctaidz = RUNTIME._bcl_runtime_csharp_internal_to_valueref["llvm.nvvm.read.ptx.sreg.nctaid.z"];
-
-                var v_tidx = LLVM.BuildCall(bb.LlvmInfo.Builder, tidx, new ValueRef[] { }, "tidx");
-                var v_tidy = LLVM.BuildCall(bb.LlvmInfo.Builder, tidy, new ValueRef[] { }, "tidy");
-                var v_ntidx = LLVM.BuildCall(bb.LlvmInfo.Builder, ntidx, new ValueRef[] { }, "ntidx");
-                var v_ntidy = LLVM.BuildCall(bb.LlvmInfo.Builder, ntidy, new ValueRef[] { }, "ntidy");
-                var v_ctaidx = LLVM.BuildCall(bb.LlvmInfo.Builder, ctaidx, new ValueRef[] { }, "ctaidx");
-                var v_ctaidy = LLVM.BuildCall(bb.LlvmInfo.Builder, ctaidy, new ValueRef[] { }, "ctaidx");
-                var v_nctaidx = LLVM.BuildCall(bb.LlvmInfo.Builder, nctaidx, new ValueRef[] { }, "nctaidx");
-
-                //int i = (threadIdx.x
-                //         + blockDim.x * blockIdx.x
-                //         + blockDim.x * gridDim.x * blockDim.y * blockIdx.y
-                //         + blockDim.x * gridDim.x * threadIdx.y);
-
-                var t1 = v_tidx;
-
-                var t2 = LLVM.BuildMul(bb.LlvmInfo.Builder, v_ntidx, v_ctaidx, "i" + instruction_id++);
-
-                var t3 = LLVM.BuildMul(bb.LlvmInfo.Builder, v_ntidx, v_nctaidx, "i" + instruction_id++);
-                t3 = LLVM.BuildMul(bb.LlvmInfo.Builder, t3, v_ntidy, "i" + instruction_id++);
-                t3 = LLVM.BuildMul(bb.LlvmInfo.Builder, t3, v_ctaidy, "i" + instruction_id++);
-
-                var t4 = LLVM.BuildMul(bb.LlvmInfo.Builder, v_ntidx, v_nctaidx, "i" + instruction_id++);
-                t4 = LLVM.BuildMul(bb.LlvmInfo.Builder, t4, v_tidy, "i" + instruction_id++);
-
-                var sum = LLVM.BuildAdd(bb.LlvmInfo.Builder, t1, t2, "i" + instruction_id++);
-                sum = LLVM.BuildAdd(bb.LlvmInfo.Builder, sum, t3, "i" + instruction_id++);
-                sum = LLVM.BuildAdd(bb.LlvmInfo.Builder, sum, t4, "i" + instruction_id++);
-
-                unsafe
-                {
-                    ValueRef[] args = new ValueRef[0];
-
-                    string name = "_Z21get_kernel_base_indexv";
-                    var list2 = RUNTIME.PtxFunctions.ToList();
-                    var f = list2.Where(t => t._mangled_name == name).First();
-                    ValueRef fv = f._valueref;
-                    var call = LLVM.BuildCall(Builder, fv, args, "");
-                    sum = LLVM.BuildAdd(bb.LlvmInfo.Builder, sum, call, "i" + instruction_id++);
-                }
-
-                if (Campy.Utils.Options.IsOn("jit_trace"))
-                    System.Console.WriteLine("load " + new VALUE(sum));
-                state._stack.Push(new VALUE(sum));
-            }
-            else
-            {
                 VALUE v = state._arguments[_arg];
                 CFG.Vertex entry = this.Block.Entry;
                 bool use_alloca = entry.CheckArgsAlloc(_arg);
@@ -1625,16 +1553,16 @@ namespace Campy.Compiler
                         System.Console.WriteLine(v);
                     state._stack.Push(v);
                 }
-                else
+            else
+            {
+                if (use_alloca)
                 {
-                    if (use_alloca)
-                    {
-                        v = new VALUE(LLVM.BuildLoad(Builder, v.V, "i" + instruction_id++));
-                    }
-                    if (Campy.Utils.Options.IsOn("jit_trace"))
-                        System.Console.WriteLine(v);
-                    state._stack.Push(v);
+                    v = new VALUE(LLVM.BuildLoad(Builder, v.V, "i" + instruction_id++));
                 }
+
+                if (Campy.Utils.Options.IsOn("jit_trace"))
+                    System.Console.WriteLine(v);
+                state._stack.Push(v);
             }
         }
     }

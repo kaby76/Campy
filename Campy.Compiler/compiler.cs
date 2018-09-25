@@ -552,6 +552,75 @@ namespace Campy.Compiler
                             "i" + INST.instruction_id++);
                         LLVM.SetAlignment(new_obj, 8);
                         LLVM.BuildStore(bb.LlvmInfo.Builder, v, new_obj);
+
+                        // If this is entry of kernel, the compute index of thread.
+                        var mn = bb._method_reference.FullName;
+                        if (mn.EndsWith("(System.Int32)")
+                            && bb == COMPILER.Singleton._kernel_block
+                            && i == 1)
+                        {
+                            //threadId
+                            var tidx = RUNTIME._bcl_runtime_csharp_internal_to_valueref["llvm.nvvm.read.ptx.sreg.tid.x"];
+                            var tidy = RUNTIME._bcl_runtime_csharp_internal_to_valueref["llvm.nvvm.read.ptx.sreg.tid.y"];
+                            var tidz = RUNTIME._bcl_runtime_csharp_internal_to_valueref["llvm.nvvm.read.ptx.sreg.tid.z"];
+
+                            //blockIdx
+                            var ctaidx = RUNTIME._bcl_runtime_csharp_internal_to_valueref["llvm.nvvm.read.ptx.sreg.ctaid.x"];
+                            var ctaidy = RUNTIME._bcl_runtime_csharp_internal_to_valueref["llvm.nvvm.read.ptx.sreg.ctaid.y"];
+                            var ctaidz = RUNTIME._bcl_runtime_csharp_internal_to_valueref["llvm.nvvm.read.ptx.sreg.ctaid.z"];
+
+                            //blockDim
+                            var ntidx = RUNTIME._bcl_runtime_csharp_internal_to_valueref["llvm.nvvm.read.ptx.sreg.ntid.x"];
+                            var ntidy = RUNTIME._bcl_runtime_csharp_internal_to_valueref["llvm.nvvm.read.ptx.sreg.ntid.y"];
+                            var ntidz = RUNTIME._bcl_runtime_csharp_internal_to_valueref["llvm.nvvm.read.ptx.sreg.ntid.z"];
+
+                            //gridDim
+                            var nctaidx = RUNTIME._bcl_runtime_csharp_internal_to_valueref["llvm.nvvm.read.ptx.sreg.nctaid.x"];
+                            var nctaidy = RUNTIME._bcl_runtime_csharp_internal_to_valueref["llvm.nvvm.read.ptx.sreg.nctaid.y"];
+                            var nctaidz = RUNTIME._bcl_runtime_csharp_internal_to_valueref["llvm.nvvm.read.ptx.sreg.nctaid.z"];
+
+                            var v_tidx = LLVM.BuildCall(bb.LlvmInfo.Builder, tidx, new ValueRef[] { }, "tidx");
+                            var v_tidy = LLVM.BuildCall(bb.LlvmInfo.Builder, tidy, new ValueRef[] { }, "tidy");
+                            var v_ntidx = LLVM.BuildCall(bb.LlvmInfo.Builder, ntidx, new ValueRef[] { }, "ntidx");
+                            var v_ntidy = LLVM.BuildCall(bb.LlvmInfo.Builder, ntidy, new ValueRef[] { }, "ntidy");
+                            var v_ctaidx = LLVM.BuildCall(bb.LlvmInfo.Builder, ctaidx, new ValueRef[] { }, "ctaidx");
+                            var v_ctaidy = LLVM.BuildCall(bb.LlvmInfo.Builder, ctaidy, new ValueRef[] { }, "ctaidx");
+                            var v_nctaidx = LLVM.BuildCall(bb.LlvmInfo.Builder, nctaidx, new ValueRef[] { }, "nctaidx");
+
+                            //int i = (threadIdx.x
+                            //         + blockDim.x * blockIdx.x
+                            //         + blockDim.x * gridDim.x * blockDim.y * blockIdx.y
+                            //         + blockDim.x * gridDim.x * threadIdx.y);
+
+                            var t1 = v_tidx;
+
+                            var t2 = LLVM.BuildMul(bb.LlvmInfo.Builder, v_ntidx, v_ctaidx, "i" + INST.instruction_id++);
+
+                            var t3 = LLVM.BuildMul(bb.LlvmInfo.Builder, v_ntidx, v_nctaidx, "i" + INST.instruction_id++);
+                            t3 = LLVM.BuildMul(bb.LlvmInfo.Builder, t3, v_ntidy, "i" + INST.instruction_id++);
+                            t3 = LLVM.BuildMul(bb.LlvmInfo.Builder, t3, v_ctaidy, "i" + INST.instruction_id++);
+
+                            var t4 = LLVM.BuildMul(bb.LlvmInfo.Builder, v_ntidx, v_nctaidx, "i" + INST.instruction_id++);
+                            t4 = LLVM.BuildMul(bb.LlvmInfo.Builder, t4, v_tidy, "i" + INST.instruction_id++);
+
+                            var sum = LLVM.BuildAdd(bb.LlvmInfo.Builder, t1, t2, "i" + INST.instruction_id++);
+                            sum = LLVM.BuildAdd(bb.LlvmInfo.Builder, sum, t3, "i" + INST.instruction_id++);
+                            sum = LLVM.BuildAdd(bb.LlvmInfo.Builder, sum, t4, "i" + INST.instruction_id++);
+
+                            unsafe
+                            {
+                                ValueRef[] largs = new ValueRef[0];
+
+                                string name = "_Z21get_kernel_base_indexv";
+                                var list2 = RUNTIME.PtxFunctions.ToList();
+                                var f = list2.Where(t => t._mangled_name == name).First();
+                                ValueRef fv = f._valueref;
+                                var call = LLVM.BuildCall(bb.LlvmInfo.Builder, fv, largs, "");
+                                sum = LLVM.BuildAdd(bb.LlvmInfo.Builder, sum, call, "i" + INST.instruction_id++);
+                                LLVM.BuildStore(bb.LlvmInfo.Builder, sum, new_obj);
+                            }
+                        }
+
                         value = new VALUE(new_obj);
                     }
                     else
