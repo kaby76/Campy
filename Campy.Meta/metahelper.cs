@@ -837,6 +837,10 @@ namespace Campy.Meta
                             continue;
 
                         TypeReference field_type = field.FieldType;
+                        // Do not consider SimpleKernel fields either.
+                        if (field_type.FullName == "Campy.SimpleKernel")
+                            continue;
+
                         TypeReference instantiated_field_type = field.FieldType;
 
                         if (git != null)

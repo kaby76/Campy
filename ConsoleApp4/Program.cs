@@ -7,87 +7,136 @@ using System.Linq;
 
 namespace ConsoleApp4
 {
+    class OddEvenSort
+    {
+        public static void swap(ref int i, ref int j)
+        {
+            int t = i;
+            i = j;
+            j = t;
+        }
+
+        public static void Seq(int[] a)
+        {
+            int N = a.Length;
+            bool sorted = false;
+            while (!sorted)
+            {
+                sorted = true;
+                int n2 = N / 2;
+                for (int i = 0; i < n2; ++i)
+                {
+                    int j = i * 2;
+                    if (a[j] > a[j + 1])
+                    {
+                        swap(ref a[j], ref a[j + 1]);
+                        sorted = false;
+                    }
+                }
+
+                for (int i = 0; i < n2 - 1; ++i)
+                {
+                    int j = i * 2 + 1;
+                    if (a[j] > a[j + 1])
+                    {
+                        swap(ref a[j], ref a[j + 1]);
+                        sorted = false;
+                    }
+                }
+            }
+        }
+
+        public static void Par(int[] a)
+        {
+            Campy.Parallel.Sticky(a);
+            int N = a.Length;
+            bool sorted = false;
+            while (!sorted)
+            {
+                sorted = true;
+                int n2 = N / 2;
+                Campy.Parallel.For(n2, i =>
+                {
+                    int j = i * 2;
+                    if (a[j] > a[j + 1])
+                    {
+                        swap(ref a[j], ref a[j + 1]);
+                        sorted = false;
+                    }
+                });
+                Campy.Parallel.For(n2 - 1, i =>
+                {
+                    int j = i * 2 + 1;
+                    if (a[j] > a[j + 1])
+                    {
+                        swap(ref a[j], ref a[j + 1]);
+                        sorted = false;
+                    }
+                });
+            }
+
+            Campy.Parallel.Sync();
+        }
+
+        // Adapted from http://www.iti.fh-flensburg.de/lang/algorithmen/sortieren/networks/oemen.htm
+
+        /** sorts a piece of length n of the array
+         * starting at position lo
+         */
+        public static void Rec(int[] a, int lo, int n)
+        {
+            if (n > 1)
+            {
+                int m = n / 2;
+                Rec(a, lo, m);
+                Rec(a, lo + m, m);
+                RecMerge(a, lo, n, 1);
+            }
+        }
+
+        /** lo is the starting position and
+         * n is the length of the piece to be merged,
+         * r is the distance of the elements to be compared
+         */
+        public static void RecMerge(int[] a, int lo, int n, int r)
+        {
+            int m = r * 2;
+            if (m < n)
+            {
+                RecMerge(a, lo, n, m); // even subsequence
+                RecMerge(a, lo + r, n, m); // odd subsequence
+                for (int i = lo + r; i + r < lo + n; i += m)
+                    if (a[i] > a[i + r])
+                        swap(ref a[i], ref a[i + r]);
+            }
+            else if (a[lo] > a[lo + r])
+                swap(ref a[lo], ref a[lo + r]);
+        }
+    }
+
     public class UnitTest1
     {
         public static void Test1()
         {
-            double[] res = new double[10];
-            Campy.Parallel.For(10, i =>
+            Random rnd = new Random();
+            int N = 8;
             {
-                switch (i)
-                {
-                    case 0:
-                        res[i] = Math.Sin(0.5);
-                        break;
-                    case 1:
-                        res[i] = Math.Cos(0.5);
-                        break;
-                    case 2:
-                        res[i] = Math.Tan(0.5);
-                        break;
-                    case 3:
-                        res[i] = Math.Log(0.5);
-                        break;
-                    case 4:
-                        res[i] = Math.Log10(0.5);
-                        break;
-                    case 5:
-                        res[i] = Math.Exp(0.5);
-                        break;
-                    case 6:
-                        res[i] = Math.Ceiling(0.5);
-                        break;
-                    case 7:
-                        res[i] = Math.Cosh(0.5);
-                        break;
-                    case 8:
-                        res[i] = Math.Sinh(0.5);
-                        break;
-                    case 9:
-                        res[i] = Math.Pow(0.5, 2);
-                        break;
-                }
-            });
-            double[] gold = new double[10];
-            for (int i = 0; i < 10; ++i)
-                switch (i)
-                {
-                    case 0:
-                        gold[i] = Math.Sin(0.5);
-                        break;
-                    case 1:
-                        gold[i] = Math.Cos(0.5);
-                        break;
-                    case 2:
-                        gold[i] = Math.Tan(0.5);
-                        break;
-                    case 3:
-                        gold[i] = Math.Log(0.5);
-                        break;
-                    case 4:
-                        gold[i] = Math.Log10(0.5);
-                        break;
-                    case 5:
-                        gold[i] = Math.Exp(0.5);
-                        break;
-                    case 6:
-                        gold[i] = Math.Ceiling(0.5);
-                        break;
-                    case 7:
-                        gold[i] = Math.Cosh(0.5);
-                        break;
-                    case 8:
-                        gold[i] = Math.Sinh(0.5);
-                        break;
-                    case 9:
-                        gold[i] = Math.Pow(0.5, 2);
-                        break;
-                }
-            for (int i = 0; i < 10; ++i)
-                if (Math.Abs(res[i] - gold[i]) > 0.000001)
-                    throw new Exception();
+                int[] a = Enumerable.Range(0, N).ToArray().OrderBy(x => rnd.Next()).ToArray();
+                OddEvenSort.Seq(a);
+                for (int i = 0; i < N; ++i)
+                    if (a[i] != i)
+                        throw new Exception();
+            }
+            {
+                int[] a = Enumerable.Range(0, N).ToArray().OrderBy(x => rnd.Next()).ToArray();
+                OddEvenSort.Par(a);
+                for (int i = 0; i < N; ++i)
+                    if (a[i] != i)
+                        throw new Exception();
+            }
         }
     }
+
     class Program
     {
         static void StartDebugging()
@@ -120,7 +169,6 @@ namespace ConsoleApp4
         static void Main(string[] args)
         {
             StartDebugging();
-            //int[] a = new int[3];
             UnitTest1.Test1();
         }
     }
