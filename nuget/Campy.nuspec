@@ -21,8 +21,8 @@
     <licenseUrl>https://raw.github.com/kaby76/campy/master/LICENSE</licenseUrl>
 
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>A compiler and API for GP-GPU computing using C# or any other NET language, for Windows and Ubuntu x64.</description>
-    <releaseNotes>Version 0.0.15--Small fix to 0.0.14. NOTE: This release is targeted for Windows only. Linux target temporarily unavailable.</releaseNotes>
+    <description>A compiler, runtime, and API for GP-GPU computing using C# or any other NET language, for Windows and Ubuntu x64.</description>
+    <releaseNotes>Version 0.0.15. Changes for WriteLine() calls, improved stability. See http://campynet.com/?p=1111 for more details.</releaseNotes>
 
     <!-- Copyright information -->
     <copyright>Copyright © 2017-2018</copyright>
@@ -39,40 +39,40 @@
     ... Not sure if they work. --> 
     <dependencies>
       <group targetFramework="net461" >
-	 <dependency id="NETStandard.Library" version="[2.0.0,)" />
-	 <dependency id="swigged.llvm" version="[70.0.1,)" />
-	 <dependency id="swigged.cuda" version="[9.2148.1,)" />
-	 <dependency id="Mono.Cecil" version="[0.10,)" />
+	 <dependency id="NETStandard.Library" version="[2.0.3]" />
+	 <dependency id="swigged.llvm" version="[70.0.1]" />
+	 <dependency id="swigged.cuda" version="[9.2148.2]" />
+	 <dependency id="Mono.Cecil" version="[0.10.1]" />
       </group>
       <group targetFramework="net462" >
-	 <dependency id="NETStandard.Library" version="[2.0.0,)" />
-	 <dependency id="swigged.llvm" version="[70.0.1,)" />
-	 <dependency id="swigged.cuda" version="[9.2148.1,)" />
-	 <dependency id="Mono.Cecil" version="[0.10,)" />
+	 <dependency id="NETStandard.Library" version="[2.0.3]" />
+	 <dependency id="swigged.llvm" version="[70.0.1]" />
+	 <dependency id="swigged.cuda" version="[9.2148.2]" />
+	 <dependency id="Mono.Cecil" version="[0.10.1]" />
       </group>
       <group targetFramework="net47" >
-	 <dependency id="NETStandard.Library" version="[2.0.0,)" />
-	 <dependency id="swigged.llvm" version="[70.0.1,)" />
-	 <dependency id="swigged.cuda" version="[9.2148.1,)" />
-	 <dependency id="Mono.Cecil" version="[0.10,)" />
+	 <dependency id="NETStandard.Library" version="[2.0.3]" />
+	 <dependency id="swigged.llvm" version="[70.0.1]" />
+	 <dependency id="swigged.cuda" version="[9.2148.2]" />
+	 <dependency id="Mono.Cecil" version="[0.10.1]" />
       </group>
       <group targetFramework="net471" >
-	 <dependency id="NETStandard.Library" version="[2.0.0,)" />
-	 <dependency id="swigged.llvm" version="[70.0.1,)" />
-	 <dependency id="swigged.cuda" version="[9.2148.1,)" />
-	 <dependency id="Mono.Cecil" version="[0.10,)" />
+	 <dependency id="NETStandard.Library" version="[2.0.3]" />
+	 <dependency id="swigged.llvm" version="[70.0.1]" />
+	 <dependency id="swigged.cuda" version="[9.2148.2]" />
+	 <dependency id="Mono.Cecil" version="[0.10.1]" />
       </group>
       <group targetFramework="netstandard2.0" >
-	 <dependency id="NETStandard.Library" version="[2.0.0,)" />
-	 <dependency id="swigged.llvm" version="[70.0.1,)" />
-	 <dependency id="swigged.cuda" version="[9.2148.1,)" />
-	 <dependency id="Mono.Cecil" version="[0.10,)" />
+	 <dependency id="NETStandard.Library" version="[2.0.3]" />
+	 <dependency id="swigged.llvm" version="[70.0.1]" />
+	 <dependency id="swigged.cuda" version="[9.2148.2]" />
+	 <dependency id="Mono.Cecil" version="[0.10.1]" />
       </group>
       <group targetFramework="netcoreapp2.1" >
-	 <dependency id="NETStandard.Library" version="[2.0.0,)" />
-	 <dependency id="swigged.llvm" version="[70.0.1,)" />
-	 <dependency id="swigged.cuda" version="[9.2148.1,)" />
-	 <dependency id="Mono.Cecil" version="[0.10,)" />
+	 <dependency id="NETStandard.Library" version="[2.0.3]" />
+	 <dependency id="swigged.llvm" version="[70.0.1]" />
+	 <dependency id="swigged.cuda" version="[9.2148.2]" />
+	 <dependency id="Mono.Cecil" version="[0.10.1]" />
       </group>
     </dependencies>
 
@@ -84,6 +84,7 @@
     <file src="..\x64\Debug\campy-runtime-native.lib" target="lib\native\" />
     <file src="..\x64\Debug\campy-runtime-wrapper.dll" target="lib\native\" />
     <file src="..\x64\Debug\campy-runtime-wrapper.pdb" target="lib\native\" />
+    <file src="..\Campy.Runtime\Wrapper\bin\x64\Debug\campy-runtime-wrapper.so" target="lib\native\" />
     <file src="..\Campy.Runtime\Corlib\bin\Debug\netstandard2.0\corlib.dll" target="lib\native\" />
 
     <file src="..\Campy\bin\Debug\netstandard2.0\Campy.dll" target="lib/net461" />
@@ -113,20 +114,6 @@
     <file src="..\Campy.Compiler\bin\Debug\netstandard2.0\Campy.Compiler.pdb" target="lib/net471" />
     <file src="..\Campy.Compiler\bin\Debug\netstandard2.0\Campy.Compiler.pdb" target="lib/netstandard2.0" />
     <file src="..\Campy.Compiler\bin\Debug\netstandard2.0\Campy.Compiler.pdb" target="lib/netcoreapp2.1" />
-
-    <file src="..\Campy.Compiler.Graph\bin\Debug\netstandard2.0\Campy.Compiler.Graph.dll" target="lib/net461" />
-    <file src="..\Campy.Compiler.Graph\bin\Debug\netstandard2.0\Campy.Compiler.Graph.dll" target="lib/net462" />
-    <file src="..\Campy.Compiler.Graph\bin\Debug\netstandard2.0\Campy.Compiler.Graph.dll" target="lib/net47" />
-    <file src="..\Campy.Compiler.Graph\bin\Debug\netstandard2.0\Campy.Compiler.Graph.dll" target="lib/net471" />
-    <file src="..\Campy.Compiler.Graph\bin\Debug\netstandard2.0\Campy.Compiler.Graph.dll" target="lib/netstandard2.0" />
-    <file src="..\Campy.Compiler.Graph\bin\Debug\netstandard2.0\Campy.Compiler.Graph.dll" target="lib/netcoreapp2.1" />
-
-    <file src="..\Campy.Compiler.Graph\bin\Debug\netstandard2.0\Campy.Compiler.Graph.pdb" target="lib/net461" />
-    <file src="..\Campy.Compiler.Graph\bin\Debug\netstandard2.0\Campy.Compiler.Graph.pdb" target="lib/net462" />
-    <file src="..\Campy.Compiler.Graph\bin\Debug\netstandard2.0\Campy.Compiler.Graph.pdb" target="lib/net47" />
-    <file src="..\Campy.Compiler.Graph\bin\Debug\netstandard2.0\Campy.Compiler.Graph.pdb" target="lib/net471" />
-    <file src="..\Campy.Compiler.Graph\bin\Debug\netstandard2.0\Campy.Compiler.Graph.pdb" target="lib/netstandard2.0" />
-    <file src="..\Campy.Compiler.Graph\bin\Debug\netstandard2.0\Campy.Compiler.Graph.pdb" target="lib/netcoreapp2.1" />
 
     <file src="..\Campy.Graphs\bin\Debug\netstandard2.0\Campy.Graphs.dll" target="lib/net461" />
     <file src="..\Campy.Graphs\bin\Debug\netstandard2.0\Campy.Graphs.dll" target="lib/net462" />

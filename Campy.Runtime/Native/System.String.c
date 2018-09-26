@@ -117,13 +117,6 @@ function_space_specifier tAsyncCall* System_String_ctor_StringIntInt(PTR pThis_,
 
     pThis = CreateStringHeapObj(length);
     memcpy(pThis->chars, &pStr->chars[startIndex], length << 1);
-
-    unsigned char * pc = (unsigned char *)&pThis->chars;
-    for (int i = 0; i < length << 1; ++i)
-    {
-        unsigned char c = *pc++;
-        Gprintf("c[%d] = %x\n", i, c);
-    }
     *(HEAP_PTR*)pReturnValue = (HEAP_PTR)pThis;
     return NULL;
 }
