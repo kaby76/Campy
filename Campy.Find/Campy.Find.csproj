@@ -50,7 +50,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="swigged.cuda">
-      <Version>9.2148.2</Version>
+      <Version>9.2148.3</Version>
     </PackageReference>
     <PackageReference Include="swigged.llvm">
       <Version>70.0.1</Version>

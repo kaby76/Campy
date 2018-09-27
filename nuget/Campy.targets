@@ -12,6 +12,12 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)\..\lib\native\campy-runtime-native.a">
+      <Link>campy-runtime-native.a</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)\..\lib\native\campy-runtime-wrapper.dll">
       <Link>campy-runtime-wrapper.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
