@@ -23,53 +23,83 @@
 
 #include "System.Threading.Interlocked.h"
 
-function_space_specifier tAsyncCall* System_Threading_Interlocked_CompareExchange_Int32(PTR pThis_, PTR pParams, PTR pReturnValue) {
+function_space_specifier tAsyncCall* System_Threading_Interlocked_CompareExchange_Int32(PTR pThis_, PTR pParams, PTR pReturnValue)
+{
     U32 *pLoc = INTERNALCALL_PARAM(0, U32*);
     U32 value = INTERNALCALL_PARAM(1, U32);
     U32 comparand = INTERNALCALL_PARAM(2, U32);
-
-    *(U32*)pReturnValue = *pLoc;
-    if (*pLoc == comparand) {
-        *pLoc = value;
-    }
+	U32 result;
+#ifdef  __CUDA_ARCH__
+	result = atomicCAS((U32*)pLoc, (U32)comparand, (U32)value);
+#else
+	result = (U32)(*(pLoc));
+	if (*pLoc == comparand)
+	{
+		*pLoc = value;
+	}
+#endif
+	*(U32*)pReturnValue = result;
 
     return NULL;
 }
 
-function_space_specifier tAsyncCall* System_Threading_Interlocked_Increment_Int32(PTR pThis_, PTR pParams, PTR pReturnValue) {
+function_space_specifier tAsyncCall* System_Threading_Interlocked_Increment_Int32(PTR pThis_, PTR pParams, PTR pReturnValue)
+{
     I32 *pLoc = INTERNALCALL_PARAM(0, I32*);
-
-    (*pLoc)++;
-    *(I32*)pReturnValue = *pLoc;
-
+	I32 result;
+#ifdef  __CUDA_ARCH__
+	result = atomicAdd((U32*)pLoc, (U32)1);
+	result += 1; // follow semantics of System.Threading.Interlocked::Increment().
+#else
+	(*pLoc)++;
+	result = *pLoc;
+#endif
+    *(I32*)pReturnValue = result;
     return NULL;
 }
 
-function_space_specifier tAsyncCall* System_Threading_Interlocked_Decrement_Int32(PTR pThis_, PTR pParams, PTR pReturnValue) {
+function_space_specifier tAsyncCall* System_Threading_Interlocked_Decrement_Int32(PTR pThis_, PTR pParams, PTR pReturnValue)
+{
     I32 *pLoc = INTERNALCALL_PARAM(0, I32*);
-
-    (*pLoc)--;
-    *(I32*)pReturnValue = *pLoc;
-
+	I32 result;
+#ifdef  __CUDA_ARCH__
+	result = atomicSub((U32*)pLoc, (U32)1);
+	result -= 1; // follow semantics of System.Threading.Interlocked::Increment().
+#else
+	(*pLoc)--;
+	result = *pLoc;
+#endif
+	*(I32*)pReturnValue = result;
     return NULL;
 }
 
-function_space_specifier tAsyncCall* System_Threading_Interlocked_Add_Int32(PTR pThis_, PTR pParams, PTR pReturnValue) {
+function_space_specifier tAsyncCall* System_Threading_Interlocked_Add_Int32(PTR pThis_, PTR pParams, PTR pReturnValue)
+{
     U32 *pLoc = INTERNALCALL_PARAM(0, U32*);
     U32 value = INTERNALCALL_PARAM(1, U32);
-
-    *pLoc += value;
-    *(U32*)pReturnValue = *pLoc;
-
+	I32 result;
+#ifdef  __CUDA_ARCH__
+	result = atomicAdd((U32*)pLoc, (U32)value);
+	result += value; // follow semantics of System.Threading.Interlocked::Increment().
+#else
+	(*pLoc) += value;
+	result = *pLoc;
+#endif
+	*(I32*)pReturnValue = result;
     return NULL;
 }
 
-function_space_specifier tAsyncCall* System_Threading_Interlocked_Exchange_Int32(PTR pThis_, PTR pParams, PTR pReturnValue) {
+function_space_specifier tAsyncCall* System_Threading_Interlocked_Exchange_Int32(PTR pThis_, PTR pParams, PTR pReturnValue)
+{
     U32 *pLoc = INTERNALCALL_PARAM(0, U32*);
     U32 value = INTERNALCALL_PARAM(1, U32);
-
-    *(U32*)pReturnValue = *pLoc;
-    *pLoc = value;
-
+	I32 result;
+#ifdef  __CUDA_ARCH__
+	result = atomicExch((U32*)pLoc, (U32)value);
+#else
+	result = *pLoc;
+	*pLoc = value;
+#endif
+	*(I32*)pReturnValue = result;
     return NULL;
 }

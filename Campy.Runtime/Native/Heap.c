@@ -73,7 +73,10 @@ function_space_specifier bool insertentry(unsigned long long int key)
 		oldentry = atomicCAS((unsigned long long int*)table + index, (unsigned long long int)SLOTEMPTY, (unsigned long long int)entry);
 #else
 		oldentry = (unsigned long long int)(*(table + index));
-		*(table + index) = entry;
+		if (*(table + index) == (unsigned long long int)SLOTEMPTY)
+		{
+			*(table + index) = entry;
+		}
 #endif
 		// If the slot was empty, the item was inserted safely.
 		if (oldentry == (unsigned long long int)SLOTEMPTY) return true;
