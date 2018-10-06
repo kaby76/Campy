@@ -1,0 +1,49 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>corlib</RootNamespace>
+    <AssemblyName>corlib</AssemblyName>
+    <NoStdLib>true</NoStdLib>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
+    <!-- RuntimeMetadataVersion must be set for Mono Cecil to work.-->
+    <RuntimeMetadataVersion>v4</RuntimeMetadataVersion>
+    <LangVersion>7.3</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Common\**" />
+    <Compile Remove="Resources\**" />
+    <Compile Remove="src\Interop\**" />
+    <Compile Remove="src\Microsoft\**" />
+    <Compile Remove="Tools\**" />
+    <EmbeddedResource Remove="Common\**" />
+    <EmbeddedResource Remove="Resources\**" />
+    <EmbeddedResource Remove="src\Interop\**" />
+    <EmbeddedResource Remove="src\Microsoft\**" />
+    <EmbeddedResource Remove="Tools\**" />
+    <None Remove="Common\**" />
+    <None Remove="Resources\**" />
+    <None Remove="src\Interop\**" />
+    <None Remove="src\Microsoft\**" />
+    <None Remove="Tools\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="src\System\Runtime\InteropServices\NonPortable.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="CreateRuntimeRootILLinkDescriptorFile.targets" />
+    <None Remove="GenerateCompilerResponseFile.targets" />
+    <None Remove="GenerateSplitStringResources.targets" />
+    <None Remove="ILLink.targets" />
+    <None Remove="ILLinkTrim.xml" />
+    <None Remove="MembersMustExist.AnalyzerData" />
+    <None Remove="PinvokeAnalyzerExceptionList.analyzerdata" />
+  </ItemGroup>
+
+</Project>
