@@ -2,7 +2,6 @@
 {
     using MethodImplAttributes = Mono.Cecil.MethodImplAttributes;
     using Mono.Cecil;
-    using Swigged.Cuda;
     using Swigged.LLVM;
     using System.Collections.Generic;
     using System.IO;
@@ -977,28 +976,28 @@ declare i64 @_Z62System_Runtime_CompilerServices_RuntimeHelpers_InitializeArrayP
             get; private set;
         }
 
-        private static Dictionary<IntPtr, CUmodule> cached_modules = new Dictionary<IntPtr, CUmodule>();
+        private static Dictionary<IntPtr, Swigged.Cuda.CUmodule> cached_modules = new Dictionary<IntPtr, Swigged.Cuda.CUmodule>();
 
-        public static CUmodule InitializeModule(IntPtr cubin)
+        public static Swigged.Cuda.CUmodule InitializeModule(IntPtr cubin)
         {
-            if (cached_modules.TryGetValue(cubin, out CUmodule value))
+            if (cached_modules.TryGetValue(cubin, out Swigged.Cuda.CUmodule value))
             {
                 return value;
             }
             uint num_ops = 0;
-            var op = new CUjit_option[num_ops];
+            var op = new Swigged.Cuda.CUjit_option[num_ops];
             ulong[] op_values = new ulong[num_ops];
 
             var op_values_link_handle = GCHandle.Alloc(op_values, GCHandleType.Pinned);
             var op_values_link_intptr = op_values_link_handle.AddrOfPinnedObject();
 
-            CUresult res = Cuda.cuModuleLoadDataEx(out CUmodule module, cubin, 0, op, op_values_link_intptr);
+            Swigged.Cuda.CUresult res = Swigged.Cuda.Cuda.cuModuleLoadDataEx(out Swigged.Cuda.CUmodule module, cubin, 0, op, op_values_link_intptr);
             CudaHelpers.CheckCudaError(res);
             cached_modules[cubin] = module;
             return module;
         }
 
-        public static CUmodule RuntimeModule
+        public static Swigged.Cuda.CUmodule RuntimeModule
         {
             get; set;
         }
@@ -1016,9 +1015,9 @@ declare i64 @_Z62System_Runtime_CompilerServices_RuntimeHelpers_InitializeArrayP
             return result;
         }
 
-        public static CUfunction _Z15Set_BCL_GlobalsP6_BCL_t(CUmodule module)
+        public static Swigged.Cuda.CUfunction _Z15Set_BCL_GlobalsP6_BCL_t(Swigged.Cuda.CUmodule module)
         {
-            CudaHelpers.CheckCudaError(Cuda.cuModuleGetFunction(out CUfunction function, module, "_Z15Set_BCL_GlobalsP6_BCL_t"));
+            CudaHelpers.CheckCudaError(Swigged.Cuda.Cuda.cuModuleGetFunction(out Swigged.Cuda.CUfunction function, module, "_Z15Set_BCL_GlobalsP6_BCL_t"));
             return function;
         }
 

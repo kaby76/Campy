@@ -1,8 +1,7 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-
-namespace Campy
+﻿namespace Campy
 {
+    using System.Collections.Generic;
+
     internal class Accelerator
     {
         public static string DefaultAccelerator { get; internal set; }

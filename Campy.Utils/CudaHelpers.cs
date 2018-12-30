@@ -1,9 +1,8 @@
-﻿using System;
-using Swigged.Cuda;
-using System.Runtime.InteropServices;
-
-namespace Campy.Utils
+﻿namespace Campy.Utils
 {
+    using System;
+    using System.Runtime.InteropServices;
+
     public class CudaHelpers
     {
         public struct dim3
@@ -70,9 +69,9 @@ namespace Campy.Utils
 
         public static void CheckCudaError(Swigged.Cuda.CUresult res)
         {
-            if (res != CUresult.CUDA_SUCCESS)
+            if (res != Swigged.Cuda.CUresult.CUDA_SUCCESS)
             {
-                Cuda.cuGetErrorString(res, out IntPtr pStr);
+                Swigged.Cuda.Cuda.cuGetErrorString(res, out IntPtr pStr);
                 var cuda_error = Marshal.PtrToStringAnsi(pStr);
                 throw new Exception("CUDA error: " + cuda_error);
             }

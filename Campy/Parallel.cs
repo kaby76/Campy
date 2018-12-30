@@ -1,18 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Reflection;
-using System.Runtime.InteropServices;
-using Campy.Compiler;
-using Campy.Utils;
-using Campy.Meta;
-using Mono.Cecil;
-using Swigged.Cuda;
-using Type = System.Type;
-
-namespace Campy
+﻿namespace Campy
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Runtime.InteropServices;
+    using Campy.Compiler;
+    using Campy.Utils;
+    using Campy.Meta;
+    using Mono.Cecil;
+    using Type = System.Type;
+
     public class Parallel
     {
         private static Parallel _singleton;
@@ -105,8 +101,8 @@ namespace Campy
                         kernel_assembly_file_name, new ReaderParameters { ReadSymbols = true });
                     MethodReference method_reference = md.ImportReference(method_info);
 
-                    CUfunction ptr_to_kernel = default(CUfunction);
-                    CUmodule module = default(CUmodule);
+                    Swigged.Cuda.CUfunction ptr_to_kernel = default(Swigged.Cuda.CUfunction);
+                    Swigged.Cuda.CUmodule module = default(Swigged.Cuda.CUmodule);
 
                     Campy.Utils.TimePhase.Time("compile     ", () =>
                     {
@@ -149,22 +145,22 @@ namespace Campy
                                     + bb.FullName);
                             var cctor = Singleton._compiler.GetCudaFunction(bb, module);
 
-                            var res = CUresult.CUDA_SUCCESS;
+                            var res = Swigged.Cuda.CUresult.CUDA_SUCCESS;
                             Campy.Utils.CudaHelpers.MakeLinearTiling(1,
                                 out Campy.Utils.CudaHelpers.dim3 tile_size, out Campy.Utils.CudaHelpers.dim3 tiles);
 
-                            res = Cuda.cuLaunchKernel(
+                            res = Swigged.Cuda.Cuda.cuLaunchKernel(
                                 cctor,
                                 tiles.x, tiles.y, tiles.z, // grid has one block.
                                 tile_size.x, tile_size.y, tile_size.z, // n threads.
                                 0, // no shared memory
-                                default(CUstream),
+                                default(Swigged.Cuda.CUstream),
                                 (IntPtr) IntPtr.Zero,
                                 (IntPtr) IntPtr.Zero
                             );
 
                             CudaHelpers.CheckCudaError(res);
-                            res = Cuda.cuCtxSynchronize(); // Make sure it's copied back to host.
+                            res = Swigged.Cuda.Cuda.cuCtxSynchronize(); // Make sure it's copied back to host.
                             CudaHelpers.CheckCudaError(res);
                         }
                     });
@@ -189,7 +185,7 @@ namespace Campy
                         IntPtr pointer2 = handle2.AddrOfPinnedObject();
 
                         IntPtr[] kp = new IntPtr[] {pointer1, pointer2};
-                        var res = CUresult.CUDA_SUCCESS;
+                        var res = Swigged.Cuda.CUresult.CUDA_SUCCESS;
                         fixed (IntPtr* kernelParams = kp)
                         {
                             Campy.Utils.CudaHelpers.MakeLinearTiling(number_of_threads,
@@ -197,19 +193,19 @@ namespace Campy
 
                             //MakeLinearTiling(1, out dim3 tile_size, out dim3 tiles);
 
-                            res = Cuda.cuLaunchKernel(
+                            res = Swigged.Cuda.Cuda.cuLaunchKernel(
                                 ptr_to_kernel,
                                 tiles.x, tiles.y, tiles.z, // grid has one block.
                                 tile_size.x, tile_size.y, tile_size.z, // n threads.
                                 0, // no shared memory
-                                default(CUstream),
+                                default(Swigged.Cuda.CUstream),
                                 (IntPtr) kernelParams,
                                 (IntPtr) IntPtr.Zero
                             );
                         }
 
                         CudaHelpers.CheckCudaError(res);
-                        res = Cuda.cuCtxSynchronize(); // Make sure it's copied back to host.
+                        res = Swigged.Cuda.Cuda.cuCtxSynchronize(); // Make sure it's copied back to host.
                         CudaHelpers.CheckCudaError(res);
                     });
 

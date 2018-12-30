@@ -1,11 +1,10 @@
-﻿using System;
-using System.Runtime.InteropServices;
-using Campy.Utils;
-using Campy.Meta;
-using Swigged.Cuda;
-
-namespace Campy
+﻿namespace Campy
 {
+    using System;
+    using System.Runtime.InteropServices;
+    using Campy.Utils;
+    using Campy.Meta;
+
     public class Sequential
     {
         public static void For(int number_of_threads, SimpleKernel simpleKernel)
@@ -35,26 +34,26 @@ namespace Campy
 
                 IntPtr[] kp = new IntPtr[] { parm1 };
 
-                CUmodule module = RUNTIME.RuntimeModule;
-                CudaHelpers.CheckCudaError(Cuda.cuModuleGetFunction(out CUfunction function, module, "_Z21set_kernel_base_indexi"));
+                Swigged.Cuda.CUmodule module = RUNTIME.RuntimeModule;
+                CudaHelpers.CheckCudaError(Swigged.Cuda.Cuda.cuModuleGetFunction(out Swigged.Cuda.CUfunction function, module, "_Z21set_kernel_base_indexi"));
                 Campy.Utils.CudaHelpers.MakeLinearTiling(1,
                     out Campy.Utils.CudaHelpers.dim3 tile_size,
                     out Campy.Utils.CudaHelpers.dim3 tiles);
-                CUresult res;
+                Swigged.Cuda.CUresult res;
                 fixed (IntPtr* kernelParams = kp)
                 {
-                    res = Cuda.cuLaunchKernel(
+                    res = Swigged.Cuda.Cuda.cuLaunchKernel(
                         function,
                         tiles.x, tiles.y, tiles.z, // grid has one block.
                         tile_size.x, tile_size.y, tile_size.z, // n threads.
                         0, // no shared memory
-                        default(CUstream),
+                        default(Swigged.Cuda.CUstream),
                         (IntPtr)kernelParams,
                         (IntPtr)IntPtr.Zero
                     );
                 }
                 Utils.CudaHelpers.CheckCudaError(res);
-                res = Cuda.cuCtxSynchronize(); // Make sure it's copied back to host.
+                res = Swigged.Cuda.Cuda.cuCtxSynchronize(); // Make sure it's copied back to host.
                 Utils.CudaHelpers.CheckCudaError(res);
             }
         }
