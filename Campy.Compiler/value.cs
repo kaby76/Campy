@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using Campy.Utils;
-using Swigged.LLVM;
-
-namespace Campy.Compiler
+﻿namespace Campy.Compiler
 {
+    using System;
+    using Swigged.LLVM;
+
     public class VALUE : IComparable
     {
         private ValueRef _value_ref;

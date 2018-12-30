@@ -1,6 +1,4 @@
-﻿using Mono.Cecil.Cil;
-
-namespace Campy.Compiler
+﻿namespace Campy.Compiler
 {
     using Campy.Graphs;
     using Mono.Cecil;

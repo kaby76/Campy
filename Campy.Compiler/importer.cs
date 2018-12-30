@@ -2,12 +2,10 @@
 namespace Campy.Compiler
 {
     using Mono.Cecil.Cil;
-    using Mono.Cecil.Rocks;
     using Mono.Cecil;
     using Mono.Collections.Generic;
     using System.Collections.Generic;
     using System.Diagnostics;
-    using System.IO;
     using System.Linq;
     using System.Reflection;
     using System;

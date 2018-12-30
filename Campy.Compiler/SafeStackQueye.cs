@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Campy.Compiler
+﻿namespace Campy.Compiler
 {
+    using System;
+
     public class SafeStackQueue<T> : Campy.Utils.StackQueue<T> where T : Mono.Cecil.TypeReference
     {
         public override void Push(T value)

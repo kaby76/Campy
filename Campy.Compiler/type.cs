@@ -1,11 +1,10 @@
-﻿using System;
-using Campy.Utils;
-using Campy.Meta;
-using Swigged.LLVM;
-using Mono.Cecil;
-
-namespace Campy.Compiler
+﻿namespace Campy.Compiler
 {
+    using System;
+    using Campy.Meta;
+    using Swigged.LLVM;
+    using Mono.Cecil;
+
     public class TYPE
     {
         // ECMA 335: see page 34-35.

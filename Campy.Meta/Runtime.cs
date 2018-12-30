@@ -1,6 +1,4 @@
-﻿using System.Text;
-
-namespace Campy.Meta
+﻿namespace Campy.Meta
 {
     using MethodImplAttributes = Mono.Cecil.MethodImplAttributes;
     using Mono.Cecil;
@@ -12,6 +10,7 @@ namespace Campy.Meta
     using System.Reflection;
     using System.Runtime.InteropServices;
     using System.Text.RegularExpressions;
+    using System.Text;
     using System;
     using Utils;
 

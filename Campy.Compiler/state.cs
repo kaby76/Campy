@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using Campy.Utils;
-
-namespace Campy.Compiler
+﻿namespace Campy.Compiler
 {
+    using System;
+    using System.Collections.Generic;
+    using Campy.Utils;
+
     public class STATE<T, STACK> where STACK : StackQueue<T>, new()
     {
         // See ECMA 335, page 82.

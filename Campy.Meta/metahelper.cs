@@ -1,15 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Mono.Cecil;
-using Mono.Cecil.Rocks;
-using Mono.Collections.Generic;
-using System.Reflection;
-using Swigged.LLVM;
-
-
-namespace Campy.Meta
+﻿namespace Campy.Meta
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using Mono.Cecil;
+    using Mono.Cecil.Rocks;
+    using Mono.Collections.Generic;
+    using System.Reflection;
+    using Swigged.LLVM;
+
     class NONSTATICMETAHELPER
     {
         public static List<GenericParameter> GetContainedGenericParameters(MemberReference type, List<GenericParameter> list = null)
