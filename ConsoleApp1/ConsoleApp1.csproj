@@ -6,7 +6,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="swigged.cuda" Version="9.2148.3" />
     <PackageReference Include="swigged.llvm" Version="70.0.1" />
   </ItemGroup>
 

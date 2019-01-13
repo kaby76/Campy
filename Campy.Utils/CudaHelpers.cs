@@ -67,14 +67,68 @@
             tile_size.z = (uint)threads[2];
         }
 
-        public static void CheckCudaError(Swigged.Cuda.CUresult res)
+        public static void CheckCudaError(CUresult res)
         {
-            if (res != Swigged.Cuda.CUresult.CUDA_SUCCESS)
+            if (res.Value != cudaError_enum.CUDA_SUCCESS)
             {
-                Swigged.Cuda.Cuda.cuGetErrorString(res, out IntPtr pStr);
+                Functions.cuGetErrorString(res, out IntPtr pStr);
                 var cuda_error = Marshal.PtrToStringAnsi(pStr);
                 throw new Exception("CUDA error: " + cuda_error);
             }
+        }
+
+        public enum CU_MEMHOSTALLOC
+        {
+            /**
+             * If set, host memory is portable between CUDA contexts.
+             * Flag for ::cuMemHostAlloc()
+             */
+            CU_MEMHOSTALLOC_PORTABLE = 0x01,
+
+            /**
+             * If set, host memory is mapped into CUDA address space and
+             * ::cuMemHostGetDevicePointer() may be called on the host pointer.
+             * Flag for ::cuMemHostAlloc()
+             */
+            CU_MEMHOSTALLOC_DEVICEMAP = 0x02,
+
+            /**
+             * If set, host memory is allocated as write-combined - fast to write,
+             * faster to DMA, slow to read except via SSE4 streaming load instruction
+             * (MOVNTDQA).
+             * Flag for ::cuMemHostAlloc()
+             */
+            CU_MEMHOSTALLOC_WRITECOMBINED = 0x04,
+        }
+
+        public enum CU_MEMHOSTREGISTER
+        {
+            /**
+             * If set, host memory is portable between CUDA contexts.
+             * Flag for ::cuMemHostRegister()
+             */
+            CU_MEMHOSTREGISTER_PORTABLE = 0x01,
+
+            /**
+             * If set, host memory is mapped into CUDA address space and
+             * ::cuMemHostGetDevicePointer() may be called on the host pointer.
+             * Flag for ::cuMemHostRegister()
+             */
+            CU_MEMHOSTREGISTER_DEVICEMAP = 0x02,
+
+            /**
+             * If set, the passed memory pointer is treated as pointing to some
+             * memory-mapped I/O space, e.g. belonging to a third-party PCIe device.
+             * On Windows the flag is a no-op.
+             * On Linux that memory is marked as non cache-coherent for the GPU and
+             * is expected to be physically contiguous. It may return
+             * CUDA_ERROR_NOT_PERMITTED if run as an unprivileged user,
+             * CUDA_ERROR_NOT_SUPPORTED on older Linux kernel versions.
+             * On all other platforms, it is not supported and CUDA_ERROR_NOT_SUPPORTED
+             * is returned.
+             * Flag for ::cuMemHostRegister()
+             */
+            CU_MEMHOSTREGISTER_IOMEMORY = 0x04
         }
     }
 }

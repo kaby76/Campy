@@ -1192,9 +1192,9 @@
             if (init) return;
             try
             {
-                Utils.CudaHelpers.CheckCudaError(Swigged.Cuda.Cuda.cuInit(0));
-                Utils.CudaHelpers.CheckCudaError(Swigged.Cuda.Cuda.cuDevicePrimaryCtxReset(0));
-                Utils.CudaHelpers.CheckCudaError(Swigged.Cuda.Cuda.cuCtxCreate_v2(out Swigged.Cuda.CUcontext pctx, 0, 0));
+                Utils.CudaHelpers.CheckCudaError(Functions.cuInit(0));
+                Utils.CudaHelpers.CheckCudaError(Functions.cuDevicePrimaryCtxReset(new CUdevice(0)));
+                Utils.CudaHelpers.CheckCudaError(Functions.cuCtxCreate_v2(out CUcontext pctx, 0, new CUdevice(0)));
             }
             catch (Exception e)
             {
@@ -1459,42 +1459,42 @@
                 if (Campy.Utils.Options.IsOn("jit_trace"))
                     System.Console.WriteLine("Current directory " + current_directory);
 
-                CudaHelpers.CheckCudaError(Swigged.Cuda.Cuda.cuMemGetInfo_v2(out ulong free_memory, out ulong total_memory));
+                CudaHelpers.CheckCudaError(Functions.cuMemGetInfo_v2(out SizeT free_memory, out SizeT total_memory));
                 if (Campy.Utils.Options.IsOn("jit_trace"))
                     System.Console.WriteLine("total memory " + total_memory + " free memory " + free_memory);
                 if (!done_stack)
                 {
-                    CudaHelpers.CheckCudaError(Swigged.Cuda.Cuda.cuCtxGetLimit(out ulong pvalue, Swigged.Cuda.CUlimit.CU_LIMIT_STACK_SIZE));
-                    CudaHelpers.CheckCudaError(Swigged.Cuda.Cuda.cuCtxSetLimit(Swigged.Cuda.CUlimit.CU_LIMIT_STACK_SIZE, (uint)pvalue * 4));
+                    CudaHelpers.CheckCudaError(Functions.cuCtxGetLimit(out SizeT pvalue, new CUlimit(CUlimit_enum.CU_LIMIT_STACK_SIZE)));
+                    CudaHelpers.CheckCudaError(Functions.cuCtxSetLimit(new CUlimit(CUlimit_enum.CU_LIMIT_STACK_SIZE), (uint)pvalue * 4));
                     if (Campy.Utils.Options.IsOn("jit_trace"))
                         System.Console.WriteLine("Stack size " + pvalue);
                     done_stack = true;
                 }
                 // Add in all of the GPU BCL runtime required.
                 uint num_ops_link = 5;
-                var op_link = new Swigged.Cuda.CUjit_option[num_ops_link];
+                var op_link = new CUjit_option[num_ops_link];
                 ulong[] op_values_link = new ulong[num_ops_link];
 
                 int size = 1024 * 100;
-                op_link[0] = Swigged.Cuda.CUjit_option.CU_JIT_INFO_LOG_BUFFER_SIZE_BYTES;
+                op_link[0] = new CUjit_option(CUjit_option_enum.CU_JIT_INFO_LOG_BUFFER_SIZE_BYTES);
                 op_values_link[0] = (ulong) size;
 
-                op_link[1] = Swigged.Cuda.CUjit_option.CU_JIT_INFO_LOG_BUFFER;
+                op_link[1] = new CUjit_option(CUjit_option_enum.CU_JIT_INFO_LOG_BUFFER);
                 byte[] info_log_buffer = new byte[size];
                 var info_log_buffer_handle = GCHandle.Alloc(info_log_buffer, GCHandleType.Pinned);
                 var info_log_buffer_intptr = info_log_buffer_handle.AddrOfPinnedObject();
                 op_values_link[1] = (ulong) info_log_buffer_intptr;
 
-                op_link[2] = Swigged.Cuda.CUjit_option.CU_JIT_ERROR_LOG_BUFFER_SIZE_BYTES;
+                op_link[2] = new CUjit_option(CUjit_option_enum.CU_JIT_ERROR_LOG_BUFFER_SIZE_BYTES);
                 op_values_link[2] = (ulong) size;
 
-                op_link[3] = Swigged.Cuda.CUjit_option.CU_JIT_ERROR_LOG_BUFFER;
+                op_link[3] = new CUjit_option(CUjit_option_enum.CU_JIT_ERROR_LOG_BUFFER);
                 byte[] error_log_buffer = new byte[size];
                 var error_log_buffer_handle = GCHandle.Alloc(error_log_buffer, GCHandleType.Pinned);
                 var error_log_buffer_intptr = error_log_buffer_handle.AddrOfPinnedObject();
                 op_values_link[3] = (ulong) error_log_buffer_intptr;
 
-                op_link[4] = Swigged.Cuda.CUjit_option.CU_JIT_LOG_VERBOSE;
+                op_link[4] = new CUjit_option(CUjit_option_enum.CU_JIT_LOG_VERBOSE);
                 op_values_link[4] = (ulong) 1;
 
                 //op_link[5] = CUjit_option.CU_JIT_TARGET;
@@ -1502,18 +1502,19 @@
 
                 var op_values_link_handle = GCHandle.Alloc(op_values_link, GCHandleType.Pinned);
                 var op_values_link_intptr = op_values_link_handle.AddrOfPinnedObject();
-                var res = Swigged.Cuda.Cuda.cuLinkCreate_v2(num_ops_link, op_link, op_values_link_intptr, out Swigged.Cuda.CUlinkState linkState);
+                CUresult res = Functions.cuLinkCreate_v2(num_ops_link, op_link, op_values_link_intptr, out CUlinkState linkState);
                 Utils.CudaHelpers.CheckCudaError(res);
 
                 IntPtr ptr = Marshal.StringToHGlobalAnsi(ptx);
-                Swigged.Cuda.CUjit_option[] op = new Swigged.Cuda.CUjit_option[0];
+                CUjit_option[] op = new CUjit_option[0];
                 ulong[] op_values = new ulong[0];
                 var op_values_handle = GCHandle.Alloc(op_values, GCHandleType.Pinned);
                 var op_values_intptr = op_values_handle.AddrOfPinnedObject();
-                res = Swigged.Cuda.Cuda.cuLinkAddData_v2(linkState, Swigged.Cuda.CUjitInputType.CU_JIT_INPUT_PTX, ptr, (uint) ptx.Length, "", 0,
+                res = Functions.cuLinkAddData_v2(linkState,
+                    new CUjitInputType(CUjitInputType_enum.CU_JIT_INPUT_PTX), ptr, (uint) ptx.Length, "", 0,
                     op,
                     op_values_intptr);
-                if (res != Swigged.Cuda.CUresult.CUDA_SUCCESS)
+                if (res.Value != cudaError_enum.CUDA_SUCCESS)
                 {
                     string info = Marshal.PtrToStringAnsi(info_log_buffer_intptr);
                     System.Console.WriteLine(info);
@@ -1525,10 +1526,11 @@
 
                 // Go to directory for Campy.
                 uint num_ops = 0;
-                res = Swigged.Cuda.Cuda.cuLinkAddFile_v2(linkState, Swigged.Cuda.CUjitInputType.CU_JIT_INPUT_LIBRARY,
+                res = Functions.cuLinkAddFile_v2(linkState,
+                    new CUjitInputType(CUjitInputType_enum.CU_JIT_INPUT_LIBRARY),
                     RUNTIME.FindNativeCoreLib(), num_ops, op, op_values_intptr);
 
-                if (res != Swigged.Cuda.CUresult.CUDA_SUCCESS)
+                if (res.Value != cudaError_enum.CUDA_SUCCESS)
                 {
                     string info = Marshal.PtrToStringAnsi(info_log_buffer_intptr);
                     System.Console.WriteLine(info);
@@ -1538,8 +1540,8 @@
 
                 Utils.CudaHelpers.CheckCudaError(res);
 
-                res = Swigged.Cuda.Cuda.cuLinkComplete(linkState, out image, out ulong sz);
-                if (res != Swigged.Cuda.CUresult.CUDA_SUCCESS)
+                res = Functions.cuLinkComplete(linkState, out image, out SizeT sz);
+                if (res.Value != cudaError_enum.CUDA_SUCCESS)
                 {
                     string info = Marshal.PtrToStringAnsi(info_log_buffer_intptr);
                     System.Console.WriteLine(info);
@@ -1567,29 +1569,29 @@
             return bb;
         }
 
-        public Swigged.Cuda.CUmodule SetModule(MethodReference kernel_method, IntPtr image)
+        public CUmodule SetModule(MethodReference kernel_method, IntPtr image)
         {
             // Compiled previously. Look for basic block of entry.
             CFG.Vertex bb = _mcfg.Entries.Where(v =>
                 v.IsEntry && v._method_reference.FullName == kernel_method.FullName).FirstOrDefault();
             string basic_block_id = bb.Name;
-            Swigged.Cuda.CUmodule module = RUNTIME.InitializeModule(image);
+            CUmodule module = RUNTIME.InitializeModule(image);
             RUNTIME.RuntimeModule = module;
             SetBCLForModule(module);
             return module;
         }
 
-        public void StoreJits(Swigged.Cuda.CUmodule module)
+        public void StoreJits(CUmodule module)
         {
             foreach (var v in _mcfg.Entries)
             {
                 var normalized_method_name = METAHELPER.RenameToLlvmMethodName(v._method_reference.FullName);
-                var res = Swigged.Cuda.Cuda.cuModuleGetFunction(out Swigged.Cuda.CUfunction helloWorld, module, normalized_method_name);
+                var res = Functions.cuModuleGetFunction(out CUfunction helloWorld, module, normalized_method_name);
                 // Not every entry is going to be in module, so this isn't a problem if not found.
-                if (res != Swigged.Cuda.CUresult.CUDA_SUCCESS) continue;
-                res = Swigged.Cuda.Cuda.cuModuleGetGlobal_v2(out IntPtr hw, out ulong z, module, "p_" + normalized_method_name);
+                if (res.Value != cudaError_enum.CUDA_SUCCESS) continue;
+                res = Functions.cuModuleGetGlobal_v2(out CUdeviceptr hw, out SizeT z, module, "p_" + normalized_method_name);
                 var bcl_type = RUNTIME.MonoBclMap_GetBcl(v._method_reference.DeclaringType);
-                RUNTIME.BclMetaDataSetMethodJit(hw,
+                RUNTIME.BclMetaDataSetMethodJit((IntPtr)hw.Value,
                     bcl_type,
                     (int)v._method_reference.MetadataToken.RID | 0x06000000);
             }
@@ -1612,12 +1614,12 @@
                     if (ci._full_name == mr.FullName)
                     {
                         string the_name = ci._native_name;
-                        var res = Swigged.Cuda.Cuda.cuModuleGetFunction(out Swigged.Cuda.CUfunction helloWorld, module, ci._native_name);
+                        var res = Functions.cuModuleGetFunction(out CUfunction helloWorld, module, ci._native_name);
                         // Not every entry is going to be in module, so this isn't a problem if not found.
-                        if (res != Swigged.Cuda.CUresult.CUDA_SUCCESS) continue;
-                        res = Swigged.Cuda.Cuda.cuModuleGetGlobal_v2(out IntPtr hw, out ulong z, module, "p_" + ci._short_name);
+                        if (res.Value != cudaError_enum.CUDA_SUCCESS) continue;
+                        res = Functions.cuModuleGetGlobal_v2(out CUdeviceptr hw, out SizeT z, module, "p_" + ci._short_name);
                         var bcl_type = RUNTIME.MonoBclMap_GetBcl(mr.DeclaringType);
-                        RUNTIME.BclMetaDataSetMethodJit(hw,
+                        RUNTIME.BclMetaDataSetMethodJit((IntPtr)hw.Value,
                             bcl_type,
                             (int)mr.MetadataToken.RID | 0x06000000);
                         break;
@@ -1626,12 +1628,12 @@
             }
         }
 
-        public Swigged.Cuda.CUfunction GetCudaFunction(MethodReference kernel_method, Swigged.Cuda.CUmodule module)
+        public CUfunction GetCudaFunction(MethodReference kernel_method, CUmodule module)
         {
             CFG.Vertex bb = _mcfg.Entries.Where(v =>
             v.IsEntry && v._method_reference.FullName == kernel_method.FullName).FirstOrDefault();
             var normalized_method_name = METAHELPER.RenameToLlvmMethodName(bb._method_reference.FullName);
-            var res = Swigged.Cuda.Cuda.cuModuleGetFunction(out Swigged.Cuda.CUfunction helloWorld, module, normalized_method_name);
+            var res = Functions.cuModuleGetFunction(out CUfunction helloWorld, module, normalized_method_name);
             Utils.CudaHelpers.CheckCudaError(res);
             return helloWorld;
         }
@@ -1699,9 +1701,9 @@
             }
         }
 
-        public void SetBCLForModule(Swigged.Cuda.CUmodule mod)
+        public void SetBCLForModule(CUmodule mod)
         {
-            Swigged.Cuda.CUresult res;
+            CUresult res;
 
             // Instead of full initialization, just set pointer to BCL globals area.
             Campy.Utils.CudaHelpers.MakeLinearTiling(1,
@@ -1719,21 +1721,21 @@
 
                 IntPtr[] kp = new IntPtr[] {parm1};
 
-                Swigged.Cuda.CUfunction _Z15Set_BCL_GlobalsP6_BCL_t = RUNTIME._Z15Set_BCL_GlobalsP6_BCL_t(mod);
+                CUfunction _Z15Set_BCL_GlobalsP6_BCL_t = RUNTIME._Z15Set_BCL_GlobalsP6_BCL_t(mod);
                 fixed (IntPtr* kernelParams = kp)
                 {
-                    res = Swigged.Cuda.Cuda.cuLaunchKernel(
+                    res = Functions.cuLaunchKernel(
                         _Z15Set_BCL_GlobalsP6_BCL_t,
                         tiles.x, tiles.y, tiles.z, // grid has one block.
                         tile_size.x, tile_size.y, tile_size.z, // n threads.
                         0, // no shared memory
-                        default(Swigged.Cuda.CUstream),
+                        default(CUstream),
                         (IntPtr) kernelParams,
                         (IntPtr) IntPtr.Zero
                     );
                 }
                 Utils.CudaHelpers.CheckCudaError(res);
-                res = Swigged.Cuda.Cuda.cuCtxSynchronize();
+                res = Functions.cuCtxSynchronize();
                 Utils.CudaHelpers.CheckCudaError(res);
             }
         }

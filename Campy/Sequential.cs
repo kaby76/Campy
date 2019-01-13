@@ -34,26 +34,26 @@
 
                 IntPtr[] kp = new IntPtr[] { parm1 };
 
-                Swigged.Cuda.CUmodule module = RUNTIME.RuntimeModule;
-                CudaHelpers.CheckCudaError(Swigged.Cuda.Cuda.cuModuleGetFunction(out Swigged.Cuda.CUfunction function, module, "_Z21set_kernel_base_indexi"));
+                CUmodule module = RUNTIME.RuntimeModule;
+                CudaHelpers.CheckCudaError(Functions.cuModuleGetFunction(out CUfunction function, module, "_Z21set_kernel_base_indexi"));
                 Campy.Utils.CudaHelpers.MakeLinearTiling(1,
                     out Campy.Utils.CudaHelpers.dim3 tile_size,
                     out Campy.Utils.CudaHelpers.dim3 tiles);
-                Swigged.Cuda.CUresult res;
+                CUresult res;
                 fixed (IntPtr* kernelParams = kp)
                 {
-                    res = Swigged.Cuda.Cuda.cuLaunchKernel(
+                    res = Functions.cuLaunchKernel(
                         function,
                         tiles.x, tiles.y, tiles.z, // grid has one block.
                         tile_size.x, tile_size.y, tile_size.z, // n threads.
                         0, // no shared memory
-                        default(Swigged.Cuda.CUstream),
+                        default(CUstream),
                         (IntPtr)kernelParams,
                         (IntPtr)IntPtr.Zero
                     );
                 }
                 Utils.CudaHelpers.CheckCudaError(res);
-                res = Swigged.Cuda.Cuda.cuCtxSynchronize(); // Make sure it's copied back to host.
+                res = Functions.cuCtxSynchronize(); // Make sure it's copied back to host.
                 Utils.CudaHelpers.CheckCudaError(res);
             }
         }
