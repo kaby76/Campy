@@ -59,6 +59,7 @@ template CudaClangSupport : ClangSupport
             "^cuModuleLoadData$",
             "^CUresult$",
             "^CUstream$",
+			"^cuCtxSetLimit$",
            };
         generate_for_only = String.Join("|", list);
         dllname = "nvcuda";
