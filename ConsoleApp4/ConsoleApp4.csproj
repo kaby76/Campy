@@ -11,7 +11,7 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>ConsoleApp4</RootNamespace>
     <AssemblyName>ConsoleApp4</AssemblyName>
-    <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <NuGetPackageImportStamp>
