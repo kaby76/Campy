@@ -1506,7 +1506,8 @@
                 // Note: cuMemHostAlloc and cuMemAllocHost seem to be almost identical except for the
                 // third parameter to cuMemHostAlloc that is used for the type of memory allocation.
                 var size = bytes;
-                var res = Functions.cuMemHostAlloc(out IntPtr pointer, (uint)size, (uint)CudaHelpers.CU_MEMHOSTALLOC.CU_MEMHOSTALLOC_DEVICEMAP);
+                IntPtr pointer = IntPtr.Zero;
+                var res = Functions.cuMemHostAlloc(ref pointer, (uint)size, (uint)CudaHelpers.CU_MEMHOSTALLOC.CU_MEMHOSTALLOC_DEVICEMAP);
                 CudaHelpers.CheckCudaError(res);
                 if (Campy.Utils.Options.IsOn("memory_trace"))
                     System.Console.WriteLine("Cu Alloc (" + bytes + " bytes) {0:X}", pointer.ToInt64());

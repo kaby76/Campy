@@ -71,7 +71,8 @@
         {
             if (res.Value != cudaError_enum.CUDA_SUCCESS)
             {
-                Functions.cuGetErrorString(res, out IntPtr pStr);
+                IntPtr pStr = IntPtr.Zero;
+                Functions.cuGetErrorString(res, ref pStr);
                 var cuda_error = Marshal.PtrToStringAnsi(pStr);
                 throw new Exception("CUDA error: " + cuda_error);
             }

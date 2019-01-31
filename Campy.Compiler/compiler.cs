@@ -1194,7 +1194,8 @@
             {
                 Utils.CudaHelpers.CheckCudaError(Functions.cuInit(0));
                 Utils.CudaHelpers.CheckCudaError(Functions.cuDevicePrimaryCtxReset(new CUdevice(0)));
-                Utils.CudaHelpers.CheckCudaError(Functions.cuCtxCreate_v2(out CUcontext pctx, 0, new CUdevice(0)));
+                CUcontext pctx = default(CUcontext);
+                Utils.CudaHelpers.CheckCudaError(Functions.cuCtxCreate_v2(ref pctx, 0, new CUdevice(0)));
             }
             catch (Exception e)
             {
@@ -1459,12 +1460,15 @@
                 if (Campy.Utils.Options.IsOn("jit_trace"))
                     System.Console.WriteLine("Current directory " + current_directory);
 
-                CudaHelpers.CheckCudaError(Functions.cuMemGetInfo_v2(out SizeT free_memory, out SizeT total_memory));
+                SizeT free_memory = default(SizeT);
+                SizeT total_memory = default(SizeT);
+                CudaHelpers.CheckCudaError(Functions.cuMemGetInfo_v2(ref free_memory, ref total_memory));
                 if (Campy.Utils.Options.IsOn("jit_trace"))
                     System.Console.WriteLine("total memory " + total_memory + " free memory " + free_memory);
                 if (!done_stack)
                 {
-                    CudaHelpers.CheckCudaError(Functions.cuCtxGetLimit(out SizeT pvalue, new CUlimit(CUlimit_enum.CU_LIMIT_STACK_SIZE)));
+                    SizeT pvalue = default(SizeT);
+                    CudaHelpers.CheckCudaError(Functions.cuCtxGetLimit(ref pvalue, new CUlimit(CUlimit_enum.CU_LIMIT_STACK_SIZE)));
                     CudaHelpers.CheckCudaError(Functions.cuCtxSetLimit(new CUlimit(CUlimit_enum.CU_LIMIT_STACK_SIZE), (uint)pvalue * 4));
                     if (Campy.Utils.Options.IsOn("jit_trace"))
                         System.Console.WriteLine("Stack size " + pvalue);
@@ -1540,7 +1544,8 @@
 
                 Utils.CudaHelpers.CheckCudaError(res);
 
-                res = Functions.cuLinkComplete(linkState, out image, out SizeT sz);
+                SizeT sz = default(SizeT);
+                res = Functions.cuLinkComplete(linkState, ref image, ref sz);
                 if (res.Value != cudaError_enum.CUDA_SUCCESS)
                 {
                     string info = Marshal.PtrToStringAnsi(info_log_buffer_intptr);
@@ -1586,10 +1591,15 @@
             foreach (var v in _mcfg.Entries)
             {
                 var normalized_method_name = METAHELPER.RenameToLlvmMethodName(v._method_reference.FullName);
-                var res = Functions.cuModuleGetFunction(out CUfunction helloWorld, module, normalized_method_name);
+                var ansi_name = Marshal.StringToHGlobalAnsi(normalized_method_name);
+                CUfunction helloWorld = default(CUfunction);
+                var res = Functions.cuModuleGetFunction(ref helloWorld, module, ansi_name);
                 // Not every entry is going to be in module, so this isn't a problem if not found.
                 if (res.Value != cudaError_enum.CUDA_SUCCESS) continue;
-                res = Functions.cuModuleGetGlobal_v2(out CUdeviceptr hw, out SizeT z, module, "p_" + normalized_method_name);
+                CUdeviceptr hw = default(CUdeviceptr);
+                SizeT z = default(SizeT);
+                var fun = Marshal.StringToHGlobalAnsi("p_" + normalized_method_name);
+                res = Functions.cuModuleGetGlobal_v2(ref hw, ref z, module, fun);
                 var bcl_type = RUNTIME.MonoBclMap_GetBcl(v._method_reference.DeclaringType);
                 RUNTIME.BclMetaDataSetMethodJit((IntPtr)hw.Value,
                     bcl_type,
@@ -1614,10 +1624,15 @@
                     if (ci._full_name == mr.FullName)
                     {
                         string the_name = ci._native_name;
-                        var res = Functions.cuModuleGetFunction(out CUfunction helloWorld, module, ci._native_name);
+                        CUfunction helloWorld = default(CUfunction);
+                        var fun1 = Marshal.StringToHGlobalAnsi(ci._native_name);
+                        var res = Functions.cuModuleGetFunction(ref helloWorld, module, fun1);
                         // Not every entry is going to be in module, so this isn't a problem if not found.
                         if (res.Value != cudaError_enum.CUDA_SUCCESS) continue;
-                        res = Functions.cuModuleGetGlobal_v2(out CUdeviceptr hw, out SizeT z, module, "p_" + ci._short_name);
+                        CUdeviceptr hw = default(CUdeviceptr);
+                        SizeT z = default(SizeT);
+                        var fun2 = Marshal.StringToHGlobalAnsi("p_" + ci._short_name);
+                        res = Functions.cuModuleGetGlobal_v2(ref hw, ref z, module, fun2);
                         var bcl_type = RUNTIME.MonoBclMap_GetBcl(mr.DeclaringType);
                         RUNTIME.BclMetaDataSetMethodJit((IntPtr)hw.Value,
                             bcl_type,
@@ -1633,7 +1648,9 @@
             CFG.Vertex bb = _mcfg.Entries.Where(v =>
             v.IsEntry && v._method_reference.FullName == kernel_method.FullName).FirstOrDefault();
             var normalized_method_name = METAHELPER.RenameToLlvmMethodName(bb._method_reference.FullName);
-            var res = Functions.cuModuleGetFunction(out CUfunction helloWorld, module, normalized_method_name);
+            CUfunction helloWorld = default(CUfunction);
+            var fun = Marshal.StringToHGlobalAnsi(normalized_method_name);
+            var res = Functions.cuModuleGetFunction(ref helloWorld, module, fun);
             Utils.CudaHelpers.CheckCudaError(res);
             return helloWorld;
         }

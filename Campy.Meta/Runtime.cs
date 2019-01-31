@@ -1017,7 +1017,9 @@ declare i64 @_Z62System_Runtime_CompilerServices_RuntimeHelpers_InitializeArrayP
 
         public static CUfunction _Z15Set_BCL_GlobalsP6_BCL_t(CUmodule module)
         {
-            CudaHelpers.CheckCudaError(Functions.cuModuleGetFunction(out CUfunction function, module, "_Z15Set_BCL_GlobalsP6_BCL_t"));
+            CUfunction function = default(CUfunction);
+            var fun = Marshal.StringToHGlobalAnsi("_Z15Set_BCL_GlobalsP6_BCL_t");
+            CudaHelpers.CheckCudaError(Functions.cuModuleGetFunction(ref function, module, fun));
             return function;
         }
 

@@ -35,7 +35,8 @@
                 IntPtr[] kp = new IntPtr[] { parm1 };
 
                 CUmodule module = RUNTIME.RuntimeModule;
-                CudaHelpers.CheckCudaError(Functions.cuModuleGetFunction(out CUfunction function, module, "_Z21set_kernel_base_indexi"));
+                CUfunction function = default(CUfunction);
+                CudaHelpers.CheckCudaError(Functions.cuModuleGetFunction(ref function, module, Marshal.StringToHGlobalAnsi("_Z21set_kernel_base_indexi")));
                 Campy.Utils.CudaHelpers.MakeLinearTiling(1,
                     out Campy.Utils.CudaHelpers.dim3 tile_size,
                     out Campy.Utils.CudaHelpers.dim3 tiles);
