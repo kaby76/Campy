@@ -1,5 +1,7 @@
 # Campy
 
+_NB: Development of Campy has been suspended until I port a complete NET runtime to C#. --Ken_
+
 Welcome! Campy is a compiler, framework, and API for GP-GPU computing in .NET languages.
 With Campy, one writes GP-GPU code without the usual boilerplate code you see in CUDA/OpenCL,
 but instead use a simplified model of a multiprocessor GPU/CPU computer,
